@@ -157,4 +157,94 @@ public class ContextAwareConnectionTest extends TestCase {
 		con.setQueryLanguage(SERQL);
 		con.prepareTupleQuery(SPARQL, queryString, null);
 	}
+
+	public void testIncludeInferred() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setIncludeInferred(true);
+		assertTrue(b.isIncludeInferred());
+		assertTrue(a.isIncludeInferred());
+	}
+
+	public void testMaxQueryTime() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setMaxQueryTime(1);
+		assertEquals(1, b.getMaxQueryTime());
+		assertEquals(1, a.getMaxQueryTime());
+	}
+
+	public void testQueryLanguage() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setQueryLanguage(QueryLanguage.SERQL);
+		assertEquals(QueryLanguage.SERQL, b.getQueryLanguage());
+		assertEquals(QueryLanguage.SERQL, a.getQueryLanguage());
+	}
+
+	public void testBaseURI() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setBaseURI("http://example.com/");
+		assertEquals("http://example.com/", b.getBaseURI());
+		assertEquals("http://example.com/", a.getBaseURI());
+	}
+
+	public void testReadContexts() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setReadContexts(context);
+		assertEquals(context, b.getReadContexts()[0]);
+		assertEquals(context, a.getReadContexts()[0]);
+	}
+
+	public void testRemoveContexts() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setRemoveContexts(context);
+		assertEquals(context, b.getRemoveContexts()[0]);
+		assertEquals(context, a.getRemoveContexts()[0]);
+	}
+
+	public void testAddContexts() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setAddContexts(context);
+		assertEquals(context, b.getAddContexts()[0]);
+		assertEquals(context, a.getAddContexts()[0]);
+	}
+
+	public void testArchiveContexts() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setArchiveContexts(context);
+		assertEquals(context, b.getArchiveContexts()[0]);
+		assertEquals(context, a.getArchiveContexts()[0]);
+	}
+
+	public void testInsertContexts() throws Exception {
+		RepositoryConnection stub = new RepositoryConnectionStub();
+		Repository repo = stub.getRepository();
+		ContextAwareConnection a = new ContextAwareConnection(repo, stub);
+		ContextAwareConnection b = new ContextAwareConnection(repo, a);
+		b.setInsertContext(context);
+		assertEquals(context, b.getInsertContext());
+		assertEquals(context, a.getInsertContext());
+	}
 }
