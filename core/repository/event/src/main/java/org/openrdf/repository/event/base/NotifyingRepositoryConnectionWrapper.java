@@ -15,6 +15,12 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -107,7 +113,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		boolean reportEvent = activated;
 
 		if (reportEvent && reportDeltas()) {
-			// Only report if the stament is not present yet
+			// Only report if the statement is not present yet
 			reportEvent = !getDelegate().hasStatement(subject, predicate, object, false, contexts);
 		}
 
@@ -115,7 +121,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (reportEvent) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.add(this, subject, predicate, object, contexts);
+				listener.add(getDelegate(), subject, predicate, object, contexts);
 			}
 		}
 	}
@@ -130,7 +136,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		else if (activated) {
 			getDelegate().clear(contexts);
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.clear(this, contexts);
+				listener.clear(getDelegate(), contexts);
 			}
 		}
 		else {
@@ -142,11 +148,11 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	public void close()
 		throws RepositoryException
 	{
-		super.close();
+		getDelegate().close();
 
 		if (activated) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.close(this);
+				listener.close(getDelegate());
 			}
 		}
 	}
@@ -159,7 +165,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (activated) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.commit(this);
+				listener.commit(getDelegate());
 			}
 		}
 	}
@@ -187,14 +193,14 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 					URI p = stmt.getPredicate();
 					Value o = stmt.getObject();
 					Resource c = stmt.getContext();
-					listener.remove(this, s, p, o, c);
+					listener.remove(getDelegate(), s, p, o, c);
 				}
 			}
 		}
 		else if (activated) {
 			getDelegate().remove(subj, pred, obj, ctx);
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.remove(this, subj, pred, obj, ctx);
+				listener.remove(getDelegate(), subj, pred, obj, ctx);
 			}
 		}
 		else {
@@ -210,7 +216,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (activated) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.removeNamespace(this, prefix);
+				listener.removeNamespace(getDelegate(), prefix);
 			}
 		}
 	}
@@ -240,7 +246,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		else if (activated) {
 			getDelegate().clearNamespaces();
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.clearNamespaces(this);
+				listener.clearNamespaces(getDelegate());
 			}
 		}
 		else {
@@ -256,7 +262,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (activated) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.rollback(this);
+				listener.rollback(getDelegate());
 			}
 		}
 	}
@@ -270,11 +276,11 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (activated && wasAutoCommit != autoCommit) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.setAutoCommit(this, autoCommit);
+				listener.setAutoCommit(getDelegate(), autoCommit);
 			}
 			if (autoCommit) {
 				for (RepositoryConnectionListener listener : listeners) {
-					listener.commit(this);
+					listener.commit(getDelegate());
 				}
 			}
 		}
@@ -288,8 +294,68 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 		if (activated) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.setNamespace(this, prefix, name);
+				listener.setNamespace(getDelegate(), prefix, name);
 			}
+		}
+	}
+
+	@Override
+	public Update prepareUpdate(final QueryLanguage ql, final String update, final String baseURI)
+		throws MalformedQueryException, RepositoryException
+	{
+		if (activated) {
+			return new Update() {
+
+				private final RepositoryConnection conn = getDelegate();
+
+				private final Update delegate = conn.prepareUpdate(ql, update, baseURI);
+
+				public void execute()
+					throws UpdateExecutionException
+				{
+					delegate.execute();
+					if (activated) {
+						for (RepositoryConnectionListener listener : listeners) {
+							listener.execute(conn, ql, update, baseURI, delegate);
+						}
+					}
+				}
+
+				public void setBinding(String name, Value value) {
+					delegate.setBinding(name, value);
+				}
+
+				public void removeBinding(String name) {
+					delegate.removeBinding(name);
+				}
+
+				public void clearBindings() {
+					delegate.clearBindings();
+				}
+
+				public BindingSet getBindings() {
+					return delegate.getBindings();
+				}
+
+				public void setDataset(Dataset dataset) {
+					delegate.setDataset(dataset);
+				}
+
+				public Dataset getDataset() {
+					return delegate.getDataset();
+				}
+
+				public void setIncludeInferred(boolean includeInferred) {
+					delegate.setIncludeInferred(includeInferred);
+				}
+
+				public boolean getIncludeInferred() {
+					return delegate.getIncludeInferred();
+				}
+			};
+		}
+		else {
+			return getDelegate().prepareUpdate(ql, update, baseURI);
 		}
 	}
 }

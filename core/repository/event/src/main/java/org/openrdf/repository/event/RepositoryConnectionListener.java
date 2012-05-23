@@ -8,6 +8,8 @@ package org.openrdf.repository.event;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryConnection;
 
 /**
@@ -38,4 +40,7 @@ public interface RepositoryConnectionListener {
 	public abstract void removeNamespace(RepositoryConnection conn, String prefix);
 
 	public abstract void clearNamespaces(RepositoryConnection conn);
+
+	public abstract void execute(RepositoryConnection conn, QueryLanguage ql, String update,
+			String baseURI, Update operation);
 }

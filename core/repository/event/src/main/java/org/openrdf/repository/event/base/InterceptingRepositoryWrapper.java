@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.InterceptingRepository;
@@ -94,14 +95,12 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	public InterceptingRepositoryConnection getConnection()
 		throws RepositoryException
 	{
-		InterceptingRepositoryConnection conn = new InterceptingRepositoryConnectionWrapper(this,
-				super.getConnection());
-
+		RepositoryConnection conn = getDelegate().getConnection();
 		if (activated) {
 			boolean denied = false;
 
 			for (RepositoryInterceptor interceptor : interceptors) {
-				denied = interceptor.getConnection(this, conn);
+				denied = interceptor.getConnection(getDelegate(), conn);
 				if (denied) {
 					break;
 				}
@@ -110,14 +109,14 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 				conn = null;
 			}
 		}
+		if (conn == null)
+			return null;
 
-		if (conn != null) {
-			for (RepositoryConnectionInterceptor conInterceptor : conInterceptors) {
-				conn.addRepositoryConnectionInterceptor(conInterceptor);
-			}
+		InterceptingRepositoryConnection iconn = new InterceptingRepositoryConnectionWrapper(this, conn);
+		for (RepositoryConnectionInterceptor conInterceptor : conInterceptors) {
+			iconn.addRepositoryConnectionInterceptor(conInterceptor);
 		}
-
-		return conn;
+		return iconn;
 	}
 
 	@Override
@@ -127,14 +126,14 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryInterceptor interceptor : interceptors) {
-				denied = interceptor.initialize(this);
+				denied = interceptor.initialize(getDelegate());
 				if (denied) {
 					break;
 				}
 			}
 		}
 		if (!denied) {
-			super.initialize();
+			getDelegate().initialize();
 		}
 	}
 
@@ -143,14 +142,14 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryInterceptor interceptor : interceptors) {
-				denied = interceptor.setDataDir(this, dataDir);
+				denied = interceptor.setDataDir(getDelegate(), dataDir);
 				if (denied) {
 					break;
 				}
 			}
 		}
 		if (!denied) {
-			super.setDataDir(dataDir);
+			getDelegate().setDataDir(dataDir);
 		}
 	}
 
@@ -161,14 +160,14 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryInterceptor interceptor : interceptors) {
-				denied = interceptor.shutDown(this);
+				denied = interceptor.shutDown(getDelegate());
 				if (denied) {
 					break;
 				}
 			}
 		}
 		if (!denied) {
-			super.shutDown();
+			getDelegate().shutDown();
 		}
 	}
 }

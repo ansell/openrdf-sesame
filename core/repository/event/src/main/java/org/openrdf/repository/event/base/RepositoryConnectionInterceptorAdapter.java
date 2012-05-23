@@ -8,6 +8,8 @@ package org.openrdf.repository.event.base;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionInterceptor;
 
@@ -57,6 +59,12 @@ public class RepositoryConnectionInterceptorAdapter implements RepositoryConnect
 	}
 
 	public boolean setNamespace(RepositoryConnection conn, String prefix, String name) {
+		return false;
+	}
+
+	public boolean execute(RepositoryConnection conn, QueryLanguage ql, String update, String baseURI,
+			Update operation)
+	{
 		return false;
 	}
 }
