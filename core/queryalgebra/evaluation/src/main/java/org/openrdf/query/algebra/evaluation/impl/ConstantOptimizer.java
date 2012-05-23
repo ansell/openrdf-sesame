@@ -20,7 +20,9 @@ import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BinaryValueOperator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.FunctionCall;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.Or;
+import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueConstant;
@@ -209,6 +211,50 @@ public class ConstantOptimizer implements QueryOptimizer {
 			if (bound.getArg().hasValue()) {
 				// variable is always bound
 				bound.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+			}
+		}
+
+		@Override
+		public void meet(If node) {
+			super.meet(node);
+
+			if (isConstant(node.getCondition())) {
+				try {
+					if (strategy.isTrue(node.getCondition(), EmptyBindingSet.getInstance())) {
+						node.replaceWith(node.getResult());
+					}
+					else {
+						node.replaceWith(node.getAlternative());
+					}
+				}
+				catch (ValueExprEvaluationException e) {
+					logger.debug("Failed to evaluate UnaryValueOperator with a constant argument", e);
+				}
+				catch (QueryEvaluationException e) {
+					logger.error("Query evaluation exception caught", e);
+				}
+			}
+		}
+
+		/**
+		 * Override meetBinaryValueOperator
+		 */
+		@Override
+		public void meet(Regex node) {
+			super.meetNode(node);
+
+			if (isConstant(node.getArg()) && isConstant(node.getPatternArg()) && isConstant(node.getFlagsArg()))
+			{
+				try {
+					Value value = strategy.evaluate(node, EmptyBindingSet.getInstance());
+					node.replaceWith(new ValueConstant(value));
+				}
+				catch (ValueExprEvaluationException e) {
+					logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				}
+				catch (QueryEvaluationException e) {
+					logger.error("Query evaluation exception caught", e);
+				}
 			}
 		}
 
