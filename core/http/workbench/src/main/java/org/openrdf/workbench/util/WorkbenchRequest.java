@@ -55,6 +55,8 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 
 	private InputStream content;
 
+	private String contentFileName;
+	
 	public WorkbenchRequest(Repository repository, HttpServletRequest request, Map<String, String> defaults)
 		throws RepositoryException, IOException, FileUploadException
 	{
@@ -80,6 +82,10 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		throws RepositoryException, BadRequestException, IOException, FileUploadException
 	{
 		return content;
+	}
+	
+	public String getContentFileName() {
+		return contentFileName;
 	}
 
 	public int getInt(String name)
@@ -283,6 +289,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 			String name = item.getFieldName();
 			if ("content".equals(name)) {
 				content = item.openStream();
+				contentFileName = item.getName();
 				return parameters;
 			}
 			else {
