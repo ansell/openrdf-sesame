@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.NotifyingRepository;
@@ -107,20 +108,20 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	public NotifyingRepositoryConnection getConnection()
 		throws RepositoryException
 	{
-		NotifyingRepositoryConnection con = new NotifyingRepositoryConnectionWrapper(this,
-				super.getConnection(), getDefaultReportDeltas());
+		RepositoryConnection con = getDelegate().getConnection();
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.getConnection(this, con);
+				listener.getConnection(getDelegate(), con);
 			}
 		}
-
+		NotifyingRepositoryConnection ncon = new NotifyingRepositoryConnectionWrapper(this,
+				con, getDefaultReportDeltas());
 		for (RepositoryConnectionListener l : conListeners) {
-			con.addRepositoryConnectionListener(l);
+			ncon.addRepositoryConnectionListener(l);
 		}
 
-		return con;
+		return ncon;
 	}
 
 	@Override
@@ -131,7 +132,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.initialize(this);
+				listener.initialize(getDelegate());
 			}
 		}
 	}
@@ -143,7 +144,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.setDataDir(this, dataDir);
+				listener.setDataDir(getDelegate(), dataDir);
 			}
 		}
 	}
@@ -156,7 +157,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.shutDown(this);
+				listener.shutDown(getDelegate());
 			}
 		}
 	}

@@ -11,6 +11,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -87,7 +93,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.add(this, subject, predicate, object, contexts);
+				denied = interceptor.add(getDelegate(), subject, predicate, object, contexts);
 				if (denied) {
 					break;
 				}
@@ -105,7 +111,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.clear(this, contexts);
+				denied = interceptor.clear(getDelegate(), contexts);
 				if (denied) {
 					break;
 				}
@@ -123,7 +129,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.close(this);
+				denied = interceptor.close(getDelegate());
 				if (denied) {
 					break;
 				}
@@ -141,7 +147,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.commit(this);
+				denied = interceptor.commit(getDelegate());
 				if (denied) {
 					break;
 				}
@@ -159,7 +165,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.remove(this, subject, predicate, object, contexts);
+				denied = interceptor.remove(getDelegate(), subject, predicate, object, contexts);
 				if (denied) {
 					break;
 				}
@@ -178,7 +184,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.removeNamespace(this, prefix);
+				denied = interceptor.removeNamespace(getDelegate(), prefix);
 				if (denied) {
 					break;
 				}
@@ -196,7 +202,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.clearNamespaces(this);
+				denied = interceptor.clearNamespaces(getDelegate());
 				if (denied) {
 					break;
 				}
@@ -214,7 +220,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.rollback(this);
+				denied = interceptor.rollback(getDelegate());
 				if (denied) {
 					break;
 				}
@@ -233,7 +239,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean wasAutoCommit = isAutoCommit();
 		if (activated && wasAutoCommit != autoCommit) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.setAutoCommit(this, autoCommit);
+				denied = interceptor.setAutoCommit(getDelegate(), autoCommit);
 				if (denied) {
 					break;
 				}
@@ -252,7 +258,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryConnectionInterceptor interceptor : interceptors) {
-				denied = interceptor.setNamespace(this, prefix, name);
+				denied = interceptor.setNamespace(getDelegate(), prefix, name);
 				if (denied) {
 					break;
 				}
@@ -260,6 +266,72 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 		}
 		if (!denied) {
 			getDelegate().setNamespace(prefix, name);
+		}
+	}
+
+	@Override
+	public Update prepareUpdate(final QueryLanguage ql, final String update, final String baseURI)
+		throws MalformedQueryException, RepositoryException
+	{
+		if (activated) {
+			return new Update() {
+
+				private final RepositoryConnection conn = getDelegate();
+
+				private final Update delegate = conn.prepareUpdate(ql, update, baseURI);
+
+				public void execute()
+					throws UpdateExecutionException
+				{
+					boolean denied = false;
+					if (activated) {
+						for (RepositoryConnectionInterceptor interceptor : interceptors) {
+							denied = interceptor.execute(conn, ql, update, baseURI, delegate);
+							if (denied) {
+								break;
+							}
+						}
+					}
+					if (!denied) {
+						delegate.execute();
+					}
+				}
+
+				public void setBinding(String name, Value value) {
+					delegate.setBinding(name, value);
+				}
+
+				public void removeBinding(String name) {
+					delegate.removeBinding(name);
+				}
+
+				public void clearBindings() {
+					delegate.clearBindings();
+				}
+
+				public BindingSet getBindings() {
+					return delegate.getBindings();
+				}
+
+				public void setDataset(Dataset dataset) {
+					delegate.setDataset(dataset);
+				}
+
+				public Dataset getDataset() {
+					return delegate.getDataset();
+				}
+
+				public void setIncludeInferred(boolean includeInferred) {
+					delegate.setIncludeInferred(includeInferred);
+				}
+
+				public boolean getIncludeInferred() {
+					return delegate.getIncludeInferred();
+				}
+			};
+		}
+		else {
+			return getDelegate().prepareUpdate(ql, update, baseURI);
 		}
 	}
 }

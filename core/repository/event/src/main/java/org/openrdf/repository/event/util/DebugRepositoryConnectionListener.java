@@ -11,6 +11,8 @@ import java.util.Arrays;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
 
@@ -168,5 +170,16 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 		int length = id.length();
 		int maxLength = 20;
 		return length <= maxLength ? id : "..." + id.substring(length - maxLength);
+	}
+
+	public void execute(RepositoryConnection conn, QueryLanguage ql, String update, String baseURI,
+			Update operation)
+	{
+		if (printing) {
+			stream.println("EXECUTE (" + getConnectionID(conn) + ") " + update);
+		}
+		if (dumpingStack) {
+			Thread.dumpStack();
+		}
 	}
 }
