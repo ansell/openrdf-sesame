@@ -13,6 +13,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
@@ -20,6 +21,7 @@ import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -177,6 +179,44 @@ public class QueryModelNormalizer extends QueryModelVisitorBase<RuntimeException
 
 		if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
 			intersection.replaceWith(new EmptySet());
+		}
+	}
+
+	@Override
+	protected void meetUnaryTupleOperator(UnaryTupleOperator node) {
+		super.meetUnaryTupleOperator(node);
+
+		if (node.getArg() instanceof EmptySet) {
+			node.replaceWith(node.getArg());
+		}
+	}
+
+	@Override
+	public void meet(Filter node) {
+		super.meet(node);
+
+		TupleExpr arg = node.getArg();
+		ValueExpr condition = node.getCondition();
+
+		if (arg instanceof EmptySet) {
+			// see #meetUnaryTupleOperator
+		}
+		else if (condition instanceof ValueConstant) {
+			boolean conditionValue;
+			try {
+				conditionValue = QueryEvaluationUtil.getEffectiveBooleanValue(((ValueConstant)condition).getValue());
+			}
+			catch (ValueExprEvaluationException e) {
+				conditionValue = false;
+			}
+
+			if (conditionValue == false) {
+				// Constraint is always false
+				node.replaceWith(new EmptySet());
+			}
+			else {
+				node.replaceWith(arg);
+			}
 		}
 	}
 

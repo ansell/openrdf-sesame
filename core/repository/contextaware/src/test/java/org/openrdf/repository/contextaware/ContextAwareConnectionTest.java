@@ -54,7 +54,7 @@ public class ContextAwareConnectionTest extends TestCase {
 	static class RepositoryStub extends RepositoryWrapper {
 		@Override
 		public RepositoryConnection getConnection() throws RepositoryException {
-			ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			ClassLoader cl = ContextAwareConnectionTest.class.getClassLoader();
 			Class<?>[] classes = new Class[] { RepositoryConnection.class };
 			InvocationHandlerStub handler = new InvocationHandlerStub();
 			Object proxy = Proxy.newProxyInstance(cl, classes, handler);
