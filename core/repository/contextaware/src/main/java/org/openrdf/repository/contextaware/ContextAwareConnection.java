@@ -50,6 +50,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	private static final URI[] ALL_CONTEXTS = new URI[0];
 
+	private final ContextAwareConnection next;
+
 	private boolean includeInferred = true;
 
 	private int maxQueryTime;
@@ -74,12 +76,23 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		this(repository, repository.getConnection());
 	}
 
-	public ContextAwareConnection(RepositoryConnection connection) {
-		super(connection.getRepository(), connection);
+	public ContextAwareConnection(RepositoryConnection connection) throws RepositoryException {
+		this(connection.getRepository(), connection);
 	}
 
-	public ContextAwareConnection(Repository repository, RepositoryConnection connection) {
+	public ContextAwareConnection(Repository repository, RepositoryConnection connection) throws RepositoryException {
 		super(repository, connection);
+		ContextAwareConnection next = null;
+		RepositoryConnection up = connection;
+		while (up instanceof RepositoryConnectionWrapper) {
+			if (up instanceof ContextAwareConnection) {
+				next = (ContextAwareConnection)up;
+				break;
+			} else {
+				up = ((RepositoryConnectionWrapper) up).getDelegate(); 
+			}
+		}
+		this.next = next;
 	}
 
 	@Override
@@ -101,6 +114,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 */
 	public void setIncludeInferred(boolean includeInferred) {
 		this.includeInferred = includeInferred;
+		if (next != null) {
+			next.setIncludeInferred(includeInferred);
+		}
 	}
 
 	public int getMaxQueryTime() {
@@ -109,6 +125,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	public void setMaxQueryTime(int maxQueryTime) {
 		this.maxQueryTime = maxQueryTime;
+		if (next != null) {
+			next.setMaxQueryTime(maxQueryTime);
+		}
 	}
 
 	public QueryLanguage getQueryLanguage() {
@@ -117,6 +136,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	public void setQueryLanguage(QueryLanguage ql) {
 		this.ql = ql;
+		if (next != null) {
+			next.setQueryLanguage(ql);
+		}
 	}
 
 	
@@ -133,6 +155,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 */
 	public void setBaseURI(String baseURI) {
 		this.baseURI = baseURI;
+		if (next != null) {
+			next.setBaseURI(baseURI);
+		}
 	}
 
 	/**
@@ -151,6 +176,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 */
 	public void setReadContexts(URI... readContexts) {
 		this.readContexts = readContexts;
+		if (next != null) {
+			next.setReadContexts(readContexts);
+		}
 	}
 
 	/**
@@ -181,6 +209,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		} else if (addContexts.length == 1) {
 			this.insertContext = addContexts[0];
 		}
+		if (next != null) {
+			next.setAddContexts(addContexts);
+		}
 	}
 
 	/**
@@ -201,6 +232,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 */
 	public void setRemoveContexts(URI... removeContexts) {
 		this.removeContexts = removeContexts;
+		if (next != null) {
+			next.setRemoveContexts(removeContexts);
+		}
 	}
 
 	/**
@@ -217,6 +251,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Deprecated
 	public void setArchiveContexts(URI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
+		if (next != null) {
+			next.setArchiveContexts(archiveContexts);
+		}
 	}
 
 	/**
@@ -238,6 +275,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void setInsertContext(URI insertContext) {
 		this.insertContext = insertContext;
 		this.addContexts = new URI[]{insertContext};
+		if (next != null) {
+			next.setInsertContext(insertContext);
+		}
 	}
 
 	public void add(File file, RDFFormat dataFormat, Resource... contexts)
