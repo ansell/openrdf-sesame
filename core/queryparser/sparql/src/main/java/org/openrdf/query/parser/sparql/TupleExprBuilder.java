@@ -322,14 +322,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply HAVING group filter condition
 		tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
 
-		// Apply result ordering
-		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, group);
-
 		// process bindings clause
 		ASTBindingsClause bindingsClause = node.getBindingsClause();
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
+		
+		// Apply result ordering
+		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, group);
 
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelect().jjtAccept(this, tupleExpr);
@@ -667,14 +667,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// Apply HAVING group filter condition
 		tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
 
-		// Apply result ordering
-		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
-
 		// process bindings clause
 		ASTBindingsClause bindingsClause = node.getBindingsClause();
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
+		
+		// Apply result ordering
+		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
 
 		// Process construct clause
 		ASTConstruct constructNode = node.getConstruct();
