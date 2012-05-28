@@ -89,21 +89,27 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 * --------- Methods ---------
 	 */
 
+	/**
+	 * Creates a new Lock for reading and increments counter for active readers.
+	 * The lock is tracked if lock tracking is enabled. This method is not thread
+	 * safe itself, the calling method is expected to handle synchronization
+	 * issues.
+	 * 
+	 * @return a read lock.
+	 */
 	protected Lock createReadLock() {
-		activeReaders++;
+
+		Lock lock = null;
 
 		if (trackLocks) {
-			Lock lock = new ReadDebugLock(logger, true);
-
-			if (trackLocks) {
-				readLocks.add(new WeakReference<Lock>(lock));
-			}
-
-			return lock;
+			lock = new ReadDebugLock(logger, true);
+			readLocks.add(new WeakReference<Lock>(lock));
 		}
 		else {
-			return new ReadLock();
+			lock = new ReadLock();
 		}
+		activeReaders++;
+		return lock;
 	}
 
 	protected class ReadLock extends AbstractLock {
@@ -130,7 +136,6 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 * Releases a read lock.
 	 */
 	private synchronized void releaseReadLock(Lock lock) {
-		activeReaders--;
 
 		if (trackLocks) {
 			Iterator<WeakReference<Lock>> iter = readLocks.iterator();
@@ -142,27 +147,33 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 			}
 		}
 
+		activeReaders--;
+
 		if (activeReaders == 0) {
 			// Maybe someone wants to write?
 			notifyAll();
 		}
 	}
 
+	/**
+	 * Creates a new Lock for writing. The lock is tracked if lock tracking is
+	 * enabled. This method is not thread safe itself for performance reasons,
+	 * the calling method is expected to handle synchronization issues.
+	 * 
+	 * @return a write lock.
+	 */
 	protected Lock createWriteLock() {
-		writerActive = true;
-
+		Lock lock;
 		if (trackLocks) {
-			Lock lock = new WriteDebugLock(logger, true);
-
-			if (trackLocks) {
-				writeLock = new WeakReference<Lock>(lock);
-			}
-
-			return lock;
+			lock = new WriteDebugLock(logger, true);
+			writeLock = new WeakReference<Lock>(lock);
 		}
 		else {
-			return new WriteLock();
+			lock = new WriteLock();
 		}
+		writerActive = true;
+		return lock;
+
 	}
 
 	protected class WriteLock extends AbstractLock {
@@ -189,11 +200,10 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 * Release a write lock.
 	 */
 	private synchronized void releaseWriteLock() {
-		writerActive = false;
-
 		if (trackLocks) {
 			writeLock = null;
 		}
+		writerActive = false;
 
 		notifyAll();
 	}
