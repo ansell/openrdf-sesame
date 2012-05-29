@@ -28,6 +28,8 @@ public final class NioFile {
 
 	private final File file;
 
+	private final String mode;
+
 	private volatile RandomAccessFile raf;
 
 	private volatile FileChannel fc;
@@ -37,7 +39,14 @@ public final class NioFile {
 	public NioFile(File file)
 		throws IOException
 	{
+		this(file, "rw");
+	}
+
+	public NioFile(File file, String mode)
+		throws IOException
+	{
 		this.file = file;
+		this.mode = mode;
 
 		if (!file.exists()) {
 			boolean created = file.createNewFile();
@@ -53,9 +62,8 @@ public final class NioFile {
 	private void open()
 		throws IOException
 	{
-		raf = new RandomAccessFile(file, "rw");
+		raf = new RandomAccessFile(file, mode);
 		fc = raf.getChannel();
-
 	}
 
 	private synchronized void reopen(ClosedChannelException e)
