@@ -87,7 +87,12 @@ public class TripleStoreRecoveryTest extends TestCase {
 
 		// Pretend that commit was called
 		TxnStatusFile txnStatusFile = new TxnStatusFile(dataDir);
-		txnStatusFile.setTxnStatus(TxnStatus.COMMITTING);
+		try {
+			txnStatusFile.setTxnStatus(TxnStatus.COMMITTING);
+		}
+		finally {
+			txnStatusFile.close();
+		}
 
 		// Try to restore from the uncompleted transaction
 		tripleStore = new TripleStore(dataDir, "spoc");

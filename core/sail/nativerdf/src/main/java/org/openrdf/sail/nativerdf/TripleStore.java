@@ -442,6 +442,8 @@ class TripleStore {
 			index.getBTree().close();
 		}
 		
+		txnStatusFile.close();
+		
 		// Should have been removed upon commit() or rollback(), but just to be sure
 		if (updatedTriplesCache != null) {
 			updatedTriplesCache.discard();

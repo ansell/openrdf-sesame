@@ -7,8 +7,9 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
-import info.aduna.io.IOUtil;
+import info.aduna.io.NioFile;
 
 /**
  * Writes transaction statuses to a file.
@@ -40,17 +41,19 @@ class TxnStatusFile {
 		ROLLING_BACK,
 
 		/**
-		 * The transaction status is unkown.
+		 * The transaction status is unknown.
 		 */
 		UNKNOWN;
 	}
+
+	private static final Charset US_ASCII = Charset.forName("US-ASCII");
 
 	/**
 	 * The name of the transaction status file.
 	 */
 	public static final String FILE_NAME = "txn-status";
 
-	private final File file;
+	private final NioFile nioFile;
 
 	/**
 	 * Creates a new transaction status file. New files are initialized with
@@ -64,15 +67,22 @@ class TxnStatusFile {
 	public TxnStatusFile(File dataDir)
 		throws IOException
 	{
-		this.file = new File(dataDir, FILE_NAME);
+		File statusFile = new File(dataDir, FILE_NAME);
+		nioFile = new NioFile(statusFile, "rwd");
 
-		if (!file.exists()) {
+		if (nioFile.size() == 0) {
 			setTxnStatus(TxnStatus.NONE);
 		}
 	}
 
+	public void close()
+		throws IOException
+	{
+		nioFile.close();
+	}
+
 	/**
-	 * Writes the specfied transaction status to file.
+	 * Writes the specified transaction status to file.
 	 * 
 	 * @param txnStatus
 	 *        The transaction status to write.
@@ -82,7 +92,7 @@ class TxnStatusFile {
 	public void setTxnStatus(TxnStatus txnStatus)
 		throws IOException
 	{
-		IOUtil.writeString(txnStatus.name(), file);
+		nioFile.writeBytes(txnStatus.name().getBytes(US_ASCII), 0);
 	}
 
 	/**
@@ -96,12 +106,21 @@ class TxnStatusFile {
 	public TxnStatus getTxnStatus()
 		throws IOException
 	{
-		String s = IOUtil.readString(file);
+		byte[] bytes = nioFile.readBytes(0, (int)nioFile.size());
+		String s = new String(bytes, US_ASCII);
 		try {
 			return TxnStatus.valueOf(s);
 		}
 		catch (IllegalArgumentException e) {
-			return TxnStatus.UNKNOWN;
+			// use platform encoding for backwards compatibility with versions
+			// older than 2.6.6:
+			s = new String(bytes);
+			try {
+				return TxnStatus.valueOf(s);
+			}
+			catch (IllegalArgumentException e2) {
+				return TxnStatus.UNKNOWN;
+			}
 		}
 	}
 }
