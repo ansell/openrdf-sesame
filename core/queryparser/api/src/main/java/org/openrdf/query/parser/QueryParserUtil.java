@@ -225,7 +225,17 @@ public class QueryParserUtil {
 					normalizedQuery.length());
 			startIndexCorrection += (matcher.end() - startIndexCorrection);
 		}
-
+		
+		normalizedQuery = normalizedQuery.trim();
+		
+		// strip leading comment before base (if present)
+		pattern = Pattern.compile("^#[^\n]+");
+		matcher = pattern.matcher(normalizedQuery);
+		if (matcher.find()) {
+			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
+			normalizedQuery = normalizedQuery.trim();
+		}
+		
 		// strip base declaration (if present)
 		pattern = Pattern.compile("^base\\s+<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(normalizedQuery);
@@ -233,6 +243,13 @@ public class QueryParserUtil {
 			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
 		}
 
+		// strip leading comment after base (if present)
+		pattern = Pattern.compile("^#[^\n]+");
+		matcher = pattern.matcher(normalizedQuery);
+		if (matcher.find()) {
+			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
+		}
+		
 		return normalizedQuery.trim();
 	}
 }
