@@ -197,7 +197,13 @@ public class RepositoryController extends AbstractController {
 			}
 			catch (QueryEvaluationException e) {
 				logger.info("Query evaluation error", e);
-				throw new ServerHTTPException("Query evaluation error: " + e.getMessage());
+				if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+					// custom signal from the backend, throw as HTTPException directly (see SES-1016).
+					throw (HTTPException)e.getCause();
+				}
+				else {
+					throw new ServerHTTPException("Query evaluation error: " + e.getMessage());
+				}
 			}
 
 			Object factory = ProtocolUtil.getAcceptableService(request, response, registry);
