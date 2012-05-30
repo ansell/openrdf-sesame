@@ -46,6 +46,7 @@ import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.http.protocol.transaction.TransactionReader;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.http.server.ClientHTTPException;
+import org.openrdf.http.server.HTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
@@ -141,7 +142,8 @@ public class StatementsController extends AbstractController {
 	 * @throws ClientHTTPException
 	 */
 	private ModelAndView getSparqlUpdateResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response) throws ServerHTTPException, ClientHTTPException
+			HttpServletRequest request, HttpServletResponse response)
+		throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -194,8 +196,7 @@ public class StatementsController extends AbstractController {
 				dataset.setDefaultInsertGraph(uri);
 			}
 			catch (IllegalArgumentException e) {
-				throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default insert graph: "
-						+ graphURI);
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default insert graph: " + graphURI);
 			}
 		}
 
@@ -219,14 +220,13 @@ public class StatementsController extends AbstractController {
 					dataset.addNamedGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: "
-							+ namedGraphURI);
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: " + namedGraphURI);
 				}
 			}
 		}
 
 		try {
-			
+
 			Update update = repositoryCon.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
 
 			update.setIncludeInferred(includeInferred);
@@ -234,7 +234,7 @@ public class StatementsController extends AbstractController {
 			if (dataset != null) {
 				update.setDataset(dataset);
 			}
-			
+
 			// determine if any variable bindings have been set on this update.
 			@SuppressWarnings("unchecked")
 			Enumeration<String> parameterNames = request.getParameterNames();
@@ -250,16 +250,30 @@ public class StatementsController extends AbstractController {
 					update.setBinding(bindingName, bindingValue);
 				}
 			}
-			
+
 			update.execute();
-			
+
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (UpdateExecutionException e) {
-			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
 		}
 		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
 		}
 		catch (MalformedQueryException e) {
 			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_QUERY, e.getMessage());
@@ -316,7 +330,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getTransactionResultResult(Repository repository, RepositoryConnection repositoryCon,
 			HttpServletRequest request, HttpServletResponse response)
-		throws IOException, ClientHTTPException, ServerHTTPException
+		throws IOException, ClientHTTPException, ServerHTTPException, HTTPException
 	{
 		InputStream in = request.getInputStream();
 		try {
@@ -349,7 +363,14 @@ public class StatementsController extends AbstractController {
 			throw new ServerHTTPException("Failed to read data: " + e.getMessage(), e);
 		}
 		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -358,7 +379,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getAddDataResult(Repository repository, RepositoryConnection repositoryCon,
 			HttpServletRequest request, HttpServletResponse response, boolean replaceCurrent)
-		throws IOException, ClientHTTPException, ServerHTTPException
+		throws IOException, ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -405,7 +426,14 @@ public class StatementsController extends AbstractController {
 			throw new ServerHTTPException("Failed to read data: " + e.getMessage(), e);
 		}
 		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -414,7 +442,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getDeleteDataResult(Repository repository, RepositoryConnection repositoryCon,
 			HttpServletRequest request, HttpServletResponse response)
-		throws ClientHTTPException, ServerHTTPException
+		throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -431,7 +459,14 @@ public class StatementsController extends AbstractController {
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
 		}
 	}
 }
