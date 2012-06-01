@@ -36,6 +36,7 @@ import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.Move;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
@@ -410,6 +411,11 @@ public class SailUpdateExecutor {
 	{
 		try {
 			TupleExpr whereClause = modify.getWhereExpr();
+
+			if (!(whereClause instanceof QueryRoot)) {
+				whereClause = new QueryRoot(whereClause);
+			}
+			
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
 			sourceBindings = evaluateWhereClause(whereClause, ds, bindings, includeInferred);
 			try {
