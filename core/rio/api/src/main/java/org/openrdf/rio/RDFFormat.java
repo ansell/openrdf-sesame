@@ -31,32 +31,76 @@ public class RDFFormat extends FileFormat {
 	 *-----------*/
 
 	/**
-	 * The RDF/XML file format.
+	 * The <a href="http://www.w3.org/TR/rdf-syntax-grammar/">RDF/XML</a> file
+	 * format.
+	 * <p>
+	 * Several file extensions are accepted for the RDF/XML format, including
+	 * <code>.rdf</code>, <code>.rdfs</code> (for RDF Schema files),
+	 * <code>.owl</code> (for OWL ontologies), and <code>.xml</code>. The media
+	 * type is <code>application/rdf+xml</code>, but <code>application/xml</code>
+	 * is also accepted. The character encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://www.w3.org/TR/rdf-syntax-grammar/
 	 */
 	public static final RDFFormat RDFXML = new RDFFormat("RDF/XML", Arrays.asList("application/rdf+xml",
 			"application/xml"), Charset.forName("UTF-8"), Arrays.asList("rdf", "rdfs", "owl", "xml"), true,
 			false);
 
 	/**
-	 * The N-Triples file format.
+	 * The <a href="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</a>
+	 * file format.
+	 * <p>
+	 * The file extension <code>.nt</code> is recommend for the N-Triples foramt.
+	 * The media type is <code>text/plain</code> and encoding is in 7-bit
+	 * US-ASCII.
+	 * </p>
+	 * 
+	 * @see http://www.w3.org/TR/rdf-testcases/#ntriples
 	 */
 	public static final RDFFormat NTRIPLES = new RDFFormat("N-Triples", "text/plain",
 			Charset.forName("US-ASCII"), "nt", false, false);
 
 	/**
-	 * The Turtle file format.
+	 * The <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle</a> file
+	 * format.
+	 * <p>
+	 * The file extension <code>.ttl</code> is recommend for the Turtle format.
+	 * The media type is <code>text/turtle</code>, but
+	 * <code>application/x-turtle</code> is also accepted. Character encoding is
+	 * UTF-8.
+	 * </p>
+	 * 
+	 * @see http://www.w3.org/TeamSubmission/turtle/
 	 */
 	public static final RDFFormat TURTLE = new RDFFormat("Turtle", Arrays.asList("text/turtle",
 			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"), true, false);
 
 	/**
-	 * The N3/Notation3 file format.
+	 * The <a
+	 * href="http://www.w3.org/DesignIssues/Notation3.html">N3/Notation3</a> file
+	 * format.
+	 * <p>
+	 * The file extension <code>.n3</code> is recommended for the N3 format. The
+	 * media type is <code>text/rdf+n3</code> and the encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://www.w3.org/DesignIssues/Notation3.html
 	 */
 	public static final RDFFormat N3 = new RDFFormat("N3", "text/rdf+n3", Charset.forName("UTF-8"), "n3",
 			true, false);
 
 	/**
-	 * The TriX file format.
+	 * The <a href="http://swdev.nokia.com/trix/">TriX</a> file format, an
+	 * XML-based RDF serialization format that supports recording of named
+	 * graphs.
+	 * <p>
+	 * The file extension <code>.trix</code> is recommended for the TriX format,
+	 * <code>.xml</code> is also accepted. The media type is
+	 * <code>application/trix</code> and the encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://swdev.nokia.com/trix/
 	 */
 	public static final RDFFormat TRIX = new RDFFormat("TriX", "application/trix", Charset.forName("UTF-8"),
 			Arrays.asList("xml", "trix"), false, true);
@@ -64,21 +108,43 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * The <a
 	 * href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">TriG</a> file
-	 * format.
+	 * format, a Turtle-based RDF serialization format that supports recording of
+	 * named graphs.
+	 * <p>
+	 * The file extension <code>.trig</code> is recommend for the TriG format.
+	 * The media type is <code>application/x-trig</code> and the encoding is
+	 * UTF-8.
+	 * </p>
+	 * 
+	 * @see http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", true, true);
 
 	/**
 	 * A binary RDF format.
+	 * <p>
+	 * The file extension <code>.brf</code> is recommend for the binary RDF
+	 * format. The media type is <code>application/x-binary-rdf</code>.
+	 * </p>
+	 * 
+	 * @see http://rivuli-development.com/2011/11/binary-rdf-in-sesame/
 	 */
 	public static final RDFFormat BINARY = new RDFFormat("BinaryRDF", "application/x-binary-rdf", null, "brf",
 			true, true);
 
 	/**
-	 * The <a href="http://sw.deri.org/2008/07/n-quads/">NQuads</a> file format.
+	 * The <a href="http://sw.deri.org/2008/07/n-quads/">N-Quads</a> file format,
+	 * an RDF serialization format that supports recording of named graphs.
+	 * <p>
+	 * The file extension <code>.nq</code> is recommended for NQuads documents.
+	 * The media type is <code>text/x-nquads</code> and the encoding is 7-bit
+	 * US-ASCII.
+	 * </p>
+	 * 
+	 * @see http://sw.deri.org/2008/07/n-quads/
 	 */
-	public static final RDFFormat NQUADS = new RDFFormat("NQuads", "text/x-nquads",
+	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", "text/x-nquads",
 			Charset.forName("US-ASCII"), "nq", false, true);
 
 	/*------------------*
