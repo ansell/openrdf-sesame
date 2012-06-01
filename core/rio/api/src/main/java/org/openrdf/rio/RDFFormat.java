@@ -34,7 +34,7 @@ public class RDFFormat extends FileFormat {
 	 * The <a href="http://www.w3.org/TR/rdf-syntax-grammar/">RDF/XML</a> file
 	 * format.
 	 * <p>
-	 * Several file extensions are accepted for the RDF/XML format, including
+	 * Several file extensions are accepted for RDF/XML documents, including
 	 * <code>.rdf</code>, <code>.rdfs</code> (for RDF Schema files),
 	 * <code>.owl</code> (for OWL ontologies), and <code>.xml</code>. The media
 	 * type is <code>application/rdf+xml</code>, but <code>application/xml</code>
@@ -51,7 +51,7 @@ public class RDFFormat extends FileFormat {
 	 * The <a href="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</a>
 	 * file format.
 	 * <p>
-	 * The file extension <code>.nt</code> is recommend for the N-Triples foramt.
+	 * The file extension <code>.nt</code> is recommend for N-Triples documents.
 	 * The media type is <code>text/plain</code> and encoding is in 7-bit
 	 * US-ASCII.
 	 * </p>
@@ -65,7 +65,7 @@ public class RDFFormat extends FileFormat {
 	 * The <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle</a> file
 	 * format.
 	 * <p>
-	 * The file extension <code>.ttl</code> is recommend for the Turtle format.
+	 * The file extension <code>.ttl</code> is recommend for Turtle documents.
 	 * The media type is <code>text/turtle</code>, but
 	 * <code>application/x-turtle</code> is also accepted. Character encoding is
 	 * UTF-8.
@@ -81,7 +81,7 @@ public class RDFFormat extends FileFormat {
 	 * href="http://www.w3.org/DesignIssues/Notation3.html">N3/Notation3</a> file
 	 * format.
 	 * <p>
-	 * The file extension <code>.n3</code> is recommended for the N3 format. The
+	 * The file extension <code>.n3</code> is recommended for N3 documents. The
 	 * media type is <code>text/rdf+n3</code> and the encoding is UTF-8.
 	 * </p>
 	 * 
@@ -95,7 +95,7 @@ public class RDFFormat extends FileFormat {
 	 * XML-based RDF serialization format that supports recording of named
 	 * graphs.
 	 * <p>
-	 * The file extension <code>.trix</code> is recommended for the TriX format,
+	 * The file extension <code>.trix</code> is recommended for TriX documents,
 	 * <code>.xml</code> is also accepted. The media type is
 	 * <code>application/trix</code> and the encoding is UTF-8.
 	 * </p>
@@ -111,7 +111,7 @@ public class RDFFormat extends FileFormat {
 	 * format, a Turtle-based RDF serialization format that supports recording of
 	 * named graphs.
 	 * <p>
-	 * The file extension <code>.trig</code> is recommend for the TriG format.
+	 * The file extension <code>.trig</code> is recommend for TriG documents.
 	 * The media type is <code>application/x-trig</code> and the encoding is
 	 * UTF-8.
 	 * </p>
@@ -124,8 +124,8 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * A binary RDF format.
 	 * <p>
-	 * The file extension <code>.brf</code> is recommend for the binary RDF
-	 * format. The media type is <code>application/x-binary-rdf</code>.
+	 * The file extension <code>.brf</code> is recommend for binary RDF
+	 * documents. The media type is <code>application/x-binary-rdf</code>.
 	 * </p>
 	 * 
 	 * @see http://rivuli-development.com/2011/11/binary-rdf-in-sesame/
@@ -137,7 +137,7 @@ public class RDFFormat extends FileFormat {
 	 * The <a href="http://sw.deri.org/2008/07/n-quads/">N-Quads</a> file format,
 	 * an RDF serialization format that supports recording of named graphs.
 	 * <p>
-	 * The file extension <code>.nq</code> is recommended for NQuads documents.
+	 * The file extension <code>.nq</code> is recommended for N-Quads documents.
 	 * The media type is <code>text/x-nquads</code> and the encoding is 7-bit
 	 * US-ASCII.
 	 * </p>
