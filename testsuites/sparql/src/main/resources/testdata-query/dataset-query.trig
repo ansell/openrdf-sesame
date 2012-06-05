@@ -75,3 +75,10 @@ ex:tree-graph {
     ex:j ex:hasParent ex:f .
     ex:k ex:hasParent ex:f .
 }
+
+ex:optional-sameterm-graph {
+	ex:a ex:p ex:A ;
+		 rdfs:label "label" ;
+		 ex:prop1 "prop1" ;
+		 ex:prop2 "prop2" .
+}
