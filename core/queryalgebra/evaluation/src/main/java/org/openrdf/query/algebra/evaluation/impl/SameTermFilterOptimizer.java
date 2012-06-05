@@ -9,6 +9,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.util.Set;
 
 import org.openrdf.model.Value;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.EmptySet;
@@ -21,8 +22,10 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.impl.MapBindingSet;
 
 /**
  * A query optimizer that embeds {@link Filter}s with {@link SameTerm} operators
@@ -45,7 +48,13 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	}
 
 	protected static class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
+		
+		private QueryBindingSet bindings;
 
+		public SameTermFilterVisitor() {
+			this.bindings = new QueryBindingSet();
+		}
+		
 		@Override
 		public void meet(Filter filter) {
 			super.meet(filter);
@@ -73,9 +82,15 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 					// invalidate the result e.g. in case of left joins
 					return;
 				}
-				
+
 				Value leftValue = getValue(leftArg);
 				Value rightValue = getValue(rightArg);
+
+				if (hasCollidingValue(leftArg, rightValue) || hasCollidingValue(rightArg, leftValue)) {
+					// one or both var(s) has been already been optimized as part of a SameTerm filter elsewhere in the query,
+					// but with a different value. Inlining would cause a value collision and invalidate the result.
+					return;
+				}
 				
 				if (leftValue != null && rightValue != null) {
 					// ConstantOptimizer should have taken care of this
@@ -97,6 +112,16 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			if (valueExpr instanceof Var) {
 				Var var = (Var)valueExpr;
 				return !var.hasValue() && !bindingNames.contains(var.getName());
+			}
+			return false;
+		}
+		
+		private boolean hasCollidingValue(ValueExpr valueExpr, Value value) {
+			if (valueExpr instanceof Var) {
+				Binding binding = bindings.getBinding(((Var)valueExpr).getName());
+				if (binding != null) {
+					return (value == null || ! value.equals(binding.getValue()));
+				}
 			}
 			return false;
 		}
@@ -130,6 +155,9 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 			// Get rid of the filter
 			filter.replaceWith(filter.getArg());
+			
+			// add to bindingset to avoid value collision in sameterm operator elsewhere in the query.
+			this.bindings.addBinding(var.getName(), value);
 		}
 	}
 

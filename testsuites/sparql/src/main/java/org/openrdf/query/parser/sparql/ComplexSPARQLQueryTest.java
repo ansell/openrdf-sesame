@@ -141,6 +141,77 @@ public abstract class ComplexSPARQLQueryTest {
 
 	}
 	
+	@Test
+	public void testSameTermRepeatInOptional() {
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append(" SELECT ?l ?opt1 ?opt2 ");
+		query.append(" FROM ex:optional-sameterm-graph ");
+		query.append(" WHERE { ");
+		query.append("          ?s ex:p ex:A ; " );
+		query.append("          { ");
+		query.append("              { ");
+		query.append("                 ?s ?p ?l .");
+		query.append("                 FILTER(?p = rdfs:label) ");
+		query.append("              } ");
+		query.append("              OPTIONAL { ");
+		query.append("                 ?s ?p ?v1 . ");
+		query.append("                 FILTER (?p = ex:prop1) ");
+		query.append("              } ");
+		query.append("              OPTIONAL { ");
+		query.append("                 ?s ?p ?v2 . ");
+		query.append("                 FILTER (?p = ex:prop2) ");
+		query.append("              } ");
+		query.append("          }");
+		query.append(" } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				count++;
+				assertNotNull(bs);
+				
+				System.out.println(bs);
+				
+				Value l = bs.getValue("l");
+				assertTrue(l instanceof Literal);
+				assertEquals("label", ((Literal)l).getLabel());
+				
+				Value opt1 = bs.getValue("opt1");
+				assertNull(opt1);
+				
+				Value opt2 = bs.getValue("opt2");
+				assertNull(opt2);
+			}
+			result.close();
+			
+			assertEquals(1, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		
+	}
+	
 	@Test 
 	public void testPropertyPathInTree() {
 		StringBuilder query = new StringBuilder();
