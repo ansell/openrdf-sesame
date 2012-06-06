@@ -6,15 +6,12 @@
 
 package info.aduna.concurrent.locks;
 
-import java.lang.ref.WeakReference;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A lock manager for exclusive locks.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class ExclusiveLockManager {
 
@@ -22,25 +19,7 @@ public class ExclusiveLockManager {
 	 * ----------- Variables -----------
 	 */
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	/**
-	 * Controls whether the lock manager will keep track of who owns the
-	 * exclusive lock. Mainly useful for debugging.
-	 */
-	private final boolean trackLocks;
-
-	/**
-	 * Flag indicating whether the single exclusive lock is currently in use.
-	 */
-	private boolean lockInUse;
-
-	/**
-	 * A reference to the currently active lock, if any. Only used when lock
-	 * tracking is enabled.
-	 */
-	@SuppressWarnings("unused")
-	private WeakReference<Lock> activeLock;
+	private final LockManager lock;
 
 	/*
 	 * -------------- Constructors --------------
@@ -53,9 +32,16 @@ public class ExclusiveLockManager {
 		this(false);
 	}
 
+	/**
+	 * Creates an ExclusiveLockManager.
+	 * 
+	 * @param name
+	 *        Common name used for debugging
+	 * @param trackLocks
+	 *        If create stack traces should be logged
+	 */
 	public ExclusiveLockManager(boolean trackLocks) {
-		lockInUse = false;
-		this.trackLocks = trackLocks || Properties.lockTrackingEnabled();
+		this.lock = new LockManager(trackLocks || Properties.lockTrackingEnabled());
 	}
 
 	/*
@@ -66,12 +52,17 @@ public class ExclusiveLockManager {
 	 * Gets the exclusive lock, if available. This method will return
 	 * <tt>null</tt> if the exclusive lock is not immediately available.
 	 */
-	public synchronized Lock tryExclusiveLock() {
-		if (lockInUse) {
+	public Lock tryExclusiveLock() {
+		if (lock.isActiveLock()) {
 			return null;
 		}
-
-		return createLock();
+		synchronized (this) {
+			if (lock.isActiveLock()) {
+				return null;
+			}
+	
+			return createLock();
+		}
 	}
 
 	/**
@@ -81,53 +72,15 @@ public class ExclusiveLockManager {
 	public synchronized Lock getExclusiveLock()
 		throws InterruptedException
 	{
-		while (lockInUse) {
+		while (lock.isActiveLock()) {
 			// Someone else currently has the lock
-			wait();
+			lock.waitForActiveLocks();
 		}
 
 		return createLock();
 	}
 
 	private Lock createLock() {
-		lockInUse = true;
-
-		if (trackLocks) {
-			Lock lock = new ExclusiveDebugLock(logger, true);
-
-			// Keep track of who acquired the lock
-			activeLock = new WeakReference<Lock>(lock);
-
-			return lock;
-		}
-		else {
-			return new ExclusiveLock();
-		}
-	}
-
-	protected class ExclusiveLock extends AbstractLock {
-
-		@Override
-		protected void releaseLock() {
-			releaseExclusiveLock();
-		}
-	}
-
-	protected class ExclusiveDebugLock extends AbstractDebugLock {
-
-		public ExclusiveDebugLock(Logger logger, boolean enableTrace) {
-			super(logger, enableTrace);
-		}
-
-		@Override
-		protected void releaseLock() {
-			releaseExclusiveLock();
-		}
-	}
-
-	private synchronized void releaseExclusiveLock() {
-		lockInUse = false;
-		activeLock = null;
-		notifyAll();
+		return lock.createLock("Exclusive");
 	}
 }

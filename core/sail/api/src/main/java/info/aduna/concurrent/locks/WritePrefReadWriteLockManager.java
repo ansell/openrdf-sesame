@@ -23,7 +23,7 @@ public class WritePrefReadWriteLockManager extends AbstractReadWriteLockManager 
 	/**
 	 * Flag indicating whether a write lock has been requested.
 	 */
-	private boolean writeRequested = false;
+	private volatile boolean writeRequested = false;
 
 	/*
 	 * -------------- Constructors --------------
@@ -57,39 +57,49 @@ public class WritePrefReadWriteLockManager extends AbstractReadWriteLockManager 
 	 * Gets a read lock, if available. This method will return <tt>null</tt> if
 	 * the read lock is not immediately available.
 	 */
-	public synchronized Lock tryReadLock() {
-		if (writerActive || writeRequested) {
+	public Lock tryReadLock() {
+		if (writeRequested || isWriterActive()) {
 			return null;
 		}
-
-		return createReadLock();
+		synchronized (this) {
+			if (isWriterActive()) {
+				return null;
+			}
+	
+			return createReadLock();
+		}
 	}
 
 	/**
 	 * Gets a read lock. This method blocks when a write lock is in use or has
 	 * been requested until the write lock is released.
 	 */
-	public synchronized Lock getReadLock()
+	public Lock getReadLock()
 		throws InterruptedException
 	{
-		while (writerActive || writeRequested) {
-			// Wait for any writing threads to finish
-			wait();
+		while (true) {
+			Lock lock = tryReadLock();
+			if (lock != null)
+				return lock;
+			waitForActiveWriter();
 		}
-
-		return createReadLock();
 	}
 
 	/**
 	 * Gets an exclusive write lock, if available. This method will return
 	 * <tt>null</tt> if the write lock is not immediately available.
 	 */
-	public synchronized Lock tryWriteLock() {
-		if (writerActive || writeRequested || activeReaders > 0) {
+	public Lock tryWriteLock() {
+		if (isWriterActive() || isReaderActive()) {
 			return null;
 		}
-
-		return createWriteLock();
+		synchronized (this) {
+			if (isWriterActive() || isReaderActive()) {
+				return null;
+			}
+	
+			return createWriteLock();
+		}
 	}
 
 	/**
@@ -101,23 +111,21 @@ public class WritePrefReadWriteLockManager extends AbstractReadWriteLockManager 
 	public synchronized Lock getWriteLock()
 		throws InterruptedException
 	{
-		while (writeRequested) {
-			// Someone else wants to write first
-			wait();
-		}
-
 		writeRequested = true;
-
-		// Wait for the lock to be released
-		while (writerActive || activeReaders > 0) {
-			wait();
+		try {
+			// Wait for the write lock to be released
+			while (isWriterActive()) {
+				waitForActiveWriter();
+			}
+	
+			// Wait for the read locks to be released
+			while (isReaderActive()) {
+				waitForActiveReaders();
+			}
+	
+			return createWriteLock();
+		} finally {
+			writeRequested = false;
 		}
-
-		Lock lock = createWriteLock();
-
-		writeRequested = false;
-		notifyAll();
-
-		return lock;
 	}
 }

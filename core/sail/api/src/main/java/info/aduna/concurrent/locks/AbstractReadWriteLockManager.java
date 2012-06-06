@@ -6,13 +6,6 @@
 
 package info.aduna.concurrent.locks;
 
-import java.lang.ref.WeakReference;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An abstract base implementation of a read/write lock manager.
@@ -26,36 +19,15 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 * ----------- Variables -----------
 	 */
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	/**
-	 * Controls whether the lock manager will keep track of who owns the locks.
-	 * Mainly useful for debugging.
-	 */
-	private final boolean trackLocks;
-
 	/**
 	 * Flag indicating whether a writer is active.
 	 */
-	protected boolean writerActive = false;;
+	private final LockManager activeWriter;
 
 	/**
 	 * Counter that keeps track of the numer of active read locks.
 	 */
-	protected int activeReaders = 0;
-
-	/**
-	 * A list of references to currently active read lock. Only used when lock
-	 * tracking is enabled.
-	 */
-	private List<WeakReference<Lock>> readLocks;
-
-	/**
-	 * A reference to currently active write lock, if any. Only used when lock
-	 * tracking is enabled.
-	 */
-	@SuppressWarnings("unused")
-	private WeakReference<Lock> writeLock;
+	private final LockManager activeReaders;
 
 	/*
 	 * -------------- Constructors --------------
@@ -78,16 +50,50 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 *        useful for debugging.
 	 */
 	public AbstractReadWriteLockManager(boolean trackLocks) {
-		this.trackLocks = trackLocks || Properties.lockTrackingEnabled();
-
-		if (this.trackLocks) {
-			readLocks = new LinkedList<WeakReference<Lock>>();
-		}
+		boolean trace = trackLocks || Properties.lockTrackingEnabled();
+		activeWriter = new LockManager(trace);
+		activeReaders = new LockManager(trace);
 	}
 
 	/*
 	 * --------- Methods ---------
 	 */
+
+	/**
+	 * If a writer is active
+	 */
+	protected boolean isWriterActive() {
+		return activeWriter.isActiveLock();
+	}
+
+	/**
+	 * If one or more readers are active
+	 */
+	protected boolean isReaderActive() {
+		return activeReaders.isActiveLock();
+	}
+
+	/**
+	 * Blocks current thread until after the writer lock is released (if active).
+	 * 
+	 * @throws InterruptedException
+	 */
+	protected void waitForActiveWriter()
+		throws InterruptedException
+	{
+		activeWriter.waitForActiveLocks();
+	}
+
+	/**
+	 * Blocks current thread until there are no reader locks active.
+	 * 
+	 * @throws InterruptedException
+	 */
+	protected void waitForActiveReaders()
+		throws InterruptedException
+	{
+		activeReaders.waitForActiveLocks();
+	}
 
 	/**
 	 * Creates a new Lock for reading and increments counter for active readers.
@@ -98,61 +104,7 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 * @return a read lock.
 	 */
 	protected Lock createReadLock() {
-
-		Lock lock = null;
-
-		if (trackLocks) {
-			lock = new ReadDebugLock(logger, true);
-			readLocks.add(new WeakReference<Lock>(lock));
-		}
-		else {
-			lock = new ReadLock();
-		}
-		activeReaders++;
-		return lock;
-	}
-
-	protected class ReadLock extends AbstractLock {
-
-		@Override
-		protected void releaseLock() {
-			releaseReadLock(this);
-		}
-	}
-
-	protected class ReadDebugLock extends AbstractDebugLock {
-
-		public ReadDebugLock(Logger logger, boolean enableTrace) {
-			super(logger, enableTrace);
-		}
-
-		@Override
-		protected void releaseLock() {
-			releaseReadLock(this);
-		}
-	}
-
-	/**
-	 * Releases a read lock.
-	 */
-	private synchronized void releaseReadLock(Lock lock) {
-
-		if (trackLocks) {
-			Iterator<WeakReference<Lock>> iter = readLocks.iterator();
-			while (iter.hasNext()) {
-				if (iter.next().get() == lock) {
-					iter.remove();
-					break;
-				}
-			}
-		}
-
-		activeReaders--;
-
-		if (activeReaders == 0) {
-			// Maybe someone wants to write?
-			notifyAll();
-		}
+		return activeReaders.createLock("Read");
 	}
 
 	/**
@@ -163,48 +115,6 @@ public abstract class AbstractReadWriteLockManager implements ReadWriteLockManag
 	 * @return a write lock.
 	 */
 	protected Lock createWriteLock() {
-		Lock lock;
-		if (trackLocks) {
-			lock = new WriteDebugLock(logger, true);
-			writeLock = new WeakReference<Lock>(lock);
-		}
-		else {
-			lock = new WriteLock();
-		}
-		writerActive = true;
-		return lock;
-
-	}
-
-	protected class WriteLock extends AbstractLock {
-
-		@Override
-		protected void releaseLock() {
-			releaseWriteLock();
-		}
-	}
-
-	protected class WriteDebugLock extends AbstractDebugLock {
-
-		public WriteDebugLock(Logger logger, boolean enableTrace) {
-			super(logger, enableTrace);
-		}
-
-		@Override
-		protected void releaseLock() {
-			releaseWriteLock();
-		}
-	}
-
-	/**
-	 * Release a write lock.
-	 */
-	private synchronized void releaseWriteLock() {
-		if (trackLocks) {
-			writeLock = null;
-		}
-		writerActive = false;
-
-		notifyAll();
+		return activeWriter.createLock("Write");
 	}
 }

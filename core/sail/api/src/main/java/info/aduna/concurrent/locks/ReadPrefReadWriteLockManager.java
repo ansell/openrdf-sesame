@@ -12,18 +12,13 @@ package info.aduna.concurrent.locks;
  * requests for write locks until all read locks have been released.
  * 
  * @author Arjohn Kampman
+ * @author James Leigh
  */
 public class ReadPrefReadWriteLockManager extends AbstractReadWriteLockManager {
 
 	/*
 	 * ----------- Variables -----------
 	 */
-
-	/**
-	 * Counter that keeps track of the number of readers that are waiting for a
-	 * read lock.
-	 */
-	private int waitingReaders = 0;
 
 	/*
 	 * -------------- Constructors --------------
@@ -57,12 +52,17 @@ public class ReadPrefReadWriteLockManager extends AbstractReadWriteLockManager {
 	 * Gets a read lock, if available. This method will return <tt>null</tt> if
 	 * the read lock is not immediately available.
 	 */
-	public synchronized Lock tryReadLock() {
-		if (writerActive) {
+	public Lock tryReadLock() {
+		if (isWriterActive()) {
 			return null;
 		}
-
-		return createReadLock();
+		synchronized (this) {
+			if (isWriterActive()) {
+				return null;
+			}
+	
+			return createReadLock();
+		}
 	}
 
 	/**
@@ -72,18 +72,9 @@ public class ReadPrefReadWriteLockManager extends AbstractReadWriteLockManager {
 	public synchronized Lock getReadLock()
 		throws InterruptedException
 	{
-		if (writerActive) {
-			waitingReaders++;
-
-			try {
-				// Wait for the writer to finish
-				while (writerActive) {
-					wait();
-				}
-			}
-			finally {
-				waitingReaders--;
-			}
+		// Wait for the writer to finish
+		while (isWriterActive()) {
+			waitForActiveWriter();
 		}
 
 		return createReadLock();
@@ -93,12 +84,16 @@ public class ReadPrefReadWriteLockManager extends AbstractReadWriteLockManager {
 	 * Gets an exclusive write lock, if available. This method will return
 	 * <tt>null</tt> if the write lock is not immediately available.
 	 */
-	public synchronized Lock tryWriteLock() {
-		if (writerActive || activeReaders > 0 || waitingReaders > 0) {
+	public Lock tryWriteLock() {
+		if (isWriterActive() || isReaderActive())
 			return null;
+		synchronized (this) {
+			if (isWriterActive() || isReaderActive()) {
+				return null;
+			}
+	
+			return createWriteLock();
 		}
-
-		return createWriteLock();
 	}
 
 	/**
@@ -107,14 +102,15 @@ public class ReadPrefReadWriteLockManager extends AbstractReadWriteLockManager {
 	 * method also block when read locks are active until all of them are
 	 * released.
 	 */
-	public synchronized Lock getWriteLock()
+	public Lock getWriteLock()
 		throws InterruptedException
 	{
-		while (writerActive || activeReaders > 0 || waitingReaders > 0) {
-			// Wait for the lock to be released
-			wait();
+		while (true) {
+			Lock lock = tryWriteLock();
+			if (lock != null)
+				return lock;
+			waitForActiveWriter();
+			waitForActiveReaders();
 		}
-
-		return createWriteLock();
 	}
 }
