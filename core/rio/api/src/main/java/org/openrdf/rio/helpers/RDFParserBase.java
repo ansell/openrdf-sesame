@@ -5,6 +5,7 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -35,6 +36,32 @@ import org.openrdf.rio.RDFParser;
  * @author Arjohn Kampman
  */
 public abstract class RDFParserBase implements RDFParser {
+
+	/**
+	 * Vocabulary Prefixes of W3C Documents (Recommendations or Notes)
+	 * 
+	 * @see http://www.w3.org/2011/rdfa-context/rdfa-1.1
+	 */
+	private static final Map<String, String> defaultPrefix;
+	static {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("grddl", "http://www.w3.org/2003/g/data-view#");
+		map.put("ma", "http://www.w3.org/ns/ma-ont#");
+		map.put("owl", "http://www.w3.org/2002/07/owl#");
+		map.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+		map.put("rdfa", "http://www.w3.org/ns/rdfa#");
+		map.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+		map.put("rif", "http://www.w3.org/2007/rif#");
+		map.put("skos", "http://www.w3.org/2004/02/skos/core#");
+		map.put("skosxl", "http://www.w3.org/2008/05/skos-xl#");
+		map.put("wdr", "http://www.w3.org/2007/05/powder#");
+		map.put("void", "http://rdfs.org/ns/void#");
+		map.put("wdrs", "http://www.w3.org/2007/05/powder-s#");
+		map.put("xhv", "http://www.w3.org/1999/xhtml/vocab#");
+		map.put("xml", "http://www.w3.org/XML/1998/namespace");
+		map.put("xsd", "http://www.w3.org/2001/XMLSchema#");
+		defaultPrefix = Collections.unmodifiableMap(new HashMap<String, String>(map));
+	}
 
 	/*-----------*
 	 * Variables *
@@ -228,10 +255,23 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Gets the namespace that is associated with the specified prefix, if any.
+	 * Gets the namespace that is associated with the specified prefix or throws
+	 * an {@link RDFParseException}.
+	 * 
+	 * @throws RDFParseException if no namespace is associated with this prefix
 	 */
-	protected String getNamespace(String prefix) {
-		return namespaceTable.get(prefix);
+	protected String getNamespace(String prefix) throws RDFParseException {
+		if (namespaceTable.containsKey(prefix))
+			return namespaceTable.get(prefix);
+		String msg = "Namespace prefix '" + prefix + "' used but not defined";
+		if (defaultPrefix.containsKey(prefix)) {
+			reportError(msg);
+			return defaultPrefix.get(prefix);
+		} else if ("".equals(prefix)) {
+			msg = "Default namespace used but not defined";
+		}
+		reportFatalError(msg);
+		throw new RDFParseException(msg);
 	}
 
 	/**

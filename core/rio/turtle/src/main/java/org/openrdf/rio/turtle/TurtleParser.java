@@ -876,9 +876,6 @@ public class TurtleParser extends RDFParserBase {
 		if (c == ':') {
 			// qname using default namespace
 			namespace = getNamespace("");
-			if (namespace == null) {
-				reportError("Default namespace used but not defined");
-			}
 		}
 		else {
 			// c is the first letter of the prefix
@@ -903,9 +900,6 @@ public class TurtleParser extends RDFParserBase {
 			verifyCharacter(c, ":");
 
 			namespace = getNamespace(prefix.toString());
-			if (namespace == null) {
-				reportError("Namespace prefix '" + prefix.toString() + "' used but not defined");
-			}
 		}
 
 		// c == ':', read optional local name
