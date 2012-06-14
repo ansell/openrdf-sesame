@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
@@ -530,16 +531,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private class SampleAggregate extends Aggregate {
 
 		private Value sample = null;
+		private Random random;
 
 		public SampleAggregate(Sample operator) {
 			super(operator);
+			random = new Random(System.currentTimeMillis());
 		}
 
 		@Override
 		public void processAggregate(BindingSet s)
 			throws QueryEvaluationException
 		{
-			if (sample == null) {
+			// we flip a coin to determine if we keep the current value or set a new value to report.
+			if (sample == null || random.nextFloat() < 0.5f) {
 				sample = evaluate(s);
 			}
 		}
