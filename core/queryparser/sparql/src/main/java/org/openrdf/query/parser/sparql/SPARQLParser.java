@@ -55,20 +55,21 @@ public class SPARQLParser implements QueryParser {
 			List<ASTUpdateContainer> updateOperations = updateSequence.getUpdateContainers();
 
 			List<ASTPrefixDecl> sharedPrefixDeclarations = null;
-			
+
 			for (ASTUpdateContainer uc : updateOperations) {
 
-				
 				StringEscapesProcessor.process(uc);
 				BaseDeclProcessor.process(uc, baseURI);
-				
-				// do a special dance to handle prefix declarations in sequences: if the current
-				// operation has its own prefix declarations, use those. Otherwise, try and use
+
+				// do a special dance to handle prefix declarations in sequences: if
+				// the current
+				// operation has its own prefix declarations, use those. Otherwise,
+				// try and use
 				// prefix declarations from a previous operation in this sequence.
 				List<ASTPrefixDecl> prefixDeclList = uc.getPrefixDeclList();
 				if (prefixDeclList == null || prefixDeclList.size() == 0) {
 					if (sharedPrefixDeclarations != null) {
-						for (ASTPrefixDecl prefixDecl: sharedPrefixDeclarations) {
+						for (ASTPrefixDecl prefixDecl : sharedPrefixDeclarations) {
 							uc.jjtAppendChild(prefixDecl);
 						}
 					}
@@ -76,7 +77,7 @@ public class SPARQLParser implements QueryParser {
 				else {
 					sharedPrefixDeclarations = prefixDeclList;
 				}
-				
+
 				PrefixDeclProcessor.process(uc);
 				BlankNodeVarProcessor.process(uc);
 
@@ -89,9 +90,11 @@ public class SPARQLParser implements QueryParser {
 				}
 
 				ASTUpdate updateNode = uc.getUpdate();
-				update.addUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
+				if (updateNode != null) {
+					update.addUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
+				}
 			}
-			
+
 			return update;
 		}
 		catch (ParseException e) {

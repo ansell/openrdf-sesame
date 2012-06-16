@@ -1703,7 +1703,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
-	private class VarCollector extends QueryModelVisitorBase<VisitorException> {
+	 protected class VarCollector extends QueryModelVisitorBase<VisitorException> {
 
 		private final Set<Var> collectedVars = new HashSet<Var>();
 

@@ -14,6 +14,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.sparql.ast.ASTDatasetClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
+import org.openrdf.query.parser.sparql.ast.ASTOperation;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 
 /**
@@ -39,25 +40,29 @@ public class DatasetDeclProcessor {
 	{
 		DatasetImpl dataset = null;
 
-		List<ASTDatasetClause> datasetClauses = qc.getOperation().getDatasetClauseList();
+		ASTOperation op = qc.getOperation();
+		if (op != null) {
 
-		if (!datasetClauses.isEmpty()) {
-			dataset = new DatasetImpl();
+			List<ASTDatasetClause> datasetClauses = op.getDatasetClauseList();
 
-			for (ASTDatasetClause dc : datasetClauses) {
-				ASTIRI astIri = dc.jjtGetChild(ASTIRI.class);
+			if (!datasetClauses.isEmpty()) {
+				dataset = new DatasetImpl();
 
-				try {
-					URI uri = new URIImpl(astIri.getValue());
-					if (dc.isNamed()) {
-						dataset.addNamedGraph(uri);
+				for (ASTDatasetClause dc : datasetClauses) {
+					ASTIRI astIri = dc.jjtGetChild(ASTIRI.class);
+
+					try {
+						URI uri = new URIImpl(astIri.getValue());
+						if (dc.isNamed()) {
+							dataset.addNamedGraph(uri);
+						}
+						else {
+							dataset.addDefaultGraph(uri);
+						}
 					}
-					else {
-						dataset.addDefaultGraph(uri);
+					catch (IllegalArgumentException e) {
+						throw new MalformedQueryException(e.getMessage(), e);
 					}
-				}
-				catch (IllegalArgumentException e) {
-					throw new MalformedQueryException(e.getMessage(), e);
 				}
 			}
 		}

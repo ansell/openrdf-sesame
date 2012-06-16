@@ -105,19 +105,31 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
 		graphPattern.setContextVar(parentGP.getContextVar());
 
-		Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
+		if (node.jjtGetNumChildren() > 0) {
 
-		if (algebraExpr instanceof ValueExpr) { // named graph identifier
-			Var contextVar = valueExpr2Var((ValueExpr)algebraExpr);
-			graphPattern.setContextVar(contextVar);
-			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+			Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
+
+			if (algebraExpr instanceof ValueExpr) { // named graph identifier
+				Var contextVar = valueExpr2Var((ValueExpr)algebraExpr);
+				graphPattern.setContextVar(contextVar);
+				graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+			}
+
+			for (int i = 1; i < node.jjtGetNumChildren(); i++) {
+				node.jjtGetChild(i).jjtAccept(this, data);
+			}
+
 		}
-
-		for (int i = 1; i < node.jjtGetNumChildren(); i++) {
-			node.jjtGetChild(i).jjtAccept(this, data);
-		}
-
 		TupleExpr insertExpr = graphPattern.buildTupleExpr();
+
+		VarCollector collector = new VarCollector();
+		insertExpr.visit(collector);
+		for (Var var : collector.getCollectedVars()) {
+			if (!var.hasValue()) {
+				// var in delete data not allowed 
+				throw new VisitorException("DELETE DATA may not contain variables");
+			}
+		}
 
 		graphPattern = parentGP;
 
@@ -210,6 +222,15 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
 
+		VarCollector collector = new VarCollector();
+		deleteExpr.visit(collector);
+		for (Var var : collector.getCollectedVars()) {
+			if (!var.hasValue()) {
+				// var in delete data not allowed 
+				throw new VisitorException("DELETE DATA may not contain variables");
+			}
+		}
+		
 		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the insert expression
@@ -523,8 +544,18 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			node.jjtGetChild(i).jjtAccept(this, data);
 		}
+		
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
 
+		VarCollector collector = new VarCollector();
+		deleteExpr.visit(collector);
+		for (Var var : collector.getCollectedVars()) {
+			if (var.isAnonymous() && !var.hasValue()) {
+				// blank node in delete pattern, for some arbitrary reason not allowed by SPARQL spec. 
+				throw new VisitorException("DELETE clause may not contain blank nodes");
+			}
+		}
+		
 		graphPattern = parentGP;
 
 		return deleteExpr;
