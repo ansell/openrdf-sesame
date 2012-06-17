@@ -92,7 +92,9 @@ class TxnStatusFile {
 	public void setTxnStatus(TxnStatus txnStatus)
 		throws IOException
 	{
-		nioFile.writeBytes(txnStatus.name().getBytes(US_ASCII), 0);
+		byte[] bytes = txnStatus.name().getBytes(US_ASCII);
+		nioFile.truncate(bytes.length);
+		nioFile.writeBytes(bytes, 0);
 	}
 
 	/**
