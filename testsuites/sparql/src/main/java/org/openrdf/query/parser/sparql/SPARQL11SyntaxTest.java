@@ -66,7 +66,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		sb.append("               mf:name {Name};");
 		sb.append("               mf:action {Action};");
 		sb.append("               dawgt:approval {dawgt:Approved} ");
-		sb.append("WHERE Type = mf:PositiveSyntaxTest11 or Type = mf:NegativeSyntaxTest11 ");
+		sb.append("WHERE Type = mf:PositiveSyntaxTest11 or Type = mf:NegativeSyntaxTest11 or Type = mf:PositiveUpdateSyntaxTest11 or Type = mf:NegativeUpdateSyntaxTest11 ");
 		sb.append("USING NAMESPACE");
 		sb.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>,");
 		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>,");
@@ -108,7 +108,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		stream.close();
 
 		try {
-			parseQuery(query, queryFileURL);
+			parseOperation(query, queryFileURL);
 
 			if (!positiveTest) {
 				fail("Negative test case should have failed to parse");
@@ -122,7 +122,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		}
 	}
 
-	protected abstract void parseQuery(String query, String queryFileURL)
+	protected abstract void parseOperation(String operation, String fileURL)
 		throws MalformedQueryException;
 
 	public static Test suite()
@@ -198,7 +198,8 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 							FileUtil.deleteDir(tmpDir);
 						}
 						catch (IOException e) {
-							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': " + e.getMessage());
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': "
+									+ e.getMessage());
 						}
 					}
 				}
@@ -244,8 +245,10 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 				String testURI = bindingSet.getValue("TestURI").toString();
 				String testName = bindingSet.getValue("Name").toString();
 				String testAction = bindingSet.getValue("Action").toString();
-				boolean positiveTest = bindingSet.getValue("Type").toString().equals(
-						"http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveSyntaxTest11");
+
+				String type = bindingSet.getValue("Type").toString();
+				boolean positiveTest = type.equals("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveSyntaxTest11")
+						|| type.equals("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveUpdateSyntaxTest11");
 
 				subSuite.addTest(factory.createSPARQLSyntaxTest(testURI, testName, testAction, positiveTest));
 			}

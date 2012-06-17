@@ -701,7 +701,7 @@ public abstract class SPARQLUpdateTest {
 
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
-		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }");
+		update.append("DELETE {?y foaf:name ?n } WHERE {?x ex:containsPerson ?y . ?y foaf:name ?n . }");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
@@ -720,31 +720,6 @@ public abstract class SPARQLUpdateTest {
 
 	}
 
-	@Test
-	public void testDeleteWhereBlankNodeHandling()
-		throws Exception
-	{
-		logger.debug("executing testDeleteWhereBlankNodeHandling");
-
-		StringBuilder update = new StringBuilder();
-		update.append(getNamespaceDeclarations());
-		update.append("DELETE {?x ex:containsPerson [ foaf:name ?n ] } ");
-		update.append(" WHERE {?x ex:containsPerson ?y . ?y foaf:name ?n. FILTER(str(?n) = \"Bob\") }");
-
-		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-
-		assertTrue(con.hasStatement(graph1, f.createURI(EX_NS, "containsPerson"), bob, true));
-		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
-		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-
-		operation.execute();
-
-		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
-		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-		assertFalse(con.hasStatement(graph1, f.createURI(EX_NS, "containsPerson"), bob, true));
-		assertTrue(con.hasStatement(graph2, f.createURI(EX_NS, "containsPerson"), alice, true));
-
-	}
 
 	@Test
 	public void testInsertData()
@@ -1386,7 +1361,7 @@ public abstract class SPARQLUpdateTest {
 
 		StringBuilder update = new StringBuilder();
 		update.append(getNamespaceDeclarations());
-		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y }; ");
+		update.append("DELETE {?y foaf:name ?n } WHERE {?x ex:containsPerson ?y. ?y foaf:name ?n . }; ");
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x} ");
 
@@ -1416,7 +1391,7 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("INSERT {?x foaf:name \"foo\" } WHERE {?y ex:containsPerson ?x}; ");
 		update.append(getNamespaceDeclarations());
-		update.append("DELETE {?y foaf:name [] } WHERE {?x ex:containsPerson ?y } ");
+		update.append("DELETE {?y foaf:name ?n } WHERE {?x ex:containsPerson ?y. ?y foaf:name ?n . } ");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
