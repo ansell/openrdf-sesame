@@ -48,13 +48,15 @@ public class SPARQL11ManifestTest {
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
 	private static final boolean LOCAL_DAWG_TESTS = false;
 
+	private static final boolean APPROVED_TESTS_ONLY = true;
+	
 	/**
 	 * use only a subset of all available tests, where the subset is defined by
 	 * an array of subdirectory names.
 	 */
 	private static final boolean USE_SUBSET = false;
 
-	private static final String[] subDirs = { "bsbm" };
+	private static final String[] subDirs = { "json-res" };
 
 	private static File tmpDir;
 
@@ -102,7 +104,7 @@ public class SPARQL11ManifestTest {
 			String subManifestFile = bindingSet.getValue("manifestFile").toString();
 
 			if (includeSubManifest(subManifestFile)) {
-				suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, false));
+				suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, APPROVED_TESTS_ONLY));
 			}
 		}
 
@@ -158,7 +160,7 @@ public class SPARQL11ManifestTest {
 			String subManifestFile = bindingSet.getValue("manifestFile").toString();
 
 			if (includeSubManifest(subManifestFile)) {
-				suite.addTest(SPARQLUpdateConformanceTest.suite(subManifestFile, factory, true));
+				suite.addTest(SPARQLUpdateConformanceTest.suite(subManifestFile, factory, APPROVED_TESTS_ONLY));
 			}
 		}
 
