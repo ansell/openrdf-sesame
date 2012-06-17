@@ -30,9 +30,9 @@ public class CoreSPARQL11SyntaxTest extends SPARQL11SyntaxTest {
 		super(testURI, name, queryFileURL, positiveTest);
 	}
 
-	protected void parseQuery(String query, String queryFileURL)
+	protected void parseOperation(String operation, String fileURL)
 		throws MalformedQueryException
 	{
-		QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, queryFileURL);
+		QueryParserUtil.parseOperation(QueryLanguage.SPARQL, operation, fileURL);
 	}
 }

@@ -5,11 +5,19 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import java.util.Map;
+
+import junit.framework.Test;
+
+import org.openrdf.model.URI;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.memory.MemoryStore;
+
 
 /**
  * @author jeen
  */
-/* TODO temporarily disabled, need better dataset handling features (Jeen)
 public class MemorySPARQLUpdateConformanceTest extends SPARQLUpdateConformanceTest {
 
 	public MemorySPARQLUpdateConformanceTest(String testURI, String name, String requestFile,
@@ -47,4 +55,3 @@ public class MemorySPARQLUpdateConformanceTest extends SPARQLUpdateConformanceTe
 
 }
 
- */
