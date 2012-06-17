@@ -546,7 +546,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		}
 		
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
-
+		
+		// FIXME we should adapt the grammar so we can avoid doing this post-processing.
 		VarCollector collector = new VarCollector();
 		deleteExpr.visit(collector);
 		for (Var var : collector.getCollectedVars()) {
