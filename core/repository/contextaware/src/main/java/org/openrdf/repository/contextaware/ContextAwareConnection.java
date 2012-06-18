@@ -96,7 +96,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	protected boolean isDelegatingRemove() {
+	protected boolean isDelegatingRemove() throws RepositoryException {
 		return archiveContexts.length == 0 && removeContexts.length < 2;
 	}
 
