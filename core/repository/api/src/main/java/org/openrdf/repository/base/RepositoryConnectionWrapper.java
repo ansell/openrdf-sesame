@@ -72,10 +72,21 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	/**
-	 * If true then each add method will call
+	 * If false then the following add methods will call
 	 * {@link #addWithoutCommit(Resource, URI, Value, Resource[])}.
 	 * 
-	 * @return <code>false</code>
+	 * @see #add(Iterable, Resource...)
+	 * @see #add(Iteration, Resource...)
+	 * @see #add(Statement, Resource...)
+	 * @see #add(File, String, RDFFormat, Resource...)
+	 * @see #add(InputStream, String, RDFFormat, Resource...)
+	 * @see #add(Reader, String, RDFFormat, Resource...)
+	 * @see #add(Resource, URI, Value, Resource...)
+	 * @see #add(URL, String, RDFFormat, Resource...)
+	 * @see #getParserConfig()
+	 * @see #setParserConfig(ParserConfig)
+	 * @return <code>true</code> to delegate add methods, <code>false</code> to
+	 *         call {@link #addWithoutCommit(Resource, URI, Value, Resource[])}
 	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingAdd()
@@ -85,10 +96,17 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	/**
-	 * If true then the has/export/isEmpty methods will call
+	 * If false then the following has/export/isEmpty methods will call
 	 * {@link #getStatements(Resource, URI, Value, boolean, Resource[])}.
 	 * 
-	 * @return <code>false</code>
+	 * @see #exportStatements(Resource, URI, Value, boolean, RDFHandler,
+	 *      Resource...)
+	 * @see #hasStatement(Statement, boolean, Resource...)
+	 * @see #hasStatement(Resource, URI, Value, boolean, Resource...)
+	 * @see #isEmpty()
+	 * @return <code>true</code> to delegate read methods, <code>false</code> to
+	 *         call
+	 *         {@link #getStatements(Resource, URI, Value, boolean, Resource[])}
 	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingRead()
@@ -98,10 +116,17 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	/**
-	 * If true then each remove method will call
+	 * If false then the following remove methods will call
 	 * {@link #removeWithoutCommit(Resource, URI, Value, Resource[])}.
 	 * 
-	 * @return <code>false</code>
+	 * @see #clear(Resource...)
+	 * @see #remove(Iterable, Resource...)
+	 * @see #remove(Iteration, Resource...)
+	 * @see #remove(Statement, Resource...)
+	 * @see #remove(Resource, URI, Value, Resource...)
+	 * @return <code>true</code> to delegate remove methods, <code>false</code> to
+	 *         call
+	 *         {@link #removeWithoutCommit(Resource, URI, Value, Resource...)}
 	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingRemove()
