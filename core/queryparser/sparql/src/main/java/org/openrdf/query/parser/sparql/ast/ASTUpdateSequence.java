@@ -32,8 +32,15 @@ public class ASTUpdateSequence extends SimpleNode {
 	}
 	
 	public List<ASTUpdateContainer> getUpdateContainers() {
-		return super.jjtGetChildren(ASTUpdateContainer.class);
+		
+		List<ASTUpdateContainer> result = jjtGetChildren(ASTUpdateContainer.class);
+		ASTUpdateSequence seq = jjtGetChild(ASTUpdateSequence.class);
+		
+		if (seq != null) {
+			result.addAll(seq.getUpdateContainers());
+		}
+		
+		return result;
 	}
-
 }
 /* JavaCC - OriginalChecksum=e4b13eef2d0d6dbe36d25df3ab1d11da (do not edit this line) */

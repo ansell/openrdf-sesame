@@ -338,6 +338,16 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern = parentGP;
 
 		TupleExpr deleteExpr = whereExpr.clone();
+		
+		// FIXME we should adapt the grammar so we can avoid doing this post-processing.
+		VarCollector collector = new VarCollector();
+		deleteExpr.visit(collector);
+		for (Var var : collector.getCollectedVars()) {
+			if (var.isAnonymous() && !var.hasValue()) {
+				throw new VisitorException("DELETE WHERE  may not contain blank nodes");
+			}
+		}
+		
 		Modify modify = new Modify(deleteExpr, null, whereExpr);
 
 		return modify;
