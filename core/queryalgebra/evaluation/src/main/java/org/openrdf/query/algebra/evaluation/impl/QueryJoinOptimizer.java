@@ -20,7 +20,9 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
@@ -72,7 +74,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				boundVars = origBoundVars;
 			}
 		}
-
+		
 		@Override
 		public void meet(Join node) {
 
@@ -99,7 +101,12 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 
 					for (TupleExpr tupleExpr : joinArgs) {
 						cardinalityMap.put(tupleExpr, statistics.getCardinality(tupleExpr));
-						varsMap.put(tupleExpr, getStatementPatternVars(tupleExpr));
+						if (tupleExpr instanceof ZeroLengthPath) {
+							varsMap.put(tupleExpr, ((ZeroLengthPath)tupleExpr).getVarList());
+						}
+						else {
+							varsMap.put(tupleExpr, getStatementPatternVars(tupleExpr));
+						}
 					}
 
 					// Build map of var frequences
