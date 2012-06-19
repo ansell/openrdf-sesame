@@ -125,10 +125,10 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	@Override
-	public void initialize()
+	protected void initializeInternal()
 		throws RepositoryException
 	{
-		super.initialize();
+		super.initializeInternal();
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
@@ -150,10 +150,10 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	@Override
-	public void shutDown()
+	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		super.shutDown();
+		super.shutDownInternal();
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {

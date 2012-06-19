@@ -17,9 +17,9 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.base.RepositoryBase;
 import org.openrdf.rio.RDFFormat;
 
 /**
@@ -33,7 +33,7 @@ import org.openrdf.rio.RDFFormat;
  * @author jeen
  * @author Herko ter Horst
  */
-public class HTTPRepository implements Repository {
+public class HTTPRepository extends RepositoryBase {
 
 	/*-----------*
 	 * Variables *
@@ -45,8 +45,6 @@ public class HTTPRepository implements Repository {
 	private final HTTPClient httpClient;
 
 	private File dataDir;
-
-	private boolean initialized = false;
 
 	/*--------------*
 	 * Constructors *
@@ -85,16 +83,15 @@ public class HTTPRepository implements Repository {
 		return dataDir;
 	}
 
-	public void initialize()
+	@Override
+	protected void initializeInternal()
 		throws RepositoryException
 	{
-		initialized = true;
 	}
 
-	public void shutDown()
+	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		initialized = false;
 		httpClient.shutDown();
 	}
 
@@ -111,7 +108,7 @@ public class HTTPRepository implements Repository {
 	public boolean isWritable()
 		throws RepositoryException
 	{
-		if (!initialized) {
+		if (!isInitialized()) {
 			throw new IllegalStateException("HTTPRepository not initialized.");
 		}
 
