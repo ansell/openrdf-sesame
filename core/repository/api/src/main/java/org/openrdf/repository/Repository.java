@@ -51,6 +51,14 @@ public interface Repository {
 		throws RepositoryException;
 
 	/**
+	 * Indicates if the Repository has been initialized. Note that the
+	 * initialization status may change if the Repository is shut down.
+	 * 
+	 * @return true iff the repository has been initialized.
+	 */
+	public boolean isInitialized();
+
+	/**
 	 * Shuts the repository down, releasing any resources that it keeps hold of.
 	 * Once shut down, the repository can no longer be used until it is
 	 * re-initialized.

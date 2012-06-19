@@ -11,6 +11,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryLockedException;
+import org.openrdf.repository.base.RepositoryBase;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailLockedException;
@@ -43,7 +44,7 @@ import org.openrdf.sail.SailLockedException;
  * 
  * @author Arjohn Kampman
  */
-public class SailRepository implements Repository {
+public class SailRepository extends RepositoryBase {
 
 	/*-----------*
 	 * Constants *
@@ -77,7 +78,8 @@ public class SailRepository implements Repository {
 		sail.setDataDir(dataDir);
 	}
 
-	public void initialize()
+	@Override
+	protected void initializeInternal()
 		throws RepositoryException
 	{
 		try {
@@ -94,7 +96,8 @@ public class SailRepository implements Repository {
 		}
 	}
 
-	public void shutDown()
+	@Override
+	protected void shutDownInternal()
 		throws RepositoryException
 	{
 		try {

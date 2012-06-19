@@ -296,8 +296,8 @@ public abstract class RepositoryManager {
 	 * 
 	 * @param id
 	 *        A repository ID.
-	 * @return A Repository object, or <tt>null</tt> if no repository was known
-	 *         for the specified ID.
+	 * @return An initialized Repository object, or <tt>null</tt> if no
+	 *         repository was known for the specified ID.
 	 * @throws RepositoryConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
@@ -308,8 +308,16 @@ public abstract class RepositoryManager {
 		synchronized (initializedRepositories) {
 			Repository result = initializedRepositories.get(id);
 
+			if (result != null && !result.isInitialized()) {
+				// repository exists but has been shut down. throw away the old
+				// object so we can re-read from the config.
+				initializedRepositories.remove(result);
+				result = null;
+			}
+
 			if (result == null) {
-				// First call, create and initialize the repository.
+				// First call (or old object thrown away), create and initialize the
+				// repository.
 				result = createRepository(id);
 
 				if (result != null) {
@@ -385,11 +393,13 @@ public abstract class RepositoryManager {
 	 * 
 	 * @param id
 	 *        A repository ID.
-	 * @return The created repository, or <tt>null</tt> if no such repository
-	 *         exists.
+	 * @return The created and initialized repository, or <tt>null</tt> if no
+	 *         such repository exists.
 	 * @throws RepositoryConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
+	 * @throws RepositoryException
+	 *         If the repository could not be initialized.
 	 */
 	protected abstract Repository createRepository(String id)
 		throws RepositoryConfigException, RepositoryException;

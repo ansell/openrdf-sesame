@@ -13,18 +13,20 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.base.RepositoryBase;
 
 /**
- * Implement the {@link Repository} interface to any SPARQl endpoint.
+ * A proxy class to access any SPARQL endpoint.
  * 
  * @author James Leigh
- * 
  */
-public class SPARQLRepository implements Repository {
-	
+public class SPARQLRepository extends RepositoryBase {
+
 	private String queryEndpointUrl;
+
 	private String updateEndpointUrl;
-	private Map<String,String> additionalHttpHeaders;
+
+	private Map<String, String> additionalHttpHeaders;
 
 	public SPARQLRepository(String queryEndpointUrl) {
 		this.queryEndpointUrl = queryEndpointUrl;
@@ -35,7 +37,9 @@ public class SPARQLRepository implements Repository {
 		this.updateEndpointUrl = updateEndpointUrl;
 	}
 
-	public RepositoryConnection getConnection() throws RepositoryException {
+	public RepositoryConnection getConnection()
+		throws RepositoryException
+	{
 		return new SPARQLConnection(this, queryEndpointUrl, updateEndpointUrl);
 	}
 
@@ -47,11 +51,16 @@ public class SPARQLRepository implements Repository {
 		return ValueFactoryImpl.getInstance();
 	}
 
-	public void initialize() throws RepositoryException {
+	@Override
+	protected void initializeInternal()
+		throws RepositoryException
+	{
 		// no-op
 	}
 
-	public boolean isWritable() throws RepositoryException {
+	public boolean isWritable()
+		throws RepositoryException
+	{
 		return false;
 	}
 
@@ -59,7 +68,10 @@ public class SPARQLRepository implements Repository {
 		// no-op
 	}
 
-	public void shutDown() throws RepositoryException {
+	@Override
+	protected void shutDownInternal()
+		throws RepositoryException
+	{
 		// no-op
 	}
 
@@ -74,9 +86,10 @@ public class SPARQLRepository implements Repository {
 	public Map<String, String> getAdditionalHttpHeaders() {
 		return additionalHttpHeaders;
 	}
-	
+
 	/**
-	 * @param additionalHttpHeaders The additionalHttpHeaders to set as key value pairs.
+	 * @param additionalHttpHeaders
+	 *        The additionalHttpHeaders to set as key value pairs.
 	 */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
 		this.additionalHttpHeaders = additionalHttpHeaders;

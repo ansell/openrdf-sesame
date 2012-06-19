@@ -120,7 +120,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	}
 
 	@Override
-	public void initialize()
+	protected void initializeInternal()
 		throws RepositoryException
 	{
 		boolean denied = false;
@@ -154,7 +154,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	}
 
 	@Override
-	public void shutDown()
+	protected void shutDownInternal()
 		throws RepositoryException
 	{
 		boolean denied = false;
