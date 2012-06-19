@@ -78,9 +78,8 @@ public class EvaluationStatistics {
 
 		@Override
 		public void meet(ZeroLengthPath node) {
-			// TODO currently giving ridiculously high cardinality to ensure ZLPs
-			// are evaluated late in the game.
-			cardinality = 100000;
+			// cardinality is the same as that of a statement pattern with three unbound vars. 
+			cardinality = 1000.0;
 		}
 
 		@Override
