@@ -20,7 +20,7 @@ import org.openrdf.repository.RepositoryException;
  * @author Herko ter Horst
  * @author Arjohn Kampman
  */
-public class RepositoryWrapper extends RepositoryBase implements DelegatingRepository {
+public class RepositoryWrapper implements DelegatingRepository {
 
 	private volatile Repository delegate;
 
@@ -54,13 +54,13 @@ public class RepositoryWrapper extends RepositoryBase implements DelegatingRepos
 		return getDelegate().getDataDir();
 	}
 
-	protected void initializeInternal()
+	public void initialize()
 		throws RepositoryException
 	{
 		getDelegate().initialize();
 	}
 
-	protected void shutDownInternal()
+	public void shutDown()
 		throws RepositoryException
 	{
 		getDelegate().shutDown();
@@ -84,5 +84,9 @@ public class RepositoryWrapper extends RepositoryBase implements DelegatingRepos
 
 	public String toString() {
 		return getDelegate().toString();
+	}
+
+	public boolean isInitialized() {
+		return getDelegate().isInitialized();
 	}
 }
