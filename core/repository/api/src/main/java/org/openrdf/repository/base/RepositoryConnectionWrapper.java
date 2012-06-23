@@ -494,14 +494,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		super.add(subject, predicate, object, contexts);
+		getDelegate().add(subject, predicate, object, contexts);
 	}
 
 	@Override
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		super.remove(subject, predicate, object, contexts);
+		getDelegate().remove(subject, predicate, object, contexts);
 	}
 
 	/**
