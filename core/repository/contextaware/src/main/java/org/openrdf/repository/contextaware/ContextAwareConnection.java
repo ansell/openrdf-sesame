@@ -626,78 +626,60 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public GraphQuery prepareGraphQuery(String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareGraphQuery(ql, query));
-		return initOperation(super.prepareGraphQuery(ql, query, baseURI));
+		return prepareGraphQuery(ql, query);
 	}
 
 	public Query prepareQuery(String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareQuery(ql, query));
-		return initOperation(super.prepareQuery(ql, query, baseURI));
+		return prepareQuery(ql, query);
 	}
 
 	public TupleQuery prepareTupleQuery(String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareTupleQuery(ql, query));
-		return initOperation(super.prepareTupleQuery(ql, query, baseURI));
+		return prepareTupleQuery(ql, query);
 	}
 
 	public Update prepareUpdate(String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareUpdate(ql, query));
-		return initOperation(super.prepareUpdate(ql, query, baseURI));
+		return prepareUpdate(ql, query);
 	}
 
 	@Override
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareGraphQuery(ql, query));
-		return initOperation(super.prepareGraphQuery(ql, query, baseURI));
+		return prepareGraphQuery(ql, query, baseURI);
 	}
 
 	@Override
 	public Query prepareQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareQuery(ql, query));
-		return initOperation(super.prepareQuery(ql, query, baseURI));
+		return prepareQuery(ql, query, baseURI);
 	}
 
 	@Override
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareTupleQuery(ql, query));
-		return initOperation(super.prepareTupleQuery(ql, query, baseURI));
+		return prepareTupleQuery(ql, query, baseURI);
 	}
 
 	@Override
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareBooleanQuery(ql, query));
-		return initOperation(super.prepareBooleanQuery(ql, query, baseURI));
+		return prepareBooleanQuery(ql, query, baseURI);
 	}
 
 	@Override
 	public Update prepareUpdate(QueryLanguage ql, String query)
 		throws MalformedQueryException, RepositoryException
 	{
-		if (baseURI == null)
-			return initOperation(super.prepareUpdate(ql, query));
-		return initOperation(super.prepareUpdate(ql, query, baseURI));
+		return prepareUpdate(ql, query, baseURI);
 	}
 
 	@Override
