@@ -52,26 +52,24 @@ public class SPARQLParser implements QueryParser {
 
 			ASTUpdateSequence updateSequence = SyntaxTreeBuilder.parseUpdateSequence(updateStr);
 
-			
 			List<ASTUpdateContainer> updateOperations = updateSequence.getUpdateContainers();
 
 			List<ASTPrefixDecl> sharedPrefixDeclarations = null;
 
 			Node node = updateSequence.jjtGetChild(0);
 			if (node instanceof ASTPrefixDecl) {
-				
+
 			}
-			
-			
+
 			for (int i = 0; i < updateOperations.size(); i++) {
 
 				ASTUpdateContainer uc = updateOperations.get(i);
-				
+
 				if (uc.jjtGetNumChildren() == 0 && i > 0 && i < updateOperations.size() - 1) {
 					// empty update in the middle of the sequence
 					throw new MalformedQueryException("empty update in sequence not allowed");
 				}
-				
+
 				StringEscapesProcessor.process(uc);
 				BaseDeclProcessor.process(uc, baseURI);
 
@@ -97,17 +95,18 @@ public class SPARQLParser implements QueryParser {
 
 				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
 
-				// Handle dataset declaration
-				Dataset dataset = DatasetDeclProcessor.process(uc);
-				if (dataset != null) {
-					update.setDataset(dataset);
-				}
-
 				ASTUpdate updateNode = uc.getUpdate();
 				if (updateNode != null) {
-					update.addUpdateExpr((UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null));
+					UpdateExpr updateExpr = (UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null);
+					
+					// add individual update expression to ParsedUpdate sequence container
+					update.addUpdateExpr(updateExpr);
+
+					// associate updateExpr with the correct dataset (if any)
+					Dataset dataset = DatasetDeclProcessor.process(uc);
+					update.addDatasetMapping(updateExpr, dataset);
 				}
-			}
+			} // end for
 
 			return update;
 		}
