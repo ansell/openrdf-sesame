@@ -22,7 +22,7 @@ public class SailLockedException extends SailException {
 	private LockManager manager;
 
 	public SailLockedException(String requestedBy) {
-		super("SAIL is already locked");
+		super("SAIL could not be locked (check permissions)");
 		this.requestedBy = requestedBy;
 	}
 
