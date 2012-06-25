@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.parser;
 
-import org.openrdf.query.Dataset;
 
 /**
  * Abstract superclass of all operations that can be formulated in a query
@@ -15,10 +14,6 @@ import org.openrdf.query.Dataset;
  */
 public abstract class ParsedOperation {
 
-	/**
-	 * The dataset that was specified in the operation, if any.
-	 */
-	private Dataset dataset;
 
 	/**
 	 * The source string (e.g. SPARQL query) that produced this operation.
@@ -34,13 +29,7 @@ public abstract class ParsedOperation {
 		this.sourceString = sourceString;
 	}
 	
-	public Dataset getDataset() {
-		return dataset;
-	}
 
-	public void setDataset(Dataset dataset) {
-		this.dataset = dataset;
-	}
 
 	/**
 	 * @return Returns the sourceString.

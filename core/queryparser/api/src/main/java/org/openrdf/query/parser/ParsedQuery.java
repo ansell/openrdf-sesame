@@ -21,6 +21,11 @@ public abstract class ParsedQuery extends ParsedOperation {
 
 	private TupleExpr tupleExpr;
 
+	/**
+	 * The dataset that was specified in the operation, if any.
+	 */
+	private Dataset dataset;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -87,6 +92,14 @@ public abstract class ParsedQuery extends ParsedOperation {
 	 * Methods *
 	 *---------*/
 
+	public Dataset getDataset() {
+		return dataset;
+	}
+
+	public void setDataset(Dataset dataset) {
+		this.dataset = dataset;
+	}
+	
 	/**
 	 * Gets the tuple expression underlying this operation.
 	 */
