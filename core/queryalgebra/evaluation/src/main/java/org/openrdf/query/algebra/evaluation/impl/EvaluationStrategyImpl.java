@@ -1255,7 +1255,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return new ServiceJoinIterator(leftIter, (Service)join.getRightArg(), bindings, this);
 		}
 
-		if (join.hasSubSelect()) {
+		if (join.hasSubSelectInRightArg()) {
 			return new BottomUpJoinIterator(this, join, bindings);
 		}
 		else {
