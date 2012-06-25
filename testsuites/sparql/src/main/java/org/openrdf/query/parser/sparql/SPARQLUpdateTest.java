@@ -386,6 +386,38 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
 	}
+	
+	@Test
+	public void testDeleteWhereOptional()
+		throws Exception
+	{
+		logger.debug("executing test testDeleteWhereOptional");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append(" DELETE { ?x foaf:name ?y; foaf:mbox ?mbox. } ");
+		update.append(" WHERE {?x foaf:name ?y. ");
+		update.append(" OPTIONAL { ?x foaf:mbox ?mbox. FILTER (str(?mbox) = \"bob@example.org\") } }");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		Literal mboxBob = f.createLiteral("bob@example.org");
+		Literal mboxAlice = f.createLiteral("alice@example.org");
+		assertTrue(con.hasStatement(bob, FOAF.MBOX, mboxBob , true));
+		assertTrue(con.hasStatement(alice, FOAF.MBOX, mboxAlice, true));
+
+
+		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+		
+		operation.execute();
+
+		assertFalse(con.hasStatement(bob, FOAF.MBOX, mboxBob , true));
+		assertTrue(con.hasStatement(alice, FOAF.MBOX, mboxAlice, true));
+		
+		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+	}
 
 	@Test
 	public void testDeleteInsertWhereWithBindings()

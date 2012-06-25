@@ -536,6 +536,12 @@ public class SailUpdateExecutor {
 				if (deletePattern.getContextVar() != null) {
 					context = (Resource)getValueForVar(deletePattern.getContextVar(), whereBinding);
 				}
+				
+				if (subject == null || predicate == null || object == null) {
+					// skip removal of triple if any variable is unbound (may happen with optional patterns)
+					// See SES-1047.
+					continue;
+				}
 
 				if (context != null) {
 					con.removeStatements(subject, predicate, object, context);
