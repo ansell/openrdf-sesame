@@ -33,8 +33,8 @@ public class Join extends BinaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
-	public boolean hasSubSelect() {
-		return (containsProjection(leftArg) || containsProjection(rightArg));
+	public boolean hasSubSelectInRightArg() {
+		return containsProjection(rightArg);
 	}
 
 	public Set<String> getBindingNames() {
