@@ -15,7 +15,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.UpdateExpr;
 
 /**
- * A parsed update formulated in the OpenRDF query algebra.
+ * A parsed update sequence formulated in the OpenRDF query algebra.
  * 
  * @author Jeen Broekstra
  */
@@ -28,7 +28,7 @@ public class ParsedUpdate extends ParsedOperation {
 	private Map<String, String> namespaces;
 
 	private List<UpdateExpr> updateExprs = new ArrayList<UpdateExpr>();
-	
+
 	private Map<UpdateExpr, Dataset> datasetMapping = new HashMap<UpdateExpr, Dataset>();
 
 	/*--------------*
@@ -36,16 +36,18 @@ public class ParsedUpdate extends ParsedOperation {
 	 *--------------*/
 
 	/**
-	 * Creates a new update. To complete this update, one or more update expressions need
-	 * to be supplied to it using {@link #addUpdateExpr(UpdateExpr)}.
+	 * Creates a new update sequence. To complete this update sequence, one or
+	 * more update expressions need to be supplied to it using
+	 * {@link #addUpdateExpr(UpdateExpr)}.
 	 */
 	public ParsedUpdate() {
 		super();
 	}
 
 	/**
-	 * Creates a new update. To complete this update, one or update expressions need
-	 * to be supplied to it using {@link #addUpdateExpr(UpdateExpr)}.
+	 * Creates a new update sequence. To complete this update sequence, one or
+	 * update expressions need to be supplied to it using
+	 * {@link #addUpdateExpr(UpdateExpr)}.
 	 * 
 	 * @param namespaces
 	 *        A mapping of namespace prefixes to namespace names representing the
@@ -72,33 +74,33 @@ public class ParsedUpdate extends ParsedOperation {
 	public void addUpdateExpr(UpdateExpr updateExpr) {
 		updateExprs.add(updateExpr);
 	}
-	
+
 	public List<UpdateExpr> getupdateExprs() {
 		return updateExprs;
 	}
-	
+
 	/**
 	 * @param updateExpr
-	 *        The updateExpr to add.
+	 *        The updateExpr to map to a dataset.
 	 * @param dataset
-	 * 		 the dataset that applies to the updateExpr. May be null.
+	 *        the dataset that applies to the updateExpr. May be null.
 	 */
-	public void addDatasetMapping(UpdateExpr updateExpr, Dataset dataset) {
+	public void map(UpdateExpr updateExpr, Dataset dataset) {
 		datasetMapping.put(updateExpr, dataset);
 	}
 
 	/**
 	 * @return Returns the map of update expressions and associated datasets.
 	 */
-	public Map<UpdateExpr, Dataset> getDatasetMappings() {
+	public Map<UpdateExpr, Dataset> getDatasetMapping() {
 		return datasetMapping;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		// TODO visualize dataset in toString()?
-		for (UpdateExpr updateExpr: datasetMapping.keySet()) {
+		for (UpdateExpr updateExpr : updateExprs) {
 			stringBuilder.append(updateExpr.toString());
 			stringBuilder.append("; ");
 		}

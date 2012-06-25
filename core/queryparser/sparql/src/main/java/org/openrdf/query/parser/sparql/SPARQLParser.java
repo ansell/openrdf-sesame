@@ -104,7 +104,7 @@ public class SPARQLParser implements QueryParser {
 
 					// associate updateExpr with the correct dataset (if any)
 					Dataset dataset = DatasetDeclProcessor.process(uc);
-					update.addDatasetMapping(updateExpr, dataset);
+					update.map(updateExpr, dataset);
 				}
 			} // end for
 
