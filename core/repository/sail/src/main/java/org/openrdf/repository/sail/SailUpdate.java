@@ -7,6 +7,7 @@ package org.openrdf.repository.sail;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,24 +50,6 @@ public class SailUpdate extends AbstractOperation implements Update {
 		return con;
 	}
 
-	/**
-	 * Gets the "active" dataset for this update. The active dataset is either
-	 * the dataset that has been specified using {@link #setDataset(Dataset)} or
-	 * the dataset that has been specified in the update, where the former takes
-	 * precedence over the latter.
-	 * 
-	 * @return The active dataset, or <tt>null</tt> if there is no dataset.
-	 */
-	public Dataset getActiveDataset() {
-		if (dataset != null) {
-			return FallbackDataset.fallback(dataset, parsedUpdate.getDataset());
-		}
-
-		// No external dataset specified, use update operation's own dataset (if
-		// any)
-		return parsedUpdate.getDataset();
-	}
-
 	@Override
 	public String toString() {
 		return parsedUpdate.toString();
@@ -76,8 +59,9 @@ public class SailUpdate extends AbstractOperation implements Update {
 		throws UpdateExecutionException
 	{
 
-		List<UpdateExpr> updateExprs = parsedUpdate.getUpdateExprs();
-
+		List<UpdateExpr> updateExprs = parsedUpdate.getupdateExprs();
+		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMappings();
+		
 		for (UpdateExpr updateExpr : updateExprs) {
 			// LOAD is handled at the Repository API level because it requires
 			// access to the Rio parser.
@@ -110,8 +94,11 @@ public class SailUpdate extends AbstractOperation implements Update {
 				// pass update operation to the SAIL.
 				SailConnection conn = getConnection().getSailConnection();
 
+				// explicitly set dataset on the SailUpdate takes precedence over declaration in the update itself.
+				Dataset activeDataset = FallbackDataset.fallback(dataset, datasetMapping.get(updateExpr));
+				
 				try {
-					conn.executeUpdate(updateExpr, getActiveDataset(), getBindings(), true);
+					conn.executeUpdate(updateExpr, activeDataset, getBindings(), true);
 					getConnection().autoCommit();
 				}
 				catch (SailException e) {

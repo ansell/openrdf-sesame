@@ -7,9 +7,11 @@ package org.openrdf.query.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.UpdateExpr;
 
 /**
@@ -26,6 +28,8 @@ public class ParsedUpdate extends ParsedOperation {
 	private Map<String, String> namespaces;
 
 	private List<UpdateExpr> updateExprs = new ArrayList<UpdateExpr>();
+	
+	private Map<UpdateExpr, Dataset> datasetMapping = new HashMap<UpdateExpr, Dataset>();
 
 	/*--------------*
 	 * Constructors *
@@ -65,25 +69,36 @@ public class ParsedUpdate extends ParsedOperation {
 		}
 	}
 
-	/**
-	 * @param updateExpr
-	 *        The updateExpr to add.
-	 */
 	public void addUpdateExpr(UpdateExpr updateExpr) {
 		updateExprs.add(updateExpr);
 	}
+	
+	public List<UpdateExpr> getupdateExprs() {
+		return updateExprs;
+	}
+	
+	/**
+	 * @param updateExpr
+	 *        The updateExpr to add.
+	 * @param dataset
+	 * 		 the dataset that applies to the updateExpr. May be null.
+	 */
+	public void addDatasetMapping(UpdateExpr updateExpr, Dataset dataset) {
+		datasetMapping.put(updateExpr, dataset);
+	}
 
 	/**
-	 * @return Returns the list of update expressions.
+	 * @return Returns the map of update expressions and associated datasets.
 	 */
-	public List<UpdateExpr> getUpdateExprs() {
-		return updateExprs;
+	public Map<UpdateExpr, Dataset> getDatasetMappings() {
+		return datasetMapping;
 	}
 	
 	@Override
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		for (UpdateExpr updateExpr: updateExprs) {
+		// TODO visualize dataset in toString()?
+		for (UpdateExpr updateExpr: datasetMapping.keySet()) {
 			stringBuilder.append(updateExpr.toString());
 			stringBuilder.append("; ");
 		}
