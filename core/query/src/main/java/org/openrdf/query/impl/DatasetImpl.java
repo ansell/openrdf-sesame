@@ -127,8 +127,10 @@ public class DatasetImpl implements Dataset {
 			sb.append("DELETE FROM ");
 			appendURI(sb, uri);
 		}
-		sb.append("INSERT INTO ");
-		appendURI(sb, getDefaultInsertGraph());
+		if (getDefaultInsertGraph() != null) {
+			sb.append("INSERT INTO ");
+			appendURI(sb, getDefaultInsertGraph());
+		}
 		for (URI uri : getDefaultGraphs()) {
 			sb.append("USING ");
 			appendURI(sb, uri);
