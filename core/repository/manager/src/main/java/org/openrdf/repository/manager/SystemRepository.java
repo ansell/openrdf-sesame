@@ -64,10 +64,10 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	 *---------*/
 
 	@Override
-	protected void initializeInternal()
+	public void initialize()
 		throws RepositoryException
 	{
-		super.initializeInternal();
+		super.initialize();
 
 		RepositoryConnection con = getConnection();
 		try {
