@@ -1099,31 +1099,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		super.visit(node, null);
 
-		// Optional constraints also apply to left hand side of operator
-		List<ValueExpr> constraints = graphPattern.removeAllConstraints();
-
-		TupleExpr leftArg = parentGP.buildTupleExpr();
-
-		TupleExpr rightArg = graphPattern.buildTupleExpr();
-
-		LeftJoin leftJoin;
-
-		if (constraints.isEmpty()) {
-			leftJoin = new LeftJoin(leftArg, rightArg);
-		}
-		else {
-			ValueExpr constraint = constraints.get(0);
-			for (int i = 1; i < constraints.size(); i++) {
-				constraint = new And(constraint, constraints.get(i));
-			}
-
-			leftJoin = new LeftJoin(leftArg, rightArg, constraint);
-		}
+		// remove filter conditions from graph pattern for inclusion as conditions in the OptionalTE
+		List<ValueExpr> optionalConstraints = graphPattern.removeAllConstraints();
+		TupleExpr optional = graphPattern.buildTupleExpr();
 
 		graphPattern = parentGP;
-
-		graphPattern.clear();
-		graphPattern.addRequiredTE(leftJoin);
+		graphPattern.addOptionalTE(optional, optionalConstraints);
 
 		return null;
 	}
