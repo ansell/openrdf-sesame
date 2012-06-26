@@ -86,8 +86,7 @@ public class LeftJoinIterator extends LookAheadIteration<BindingSet, QueryEvalua
 						}
 						else {
 							// Limit the bindings to the ones that are in scope for
-							// this
-							// filter
+							// this filter
 							QueryBindingSet scopeBindings = new QueryBindingSet(rightBindings);
 							scopeBindings.retainAll(scopeBindingNames);
 
