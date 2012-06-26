@@ -59,7 +59,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 		throws UpdateExecutionException
 	{
 
-		List<UpdateExpr> updateExprs = parsedUpdate.getupdateExprs();
+		List<UpdateExpr> updateExprs = parsedUpdate.getUpdateExprs();
 		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMapping();
 		
 		for (UpdateExpr updateExpr : updateExprs) {

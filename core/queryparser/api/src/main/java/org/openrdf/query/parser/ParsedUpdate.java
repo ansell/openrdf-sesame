@@ -75,7 +75,7 @@ public class ParsedUpdate extends ParsedOperation {
 		updateExprs.add(updateExpr);
 	}
 
-	public List<UpdateExpr> getupdateExprs() {
+	public List<UpdateExpr> getUpdateExprs() {
 		return updateExprs;
 	}
 
