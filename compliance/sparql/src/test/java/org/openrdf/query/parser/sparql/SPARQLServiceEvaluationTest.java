@@ -381,23 +381,39 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public void test12() throws Exception {
+	public void testFallbackWithDBpedia() throws Exception {
 		/* test vectored join with more intermediate results */
 		// clears the repository and adds new data + execute
 		prepareTest("/testcases-service/data12.ttl", Collections.<String>emptyList());
 		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
 	}
 	
+	@Test
 	public void test13() throws Exception {
 		/* test for bug SES-899: cross product is required */
 		prepareTest(null, Arrays.asList("/testcases-service/data13.ttl"));
 		execute("/testcases-service/service13.rq", "/testcases-service/service13.srx", false);				
 	}
 	
+	@Test
 	public void testEmptyServiceBlock() throws Exception {
 		/* test for bug SES-900: nullpointer for empty service block */
 		prepareTest(null, Arrays.asList("/testcases-service/data13.ttl"));
 		execute("/testcases-service/service14.rq", "/testcases-service/service14.srx", false);	
+	}
+	
+
+	public void testJoinOrderOfSubquery() throws Exception {
+		/* manual test for bug SES-1017 */
+		prepareTest("/testcases-service/data16local.ttl", Collections.<String>emptyList());
+		execute("/testcases-service/service16.rq", "/testcases-service/service16.srx", false);	
+	}
+	
+	@Test
+	public void testNotProjectedCount() throws Exception {
+		/* test projection of subqueries - SES-1000 */
+		prepareTest(null, Arrays.asList("/testcases-service/data17endpoint1.ttl"));
+		execute("/testcases-service/service17.rq", "/testcases-service/service17.srx", false);	
 	}
 	
 	/**

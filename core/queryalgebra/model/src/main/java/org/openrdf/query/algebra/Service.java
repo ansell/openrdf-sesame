@@ -8,6 +8,7 @@ package org.openrdf.query.algebra;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
@@ -214,16 +215,23 @@ public class Service extends UnaryTupleOperator {
 		return res;
 	}
 
+	private static Pattern subselectPattern = Pattern.compile("SELECT.*", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	
 	private void initPreparedQueryString() {
-
+		
+		serviceExpressionString = serviceExpressionString.trim();		
 		String prefixString = computePrefixString(prefixDeclarations);
 
 		// build the raw SELECT query string
 		StringBuilder sb = new StringBuilder();
 		sb.append(prefixString);
-		sb.append("SELECT %PROJECTION_VARS% WHERE { ");
-		sb.append(serviceExpressionString);
-		sb.append(" }");
+		if (subselectPattern.matcher(serviceExpressionString).matches()) {
+			sb.append(serviceExpressionString);
+		} else {
+			sb.append("SELECT %PROJECTION_VARS% WHERE { ");
+			sb.append(serviceExpressionString);
+			sb.append(" }");
+		}
 		preparedSelectQueryString = sb.toString();
 
 		// build the raw ASK query string
