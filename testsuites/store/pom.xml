@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-testsuites</artifactId>
-		<version>2.6.7-SNAPSHOT</version>
+		<version>2.6.7</version>
 	</parent>
 
 	<artifactId>sesame-store-testsuite</artifactId>
@@ -42,9 +42,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/testsuites/store</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/testsuites/store</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/testsuites/store</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.6.7/testsuites/store</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.6.7/testsuites/store</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.6.7/testsuites/store?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/testsuites/store</url>
 	</scm>
 
 </project>
