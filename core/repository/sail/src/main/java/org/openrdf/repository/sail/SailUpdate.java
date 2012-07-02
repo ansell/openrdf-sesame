@@ -8,11 +8,13 @@ package org.openrdf.repository.sail;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Update;
@@ -20,6 +22,7 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractOperation;
+import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryException;
@@ -94,8 +97,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 				// pass update operation to the SAIL.
 				SailConnection conn = getConnection().getSailConnection();
 
-				// explicitly set dataset on the SailUpdate takes precedence over declaration in the update itself.
-				Dataset activeDataset = FallbackDataset.fallback(dataset, datasetMapping.get(updateExpr));
+				Dataset activeDataset = getMergedDataset(datasetMapping.get(updateExpr));
 				
 				try {
 					conn.executeUpdate(updateExpr, activeDataset, getBindings(), true);
@@ -114,6 +116,45 @@ public class SailUpdate extends AbstractOperation implements Update {
 					}
 				}
 			}
+		}
+	}
+	
+	protected Dataset getMergedDataset(Dataset sparqlDefinedDataset) {
+		if (sparqlDefinedDataset == null) {
+			return dataset;
+		}
+		else if (dataset == null) {
+			return sparqlDefinedDataset;
+		}
+		else {
+			Set<URI> dgs = sparqlDefinedDataset.getDefaultGraphs() ;
+			if (dgs != null && dgs.size() > 0) {
+				// one or more USING-clauses in the update itself, we need to define
+				// the default graphs by means of the update itself, the rest can
+				// be copied from the externally supplied dataset.
+				DatasetImpl mergedDataset = new DatasetImpl();
+				
+				for (URI graphURI: dgs) {
+					// TODO add the null context?
+					mergedDataset.addDefaultGraph(graphURI);
+				}
+				
+				mergedDataset.setDefaultInsertGraph(dataset.getDefaultInsertGraph());
+				
+				for (URI graphURI: dataset.getDefaultRemoveGraphs()) {
+					mergedDataset.addDefaultRemoveGraph(graphURI);
+				}
+				
+				for (URI graphURI: dataset.getNamedGraphs()) {
+					mergedDataset.addNamedGraph(graphURI);
+				}
+				
+				return mergedDataset;
+			}
+			else {
+				return sparqlDefinedDataset;
+			}
+			
 		}
 	}
 }

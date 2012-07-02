@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.sun.corba.se.impl.copyobject.FallbackObjectCopierImpl;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -39,9 +41,12 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.contextaware.ContextAwareConnection;
+import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
@@ -66,7 +71,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	protected Repository dataRep;
+	protected ContextAwareRepository dataRep;
 
 	protected Repository expectedResultRepo;
 
@@ -78,7 +83,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 	private Map<String, URI> resultNamedGraphs;
 
-	protected final Dataset dataset = null;
+	protected final Dataset dataset;
 
 	/*--------------*
 	 * Constructors *
@@ -96,19 +101,21 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		this.resultDefaultGraph = resultDefaultGraphURI;
 		this.resultNamedGraphs = resultNamedGraphs;
 
-		/*
 		if (this.inputNamedGraphs.size() > 0) {
 			DatasetImpl ds = new DatasetImpl();
 			ds.addDefaultGraph(null);
+			ds.addDefaultRemoveGraph(null);
+			ds.setDefaultInsertGraph(null);
+
 			for (String ng : inputNamedGraphs.keySet()) {
-				ds.addNamedGraph(new URIImpl(ng));
+				URI namedGraph = new URIImpl(ng);
+				ds.addNamedGraph(namedGraph);
 			}
 			this.dataset = ds;
 		}
 		else {
 			this.dataset = null;
 		}
-		*/
 	}
 
 	/*---------*
@@ -124,6 +131,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		URL graphURL = null;
 		RepositoryConnection conn = dataRep.getConnection();
 		try {
+			conn.clear();
+
 			if (inputDefaultGraph != null) {
 				graphURL = new URL(inputDefaultGraph.stringValue());
 				conn.add(graphURL, null, RDFFormat.forFileName(graphURL.toString()));
@@ -142,7 +151,10 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		expectedResultRepo = createRepository();
 
 		conn = expectedResultRepo.getConnection();
+
 		try {
+			conn.clear();
+
 			if (resultDefaultGraph != null) {
 				graphURL = new URL(resultDefaultGraph.stringValue());
 				conn.add(graphURL, null, RDFFormat.forFileName(graphURL.toString()));
@@ -160,10 +172,10 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 	}
 
-	protected Repository createRepository()
+	protected ContextAwareRepository createRepository()
 		throws Exception
 	{
-		Repository repo = newRepository();
+		ContextAwareRepository repo = newRepository();
 		repo.initialize();
 		RepositoryConnection con = repo.getConnection();
 		try {
@@ -176,7 +188,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		return repo;
 	}
 
-	protected abstract Repository newRepository()
+	protected abstract ContextAwareRepository newRepository()
 		throws Exception;
 
 	@Override
@@ -193,13 +205,15 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-		RepositoryConnection con = dataRep.getConnection();
+		ContextAwareConnection con = dataRep.getConnection();
 		RepositoryConnection erCon = expectedResultRepo.getConnection();
 		try {
 			String updateString = readUpdateString();
-			Update update = con.prepareUpdate(QueryLanguage.SPARQL, updateString, requestFileURL);
 
-			if (this.dataset != null && update.getDataset() == null) {
+			con.setReadContexts((URI)null);
+			
+			Update update = con.prepareUpdate(QueryLanguage.SPARQL, updateString, requestFileURL);
+			if (this.dataset != null) {
 				update.setDataset(this.dataset);
 			}
 			update.execute();
