@@ -11,6 +11,7 @@ import junit.framework.Test;
 
 import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -45,12 +46,12 @@ public class MemorySPARQLUpdateConformanceTest extends SPARQLUpdateConformanceTe
 	}
 
 	@Override
-	protected Repository newRepository()
+	protected ContextAwareRepository newRepository()
 		throws Exception
 	{
 		SailRepository repo = new SailRepository(new MemoryStore());
 
-		return repo;
+		return new ContextAwareRepository(repo);
 	}
 
 }

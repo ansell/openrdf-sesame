@@ -43,12 +43,12 @@ public class SPARQL11ManifestTest {
 	static final Logger logger = LoggerFactory.getLogger(SPARQL11ManifestTest.class);
 
 	/** use DAWG SPARQL 1.1 tests located on www.3.org instead of local resources */
-	private static final boolean REMOTE = false;
+	private static final boolean REMOTE = true;
 
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
 	private static final boolean LOCAL_DAWG_TESTS = false;
 
-	private static final boolean APPROVED_TESTS_ONLY = false;
+	private static final boolean APPROVED_TESTS_ONLY = true;
 	
 	/**
 	 * use only a subset of all available tests, where the subset is defined by
@@ -56,7 +56,7 @@ public class SPARQL11ManifestTest {
 	 */
 	private static final boolean USE_SUBSET = false;
 
-	private static final String[] subDirs = { "json-res" };
+	private static final String[] subDirs = { "basic-update" };
 
 	private static File tmpDir;
 
