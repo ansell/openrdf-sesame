@@ -13,6 +13,7 @@ import info.aduna.iteration.FilterIteration;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SubQueryValueOperator;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -54,6 +55,20 @@ public class FilterIterator extends FilterIteration<BindingSet, QueryEvaluationE
 	 * Methods *
 	 *---------*/
 
+	private boolean isPartOfSubQuery(QueryModelNode node) {
+		if (node instanceof SubQueryValueOperator) {
+			return true;
+		}
+		
+		QueryModelNode parent = node.getParentNode();
+		if (parent == null) {
+			return false;
+		}
+		else {
+			return isPartOfSubQuery(parent);
+		}
+	}
+	
 	@Override
 	protected boolean accept(BindingSet bindings)
 		throws QueryEvaluationException
@@ -65,7 +80,7 @@ public class FilterIterator extends FilterIteration<BindingSet, QueryEvaluationE
 			// FIXME J1 scopeBindingNames should include bindings from superquery if the filter
 			// is part of a subquery. This is a workaround: we should fix the settings of scopeBindingNames, 
 			// rather than skipping the limiting of bindings.
-			if (!(filter.getParentNode() instanceof SubQueryValueOperator)) {
+			if (!isPartOfSubQuery(filter)) {
 				scopeBindings.retainAll(scopeBindingNames);
 			}
 
