@@ -254,6 +254,57 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testFilterRegexBoolean() {
+		
+		// test case for issue SES-1050
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append(" SELECT *");
+		query.append(" WHERE { ");
+		query.append("       ?x foaf:name ?name ; ");
+		query.append("          foaf:mbox ?mbox . ");
+		query.append("       FILTER(EXISTS { ");
+		query.append("            FILTER(REGEX(?name, \"Bo\") && REGEX(?mbox, \"bob\")) ");
+//		query.append("            FILTER(REGEX(?mbox, \"bob\")) ");
+		query.append("            } )");
+		query.append(" } ");
+		
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+			
+			assertTrue(result.hasNext());
+			int count = 0;
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				count++;
+				System.out.println(bs);
+			}
+			assertEquals(1, count);
+			
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	} 
+	
+	@Test
 	public void testGroupConcatNonDistinct() {
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
