@@ -7,6 +7,7 @@ package org.openrdf.query.parser.sparql;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -19,6 +20,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -29,6 +31,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
@@ -775,6 +778,56 @@ public abstract class SPARQLUpdateTest {
 		String msg = "two new statements about ex:book1 should have been inserted";
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
+	}
+	
+	@Test
+	public void testInsertDataBlankNode()
+		throws Exception
+	{
+		logger.debug("executing testInsertDataBlankNode");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT DATA { _:foo dc:title \"book 1\" ; dc:creator \"Ringo\" . } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertFalse(con.hasStatement(null, DC.TITLE, f.createLiteral("book 1"), true));
+		assertFalse(con.hasStatement(null, DC.CREATOR, f.createLiteral("Ringo"), true));
+
+		operation.execute();
+
+		RepositoryResult<Statement> titleStatements = con.getStatements(null, DC.TITLE, f.createLiteral("book 1"), true);
+		assertNotNull(titleStatements);
+		
+		RepositoryResult<Statement> creatorStatements = con.getStatements(null, DC.CREATOR, f.createLiteral("Ringo"), true);
+		assertNotNull(creatorStatements);
+		
+		BNode bookNode = null;
+		if (titleStatements.hasNext()) {
+			Statement ts = titleStatements.next();
+			assertFalse(titleStatements.hasNext());
+			
+			Resource subject = ts.getSubject();
+			assertTrue(subject instanceof BNode);
+			bookNode = (BNode)subject;
+		}
+		titleStatements.close();
+		assertNotNull(bookNode);
+		assertFalse("_:foo".equals(bookNode.getID()));
+		
+		if (creatorStatements.hasNext()) {
+			Statement cs = creatorStatements.next();
+			assertFalse (creatorStatements.hasNext());
+			
+			Resource subject = cs.getSubject();
+			assertTrue(subject instanceof BNode);
+			assertEquals(bookNode, subject);
+		}
+		else {
+			fail("at least one creator statement expected");
+		}
+		creatorStatements.close();
 	}
 
 	@Test

@@ -46,7 +46,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 
 	private static final Logger logger = LoggerFactory.getLogger(SPARQL11SyntaxTest.class);
 
-	private static final boolean REMOTE = false;
+	private static final boolean REMOTE = true;
 
 	private static final String SUBMANIFEST_QUERY, TESTCASE_QUERY;
 
