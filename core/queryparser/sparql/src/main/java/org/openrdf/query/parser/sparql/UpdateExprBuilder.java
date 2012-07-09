@@ -97,7 +97,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		TupleExpr result = new SingletonSet();
 
-		// Collect construct triples
+		// Collect insert triples
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern();
 
@@ -125,9 +125,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		VarCollector collector = new VarCollector();
 		insertExpr.visit(collector);
 		for (Var var : collector.getCollectedVars()) {
-			if (!var.hasValue()) {
-				// var in delete data not allowed 
-				throw new VisitorException("DELETE DATA may not contain variables");
+			if (!var.hasValue() && !var.isAnonymous()) {
+				// non-anonymous var in insert data not allowed
+				throw new VisitorException("INSERT DATA may not contain variables");
 			}
 		}
 
@@ -226,11 +226,17 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		deleteExpr.visit(collector);
 		for (Var var : collector.getCollectedVars()) {
 			if (!var.hasValue()) {
-				// var in delete data not allowed 
-				throw new VisitorException("DELETE DATA may not contain variables");
+				if (var.isAnonymous()) {
+					// blank node in delete data not allowed
+					throw new VisitorException("DELETE DATA may not contain blank nodes");
+				}
+				else {
+					// var in delete data not allowed
+					throw new VisitorException("DELETE DATA may not contain variables");
+				}
 			}
 		}
-		
+
 		graphPattern = parentGP;
 
 		// Retrieve all StatementPatterns from the insert expression
@@ -322,7 +328,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	public Modify visit(ASTDeleteWhere node, Object data)
 		throws VisitorException
 	{
-		// Collect construct triples
+		// Collect delete clause triples
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern();
 
@@ -338,16 +344,17 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		graphPattern = parentGP;
 
 		TupleExpr deleteExpr = whereExpr.clone();
-		
-		// FIXME we should adapt the grammar so we can avoid doing this post-processing.
+
+		// FIXME we should adapt the grammar so we can avoid doing this
+		// post-processing.
 		VarCollector collector = new VarCollector();
 		deleteExpr.visit(collector);
 		for (Var var : collector.getCollectedVars()) {
 			if (var.isAnonymous() && !var.hasValue()) {
-				throw new VisitorException("DELETE WHERE  may not contain blank nodes");
+				throw new VisitorException("DELETE WHERE may not contain blank nodes");
 			}
 		}
-		
+
 		Modify modify = new Modify(deleteExpr, null, whereExpr);
 
 		return modify;
@@ -554,19 +561,20 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			node.jjtGetChild(i).jjtAccept(this, data);
 		}
-		
+
 		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
-		
-		// FIXME we should adapt the grammar so we can avoid doing this post-processing.
+
+		// FIXME we should adapt the grammar so we can avoid doing this in
+		// post-processing.
 		VarCollector collector = new VarCollector();
 		deleteExpr.visit(collector);
 		for (Var var : collector.getCollectedVars()) {
 			if (var.isAnonymous() && !var.hasValue()) {
-				// blank node in delete pattern, for some arbitrary reason not allowed by SPARQL spec. 
+				// blank node in delete pattern, not allowed by SPARQL spec.
 				throw new VisitorException("DELETE clause may not contain blank nodes");
 			}
 		}
-		
+
 		graphPattern = parentGP;
 
 		return deleteExpr;
@@ -579,7 +587,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	{
 		TupleExpr result = (TupleExpr)data;
 
-		// Collect construct triples
+		// Collect insert clause triples
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern();
 
@@ -597,63 +605,6 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		return insertExpr;
 
-		/*
-		// Retrieve all StatementPatterns from the insert expression
-		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
-
-		Set<Var> projectionVars = getProjectionVars(statementPatterns);
-
-		// Create BNodeGenerators for all anonymous variables
-		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
-
-		for (Var var : projectionVars) {
-			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
-				ValueExpr valueExpr;
-
-				if (var.hasValue()) {
-					valueExpr = new ValueConstant(var.getValue());
-				}
-				else {
-					valueExpr = new BNodeGenerator();
-				}
-
-				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
-			}
-		}
-
-		if (!extElemMap.isEmpty()) {
-			result = new Extension(result, extElemMap.values());
-		}
-
-		// Create a Projection for each StatementPattern in the clause
-		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
-
-		for (StatementPattern sp : statementPatterns) {
-			ProjectionElemList projElemList = new ProjectionElemList();
-
-			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
-			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
-			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
-
-			if (sp.getContextVar() != null) {
-				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
-			}
-
-			projList.add(projElemList);
-		}
-
-		if (projList.size() == 1) {
-			result = new Projection(result, projList.get(0));
-		}
-		else if (projList.size() > 1) {
-			result = new MultiProjection(result, projList);
-		}
-		else {
-			// Empty constructor
-			result = new EmptySet();
-		}
-
-		*/
 	}
 
 	private Set<Var> getProjectionVars(Collection<StatementPattern> statementPatterns) {
