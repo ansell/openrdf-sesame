@@ -189,7 +189,10 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * more contexts are specified each statement is added to these contexts,
 	 * ignoring any context information in the statement itself.
 	 */
+	@Deprecated
 	public URI[] getAddContexts() {
+		if (addContexts == null || addContexts.length < 1 || addContexts.length == 1 && addContexts[0] == null)
+			return new URI[] { getInsertContext() };
 		return addContexts;
 	}
 
