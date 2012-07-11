@@ -218,10 +218,10 @@ public class LockManager {
 						+ " lock acquired in " + lock.acquiredName;
 				if (lock.acquiredId == current.getId()) {
 					if (lock.stack == null) {
-						logger.warn(msg);
+						logger.warn(msg, new Throwable());
 					}
 					else {
-						logger.warn(msg, lock.stack);
+						logger.warn(msg, new Throwable(lock.stack));
 					}
 				}
 				else {
@@ -229,7 +229,7 @@ public class LockManager {
 						logger.info(msg);
 					}
 					else {
-						logger.info(msg, lock.stack);
+						logger.info(msg, new Throwable(lock.stack));
 					}
 				}
 			}
