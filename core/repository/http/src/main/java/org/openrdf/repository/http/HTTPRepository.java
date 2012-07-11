@@ -66,14 +66,9 @@ public class HTTPRepository extends RepositoryBase {
 		httpClient.setRepositoryURL(repositoryURL);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	// httpClient is shared with HTTPConnection
-	HTTPClient getHTTPClient() {
-		return httpClient;
-	}
+	/* ---------------*
+	 * public methods *
+	 * ---------------*/
 
 	public void setDataDir(File dataDir) {
 		this.dataDir = dataDir;
@@ -81,18 +76,6 @@ public class HTTPRepository extends RepositoryBase {
 
 	public File getDataDir() {
 		return dataDir;
-	}
-
-	@Override
-	protected void initializeInternal()
-		throws RepositoryException
-	{
-	}
-
-	protected void shutDownInternal()
-		throws RepositoryException
-	{
-		httpClient.shutDown();
 	}
 
 	public ValueFactory getValueFactory() {
@@ -206,5 +189,38 @@ public class HTTPRepository extends RepositoryBase {
 	 */
 	public void setUsernameAndPassword(String username, String password) {
 		httpClient.setUsernameAndPassword(username, password);
+	}
+	
+
+	/* -------------------*
+	 * non-public methods *
+	 * -------------------*/
+
+	@Override
+	protected void initializeInternal()
+		throws RepositoryException
+	{
+	}
+
+	protected void shutDownInternal()
+		throws RepositoryException
+	{
+		// httpclient shutdown moved to finalize method, to avoid problems with
+		// shutdown followed by re-initialization. See SES-1059.
+		// httpClient.shutDown();
+	}
+	
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		httpClient.shutDown();
+		super.finalize();
+	}
+	
+	
+	// httpClient is shared with HTTPConnection
+	HTTPClient getHTTPClient() {
+		return httpClient;
 	}
 }
