@@ -48,13 +48,13 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	}
 
 	protected static class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
-		
+
 		private QueryBindingSet bindings;
 
 		public SameTermFilterVisitor() {
 			this.bindings = new QueryBindingSet();
 		}
-		
+
 		@Override
 		public void meet(Filter filter) {
 			super.meet(filter);
@@ -87,11 +87,13 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				Value rightValue = getValue(rightArg);
 
 				if (hasCollidingValue(leftArg, rightValue) || hasCollidingValue(rightArg, leftValue)) {
-					// one or both var(s) has been already been optimized as part of a SameTerm filter elsewhere in the query,
-					// but with a different value. Inlining would cause a value collision and invalidate the result.
+					// one or both var(s) has been already been optimized as part of
+					// a SameTerm filter elsewhere in the query,
+					// but with a different value. Inlining would cause a value
+					// collision and invalidate the result.
 					return;
 				}
-				
+
 				if (leftValue != null && rightValue != null) {
 					// ConstantOptimizer should have taken care of this
 				}
@@ -115,12 +117,12 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			}
 			return false;
 		}
-		
+
 		private boolean hasCollidingValue(ValueExpr valueExpr, Value value) {
 			if (valueExpr instanceof Var) {
 				Binding binding = bindings.getBinding(((Var)valueExpr).getName());
 				if (binding != null) {
-					return (value == null || ! value.equals(binding.getValue()));
+					return (value == null || !value.equals(binding.getValue()));
 				}
 			}
 			return false;
@@ -155,9 +157,12 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 			// Get rid of the filter
 			filter.replaceWith(filter.getArg());
-			
-			// add to bindingset to avoid value collision in sameterm operator elsewhere in the query.
-			this.bindings.addBinding(var.getName(), value);
+
+			if (!this.bindings.hasBinding(var.getName())) {
+				// add to bindingset to avoid value collision in sameterm operator
+				// elsewhere in the query.
+				this.bindings.addBinding(var.getName(), value);
+			}
 		}
 	}
 
