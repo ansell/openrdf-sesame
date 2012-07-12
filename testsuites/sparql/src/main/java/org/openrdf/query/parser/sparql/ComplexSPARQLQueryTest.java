@@ -5,7 +5,11 @@
  */
 package org.openrdf.query.parser.sparql;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
@@ -203,6 +208,63 @@ public abstract class ComplexSPARQLQueryTest {
 			result.close();
 			
 			assertEquals(1, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		
+	}
+	
+	@Test
+	public void testSameTermRepeatInUnion() {
+		StringBuilder query = new StringBuilder();
+		query.append("PREFIX foaf:<http://xmlns.com/foaf/0.1/>\n");
+		query.append("SELECT * {\n");
+		query.append("    {\n");
+		query.append("        ?sameTerm foaf:mbox ?mbox\n");
+		query.append("        FILTER sameTerm(?sameTerm,$william)\n");
+		query.append("    } UNION {\n");
+		query.append("        ?x foaf:knows ?sameTerm\n");
+		query.append("        FILTER sameTerm(?sameTerm,$william)\n");
+		query.append("    }\n");
+		query.append("}");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+			tq.setBinding("william", conn.getValueFactory().createURI("http://example.org/william"));
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				count++;
+				assertNotNull(bs);
+				
+				System.out.println(bs);
+				
+				Value mbox = bs.getValue("mbox");
+				Value x = bs.getValue("x");
+
+				assertTrue(mbox instanceof Literal || x instanceof URI);
+			}
+			result.close();
+			
+			assertEquals(3, count);
 		}
 		catch (QueryEvaluationException e) {
 			e.printStackTrace();
