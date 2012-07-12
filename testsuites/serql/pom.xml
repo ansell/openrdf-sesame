@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-testsuites</artifactId>
-		<version>2.6.8-SNAPSHOT</version>
+		<version>2.6.8</version>
 	</parent>
 
 	<artifactId>sesame-serql-testsuite</artifactId>
@@ -47,9 +47,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/testsuites/serql</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/testsuites/serql</developerConnection>
-		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/testsuites/serql</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.6.8/testsuites/serql</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/tags/2.6.8/testsuites/serql</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/tags/2.6.8/testsuites/serql?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/testsuites/serql</url>
 	</scm>
 
 </project>
