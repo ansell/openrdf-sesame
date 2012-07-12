@@ -191,7 +191,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 */
 	@Deprecated
 	public URI[] getAddContexts() {
-		if (addContexts == null || addContexts.length < 1 || addContexts.length == 1 && addContexts[0] == null)
+		if (isNilContext(addContexts))
 			return new URI[] { getInsertContext() };
 		return addContexts;
 	}
@@ -207,7 +207,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Deprecated
 	public void setAddContexts(URI... addContexts) {
 		this.addContexts = addContexts;
-		if (addContexts == null || addContexts.length < 0) {
+		if (isNilContext(addContexts)) {
 			this.insertContext = null;
 		} else if (addContexts.length == 1) {
 			this.insertContext = addContexts[0];
@@ -286,7 +286,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(File file, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(file, getBaseURI(), dataFormat, getAddContexts());
 		}
 		else {
@@ -301,7 +301,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		if (baseURI == null) {
 			baseURI = getBaseURI();
 		}
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(file, baseURI, dataFormat, getAddContexts());
 		}
 		else {
@@ -312,7 +312,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(InputStream in, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(in, getBaseURI(), dataFormat, getAddContexts());
 		}
 		else {
@@ -327,7 +327,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		if (baseURI == null) {
 			baseURI = getBaseURI();
 		}
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(in, baseURI, dataFormat, getAddContexts());
 		}
 		else {
@@ -339,7 +339,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isNilContext(contexts)) {
 			add(new IteratorIteration<Statement, RuntimeException>(statements.iterator()));
 		}
 		else {
@@ -353,7 +353,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException, E
 	{
 		final URI insertContext = getInsertContext();
-		if (contexts != null && contexts.length == 0) {
+		if (isNilContext(contexts)) {
 			super.add(new ConvertingIteration<Statement, Statement, E>(statementIter) {
 
 				protected Statement convert(Statement st) {
@@ -372,7 +372,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(Reader reader, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(reader, getBaseURI(), dataFormat, getAddContexts());
 		}
 		else {
@@ -387,7 +387,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		if (baseURI == null) {
 			baseURI = getBaseURI();
 		}
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(reader, baseURI, dataFormat, getAddContexts());
 		}
 		else {
@@ -399,7 +399,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isNilContext(contexts)) {
 			super.add(subject, predicate, object, getAddContexts());
 		}
 		else {
@@ -411,7 +411,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && st.getContext() == null) {
+		if (isNilContext(contexts) && st.getContext() == null) {
 			super.add(st, getAddContexts());
 		}
 		else {
@@ -422,7 +422,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void add(URL url, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(url, getBaseURI(), dataFormat, getAddContexts());
 		}
 		else {
@@ -437,7 +437,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		if (baseURI == null) {
 			baseURI = getBaseURI();
 		}
-		if (contexts != null && contexts.length == 0 && !dataFormat.supportsContexts()) {
+		if (isNilContext(contexts) && !dataFormat.supportsContexts()) {
 			super.add(url, baseURI, dataFormat, getAddContexts());
 		}
 		else {
@@ -449,7 +449,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void clear(Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			super.clear(getRemoveContexts());
 		}
 		else {
@@ -461,7 +461,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void export(RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			super.export(handler, getReadContexts());
 		}
 		else {
@@ -489,7 +489,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			super.exportStatements(subj, pred, obj, isIncludeInferred(), handler, getReadContexts());
 		}
 		else {
@@ -502,7 +502,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			super.exportStatements(subj, pred, obj, includeInferred, handler, getReadContexts());
 		}
 		else {
@@ -532,7 +532,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			return super.getStatements(subj, pred, obj, isIncludeInferred(), getReadContexts());
 		}
 		else {
@@ -545,7 +545,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			return super.getStatements(subj, pred, obj, includeInferred, getReadContexts());
 		}
 		else {
@@ -558,7 +558,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			return super.hasStatement(subj, pred, obj, includeInferred, getReadContexts());
 		}
 		else {
@@ -570,7 +570,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && st.getContext() == null) {
+		if (isAllContext(contexts) && st.getContext() == null) {
 			return super.hasStatement(st, includeInferred, getReadContexts());
 		}
 		else {
@@ -596,7 +596,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public boolean hasStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			return super.hasStatement(subj, pred, obj, isIncludeInferred(), getReadContexts());
 		}
 		else {
@@ -619,7 +619,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public boolean hasStatement(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 & st.getContext() == null) {
+		if (isAllContext(contexts) && st.getContext() == null) {
 			return super.hasStatement(st, isIncludeInferred(), getReadContexts());
 		}
 		else {
@@ -740,7 +740,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			remove(new IteratorIteration<Statement, RuntimeException>(statements.iterator()));
 		}
 		else {
@@ -768,7 +768,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		throws RepositoryException, E
 	{
 		final URI[] removeContexts = getRemoveContexts();
-		if (contexts != null && contexts.length == 0 && removeContexts.length == 1) {
+		if (isAllContext(contexts) && removeContexts.length == 1) {
 			super.remove(new ConvertingIteration<Statement, Statement, E>(statementIter) {
 
 				protected Statement convert(Statement st) {
@@ -803,7 +803,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			super.remove(subject, predicate, object, getRemoveContexts());
 		}
 		else {
@@ -826,7 +826,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public void remove(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && st.getContext() == null) {
+		if (isAllContext(contexts) && st.getContext() == null) {
 			super.remove(st, getRemoveContexts());
 		}
 		else {
@@ -846,7 +846,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	public long size(Resource... contexts)
 		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			return super.size(getReadContexts());
 		}
 		else {
@@ -871,7 +871,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 				throw new AssertionError(e);
 			}
 		}
-		if (contexts != null && contexts.length == 0) {
+		if (isAllContext(contexts)) {
 			getDelegate().remove(subject, predicate, object, getRemoveContexts());
 		}
 		else {
@@ -900,10 +900,18 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			ds.setDefaultInsertGraph(insertContext);
 			op.setDataset(ds);
 		}
-
+	
 		op.setIncludeInferred(isIncludeInferred());
-
+	
 		return op;
+	}
+
+	private boolean isNilContext(Resource[] contexts) {
+		return isAllContext(contexts) || contexts.length == 1 && contexts[0] == null;
+	}
+
+	private boolean isAllContext(Resource[] contexts) {
+		return contexts == null || contexts.length == 0;
 	}
 
 }
