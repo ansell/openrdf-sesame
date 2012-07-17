@@ -95,8 +95,8 @@ public class RDFFormat extends FileFormat {
 	 * XML-based RDF serialization format that supports recording of named
 	 * graphs.
 	 * <p>
-	 * The file extension <code>.trix</code> is recommended for TriX documents,
-	 * <code>.xml</code> is also accepted. The media type is
+	 * The file extension <code>.xml</code> is recommended for TriX documents,
+	 * <code>.trix</code> is also accepted. The media type is
 	 * <code>application/trix</code> and the encoding is UTF-8.
 	 * </p>
 	 * 
