@@ -26,7 +26,8 @@ public class LockManager {
 	 * Number of milliseconds to block thread before the garbage collection
 	 * should search and collect abandoned active locks
 	 */
-	private static final int INITIAL_WAIT_TO_COLLECT = 1000;
+	private static final int INITIAL_WAIT_TO_COLLECT = 10000;
+	private static final int MAX_WAIT_TO_COLLECT = 90 * 60 * 1000;
 
 	private static class WeakLockReference {
 
@@ -127,7 +128,7 @@ public class LockManager {
 				if (activeLocks.isEmpty())
 					return;
 			}
-			releaseAbanded();
+			releaseAbandoned();
 		}
 	}
 
@@ -171,7 +172,7 @@ public class LockManager {
 		return lock;
 	}
 
-	private void releaseAbanded() {
+	private void releaseAbandoned() {
 		System.gc();
 		Thread.yield();
 		synchronized (activeLocks) {
@@ -190,7 +191,9 @@ public class LockManager {
 				if (stalled) {
 					// No active locks were found to be abandoned
 					// wait longer next time before running gc
-					waitToCollect = waitToCollect * 2;
+					if (waitToCollect < MAX_WAIT_TO_COLLECT) {
+						waitToCollect = waitToCollect * 2;
+					}
 					logStalledLock(activeLocks);
 				}
 			}
