@@ -139,9 +139,10 @@ public class MathUtil {
 							result = left.divide(right, MathContext.UNLIMITED);
 						}
 						catch (ArithmeticException e) {
-							// non-terminating decimal expansion in quotient, using rounding.
-							result = left.divide(right, RoundingMode.HALF_UP);
+							// non-terminating decimal expansion in quotient, using scaling and rounding.
+							result = left.setScale(24, RoundingMode.HALF_UP).divide(right, RoundingMode.HALF_UP);
 						}
+						
 						
 						return new DecimalLiteralImpl(result);
 					default:
