@@ -21,11 +21,21 @@ import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 /**
- * A utility class for evaluation of mathematical expressions on RDF literals. 
+ * A utility class for evaluation of mathematical expressions on RDF literals.
  * 
  * @author Jeen Broekstra
  */
 public class MathUtil {
+
+	/**
+	 * The default expansion scale used in division operations resulting
+	 * in a decimal value with non-terminating decimal expansion. The OpenRDF
+	 * default is 24 digits, a value used in various other SPARQL
+	 * implementations, to make comparison between these systems easy.
+	 */
+	public static final int DEFAULT_DECIMAL_EXPANSION_SCALE = 24;
+
+	private static int decimalExpansionScale = DEFAULT_DECIMAL_EXPANSION_SCALE;
 
 	/**
 	 * Computes the result of applying the supplied math operator on the supplied
@@ -139,11 +149,12 @@ public class MathUtil {
 							result = left.divide(right, MathContext.UNLIMITED);
 						}
 						catch (ArithmeticException e) {
-							// non-terminating decimal expansion in quotient, using scaling and rounding.
-							result = left.setScale(24, RoundingMode.HALF_UP).divide(right, RoundingMode.HALF_UP);
+							// non-terminating decimal expansion in quotient, using
+							// scaling and rounding.
+							result = left.setScale(getDecimalExpansionScale(), RoundingMode.HALF_UP).divide(right,
+									RoundingMode.HALF_UP);
 						}
-						
-						
+
 						return new DecimalLiteralImpl(result);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
@@ -173,6 +184,30 @@ public class MathUtil {
 		catch (ArithmeticException e) {
 			throw new ValueExprEvaluationException(e);
 		}
+	}
+
+	/**
+	 * Returns the decimal expansion scale used in division operations resulting
+	 * in a decimal value with non-terminating decimal expansion. By default,
+	 * this value is set to 24.
+	 * 
+	 * @return The decimal expansion scale.
+	 */
+	public static int getDecimalExpansionScale() {
+		return decimalExpansionScale;
+	}
+
+	/**
+	 * Sets the decimal expansion scale used in divisions resulting in a decimal
+	 * value with non-terminating decimal expansion.
+	 * 
+	 * @param decimalExpansionScale
+	 *        The decimal expansion scale to set. Note that a mimimum of 18 is
+	 *        required to stay compliant with the XPath specification of
+	 *        xsd:decimal operations.
+	 */
+	public static void setDecimalExpansionScale(int decimalExpansionScale) {
+		MathUtil.decimalExpansionScale = decimalExpansionScale;
 	}
 
 }
