@@ -4,7 +4,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.algebra.evaluation.impl;
+package org.openrdf.sail.rdbms.optimizers;
 
 import java.util.Set;
 
@@ -34,7 +34,7 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class SameTermFilterOptimizer implements QueryOptimizer {
+public class SameTermFilterRdbmsOptimizer implements QueryOptimizer {
 
 	/**
 	 * Applies generally applicable optimizations to the supplied query: variable
@@ -73,10 +73,10 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 					// invalidate the result e.g. in case of left joins
 					return;
 				}
-
+				
 				Value leftValue = getValue(leftArg);
 				Value rightValue = getValue(rightArg);
-
+				
 				if (leftValue != null && rightValue != null) {
 					// ConstantOptimizer should have taken care of this
 				}
@@ -127,6 +127,9 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		private void bindVar(Var var, Value value, Filter filter) {
 			// Set the value on all occurences of the variable
 			filter.getArg().visit(new VarBinder(var.getName(), value));
+
+			// Get rid of the filter
+			filter.replaceWith(filter.getArg());
 		}
 	}
 
