@@ -15,7 +15,7 @@ import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
 import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
+import org.openrdf.sail.rdbms.optimizers.SameTermFilterRdbmsOptimizer;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.schema.BNodeTable;
 import org.openrdf.sail.rdbms.schema.HashTable;
@@ -93,7 +93,7 @@ public class RdbmsQueryOptimizer {
 		new CompareOptimizer().optimize(expr, dataset, bindings);
 		new ConjunctiveConstraintSplitter().optimize(expr, dataset, bindings);
 		new DisjunctiveConstraintOptimizer().optimize(expr, dataset, bindings);
-		new SameTermFilterOptimizer().optimize(expr, dataset, bindings);
+		new SameTermFilterRdbmsOptimizer().optimize(expr, dataset, bindings);
 	}
 
 	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings) {

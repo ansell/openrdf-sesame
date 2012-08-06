@@ -160,11 +160,11 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("                 FILTER(?p = rdfs:label) ");
 		query.append("              } ");
 		query.append("              OPTIONAL { ");
-		query.append("                 ?s ?p ?v1 . ");
+		query.append("                 ?s ?p ?opt1 . ");
 		query.append("                 FILTER (?p = ex:prop1) ");
 		query.append("              } ");
 		query.append("              OPTIONAL { ");
-		query.append("                 ?s ?p ?v2 . ");
+		query.append("                 ?s ?p ?opt2 . ");
 		query.append("                 FILTER (?p = ex:prop2) ");
 		query.append("              } ");
 		query.append("          }");
@@ -261,6 +261,82 @@ public abstract class ComplexSPARQLQueryTest {
 				Value x = bs.getValue("x");
 
 				assertTrue(mbox instanceof Literal || x instanceof URI);
+			}
+			result.close();
+			
+			assertEquals(3, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		
+	}
+	
+	@Test
+	public void testSameTermRepeatInUnionAndOptional() {
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT * {\n");
+		query.append("    {\n");
+		query.append("        ex:a ?p ?prop1\n");
+		query.append("        FILTER (?p = ex:prop1)\n");
+		query.append("    } UNION {\n");
+		query.append("          ?s ex:p ex:A ; " );
+		query.append("          { ");
+		query.append("              { ");
+		query.append("                 ?s ?p ?l .");
+		query.append("                 FILTER(?p = rdfs:label) ");
+		query.append("              } ");
+		query.append("              OPTIONAL { ");
+		query.append("                 ?s ?p ?opt1 . ");
+		query.append("                 FILTER (?p = ex:prop1) ");
+		query.append("              } ");
+		query.append("              OPTIONAL { ");
+		query.append("                 ?s ?p ?opt2 . ");
+		query.append("                 FILTER (?p = ex:prop2) ");
+		query.append("              } ");
+		query.append("          }");
+		query.append("    }\n");
+		query.append("}");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				count++;
+				assertNotNull(bs);
+				
+				System.out.println(bs);
+				
+				Value prop1 = bs.getValue("prop1");
+				Value l = bs.getValue("l");
+
+				assertTrue(prop1 instanceof Literal || l instanceof Literal);
+				if (l instanceof Literal) {
+					Value opt1 = bs.getValue("opt1");
+					assertNull(opt1);
+					
+					Value opt2 = bs.getValue("opt2");
+					assertNull(opt2);
+				}
 			}
 			result.close();
 			
