@@ -10,11 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-import com.sun.corba.se.impl.copyobject.FallbackObjectCopierImpl;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -41,18 +37,13 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
-import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class SPARQLUpdateConformanceTest extends TestCase {
@@ -264,57 +255,6 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 			logger.error(message.toString());
 			fail(message.toString());
-		}
-	}
-
-	private void uploadDataset(Dataset dataset)
-		throws Exception
-	{
-		RepositoryConnection con = dataRep.getConnection();
-		try {
-			// Merge default and named graphs to filter duplicates
-			Set<URI> graphURIs = new HashSet<URI>();
-			graphURIs.addAll(dataset.getDefaultGraphs());
-			graphURIs.addAll(dataset.getNamedGraphs());
-
-			for (Resource graphURI : graphURIs) {
-				upload(((URI)graphURI), graphURI);
-			}
-		}
-		finally {
-			con.close();
-		}
-	}
-
-	private void upload(URI graphURI, Resource context)
-		throws Exception
-	{
-		RepositoryConnection con = dataRep.getConnection();
-		con.setAutoCommit(false);
-		try {
-			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
-			RDFParser rdfParser = Rio.createParser(rdfFormat, dataRep.getValueFactory());
-			rdfParser.setVerifyData(false);
-			rdfParser.setDatatypeHandling(DatatypeHandling.IGNORE);
-			// rdfParser.setPreserveBNodeIDs(true);
-
-			RDFInserter rdfInserter = new RDFInserter(con);
-			rdfInserter.enforceContext(context);
-			rdfParser.setRDFHandler(rdfInserter);
-
-			URL graphURL = new URL(graphURI.toString());
-			InputStream in = graphURL.openStream();
-			try {
-				rdfParser.parse(in, graphURI.toString());
-			}
-			finally {
-				in.close();
-			}
-
-			con.setAutoCommit(true);
-		}
-		finally {
-			con.close();
 		}
 	}
 
