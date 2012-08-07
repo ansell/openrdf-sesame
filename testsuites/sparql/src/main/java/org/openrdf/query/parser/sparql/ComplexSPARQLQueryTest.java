@@ -340,7 +340,7 @@ public abstract class ComplexSPARQLQueryTest {
 			}
 			result.close();
 			
-			assertEquals(3, count);
+			assertEquals(2, count);
 		}
 		catch (QueryEvaluationException e) {
 			e.printStackTrace();
