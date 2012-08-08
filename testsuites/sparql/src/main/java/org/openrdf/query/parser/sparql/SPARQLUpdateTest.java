@@ -1060,6 +1060,7 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
+		assertTrue(con.hasStatement(alice, FOAF.NAME, null, false, graph2));
 		operation.execute();
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph2));
 		assertFalse(con.hasStatement(alice, FOAF.NAME, null, false, graph2));
@@ -1192,16 +1193,19 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
+		URI graph3 = f.createURI(EX_NS, "graph3");
 		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
 		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph1));
 		operation.execute();
 		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
 		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
-		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
-
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, graph3));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, graph3));
+		assertTrue(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph1));
+		assertFalse(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph3));
 	}
-
+	
 	@Test
 	public void testAddFromDefaultToDefault()
 		throws Exception
