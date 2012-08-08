@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.impl.DatasetImpl;
@@ -49,10 +50,16 @@ public class DatasetDeclProcessor {
 				dataset = new DatasetImpl();
 
 				for (ASTDatasetClause dc : datasetClauses) {
+
 					ASTIRI astIri = dc.jjtGetChild(ASTIRI.class);
 
 					try {
-						URI uri = new URIImpl(astIri.getValue());
+						URI uri = SESAME.NIL;
+						
+						if (astIri != null) {
+							uri = new URIImpl(astIri.getValue());
+						}
+						
 						if (dc.isNamed()) {
 							dataset.addNamedGraph(uri);
 						}

@@ -6,6 +6,7 @@
 package org.openrdf.query.parser.sparql;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -21,11 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -57,6 +60,10 @@ public abstract class ComplexSPARQLQueryTest {
 
 	protected static final String EX_NS = "http://example.org/";
 
+	private URI bob;
+
+	private URI alice;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -72,6 +79,9 @@ public abstract class ComplexSPARQLQueryTest {
 		conn = rep.getConnection();
 
 		loadTestData();
+
+		bob = f.createURI(EX_NS, "bob");
+		alice = f.createURI(EX_NS, "alice");
 
 		logger.debug("test setup complete.");
 	}
@@ -94,6 +104,92 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testNullContext1() {
+		StringBuilder query = new StringBuilder();
+		query.append(" SELECT * ");
+		query.append(" FROM DEFAULT ");
+		query.append(" WHERE { ?s ?p ?o } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				assertNotNull(bs);
+
+				Resource s = (Resource)bs.getValue("s");
+
+				assertNotNull(s);
+				assertFalse(bob.equals(s)); // should not be present in default graph
+				assertFalse(alice.equals(s)); // should not be present in default graph
+			}
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testNullContext2() {
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append(" SELECT * ");
+		query.append(" FROM sesame:nil ");
+		query.append(" WHERE { ?s ?p ?o } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				assertNotNull(bs);
+
+				Resource s = (Resource)bs.getValue("s");
+
+				assertNotNull(s);
+				assertFalse(bob.equals(s)); // should not be present in default graph
+				assertFalse(alice.equals(s)); // should not be present in default graph
+			}
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+
+	@Test
 	public void testGroupConcatDistinct() {
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
@@ -108,7 +204,6 @@ public abstract class ComplexSPARQLQueryTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-
 		catch (MalformedQueryException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -145,7 +240,7 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
-	
+
 	@Test
 	public void testSameTermRepeatInOptional() {
 		StringBuilder query = new StringBuilder();
@@ -153,7 +248,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" SELECT ?l ?opt1 ?opt2 ");
 		query.append(" FROM ex:optional-sameterm-graph ");
 		query.append(" WHERE { ");
-		query.append("          ?s ex:p ex:A ; " );
+		query.append("          ?s ex:p ex:A ; ");
 		query.append("          { ");
 		query.append("              { ");
 		query.append("                 ?s ?p ?l .");
@@ -192,21 +287,21 @@ public abstract class ComplexSPARQLQueryTest {
 				BindingSet bs = result.next();
 				count++;
 				assertNotNull(bs);
-				
+
 				System.out.println(bs);
-				
+
 				Value l = bs.getValue("l");
 				assertTrue(l instanceof Literal);
 				assertEquals("label", ((Literal)l).getLabel());
-				
+
 				Value opt1 = bs.getValue("opt1");
 				assertNull(opt1);
-				
+
 				Value opt2 = bs.getValue("opt2");
 				assertNull(opt2);
 			}
 			result.close();
-			
+
 			assertEquals(1, count);
 		}
 		catch (QueryEvaluationException e) {
@@ -214,9 +309,8 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
-		
 	}
-	
+
 	@Test
 	public void testSameTermRepeatInUnion() {
 		StringBuilder query = new StringBuilder();
@@ -254,16 +348,16 @@ public abstract class ComplexSPARQLQueryTest {
 				BindingSet bs = result.next();
 				count++;
 				assertNotNull(bs);
-				
+
 				System.out.println(bs);
-				
+
 				Value mbox = bs.getValue("mbox");
 				Value x = bs.getValue("x");
 
 				assertTrue(mbox instanceof Literal || x instanceof URI);
 			}
 			result.close();
-			
+
 			assertEquals(3, count);
 		}
 		catch (QueryEvaluationException e) {
@@ -271,9 +365,8 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
-		
 	}
-	
+
 	@Test
 	public void testSameTermRepeatInUnionAndOptional() {
 		StringBuilder query = new StringBuilder();
@@ -283,7 +376,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("        ex:a ?p ?prop1\n");
 		query.append("        FILTER (?p = ex:prop1)\n");
 		query.append("    } UNION {\n");
-		query.append("          ?s ex:p ex:A ; " );
+		query.append("          ?s ex:p ex:A ; ");
 		query.append("          { ");
 		query.append("              { ");
 		query.append("                 ?s ?p ?l .");
@@ -323,9 +416,9 @@ public abstract class ComplexSPARQLQueryTest {
 				BindingSet bs = result.next();
 				count++;
 				assertNotNull(bs);
-				
+
 				System.out.println(bs);
-				
+
 				Value prop1 = bs.getValue("prop1");
 				Value l = bs.getValue("l");
 
@@ -333,13 +426,13 @@ public abstract class ComplexSPARQLQueryTest {
 				if (l instanceof Literal) {
 					Value opt1 = bs.getValue("opt1");
 					assertNull(opt1);
-					
+
 					Value opt2 = bs.getValue("opt2");
 					assertNull(opt2);
 				}
 			}
 			result.close();
-			
+
 			assertEquals(2, count);
 		}
 		catch (QueryEvaluationException e) {
@@ -347,10 +440,9 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
-		
 	}
-	
-	@Test 
+
+	@Test
 	public void testPropertyPathInTree() {
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
@@ -378,9 +470,9 @@ public abstract class ComplexSPARQLQueryTest {
 			while (result.hasNext()) {
 				BindingSet bs = result.next();
 				assertNotNull(bs);
-				
+
 				System.out.println(bs);
-				
+
 			}
 			result.close();
 		}
@@ -388,12 +480,12 @@ public abstract class ComplexSPARQLQueryTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-				
+
 	}
 
 	@Test
 	public void testFilterRegexBoolean() {
-		
+
 		// test case for issue SES-1050
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
@@ -403,10 +495,10 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("          foaf:mbox ?mbox . ");
 		query.append("       FILTER(EXISTS { ");
 		query.append("            FILTER(REGEX(?name, \"Bo\") && REGEX(?mbox, \"bob\")) ");
-//		query.append("            FILTER(REGEX(?mbox, \"bob\")) ");
+		// query.append("            FILTER(REGEX(?mbox, \"bob\")) ");
 		query.append("            } )");
 		query.append(" } ");
-		
+
 		TupleQuery tq = null;
 		try {
 			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -424,7 +516,7 @@ public abstract class ComplexSPARQLQueryTest {
 		try {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
-			
+
 			assertTrue(result.hasNext());
 			int count = 0;
 			while (result.hasNext()) {
@@ -433,15 +525,15 @@ public abstract class ComplexSPARQLQueryTest {
 				System.out.println(bs);
 			}
 			assertEquals(1, count);
-			
+
 			result.close();
 		}
 		catch (QueryEvaluationException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-	} 
-	
+	}
+
 	@Test
 	public void testGroupConcatNonDistinct() {
 		StringBuilder query = new StringBuilder();
@@ -516,6 +608,7 @@ public abstract class ComplexSPARQLQueryTest {
 		declarations.append("PREFIX rdfs: <" + RDFS.NAMESPACE + "> \n");
 		declarations.append("PREFIX dc: <" + DC.NAMESPACE + "> \n");
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
+		declarations.append("PREFIX sesame: <" + SESAME.NAMESPACE +"> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
 		declarations.append("\n");
 

@@ -25,11 +25,16 @@ public class SESAME {
 
 	/** <tt>http://www.openrdf.org/schema/sesame#directType</tt> */
 	public final static URI DIRECTTYPE;
+
+	/** The SPARQL null context identifier (<tt>http://www.openrdf.org/schema/sesame#nil</tt>) */
+	public final static URI NIL;
 	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		DIRECTSUBCLASSOF = factory.createURI(SESAME.NAMESPACE, "directSubClassOf");
 		DIRECTSUBPROPERTYOF = factory.createURI(SESAME.NAMESPACE, "directSubPropertyOf");
 		DIRECTTYPE = factory.createURI(SESAME.NAMESPACE, "directType");
+		
+		NIL = factory.createURI(NAMESPACE, "nil");
 	}
 }
