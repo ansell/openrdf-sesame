@@ -389,6 +389,15 @@ void SelectQuery() :
 	[BindingsClause()]
 }
 
+void SubSelect() #SelectQuery : // subselect does not accept dataset clauses
+{}
+{
+	Select()
+	WhereClause()
+	SolutionModifier()
+	[BindingsClause()]
+}
+
 void Select() :
 {}
 {
@@ -577,7 +586,7 @@ Token GroupGraphPattern() #GraphPatternGroup :
 {
 	<LBRACE> 
 	(
-	    SelectQuery() 
+	    SubSelect() 
 	    | 
 	    GraphPattern()
 	) 
@@ -640,7 +649,7 @@ void OptionalGraphPattern() :
 {
 	// Note: does not refer GroupGraphPattern() because constraints are not limited
 	// to the optional graph pattern, but can also reference the operator's LHS
-	<OPTIONAL> <LBRACE> (SelectQuery() | GraphPattern()) <RBRACE>
+	<OPTIONAL> <LBRACE> (SubSelect() | GraphPattern()) <RBRACE>
 }
 
 void GraphGraphPattern() :
