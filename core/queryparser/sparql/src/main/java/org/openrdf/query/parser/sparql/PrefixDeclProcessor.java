@@ -11,6 +11,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.openrdf.model.vocabulary.FN;
+import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
@@ -48,6 +54,7 @@ public class PrefixDeclProcessor {
 
 		// Build a prefix --> IRI map
 		Map<String, String> prefixMap = new LinkedHashMap<String, String>();
+		
 		for (ASTPrefixDecl prefixDecl : prefixDeclList) {
 			String prefix = prefixDecl.getPrefix();
 			String iri = prefixDecl.getIRI().getValue();
@@ -58,6 +65,14 @@ public class PrefixDeclProcessor {
 
 			prefixMap.put(prefix, iri);
 		}
+		
+		// insert some default prefixes (if not explicitly defined in the query)
+		insertDefaultPrefix(prefixMap, "rdf", RDF.NAMESPACE);
+		insertDefaultPrefix(prefixMap, "rdfs", RDFS.NAMESPACE);
+		insertDefaultPrefix(prefixMap, "sesame", SESAME.NAMESPACE);
+		insertDefaultPrefix(prefixMap, "owl", OWL.NAMESPACE);
+		insertDefaultPrefix(prefixMap, "xsd", XMLSchema.NAMESPACE);
+		insertDefaultPrefix(prefixMap, "fn", FN.NAMESPACE);
 
 		QNameProcessor visitor = new QNameProcessor(prefixMap);
 		try {
@@ -70,6 +85,12 @@ public class PrefixDeclProcessor {
 		return prefixMap;
 	}
 
+	private static void insertDefaultPrefix(Map<String, String> prefixMap, String prefix, String namespace) {
+		if (!prefixMap.containsKey(prefix) && !prefixMap.containsValue(namespace)) {
+			prefixMap.put(prefix, namespace);
+		}
+	}
+	
 	private static class QNameProcessor extends ASTVisitorBase {
 
 		private Map<String, String> prefixMap;
