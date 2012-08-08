@@ -38,6 +38,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -318,7 +319,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		private List<ValuePair> reportedValues = new ArrayList<ValuePair>();
 
 		private List<ValuePair> unreportedValues = new ArrayList<ValuePair>();
-		
+
 		private TupleExpr pathExpression;
 
 		private Var contextVar;
@@ -933,7 +934,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				}
 			}
 			else {
-				contexts = graphs.toArray(new Resource[graphs.size()]);
+				contexts = new Resource[graphs.size()];
+				int i = 0;
+				for (URI graph : graphs) {
+					URI context = null;
+					if (!SESAME.NIL.equals(graph)) {
+						context = graph;
+					}
+					contexts[i++] = context;
+				}
 			}
 
 			stIter = tripleSource.getStatements((Resource)subjValue, (URI)predValue, objValue, contexts);

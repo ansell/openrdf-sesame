@@ -472,7 +472,12 @@ void AskQuery() :
 void DatasetClause() :
 {}
 {
-	<FROM> [<NAMED> {jjtThis.setNamed(true);}] IRIref()
+	<FROM>
+	( 
+	    [<NAMED> {jjtThis.setNamed(true);}] IRIref()
+	    |
+	    <DEFAULT_GRAPH> 
+	)
 }
 
 void WhereClause() :
