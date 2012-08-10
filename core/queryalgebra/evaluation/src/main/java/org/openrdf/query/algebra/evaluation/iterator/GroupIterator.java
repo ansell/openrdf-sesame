@@ -65,7 +65,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private final BindingSet parentBindings;
 
 	private final Group group;
+	
+	private boolean initialized = false;
 
+	private final Object lock = new Object();
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -76,13 +80,38 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		this.strategy = strategy;
 		this.group = group;
 		this.parentBindings = parentBindings;
-		super.setIterator(createIterator());
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	@Override
+	public boolean hasNext() throws QueryEvaluationException {
+		if (!initialized) {
+			synchronized(lock) {
+				if (!initialized) {
+					super.setIterator(createIterator());
+					initialized = true;
+				}
+			}
+		}
+		return super.hasNext();
+	}
+
+	@Override
+	public BindingSet next() throws QueryEvaluationException {
+		if (!initialized) {
+			synchronized(lock) {
+				if (!initialized) {
+					super.setIterator(createIterator());
+					initialized = true;
+				}
+			}
+		}
+		return super.next();
+	}
+	
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{

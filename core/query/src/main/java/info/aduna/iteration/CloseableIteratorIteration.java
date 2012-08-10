@@ -48,11 +48,15 @@ public class CloseableIteratorIteration<E, X extends Exception> extends Closeabl
 		this.iter = iter;
 	}
 
-	public boolean hasNext() {
+	public boolean hasNext()
+		throws X
+	{
 		return !isClosed() && iter.hasNext();
 	}
 
-	public E next() {
+	public E next()
+		throws X
+	{
 		if (isClosed()) {
 			throw new NoSuchElementException("Iteration has been closed");
 		}
@@ -60,7 +64,9 @@ public class CloseableIteratorIteration<E, X extends Exception> extends Closeabl
 		return iter.next();
 	}
 
-	public void remove() {
+	public void remove()
+		throws X
+	{
 		if (isClosed()) {
 			throw new IllegalStateException("Iteration has been closed");
 		}
