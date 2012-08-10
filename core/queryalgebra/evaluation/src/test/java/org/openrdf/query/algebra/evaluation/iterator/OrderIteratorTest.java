@@ -43,13 +43,13 @@ public class OrderIteratorTest extends TestCase {
 		}
 
 		@Override
-		public boolean hasNext() {
+		public boolean hasNext() throws QueryEvaluationException {
 			hasNextCount++;
 			return super.hasNext();
 		}
 
 		@Override
-		public BindingSet next() {
+		public BindingSet next() throws QueryEvaluationException {
 			nextCount++;
 			return super.next();
 		}
