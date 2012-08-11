@@ -21,6 +21,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
@@ -192,11 +193,11 @@ public abstract class RDFParserBase implements RDFParser {
 		setDatatypeHandling(config.datatypeHandling());
 		setPreserveBNodeIDs(config.isPreserveBNodeIDs());
 	}
-	
+
 	public ParserConfig getParserConfig() {
 		return new ParserConfig(verifyData(), stopAtFirstError(), preserveBNodeIDs(), datatypeHandling());
 	}
-	
+
 	public void setVerifyData(boolean verifyData) {
 		this.verifyData = verifyData;
 	}
@@ -258,16 +259,20 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Gets the namespace that is associated with the specified prefix or throws
 	 * an {@link RDFParseException}.
 	 * 
-	 * @throws RDFParseException if no namespace is associated with this prefix
+	 * @throws RDFParseException
+	 *         if no namespace is associated with this prefix
 	 */
-	protected String getNamespace(String prefix) throws RDFParseException {
+	protected String getNamespace(String prefix)
+		throws RDFParseException
+	{
 		if (namespaceTable.containsKey(prefix))
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
 		if (defaultPrefix.containsKey(prefix)) {
 			reportError(msg);
 			return defaultPrefix.get(prefix);
-		} else if ("".equals(prefix)) {
+		}
+		else if ("".equals(prefix)) {
 			msg = "Default namespace used but not defined";
 		}
 		reportFatalError(msg);
@@ -389,7 +394,15 @@ public abstract class RDFParserBase implements RDFParser {
 		throws RDFParseException
 	{
 		if (datatype != null) {
+			if (verifyData && datatypeHandling != DatatypeHandling.IGNORE) {
+				if (datatype.stringValue().startsWith("xsd")) {
+					reportWarning("Probable syntax error: datatype '" + datatype
+							+ "' seems be a prefixed name, needs to be a full URI.");
+				}
+			}
+
 			if (datatypeHandling == DatatypeHandling.VERIFY) {
+
 				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
 					reportError("'" + label + "' is not a valid value for datatype " + datatype);
 				}
@@ -428,23 +441,21 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Checks that the supplied language tag conforms to lexical formatting as specified
-	 * in RFC-3066.
+	 * Checks that the supplied language tag conforms to lexical formatting as
+	 * specified in RFC-3066.
 	 * 
 	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
-	 * 
 	 * @param languageTag
-	 * 
 	 * @return true if the language tag is lexically valid, false otherwise.
 	 */
-	protected boolean isValidLanguageTag(String languageTag) 
-	{
-		// language tag is RFC3066-conformant if it matches this regex: [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})* 
+	protected boolean isValidLanguageTag(String languageTag) {
+		// language tag is RFC3066-conformant if it matches this regex:
+		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
 		boolean result = Pattern.matches("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", languageTag);
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Creates a new {@link Statement} object with the supplied components.
 	 */
