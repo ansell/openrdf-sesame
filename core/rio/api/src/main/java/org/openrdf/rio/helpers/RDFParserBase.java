@@ -395,14 +395,19 @@ public abstract class RDFParserBase implements RDFParser {
 	{
 		if (datatype != null) {
 			if (verifyData && datatypeHandling != DatatypeHandling.IGNORE) {
-				if (datatype.stringValue().startsWith("xsd")) {
-					reportWarning("Probable syntax error: datatype '" + datatype
-							+ "' seems be a prefixed name, needs to be a full URI.");
+				if (!XMLDatatypeUtil.isBuiltInDatatype(datatype)) { 
+					// report a warning on all unrecognized datatypes
+					if (datatype.stringValue().startsWith("xsd")) {
+						reportWarning("datatype '" + datatype
+								+ "' seems be a prefixed name, should be a full URI instead.");
+					}
+					else {
+						reportWarning("'" + datatype + "' is not recognized as a supported xsd datatype.");
+					}
 				}
 			}
 
 			if (datatypeHandling == DatatypeHandling.VERIFY) {
-
 				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
 					reportError("'" + label + "' is not a valid value for datatype " + datatype);
 				}
