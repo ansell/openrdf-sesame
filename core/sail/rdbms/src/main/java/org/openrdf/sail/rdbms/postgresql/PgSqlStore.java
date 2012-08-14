@@ -23,8 +23,11 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * A convenient way to initialise a PostgreSQL RDF store.
  * 
  * @author James Leigh
- * 
+ * @deprecated the PostgreSQL RDF store is no longer supported and will be
+ *             removed in a future Sesame release. Consider switching to a
+ *             different SAIL backend.
  */
+@Deprecated
 public class PgSqlStore extends RdbmsStore {
 
 	private String serverName;
@@ -151,7 +154,8 @@ public class PgSqlStore extends RdbmsStore {
 	private String enc(String text) {
 		try {
 			return URLEncoder.encode(text, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

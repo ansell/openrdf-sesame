@@ -28,7 +28,11 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  * that can infer the type of database through the JDBC connection.
  * 
  * @author James Leigh
+ * @deprecated the RDBMS SAIL is no longer actively supported and will be
+ *             removed in a future Sesame release. Consider switching to a
+ *             different SAIL backend.
  */
+@Deprecated
 public class RdbmsStore extends SailBase {
 
 	private RdbmsConnectionFactory factory;
