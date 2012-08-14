@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -403,12 +404,6 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	}
 	
 
-	public void testJoinOrderOfSubquery() throws Exception {
-		/* manual test for bug SES-1017 */
-		prepareTest("/testcases-service/data16local.ttl", Collections.<String>emptyList());
-		execute("/testcases-service/service16.rq", "/testcases-service/service16.srx", false);	
-	}
-	
 	@Test
 	public void testNotProjectedCount() throws Exception {
 		/* test projection of subqueries - SES-1000 */
