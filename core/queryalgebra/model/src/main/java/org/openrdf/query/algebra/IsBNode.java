@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public class IsBNode extends UnaryValueOperator {
 
-	private static final long serialVersionUID = 5442417368920337210L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -28,6 +26,16 @@ public class IsBNode extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsBNode && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "IsBNode".hashCode();
 	}
 
 	@Override

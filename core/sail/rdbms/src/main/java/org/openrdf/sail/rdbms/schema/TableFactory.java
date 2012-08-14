@@ -8,6 +8,7 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.Connection;
 
 /**
+ * 
  * @author James Leigh
  */
 public class TableFactory {

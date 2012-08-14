@@ -12,6 +12,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
  * An SQL VARCHAR expression.
  * 
  * @author James Leigh
+ * 
  */
 public class StringValue extends SqlConstant<String> {
 

@@ -14,8 +14,6 @@ package org.openrdf.query.algebra;
  */
 public class Datatype extends UnaryValueOperator {
 
-	private static final long serialVersionUID = 1295677499913507843L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -35,6 +33,16 @@ public class Datatype extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Datatype && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Datatype".hashCode();
 	}
 
 	@Override

@@ -10,19 +10,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.EvaluationException;
+import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.TupleResult;
-import org.openrdf.result.util.QueryResultUtil;
-import org.openrdf.result.util.TupleQueryResultBuilder;
+import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.store.StoreException;
 
 /**
  * Class offering utility methods related to query results.
@@ -337,7 +336,7 @@ public class QueryResultIO {
 	 * @throws IllegalArgumentException
 	 *         If an unsupported query result file format was specified.
 	 */
-	public static TupleResult parse(InputStream in, TupleQueryResultFormat format)
+	public static TupleQueryResult parse(InputStream in, TupleQueryResultFormat format)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException
 	{
@@ -387,12 +386,12 @@ public class QueryResultIO {
 	 * @throws TupleQueryResultHandlerException
 	 *         If such an exception is thrown by the used query result writer.
 	 * @throws UnsupportedQueryResultFormatException
-	 * @throws EvaluationException
+	 * @throws QueryEvaluationException
 	 *         If an unsupported query result file format was specified.
 	 */
-	public static void write(TupleResult tqr, TupleQueryResultFormat format, OutputStream out)
+	public static void write(TupleQueryResult tqr, TupleQueryResultFormat format, OutputStream out)
 		throws IOException, TupleQueryResultHandlerException, UnsupportedQueryResultFormatException,
-		StoreException
+		QueryEvaluationException
 	{
 		TupleQueryResultWriter writer = createWriter(format, out);
 		try {
@@ -446,12 +445,12 @@ public class QueryResultIO {
 	 *         the stream.
 	 * @throws RDFHandlerException
 	 *         If such an exception is thrown by the used RDF writer.
-	 * @throws EvaluationException
+	 * @throws QueryEvaluationException
 	 * @throws UnsupportedRDFormatException
 	 *         If an unsupported query result file format was specified.
 	 */
-	public static void write(GraphResult gqr, RDFFormat format, OutputStream out)
-		throws IOException, RDFHandlerException, UnsupportedRDFormatException, StoreException
+	public static void write(GraphQueryResult gqr, RDFFormat format, OutputStream out)
+		throws IOException, RDFHandlerException, UnsupportedRDFormatException, QueryEvaluationException
 	{
 		RDFWriter writer = Rio.createWriter(format, out);
 		try {

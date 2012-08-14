@@ -14,17 +14,14 @@ import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
 import info.aduna.io.ByteArrayUtil;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BNodeFactoryImpl;
 import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.LiteralFactoryImpl;
 import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.impl.ValueFactoryBase;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
 import org.openrdf.sail.nativerdf.model.NativeBNode;
 import org.openrdf.sail.nativerdf.model.NativeLiteral;
@@ -38,21 +35,33 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * 
  * @author Arjohn Kampman
  */
-public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
+public class ValueStore extends ValueFactoryBase {
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * The default value cache size: 512.
+	 */
+	public static final int VALUE_CACHE_SIZE = 512;
+
+	/**
+	 * The default value id cache size: 128.
+	 */
+	public static final int VALUE_ID_CACHE_SIZE = 128;
+
+	/**
+	 * The default namespace cache size: 64.
+	 */
+	public static final int NAMESPACE_CACHE_SIZE = 64;
+
+	/**
+	 * The default namespace id cache size: 32.
+	 */
+	public static final int NAMESPACE_ID_CACHE_SIZE = 32;
+
 	private static final String FILENAME_PREFIX = "values";
-
-	private static final int VALUE_CACHE_SIZE = 512;
-
-	private static final int VALUE_ID_CACHE_SIZE = 128;
-
-	private static final int NAMESPACE_CACHE_SIZE = 64;
-
-	private static final int NAMESPACE_ID_CACHE_SIZE = 32;
 
 	private static final byte VALUE_TYPE_MASK = 0x3; // 0000 0011
 
@@ -65,8 +74,6 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	private BNodeFactory bnodes = new BNodeFactoryImpl();
 
 	/**
 	 * Used to do the actual storage of values, once they're translated to byte
@@ -98,7 +105,7 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 	 * A simple cache containing the [ID_CACHE_SIZE] most-recently used value-IDs
 	 * stored by their value.
 	 */
-	private final LRUCache<Value, Integer> valueIDCache;
+	private final LRUCache<NativeValue, Integer> valueIDCache;
 
 	/**
 	 * A simple cache containing the [NAMESPACE_CACHE_SIZE] most-recently used
@@ -125,13 +132,21 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 	public ValueStore(File dataDir, boolean forceSync)
 		throws IOException
 	{
+		this(dataDir, forceSync, VALUE_CACHE_SIZE, VALUE_ID_CACHE_SIZE, NAMESPACE_CACHE_SIZE,
+				NAMESPACE_ID_CACHE_SIZE);
+	}
+
+	public ValueStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
+			int namespaceCacheSize, int namespaceIDCacheSize)
+		throws IOException
+	{
 		super();
 		dataStore = new DataStore(dataDir, FILENAME_PREFIX, forceSync);
 
-		valueCache = new LRUCache<Integer, NativeValue>(VALUE_CACHE_SIZE);
-		valueIDCache = new LRUCache<Value, Integer>(VALUE_ID_CACHE_SIZE);
-		namespaceCache = new LRUCache<Integer, String>(NAMESPACE_CACHE_SIZE);
-		namespaceIDCache = new LRUCache<String, Integer>(NAMESPACE_ID_CACHE_SIZE);
+		valueCache = new LRUCache<Integer, NativeValue>(valueCacheSize);
+		valueIDCache = new LRUCache<NativeValue, Integer>(valueIDCacheSize);
+		namespaceCache = new LRUCache<Integer, String>(namespaceCacheSize);
+		namespaceIDCache = new LRUCache<String, Integer>(namespaceIDCacheSize);
 
 		setNewRevision();
 	}
@@ -175,13 +190,9 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 	public NativeValue getValue(int id)
 		throws IOException
 	{
-		NativeValue resultValue = null;
-
 		// Check value cache
 		Integer cacheID = new Integer(id);
-		synchronized (valueCache) {
-			resultValue = valueCache.get(cacheID);
-		}
+		NativeValue resultValue = valueCache.get(cacheID);
 
 		if (resultValue == null) {
 			// Value not in cache, fetch it from file
@@ -191,9 +202,7 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 				resultValue = data2value(id, data);
 
 				// Store value in cache
-				synchronized (valueCache) {
-					valueCache.put(cacheID, resultValue);
-				}
+				valueCache.put(cacheID, resultValue);
 			}
 		}
 
@@ -229,10 +238,7 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 		}
 
 		// Check cache
-		Integer cachedID = null;
-		synchronized (valueIDCache) {
-			cachedID = valueIDCache.get(value);
-		}
+		Integer cachedID = valueIDCache.get(value);
 
 		if (cachedID != null) {
 			int id = cachedID.intValue();
@@ -258,9 +264,9 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 				}
 				else {
 					// Store id in cache
-					synchronized (valueIDCache) {
-						valueIDCache.put(value, new Integer(id));
-					}
+					NativeValue nv = getNativeValue(value);
+					nv.setInternalID(id, revision);
+					valueIDCache.put(nv, new Integer(id));
 				}
 			}
 
@@ -301,10 +307,7 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 		}
 
 		// ID not stored in value itself, try the ID cache
-		Integer cachedID = null;
-		synchronized (valueIDCache) {
-			cachedID = valueIDCache.get(value);
-		}
+		Integer cachedID = valueIDCache.get(value);
 
 		if (cachedID != null) {
 			int id = cachedID.intValue();
@@ -323,16 +326,13 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 
 		int id = dataStore.storeData(valueData);
 
-		if (isOwnValue) {
-			// Store id in value for fast access in any consecutive calls
-			((NativeValue)value).setInternalID(id, revision);
-		}
-		else {
-			// Update cache
-			synchronized (valueIDCache) {
-				valueIDCache.put(value, new Integer(id));
-			}
-		}
+		NativeValue nv = isOwnValue ? (NativeValue)value : getNativeValue(value);
+
+		// Store id in value for fast access in any consecutive calls
+		nv.setInternalID(id, revision);
+
+		// Update cache
+		valueIDCache.put(nv, new Integer(id));
 
 		return id;
 	}
@@ -351,21 +351,12 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 			try {
 				dataStore.clear();
 
-				synchronized (valueCache) {
-					valueCache.clear();
-				}
+				valueCache.clear();
+				valueIDCache.clear();
+				namespaceCache.clear();
+				namespaceIDCache.clear();
 
-				synchronized (valueIDCache) {
-					valueIDCache.clear();
-				}
-
-				synchronized (namespaceCache) {
-					namespaceCache.clear();
-				}
-
-				synchronized (namespaceIDCache) {
-					namespaceIDCache.clear();
-				}
+				initBNodeParams();
 
 				setNewRevision();
 			}
@@ -583,29 +574,23 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 	private int getNamespaceID(String namespace, boolean create)
 		throws IOException
 	{
-		int id;
-
-		Integer cacheID = null;
-		synchronized (namespaceIDCache) {
-			cacheID = namespaceIDCache.get(namespace);
+		Integer cacheID = namespaceIDCache.get(namespace);
+		if (cacheID != null) {
+			return cacheID.intValue();
 		}
 
-		if (cacheID != null) {
-			id = cacheID.intValue();
+		byte[] namespaceData = namespace.getBytes("UTF-8");
+
+		int id;
+		if (create) {
+			id = dataStore.storeData(namespaceData);
 		}
 		else {
-			byte[] namespaceData = namespace.getBytes("UTF-8");
+			id = dataStore.getID(namespaceData);
+		}
 
-			if (create) {
-				id = dataStore.storeData(namespaceData);
-			}
-			else {
-				id = dataStore.getID(namespaceData);
-			}
-
-			if (id != -1) {
-				namespaceIDCache.put(namespace, new Integer(id));
-			}
+		if (id != -1) {
+			namespaceIDCache.put(namespace, new Integer(id));
 		}
 
 		return id;
@@ -615,19 +600,13 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 		throws IOException
 	{
 		Integer cacheID = new Integer(id);
-		String namespace = null;
-
-		synchronized (namespaceCache) {
-			namespace = namespaceCache.get(cacheID);
-		}
+		String namespace = namespaceCache.get(cacheID);
 
 		if (namespace == null) {
 			byte[] namespaceData = dataStore.getData(id);
 			namespace = new String(namespaceData, "UTF-8");
 
-			synchronized (namespaceCache) {
-				namespaceCache.put(cacheID, namespace);
-			}
+			namespaceCache.put(cacheID, namespace);
 		}
 
 		return namespace;
@@ -645,25 +624,18 @@ public class ValueStore extends LiteralFactoryImpl implements ValueFactory {
 		return new NativeURI(revision, namespace, localName);
 	}
 
-	public NativeBNode createBNode() {
-		return createBNode(bnodes.createBNode().getID());
-	}
-
 	public NativeBNode createBNode(String nodeID) {
 		return new NativeBNode(revision, nodeID);
 	}
 
-	@Override
 	public NativeLiteral createLiteral(String value) {
 		return new NativeLiteral(revision, value);
 	}
 
-	@Override
 	public NativeLiteral createLiteral(String value, String language) {
 		return new NativeLiteral(revision, value, language);
 	}
 
-	@Override
 	public NativeLiteral createLiteral(String value, URI datatype) {
 		return new NativeLiteral(revision, value, datatype);
 	}

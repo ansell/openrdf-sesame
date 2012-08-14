@@ -262,18 +262,21 @@ public class RDFXMLParser extends RDFParserBase {
 		}
 		catch (SAXParseException e) {
 			Exception wrappedExc = e.getException();
+
 			if (wrappedExc == null) {
-				wrappedExc = e;
+				reportFatalError(e, e.getLineNumber(), e.getColumnNumber());
 			}
-			reportFatalError(wrappedExc, e.getLineNumber(), e.getColumnNumber());
+			else {
+				reportFatalError(wrappedExc, e.getLineNumber(), e.getColumnNumber());
+			}
 		}
 		catch (SAXException e) {
 			Exception wrappedExc = e.getException();
-			if (wrappedExc == null) {
-				wrappedExc = e;
-			}
 
-			if (wrappedExc instanceof RDFParseException) {
+			if (wrappedExc == null) {
+				reportFatalError(e);
+			}
+			else if (wrappedExc instanceof RDFParseException) {
 				throw (RDFParseException)wrappedExc;
 			}
 			else if (wrappedExc instanceof RDFHandlerException) {

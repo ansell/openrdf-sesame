@@ -5,26 +5,27 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>2.6.9-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-core</artifactId>
-	<version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
 		<module>console</module>
 		<module>http</module>
 		<module>model</module>
-		<module>store</module>
+		<module>query</module>
 		<module>queryalgebra</module>
 		<module>queryparser</module>
 		<module>queryresultio</module>
 		<module>repository</module>
 		<module>rio</module>
 		<module>runtime</module>
-		<module>client</module>
+		<module>runtime-osgi</module>
 		<module>sail</module>
+		<module>config</module>
+		<module>util</module>
 	</modules>
 
 	<name>OpenRDF Sesame Core</name>
@@ -39,8 +40,6 @@
 					<finalName>openrdf-sesame-${project.version}</finalName>
 					<descriptors>
 						<descriptor>src/main/assembly/onejar.xml</descriptor>
-						<descriptor>src/main/assembly/runtime.xml</descriptor>
-						<descriptor>src/main/assembly/client.xml</descriptor>
 						<descriptor>src/main/assembly/sdk.xml</descriptor>
 					</descriptors>
 				</configuration>
@@ -53,14 +52,14 @@
 					<execution>
 						<phase>site</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="userdoc" />
 								</ant>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="systemdoc" />
 								</ant>
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
@@ -84,9 +83,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<aggregate>true</aggregate>
-					<source>1.5</source>
 					<encoding>utf8</encoding>
+					<source>1.5</source>
 					<quiet>true</quiet>
 					<groups>
 						<group>
@@ -123,7 +121,7 @@
 						</group>
 					</groups>
 					<links>
-						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+						<link>http://download.oracle.com/javase/1.5.0/docs/api</link>
 						<link>http://repository.aduna-software.org/docs/info.aduna/api/</link>
 					</links>
 				</configuration>
@@ -145,13 +143,14 @@
 					</reportSet>
 				</reportSets>
 			</plugin>
+			
 		</plugins>
 	</reporting>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core</url>
 	</scm>
 
 </project>

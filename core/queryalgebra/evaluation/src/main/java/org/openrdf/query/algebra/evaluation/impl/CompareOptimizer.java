@@ -9,13 +9,14 @@ package org.openrdf.query.algebra.evaluation.impl;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.SameTerm;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
@@ -31,11 +32,11 @@ public class CompareOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
 	 */
-	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(new CompareVisitor());
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(new CompareVisitor());
 	}
 
-	protected class CompareVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CompareVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Compare compare) {
@@ -70,10 +71,12 @@ public class CompareOptimizer implements QueryOptimizer {
 		protected boolean isResource(ValueExpr valueExpr) {
 			if (valueExpr instanceof ValueConstant) {
 				Value value = ((ValueConstant)valueExpr).getValue();
+				return value instanceof Resource;
+			}
 
-				if (value instanceof Resource) {
-					return true;
-				}
+			if (valueExpr instanceof Var) {
+				Value value = ((Var)valueExpr).getValue();
+				return value instanceof Resource;
 			}
 
 			return false;

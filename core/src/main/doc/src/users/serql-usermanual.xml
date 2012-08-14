@@ -1,9 +1,9 @@
 <chapter id="chapter-serql">
-	<title>The SeRQL query language (revision 3.0)</title>
+	<title>The SeRQL query language (revision 3.1)</title>
 
-	<section>
+	<section id="section-revisions">
 		<title>Revisions</title>
-		<section>
+		<section id="section-revision-1.1">
 			<title>revision 1.1</title>
 			<para>
 				SeRQL revision 1.1 is a syntax revision (see issue tracker item
@@ -13,7 +13,7 @@
 				1.2-RC1 onwards, the old syntax is no longer supported.
 			</para>
 		</section>
-		<section>
+		<section id="section-revision-1.2">
 			<title>revision 1.2</title>
 			<para>
 				SeRQL revision 1.2 covers a set of new functions and operators:
@@ -33,7 +33,7 @@
 				</listitem>
 				<listitem>
 					Nested WHERE clause for optional path expressions
-					(<xref linkend="nested-where"/>).
+					(<xref linkend="section-nested-where"/>).
 				</listitem>
 				<listitem>
 					New functions namespace(), localName()
@@ -41,7 +41,7 @@
 				</listitem>
 				<listitem>
 					OWL default namespace
-					(<xref linkend="section-usingns"/>).
+					(<xref linkend="section-using-namespace"/>).
 				</listitem>
 				<listitem>
 					Set operations
@@ -69,7 +69,7 @@
 				this document.
 			</para>
 		</section>
-		<section>
+		<section id="section-revision-2.0">
 			<title>revision 2.0</title>
 			<para>
 				SeRQL revision 2.0 is an extension of SeRQL that offers
@@ -77,7 +77,7 @@
 				<xref linkend="section-context"/> for details.
 			</para>
 		</section>
-		<section>
+		<section id="section-revision-3.0">
 			<title>revision 3.0</title>
 			<para>
 				SeRQL revision 3.0 modifies SeRQL to be more like SPARQL,
@@ -100,8 +100,20 @@
 				</listitem>
 			</itemizedlist>
 		</section>
+		<section id="section-revision-3.1">
+			<title>revision 3.1</title>
+			<para>
+				SeRQL revision 3.1 adds the possibility to apply the IN-operator on a
+				list of values. It also adds support for some SPARQL functionality that
+				wasn't available in SeRQL (in whatever form). This includes the SAMETERM,
+				STR, LANGMATCHES and REGEX operators, result ordering using ORDER BY,
+				UNION of path expressions and the REDUCED modifier for both select and
+				construct queries. SeRQL revision 3.1 was implemented in Sesame 2.3.0.
+			</para>
+		</section>
+
 	</section> <!-- Revisions -->
-	<section>
+	<section id="section-introduction">
 		<title>Introduction</title>
 		<para>
 			SeRQL ("Sesame RDF Query Language", pronounced "circle") is an RDF
@@ -117,7 +129,7 @@
 		</para>
 	</section> <!-- Introduction -->
 
-	<section>
+	<section id="section-uris-literals-variables">
 		<title>URIs, literals and variables</title>
 		<para>
 			URIs and literals are the basic building blocks of RDF. For a query
@@ -125,7 +137,7 @@
 			sections will show how to write these down in SeRQL.
 		</para>
 
-		<section>
+		<section id="section-variables">
 			<title>Variables</title>
 			<para>
 				Variables are identified by names. These names must start with a
@@ -140,19 +152,21 @@
 			</itemizedlist>
 			<para>
 				SeRQL keywords are not allowed to be used as variable names.
-				Currently, the following keywords are used or reserved for
-				future use in SeRQL: select, construct, from, where, using,
-				namespace, true, false, not, and, or, like, label, lang,
-				datatype, null, bound, isresource, isliteral, sort, in, union,
-				intersect, minus, exists, forall, distinct, limit, offset.
+				Currently, the following keywords are used in SeRQL:
+				select, construct, distinct, reduced, as, from, context,
+				where, order, by, asc, desc, limit, offset, using, namespace,
+				true, false, not, and, or, sameterm, like, ignore, case,
+				regex, label, lang, langmatches, datatype, localname, str,
+				bound, null, isresource, isbnode, isuri, isliteral, in,
+				union, intersect, minus, exists, any, all.
 			</para>
 			<para>
-				Keywords in SeRQL are all case-insensitive, this in contrast to
-				variable names; these are case-sensitive.
+				Keywords in SeRQL are all case-insensitive but variable names
+				are case-sensitive.
 			</para>
 		</section>
 
-		<section>
+		<section id="section-uris">
 			<title>URIs</title>
 			<para>
 				There are two ways to write down URIs in SeRQL: either as full
@@ -183,7 +197,7 @@
 			</itemizedlist>
 		</section>
 
-		<section>
+		<section id="section-literals">
 			<title>Literals</title>
 			<para>
 				RDF literals consist of three parts: a label, a language tag,
@@ -235,6 +249,7 @@
 				is explained later.
 			</para>
 		</section>
+
 		<section id="section-blanknodes">
 			<title>Blank Nodes (R1.2)</title>
 			<para>
@@ -280,7 +295,7 @@
 		</section>
 	</section> <!-- URIs, literals and variables -->
 
-	<section>
+	<section id="section-path-expressions">
 		<title>Path expressions</title>
 		<para>
 			One of the most prominent parts of SeRQL are path expressions. Path
@@ -288,7 +303,7 @@
 			graph. 
 		</para>
 
-		<section>
+		<section id="section-basic-path-expressions">
 			<title>Basic path expressions</title>
 			<para>
 				Imagine that we want to query an RDF graph for persons who work
@@ -344,7 +359,7 @@
 			</itemizedlist>
 		</section>
 
-		<section>
+		<section id="section-path-expression-short-cuts">
 			<title>Path expression short cuts</title>
 			<para>
 				Each and every path can be constructed using a set of basic path
@@ -352,7 +367,7 @@
 				available short cuts. There are three types of short cuts:
 			</para>
 
-			<section>
+			<section id="section-multi-value-nodes">
 				<title>Multi-value nodes</title>
 				<para>
 					In situations where one wants to query for two or more
@@ -412,7 +427,7 @@ WHERE obj1 != obj2 AND obj1 != obj3 AND obj2 != obj3]]></screen>
 				</figure>
 			</section>
 
-			<section>
+			<section id="section-branches">
 				<title>Branches</title>
 				<para>
 					One of the shorts cuts that is probably used most, is the
@@ -466,7 +481,7 @@ WHERE obj1 != obj2 AND obj1 != obj3 AND obj2 != obj3]]></screen>
 				</para>
 			</section>
 
-			<section>
+			<section id="section-reified-statements">
 				<title>Reified statements</title>
 				<para>
 					The last short cut is a short cut for reified statements. A
@@ -567,7 +582,7 @@ WHERE obj1 != obj2 AND obj1 != obj3 AND obj2 != obj3]]></screen>
 		</section>
 	</section> <!-- Path expressions -->
 
-	<section>
+	<section id="section-select-construct-queries">
 		<title>Select- and construct queries</title>
 		<para>
 			The SeRQL query language supports two querying concepts. The first
@@ -636,7 +651,7 @@ WHERE obj1 != obj2 AND obj1 != obj3 AND obj2 != obj3]]></screen>
 		</para>
 	</section> <!-- Select- and construct queries -->
 
-	<section>
+	<section id="section-select-queries">
 		<title>Select queries</title>
 		<para>
 			As said before, select queries return tables of values, or sets of
@@ -675,9 +690,19 @@ SELECT DISTINCT *
 FROM {Country1} ex:borders {} ex:borders {Country2}
 USING NAMESPACE
     ex = <http://example.org/things#>]]></screen>
+		<para>
+			An alternative to DISTINCT is the REDUCED keyword (Since R3.1).
+			Specifying the REDUCED keyword allows the query engine to filter
+			duplicates from the results, but does not require or guarantee that
+			all duplicates are eliminated. In some cases specifying this keyword
+			allows the query engine to apply more extensive query optimizations,
+			resulting in better query performance. Specifying this option is
+			recommended if there are no strong requirements to retrieve all
+			duplicates.
+		</para>
 	</section> <!-- Select queries -->
 
-	<section>
+	<section id="section-construct-queries">
 		<title>Construct queries</title>
 		<para>
 			Construct queries return RDF graphs as set of statements. The statements
@@ -736,9 +761,14 @@ FROM
              ex:hasCreated {} rdf:type {ex:Painting}
 USING NAMESPACE
     ex = <http://example.org/things#>]]></screen>
+		<para>
+			Again, the REDUCED keyword can also be used as an alternative to
+			DISTINCT. See <xref linkend="section-select-queries"/> for a description
+			of this keyword.
+		</para>
 	</section> <!-- Construct queries -->
 
-	<section>
+	<section id="section-where">
 		<title>The WHERE clause</title>
 		<para>
 			The third clause in a query is the WHERE clause. This is an optional
@@ -747,11 +777,11 @@ USING NAMESPACE
 		<para>
 			The following sections will explain the available Boolean
 			expressions for use in the WHERE clause.
-			<xref linkend="nested-where"/> will explain how WHERE clauses can be
+			<xref linkend="section-nested-where"/> will explain how WHERE clauses can be
 			nested inside optional path expressions.
 		</para>
 
-		<section>
+		<section id="section-boolean-constants">
 			<title>Boolean constants</title>
 			<para>
 				There are two Boolean constants, TRUE and FALSE. The first one
@@ -765,7 +795,7 @@ FROM {X} Y {Z}
 WHERE FALSE]]></screen>
 		</section>
 
-		<section>
+		<section id="section-value-equality">
 			<title>Value (in)equality</title>
 			<para>
 				The most common boolean constraint is equality or inequality of
@@ -781,9 +811,44 @@ WHERE FALSE]]></screen>
 			<para>
 				checks whether two variables are bound to unequal values.
 			</para>
+			<para>
+				Equality of literals is influenced by the literal's datatype. This
+				means that two values that represent the same value but are written
+				differently still compare equal. For example, the following comparison
+				evaluates to true:
+			</para>
+			<screen><![CDATA["123"^^xsd:positiveInteger = "123.0"^^xsd:float]]></screen>
 		</section>
 
-		<section>
+		<section id="section-same-term">
+			<title>SameTerm (R3.1)</title>
+			<para>
+				Where the equality operators described in the previous section
+				compares values taking datatypes into account, the SameTerm operator
+				requires an exact lexical match of values. Using a SameTerm operator
+				on a variable and a value is equivalent to replacing the variable with
+				the value in all path expressions. For exampe, the following query:
+			</para>
+			<screen><![CDATA[
+SELECT X, Y
+FROM {X} Y {Z}
+WHERE SameTerm(Z, "123.0"^^xsd:float)]]></screen>
+			<para>
+				...is equivalent to:
+			</para>
+			<screen><![CDATA[
+SELECT X, Y
+FROM {X} Y {"123.0"^^xsd:float}]]></screen>
+			<para>
+				...but is semantically different from:
+			</para>
+			<screen><![CDATA[
+SELECT X, Y
+FROM {X} Y {Z}
+WHERE Z = "123.0"^^xsd:float]]></screen>
+		</section>
+
+		<section id="section-numerical-comparisons">
 			<title>Numerical comparisons</title>
 			<para>
 				Numbers can be compared to each other using the operators "&lt;"
@@ -827,8 +892,8 @@ USING NAMESPACE
 			</para>
 		</section>
 
-		<section>
-			<title>bound() (R3.0)</title>
+		<section id="section-bound">
+			<title>Bound() (R3.0)</title>
 			<para>
 				The bound() boolean function checks whether a specific variable has been
 				bound to a value. For example, the following query returns the names of
@@ -843,7 +908,7 @@ WHERE NOT BOUND(EmailAddress)
 		</section>
 
 		<section id="section-isuri">
-			<title>isURI() and isBNode() (R1.2)</title>
+			<title>isUri() and isBnode() (R1.2)</title>
 			<para>
 				The isURI() and isBNode() boolean functions are more specific
 				versions of isResource(). They check whether a variable is bound to
@@ -858,7 +923,7 @@ WHERE isURI(V)]]></screen>
 		</section>
 
 		<section id="section-like">
-			<title>The LIKE operator (R1.2)</title>
+			<title>Like (R1.2)</title>
 			<para>
 				The LIKE operator can check whether a value matches a specified
 				pattern of characters. '*' characters can be used as wildcards,
@@ -905,8 +970,27 @@ USING NAMESPACE
 			</para>
 		</section>
 
-		<section>
-			<title>AND, OR, NOT</title>
+		<section id="section-regex">
+			<title>Regex (R3.1)</title>
+			<para>
+				The regex() function in SeRQL has been adopted from SPARQL. See the
+				<ulink url="http://www.w3.org/TR/rdf-sparql-query/#funcex-regex">SPARQL
+					regex description</ulink> for more information.
+			</para>
+		</section>
+
+		<section id="section-langmatches">
+			<title>LangMatches (R3.1)</title>
+			<para>
+				The langMatches() function in SeRQL has been adopted from SPARQL. See the
+				<ulink url="http://www.w3.org/TR/rdf-sparql-query/#func-langMatches">SPARQL
+					langMatches description</ulink> for more information.
+			</para>
+		</section>
+
+
+		<section id="section-boolean-operators">
+			<title>And, or, not</title>
 			<para>
 				Boolean constraints and functions can be combined using the AND and OR
 				operators, and negated using the NOT operator. The NOT operator
@@ -923,7 +1007,28 @@ WHERE NOT L LIKE "*FooBar*" AND
       isLiteral(L)]]></screen>
 		</section>
 
-		<section id="nested-where">
+		<section id="section-in-list">
+			<title>In (R3.1)</title>
+			<para>
+				The IN operator can check whether a value is contained in a list of
+				one or more other values. For example:
+			</para>
+			<screen><![CDATA[
+SELECT *
+FROM {X} Prop {Y}
+WHERE Y IN (<foo:bar>, <bar:foo>)]]></screen>
+			<para>
+				When there are multiple alternatives, this syntax is more convenient
+				than the semantic equivalent with a combination of OR and SameTerm
+				operators:
+			</para>
+			<screen><![CDATA[
+SELECT *
+FROM {X} Prop {Y}
+WHERE SameTerm(Y, <foo:bar>) OR SameTerm(Y, <bar:foo>)]]></screen>
+		</section>
+
+		<section id="section-nested-where">
 			<title>Nested WHERE clauses (R1.2)</title>
 			<para>
 				In order to be able to express boolean constraints on variables in
@@ -1045,7 +1150,7 @@ FROM
 		</section>
 	</section> <!-- The where clause -->
 
-	<section>
+	<section id="section-other-functions">
 		<title>Other functions</title>
 		<para>
 			Apart from the boolean functions and operators introduced in the
@@ -1054,7 +1159,7 @@ FROM
 			used in both the SELECT and the WHERE clause.
 		</para>
 
-		<section>
+		<section id="section-label-lang-datatype">
 			<title>label(), lang() and datatype()</title>
 			<para>
 				The three functions label(), lang() and datatype() all operate on
@@ -1182,9 +1287,52 @@ USING NAMESPACE
 				</tgroup>
 			</informaltable>
 		</section>
+		<section id="section-str">
+			<title>str() (R3.1)</title>
+			<para>
+				The str() function in SeRQL has been adopted from SPARQL. It is
+				similar to the label() function, except that it can also be
+				applied to URIs to convert it to a literal. See the SPARQL
+				specification for more extensive information.
+			</para>
+		</section>
 	</section> <!-- other functions -->
 
-	<section>
+	<section id="section-order-by">
+		<title>The ORDER BY clause</title>
+		<para>
+			The ORDER BY clause can be used to order query results in particular
+			ways. This functionality has been adopted from SPARQL, but the syntax
+			is slightly different. The following example retrieves all known
+			countries, ordered from largest to smallest population:
+		</para>
+		<screen><![CDATA[
+SELECT Countr, Population
+FROM {Country} ex:population {Population}
+ORDER BY Population DESC
+USING NAMESPACE
+    ex = <http://example.org/things#>]]></screen>
+    		<para>
+			The DESC keyword in this example tells the query engine to sort in the
+			results in descending order. The ASC keyword can be used to sort the
+			results in ascending order, which is also the default when order is
+			specified.
+		</para>
+		<para>
+			Multiple ordering expressions can be specified. If the first expression
+			doesn't define an order between two results, the query engine will use
+			the second expression. This process continues until an order between the
+			results has been established, or until all ordering expressions have
+			been processed. In the latter case, the order of these results is
+			unspecified.
+		</para>
+		<para>
+			Please see the SPARQL specification for more information on the
+			(partial) ordering of URIs, literals, etc.
+		</para>
+	</section> <!-- order by clause -->
+
+	<section id="section-limit-offset">
 		<title>The LIMIT and OFFSET clauses</title>
 		<para>
 			LIMIT and OFFSET allow you to retrieve just a portion of the results
@@ -1200,7 +1348,7 @@ USING NAMESPACE
 		</para>
 	</section>
 
-	<section id="section-usingns">
+	<section id="section-using-namespace">
 		<title>The USING NAMESPACE clause</title>
 		<para>
 			The USING NAMESPACE clause can be used to define short prefixes for
@@ -1269,7 +1417,7 @@ USING NAMESPACE
 		</para>
 	</section> <!-- The using namespace clause -->
 
-	<section>
+	<section id="section-built-in-predicates">
 		<title>Built-in predicates (REVISED in R2.0)</title>
 		<para>
 			SeRQL contains a number of built-in predicates. These built-ins can
@@ -1354,8 +1502,8 @@ USING NAMESPACE
 			SeRQL offers three combinatory operations that can be used to
 			combine sets of query results.
 		</para>
-		<section>
-			<title>UNION (REVISED in R3.0)</title>
+		<section id="section-union">
+			<title>UNION (REVISED in R3.0, extended in R3.1)</title>
 			<para>
 				UNION is a combinatory operation the result of which is the set of
 				query answers of both its operands. This allows one to specify
@@ -1464,9 +1612,23 @@ USING NAMESPACE
 					</tbody>
 				</tgroup>
 			</informaltable>
+			<para>
+				Since R3.1, the UNION operation can also be applied to path
+				expressions. With this syntax, the first example can be rewritten
+				to a more compact:
+			</para>
+			<screen><![CDATA[
+SELECT title
+FROM
+    {book} dc10:title {title}
+    UNION
+    {book} dc11:title {title}
+USING NAMESPACE
+    dc10 = <http://purl.org/dc/elements/1.0/>,
+    dc11 = <http://purl.org/dc/elements/1.1/>]]></screen>
 		</section>
 
-		<section>
+		<section id="section-intersect">
 			<title>INTERSECT (R1.2)</title>
 			<para>
 				The INTERSECT operation retrieves query results that occur in both
@@ -1527,7 +1689,7 @@ USING NAMESPACE
 				</tgroup>
 			</informaltable>
 		</section>
-		<section>
+		<section id="section-minus">
 			<title>MINUS (R1.2)</title>
 			<para>
 				The Minus operation returns query results from its first operand
@@ -1603,7 +1765,7 @@ USING NAMESPACE
 			carried over to the inner query when that variable is reused there.
 		</para>
 		<section id="section-in">
-			<title>The IN operator (R1.2)</title>
+			<title>IN (R1.2)</title>
 			<para>
 				The IN operator allows set membership checking where the set is
 				defined by a nested SELECT-query.
@@ -1998,10 +2160,10 @@ USING NAMESPACE
 			</informaltable>
 		</section> <!-- querying context -->
 		
-	<section>
+	<section id="section-example-queries">
 		<title>Example SeRQL queries</title>
 
-		<section>
+		<section id="section-example-query-1">
 			<title>Query 1</title>
 			<para>
 				Description: Find all papers that are about "RDF" and about
@@ -2031,7 +2193,7 @@ USING NAMESPACE
 			</figure>
 		</section>
 
-		<section>
+		<section id="section-example-query-2">
 			<title>Query 2</title>
 			<para>
 				Description: Find all artefacts whose English title contains
@@ -2073,7 +2235,7 @@ USING NAMESPACE
 			</para>
 		</section>
 
-		<section>
+		<section id="section-example-query-3">
 			<title>Query 3</title>
 			<para>
 				Description: Find all siblings of class foo:bar.
@@ -2102,7 +2264,7 @@ FROM
 		</section>
 	</section> <!-- Example SeRQL queries -->
 
-	<section>
+	<section id="section-serql-references">
 		<title>References</title>
 		<itemizedlist>
 			<listitem>
@@ -2404,7 +2566,7 @@ FROM
 		</section>
 	</section>
 	-->
-	<section>
+	<section id="section-serql-grammar">
 		<title>SeRQL grammar</title>
 		<para>
 			The following is the BNF grammar of SeRQL, revision 3.0:
@@ -2430,17 +2592,18 @@ SetOperator      ::= "union" ["all"]
                    | "minus"
                    | "intersect"
 
-SelectQuery      ::= "select" ["distinct"] Projection [QueryBody]
+SelectQuery      ::= "select" ["distinct"|"reduced"] Projection [QueryBody]
 Projection       ::= "*"
                    | [ ProjectionElem ("," ProjectionElem)* ]
-ProjectionElem   ::= ValueExpr ["as" <STRING>]
+ProjectionElem   ::= ValueExpr ["as" Var]
 
-ConstructQuery   ::= "construct" ["distinct"] ConstructClause [QueryBody]
+ConstructQuery   ::= "construct" ["distinct"|"reduced"] ConstructClause [QueryBody]
 ConstructClause  ::= "*"
                    | PathExprList
 
 QueryBody        ::= ("from" ["context" ContextID] PathExprList)+
                      ["where" BooleanExpr]
+                     ["order" "by" OrderExprList]
                      ["limit" <POS_INTEGER>]
                      ["offset" <POS_INTEGER>]
 
@@ -2448,9 +2611,11 @@ ContextID        ::= Var
                    | Uri
                    | BNode
 
-PathExprList     ::= PathExpr ("," PathExpr)*
-PathExpr          ::= BasicPathExpr
+PathExprList     ::= UnionPathExpr ("," UnionPathExpr)*
+UnionPathExpr    ::= PathExpr ("union" PathExpr)*
+PathExpr         ::= BasicPathExpr
                    | OptGraphPattern
+                   | "(" PathExprList ")"
 BasicPathExpr    ::= Node Edge Node [[";"] PathExprTail]
 OptGraphPattern  ::= "[" PathExprList ["where" BooleanExpr] "]"
 
@@ -2474,6 +2639,9 @@ NodeElem         ::= Var
                    | ReifiedStat
 ReifiedStat      ::= "{" [NodeElem] "}" Edge "{" [NodeElem] "}"
 
+OrderExprList    ::= OrderExpr ("," OrderExpr)*
+OrderExpr        ::= ValueExpr ["asc"|"desc"]
+
 BooleanExpr      ::= OrExpr
 OrExpr           ::= AndExpr ["or" BooleanExpr]
 AndExpr          ::= BooleanElem ["and" AndExpr]
@@ -2481,29 +2649,35 @@ BooleanElem      ::= "(" BooleanExpr ")"
                    | "true"
                    | "false"
                    | "not" BooleanElem
+                   | "bound" "(" Var ")"
+                   | "sameTerm" "(" ValueExpr "," ValueExpr ")"
                    | ValueExpr CompOp ValueExpr
                    | ValueExpr CompOp ("any"|"all") "(" TupleQuerySet ")"
                    | ValueExpr "like" <STRING>
                    | ValueExpr "in" "(" TupleQuerySet ")"
+                   | ValueExpr "in" "(" ArgList ")"
                    | "exists" "(" TupleQuerySet ")"
                    | "isResource" "(" Var ")"
                    | "isURI" "(" Var ")"
                    | "isBNode" "(" Var ")"
                    | "isLiteral" "(" Var ")"
+                   | "langMatches" "(" ValueExpr "," ValueExpr ")"
+                   | "regex" "(" ValueExpr "," ValueExpr [ "," ValueExpr ] ")"
 
 CompOp           ::= "=" | "!=" | "<" | "<=" | ">" | ">="
 
 ValueExpr        ::= Var
                    | Value
-				   | "bound" "(" Var ")"
                    | "datatype" "(" Var ")"
                    | "lang" "(" Var ")"
                    | "label" "(" Var ")"
                    | "namespace" "(" Var ")"
                    | "localname" "(" Var ")"
-				   | FunctionCall
+                   | "str" "(" ValueExpr ")"
+                   | FunctionCall
 
 FunctionCall     ::= Uri "(" [ArgList] ")"
+
 ArgList          ::= ValueExpr ("," ValueExpr)*
 
 Var              ::= <NC_NAME>

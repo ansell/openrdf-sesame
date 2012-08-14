@@ -12,20 +12,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openrdf.http.client.SesameClient;
-import org.openrdf.http.client.connections.HTTPConnectionPool;
+import org.apache.commons.httpclient.HttpException;
+
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.http.HTTPRepository;
-import org.openrdf.repository.manager.config.RemoteConfigManager;
-import org.openrdf.repository.manager.templates.RemoteTemplateManager;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreConfigException;
-import org.openrdf.store.StoreException;
 
 /**
  * A manager for {@link Repository}s that reside on a remote server. This
@@ -45,7 +46,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * server URL.
 	 */
 	public static RemoteRepositoryManager getInstance(String serverURL)
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
 		manager.initialize();
@@ -57,7 +58,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * server URL and credentials.
 	 */
 	public static RemoteRepositoryManager getInstance(String serverURL, String username, String password)
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		RemoteRepositoryManager manager = new RemoteRepositoryManager(serverURL);
 		manager.setUsernameAndPassword(username, password);
@@ -72,15 +73,11 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	/**
 	 * The URL of the remote server, e.g. http://localhost:8080/openrdf-sesame/
 	 */
-	private final String serverURL;
+	private String serverURL;
 
 	private String username;
 
 	private String password;
-
-	private SesameClient client;
-
-	private HTTPConnectionPool pool;
 
 	/*--------------*
 	 * Constructors *
@@ -103,24 +100,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 *---------*/
 
 	/**
-	 * Initializes the repository manager.
-	 */
-	@Override
-	public void initialize() {
-		pool = new HTTPConnectionPool(serverURL);
-		pool.setUsernameAndPassword(username, password);
-		client = new SesameClient(pool);
-		setConfigTemplateManager(new RemoteTemplateManager(client));
-		setRepositoryConfigManager(new RemoteConfigManager(client));
-	}
-
-	@Override
-	public void shutDown() {
-		pool.shutdown();
-		super.shutDown();
-	}
-
-	/**
 	 * Set the username and password for authenication with the remote server.
 	 * 
 	 * @param username
@@ -133,6 +112,16 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		this.password = password;
 	}
 
+	@Override
+	protected Repository createSystemRepository()
+		throws RepositoryException
+	{
+		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
+		systemRepository.setUsernameAndPassword(username, password);
+		systemRepository.initialize();
+		return systemRepository;
+	}
+
 	/**
 	 * Gets the URL of the remote server, e.g.
 	 * "http://localhost:8080/openrdf-sesame/".
@@ -140,7 +129,6 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * @throws MalformedURLException
 	 *         If serverURL cannot be parsed
 	 */
-	@Override
 	public URL getLocation()
 		throws MalformedURLException
 	{
@@ -162,17 +150,17 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 *        A repository ID.
 	 * @return The created repository, or <tt>null</tt> if no such repository
 	 *         exists.
-	 * @throws StoreConfigException
+	 * @throws RepositoryConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	@Override
 	protected Repository createRepository(String id)
-		throws StoreConfigException, StoreException
+		throws RepositoryConfigException, RepositoryException
 	{
 		HTTPRepository result = null;
 
-		if (hasRepositoryConfig(id)) {
+		if (RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), id)) {
 			result = new HTTPRepository(serverURL, id);
 			result.setUsernameAndPassword(username, password);
 			result.initialize();
@@ -183,7 +171,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		for (RepositoryInfo repInfo : getAllRepositoryInfos()) {
 			if (repInfo.getId().equals(id)) {
@@ -196,56 +184,110 @@ public class RemoteRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		try {
-			TupleResult responseFromServer = client.repositories().list();
-			while (responseFromServer.hasNext()) {
-				BindingSet bindingSet = responseFromServer.next();
-				RepositoryInfo repInfo = new RepositoryInfo();
+			HTTPClient httpClient = new HTTPClient();
+			httpClient.setServerURL(serverURL);
+			httpClient.setUsernameAndPassword(username, password);
+			try {
+				TupleQueryResult responseFromServer = httpClient.getRepositoryList();
+				while (responseFromServer.hasNext()) {
+					BindingSet bindingSet = responseFromServer.next();
+					RepositoryInfo repInfo = new RepositoryInfo();
 
-				String id = LiteralUtil.getLabel(bindingSet.getValue("id"), null);
+					String id = LiteralUtil.getLabel(bindingSet.getValue("id"), null);
 
-				if (skipSystemRepo && id.equals(SystemRepository.ID)) {
-					continue;
-				}
-
-				Value uri = bindingSet.getValue("uri");
-				String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
-
-				if (uri instanceof URI) {
-					try {
-						repInfo.setLocation(new URL(uri.toString()));
+					if (skipSystemRepo && id.equals(SystemRepository.ID)) {
+						continue;
 					}
-					catch (MalformedURLException e) {
-						logger.warn("Server reported malformed repository URL: {}", uri);
+
+					Value uri = bindingSet.getValue("uri");
+					String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
+					boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
+					boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+
+					if (uri instanceof URI) {
+						try {
+							repInfo.setLocation(new URL(uri.toString()));
+						}
+						catch (MalformedURLException e) {
+							logger.warn("Server reported malformed repository URL: {}", uri);
+						}
 					}
+
+					repInfo.setId(id);
+					repInfo.setDescription(description);
+					repInfo.setReadable(readable);
+					repInfo.setWritable(writable);
+
+					result.add(repInfo);
 				}
-
-				repInfo.setId(id);
-				repInfo.setDescription(description);
-
-				result.add(repInfo);
 			}
+			finally {
+				httpClient.shutDown();
+			}
+		}
+		catch (IOException ioe) {
+			logger.warn("Unable to retrieve list of repositories", ioe);
+			throw new RepositoryException(ioe);
+		}
+		catch (QueryEvaluationException qee) {
+			logger.warn("Unable to retrieve list of repositories", qee);
+			throw new RepositoryException(qee);
 		}
 		catch (UnauthorizedException ue) {
 			logger.warn("Not authorized to retrieve list of repositories", ue);
-			throw new StoreConfigException(ue);
+			throw new RepositoryException(ue);
 		}
-		catch (StoreException re) {
+		catch (RepositoryException re) {
 			logger.warn("Unable to retrieve list of repositories", re);
-			throw new StoreConfigException(re);
+			throw re;
 		}
 
 		return result;
 	}
 
 	@Override
+	public boolean removeRepository(String repositoryID)
+		throws RepositoryException, RepositoryConfigException
+	{
+
+		boolean existingRepo = RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
+
+		if (existingRepo) {
+			HTTPClient httpClient = new HTTPClient();
+
+			try {
+				httpClient.setServerURL(serverURL);
+				httpClient.setUsernameAndPassword(username, password);
+
+				try {
+					httpClient.deleteRepository(repositoryID);
+				}
+				catch (HttpException e) {
+					logger.warn("error while deleting remote repository", e);
+					throw new RepositoryConfigException(e);
+				}
+				catch (IOException e) {
+					logger.warn("error while deleting remote repository", e);
+					throw new RepositoryConfigException(e);
+				}
+			}
+			finally {
+				httpClient.shutDown();
+			}
+		}
+
+		return existingRepo;
+	}
+
+	@Override
 	protected void cleanUpRepository(String repositoryID)
 		throws IOException
+
 	{
-		// do nothing
 	}
 }

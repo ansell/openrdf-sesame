@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,13 +11,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.collections.iterators.ConvertingIterator;
-
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.util.iterators.ConvertingIterator;
 
 /**
  * An implementation of the {@link BindingSet} interface that is used to evalate
@@ -27,15 +26,9 @@ import org.openrdf.query.impl.MapBindingSet;
  */
 public class QueryBindingSet implements BindingSet {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	private static final long serialVersionUID = -2010715346095527301L;
 
-	private Map<String, Value> bindings;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
+	private final Map<String, Value> bindings;
 
 	public QueryBindingSet() {
 		this(8);
@@ -52,10 +45,6 @@ public class QueryBindingSet implements BindingSet {
 		addAll(bindingSet);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
 	public void addAll(BindingSet bindingSet) {
 		if (bindingSet instanceof QueryBindingSet) {
 			bindings.putAll(((QueryBindingSet)bindingSet).bindings);
@@ -68,8 +57,8 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	/**
-	 * Adds a new binding to the solution. The binding's name must not already be
-	 * part of this solution.
+	 * Adds a new binding to the binding set. The binding's name must not already
+	 * be part of this binding set.
 	 * 
 	 * @param binding
 	 *        The binding to add this this BindingSet.
@@ -79,11 +68,11 @@ public class QueryBindingSet implements BindingSet {
 	}
 
 	/**
-	 * Adds a new binding to the solution. The binding's name must not already be
-	 * part of this solution.
+	 * Adds a new binding to the binding set. The binding's name must not already
+	 * be part of this binding set.
 	 * 
 	 * @param name
-	 *        The binding's name, must not be bound in this solution already.
+	 *        The binding's name, must not be bound in this binding set already.
 	 * @param value
 	 *        The binding's value.
 	 */
@@ -174,7 +163,7 @@ public class QueryBindingSet implements BindingSet {
 				otherSize++;
 			}
 
-			// All bindings have been matched, sets are equal if this solution
+			// All bindings have been matched, sets are equal if this binding set
 			// doesn't have any additional bindings.
 			return otherSize == bindings.size();
 		}

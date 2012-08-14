@@ -7,7 +7,7 @@ package org.openrdf.sail.memory;
 
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 
 /**
@@ -30,7 +30,7 @@ public class MemoryStoreTest extends RDFNotifyingStoreTest {
 
 	@Override
 	protected NotifyingSail createSail()
-		throws StoreException
+		throws SailException
 	{
 		NotifyingSail sail = new MemoryStore();
 		sail.initialize();

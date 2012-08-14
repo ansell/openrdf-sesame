@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  * Copyright James Leigh (c) 2006.
  *
  * Licensed under the Aduna BSD-style license.
@@ -12,21 +12,23 @@ import java.util.Collections;
 import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.concurrent.locks.LockingIteration;
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.CollectionCursor;
-import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.cursors.LockingCursor;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -35,24 +37,24 @@ import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.OrderLimitOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
+import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
-import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
-import org.openrdf.sail.memory.model.MemStatementCursor;
+import org.openrdf.sail.memory.model.MemStatementIterator;
 import org.openrdf.sail.memory.model.MemStatementList;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
 
 /**
  * Implementation of a Sail Connection for memory stores.
@@ -67,8 +69,6 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 *-----------*/
 
 	protected final MemoryStore store;
-
-	protected final MemValueFactory vf;
 
 	/**
 	 * The exclusive transaction lock held by this connection during
@@ -88,81 +88,86 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 *--------------*/
 
 	protected MemoryStoreConnection(MemoryStore store) {
+		super(store);
 		this.store = store;
-		this.vf = store.createValueFactory();
-
-		// Set default isolation level (serializable since we don't allow
-		// concurrent transactions yet)
-		try {
-			setTransactionIsolation(Isolation.SERIALIZABLE);
-		}
-		catch (StoreException e) {
-			throw new RuntimeException("unexpected exception", e);
-		}
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public MemValueFactory getValueFactory() {
-		return vf;
-	}
-
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
+			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
 	{
-		logger.trace("Incoming query model:\n{}", query);
+		logger.trace("Incoming query model:\n{}", tupleExpr);
 
 		// Clone the tuple expression to allow for more aggresive optimizations
-		query = query.clone();
+		tupleExpr = tupleExpr.clone();
+
+		if (!(tupleExpr instanceof QueryRoot)) {
+			// Add a dummy root node to the tuple expressions to allow the
+			// optimizers to modify the actual root node
+			tupleExpr = new QueryRoot(tupleExpr);
+		}
 
 		Lock stLock = store.getStatementsReadLock();
+		boolean releaseLock = true;
 
 		try {
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			if (!isAutoCommit()) {
+			if (transactionActive()) {
 				snapshot++;
 				readMode = ReadMode.TRANSACTION;
 			}
 
 			TripleSource tripleSource = new MemTripleSource(includeInferred, snapshot, readMode);
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, query);
+			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
 
-			QueryOptimizerList optimizerList = new QueryOptimizerList();
-			optimizerList.add(new BindingAssigner());
-			optimizerList.add(new ConstantOptimizer(strategy));
-			optimizerList.add(new CompareOptimizer());
-			optimizerList.add(new ConjunctiveConstraintSplitter());
-			optimizerList.add(new DisjunctiveConstraintOptimizer());
-			optimizerList.add(new SameTermFilterOptimizer());
-			optimizerList.add(new QueryModelPruner());
-			optimizerList.add(new QueryJoinOptimizer(new MemEvaluationStatistics()));
-			optimizerList.add(new FilterOptimizer());
+			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
+			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
+			new CompareOptimizer().optimize(tupleExpr, dataset, bindings);
+			new ConjunctiveConstraintSplitter().optimize(tupleExpr, dataset, bindings);
+			new DisjunctiveConstraintOptimizer().optimize(tupleExpr, dataset, bindings);
+			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
+			new QueryJoinOptimizer(new MemEvaluationStatistics()).optimize(tupleExpr, dataset, bindings);
+//			new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
+			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
 
-			optimizerList.optimize(query, bindings);
+			logger.trace("Optimized query model:\n{}", tupleExpr);
 
-			logger.trace("Optimized query model:\n{}", query);
-
-			Cursor<BindingSet> iter;
-			iter = strategy.evaluate(query, EmptyBindingSet.getInstance());
-			iter = new LockingCursor<BindingSet>(stLock, iter);
+			CloseableIteration<BindingSet, QueryEvaluationException> iter;
+			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
+			iter = new LockingIteration<BindingSet, QueryEvaluationException>(stLock, iter);
+			releaseLock = false;
 			return iter;
 		}
-		catch (StoreException e) {
-			stLock.release();
-			throw e;
+		catch (QueryEvaluationException e) {
+			throw new SailException(e);
 		}
-		catch (RuntimeException e) {
-			stLock.release();
-			throw e;
+		finally {
+			if (releaseLock) {
+				stLock.release();
+			}
 		}
 	}
 
-	public Cursor<? extends Resource> getContextIDs()
-		throws StoreException
+	@Override
+	protected void closeInternal()
+		throws SailException
+	{
+		// do nothing
+	}
+
+	@Override
+	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
+		throws SailException
 	{
 		// Note: we can't do this in a streaming fashion due to concurrency
 		// issues; iterating over the set of URIs or bnodes while another thread
@@ -175,18 +180,20 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			final int snapshot = isAutoCommit() ? store.getCurrentSnapshot() : store.getCurrentSnapshot() + 1;
-			final ReadMode readMode = isAutoCommit() ? ReadMode.COMMITTED : ReadMode.TRANSACTION;
+			final int snapshot = transactionActive() ? store.getCurrentSnapshot() + 1
+					: store.getCurrentSnapshot();
+			final ReadMode readMode = transactionActive() ? ReadMode.TRANSACTION : ReadMode.COMMITTED;
 
-			synchronized (vf.getURIFactory()) {
-				for (MemResource memResource : vf.getMemURIs()) {
+			MemValueFactory valueFactory = store.getValueFactory();
+
+			synchronized (valueFactory) {
+				for (MemResource memResource : valueFactory.getMemURIs()) {
 					if (isContextResource(memResource, snapshot, readMode)) {
 						contextIDs.add(memResource);
 					}
 				}
-			}
-			synchronized (vf.getBNodeFactory()) {
-				for (MemResource memResource : vf.getMemBNodes()) {
+
+				for (MemResource memResource : valueFactory.getMemBNodes()) {
 					if (isContextResource(memResource, snapshot, readMode)) {
 						contextIDs.add(memResource);
 					}
@@ -197,11 +204,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			stLock.release();
 		}
 
-		return new CollectionCursor<MemResource>(contextIDs);
+		return new CloseableIteratorIteration<MemResource, SailException>(contextIDs.iterator());
 	}
 
 	private boolean isContextResource(MemResource memResource, int snapshot, ReadMode readMode)
-		throws StoreException
+		throws SailException
 	{
 		MemStatementList contextStatements = memResource.getContextStatementList();
 
@@ -211,19 +218,50 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		// Filter more thoroughly by considering snapshot and read-mode parameters
-		MemStatementCursor iter = new MemStatementCursor(contextStatements, null, null, null, false, snapshot,
-				readMode);
+		MemStatementIterator<SailException> iter = new MemStatementIterator<SailException>(contextStatements,
+				null, null, null, false, snapshot, readMode);
 		try {
-			return iter.next() != null;
+			return iter.hasNext();
 		}
 		finally {
 			iter.close();
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws SailException
+	{
+		Lock stLock = store.getStatementsReadLock();
+		boolean releaseLock = true;
+
+		try {
+			int snapshot = store.getCurrentSnapshot();
+			ReadMode readMode = ReadMode.COMMITTED;
+
+			if (transactionActive()) {
+				snapshot++;
+				readMode = ReadMode.TRANSACTION;
+			}
+
+			CloseableIteration<MemStatement, SailException> iter;
+			iter = store.createStatementIterator(SailException.class, subj, pred, obj, !includeInferred,
+					snapshot, readMode, contexts);
+			iter = new LockingIteration<MemStatement, SailException>(stLock, iter);
+			releaseLock = false;
+			return iter;
+		}
+		finally {
+			if (releaseLock) {
+				stLock.release();
+			}
+		}
+	}
+
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws SailException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
@@ -231,32 +269,33 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			if (!isAutoCommit()) {
+			if (transactionActive()) {
 				snapshot++;
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			return new LockingCursor<MemStatement>(stLock, store.createStatementIterator(subj, pred, obj,
-					!includeInferred, snapshot, readMode, vf, contexts));
+			return store.hasStatement(subj, pred, obj, !includeInferred, snapshot, readMode, contexts);
 		}
-		catch (RuntimeException e) {
+		finally {
 			stLock.release();
-			throw e;
 		}
 	}
 
-	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	@Override
+	protected long sizeInternal(Resource... contexts)
+		throws SailException
 	{
 		Lock stLock = store.getStatementsReadLock();
 
 		try {
-			Cursor<? extends Statement> iter = getStatements(subj, pred, obj, includeInferred, contexts);
+			CloseableIteration<? extends Statement, SailException> iter = getStatementsInternal(null, null,
+					null, false, contexts);
 
 			try {
 				long size = 0L;
 
-				while (iter.next() != null) {
+				while (iter.hasNext()) {
+					iter.next();
 					size++;
 				}
 
@@ -271,51 +310,67 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public Cursor<? extends Namespace> getNamespaces()
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
+		throws SailException
 	{
-		return new CollectionCursor<Namespace>(store.getNamespaceStore());
+		return new CloseableIteratorIteration<Namespace, SailException>(store.getNamespaceStore().iterator());
 	}
 
-	public String getNamespace(String prefix)
-		throws StoreException
+	@Override
+	protected String getNamespaceInternal(String prefix)
+		throws SailException
 	{
 		return store.getNamespaceStore().getNamespace(prefix);
 	}
 
 	@Override
-	public void begin()
-		throws StoreException
+	protected void startTransactionInternal()
+		throws SailException
 	{
 		if (!store.isWritable()) {
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
 		txnStLock = store.getStatementsReadLock();
+		boolean releaseLocks = true;
 
-		// Prevent concurrent transactions by acquiring an exclusive txn lock
-		txnLock = store.getTransactionLock();
-		store.startTransaction();
-		super.begin();
+		try {
+			// Prevent concurrent transactions by acquiring an exclusive txn lock
+			txnLock = store.getTransactionLock();
+
+			try {
+				store.startTransaction();
+				releaseLocks = false;
+			}
+			finally {
+				if (releaseLocks) {
+					txnLock.release();
+				}
+			}
+		}
+		finally {
+			if (releaseLocks) {
+				txnStLock.release();
+			}
+		}
 	}
 
 	@Override
-	public void commit()
-		throws StoreException
+	protected void commitInternal()
+		throws SailException
 	{
 		store.commit();
 		txnLock.release();
 		txnStLock.release();
-		super.commit();
 	}
 
 	@Override
-	public void rollback()
-		throws StoreException
+	protected void rollbackInternal()
+		throws SailException
 	{
 		try {
 			store.rollback();
-			super.rollback();
 		}
 		finally {
 			txnLock.release();
@@ -323,41 +378,57 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
 		addStatementInternal(subj, pred, obj, true, contexts);
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
-		return addStatementInternal(subj, pred, obj, false, contexts);
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				return addStatementInternal(subj, pred, obj, false, contexts);
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
 	}
 
 	/**
 	 * Adds the specified statement to this MemoryStore.
 	 * 
-	 * @throws StoreException
+	 * @throws SailException
 	 */
-	private boolean addStatementInternal(Resource subj, URI pred, Value obj, boolean explicit,
+	protected boolean addStatementInternal(Resource subj, URI pred, Value obj, boolean explicit,
 			Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
 		assert txnStLock.isActive();
 		assert txnLock.isActive();
 
 		Statement st = null;
 
-		if (contexts != null && contexts.length == 0) {
-			st = store.addStatement(subj, pred, obj, null, explicit, vf);
+		if (contexts.length == 0) {
+			st = store.addStatement(subj, pred, obj, null, explicit);
 			if (st != null) {
 				notifyStatementAdded(st);
 			}
 		}
 		else {
-			for (Resource context : OpenRDFUtil.notNull(contexts)) {
-				st = store.addStatement(subj, pred, obj, context, explicit, vf);
+			for (Resource context : contexts) {
+				st = store.addStatement(subj, pred, obj, context, explicit);
 				if (st != null) {
 					notifyStatementAdded(st);
 				}
@@ -369,16 +440,60 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return st != null;
 	}
 
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
 		removeStatementsInternal(subj, pred, obj, true, contexts);
 	}
 
-	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
-		return removeStatementsInternal(subj, pred, obj, false, contexts);
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				return removeStatementsInternal(subj, pred, obj, false, contexts);
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	protected void clearInternal(Resource... contexts)
+		throws SailException
+	{
+		removeStatementsInternal(null, null, null, true, contexts);
+	}
+
+	public void clearInferred(Resource... contexts)
+		throws SailException
+	{
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				removeStatementsInternal(null, null, null, false, contexts);
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
 	}
 
 	public void flushUpdates() {
@@ -400,26 +515,28 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 *        removed; <tt>true</tt> removes explicit statements that match the
 	 *        pattern, <tt>false</tt> removes inferred statements that match the
 	 *        pattern.
-	 * @throws StoreException
+	 * @throws SailException
 	 */
-	private boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
+	protected boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
 			Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
-		Cursor<MemStatement> stIter = store.createStatementIterator(subj, pred, obj, explicit,
-				store.getCurrentSnapshot() + 1, ReadMode.TRANSACTION, vf, contexts);
+		CloseableIteration<MemStatement, SailException> stIter = store.createStatementIterator(
+				SailException.class, subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
+				ReadMode.TRANSACTION, contexts);
 
 		return removeIteratorStatements(stIter, explicit);
 	}
 
-	protected boolean removeIteratorStatements(Cursor<MemStatement> stIter, boolean explicit)
-		throws StoreException
+	protected boolean removeIteratorStatements(CloseableIteration<MemStatement, SailException> stIter,
+			boolean explicit)
+		throws SailException
 	{
 		boolean statementsRemoved = false;
 
 		try {
-			MemStatement st;
-			while ((st = stIter.next()) != null) {
+			while (stIter.hasNext()) {
+				MemStatement st = stIter.next();
 
 				if (store.removeStatement(st, explicit)) {
 					statementsRemoved = true;
@@ -435,27 +552,30 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 	}
 
-	public void setNamespace(String prefix, String name)
-		throws StoreException
+	@Override
+	protected void setNamespaceInternal(String prefix, String name)
+		throws SailException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		try {
 			store.getNamespaceStore().setNamespace(prefix, name);
 		}
 		catch (IllegalArgumentException e) {
-			throw new StoreException(e.getMessage());
+			throw new SailException(e.getMessage());
 		}
 	}
 
-	public void removeNamespace(String prefix)
-		throws StoreException
+	@Override
+	protected void removeNamespaceInternal(String prefix)
+		throws SailException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().removeNamespace(prefix);
 	}
 
-	public void clearNamespaces()
-		throws StoreException
+	@Override
+	protected void clearNamespacesInternal()
+		throws SailException
 	{
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().clear();
@@ -482,13 +602,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			this.readMode = readMode;
 		}
 
-		public Cursor<MemStatement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts) {
-			return store.createStatementIterator(subj, pred, obj, !includeInferred, snapshot, readMode, vf,
-					contexts);
+		public CloseableIteration<MemStatement, QueryEvaluationException> getStatements(Resource subj,
+				URI pred, Value obj, Resource... contexts)
+		{
+			return store.createStatementIterator(QueryEvaluationException.class, subj, pred, obj,
+					!includeInferred, snapshot, readMode, contexts);
 		}
 
 		public MemValueFactory getValueFactory() {
-			return vf;
+			return store.getValueFactory();
 		}
 	} // end inner class MemTripleSource
 
@@ -515,16 +637,33 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			@Override
 			public double getCardinality(StatementPattern sp) {
-				Resource subj = (Resource)getConstantValue(sp.getSubjectVar());
-				URI pred = (URI)getConstantValue(sp.getPredicateVar());
+				
+				Value subj = getConstantValue(sp.getSubjectVar());
+				if (!(subj instanceof Resource)) {
+					// can happen when a previous optimizer has inlined a comparison operator. 
+					// this can cause, for example, the subject variable to be equated to a literal value. 
+					// See SES-970 / SES-998
+					subj = null;
+				}
+				Value pred = getConstantValue(sp.getPredicateVar());
+				if (!(pred instanceof URI)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					pred = null;
+				}
 				Value obj = getConstantValue(sp.getObjectVar());
-				Resource context = (Resource)getConstantValue(sp.getContextVar());
+				Value context = getConstantValue(sp.getContextVar());
+				if (!(context instanceof Resource)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					context = null;
+				}
+
+				MemValueFactory valueFactory = store.getValueFactory();
 
 				// Perform look-ups for value-equivalents of the specified values
-				MemResource memSubj = vf.getMemResource(subj);
-				MemURI memPred = vf.getMemURI(pred);
-				MemValue memObj = vf.getMemValue(obj);
-				MemResource memContext = vf.getMemResource(context);
+				MemResource memSubj = valueFactory.getMemResource((Resource)subj);
+				MemURI memPred = valueFactory.getMemURI((URI)pred);
+				MemValue memObj = valueFactory.getMemValue(obj);
+				MemResource memContext = valueFactory.getMemResource((Resource)context);
 
 				if (subj != null && memSubj == null || pred != null && memPred == null || obj != null
 						&& memObj == null || context != null && memContext == null)

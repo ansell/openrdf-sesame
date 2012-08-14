@@ -48,7 +48,6 @@ import org.openrdf.sail.rdbms.algebra.URIColumn;
 import org.openrdf.sail.rdbms.algebra.UnionItem;
 import org.openrdf.sail.rdbms.algebra.base.BinarySqlOperator;
 import org.openrdf.sail.rdbms.algebra.base.FromItem;
-import org.openrdf.sail.rdbms.algebra.base.NarySqlOperator;
 import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
@@ -60,6 +59,7 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Constructs an SQL query from {@link SqlExpr}s and {@link FromItem}s.
  * 
  * @author James Leigh
+ * 
  */
 public class QueryBuilder {
 
@@ -105,11 +105,11 @@ public class QueryBuilder {
 		return query.findParameters(new ArrayList<Object>());
 	}
 
-	public void limit(Integer limit) {
+	public void limit(Long limit) {
 		query.limit(limit);
 	}
 
-	public void offset(Integer offset) {
+	public void offset(Long offset) {
 		query.offset(offset);
 	}
 
@@ -247,12 +247,9 @@ public class QueryBuilder {
 	private void append(SqlAnd expr, SqlExprBuilder filter)
 		throws UnsupportedRdbmsOperatorException
 	{
-		for (int i = 0, n = expr.getNumberOfArguments(); i < n; i++) {
-			if (i > 0) {
-				filter.and();
-			}
-			dispatch(expr.getArg(i), filter);
-		}
+		dispatch(expr.getLeftArg(), filter);
+		filter.and();
+		dispatch(expr.getRightArg(), filter);
 	}
 
 	private void append(SqlCase expr, SqlExprBuilder filter)
@@ -356,12 +353,9 @@ public class QueryBuilder {
 		throws UnsupportedRdbmsOperatorException
 	{
 		SqlBracketBuilder open = filter.open();
-		for (int i = 0, n = expr.getNumberOfArguments(); i < n; i++) {
-			if (i > 0) {
-				open.or();
-			}
-			dispatch(expr.getArg(i), open);
-		}
+		dispatch(expr.getLeftArg(), open);
+		open.or();
+		dispatch(expr.getRightArg(), open);
 		open.close();
 	}
 
@@ -419,25 +413,8 @@ public class QueryBuilder {
 		else if (expr instanceof UnarySqlOperator) {
 			dispatchUnarySqlOperator((UnarySqlOperator)expr, filter);
 		}
-		else if (expr instanceof NarySqlOperator) {
-			dispatchNarySqlOperator((NarySqlOperator)expr, filter);
-		}
-		else {
-			dispatchOther(expr, filter);
-		}
-	}
-
-	private void dispatchNarySqlOperator(NarySqlOperator expr, SqlExprBuilder filter)
-		throws UnsupportedRdbmsOperatorException
-	{
-		if (expr instanceof BinarySqlOperator) {
+		else if (expr instanceof BinarySqlOperator) {
 			dispatchBinarySqlOperator((BinarySqlOperator)expr, filter);
-		}
-		else if (expr instanceof SqlAnd) {
-			append((SqlAnd)expr, filter);
-		}
-		else if (expr instanceof SqlOr) {
-			append((SqlOr)expr, filter);
 		}
 		else {
 			dispatchOther(expr, filter);
@@ -447,8 +424,14 @@ public class QueryBuilder {
 	private void dispatchBinarySqlOperator(BinarySqlOperator expr, SqlExprBuilder filter)
 		throws UnsupportedRdbmsOperatorException
 	{
-		if (expr instanceof SqlEq) {
+		if (expr instanceof SqlAnd) {
+			append((SqlAnd)expr, filter);
+		}
+		else if (expr instanceof SqlEq) {
 			append((SqlEq)expr, filter);
+		}
+		else if (expr instanceof SqlOr) {
+			append((SqlOr)expr, filter);
 		}
 		else if (expr instanceof SqlCompare) {
 			append((SqlCompare)expr, filter);
@@ -602,9 +585,8 @@ public class QueryBuilder {
 
 	private String getDBName(ColumnVar var) {
 		String name = var.getName();
-		if (name.indexOf('-') >= 0) {
+		if (name.indexOf('-') >= 0)
 			return name.replace('-', '_');
-		}
 		return "_" + name; // might be a keyword otherwise
 	}
 

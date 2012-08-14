@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public class ProjectionElem extends QueryModelNodeBase {
 
-	private static final long serialVersionUID = 6690705760605338877L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -17,6 +15,10 @@ public class ProjectionElem extends QueryModelNodeBase {
 
 	private String targetName;
 
+	private boolean aggregateOperatorInExpression;
+	
+	private ExtensionElem sourceExpression;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -78,7 +80,52 @@ public class ProjectionElem extends QueryModelNodeBase {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ProjectionElem) {
+			ProjectionElem o = (ProjectionElem)other;
+			return sourceName.equals(o.getSourceName()) && targetName.equals(o.getTargetName());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// Note: don't xor source and target since they will often be equal
+		return targetName.hashCode();
+	}
+
+	@Override
 	public ProjectionElem clone() {
 		return (ProjectionElem)super.clone();
 	}
+
+	/**
+	 * @return Returns the aggregateOperatorInExpression.
+	 */
+	public boolean hasAggregateOperatorInExpression() {
+		return aggregateOperatorInExpression;
+	}
+
+	/**
+	 * @param aggregateOperatorInExpression The aggregateOperatorInExpression to set.
+	 */
+	public void setAggregateOperatorInExpression(boolean aggregateOperatorInExpression) {
+		this.aggregateOperatorInExpression = aggregateOperatorInExpression;
+	}
+
+	/**
+	 * @return Returns the sourceExpression.
+	 */
+	public ExtensionElem getSourceExpression() {
+		return sourceExpression;
+	}
+
+	/**
+	 * @param sourceExpression The sourceExpression to set.
+	 */
+	public void setSourceExpression(ExtensionElem sourceExpression) {
+		this.sourceExpression = sourceExpression;
+	}
+	
+	
 }

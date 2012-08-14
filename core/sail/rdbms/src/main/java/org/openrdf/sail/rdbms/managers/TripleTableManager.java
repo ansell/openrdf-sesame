@@ -32,6 +32,7 @@ import org.openrdf.sail.rdbms.schema.ValueTableFactory;
  * Manages and delegates to the collection of {@link TripleTable}.
  * 
  * @author James Leigh
+ * 
  */
 public class TripleTableManager {
 
@@ -49,7 +50,7 @@ public class TripleTableManager {
 
 	private BNodeManager bnodes;
 
-	private volatile boolean closed;
+	private boolean closed;
 
 	private Connection conn;
 
@@ -59,7 +60,7 @@ public class TripleTableManager {
 
 	private LiteralManager literals;
 
-	Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
+	private Logger logger = LoggerFactory.getLogger(TripleTableManager.class);
 
 	private PredicateManager predicates;
 
@@ -75,11 +76,11 @@ public class TripleTableManager {
 
 	private int maxTables = MAX_TABLES;
 
-	private volatile boolean indexingTriples = INDEX_TRIPLES;
+	private boolean indexingTriples = INDEX_TRIPLES;
 
 	private IdSequence ids;
 
-	volatile Exception exc;
+	Exception exc;
 
 	public TripleTableManager(ValueTableFactory factory) {
 		this.factory = factory;
@@ -115,9 +116,8 @@ public class TripleTableManager {
 	}
 
 	public int getMaxNumberOfTripleTables() {
-		if (maxTables == Integer.MAX_VALUE) {
+		if (maxTables == Integer.MAX_VALUE)
 			return 0;
-		}
 		return maxTables + 1;
 	}
 
@@ -209,9 +209,8 @@ public class TripleTableManager {
 	}
 
 	public synchronized TripleTable getExistingTable(Number pred) {
-		if (tables.containsKey(pred)) {
+		if (tables.containsKey(pred))
 			return tables.get(pred);
-		}
 		return tables.get(OTHER_PRED);
 	}
 
@@ -224,12 +223,10 @@ public class TripleTableManager {
 	{
 		assert pred.longValue() != 0;
 		assert pred.equals(ids.idOf(pred));
-		if (tables.containsKey(pred)) {
+		if (tables.containsKey(pred))
 			return tables.get(pred);
-		}
-		if (tables.containsKey(OTHER_PRED)) {
+		if (tables.containsKey(OTHER_PRED))
 			return tables.get(OTHER_PRED);
-		}
 		String tableName = getNewTableName(pred);
 		if (tables.size() >= maxTables) {
 			tableName = OTHER_TRIPLES_TABLE;
@@ -251,12 +248,10 @@ public class TripleTableManager {
 	public synchronized String getTableName(Number pred)
 		throws SQLException
 	{
-		if (tables.containsKey(pred)) {
+		if (tables.containsKey(pred))
 			return tables.get(pred).getNameWhenReady();
-		}
-		if (tables.containsKey(OTHER_PRED)) {
+		if (tables.containsKey(OTHER_PRED))
 			return tables.get(OTHER_PRED).getNameWhenReady();
-		}
 		return null;
 	}
 
@@ -270,8 +265,7 @@ public class TripleTableManager {
 		if (hashes != null) {
 			if (hashes.removedStatements(count, condition)) {
 				condition = hashes.getExpungeCondition();
-			}
-			else {
+			} else {
 				condition = null;
 			}
 		}
@@ -328,9 +322,8 @@ public class TripleTableManager {
 		throws SQLException
 	{
 		Set<String> tables = findTablesWithExactColumn(column.toUpperCase());
-		if (tables.isEmpty()) {
+		if (tables.isEmpty())
 			return findTablesWithExactColumn(column.toLowerCase());
-		}
 		return tables;
 	}
 
@@ -361,9 +354,8 @@ public class TripleTableManager {
 		StringBuilder sb = new StringBuilder(1024);
 		for (Map.Entry<Number, TripleTable> e : tables.entrySet()) {
 			sb.append("\nAND id <> ").append(e.getKey());
-			if (e.getValue().isEmpty()) {
+			if (e.getValue().isEmpty())
 				continue;
-			}
 			sb.append(" AND NOT EXISTS (SELECT * FROM ");
 			sb.append(e.getValue().getNameWhenReady());
 			sb.append(" WHERE ctx = id OR subj = id OR obj = id");
@@ -384,9 +376,8 @@ public class TripleTableManager {
 	}
 
 	protected Number key(String tn) {
-		if (tn.equalsIgnoreCase(OTHER_TRIPLES_TABLE)) {
+		if (tn.equalsIgnoreCase(OTHER_TRIPLES_TABLE))
 			return OTHER_PRED;
-		}
 		Number id = ids.idOf(Long.valueOf(tn.substring(tn.lastIndexOf('_') + 1)));
 		assert id.longValue() != 0;
 		return id;
@@ -396,20 +387,16 @@ public class TripleTableManager {
 		throws SQLException
 	{
 		String uri = predicates.getPredicateUri(pred);
-		if (uri == null) {
+		if (uri == null)
 			return DEFAULT_TABLE_PREFIX;
-		}
 		Matcher m = tablePrefix.matcher(uri);
-		if (!m.find()) {
+		if (!m.find())
 			return DEFAULT_TABLE_PREFIX;
-		}
 		String localName = m.group(1).replaceAll("^[^a-zA-Z]*", "");
-		if (localName.length() == 0) {
+		if (localName.length() == 0)
 			return DEFAULT_TABLE_PREFIX;
-		}
-		if (localName.length() > 16) {
+		if (localName.length() > 16)
 			return localName.substring(0, 16);
-		}
 		return localName;
 	}
 
@@ -448,9 +435,8 @@ public class TripleTableManager {
 	private void initTable(TripleTable table)
 		throws SQLException
 	{
-		if (exc != null) {
+		if (exc != null)
 			throwException();
-		}
 		table.setIndexed(indexingTriples);
 		if (true || queue == null) {
 			table.initTable();

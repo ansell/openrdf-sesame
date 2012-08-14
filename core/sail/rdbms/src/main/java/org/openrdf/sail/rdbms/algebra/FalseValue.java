@@ -12,6 +12,7 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
  * Represents the value false in an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class FalseValue extends BooleanValue {
 

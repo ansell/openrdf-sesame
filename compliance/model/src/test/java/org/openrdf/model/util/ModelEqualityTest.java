@@ -13,7 +13,6 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;

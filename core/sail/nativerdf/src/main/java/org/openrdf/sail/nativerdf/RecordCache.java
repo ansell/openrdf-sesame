@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
@@ -17,17 +18,13 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  */
 abstract class RecordCache {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
-	protected final long maxRecords;
+	private final AtomicLong maxRecords;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	private volatile long recordCount;
+	private final AtomicLong recordCount;
 
 	/*--------------*
 	 * Constructors *
@@ -42,39 +39,74 @@ abstract class RecordCache {
 	public RecordCache(long maxRecords)
 		throws IOException
 	{
-		this.maxRecords = maxRecords;
-		this.recordCount = 0;
+		this.maxRecords = new AtomicLong(maxRecords);
+		this.recordCount = new AtomicLong();
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public abstract void discard()
-		throws IOException;
-
-	public final boolean isValid() {
-		return recordCount < maxRecords;
+	public final long getMaxRecords() {
+		return maxRecords.get();
 	}
 
+	public final void setMaxRecords(long maxRecords) {
+		this.maxRecords.set(maxRecords);
+	}
+
+	/**
+	 * Gets the number of records currently stored in the cache, throwing an
+	 * {@link IllegalStateException} if the cache is no longer {@link #isValid()
+	 * valid}.
+	 * 
+	 * @return
+	 * @throws IllegalStateException
+	 *         If the cache is not/no longer {@link #isValid() valid}.
+	 */
+	public final long getRecordCount() {
+		if (isValid()) {
+			return recordCount.get();
+		}
+
+		throw new IllegalStateException();
+	}
+
+	/**
+	 * Stores a record in the cache.
+	 * 
+	 * @param data
+	 *        The record to store.
+	 */
 	public final void storeRecord(byte[] data)
 		throws IOException
 	{
-		if (isValid()) {
+		long spareSlots = maxRecords.get() - recordCount.get();
+
+		if (spareSlots > 0L) {
 			storeRecordInternal(data);
-			recordCount++;
+			recordCount.incrementAndGet();
+		}
+		else if (spareSlots == 0L) {
+			// invalidate the cache
+			recordCount.incrementAndGet();
 		}
 	}
 
-	public final void storeRecords(RecordCache other)
+	/**
+	 * Stores the records from the supplied cache into this cache.
+	 * 
+	 * @param otherCache
+	 *        The cache to copy the records from.
+	 */
+	public final void storeRecords(RecordCache otherCache)
 		throws IOException
 	{
-		if (isValid()) {
-			RecordIterator recIter = other.getRecords();
+		if (recordCount.get() <= maxRecords.get()) {
+			RecordIterator recIter = otherCache.getRecords();
 			try {
 				byte[] record;
-
-				while ((record = recIter.next()) != null) {
+				while ((record = recIter.next()) != null && recordCount.incrementAndGet() <= maxRecords.get()) {
 					storeRecordInternal(record);
 				}
 			}
@@ -84,9 +116,31 @@ abstract class RecordCache {
 		}
 	}
 
-	public abstract void storeRecordInternal(byte[] data)
+	protected abstract void storeRecordInternal(byte[] data)
 		throws IOException;
 
+	/**
+	 * Clears the cache, deleting all stored records.
+	 */
+	public final void clear()
+		throws IOException
+	{
+		clearInternal();
+		recordCount.set(0L);
+	}
+
+	protected abstract void clearInternal()
+		throws IOException;
+
+	/**
+	 * Gets all records that are stored in the cache, throwing an
+	 * {@link IllegalStateException} if the cache is no longer {@link #isValid()
+	 * valid}.
+	 * 
+	 * @return An iterator over all records.
+	 * @throws IllegalStateException
+	 *         If the cache is not/no longer {@link #isValid() valid}.
+	 */
 	public final RecordIterator getRecords() {
 		if (isValid()) {
 			return getRecordsInternal();
@@ -95,13 +149,20 @@ abstract class RecordCache {
 		throw new IllegalStateException();
 	}
 
-	public abstract RecordIterator getRecordsInternal();
+	protected abstract RecordIterator getRecordsInternal();
 
-	public final long getRecordCount() {
-		if (isValid()) {
-			return recordCount;
-		}
-
-		throw new IllegalStateException();
+	/**
+	 * Checks whether the cache is still valid. Caches are valid if the number of
+	 * stored records is smaller than or equal to the {@link #getMaxRecords()
+	 * maximum number of records}.
+	 */
+	public final boolean isValid() {
+		return recordCount.get() <= maxRecords.get();
 	}
+
+	/**
+	 * Discards the cache, deleting any allocated files.
+	 */
+	public abstract void discard()
+		throws IOException;
 }

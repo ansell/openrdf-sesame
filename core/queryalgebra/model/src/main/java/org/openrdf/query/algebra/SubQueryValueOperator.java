@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public abstract class SubQueryValueOperator extends QueryModelNodeBase implements ValueExpr {
 
-	private static final long serialVersionUID = -94320049138474906L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -55,6 +53,21 @@ public abstract class SubQueryValueOperator extends QueryModelNodeBase implement
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof SubQueryValueOperator) {
+			SubQueryValueOperator o = (SubQueryValueOperator)other;
+			return subQuery.equals(o.getSubQuery());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return subQuery.hashCode();
 	}
 
 	@Override

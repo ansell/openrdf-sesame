@@ -8,11 +8,11 @@ package org.openrdf.repository.config;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTYPE;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Model;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelException;
-import org.openrdf.store.StoreConfigException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
 
 /**
  * @author Herko ter Horst
@@ -44,61 +44,59 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 	}
 
 	public void validate()
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		if (type == null) {
-			throw new StoreConfigException("No type specified for repository implementation");
+			throw new RepositoryConfigException("No type specified for repository implementation");
 		}
 	}
 
-	public Resource export(Model model) {
-		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
-
-		BNode implNode = vf.createBNode();
+	public Resource export(Graph graph) {
+		BNode implNode = graph.getValueFactory().createBNode();
 
 		if (type != null) {
-			model.add(implNode, REPOSITORYTYPE, vf.createLiteral(type));
+			graph.add(implNode, REPOSITORYTYPE, graph.getValueFactory().createLiteral(type));
 		}
 
 		return implNode;
 	}
 
-	public void parse(Model model, Resource implNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource implNode)
+		throws RepositoryConfigException
 	{
 		try {
-			String type = model.filter(implNode, REPOSITORYTYPE, null).objectString();
-			if (type != null) {
-				setType(type);
+			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
+			if (typeLit != null) {
+				setType(typeLit.getLabel());
 			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 
-	public static RepositoryImplConfig create(Model model, Resource implNode)
-		throws StoreConfigException
+	public static RepositoryImplConfig create(Graph graph, Resource implNode)
+		throws RepositoryConfigException
 	{
 		try {
-			String type = model.filter(implNode, REPOSITORYTYPE, null).objectString();
+			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
 
-			if (type != null) {
-				RepositoryFactory factory = RepositoryRegistry.getInstance().get(type);
+			if (typeLit != null) {
+				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
 
 				if (factory == null) {
-					throw new StoreConfigException("Unsupported repository type: " + type);
+					throw new RepositoryConfigException("Unsupported repository type: " + typeLit.getLabel());
 				}
 
 				RepositoryImplConfig implConfig = factory.getConfig();
-				implConfig.parse(model, implNode);
+				implConfig.parse(graph, implNode);
 				return implConfig;
 			}
 
 			return null;
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 }

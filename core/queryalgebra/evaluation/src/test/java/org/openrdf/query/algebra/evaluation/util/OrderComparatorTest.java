@@ -10,10 +10,11 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.EvaluationException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.TupleExpr;
@@ -22,33 +23,30 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 /**
- * @author James Leigh
+ * 
+ * @author james
+ * 
  */
 public class OrderComparatorTest extends TestCase {
-
 	class EvaluationStrategyStub implements EvaluationStrategy {
-
-		public Cursor<BindingSet> evaluate(TupleExpr expr, BindingSet bindings)
-			throws EvaluationException
-		{
+		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
+				TupleExpr expr, BindingSet bindings)
+				throws QueryEvaluationException {
 			throw new UnsupportedOperationException();
 		}
 
 		public Value evaluate(ValueExpr expr, BindingSet bindings)
-			throws ValueExprEvaluationException, EvaluationException
-		{
+				throws ValueExprEvaluationException, QueryEvaluationException {
 			return null;
 		}
 
 		public boolean isTrue(ValueExpr expr, BindingSet bindings)
-			throws ValueExprEvaluationException, EvaluationException
-		{
+				throws ValueExprEvaluationException, QueryEvaluationException {
 			throw new UnsupportedOperationException();
 		}
 	}
 
 	class ComparatorStub extends ValueComparator {
-
 		Iterator<Integer> iter;
 
 		public void setIterator(Iterator<Integer> iter) {
@@ -77,18 +75,14 @@ public class OrderComparatorTest extends TestCase {
 
 	private int NEG = -7349;
 
-	public void testEquals()
-		throws Exception
-	{
+	public void testEquals() throws Exception {
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(ZERO).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) == 0);
 	}
 
-	public void testZero()
-		throws Exception
-	{
+	public void testZero() throws Exception {
 		order.addElement(asc);
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(ZERO, POS).iterator());
@@ -96,9 +90,7 @@ public class OrderComparatorTest extends TestCase {
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testTerm()
-		throws Exception
-	{
+	public void testTerm() throws Exception {
 		order.addElement(asc);
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(POS, NEG).iterator());
@@ -106,36 +98,28 @@ public class OrderComparatorTest extends TestCase {
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testAscLessThan()
-		throws Exception
-	{
+	public void testAscLessThan() throws Exception {
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(NEG).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) < 0);
 	}
 
-	public void testAscGreaterThan()
-		throws Exception
-	{
+	public void testAscGreaterThan() throws Exception {
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testDescLessThan()
-		throws Exception
-	{
+	public void testDescLessThan() throws Exception {
 		order.addElement(desc);
 		cmp.setIterator(Arrays.asList(NEG).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) > 0);
 	}
 
-	public void testDescGreaterThan()
-		throws Exception
-	{
+	public void testDescGreaterThan() throws Exception {
 		order.addElement(desc);
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
@@ -143,9 +127,7 @@ public class OrderComparatorTest extends TestCase {
 	}
 
 	@Override
-	protected void setUp()
-		throws Exception
-	{
+	protected void setUp() throws Exception {
 		asc.setAscending(true);
 		desc.setAscending(false);
 	}

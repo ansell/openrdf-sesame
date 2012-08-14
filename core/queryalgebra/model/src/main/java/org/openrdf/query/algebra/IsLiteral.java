@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public class IsLiteral extends UnaryValueOperator {
 
-	private static final long serialVersionUID = 4676127518119593726L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -28,6 +26,16 @@ public class IsLiteral extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsLiteral && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "IsLiteral".hashCode();
 	}
 
 	@Override

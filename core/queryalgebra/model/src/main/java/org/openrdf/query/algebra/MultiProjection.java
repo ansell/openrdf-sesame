@@ -17,8 +17,6 @@ import java.util.Set;
  */
 public class MultiProjection extends UnaryTupleOperator {
 
-	private static final long serialVersionUID = -2042227764892695037L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -116,14 +114,24 @@ public class MultiProjection extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = projections.indexOf(current);
-		if (index >= 0) {
-			projections.set(index, (ProjectionElemList)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(projections, current, replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
+		super.replaceChildNode(current, replacement);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof MultiProjection && super.equals(other)) {
+			MultiProjection o = (MultiProjection)other;
+			return projections.equals(o.getProjections());
 		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ projections.hashCode();
 	}
 
 	@Override

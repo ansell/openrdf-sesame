@@ -5,14 +5,10 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.List;
-
 /**
  * A boolean OR operator operating on two boolean expressions.
  */
-public class Or extends NaryValueOperator {
-
-	private static final long serialVersionUID = -9199477318547462027L;
+public class Or extends BinaryValueOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -21,12 +17,8 @@ public class Or extends NaryValueOperator {
 	public Or() {
 	}
 
-	public Or(ValueExpr... args) {
-		super(args);
-	}
-
-	public Or(Iterable<? extends ValueExpr> args) {
-		super(args);
+	public Or(ValueExpr leftArg, ValueExpr rightArg) {
+		super(leftArg, rightArg);
 	}
 
 	/*---------*
@@ -37,6 +29,16 @@ public class Or extends NaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Or && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Or".hashCode();
 	}
 
 	@Override

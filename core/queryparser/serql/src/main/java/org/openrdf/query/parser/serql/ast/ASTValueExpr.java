@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.parser.serql.ast;
 
+
 public abstract class ASTValueExpr extends SimpleNode {
 
 	public ASTValueExpr(int i) {

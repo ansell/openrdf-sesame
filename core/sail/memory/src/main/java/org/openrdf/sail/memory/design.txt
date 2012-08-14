@@ -8,6 +8,6 @@
   
 - Transactions are not allowed to remove statement objects from the data
   structure as that potentially changes the iteration order (due to the
-  implementation of MemStatementList), which can cause active cursors to
+  implementation of MemStatementList), which can cause active iterations to
   miss some of the current statements. Such statements are flagged with a
-  till-snapshot that will make them invisible to future cursors instead.
+  till-snapshot that will make them invisible to future iterations instead.

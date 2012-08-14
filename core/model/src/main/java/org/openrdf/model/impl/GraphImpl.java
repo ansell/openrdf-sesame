@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import info.aduna.collections.iterators.FilterIterator;
+import org.openrdf.util.iterators.FilterIterator;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Graph;
@@ -26,9 +26,11 @@ import org.openrdf.model.ValueFactory;
 /**
  * @author Arjohn Kampman
  */
-@Deprecated
 public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = -5307095904382050478L;
 
 	protected LinkedList<Statement> statements;
@@ -63,28 +65,33 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	@Override
-	public Iterator<Statement> iterator() {
+	public Iterator<Statement> iterator()
+	{
 		return statements.iterator();
 	}
 
 	@Override
-	public int size() {
+	public int size()
+	{
 		return statements.size();
 	}
 
 	@Override
-	public boolean add(Statement st) {
+	public boolean add(Statement st)
+	{
 		return statements.add(st);
 	}
 
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
 		boolean graphChanged = false;
 
-		if (contexts != null && contexts.length == 0) {
+		if (contexts.length == 0) {
 			graphChanged = add(valueFactory.createStatement(subj, pred, obj));
 		}
 		else {
-			for (Resource context : OpenRDFUtil.notNull(contexts)) {
+			for (Resource context : contexts) {
 				graphChanged |= add(valueFactory.createStatement(subj, pred, obj, context));
 			}
 		}
@@ -93,17 +100,18 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
+		OpenRDFUtil.verifyContextNotNull(contexts);
 		return new PatternIterator(iterator(), subj, pred, obj, contexts);
 	}
-
-	private void writeObject(ObjectOutputStream out)
-		throws IOException
+	
+	private void writeObject(ObjectOutputStream out) 
+		throws IOException 
 	{
 		out.defaultWriteObject();
 	}
 
-	private void readObject(ObjectInputStream in)
-		throws IOException, ClassNotFoundException
+	private void readObject(ObjectInputStream in) 
+		throws IOException, ClassNotFoundException 
 	{
 		in.defaultReadObject();
 		setValueFactory(new ValueFactoryImpl());
@@ -130,11 +138,12 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 			this.subj = subj;
 			this.pred = pred;
 			this.obj = obj;
-			this.contexts = OpenRDFUtil.notNull(contexts);
+			this.contexts = contexts;
 		}
 
 		@Override
-		protected boolean accept(Statement st) {
+		protected boolean accept(Statement st)
+		{
 			if (subj != null && !subj.equals(st.getSubject())) {
 				return false;
 			}

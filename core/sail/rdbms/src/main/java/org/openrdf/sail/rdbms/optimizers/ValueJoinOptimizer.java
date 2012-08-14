@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
@@ -39,6 +40,7 @@ import org.openrdf.sail.rdbms.schema.URITable;
  * Adds LEFT JOINs to the query for value tables.
  * 
  * @author James Leigh
+ * 
  */
 public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer
@@ -76,9 +78,9 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 		this.hashes = hashes;
 	}
 
-	public void optimize(QueryModel query, BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		join = null;
-		query.visit(this);
+		tupleExpr.visit(this);
 	}
 
 	@Override
@@ -222,9 +224,8 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 
 	private CharSequence getDBName(ColumnVar var) {
 		String name = var.getName();
-		if (name.indexOf('-') >= 0) {
+		if (name.indexOf('-') >= 0)
 			return name.replace('-', '_');
-		}
 		return "_" + name; // might be a keyword otherwise
 	}
 
@@ -245,9 +246,8 @@ public class ValueJoinOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExcept
 	}
 
 	private boolean isJoined(String alias) {
-		if (stack.isEmpty()) {
+		if (stack.isEmpty())
 			return query.getFromItem(alias) != null;
-		}
 		return stack.get(stack.size() - 1).getFromItem(alias) != null;
 	}
 

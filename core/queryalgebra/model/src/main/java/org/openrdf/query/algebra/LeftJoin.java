@@ -5,6 +5,7 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -15,8 +16,6 @@ import java.util.Set;
  * @author Arjohn Kampman
  */
 public class LeftJoin extends BinaryTupleOperator {
-
-	private static final long serialVersionUID = -7541267070580841572L;
 
 	/*-----------*
 	 * Variables *
@@ -59,6 +58,13 @@ public class LeftJoin extends BinaryTupleOperator {
 		return condition != null;
 	}
 
+	public Set<String> getBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>(16);
+		bindingNames.addAll(getLeftArg().getBindingNames());
+		bindingNames.addAll(getRightArg().getBindingNames());
+		return bindingNames;
+	}
+
 	public Set<String> getAssuredBindingNames() {
 		return getLeftArg().getAssuredBindingNames();
 	}
@@ -88,6 +94,25 @@ public class LeftJoin extends BinaryTupleOperator {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof LeftJoin && super.equals(other)) {
+			ValueExpr oCond = ((LeftJoin)other).getCondition();
+			return nullEquals(condition, oCond);
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode() ^ "LeftJoin".hashCode();
+		if (hasCondition()) {
+			result ^= getCondition().hashCode();
+		}
+		return result;
 	}
 
 	@Override

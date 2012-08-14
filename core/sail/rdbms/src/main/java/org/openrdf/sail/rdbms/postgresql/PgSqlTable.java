@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.schema.RdbmsTable;
  * Converts table names to lower-case and include the analyse optimisation.
  * 
  * @author James Leigh
+ * 
  */
 public class PgSqlTable extends RdbmsTable {
 

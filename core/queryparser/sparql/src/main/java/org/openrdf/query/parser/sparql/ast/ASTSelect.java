@@ -2,6 +2,8 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
+import java.util.List;
+
 public class ASTSelect extends SimpleNode {
 
 	private boolean distinct = false;
@@ -45,15 +47,24 @@ public class ASTSelect extends SimpleNode {
 		return wildcard;
 	}
 
+	public boolean isSubSelect() {
+		return ((ASTSelectQuery)parent).isSubSelect();
+	}
+	
 	public void setWildcard(boolean wildcard) {
 		this.wildcard = wildcard;
 	}
-
+	
+	public List<ASTProjectionElem> getProjectionElemList() {
+		return this.jjtGetChildren(ASTProjectionElem.class);
+		//return new CastingList<ASTProjectionElem>(children);
+	}
+	
 	@Override
 	public String toString() {
 		String result = super.toString();
-
-		if (distinct || wildcard) {
+		
+		if (distinct || reduced || wildcard) {
 			result += " (";
 			if (distinct) {
 				result += " distinct";
@@ -66,7 +77,7 @@ public class ASTSelect extends SimpleNode {
 			}
 			result += " )";
 		}
-
+		
 		return result;
 	}
 }

@@ -49,6 +49,7 @@ import org.openrdf.sail.rdbms.algebra.UnionItem;
  * meet methods.
  * 
  * @author James Leigh
+ * 
  */
 public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelVisitorBase<X> {
 
@@ -163,7 +164,7 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 	public void meet(SqlAnd node)
 		throws X
 	{
-		meetNarySqlOperator(node);
+		meetBinarySqlOperator(node);
 	}
 
 	public void meet(SqlCase node)
@@ -235,7 +236,7 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 	public void meet(SqlOr node)
 		throws X
 	{
-		meetNarySqlOperator(node);
+		meetBinarySqlOperator(node);
 	}
 
 	public void meet(SqlRegex node)
@@ -275,12 +276,6 @@ public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelV
 	}
 
 	protected void meetBinarySqlOperator(BinarySqlOperator node)
-		throws X
-	{
-		meetNarySqlOperator(node);
-	}
-
-	protected void meetNarySqlOperator(NarySqlOperator node)
 		throws X
 	{
 		meetNode(node);

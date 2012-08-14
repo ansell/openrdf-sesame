@@ -8,12 +8,13 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.util.Collections;
 import java.util.Set;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryModelNodeBase;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.store.StoreException;
 
 /**
  * @author James Leigh
@@ -45,7 +46,7 @@ public abstract class ExternalSet extends QueryModelNodeBase implements TupleExp
 		return 1;
 	}
 
-	public abstract Cursor<BindingSet> evaluate(BindingSet bindings)
-		throws StoreException;
+	public abstract CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSet bindings)
+		throws QueryEvaluationException;
 
 }

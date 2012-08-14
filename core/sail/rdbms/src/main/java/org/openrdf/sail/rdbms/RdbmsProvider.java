@@ -12,6 +12,7 @@ package org.openrdf.sail.rdbms;
  * version it should not return a connection factory, but rather a null value.
  * 
  * @author James Leigh
+ * 
  */
 public interface RdbmsProvider {
 

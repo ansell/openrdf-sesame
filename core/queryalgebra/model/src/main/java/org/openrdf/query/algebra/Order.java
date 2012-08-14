@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,8 +15,6 @@ import java.util.List;
  * @author Arjohn Kampman
  */
 public class Order extends UnaryTupleOperator {
-
-	private static final long serialVersionUID = -7017439492263769705L;
 
 	/*-----------*
 	 * Variables *
@@ -93,14 +91,24 @@ public class Order extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = elements.indexOf(current);
-		if (index >= 0) {
-			elements.set(index, (OrderElem)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(elements, current, replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
+		super.replaceChildNode(current, replacement);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Order && super.equals(other)) {
+			Order o = (Order)other;
+			return elements.equals(o.getElements());
 		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ elements.hashCode();
 	}
 
 	@Override

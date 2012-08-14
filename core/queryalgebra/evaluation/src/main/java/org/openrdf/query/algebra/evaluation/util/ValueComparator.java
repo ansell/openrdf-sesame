@@ -23,7 +23,7 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
  * href="http://www.w3.org/TR/rdf-sparql-query/#modOrderBy">SPARQL Query
  * Language for RDF</a>.
  * 
- * @author James Leigh
+ * @author james
  * @author Arjohn Kampman
  */
 public class ValueComparator implements Comparator<Value> {
@@ -46,7 +46,7 @@ public class ValueComparator implements Comparator<Value> {
 		boolean b1 = o1 instanceof BNode;
 		boolean b2 = o2 instanceof BNode;
 		if (b1 && b2) {
-			return 0;
+			return compareBNodes((BNode)o1, (BNode)o2);
 		}
 		if (b1) {
 			return -1;
@@ -72,6 +72,10 @@ public class ValueComparator implements Comparator<Value> {
 		return compareLiterals((Literal)o1, (Literal)o2);
 	}
 
+	private int compareBNodes(BNode leftBNode, BNode rightBNode) {
+		return leftBNode.getID().compareTo(rightBNode.getID());
+	}
+
 	private int compareURIs(URI leftURI, URI rightURI) {
 		return leftURI.toString().compareTo(rightURI.toString());
 	}
@@ -80,8 +84,7 @@ public class ValueComparator implements Comparator<Value> {
 		// Additional constraint for ORDER BY: "A plain literal is lower
 		// than an RDF literal with type xsd:string of the same lexical
 		// form."
-
-		if (!QueryEvaluationUtil.isStringLiteral(leftLit) || !QueryEvaluationUtil.isStringLiteral(rightLit)) {
+		if (!(QueryEvaluationUtil.isPlainLiteral(leftLit) || QueryEvaluationUtil.isPlainLiteral(rightLit))) {
 			try {
 				boolean isSmaller = QueryEvaluationUtil.compareLiterals(leftLit, rightLit, CompareOp.LT);
 

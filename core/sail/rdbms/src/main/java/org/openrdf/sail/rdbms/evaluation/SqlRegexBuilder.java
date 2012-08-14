@@ -9,6 +9,7 @@ package org.openrdf.sail.rdbms.evaluation;
  * Facilitates the building of a regular expression in SQL.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlRegexBuilder {
 

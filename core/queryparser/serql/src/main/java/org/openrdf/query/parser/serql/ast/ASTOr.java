@@ -7,8 +7,6 @@ package org.openrdf.query.parser.serql.ast;
 
 import java.util.List;
 
-import info.aduna.collections.CastingList;
-
 public class ASTOr extends ASTBooleanExpr {
 
 	public ASTOr(int id) {
@@ -25,7 +23,7 @@ public class ASTOr extends ASTBooleanExpr {
 	{
 		return visitor.visit(this, data);
 	}
-
+	
 	public List<ASTBooleanExpr> getOperandList() {
 		return new CastingList<ASTBooleanExpr>(children);
 	}

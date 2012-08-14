@@ -139,33 +139,45 @@ public class QueryEvaluationUtil {
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
+		// for purposes of query evaluation in SPARQL, simple literals and
+		// string-typed literals with the same
+		// lexical value are considered equal.
+		URI commonDatatype = null;
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && XMLSchema.STRING.equals(rightDatatype)) {
+			commonDatatype = XMLSchema.STRING;
+		}
+		else if (QueryEvaluationUtil.isSimpleLiteral(rightLit) && XMLSchema.STRING.equals(leftDatatype)) {
+			commonDatatype = XMLSchema.STRING;
+		}
+
 		Integer compareResult = null;
 
-		if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit)) {
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
-		else if (leftDatatype != null && rightDatatype != null) {
-			URI commonDatatype = null;
-
-			if (leftDatatype.equals(rightDatatype)) {
-				commonDatatype = leftDatatype;
-			}
-			else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
-					&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
-			{
-				// left and right arguments have different datatypes, try to find a
-				// more general, shared datatype
-				if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
-					commonDatatype = XMLSchema.DOUBLE;
+		else if ((leftDatatype != null && rightDatatype != null) || commonDatatype != null) {
+			if (commonDatatype == null) {
+				if (leftDatatype.equals(rightDatatype)) {
+					commonDatatype = leftDatatype;
 				}
-				else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
-					commonDatatype = XMLSchema.FLOAT;
-				}
-				else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
-					commonDatatype = XMLSchema.DECIMAL;
-				}
-				else {
-					commonDatatype = XMLSchema.INTEGER;
+				else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
+						&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
+				{
+					// left and right arguments have different datatypes, try to find
+					// a
+					// more general, shared datatype
+					if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
+						commonDatatype = XMLSchema.DOUBLE;
+					}
+					else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
+						commonDatatype = XMLSchema.FLOAT;
+					}
+					else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
+						commonDatatype = XMLSchema.DECIMAL;
+					}
+					else {
+						commonDatatype = XMLSchema.INTEGER;
+					}
 				}
 			}
 
@@ -250,12 +262,21 @@ public class QueryEvaluationUtil {
 			boolean literalsEqual = leftLit.equals(rightLit);
 
 			if (!literalsEqual) {
-				if (leftDatatype != null && rightDatatype != null
-						&& XMLDatatypeUtil.isCalendarDatatype(leftDatatype)
-						&& XMLDatatypeUtil.isCalendarDatatype(rightDatatype))
+				if (leftDatatype != null && rightDatatype != null && isSupportedDatatype(leftDatatype)
+						&& isSupportedDatatype(rightDatatype))
 				{
-					// left and right arguments have different date/time datatypes,
-					// these are always unequal
+					// left and right arguments have incompatible but supported
+					// datatypes
+
+					// we need to check that the lexical-to-value mapping for both
+					// datatypes succeeds
+					if (!XMLDatatypeUtil.isValidValue(leftLit.getLabel(), leftDatatype)) {
+						throw new ValueExprEvaluationException("not a valid datatype value: " + leftLit);
+					}
+
+					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
+						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
+					}
 				}
 				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
 						&& leftLit.getLanguage() == null)
@@ -284,9 +305,24 @@ public class QueryEvaluationUtil {
 	}
 
 	/**
-	 * Checks whether the supplied value is a "simple literal" as defined in the
-	 * SPARQL spec. A "simple literal" is a literal without a language tag or a
-	 * datatype.
+	 * Checks whether the supplied value is a "plain literal". A "plain literal"
+	 * is a literal with no datatype and optionally a language tag.
+	 * 
+	 * @see http://www.w3.org/TR/REC-rdf-concepts/#dfn-plain-literal
+	 */
+	public static boolean isPlainLiteral(Value v) {
+		if (v instanceof Literal) {
+			Literal l = (Literal)v;
+			return (l.getDatatype() == null);
+		}
+		return false;
+	}
+
+	/**
+	 * Checks whether the supplied value is a "simple literal". A
+	 * "simple literal" is a literal with no language tag nor datatype.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal
 	 */
 	public static boolean isSimpleLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -297,9 +333,10 @@ public class QueryEvaluationUtil {
 	}
 
 	/**
-	 * Checks whether the supplied literal is a "simple literal" as defined in
-	 * the SPARQL spec. A "simple literal" is a literal without a language tag or
-	 * a datatype.
+	 * Checks whether the supplied literal is a "simple literal". A
+	 * "simple literal" is a literal with no language tag nor datatype.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
 		return l.getLanguage() == null && l.getDatatype() == null;
@@ -307,17 +344,32 @@ public class QueryEvaluationUtil {
 
 	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
-	 * literal" is either a {@link #isSimpleLiteral(Literal) simple literal} or a
-	 * literal with datatype {@link XMLSchema#STRING xsd:string}.
+	 * literal" is either a simple literal, a plain literal with language tag, or
+	 * a literal with datatype xsd:string.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#func-string
+	 */
+	public static boolean isStringLiteral(Value v) {
+		if (v instanceof Literal) {
+			return isStringLiteral((Literal)v);
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether the supplied literal is a "string literal". A "string
+	 * literal" is either a simple literal, a plain literal with language tag, or
+	 * a literal with datatype xsd:string.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-query/#func-string
 	 */
 	public static boolean isStringLiteral(Literal l) {
 		URI datatype = l.getDatatype();
+		return datatype == null || datatype.equals(XMLSchema.STRING);
+	}
 
-		if (datatype == null) {
-			return l.getLanguage() == null;
-		}
-		else {
-			return datatype.equals(XMLSchema.STRING);
-		}
+	private static boolean isSupportedDatatype(URI datatype) {
+		return (XMLSchema.STRING.equals(datatype) || XMLDatatypeUtil.isNumericDatatype(datatype) || XMLDatatypeUtil.isCalendarDatatype(datatype));
 	}
 }

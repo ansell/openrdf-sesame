@@ -7,14 +7,13 @@ package org.openrdf.sail.rdbms.managers;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.sail.rdbms.cursor.NamespaceCursor;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 
@@ -22,14 +21,13 @@ import org.openrdf.sail.rdbms.schema.NamespacesTable;
  * Manages the namespace prefixes.
  * 
  * @author James Leigh
+ * 
  */
 public class NamespaceManager {
 
-	/** Namespaces records in database, they are never removed */
-	private Set<String> namespaces = new HashSet<String>();
+	private Map<String, NamespaceImpl> byNamespace = new ConcurrentHashMap<String, NamespaceImpl>();
 
-	/** prefix -> namespace **/
-	private Map<String, String> map = new ConcurrentHashMap<String, String>();
+	private Map<String, NamespaceImpl> byPrefix = new ConcurrentHashMap<String, NamespaceImpl>();
 
 	private Connection conn;
 
@@ -65,75 +63,91 @@ public class NamespaceManager {
 		}
 	}
 
+	public NamespaceImpl findNamespace(String namespace)
+		throws RdbmsException
+	{
+		if (namespace == null)
+			return null;
+		if (byNamespace.containsKey(namespace))
+			return byNamespace.get(namespace);
+		try {
+			return create(namespace);
+		}
+		catch (SQLException e) {
+			throw new RdbmsException(e);
+		}
+	}
+
 	private void load()
 		throws SQLException
 	{
-		synchronized (namespaces) {
-			namespaces.clear();
-			Map<String, String> p2n = new HashMap<String, String>();
-			for (Object[] row : table.selectAll()) {
-				String prefix = (String)row[0];
-				String namespace = (String)row[1];
-				if (namespace == null) {
-					continue;
-				}
-				namespaces.add(namespace);
-				if (prefix != null) {
-					p2n.put(prefix, namespace);
-				}
+		Map<String, NamespaceImpl> map = new HashMap<String, NamespaceImpl>();
+		Map<String, NamespaceImpl> prefixes = new HashMap<String, NamespaceImpl>();
+		for (Object[] row : table.selectAll()) {
+			String prefix = (String)row[0];
+			String namespace = (String)row[1];
+			if (namespace == null)
+				continue;
+			NamespaceImpl ns = new NamespaceImpl(prefix, namespace);
+			map.put(namespace, ns);
+			if (prefix != null) {
+				prefixes.put(prefix, ns);
 			}
-			map.clear();
-			map.putAll(p2n);
 		}
+		byNamespace.putAll(map);
+		byPrefix.clear();
+		byPrefix.putAll(prefixes);
+	}
+
+	private synchronized NamespaceImpl create(String namespace)
+		throws SQLException
+	{
+		if (byNamespace.containsKey(namespace))
+			return byNamespace.get(namespace);
+		table.insert(null, namespace);
+		NamespaceImpl ns = new NamespaceImpl(null, namespace);
+		byNamespace.put(ns.getName(), ns);
+		return ns;
 	}
 
 	public void setPrefix(String prefix, String name)
 		throws RdbmsException
 	{
+		NamespaceImpl ns = findNamespace(name);
 		try {
-			synchronized (namespaces) {
-				if (!namespaces.contains(name)) {
-					table.insert(prefix, name);
-					namespaces.add(name);
-					map.put(prefix, name);
-					return;
-				}
-			}
 			table.updatePrefix(prefix, name);
-			map.put(prefix, name);
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
+		ns.setPrefix(prefix);
+		byPrefix.put(prefix, ns);
 	}
 
 	public NamespaceImpl findByPrefix(String prefix) {
-		String namespace = map.get(prefix);
-		if (namespace == null) {
-			return null;
-		}
-		return new NamespaceImpl(prefix, namespace);
+		return byPrefix.get(prefix);
 	}
 
 	public void removePrefix(String prefix)
 		throws RdbmsException
 	{
+		NamespaceImpl ns = findByPrefix(prefix);
+		if (ns == null)
+			return;
 		try {
-			String namespace = map.get(prefix);
-			if (namespace != null) {
-				table.updatePrefix(null, namespace);
-				map.remove(prefix);
-			}
+			table.updatePrefix(prefix, ns.getName());
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
 		}
+		ns.setPrefix(null);
+		byPrefix.remove(prefix);
 	}
 
-	public NamespaceCursor getNamespacesWithPrefix()
+	public Collection<? extends Namespace> getNamespacesWithPrefix()
 		throws RdbmsException
 	{
-		return new NamespaceCursor(map.entrySet().iterator());
+		return byPrefix.values();
 	}
 
 	public void clearPrefixes()

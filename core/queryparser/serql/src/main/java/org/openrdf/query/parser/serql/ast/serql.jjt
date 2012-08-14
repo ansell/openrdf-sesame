@@ -70,7 +70,7 @@ SPECIAL_TOKEN :
 	<SINGLE_LINE_COMMENT: "#" (~["\n","\r"])* ("\n" | "\r" | "\r\n")?>
 }
 
-// Comparision operators
+// Comparison operators
 TOKEN :
 {
 	<EQ: "=">
@@ -103,9 +103,14 @@ TOKEN :
 |	<SELECT: "select">
 |	<CONSTRUCT: "construct">
 |	<DISTINCT: "distinct">
+|	<REDUCED: "reduced">
 |	<FROM: "from">
 |	<CONTEXT: "context">
 |	<WHERE: "where">
+|	<ORDER: "order">
+|	<BY: "by">
+|	<ASC: "asc">
+|	<DESC: "desc">
 |	<LIMIT: "limit">
 |	<OFFSET: "offset">
 |	<TRUE: "true">
@@ -113,13 +118,17 @@ TOKEN :
 |	<NOT: "not">
 |	<AND: "and">
 |	<OR: "or">
+|	<SAMETERM: "sameTerm">
 |	<LIKE: "like">
 |	<IGNORE: "ignore">
 |	<CASE: "case">
+|	<REGEX: "regex">
 |	<LABEL: "label">
 |	<LANG: "lang">
+|	<LANGMATCHES: "langMatches">
 |	<DATATYPE: "datatype">
 |	<LOCALNAME: "localname">
+|	<STR: "str">
 |	<BOUND: "bound">
 |	<NULL: "null">
 |	<ISRESOURCE: "isResource">
@@ -324,13 +333,19 @@ void GraphQuery() #void :
 void SelectQuery() :
 {}
 {
-	Select() [ QueryBody() [ Limit() ] [ Offset() ] ]
+	Select() [ QueryBody() [ OrderBy() ] [ Limit() ] [ Offset() ] ]
 }
 
 void Select() :
 {}
 {
-	<SELECT> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
+	<SELECT>
+
+	[
+		<DISTINCT> {jjtThis.setDistinct(true);}
+	|
+		<REDUCED> {jjtThis.setReduced(true);}
+	]
 
 	(
 		<STAR> {jjtThis.setWildcard(true);}
@@ -342,20 +357,26 @@ void Select() :
 void ProjectionElem() :
 {}
 {
-	ValueExprOrNull() [ <AS> String() ]
+	ValueExprOrNull() [ <AS> ( String() | Var() ) ]
 }
 
 void ConstructQuery() :
 {}
 {
-	Construct() [ QueryBody() [ Limit() ] [ Offset() ] ]
+	Construct() [ QueryBody() [ OrderBy() ] [ Limit() ] [ Offset() ] ]
 }
 
 void Construct() :
 {}
 {
-	<CONSTRUCT> [ <DISTINCT> {jjtThis.setDistinct(true);} ]
-	
+	<CONSTRUCT>
+ 
+	[
+		<DISTINCT> {jjtThis.setDistinct(true);}
+	|
+		<REDUCED> {jjtThis.setReduced(true);}
+	]
+
 	(
 		<STAR> {jjtThis.setWildcard(true);}
 	|
@@ -381,6 +402,12 @@ void Where() :
 	<WHERE> BooleanExpr()
 }
 
+void OrderBy() :
+{ int limit; }
+{
+	<ORDER> <BY> OrderExprList()
+}
+
 void Limit() :
 { int limit; }
 {
@@ -404,7 +431,22 @@ void ContextID() #void :
 void PathExprList() #void :
 {}
 {
-	PathExpr() ( <COMMA> PathExpr() )*
+	(
+		UnionPathExpr() ( <COMMA> UnionPathExpr() )*
+	) #PathExprList(>1)
+}
+
+void UnionPathExpr() #void :
+{}
+{
+	(
+		PathExpr()
+		(
+			// Only when followed by an OptPathExpr or Node (and not a select or construct)
+			LOOKAHEAD( <UNION> (<LPAREN>)* (<LBRACK>|<LBRACE>) )
+			<UNION> PathExpr()
+		)*
+	) #PathExprUnion(>1)
 }
 
 void PathExpr() #void :
@@ -413,6 +455,8 @@ void PathExpr() #void :
 	BasicPathExpr()
 |
 	OptPathExpr()
+|
+	<LPAREN> PathExprList() <RPAREN>
 }
 
 void BasicPathExpr() :
@@ -493,6 +537,24 @@ void ReifiedStat() :
 	<LBRACE> [ NodeElem() ] <RBRACE>
 }
 
+void OrderExprList() #void :
+{}
+{
+	OrderExpr() ( <COMMA> OrderExpr() )*
+}
+
+void OrderExpr() :
+{}
+{
+	ValueExpr()
+
+	[
+		<ASC>
+	|
+		<DESC> {jjtThis.setAscending(false);}
+	]
+}
+
 void BooleanExpr() #void :
 {}
 {
@@ -522,10 +584,13 @@ void BooleanElem() #void :
 |	BooleanConstant()
 |	Not()
 |	Bound()
+|	SameTerm()
 |	IsResource()
 |	IsLiteral()
 |	IsURI()
 |	IsBNode()
+|	LangMatches()
+|	Regex()
 |	Exists()
 |	BooleanValueOp()
 }
@@ -542,6 +607,18 @@ void Not() :
 {}
 {
 	<NOT> BooleanElem()
+}
+
+void Bound():
+{}
+{
+	<BOUND> <LPAREN> Var() <RPAREN>
+}
+
+void SameTerm():
+{}
+{
+	<SAMETERM> <LPAREN> ValueExpr() <COMMA> ValueExpr() <RPAREN>
 }
 
 void IsResource() :
@@ -568,6 +645,18 @@ void IsBNode() :
 	<ISBNODE> <LPAREN> Var() <RPAREN>
 }
 
+void LangMatches() :
+{}
+{
+	<LANGMATCHES> <LPAREN> ValueExpr() <COMMA> ValueExpr() <RPAREN>
+}
+
+void Regex() :
+{}
+{
+	<REGEX> <LPAREN> ValueExpr() <COMMA> ValueExpr() [ <COMMA> ValueExpr() ] <RPAREN>
+}
+
 void Exists() :
 {}
 {
@@ -589,7 +678,12 @@ void BooleanValueOp() #void :
 	|
 		<LIKE> String() [ <IGNORE> <CASE> { jjtThis.setIgnoreCase(true); } ]   #Like(2)
 	|
-		<IN> <LPAREN> TupleQuerySet() <RPAREN>   #In(2)
+		<IN> <LPAREN> 
+		(
+			TupleQuerySet()   #In(2)
+		|	ArgList()         #InList(2)
+		)
+		<RPAREN>
 	)
 }
 
@@ -621,6 +715,7 @@ void ValueExpr() #void :
 |	Label()
 |	Namespace()
 |	LocalName()
+|	Str()
 |	LOOKAHEAD(2) FunctionCall()
 |	Value()
 }
@@ -662,10 +757,10 @@ void LocalName():
 	<LOCALNAME> <LPAREN> Var() <RPAREN>
 }
 
-void Bound():
+void Str():
 {}
 {
-	<BOUND> <LPAREN> Var() <RPAREN>
+	<STR> <LPAREN> ValueExpr() <RPAREN>
 }
 
 void FunctionCall():
@@ -674,7 +769,7 @@ void FunctionCall():
 	URIRef() <LPAREN> [ ArgList() ] <RPAREN>
 }
 
-void ArgList() #void :
+void ArgList() :
 {}
 {
 	ValueExpr() ("," ValueExpr())*

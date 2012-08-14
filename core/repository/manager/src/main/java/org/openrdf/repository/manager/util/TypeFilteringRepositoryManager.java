@@ -14,14 +14,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.model.Model;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.SystemRepository;
-import org.openrdf.store.StoreConfigException;
-import org.openrdf.store.StoreException;
 
 /**
  * @author Herko ter Horst
@@ -43,34 +42,50 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public void initialize()
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		delegate.initialize();
 	}
 
 	@Override
-	public URL getLocation()
-		throws MalformedURLException
-	{
+	public URL getLocation() throws MalformedURLException {
 		return delegate.getLocation();
 	}
 
 	@Override
+	protected Repository createSystemRepository()
+		throws RepositoryException
+	{
+		throw new UnsupportedOperationException(
+				"The system repository cannot be created through this wrapper. This method should not have been called, the delegate should take care of it.");
+	}
+
+	@Override
+	public Repository getSystemRepository() {
+		return delegate.getSystemRepository();
+	}
+
+	@Override
 	public String getNewRepositoryID(String baseName)
-		throws StoreConfigException
+		throws RepositoryException, RepositoryConfigException
 	{
 		return delegate.getNewRepositoryID(baseName);
 	}
 
 	@Override
 	public Set<String> getRepositoryIDs()
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		Set<String> result = new LinkedHashSet<String>();
 
 		for (String id : delegate.getRepositoryIDs()) {
-			if (isCorrectType(id)) {
-				result.add(id);
+			try {
+				if (isCorrectType(id)) {
+					result.add(id);
+				}
+			}
+			catch (RepositoryConfigException e) {
+				throw new RepositoryException(e);
 			}
 		}
 
@@ -79,7 +94,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean hasRepositoryConfig(String repositoryID)
-		throws StoreConfigException
+		throws RepositoryException, RepositoryConfigException
 	{
 		boolean result = false;
 
@@ -91,17 +106,16 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public Model getRepositoryConfig(String repositoryID)
-		throws StoreConfigException
+	public RepositoryConfig getRepositoryConfig(String repositoryID)
+		throws RepositoryConfigException, RepositoryException
 	{
-		Model result = delegate.getRepositoryConfig(repositoryID);
+		RepositoryConfig result = delegate.getRepositoryConfig(repositoryID);
 
 		if (result != null) {
 			if (!isCorrectType(result)) {
-				RepositoryConfig config = parse(result);
 				logger.debug(
 						"Surpressing retrieval of repository {}: repository type {} did not match expected type {}",
-						new Object[] { repositoryID, config.getRepositoryImplConfig().getType(), type });
+						new Object[] { result.getID(), result.getRepositoryImplConfig().getType(), type });
 
 				result = null;
 			}
@@ -111,11 +125,11 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public String addRepositoryConfig(String id, Model config)
-		throws StoreConfigException, StoreException
+	public void addRepositoryConfig(RepositoryConfig config)
+		throws RepositoryException, RepositoryConfigException
 	{
 		if (isCorrectType(config)) {
-			return delegate.addRepositoryConfig(id, config);
+			delegate.addRepositoryConfig(config);
 		}
 		else {
 			throw new UnsupportedOperationException("Only repositories of type " + type
@@ -125,7 +139,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public boolean removeRepositoryConfig(String repositoryID)
-		throws StoreConfigException, StoreException
+		throws RepositoryException, RepositoryConfigException
 	{
 		boolean result = false;
 
@@ -138,7 +152,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Repository getRepository(String id)
-		throws StoreConfigException, StoreException
+		throws RepositoryConfigException, RepositoryException
 	{
 		Repository result = null;
 
@@ -159,7 +173,10 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 					result.add(id);
 				}
 			}
-			catch (StoreConfigException e) {
+			catch (RepositoryConfigException e) {
+				logger.error("Failed to verify repository type", e);
+			}
+			catch (RepositoryException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 		}
@@ -179,10 +196,10 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 					result.add(repository);
 				}
 			}
-			catch (StoreConfigException e) {
+			catch (RepositoryConfigException e) {
 				logger.error("Failed to verify repository type", e);
 			}
-			catch (StoreException e) {
+			catch (RepositoryException e) {
 				logger.error("Failed to verify repository type", e);
 			}
 		}
@@ -192,7 +209,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	protected Repository createRepository(String id)
-		throws StoreConfigException, StoreException
+		throws RepositoryConfigException, RepositoryException
 	{
 		throw new UnsupportedOperationException(
 				"Repositories cannot be created through this wrapper. This method should not have been called, the delegate should take care of it.");
@@ -200,13 +217,18 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public Collection<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		for (RepositoryInfo repInfo : delegate.getAllRepositoryInfos(skipSystemRepo)) {
-			if (isCorrectType(repInfo.getId())) {
-				result.add(repInfo);
+			try {
+				if (isCorrectType(repInfo.getId())) {
+					result.add(repInfo);
+				}
+			}
+			catch (RepositoryConfigException e) {
+				throw new RepositoryException(e.getMessage(), e);
 			}
 		}
 
@@ -215,13 +237,18 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws StoreConfigException
+		throws RepositoryException
 	{
-		if (isCorrectType(id)) {
-			return delegate.getRepositoryInfo(id);
-		}
+		try {
+			if (isCorrectType(id)) {
+				return delegate.getRepositoryInfo(id);
+			}
 
-		return null;
+			return null;
+		}
+		catch (RepositoryConfigException e) {
+			throw new RepositoryException(e.getMessage(), e);
+		}
 	}
 
 	@Override
@@ -243,7 +270,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	protected boolean isCorrectType(String repositoryID)
-		throws StoreConfigException
+		throws RepositoryConfigException, RepositoryException
 	{
 		// first, check for SystemRepository, because we can't get a repository
 		// config object for it
@@ -254,23 +281,13 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 		return result;
 	}
 
-	protected boolean isCorrectType(Model repositoryConfig)
-		throws StoreConfigException
-	{
+	protected boolean isCorrectType(RepositoryConfig repositoryConfig) {
 		boolean result = false;
 
 		if (repositoryConfig != null) {
-			result = parse(repositoryConfig).getRepositoryImplConfig().getType().equals(type);
+			result = repositoryConfig.getRepositoryImplConfig().getType().equals(type);
 		}
 
 		return result;
-	}
-
-	private RepositoryConfig parse(Model config)
-		throws StoreConfigException
-	{
-		RepositoryConfig repConfig = RepositoryConfig.create(config);
-		repConfig.validate();
-		return repConfig;
 	}
 }

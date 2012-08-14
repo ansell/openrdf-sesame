@@ -59,10 +59,6 @@ public class N3Writer implements RDFWriter {
 		return RDFFormat.N3;
 	}
 
-	public void setBaseURI(String baseURI) {
-		ttlWriter.setBaseURI(baseURI);
-	}
-
 	public void startRDF()
 		throws RDFHandlerException
 	{

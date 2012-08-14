@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail;
 
-import org.openrdf.store.StoreException;
 
 /**
  * An interface for an RDF Storage And Inference Layer. RDF Sails can store RDF
@@ -24,12 +23,12 @@ public interface NotifyingSail extends Sail {
 	 * this method might block when there is another open connection on this
 	 * Sail.
 	 * 
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If no transaction could be started, for example because the Sail
 	 *         is not writable.
 	 */
 	public NotifyingSailConnection getConnection()
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Adds the specified SailChangedListener to receive events when the data in

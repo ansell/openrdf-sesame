@@ -25,6 +25,7 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * factories.
  * 
  * @author James Leigh
+ * 
  */
 public class SelectQueryOptimizerFactory {
 
@@ -70,6 +71,7 @@ public class SelectQueryOptimizerFactory {
 		optimizer.setSqlExprFactory(sql);
 		optimizer.setValueFactory(vf);
 		optimizer.setTransTableManager(tables);
+		optimizer.setIdSequence(ids);
 		return optimizer;
 	}
 

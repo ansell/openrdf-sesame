@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -22,30 +25,38 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.GZipUtil;
 import info.aduna.io.ZipUtil;
+import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
 
-import org.openrdf.cursor.Cursor;
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.util.RDFInserter;
-import org.openrdf.result.ModelResult;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.store.StoreException;
+import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
  * Abstract class implementing most 'convenience' methods in the
@@ -66,42 +77,80 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private final Repository repository;
 
+	private volatile ParserConfig parserConfig = new ParserConfig(true, false, false, DatatypeHandling.VERIFY);
+	
+	private volatile boolean isOpen;
+
+	private volatile boolean autoCommit;
+
 	protected RepositoryConnectionBase(Repository repository) {
 		this.repository = repository;
+		this.isOpen = true;
+		this.autoCommit = true;
 	}
 
+	public void setParserConfig(ParserConfig parserConfig) {
+		this.parserConfig = parserConfig;
+	}
+	
+	public ParserConfig getParserConfig() {
+		return parserConfig;
+	}
 	public Repository getRepository() {
 		return repository;
 	}
 
+	public ValueFactory getValueFactory() {
+		return getRepository().getValueFactory();
+	}
+
+	public boolean isOpen()
+		throws RepositoryException
+	{
+		return isOpen;
+	}
+
+	public void close()
+		throws RepositoryException
+	{
+		isOpen = false;
+	}
+
 	public Query prepareQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return prepareQuery(ql, query, null);
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return prepareTupleQuery(ql, query, null);
 	}
 
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return prepareGraphQuery(ql, query, null);
 	}
 
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return prepareBooleanQuery(ql, query, null);
 	}
 
-	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	public Update prepareUpdate(QueryLanguage ql, String update)
+		throws MalformedQueryException, RepositoryException
 	{
-		ModelResult stIter = match(subj, pred, obj, includeInferred, contexts);
+		return prepareUpdate(ql, update, null);
+	}
+
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws RepositoryException
+	{
+		RepositoryResult<Statement> stIter = getStatements(subj, pred, obj, includeInferred, contexts);
 		try {
 			return stIter.hasNext();
 		}
@@ -111,25 +160,58 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
-		return hasMatch(st.getSubject(), st.getPredicate(), st.getObject(), includeInferred, contexts);
+		return hasStatement(st.getSubject(), st.getPredicate(), st.getObject(), includeInferred, contexts);
 	}
 
 	public boolean isEmpty()
-		throws StoreException
+		throws RepositoryException
 	{
 		return size() == 0;
 	}
 
-	public <H extends RDFHandler> H export(H handler, Resource... contexts)
-		throws StoreException, RDFHandlerException
+	public void export(RDFHandler handler, Resource... contexts)
+		throws RepositoryException, RDFHandlerException
 	{
-		return exportMatch(null, null, null, false, handler, contexts);
+		exportStatements(null, null, null, false, handler, contexts);
+	}
+
+	public void setAutoCommit(boolean autoCommit)
+		throws RepositoryException
+	{
+		if (autoCommit == this.autoCommit) {
+			return;
+		}
+
+		this.autoCommit = autoCommit;
+
+		// if we are switching from non-autocommit to autocommit mode, commit any
+		// pending updates
+		if (autoCommit) {
+			commit();
+		}
+	}
+
+	public boolean isAutoCommit()
+		throws RepositoryException
+	{
+		return autoCommit;
+	}
+
+	/**
+	 * Calls {@link #commit} when in auto-commit mode.
+	 */
+	protected void autoCommit()
+		throws RepositoryException
+	{
+		if (isAutoCommit()) {
+			commit();
+		}
 	}
 
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
 		if (baseURI == null) {
 			// default baseURI to file
@@ -149,16 +231,45 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
 		}
-		if (dataFormat == null) {
-			dataFormat = Rio.getParserFormatForFileName(url.getPath());
+
+		URLConnection con = url.openConnection();
+
+		// Set appropriate Accept headers
+		if (dataFormat != null) {
+			for (String mimeType : dataFormat.getMIMETypes()) {
+				con.addRequestProperty("Accept", mimeType);
+			}
+		}
+		else {
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, true, null);
+			for (String acceptParam : acceptParams) {
+				con.addRequestProperty("Accept", acceptParam);
+			}
 		}
 
-		InputStream in = url.openStream();
+		InputStream in = con.getInputStream();
+
+		if (dataFormat == null) {
+			// Try to determine the data's MIME type
+			String mimeType = con.getContentType();
+			int semiColonIdx = mimeType.indexOf(';');
+			if (semiColonIdx >= 0) {
+				mimeType = mimeType.substring(0, semiColonIdx);
+			}
+			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
+
+			// Fall back to using file name extensions
+			if (dataFormat == null) {
+				dataFormat = Rio.getParserFormatForFileName(url.getPath());
+			}
+		}
+
 		try {
 			add(in, baseURI, dataFormat, contexts);
 		}
@@ -168,7 +279,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
 		if (!in.markSupported()) {
 			in = new BufferedInputStream(in, 1024);
@@ -186,14 +297,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	private void addZip(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
 		boolean autoCommit = isAutoCommit();
-
-		if (autoCommit) {
-			// Add the zip in a single transaction
-			begin();
-		}
+		setAutoCommit(false);
 
 		try {
 			ZipInputStream zipIn = new ZipInputStream(in);
@@ -210,13 +317,16 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 						// Prevent parser (Xerces) from closing the input stream
 						FilterInputStream wrapper = new FilterInputStream(zipIn) {
 
-							@Override
 							public void close() {
 							}
 						};
 						add(wrapper, baseURI, format, contexts);
 					}
 					catch (RDFParseException e) {
+						if (autoCommit) {
+							rollback();
+						}
+
 						String msg = e.getMessage() + " in " + entry.getName();
 						RDFParseException pe = new RDFParseException(msg, e.getLineNumber(), e.getColumnNumber());
 						pe.initCause(e);
@@ -230,21 +340,26 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			finally {
 				zipIn.close();
 			}
-
-			if (autoCommit) {
-				commit();
-			}
 		}
-		finally {
-			if (autoCommit && !isAutoCommit()) {
-				// restore auto-commit by rolling back
+		catch (IOException e) {
+			if (autoCommit) {
 				rollback();
 			}
+			throw e;
+		}
+		catch (RepositoryException e) {
+			if (autoCommit) {
+				rollback();
+			}
+			throw e;
+		}
+		finally {
+			setAutoCommit(autoCommit);
 		}
 	}
 
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
 		addInputStreamOrReader(reader, baseURI, dataFormat, contexts);
 	}
@@ -265,27 +380,24 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	 * @throws IOException
 	 * @throws UnsupportedRDFormatException
 	 * @throws RDFParseException
-	 * @throws StoreException
+	 * @throws RepositoryException
 	 */
 	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
 			Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
-		RDFParser rdfParser = Rio.createParser(dataFormat, getValueFactory());
+		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		rdfParser.setVerifyData(true);
-		rdfParser.setStopAtFirstError(true);
-		rdfParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		RDFParser rdfParser = Rio.createParser(dataFormat, getRepository().getValueFactory());
+		rdfParser.setParserConfig(getParserConfig());
+		rdfParser.setParseErrorListener(new ParseErrorLogger());
 
 		RDFInserter rdfInserter = new RDFInserter(this);
 		rdfInserter.enforceContext(contexts);
 		rdfParser.setRDFHandler(rdfInserter);
 
 		boolean autoCommit = isAutoCommit();
-		if (autoCommit) {
-			// Add the stream in a single transaction
-			begin();
-		}
+		setAutoCommit(false);
 
 		try {
 			if (inputStreamOrReader instanceof InputStream) {
@@ -299,222 +411,217 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 						"inputStreamOrReader must be an InputStream or a Reader, is a: "
 								+ inputStreamOrReader.getClass());
 			}
-
-			if (autoCommit) {
-				commit();
-			}
 		}
 		catch (RDFHandlerException e) {
-			// RDFInserter only throws wrapped StoreExceptions
-			throw (StoreException)e.getCause();
-		}
-		finally {
-			if (autoCommit && !isAutoCommit()) {
-				// restore auto-commit by rolling back
+			if (autoCommit) {
 				rollback();
 			}
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RuntimeException e) {
+			if (autoCommit) {
+				rollback();
+			}
+			throw e;
+		}
+		finally {
+			setAutoCommit(autoCommit);
 		}
 	}
 
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
 		boolean autoCommit = isAutoCommit();
-		if (autoCommit) {
-			// Add the statements in a single transaction
-			begin();
-		}
+		setAutoCommit(false);
 
 		try {
 			for (Statement st : statements) {
-				add(st, contexts);
-			}
-
-			if (autoCommit) {
-				commit();
+				addWithoutCommit(st, contexts);
 			}
 		}
-		finally {
-			if (autoCommit && !isAutoCommit()) {
-				// restore auto-commit by rolling back
+		catch (RepositoryException e) {
+			if (autoCommit) {
 				rollback();
 			}
+			throw e;
+		}
+		catch (RuntimeException e) {
+			if (autoCommit) {
+				rollback();
+			}
+			throw e;
+		}
+		finally {
+			setAutoCommit(autoCommit);
 		}
 	}
 
-	public void add(Cursor<? extends Statement> statementIter, Resource... contexts)
-		throws StoreException
+	public <E extends Exception> void add(Iteration<? extends Statement, E> statements, Resource... contexts)
+		throws RepositoryException, E
 	{
-		boolean autoCommit = isAutoCommit();
-		if (autoCommit) {
-			// Add the statements in a single transaction
-			begin();
-		}
-
 		try {
-			Statement st;
-			while ((st = statementIter.next()) != null) {
-				add(st, contexts);
-			}
+			OpenRDFUtil.verifyContextNotNull(contexts);
 
-			if (autoCommit) {
-				commit();
+			boolean autoCommit = isAutoCommit();
+			setAutoCommit(false);
+
+			try {
+				while (statements.hasNext()) {
+					addWithoutCommit(statements.next(), contexts);
+				}
+			}
+			catch (RepositoryException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
+			}
+			catch (RuntimeException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
+			}
+			finally {
+				setAutoCommit(autoCommit);
 			}
 		}
 		finally {
-			try {
-				if (autoCommit && !isAutoCommit()) {
-					// restore auto-commit by rolling back
-					rollback();
-				}
-			}
-			finally {
-				statementIter.close();
-			}
+			Iterations.closeCloseable(statements);
 		}
 	}
 
 	public void add(Statement st, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
-			contexts = new Resource[] { st.getContext() };
-		}
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		addWithoutCommit(st, contexts);
+		autoCommit();
+	}
 
-		add(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		addWithoutCommit(subject, predicate, object, contexts);
+		autoCommit();
 	}
 
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
 		boolean autoCommit = isAutoCommit();
-		if (autoCommit) {
-			// Add the statements in a single transaction
-			begin();
-		}
+		setAutoCommit(false);
 
 		try {
 			for (Statement st : statements) {
 				remove(st, contexts);
 			}
-
-			if (autoCommit) {
-				commit();
-			}
 		}
-		finally {
-			if (autoCommit && !isAutoCommit()) {
-				// restore auto-commit by rolling back
+		catch (RepositoryException e) {
+			if (autoCommit) {
 				rollback();
 			}
+			throw e;
+		}
+		catch (RuntimeException e) {
+			if (autoCommit) {
+				rollback();
+			}
+			throw e;
+		}
+		finally {
+			setAutoCommit(autoCommit);
 		}
 	}
 
-	public void remove(Cursor<? extends Statement> statementIter, Resource... contexts)
-		throws StoreException
+	public <E extends Exception> void remove(Iteration<? extends Statement, E> statements,
+			Resource... contexts)
+		throws RepositoryException, E
 	{
-		boolean autoCommit = isAutoCommit();
-		if (autoCommit) {
-			// Add the statements in a single transaction
-			begin();
-		}
-
 		try {
-			Statement st;
-			while ((st = statementIter.next()) != null) {
-				remove(st, contexts);
-			}
+			boolean autoCommit = isAutoCommit();
+			setAutoCommit(false);
 
-			if (autoCommit) {
-				commit();
+			try {
+				while (statements.hasNext()) {
+					remove(statements.next(), contexts);
+				}
+			}
+			catch (RepositoryException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
+			}
+			catch (RuntimeException e) {
+				if (autoCommit) {
+					rollback();
+				}
+				throw e;
+			}
+			finally {
+				setAutoCommit(autoCommit);
 			}
 		}
 		finally {
-			try {
-				if (autoCommit && !isAutoCommit()) {
-					// restore auto-commit by rolling back
-					rollback();
-				}
-			}
-			finally {
-				statementIter.close();
-			}
+			Iterations.closeCloseable(statements);
 		}
 	}
 
 	public void remove(Statement st, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
-		if (contexts != null && contexts.length == 0 && st.getContext() != null) {
-			contexts = new Resource[] { st.getContext() };
-		}
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		removeWithoutCommit(st, contexts);
+		autoCommit();
+	}
 
-		removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		removeWithoutCommit(subject, predicate, object, contexts);
+		autoCommit();
 	}
 
 	public void clear(Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
-		removeMatch(null, null, null, contexts);
+		remove(null, null, null, contexts);
 	}
 
-	public long size(Resource... contexts)
-		throws StoreException
+	protected void addWithoutCommit(Statement st, Resource... contexts)
+		throws RepositoryException
 	{
-		return sizeMatch(null, null, null, false, contexts);
+		if (contexts.length == 0 && st.getContext() != null) {
+			contexts = new Resource[] { st.getContext() };
+		}
+
+		addWithoutCommit(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
-	/**
-	 * @deprecated Use {@link #match(Resource,URI,Value,boolean,Resource...)}
-	 *             instead
-	 */
-	@Deprecated
-	public final ModelResult getStatements(Resource subj, URI pred, Value obj, boolean inf, Resource... ctx)
-		throws StoreException
-	{
-		return match(subj, pred, obj, inf, ctx);
-	}
-
-	/**
-	 * @deprecated Use
-	 *             {@link #exportMatch(Resource,URI,Value,boolean,RDFHandler,Resource...)}
-	 *             instead
-	 */
-	@Deprecated
-	public final void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
-			RDFHandler handler, Resource... contexts)
-		throws RDFHandlerException, StoreException
-	{
-		exportMatch(subj, pred, obj, includeInferred, handler, contexts);
-	}
-
-	/**
-	 * @deprecated Use {@link #sizeMatch(Resource,URI,Value,boolean,Resource...)}
-	 *             instead
-	 */
-	@Deprecated
-	public final long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return sizeMatch(subj, pred, obj, includeInferred, contexts);
-	}
-
-	/**
-	 * @deprecated Use {@link #hasMatch(Resource,URI,Value,boolean,Resource...)}
-	 *             instead
-	 */
-	@Deprecated
-	public final boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	protected abstract void addWithoutCommit(Resource subject, URI predicate, Value object,
 			Resource... contexts)
-		throws StoreException
+		throws RepositoryException;
+
+	protected void removeWithoutCommit(Statement st, Resource... contexts)
+		throws RepositoryException
 	{
-		return hasMatch(subj, pred, obj, includeInferred, contexts);
+		if (contexts.length == 0 && st.getContext() != null) {
+			contexts = new Resource[] { st.getContext() };
+		}
+
+		removeWithoutCommit(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
-	@Deprecated
-	public final void remove(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
-	{
-		removeMatch(subject, predicate, object, contexts);
-	}
+	protected abstract void removeWithoutCommit(Resource subject, URI predicate, Value object,
+			Resource... contexts)
+		throws RepositoryException;
 }

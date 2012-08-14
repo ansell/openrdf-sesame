@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,21 +10,21 @@ import static org.openrdf.query.QueryLanguage.SPARQL;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,47 +39,56 @@ import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.FileUtil;
-import info.aduna.io.MavenUtil;
+import info.aduna.app.AppConfiguration;
+import info.aduna.app.AppVersion;
+import info.aduna.io.IOUtil;
+import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.StringUtil;
 
-import org.openrdf.http.client.SesameClient;
-import org.openrdf.http.client.connections.HTTPConnectionPool;
+import org.openrdf.Sesame;
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
+import org.openrdf.model.Graph;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.EvaluationException;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.parser.BooleanQueryModel;
-import org.openrdf.query.parser.GraphQueryModel;
+import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedOperation;
+import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.query.parser.serql.SeRQLUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryLockedException;
+import org.openrdf.repository.RepositoryReadOnlyException;
+import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.config.RepositoryConfigSchema;
+import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.manager.templates.ConfigProperty;
-import org.openrdf.repository.manager.templates.ConfigTemplate;
-import org.openrdf.result.ContextResult;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -88,13 +97,11 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesUtil;
 import org.openrdf.sail.LockManager;
 import org.openrdf.sail.SailLockedException;
-import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.store.StoreConfigException;
-import org.openrdf.store.StoreException;
 
 /**
  * The Sesame Console is a command-line application for interacting with Sesame.
@@ -111,28 +118,17 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-console",
-			"devel");
+	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
 
-	public static final Map<String, Level> LOG_LEVELS;
-
-	static {
-		Map<String, Level> logLevels = new LinkedHashMap<String, Level>();
-		logLevels.put("none", Level.OFF);
-		logLevels.put("error", Level.SEVERE);
-		logLevels.put("warning", Level.WARNING);
-		logLevels.put("info", Level.INFO);
-		logLevels.put("debug", Level.FINE);
-		LOG_LEVELS = Collections.unmodifiableMap(logLevels);
-	}
+	private static final String TEMPLATES_DIR = "templates";
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
-	private final java.util.logging.Logger jdkRootLogger = java.util.logging.Logger.getLogger("");
+	private final AppConfiguration appConfig = new AppConfiguration(APP_NAME, APP_NAME, VERSION);
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -177,7 +173,6 @@ public class Console {
 		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 
 		options.addOption(helpOption);
-		options.addOption(versionOption);
 
 		OptionGroup connectGroup = new OptionGroup();
 		connectGroup.addOption(serverURLOption);
@@ -195,7 +190,7 @@ public class Console {
 			}
 
 			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(VERSION);
+				System.out.println(console.appConfig.getFullName());
 				System.exit(0);
 			}
 
@@ -253,8 +248,7 @@ public class Console {
 	public Console()
 		throws IOException
 	{
-		// Set log level to WARNING by default
-		jdkRootLogger.setLevel(Level.WARNING);
+		appConfig.init();
 
 		in = new BufferedReader(new InputStreamReader(System.in));
 		out = System.out;
@@ -290,14 +284,9 @@ public class Console {
 	private boolean executeCommand(String command)
 		throws IOException
 	{
-		String[] tokens = parse(command);
-
-		if (tokens.length == 0) {
-			return false;
-		}
-
-		String operation = tokens[0].toLowerCase(Locale.ENGLISH);
 		boolean exit = false;
+		String[] tokens = parse(command);
+		String operation = tokens[0].toLowerCase(Locale.ENGLISH);
 
 		if ("quit".equals(operation) || "exit".equals(operation)) {
 			exit = true;
@@ -450,27 +439,20 @@ public class Console {
 	}
 
 	private void printInfo() {
-		writeln(APP_NAME + " " + VERSION);
+		writeln(appConfig.getFullName());
+		writeln("Data dir: " + appConfig.getDataDir());
 		writeln("Connected to: " + (managerID == null ? "-" : managerID));
-		try {
-			writeln("Data location: " + (manager == null ? "-" : manager.getLocation()));
-		}
-		catch (MalformedURLException e) {
-			writeError("Unable to show data location (" + e.getMessage() + ")");
-		}
 	}
 
 	private void printHelpConnect() {
 		writeln("Usage:");
-		writeln("connect default           Opens the default repository set for this console");
-		writeln("connect <dataDirectory>   Opens the repository set in the specified data dir");
-		writeln("connect <serverURL>       Connects to a Sesame server");
+		writeln("connect default                         Opens the default repository set for this console");
+		writeln("connect <dataDirectory>                 Opens the repository set in the specified data dir");
+		writeln("connect <serverURL> [user [password]]   Connects to a Sesame server with optional credentials");
 	}
 
-	private void connect(String[] tokens)
-		throws IOException
-	{
-		if (tokens.length != 2) {
+	private void connect(String[] tokens) {
+		if (tokens.length < 2) {
 			printHelpConnect();
 			return;
 		}
@@ -484,7 +466,9 @@ public class Console {
 			try {
 				new URL(target);
 				// target is a valid URL
-				connectRemote(target);
+				String username = (tokens.length > 2) ? tokens[2] : null;
+				String password = (tokens.length > 3) ? tokens[3] : null;
+				connectRemote(target, username, password);
 			}
 			catch (MalformedURLException e) {
 				// assume target is a directory path
@@ -493,31 +477,8 @@ public class Console {
 		}
 	}
 
-	private boolean connectDefault()
-		throws IOException
-	{
-		return connectLocal(createTempDir().getPath());
-	}
-
-	private File createTempDir()
-		throws IOException
-	{
-		final File dir = FileUtil.createTempDir("sesame");
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-
-			@Override
-			public void run() {
-				try {
-					FileUtil.deleteDir(dir);
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-
-		return dir;
+	private boolean connectDefault() {
+		return installNewManager(new LocalRepositoryManager(appConfig.getDataDir()), "default data directory");
 	}
 
 	private boolean connectLocal(String path) {
@@ -531,23 +492,59 @@ public class Console {
 	}
 
 	private boolean connectRemote(String url) {
+		return connectRemote(url, null, null);
+	}
+
+	private boolean connectRemote(final String url, final String user, String pass) {
+		if (pass == null) {
+			pass = "";
+		}
+
 		try {
 			// Ping server
-			HTTPConnectionPool pool = new HTTPConnectionPool(url);
+			HTTPClient httpClient = new HTTPClient();
 			try {
-				new SesameClient(pool).protocol().get();
+				httpClient.setServerURL(url);
+
+				if (user != null) {
+					httpClient.setUsernameAndPassword(user, pass);
+				}
+
+				// Ping the server
+				httpClient.getServerProtocol();
 			}
 			finally {
-				pool.shutdown();
+				httpClient.shutDown();
 			}
 
-			return installNewManager(new RemoteRepositoryManager(url), url);
+			RemoteRepositoryManager manager = new RemoteRepositoryManager(url);
+			manager.setUsernameAndPassword(user, pass);
+			return installNewManager(manager, url);
 		}
 		catch (UnauthorizedException e) {
-			// FIXME: handle authentication
-			writeError("Not authorized to access the server");
+			if (user != null && pass.length() > 0) {
+				writeError("Authentication for user '" + user + "' failed");
+				logger.warn("Authentication for user '" + user + "' failed", e);
+			}
+			else {
+				// Ask user for credentials
+				try {
+					writeln("Authentication required");
+					String username = readln("Username:");
+					String password = readPassword("Password:");
+					connectRemote(url, username, password);
+				}
+				catch (IOException ioe) {
+					writeError("Failed to read user credentials");
+					logger.warn("Failed to read user credentials", ioe);
+				}
+			}
 		}
-		catch (StoreException e) {
+		catch (IOException e) {
+			writeError("Failed to access the server: " + e.getMessage());
+			logger.warn("Failed to access the server", e);
+		}
+		catch (RepositoryException e) {
 			writeError("Failed to access the server: " + e.getMessage());
 			logger.warn("Failed to access the server", e);
 		}
@@ -571,7 +568,7 @@ public class Console {
 			writeln("Connected to " + managerID);
 			return true;
 		}
-		catch (StoreConfigException e) {
+		catch (RepositoryException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to install new manager", e);
 			return false;
@@ -617,48 +614,69 @@ public class Console {
 	private void createRepository(String templateName)
 		throws IOException
 	{
+		Repository systemRepo = manager.getSystemRepository();
+
 		try {
-			ConfigTemplate configTemplate = manager.getConfigTemplateManager().getTemplate(templateName);
-			if (configTemplate == null) {
-				writeError("No template called " + templateName + " found");
-				return;
+			// FIXME: remove assumption of .ttl extension
+			String templateFileName = templateName + ".ttl";
+
+			File templatesDir = new File(appConfig.getDataDir(), TEMPLATES_DIR);
+
+			File templateFile = new File(templatesDir, templateFileName);
+			InputStream templateStream;
+
+			if (templateFile.exists()) {
+				if (!templateFile.canRead()) {
+					writeError("Not allowed to read template file: " + templateFile);
+					return;
+				}
+
+				templateStream = new FileInputStream(templateFile);
+			}
+			else {
+				// Try classpath for built-ins
+				templateStream = Console.class.getResourceAsStream(templateFileName);
+
+				if (templateStream == null) {
+					writeError("No template called " + templateName + " found in " + templatesDir);
+					return;
+				}
 			}
 
-			List<ConfigProperty> properties = configTemplate.getProperties();
+			String template;
+			try {
+				template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
+			}
+			finally {
+				templateStream.close();
+			}
 
-			if (!properties.isEmpty()) {
+			ConfigTemplate configTemplate = new ConfigTemplate(template);
+
+			Map<String, String> valueMap = new HashMap<String, String>();
+			Map<String, List<String>> variableMap = configTemplate.getVariableMap();
+
+			if (!variableMap.isEmpty()) {
 				writeln("Please specify values for the following variables:");
 			}
 
-			// prompt for repository ID
-			write("Repository ID [" + templateName + "]: ");
-			String repositoryID = in.readLine();
-			if (repositoryID == null) {
-				// EOF
-				return;
-			}
-			else if (repositoryID.trim().length() < 1) {
-				repositoryID = templateName;
-			}
+			for (Map.Entry<String, List<String>> entry : variableMap.entrySet()) {
+				String var = entry.getKey();
+				List<String> values = entry.getValue();
 
-			// other properties
-			for (ConfigProperty property : properties) {
-				List<Literal> values = property.getPossibleLiterals();
-				Literal defaultLiteral = property.getDefaultLiteral();
-
-				write(property.getLabel());
+				write(var);
 				if (values.size() > 1) {
 					write(" (");
 					for (int i = 0; i < values.size(); i++) {
 						if (i > 0) {
 							write("|");
 						}
-						write(values.get(i).stringValue());
+						write(values.get(i));
 					}
 					write(")");
 				}
-				if (defaultLiteral != null) {
-					write(" [" + defaultLiteral.stringValue() + "]");
+				if (!values.isEmpty()) {
+					write(" [" + values.get(0) + "]");
 				}
 				write(": ");
 
@@ -669,14 +687,29 @@ public class Console {
 				}
 
 				value = value.trim();
-				if (value.length() > 0) {
-					property.setValue(new LiteralImpl(value));
+				if (value.length() == 0) {
+					value = null;
 				}
+				valueMap.put(var, value);
 			}
 
-			Model repConfig = configTemplate.createConfig(properties);
+			String configString = configTemplate.render(valueMap);
+			// writeln(configString);
 
-			if (manager.hasRepositoryConfig(repositoryID)) {
+			ValueFactory vf = systemRepo.getValueFactory();
+
+			Graph graph = new GraphImpl(vf);
+
+			RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, vf);
+			rdfParser.setRDFHandler(new StatementCollector(graph));
+			rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
+
+			Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
+					RepositoryConfigSchema.REPOSITORY);
+			RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
+			repConfig.validate();
+
+			if (RepositoryConfigUtil.hasRepositoryConfig(systemRepo, repConfig.getID())) {
 				boolean proceed = askProceed(
 						"WARNING: you are about to overwrite the configuration of an existing repository!", false);
 
@@ -686,8 +719,20 @@ public class Console {
 				}
 			}
 
-			manager.addRepositoryConfig(repositoryID, repConfig);
-			writeln("Repository created");
+			try {
+				RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
+				writeln("Repository created");
+			}
+			catch (RepositoryReadOnlyException e) {
+				if (tryToRemoveLock(e, systemRepo)) {
+					RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
+					writeln("Repository created");
+				}
+				else {
+					writeError("Failed to create repository");
+					logger.error("Failed to create repository", e);
+				}
+			}
 		}
 		catch (Exception e) {
 			writeError(e.getMessage());
@@ -729,13 +774,28 @@ public class Console {
 				writeln("Drop aborted");
 			}
 		}
-		catch (StoreConfigException e) {
+		catch (RepositoryConfigException e) {
 			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
 			logger.warn("Unable to drop repository '" + id + "'", e);
 		}
-		catch (StoreException e) {
-			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
-			logger.warn("Unable to drop repository '" + id + "'", e);
+		catch (RepositoryReadOnlyException e) {
+			try {
+				if (tryToRemoveLock(e, manager.getSystemRepository())) {
+					dropRepository(tokens);
+				}
+				else {
+					writeError("Failed to drop repository");
+					logger.error("Failed to drop repository", e);
+				}
+			}
+			catch (RepositoryException e2) {
+				writeError("Failed to restart system: " + e2.getMessage());
+				logger.error("Failed to restart system", e2);
+			}
+		}
+		catch (RepositoryException e) {
+			writeError("Failed to update configuration in system repository: " + e.getMessage());
+			logger.warn("Failed to update configuration in system repository", e);
 		}
 	}
 
@@ -769,7 +829,7 @@ public class Console {
 				writeError("Unknown repository: '" + id + "'");
 			}
 		}
-		catch (SailLockedException e) {
+		catch (RepositoryLockedException e) {
 			try {
 				if (tryToRemoveLock(e)) {
 					openRepository(id);
@@ -783,11 +843,11 @@ public class Console {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
-		catch (StoreConfigException e) {
+		catch (RepositoryConfigException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to open repository", e);
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to open repository", e);
 		}
@@ -865,7 +925,7 @@ public class Console {
 							write(" (\"" + repInfo.getDescription() + "\")");
 						}
 					}
-					catch (StoreConfigException e) {
+					catch (RepositoryException e) {
 						write(" [ERROR: " + e.getMessage() + "]");
 					}
 					writeln();
@@ -873,7 +933,7 @@ public class Console {
 				writeln("+----------");
 			}
 		}
-		catch (StoreConfigException e) {
+		catch (RepositoryException e) {
 			writeError("Failed to get repository list: " + e.getMessage());
 			logger.error("Failed to get repository list", e);
 		}
@@ -890,7 +950,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				NamespaceResult namespaces = con.getNamespaces();
+				CloseableIteration<? extends Namespace, RepositoryException> namespaces = con.getNamespaces();
 
 				try {
 					if (namespaces.hasNext()) {
@@ -913,7 +973,7 @@ public class Console {
 				con.close();
 			}
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to show namespaces", e);
 		}
@@ -930,7 +990,7 @@ public class Console {
 			con = repository.getConnection();
 
 			try {
-				ContextResult contexts = con.getContextIDs();
+				CloseableIteration<? extends Resource, RepositoryException> contexts = con.getContextIDs();
 
 				try {
 					if (contexts.hasNext()) {
@@ -953,7 +1013,7 @@ public class Console {
 				con.close();
 			}
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			writeError(e.getMessage());
 			logger.error("Failed to show contexts", e);
 		}
@@ -1012,32 +1072,30 @@ public class Console {
 		}
 
 		try {
+			Resource[] contexts = new Resource[0];
 
-			RDFFormat format = Rio.getParserFormatForFileName(dataPath, RDFFormat.RDFXML);
+			if (context != null) {
+				Resource contextURI;
+				if (context.startsWith("_:")) {
+					contextURI = repository.getValueFactory().createBNode(context.substring(2));
+				}
+				else {
+					contextURI = repository.getValueFactory().createURI(context);
+				}
+
+				contexts = new Resource[] { contextURI };
+			}
 
 			writeln("Loading data...");
 			long startTime = System.nanoTime();
 
 			RepositoryConnection con = repository.getConnection();
 			try {
-				Resource[] contexts = new Resource[0];
-
-				if (context != null) {
-					Resource contextURI;
-					if (context.startsWith("_:")) {
-						contextURI = con.getValueFactory().createBNode(context.substring(2));
-					}
-					else {
-						contextURI = con.getValueFactory().createURI(context);
-					}
-
-					contexts = new Resource[] { contextURI };
-				}
 				if (dataURL != null) {
-					con.add(dataURL, baseURI, format, contexts);
+					con.add(dataURL, baseURI, null, contexts);
 				}
 				else {
-					con.add(dataFile, baseURI, format, contexts);
+					con.add(dataFile, baseURI, null, contexts);
 				}
 			}
 			finally {
@@ -1047,7 +1105,7 @@ public class Console {
 			long endTime = System.nanoTime();
 			writeln("Data has been added to the repository (" + (endTime - startTime) / 1000000 + " ms)");
 		}
-		catch (SailReadOnlyException e) {
+		catch (RepositoryReadOnlyException e) {
 			try {
 				if (tryToRemoveLock(e, repository)) {
 					load(tokens);
@@ -1057,7 +1115,7 @@ public class Console {
 					logger.error("Failed to load data", e);
 				}
 			}
-			catch (StoreException e1) {
+			catch (RepositoryException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
 				logger.error("Unable to restart repository", e1);
 			}
@@ -1081,7 +1139,7 @@ public class Console {
 		catch (RDFParseException e) {
 			writeError("Malformed document: " + e.getMessage());
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			writeError("Unable to add data to repository: " + e.getMessage());
 			logger.error("Failed to add data to repository", e);
 		}
@@ -1179,7 +1237,7 @@ public class Console {
 			return;
 		}
 
-		URIFactory valueFactory = repository.getURIFactory();
+		ValueFactory valueFactory = repository.getValueFactory();
 
 		Resource[] contexts = new Resource[tokens.length - 1];
 
@@ -1188,6 +1246,9 @@ public class Console {
 
 			if (contextID.equalsIgnoreCase("null")) {
 				contexts[i - 1] = null;
+			}
+			else if (contextID.startsWith("_:")) {
+				contexts[i - 1] = valueFactory.createBNode(contextID.substring(2));
 			}
 			else {
 				try {
@@ -1212,12 +1273,15 @@ public class Console {
 			RepositoryConnection con = repository.getConnection();
 			try {
 				con.clear(contexts);
+				if (contexts.length == 0) {
+					con.clearNamespaces();
+				}
 			}
 			finally {
 				con.close();
 			}
 		}
-		catch (SailReadOnlyException e) {
+		catch (RepositoryReadOnlyException e) {
 			try {
 				if (tryToRemoveLock(e, repository)) {
 					clear(tokens);
@@ -1227,7 +1291,7 @@ public class Console {
 					logger.error("Failed to clear repository", e);
 				}
 			}
-			catch (StoreException e1) {
+			catch (RepositoryException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
 				logger.error("Unable to restart repository", e1);
 			}
@@ -1235,7 +1299,7 @@ public class Console {
 				writeError("Unable to remove lock: " + e1.getMessage());
 			}
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			writeError("Failed to clear repository: " + e.getMessage());
 			logger.error("Failed to clear repository", e);
 		}
@@ -1244,15 +1308,20 @@ public class Console {
 	private void evaluateQuery(QueryLanguage ql, String queryString) {
 		try {
 			queryString = addQueryPrefixes(ql, queryString);
-			QueryModel query = QueryParserUtil.parseQuery(ql, queryString, null);
-			if (query instanceof TupleQueryModel) {
+
+			ParsedOperation query = QueryParserUtil.parseOperation(ql, queryString, null);
+
+			if (query instanceof ParsedTupleQuery) {
 				evaluateTupleQuery(ql, queryString);
 			}
-			else if (query instanceof GraphQueryModel) {
+			else if (query instanceof ParsedGraphQuery) {
 				evaluateGraphQuery(ql, queryString);
 			}
-			else if (query instanceof BooleanQueryModel) {
+			else if (query instanceof ParsedBooleanQuery) {
 				evaluateBooleanQuery(ql, queryString);
+			}
+			else if (query instanceof ParsedUpdate) {
+				executeUpdate(ql, queryString);
 			}
 			else {
 				writeError("Unexpected query type");
@@ -1268,13 +1337,17 @@ public class Console {
 			writeError("Query interrupted: " + e.getMessage());
 			logger.error("Query interrupted", e);
 		}
-		catch (EvaluationException e) {
+		catch (QueryEvaluationException e) {
 			writeError("Query evaluation error: " + e.getMessage());
 			logger.error("Query evaluation error", e);
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			writeError("Failed to evaluate query: " + e.getMessage());
 			logger.error("Failed to evaluate query", e);
+		}
+		catch (UpdateExecutionException e) {
+			writeError("Failed to execute update: " + e.getMessage());
+			logger.error("Failed to execute update", e);
 		}
 	}
 
@@ -1330,7 +1403,7 @@ public class Console {
 						con.close();
 					}
 				}
-				catch (StoreException e) {
+				catch (RepositoryException e) {
 					writeError("Error connecting to repository: " + e.getMessage());
 					logger.error("Error connecting to repository", e);
 				}
@@ -1341,7 +1414,8 @@ public class Console {
 	}
 
 	private void evaluateTupleQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException, StoreException
+		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
+		RepositoryException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1356,7 +1430,7 @@ public class Console {
 
 			Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
 
-			TupleResult tupleQueryResult = con.prepareTupleQuery(ql, queryString).evaluate();
+			TupleQueryResult tupleQueryResult = con.prepareTupleQuery(ql, queryString).evaluate();
 
 			try {
 				int resultCount = 0;
@@ -1428,7 +1502,8 @@ public class Console {
 	}
 
 	private void evaluateGraphQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException, StoreException
+		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
+		RepositoryException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1443,7 +1518,7 @@ public class Console {
 
 			Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
 
-			GraphResult queryResult = con.prepareGraphQuery(ql, queryString).evaluate();
+			GraphQueryResult queryResult = con.prepareGraphQuery(ql, queryString).evaluate();
 
 			try {
 				int resultCount = 0;
@@ -1473,7 +1548,8 @@ public class Console {
 	}
 
 	private void evaluateBooleanQuery(QueryLanguage ql, String queryString)
-		throws UnsupportedQueryLanguageException, MalformedQueryException, EvaluationException, StoreException
+		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
+		RepositoryException
 	{
 		if (repository == null) {
 			writeError("please open a repository first");
@@ -1486,12 +1562,36 @@ public class Console {
 			writeln("Evaluating query...");
 			long startTime = System.nanoTime();
 
-			boolean booleanQueryResult = con.prepareBooleanQuery(ql, queryString).ask();
+			boolean booleanQueryResult = con.prepareBooleanQuery(ql, queryString).evaluate();
 
 			writeln("Answer: " + booleanQueryResult);
 
 			long endTime = System.nanoTime();
 			writeln("Query evaluated in " + (endTime - startTime) / 1000000 + " ms");
+		}
+		finally {
+			con.close();
+		}
+	}
+
+	private void executeUpdate(QueryLanguage ql, String queryString)
+		throws RepositoryException, UpdateExecutionException, MalformedQueryException
+	{
+		if (repository == null) {
+			writeError("please open a repository first");
+			return;
+		}
+
+		RepositoryConnection con = repository.getConnection();
+
+		try {
+			writeln("Executing update...");
+			long startTime = System.nanoTime();
+
+			con.prepareUpdate(ql, queryString).execute();
+
+			long endTime = System.nanoTime();
+			writeln("Update executed in " + (endTime - startTime) / 1000000 + " ms");
 		}
 		finally {
 			con.close();
@@ -1569,7 +1669,6 @@ public class Console {
 	}
 
 	private void showParameters() {
-		setLog(null);
 		setWidth(null);
 		setShowPrefix(null);
 		setQueryPrefix(null);
@@ -1578,10 +1677,7 @@ public class Console {
 	private void setParameter(String key, String value) {
 		key = key.toLowerCase(Locale.ENGLISH);
 
-		if ("log".equals(key)) {
-			setLog(value);
-		}
-		else if ("width".equals(key)) {
+		if ("width".equals(key)) {
 			setWidth(value);
 		}
 		else if ("showprefix".equals(key)) {
@@ -1615,32 +1711,6 @@ public class Console {
 		}
 	}
 
-	private void setLog(String value) {
-		if (value == null) {
-			Level currentLevel = jdkRootLogger.getLevel();
-			String levelString = currentLevel.getName();
-
-			for (Map.Entry<String, Level> entry : LOG_LEVELS.entrySet()) {
-				if (entry.getValue().equals(currentLevel)) {
-					levelString = entry.getKey();
-					break;
-				}
-			}
-
-			writeln("log: " + levelString);
-		}
-		else {
-			Level logLevel = LOG_LEVELS.get(value.toLowerCase());
-
-			if (logLevel != null) {
-				jdkRootLogger.setLevel(logLevel);
-			}
-			else {
-				writeError("unknown logging level: " + value);
-			}
-		}
-	}
-
 	private void setShowPrefix(String value) {
 		if (value == null) {
 			writeln("showPrefix: " + showPrefix);
@@ -1659,8 +1729,8 @@ public class Console {
 		}
 	}
 
-	private boolean tryToRemoveLock(SailReadOnlyException e, Repository repo)
-		throws IOException, StoreException
+	private boolean tryToRemoveLock(RepositoryReadOnlyException e, Repository repo)
+		throws IOException, RepositoryException
 	{
 		boolean lockRemoved = false;
 
@@ -1678,18 +1748,22 @@ public class Console {
 		return lockRemoved;
 	}
 
-	private boolean tryToRemoveLock(SailLockedException e)
+	private boolean tryToRemoveLock(RepositoryLockedException e)
 		throws IOException
 	{
 		boolean lockRemoved = false;
 
-		LockManager lockManager = e.getLockManager();
+		if (e.getCause() instanceof SailLockedException) {
+			SailLockedException sle = (SailLockedException)e.getCause();
 
-		if (lockManager != null && lockManager.isLocked()) {
-			if (askProceed("WARNING: The lock from process '" + e.getLockedBy()
-					+ "' on this repository needs to be removed", true))
-			{
-				lockRemoved = lockManager.revokeLock();
+			LockManager lockManager = sle.getLockManager();
+
+			if (lockManager != null && lockManager.isLocked()) {
+				if (askProceed("WARNING: The lock from process '" + sle.getLockedBy()
+						+ "' on this repository needs to be removed", true))
+				{
+					lockRemoved = lockManager.revokeLock();
+				}
 			}
 		}
 
@@ -1749,6 +1823,22 @@ public class Console {
 		buf.setLength(buf.length() - 1);
 
 		return buf.toString().trim();
+	}
+
+	private String readln(String message)
+		throws IOException
+	{
+		if (message != null) {
+			write(message + " ");
+		}
+		return in.readLine();
+	}
+
+	private String readPassword(String message)
+		throws IOException
+	{
+		// TODO: Proper password reader
+		return readln(message);
 	}
 
 	private void write(String s) {

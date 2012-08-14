@@ -13,14 +13,14 @@ import java.util.Set;
  */
 public class Projection extends UnaryTupleOperator {
 
-	private static final long serialVersionUID = -2878982614878677889L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	private ProjectionElemList projElemList = new ProjectionElemList();
 
+	private Var projectionContext = null;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -87,9 +87,38 @@ public class Projection extends UnaryTupleOperator {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Projection && super.equals(other)) {
+			Projection o = (Projection)other;
+			return projElemList.equals(o.getProjectionElemList());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ projElemList.hashCode();
+	}
+
+	@Override
 	public Projection clone() {
 		Projection clone = (Projection)super.clone();
 		clone.setProjectionElemList(getProjectionElemList().clone());
 		return clone;
 	}
+
+	/**
+	 * @return Returns the projectionContext.
+	 */
+	public Var getProjectionContext() {
+		return projectionContext;
+	}
+
+	/**
+	 * @param projectionContext The projectionContext to set.
+	 */
+	public void setProjectionContext(Var projectionContext) {
+		this.projectionContext = projectionContext;
+	}
+
 }

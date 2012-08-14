@@ -86,6 +86,10 @@ public class MemLiteral extends LiteralImpl implements MemValue {
 		return creator;
 	}
 
+	public boolean hasStatements() {
+		return objectStatements != null;
+	}
+
 	public MemStatementList getObjectStatementList() {
 		if (objectStatements == null) {
 			return EMPTY_LIST;

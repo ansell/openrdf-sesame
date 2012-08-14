@@ -11,6 +11,7 @@ import java.sql.Types;
  * Prints round brackets in an SQL query.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlCastBuilder extends SqlExprBuilder {
 

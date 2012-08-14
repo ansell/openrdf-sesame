@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007-2009.
+ * Copyright James Leigh (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,14 +15,19 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
-import org.openrdf.result.ModelResult;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.store.StoreException;
 
 /**
  * This broadcaster is used by the RepositoryBroadcaster to wrap the delegate
@@ -31,7 +36,6 @@ import org.openrdf.store.StoreException;
  * 
  * @author James Leigh
  * @author Herko ter Horst
- * @author Arjohn Kampman
  */
 public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWrapper implements
 		NotifyingRepositoryConnection
@@ -103,84 +107,76 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
-	public void close()
-		throws StoreException
-	{
-		super.close();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.close(this);
-			}
-		}
-	}
-
-	@Override
-	public void begin()
-		throws StoreException
-	{
-		getDelegate().begin();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.begin(this);
-			}
-		}
-	}
-
-	@Override
-	public void commit()
-		throws StoreException
-	{
-		getDelegate().commit();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.commit(this);
-			}
-		}
-	}
-
-	@Override
-	public void rollback()
-		throws StoreException
-	{
-		getDelegate().rollback();
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.rollback(this);
-			}
-		}
-	}
-
-	@Override
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
+	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
 	{
 		boolean reportEvent = activated;
 
 		if (reportEvent && reportDeltas()) {
-			// Only report if the stament is not present yet
-			reportEvent = !getDelegate().hasMatch(subject, predicate, object, false, contexts);
+			// Only report if the statement is not present yet
+			reportEvent = !getDelegate().hasStatement(subject, predicate, object, false, contexts);
 		}
 
 		getDelegate().add(subject, predicate, object, contexts);
 
 		if (reportEvent) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.add(this, subject, predicate, object, contexts);
+				listener.add(getDelegate(), subject, predicate, object, contexts);
 			}
 		}
 	}
 
 	@Override
-	public void removeMatch(Resource subj, URI pred, Value obj, Resource... ctx)
-		throws StoreException
+	public void clear(Resource... contexts)
+		throws RepositoryException
 	{
 		if (activated && reportDeltas()) {
-			ModelResult stmts;
-			stmts = getDelegate().match(subj, pred, obj, false, ctx);
+			removeWithoutCommit(null, null, null, contexts);
+		}
+		else if (activated) {
+			getDelegate().clear(contexts);
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.clear(getDelegate(), contexts);
+			}
+		}
+		else {
+			getDelegate().clear(contexts);
+		}
+	}
+
+	@Override
+	public void close()
+		throws RepositoryException
+	{
+		getDelegate().close();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.close(getDelegate());
+			}
+		}
+	}
+
+	@Override
+	public void commit()
+		throws RepositoryException
+	{
+		getDelegate().commit();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.commit(getDelegate());
+			}
+		}
+	}
+
+	@Override
+	public void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... ctx)
+		throws RepositoryException
+	{
+		if (activated && reportDeltas()) {
+			RepositoryResult<Statement> stmts;
+			stmts = getDelegate().getStatements(subj, pred, obj, false, ctx);
 			List<Statement> list = new ArrayList<Statement>();
 			try {
 				while (stmts.hasNext()) {
@@ -190,78 +186,47 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 			finally {
 				stmts.close();
 			}
-			getDelegate().removeMatch(subj, pred, obj, ctx);
+			getDelegate().remove(subj, pred, obj, ctx);
 			for (RepositoryConnectionListener listener : listeners) {
 				for (Statement stmt : list) {
 					Resource s = stmt.getSubject();
 					URI p = stmt.getPredicate();
 					Value o = stmt.getObject();
 					Resource c = stmt.getContext();
-					listener.remove(this, s, p, o, c);
+					listener.remove(getDelegate(), s, p, o, c);
 				}
 			}
 		}
 		else if (activated) {
-			getDelegate().removeMatch(subj, pred, obj, ctx);
+			getDelegate().remove(subj, pred, obj, ctx);
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.remove(this, subj, pred, obj, ctx);
+				listener.remove(getDelegate(), subj, pred, obj, ctx);
 			}
 		}
 		else {
-			getDelegate().removeMatch(subj, pred, obj, ctx);
-		}
-	}
-
-	@Override
-	public void clear(Resource... contexts)
-		throws StoreException
-	{
-		if (activated && reportDeltas()) {
-			removeMatch(null, null, null, contexts);
-		}
-		else if (activated) {
-			getDelegate().clear(contexts);
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.clear(this, contexts);
-			}
-		}
-		else {
-			getDelegate().clear(contexts);
-		}
-	}
-
-	@Override
-	public void setNamespace(String prefix, String name)
-		throws StoreException
-	{
-		getDelegate().setNamespace(prefix, name);
-
-		if (activated) {
-			for (RepositoryConnectionListener listener : listeners) {
-				listener.setNamespace(this, prefix, name);
-			}
+			getDelegate().remove(subj, pred, obj, ctx);
 		}
 	}
 
 	@Override
 	public void removeNamespace(String prefix)
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().removeNamespace(prefix);
 
 		if (activated) {
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.removeNamespace(this, prefix);
+				listener.removeNamespace(getDelegate(), prefix);
 			}
 		}
 	}
 
 	@Override
 	public void clearNamespaces()
-		throws StoreException
+		throws RepositoryException
 	{
 		if (activated && reportDeltas()) {
-			NamespaceResult namespaces;
+			RepositoryResult<Namespace> namespaces;
 			namespaces = getDelegate().getNamespaces();
 			List<String> prefix = new ArrayList<String>();
 			try {
@@ -281,11 +246,116 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 		else if (activated) {
 			getDelegate().clearNamespaces();
 			for (RepositoryConnectionListener listener : listeners) {
-				listener.clearNamespaces(this);
+				listener.clearNamespaces(getDelegate());
 			}
 		}
 		else {
 			getDelegate().clearNamespaces();
+		}
+	}
+
+	@Override
+	public void rollback()
+		throws RepositoryException
+	{
+		getDelegate().rollback();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.rollback(getDelegate());
+			}
+		}
+	}
+
+	@Override
+	public void setAutoCommit(boolean autoCommit)
+		throws RepositoryException
+	{
+		boolean wasAutoCommit = isAutoCommit();
+		getDelegate().setAutoCommit(autoCommit);
+
+		if (activated && wasAutoCommit != autoCommit) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.setAutoCommit(getDelegate(), autoCommit);
+			}
+			if (autoCommit) {
+				for (RepositoryConnectionListener listener : listeners) {
+					listener.commit(getDelegate());
+				}
+			}
+		}
+	}
+
+	@Override
+	public void setNamespace(String prefix, String name)
+		throws RepositoryException
+	{
+		getDelegate().setNamespace(prefix, name);
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.setNamespace(getDelegate(), prefix, name);
+			}
+		}
+	}
+
+	@Override
+	public Update prepareUpdate(final QueryLanguage ql, final String update, final String baseURI)
+		throws MalformedQueryException, RepositoryException
+	{
+		if (activated) {
+			return new Update() {
+
+				private final RepositoryConnection conn = getDelegate();
+
+				private final Update delegate = conn.prepareUpdate(ql, update, baseURI);
+
+				public void execute()
+					throws UpdateExecutionException
+				{
+					delegate.execute();
+					if (activated) {
+						for (RepositoryConnectionListener listener : listeners) {
+							listener.execute(conn, ql, update, baseURI, delegate);
+						}
+					}
+				}
+
+				public void setBinding(String name, Value value) {
+					delegate.setBinding(name, value);
+				}
+
+				public void removeBinding(String name) {
+					delegate.removeBinding(name);
+				}
+
+				public void clearBindings() {
+					delegate.clearBindings();
+				}
+
+				public BindingSet getBindings() {
+					return delegate.getBindings();
+				}
+
+				public void setDataset(Dataset dataset) {
+					delegate.setDataset(dataset);
+				}
+
+				public Dataset getDataset() {
+					return delegate.getDataset();
+				}
+
+				public void setIncludeInferred(boolean includeInferred) {
+					delegate.setIncludeInferred(includeInferred);
+				}
+
+				public boolean getIncludeInferred() {
+					return delegate.getIncludeInferred();
+				}
+			};
+		}
+		else {
+			return getDelegate().prepareUpdate(ql, update, baseURI);
 		}
 	}
 }

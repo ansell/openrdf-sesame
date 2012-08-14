@@ -70,18 +70,17 @@ public class SimpleNode implements Node {
 			}
 		}
 	}
-
+	
 	/**
 	 * Replaces this node with the supplied one in the AST.
-	 * 
-	 * @param newNode
-	 *        The replacement node.
+	 *
+	 * @param newNode The replacement node.
 	 */
 	public void jjtReplaceWith(Node newNode) {
 		if (parent != null) {
 			parent.jjtReplaceChild(this, newNode);
 		}
-
+		
 		for (Node childNode : children) {
 			childNode.jjtSetParent(newNode);
 		}
@@ -97,11 +96,10 @@ public class SimpleNode implements Node {
 
 	/**
 	 * Gets the (first) child of this node that is of the specific type.
-	 * 
-	 * @param type
-	 *        The type of the child node that should be returned.
-	 * @return The (first) child node of the specified type, or <tt>null</tt> if
-	 *         no such child node was found.
+	 *
+	 * @param type The type of the child node that should be returned.
+	 * @return The (first) child node of the specified type, or <tt>null</tt>
+	 * if no such child node was found.
 	 */
 	public <T extends Node> T jjtGetChild(Class<T> type) {
 		for (Node n : children) {
@@ -112,10 +110,10 @@ public class SimpleNode implements Node {
 
 		return null;
 	}
-
+	
 	public <T extends Node> List<T> jjtGetChildren(Class<T> type) {
 		List<T> result = new ArrayList<T>(children.size());
-
+		
 		for (Node n : children) {
 			if (type.isInstance(n)) {
 				result.add((T)n);
@@ -156,7 +154,8 @@ public class SimpleNode implements Node {
 	 */
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return SyntaxTreeBuilderTreeConstants.jjtNodeName[id];
 	}
 

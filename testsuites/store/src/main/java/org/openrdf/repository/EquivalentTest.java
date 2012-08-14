@@ -15,12 +15,11 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.EvaluationException;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.TupleQueryResult;
 
 public abstract class EquivalentTest extends TestCase {
 
@@ -276,7 +275,7 @@ public abstract class EquivalentTest extends TestCase {
 	}
 
 	private boolean evaluate(String op)
-		throws StoreException, MalformedQueryException, EvaluationException
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		String qry = PREFIX + "SELECT ?term1 ?term2 "
 				+ "WHERE {ex:t1 rdf:value ?term1 . ex:t2 rdf:value ?term2 " + "FILTER (?term1 " + op
@@ -285,10 +284,10 @@ public abstract class EquivalentTest extends TestCase {
 	}
 
 	private boolean evaluateSparql(String qry)
-		throws StoreException, MalformedQueryException, EvaluationException
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, qry);
-		TupleResult evaluate = query.evaluate();
+		TupleQueryResult evaluate = query.evaluate();
 		try {
 			return evaluate.hasNext();
 		}

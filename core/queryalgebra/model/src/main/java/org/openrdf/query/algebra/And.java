@@ -5,13 +5,10 @@
  */
 package org.openrdf.query.algebra;
 
-
 /**
  * A boolean AND operator operating on two boolean expressions.
  */
-public class And extends NaryValueOperator {
-
-	private static final long serialVersionUID = 857801347313680392L;
+public class And extends BinaryValueOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -20,12 +17,8 @@ public class And extends NaryValueOperator {
 	public And() {
 	}
 
-	public And(ValueExpr... args) {
-		super(args);
-	}
-
-	public And(Iterable<ValueExpr> args) {
-		super(args);
+	public And(ValueExpr leftArg, ValueExpr rightArg) {
+		super(leftArg, rightArg);
 	}
 
 	/*---------*
@@ -36,6 +29,16 @@ public class And extends NaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof And && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "And".hashCode();
 	}
 
 	@Override

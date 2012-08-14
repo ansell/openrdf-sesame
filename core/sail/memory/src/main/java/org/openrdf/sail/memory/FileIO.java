@@ -24,21 +24,20 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import info.aduna.io.IOUtil;
+import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.cursor.Cursor;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
-import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
-import org.openrdf.store.StoreException;
 
 /**
  * Functionality to read and write MemoryStore to/from a file.
@@ -89,8 +88,6 @@ class FileIO {
 
 	private final MemoryStore store;
 
-	private MemValueFactory vf;
-
 	private final CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
 
 	private final CharsetDecoder charsetDecoder = Charset.forName("UTF-8").newDecoder();
@@ -101,9 +98,8 @@ class FileIO {
 	 * Constructors *
 	 *--------------*/
 
-	public FileIO(MemoryStore store, MemValueFactory vf) {
+	public FileIO(MemoryStore store) {
 		this.store = store;
-		this.vf = vf;
 	}
 
 	/*---------*
@@ -111,7 +107,7 @@ class FileIO {
 	 *---------*/
 
 	public synchronized void write(File syncFile, File dataFile)
-		throws IOException, StoreException
+		throws IOException, SailException
 	{
 		write(syncFile);
 
@@ -134,7 +130,7 @@ class FileIO {
 	}
 
 	private void write(File dataFile)
-		throws IOException, StoreException
+		throws IOException, SailException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
 		try {
@@ -229,14 +225,14 @@ class FileIO {
 	}
 
 	private void writeStatements(DataOutputStream dataOut)
-		throws IOException, StoreException
+		throws IOException, SailException
 	{
-		Cursor<MemStatement> stIter = store.createStatementIterator(null, null, null, false,
-				store.getCurrentSnapshot(), ReadMode.COMMITTED, vf);
+		CloseableIteration<MemStatement, SailException> stIter = store.createStatementIterator(
+				SailException.class, null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
 
 		try {
-			MemStatement st;
-			while ((st = stIter.next()) != null) {
+			while (stIter.hasNext()) {
+				MemStatement st = stIter.next();
 				Resource context = st.getContext();
 
 				if (st.isExplicit()) {
@@ -331,25 +327,25 @@ class FileIO {
 
 		if (valueTypeMarker == URI_MARKER) {
 			String uriString = readString(dataIn);
-			return vf.createURI(uriString);
+			return store.getValueFactory().createURI(uriString);
 		}
 		else if (valueTypeMarker == BNODE_MARKER) {
 			String bnodeID = readString(dataIn);
-			return vf.createBNode(bnodeID);
+			return store.getValueFactory().createBNode(bnodeID);
 		}
 		else if (valueTypeMarker == PLAIN_LITERAL_MARKER) {
 			String label = readString(dataIn);
-			return vf.createLiteral(label);
+			return store.getValueFactory().createLiteral(label);
 		}
 		else if (valueTypeMarker == LANG_LITERAL_MARKER) {
 			String label = readString(dataIn);
 			String language = readString(dataIn);
-			return vf.createLiteral(label, language);
+			return store.getValueFactory().createLiteral(label, language);
 		}
 		else if (valueTypeMarker == DATATYPE_LITERAL_MARKER) {
 			String label = readString(dataIn);
 			URI datatype = (URI)readValue(dataIn);
-			return vf.createLiteral(label, datatype);
+			return store.getValueFactory().createLiteral(label, datatype);
 		}
 		else {
 			throw new IOException("Invalid value type marker: " + valueTypeMarker);

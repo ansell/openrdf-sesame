@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * Represents and controls the underlying database table.
  * 
  * @author James Leigh
+ * 
  */
 public class RdbmsTable {
 
@@ -255,9 +256,8 @@ public class RdbmsTable {
 	public void modified(int inserted, int deleted)
 		throws SQLException
 	{
-		if (inserted < 1 && deleted < 1) {
+		if (inserted < 1 && deleted < 1)
 			return;
-		}
 		addedCount += inserted;
 		removedCount += deleted;
 		rowCount += inserted - deleted;
@@ -341,9 +341,8 @@ public class RdbmsTable {
 		try {
 			ResultSet rs = st.executeQuery(query);
 			try {
-				if (!rs.next()) {
+				if (!rs.next())
 					throw new AssertionError();
-				}
 				int columnCount = rs.getMetaData().getColumnCount();
 				int[] result = new int[columnCount - 1];
 				for (int i = 0; i < result.length; i++) {
@@ -363,9 +362,8 @@ public class RdbmsTable {
 	}
 
 	protected boolean optimize(int delta, long rowCount) {
-		if (delta > MAX_DELTA_TO_FORCE_OPTIMIZE) {
+		if (delta > MAX_DELTA_TO_FORCE_OPTIMIZE)
 			return true;
-		}
 		return delta != 0 && rowCount / delta <= 2;
 	}
 
@@ -461,24 +459,19 @@ public class RdbmsTable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (!(obj instanceof RdbmsTable)) {
+		if (!(obj instanceof RdbmsTable))
 			return false;
-		}
 		final RdbmsTable other = (RdbmsTable)obj;
 		if (name == null) {
-			if (other.name != null) {
+			if (other.name != null)
 				return false;
-			}
 		}
-		else if (!name.equals(other.name)) {
+		else if (!name.equals(other.name))
 			return false;
-		}
 		return true;
 	}
 

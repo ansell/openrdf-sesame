@@ -17,10 +17,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class RepositoryConfigSchema {
 
-	/**
-	 * The HTTPRepository schema namespace (
-	 * <tt>http://www.openrdf.org/config/repository#</tt>).
-	 */
+	/** The HTTPRepository schema namespace (<tt>http://www.openrdf.org/config/repository#</tt>). */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository#";
 
 	/** <tt>http://www.openrdf.org/config/repository#RepositoryContext</tt> */
@@ -29,8 +26,8 @@ public class RepositoryConfigSchema {
 	/** <tt>http://www.openrdf.org/config/repository#Repository</tt> */
 	public final static URI REPOSITORY;
 
-	/** <tt>http://www.openrdf.org/config/repository#repositoryTitle</tt> */
-	public final static URI REPOSITORYTITLE;
+	/** <tt>http://www.openrdf.org/config/repository#repositoryID</tt> */
+	public final static URI REPOSITORYID;
 
 	/** <tt>http://www.openrdf.org/config/repository#repositoryImpl</tt> */
 	public final static URI REPOSITORYIMPL;
@@ -45,7 +42,7 @@ public class RepositoryConfigSchema {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		REPOSITORY_CONTEXT = factory.createURI(NAMESPACE, "RepositoryContext");
 		REPOSITORY = factory.createURI(NAMESPACE, "Repository");
-		REPOSITORYTITLE = factory.createURI(NAMESPACE, "repositoryTitle");
+		REPOSITORYID = factory.createURI(NAMESPACE, "repositoryID");
 		REPOSITORYIMPL = factory.createURI(NAMESPACE, "repositoryImpl");
 		REPOSITORYTYPE = factory.createURI(NAMESPACE, "repositoryType");
 		DELEGATE = factory.createURI(NAMESPACE, "delegate");

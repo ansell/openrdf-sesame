@@ -6,25 +6,17 @@
 package org.openrdf.repository.http.config;
 
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.PASSWORD;
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.READ_ONLY;
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYID;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.REPOSITORYURL;
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.SERVERURL;
-import static org.openrdf.repository.http.config.HTTPRepositorySchema.SUBJECTSPACE;
 import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -36,10 +28,6 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 	private String username;
 
 	private String password;
-
-	private boolean readOnly;
-
-	private Set<String> subjectSpace = new HashSet<String>();
 
 	public HTTPRepositoryConfig() {
 		super(HTTPRepositoryFactory.REPOSITORY_TYPE);
@@ -74,92 +62,55 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		this.password = password;
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
-
-	public Set<String> getSubjectSpace() {
-		return subjectSpace;
-	}
-
-	public void setSubjectSpace(Set<String> subjectSpace) {
-		this.subjectSpace = new HashSet<String>(subjectSpace);
-	}
-
 	@Override
 	public void validate()
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		super.validate();
 		if (url == null) {
-			throw new StoreConfigException("No URL specified for HTTP repository");
+			throw new RepositoryConfigException("No URL specified for HTTP repository");
 		}
 	}
 
 	@Override
-	public Resource export(Model model) {
-		Resource implNode = super.export(model);
-		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+	public Resource export(Graph graph) {
+		Resource implNode = super.export(graph);
 
 		if (url != null) {
-			model.add(implNode, REPOSITORYURL, vf.createURI(url));
+			graph.add(implNode, REPOSITORYURL, graph.getValueFactory().createURI(url));
 		}
-		if (readOnly) {
-			model.add(implNode, READ_ONLY, vf.createLiteral(readOnly));
-		}
-		for (String space : subjectSpace) {
-			model.add(implNode, SUBJECTSPACE, vf.createURI(space));
-		}
-		// if (username != null) {
-		// graph.add(implNode, USERNAME,
-		// graph.getValueFactory().createLiteral(username));
-		// }
-		// if (password != null) {
-		// graph.add(implNode, PASSWORD,
-		// graph.getValueFactory().createLiteral(password));
-		// }
+//		if (username != null) {
+//			graph.add(implNode, USERNAME, graph.getValueFactory().createLiteral(username));
+//		}
+//		if (password != null) {
+//			graph.add(implNode, PASSWORD, graph.getValueFactory().createLiteral(password));
+//		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Model model, Resource implNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource implNode)
+		throws RepositoryConfigException
 	{
-		super.parse(model, implNode);
+		super.parse(graph, implNode);
 
 		try {
-			Value server = model.filter(implNode, SERVERURL, null).objectValue();
-			Literal id = model.filter(implNode, REPOSITORYID, null).objectLiteral();
-			if (server != null && id != null) {
-				setURL(server.stringValue() + "/repositories/" + id.stringValue());
-			}
-			URI uri = model.filter(implNode, REPOSITORYURL, null).objectURI();
+			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
 			if (uri != null) {
 				setURL(uri.toString());
 			}
-			Literal username = model.filter(implNode, USERNAME, null).objectLiteral();
+			Literal username = GraphUtil.getOptionalObjectLiteral(graph, implNode, USERNAME);
 			if (username != null) {
 				setUsername(username.getLabel());
 			}
-			Literal password = model.filter(implNode, PASSWORD, null).objectLiteral();
+			Literal password = GraphUtil.getOptionalObjectLiteral(graph, implNode, PASSWORD);
 			if (password != null) {
 				setPassword(password.getLabel());
 			}
-			Literal readOnly = model.filter(implNode, READ_ONLY, null).objectLiteral();
-			if (readOnly != null) {
-				setReadOnly(readOnly.booleanValue());
-			}
-			for (Value obj : model.filter(implNode, SUBJECTSPACE, null).objects()) {
-				subjectSpace.add(obj.stringValue());
-			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 }

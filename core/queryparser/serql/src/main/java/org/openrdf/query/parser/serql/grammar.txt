@@ -18,17 +18,18 @@ SetOperator      ::= "union" ["all"]
                    | "minus"
                    | "intersect"
 
-SelectQuery      ::= "select" ["distinct"] Projection [QueryBody]
+SelectQuery      ::= "select" ["distinct"|"reduced"] Projection [QueryBody]
 Projection       ::= "*"
                    | [ ProjectionElem ("," ProjectionElem)* ]
-ProjectionElem   ::= ValueExpr ["as" <STRING>]
+ProjectionElem   ::= ValueExpr ["as" Var]
 
-ConstructQuery   ::= "construct" ["distinct"] ConstructClause [QueryBody]
+ConstructQuery   ::= "construct" ["distinct"|"reduced"] ConstructClause [QueryBody]
 ConstructClause  ::= "*"
                    | PathExprList
 
 QueryBody        ::= ("from" ["context" ContextID] PathExprList)+
                      ["where" BooleanExpr]
+                     ["order" "by" OrderExprList]
                      ["limit" <POS_INTEGER>]
                      ["offset" <POS_INTEGER>]
 
@@ -36,9 +37,11 @@ ContextID        ::= Var
                    | Uri
                    | BNode
 
-PathExprList     ::= PathExpr ("," PathExpr)*
-PathExpr          ::= BasicPathExpr
+PathExprList     ::= UnionPathExpr ("," UnionPathExpr)*
+UnionPathExpr    ::= PathExpr ("union" PathExpr)*
+PathExpr         ::= BasicPathExpr
                    | OptGraphPattern
+                   | "(" PathExprList ")"
 BasicPathExpr    ::= Node Edge Node [[";"] PathExprTail]
 OptGraphPattern  ::= "[" PathExprList ["where" BooleanExpr] "]"
 
@@ -62,6 +65,9 @@ NodeElem         ::= Var
                    | ReifiedStat
 ReifiedStat      ::= "{" [NodeElem] "}" Edge "{" [NodeElem] "}"
 
+OrderExprList    ::= OrderExpr ("," OrderExpr)*
+OrderExpr        ::= ValueExpr ["asc"|"desc"]
+
 BooleanExpr      ::= OrExpr
 OrExpr           ::= AndExpr ["or" BooleanExpr]
 AndExpr          ::= BooleanElem ["and" AndExpr]
@@ -69,16 +75,20 @@ BooleanElem      ::= "(" BooleanExpr ")"
                    | "true"
                    | "false"
                    | "not" BooleanElem
+                   | "bound" "(" Var ")"
+                   | "sameTerm" "(" ValueExpr "," ValueExpr ")"
                    | ValueExpr CompOp ValueExpr
                    | ValueExpr CompOp ("any"|"all") "(" TupleQuerySet ")"
                    | ValueExpr "like" <STRING>
                    | ValueExpr "in" "(" TupleQuerySet ")"
+                   | ValueExpr "in" "(" ArgList ")"
                    | "exists" "(" TupleQuerySet ")"
-                   | "bound" "(" Var ")"
                    | "isResource" "(" Var ")"
                    | "isURI" "(" Var ")"
                    | "isBNode" "(" Var ")"
                    | "isLiteral" "(" Var ")"
+                   | "langMatches" "(" ValueExpr "," ValueExpr ")"
+                   | "regex" "(" ValueExpr "," ValueExpr [ "," ValueExpr ] ")"
 
 CompOp           ::= "=" | "!=" | "<" | "<=" | ">" | ">="
 
@@ -89,6 +99,7 @@ ValueExpr        ::= Var
                    | "label" "(" Var ")"
                    | "namespace" "(" Var ")"
                    | "localname" "(" Var ")"
+                   | "str" "(" ValueExpr ")"
                    | FunctionCall
 
 FunctionCall     ::= Uri "(" [ArgList] ")"

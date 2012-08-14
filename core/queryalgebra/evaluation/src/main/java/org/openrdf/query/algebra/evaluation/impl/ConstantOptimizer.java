@@ -6,18 +6,25 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.And;
+import org.openrdf.query.algebra.BinaryValueOperator;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.FunctionCall;
-import org.openrdf.query.algebra.NaryValueOperator;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.Or;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.algebra.Regex;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -26,7 +33,6 @@ import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
-import org.openrdf.store.StoreException;
 
 /**
  * A query optimizer that optimizes constant value expressions.
@@ -48,107 +54,135 @@ public class ConstantOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
 	 */
-	public void optimize(QueryModel query, BindingSet bindings)
-		throws StoreException
-	{
-		query.visit(new ConstantVisitor());
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(new ConstantVisitor());
 	}
 
-	protected class ConstantVisitor extends QueryModelVisitorBase<StoreException> {
+	protected class ConstantVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Or or)
-			throws StoreException
 		{
 			or.visitChildren(this);
 
 			try {
-				for (ValueExpr arg : or.getArgs()) {
-					if (isConstant(arg)) {
-						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
-							or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-							return;
-						}
-						else {
-							or.removeArg(arg);
-						}
+				if (isConstant(or.getLeftArg()) && isConstant(or.getRightArg())) {
+					boolean value = strategy.isTrue(or, EmptyBindingSet.getInstance());
+					or.replaceWith(new ValueConstant(BooleanLiteralImpl.valueOf(value)));
+				}
+				else if (isConstant(or.getLeftArg())) {
+					boolean leftIsTrue = strategy.isTrue(or.getLeftArg(), EmptyBindingSet.getInstance());
+					if (leftIsTrue) {
+						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+					}
+					else {
+						or.replaceWith(or.getRightArg());
 					}
 				}
-				if (or.getNumberOfArguments() == 0) {
-					or.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-				}
-				else if (or.getNumberOfArguments() == 1) {
-					or.replaceWith(or.getArg(0));
+				else if (isConstant(or.getRightArg())) {
+					boolean rightIsTrue = strategy.isTrue(or.getRightArg(), EmptyBindingSet.getInstance());
+					if (rightIsTrue) {
+						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+					}
+					else {
+						or.replaceWith(or.getLeftArg());
+					}
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of
-				// the query tree
-				logger.debug("Failed to optimize Or with constant argument(s)", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+			}
+			catch (QueryEvaluationException e) {
+				logger.error("Query evaluation exception caught", e);
 			}
 		}
 
 		@Override
 		public void meet(And and)
-			throws StoreException
 		{
 			and.visitChildren(this);
 
 			try {
-				for (ValueExpr arg : and.getArgs()) {
-					if (isConstant(arg)) {
-						if (strategy.isTrue(arg, EmptyBindingSet.getInstance())) {
-							and.removeArg(arg);
-						}
-						else {
-							and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
-							return;
-						}
+				if (isConstant(and.getLeftArg()) && isConstant(and.getRightArg())) {
+					boolean value = strategy.isTrue(and, EmptyBindingSet.getInstance());
+					and.replaceWith(new ValueConstant(BooleanLiteralImpl.valueOf(value)));
+				}
+				else if (isConstant(and.getLeftArg())) {
+					boolean leftIsTrue = strategy.isTrue(and.getLeftArg(), EmptyBindingSet.getInstance());
+					if (leftIsTrue) {
+						and.replaceWith(and.getRightArg());
+					}
+					else {
+						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
 					}
 				}
-				if (and.getNumberOfArguments() == 0) {
-					and.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
-				}
-				else if (and.getNumberOfArguments() == 1) {
-					and.replaceWith(and.getArg(0));
+				else if (isConstant(and.getRightArg())) {
+					boolean rightIsTrue = strategy.isTrue(and.getRightArg(), EmptyBindingSet.getInstance());
+					if (rightIsTrue) {
+						and.replaceWith(and.getLeftArg());
+					}
+					else {
+						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+					}
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of
-				// the query tree
-				logger.debug("Failed to optimize And with constant argument(s)", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+			}
+			catch (QueryEvaluationException e) {
+				logger.error("Query evaluation exception caught", e);
 			}
 		}
 
 		@Override
-		protected void meetNaryValueOperator(NaryValueOperator naryValueOp)
-			throws StoreException
+		protected void meetBinaryValueOperator(BinaryValueOperator binaryValueOp)
 		{
-			super.meetNaryValueOperator(naryValueOp);
+			super.meetBinaryValueOperator(binaryValueOp);
 
-			for (ValueExpr arg : naryValueOp.getArgs()) {
-				if (!isConstant(arg)) {
-					return;
+			if (isConstant(binaryValueOp.getLeftArg()) && isConstant(binaryValueOp.getRightArg())) {
+				try {
+					Value value = strategy.evaluate(binaryValueOp, EmptyBindingSet.getInstance());
+					binaryValueOp.replaceWith(new ValueConstant(value));
+				}
+				catch (ValueExprEvaluationException e) {
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+					logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				}
+				catch (QueryEvaluationException e) {
+					logger.error("Query evaluation exception caught", e);
 				}
 			}
-			try {
-				Value value = strategy.evaluate(naryValueOp, EmptyBindingSet.getInstance());
-				naryValueOp.replaceWith(new ValueConstant(value));
-			}
-			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of
-				// the query tree
-				logger.debug("Failed to optimize NaryValueOperator with constant argument(s)", e);
+		}
+
+		@Override
+		protected void meetUnaryValueOperator(UnaryValueOperator unaryValueOp)
+		{
+			super.meetUnaryValueOperator(unaryValueOp);
+
+			if (isConstant(unaryValueOp.getArg())) {
+				try {
+					Value value = strategy.evaluate(unaryValueOp, EmptyBindingSet.getInstance());
+					unaryValueOp.replaceWith(new ValueConstant(value));
+				}
+				catch (ValueExprEvaluationException e) {
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+					logger.debug("Failed to evaluate UnaryValueOperator with a constant argument", e);
+				}
+				catch (QueryEvaluationException e) {
+					logger.error("Query evaluation exception caught", e);
+				}
 			}
 		}
 
 		@Override
 		public void meet(FunctionCall functionCall)
-			throws StoreException
 		{
 			super.meet(functionCall);
 
-			for (ValueExpr arg : functionCall.getArgs()) {
+			List<ValueExpr> args = functionCall.getArgs();
+			for (ValueExpr arg : args) {
 				if (!isConstant(arg)) {
 					return;
 				}
@@ -161,21 +195,66 @@ public class ConstantOptimizer implements QueryOptimizer {
 				functionCall.replaceWith(new ValueConstant(value));
 			}
 			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of
-				// the query tree
-				logger.debug("Failed to optimize function call with constant argument(s)", e);
+				// TODO: incompatible values types(?), remove the affected part of the query tree
+				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+			}
+			catch (QueryEvaluationException e) {
+				logger.error("Query evaluation exception caught", e);
 			}
 		}
 
 		@Override
 		public void meet(Bound bound)
-			throws StoreException
 		{
 			super.meet(bound);
 
 			if (bound.getArg().hasValue()) {
 				// variable is always bound
 				bound.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+			}
+		}
+
+		@Override
+		public void meet(If node) {
+			super.meet(node);
+
+			if (isConstant(node.getCondition())) {
+				try {
+					if (strategy.isTrue(node.getCondition(), EmptyBindingSet.getInstance())) {
+						node.replaceWith(node.getResult());
+					}
+					else {
+						node.replaceWith(node.getAlternative());
+					}
+				}
+				catch (ValueExprEvaluationException e) {
+					logger.debug("Failed to evaluate UnaryValueOperator with a constant argument", e);
+				}
+				catch (QueryEvaluationException e) {
+					logger.error("Query evaluation exception caught", e);
+				}
+			}
+		}
+
+		/**
+		 * Override meetBinaryValueOperator
+		 */
+		@Override
+		public void meet(Regex node) {
+			super.meetNode(node);
+
+			if (isConstant(node.getArg()) && isConstant(node.getPatternArg()) && isConstant(node.getFlagsArg()))
+			{
+				try {
+					Value value = strategy.evaluate(node, EmptyBindingSet.getInstance());
+					node.replaceWith(new ValueConstant(value));
+				}
+				catch (ValueExprEvaluationException e) {
+					logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
+				}
+				catch (QueryEvaluationException e) {
+					logger.error("Query evaluation exception caught", e);
+				}
 			}
 		}
 

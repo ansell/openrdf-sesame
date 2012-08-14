@@ -19,8 +19,6 @@ public class RDFParseException extends OpenRDFException {
 
 	private static final long serialVersionUID = -4686126837948873012L;
 
-	private String filename;
-
 	private final int lineNo;
 
 	private final int columnNo;
@@ -106,22 +104,6 @@ public class RDFParseException extends OpenRDFException {
 	 */
 	public int getColumnNumber() {
 		return columnNo;
-	}
-
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
-
-	@Override
-	public String getMessage() {
-		if (filename == null) {
-			return super.getMessage();
-		}
-		return super.getMessage() + " in " + filename;
 	}
 
 	/**

@@ -4,7 +4,7 @@ package org.openrdf.query.parser.sparql.ast;
 
 public class ASTOffset extends SimpleNode {
 
-	private int value;
+	private long value;
 
 	public ASTOffset(int id) {
 		super(id);
@@ -21,16 +21,17 @@ public class ASTOffset extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 
-	public int getValue() {
+	public long getValue() {
 		return value;
 	}
 
-	public void setValue(int value) {
+	public void setValue(long value) {
 		this.value = value;
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return super.toString() + " (" + value + ")";
 	}
 }

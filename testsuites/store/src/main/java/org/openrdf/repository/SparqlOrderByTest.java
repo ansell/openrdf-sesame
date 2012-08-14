@@ -11,15 +11,13 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
-import org.openrdf.query.EvaluationException;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.TupleQueryResult;
 
 public abstract class SparqlOrderByTest extends TestCase {
 
@@ -101,23 +99,22 @@ public abstract class SparqlOrderByTest extends TestCase {
 	}
 
 	private void createEmployee(String id, String name, int empId)
-		throws StoreException
+		throws RepositoryException
 	{
-		URIFactory uf = repository.getURIFactory();
-		LiteralFactory lf = repository.getLiteralFactory();
+		ValueFactory vf = repository.getValueFactory();
 		String foafName = "http://xmlns.com/foaf/0.1/name";
 		String exEmpId = "http://example.org/ns#empId";
 		RepositoryConnection conn = repository.getConnection();
-		conn.add(uf.createURI("http://example.org/ns#" + id), uf.createURI(foafName), lf.createLiteral(name));
-		conn.add(uf.createURI("http://example.org/ns#" + id), uf.createURI(exEmpId), lf.createLiteral(empId));
+		conn.add(vf.createURI("http://example.org/ns#" + id), vf.createURI(foafName), vf.createLiteral(name));
+		conn.add(vf.createURI("http://example.org/ns#" + id), vf.createURI(exEmpId), vf.createLiteral(empId));
 		conn.close();
 	}
 
 	private void assertResult(String queryStr, List<String> names)
-		throws StoreException, MalformedQueryException, EvaluationException
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		TupleResult result = query.evaluate();
+		TupleQueryResult result = query.evaluate();
 		for (String name : names) {
 			Value value = result.next().getValue("name");
 			assertEquals(name, ((Literal)value).getLabel());

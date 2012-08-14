@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-queryalgebra</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>2.6.9-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-queryalgebra-model</artifactId>
@@ -18,22 +18,20 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-model</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-collections</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-query</artifactId>
 		</dependency>
-		
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
 		</dependency>
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra/model</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra/model</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/queryalgebra/model</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/queryalgebra/model</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/queryalgebra/model</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/queryalgebra/model</url>
 	</scm>
 
 </project>

@@ -5,7 +5,6 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -13,9 +12,7 @@ import java.util.Set;
  * The UNION set operator, which return the union of the result sets of two
  * tuple expressions.
  */
-public class Union extends NaryTupleOperator {
-
-	private static final long serialVersionUID = -1894706875682296935L;
+public class Union extends BinaryTupleOperator {
 
 	/*--------------*
 	 * Constructors *
@@ -25,40 +22,32 @@ public class Union extends NaryTupleOperator {
 	}
 
 	/**
-	 * Creates a new union operator that operates on the specified arguments.
+	 * Creates a new union operator that operates on the two specified arguments.
 	 * 
-	 * @param args
-	 *        The arguments of the union operator.
+	 * @param leftArg
+	 *        The left argument of the union operator.
+	 * @param rightArg
+	 *        The right argument of the union operator.
 	 */
-	public Union(TupleExpr... args) {
-		super(args);
-	}
-
-	/**
-	 * Creates a new union operator that operates on the specified arguments.
-	 * 
-	 * @param args
-	 *        The arguments of the union operator.
-	 */
-	public Union(Iterable<? extends TupleExpr> args) {
-		super(args);
+	public Union(TupleExpr leftArg, TupleExpr rightArg) {
+		super(leftArg, rightArg);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	public Set<String> getBindingNames() {
+		Set<String> bindingNames = new LinkedHashSet<String>(16);
+		bindingNames.addAll(getLeftArg().getBindingNames());
+		bindingNames.addAll(getRightArg().getBindingNames());
+		return bindingNames;
+	}
+
 	public Set<String> getAssuredBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
-
-		Iterator<? extends TupleExpr> args = getArgs().iterator();
-		if (args.hasNext()) {
-			bindingNames.addAll(args.next().getAssuredBindingNames());
-			while (args.hasNext()) {
-				bindingNames.retainAll(args.next().getAssuredBindingNames());
-			}
-		}
-
+		bindingNames.addAll(getLeftArg().getAssuredBindingNames());
+		bindingNames.retainAll(getRightArg().getAssuredBindingNames());
 		return bindingNames;
 	}
 
@@ -66,6 +55,16 @@ public class Union extends NaryTupleOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Union && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Union".hashCode();
 	}
 
 	@Override

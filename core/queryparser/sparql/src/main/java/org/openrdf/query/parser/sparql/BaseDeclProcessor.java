@@ -10,7 +10,9 @@ import info.aduna.net.ParsedURI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTBaseDecl;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
-import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
+import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
+import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
+import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /**
@@ -20,7 +22,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class BaseDeclProcessor {
+public class BaseDeclProcessor {
 
 	/**
 	 * Resolves relative URIs in the supplied query model using either the
@@ -39,7 +41,7 @@ class BaseDeclProcessor {
 	 *         If the base URI specified in the query model is not an absolute
 	 *         URI.
 	 */
-	public static void process(ASTQueryContainer qc, String externalBaseURI)
+	public static void process(ASTOperationContainer qc, String externalBaseURI)
 		throws MalformedQueryException
 	{
 		ParsedURI parsedBaseURI = null;
@@ -91,6 +93,22 @@ class BaseDeclProcessor {
 			ParsedURI resolvedURI = parsedBaseURI.resolve(node.getValue());
 			node.setValue(resolvedURI.toString());
 
+			return super.visit(node, data);
+		}
+
+		@Override
+		public Object visit(ASTIRIFunc node, Object data)
+			throws VisitorException
+		{
+			node.setBaseURI(parsedBaseURI.toString());
+			return super.visit(node, data);
+		}
+
+		@Override
+		public Object visit(ASTServiceGraphPattern node, Object data)
+			throws VisitorException
+		{
+			node.setBaseURI(parsedBaseURI.toString());
 			return super.visit(node, data);
 		}
 	}

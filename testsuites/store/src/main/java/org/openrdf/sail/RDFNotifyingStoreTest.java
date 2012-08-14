@@ -7,7 +7,6 @@ package org.openrdf.sail;
 
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.store.StoreException;
 
 /**
  * A JUnit test for testing Sail implementations that store RDF data. This is
@@ -42,11 +41,11 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 	 * repository should already have been initialized.
 	 * 
 	 * @return an initialized Sail.
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the initialization of the repository failed.
 	 */
 	protected abstract NotifyingSail createSail()
-		throws StoreException;
+		throws SailException;
 
 	@Override
 	protected void setUp()
@@ -63,7 +62,6 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 		throws Exception
 	{
 		// Add some data to the repository
-		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -73,6 +71,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 
 		// Test removal of statements
 		con.removeStatements(painting, RDF.TYPE, RDFS.CLASS);
+		con.commit();
 
 		assertEquals("Repository should contain 4 statements in total", 4, countAllElements());
 
@@ -82,12 +81,14 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 				countQueryResults("select 1 from {ex:Painting} rdf:type {rdfs:Class}"));
 
 		con.removeStatements(null, null, null, context1);
+		con.commit();
 
 		assertEquals("Repository should contain 1 statement in total", 1, countAllElements());
 
 		assertEquals("Named context should be empty", 0, countContext1Elements());
 
-		con.removeStatements(null, null, null);
+		con.clear();
+		con.commit();
 
 		assertEquals("Repository should no longer contain any statements", 0, countAllElements());
 

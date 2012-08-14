@@ -13,6 +13,7 @@ import java.util.Map;
  * Manages the life-cycle of the rows in a single predicate table.
  * 
  * @author James Leigh
+ * 
  */
 public class TripleTable {
 
@@ -71,9 +72,8 @@ public class TripleTable {
 	public synchronized void initTable()
 		throws SQLException
 	{
-		if (initialize) {
+		if (initialize)
 			return;
-		}
 		table.createTransactionalTable(buildTableColumns());
 		tables_created++;
 		total_st++;
@@ -176,9 +176,8 @@ public class TripleTable {
 	public void blockUntilReady()
 		throws SQLException
 	{
-		if (initialize) {
+		if (initialize)
 			return;
-		}
 		initTable();
 	}
 

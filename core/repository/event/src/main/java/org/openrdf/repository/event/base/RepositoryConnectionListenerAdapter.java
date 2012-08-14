@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,19 +8,20 @@ package org.openrdf.repository.event.base;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
 
 /**
  * @author Herko ter Horst
- * @author Arjohn Kampman
  */
 public class RepositoryConnectionListenerAdapter implements RepositoryConnectionListener {
 
 	public void close(RepositoryConnection conn) {
 	}
 
-	public void begin(RepositoryConnection conn) {
+	public void setAutoCommit(RepositoryConnection conn, boolean autoCommit) {
 	}
 
 	public void commit(RepositoryConnection conn) {
@@ -49,5 +50,10 @@ public class RepositoryConnectionListenerAdapter implements RepositoryConnection
 	}
 
 	public void clearNamespaces(RepositoryConnection conn) {
+	}
+
+	public void execute(RepositoryConnection conn, QueryLanguage ql, String update, String baseURI,
+			Update operation)
+	{
 	}
 }

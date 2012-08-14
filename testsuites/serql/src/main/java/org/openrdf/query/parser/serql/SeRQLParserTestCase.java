@@ -28,11 +28,11 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.parser.QueryParser;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -144,7 +144,7 @@ public abstract class SeRQLParserTestCase extends TestCase {
 				+ "  mfx = <http://www.openrdf.org/test-manifest-extensions#>, "
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
 
-		TupleResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 		while (tests.hasNext()) {
 			BindingSet testBindings = tests.next();
 			String testName = testBindings.getValue("testName").toString();
@@ -173,9 +173,8 @@ public abstract class SeRQLParserTestCase extends TestCase {
 	private static URL url(String uri)
 		throws MalformedURLException
 	{
-		if (!uri.startsWith("injar:")) {
+		if (!uri.startsWith("injar:"))
 			return new URL(uri);
-		}
 		int start = uri.indexOf(':') + 3;
 		int end = uri.indexOf('/', start);
 		String encoded = uri.substring(start, end);
@@ -189,9 +188,8 @@ public abstract class SeRQLParserTestCase extends TestCase {
 	}
 
 	private static String base(String uri) {
-		if (!uri.startsWith("jar:")) {
+		if (!uri.startsWith("jar:"))
 			return uri;
-		}
 		int start = uri.indexOf(':') + 1;
 		int end = uri.lastIndexOf('!');
 		String jar = uri.substring(start, end);

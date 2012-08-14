@@ -9,10 +9,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
+
 /**
  * Manages the namespace prefix in the database.
  * 
  * @author James Leigh
+ * 
  */
 public class NamespacesTable {
 
@@ -75,9 +78,8 @@ public class NamespacesTable {
 		throws SQLException
 	{
 		int result = table.executeUpdate(INSERT, prefix, namespace);
-		if (result != 1 && result != Statement.SUCCESS_NO_INFO) {
-			throw new SQLException("Namespace could not be created");
-		}
+		if (result != 1 && result != Statement.SUCCESS_NO_INFO)
+			throw new RdbmsRuntimeException("Namespace could not be created");
 		table.modified(1, 0);
 		table.optimize();
 	}
@@ -86,9 +88,8 @@ public class NamespacesTable {
 		throws SQLException
 	{
 		int result = table.executeUpdate(UPDATE, prefix, namespace);
-		if (result != 1 && result != Statement.SUCCESS_NO_INFO) {
-			throw new SQLException("Namespace prefix could not be changed, result: " + result);
-		}
+		if (result != 1 && result != Statement.SUCCESS_NO_INFO)
+			throw new RdbmsRuntimeException("Namespace prefix could not be changed, result: " + result);
 	}
 
 	public void clearPrefixes()

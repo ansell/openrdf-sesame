@@ -5,10 +5,6 @@
  */
 package org.openrdf.http.protocol;
 
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -21,7 +17,7 @@ public abstract class Protocol {
 	/**
 	 * Protocol version.
 	 */
-	public static final String VERSION = "4";
+	public static final String VERSION = "6";
 
 	/**
 	 * Parameter name for the 'subject' parameter of a statement query.
@@ -39,20 +35,30 @@ public abstract class Protocol {
 	public static final String OBJECT_PARAM_NAME = "obj";
 
 	/**
-	 * Parameter name for the context parameter.
-	 */
-	public static final String CONTEXT_PARAM_NAME = "context";
-
-	/**
 	 * Parameter name for the 'includeInferred' parameter.
 	 */
 	public static final String INCLUDE_INFERRED_PARAM_NAME = "infer";
+
+	/**
+	 * Parameter name for the context parameter.
+	 */
+	public static final String CONTEXT_PARAM_NAME = "context";
 
 	/**
 	 * Parameter value for the NULL context.
 	 */
 	public static final String NULL_PARAM_VALUE = "null";
 
+	/**
+	 * Parameter name for the graph parameter.
+	 */
+	public static final String GRAPH_PARAM_NAME = "graph";
+
+	/**
+	 * Parameter name for the update parameter.
+	 */
+	public static final String UPDATE_PARAM_NAME = "update";
+	
 	/**
 	 * Parameter name for the base-URI parameter.
 	 */
@@ -67,6 +73,28 @@ public abstract class Protocol {
 	 * Parameter name for the query language parameter.
 	 */
 	public static final String QUERY_LANGUAGE_PARAM_NAME = "queryLn";
+	
+	public static final String TIMEOUT_PARAM_NAME = "timeout";
+
+	/**
+	 * Parameter name for the default remove graph URI parameter.
+	 */
+	public static final String REMOVE_GRAPH_PARAM_NAME = "remove-graph-uri";
+
+	/**
+	 * Parameter name for the default insert graph URI parameter.
+	 */
+	public static final String INSERT_GRAPH_PARAM_NAME = "insert-graph-uri";
+
+	/**
+	 * Parameter name for the default graph URI parameter for update.
+	 */
+	public static final String USING_GRAPH_PARAM_NAME = "using-graph-uri";
+
+	/**
+	 * Parameter name for the named graph URI parameter for update.
+	 */
+	public static final String USING_NAMED_GRAPH_PARAM_NAME = "using-named-graph-uri";
 
 	/**
 	 * Parameter name for the default graph URI parameter.
@@ -79,9 +107,10 @@ public abstract class Protocol {
 	public static final String NAMED_GRAPH_PARAM_NAME = "named-graph-uri";
 
 	/**
-	 * Parameter prefix for query-external variable bindings.
+	 * Parameter name for the Accept parameter (may also be used as the name of
+	 * the Accept HTTP header).
 	 */
-	public static final String BINDING_PREFIX = "$";
+	public static final String ACCEPT_PARAM_NAME = "Accept";
 
 	/**
 	 * Relative location of the protocol resource.
@@ -114,14 +143,9 @@ public abstract class Protocol {
 	public static final String NAMESPACES = "namespaces";
 
 	/**
-	 * Relative location of the metadata resource of a repository.
+	 * Parameter prefix for query-external variable bindings.
 	 */
-	public static final String METADATA = "metadata";
-
-	/**
-	 * Relative location of the bnodes resource of a repository.
-	 */
-	public static final String BNODES = "bnodes";
+	public static final String BINDING_PREFIX = "$";
 
 	/**
 	 * Relative location of the 'size' resource of a repository.
@@ -129,93 +153,22 @@ public abstract class Protocol {
 	public static final String SIZE = "size";
 
 	/**
-	 * Relative location of the repository configurations resource.
-	 */
-	public static final String CONFIGURATIONS = "configurations";
-
-	/**
-	 * Relative location of the templates resource.
-	 */
-	public static final String TEMPLATES = "templates";
-
-	/**
-	 * Relative location of the template schemas resource.
-	 */
-	public static final String SCHEMAS = "schemas";
-
-	/**
-	 * Custom header used to convey query types from a server to a client. The
-	 * client can use the header to decide which set of result parsers are
-	 * relevant for the response body.
-	 */
-	public static final String X_QUERY_TYPE = "X-Query-Type";
-
-	/**
-	 * Value for {@link #X_QUERY_TYPE} for tuple query results.
-	 */
-	public static final String BINDINGS_QUERY = "bindings";
-
-	/**
-	 * Value for {@link #X_QUERY_TYPE} for graph query results.
-	 */
-	public static final String GRAPH_QUERY = "graph";
-
-	/**
-	 * Value for {@link #X_QUERY_TYPE} for boolean query results.
-	 */
-	public static final String BOOLEAN_QUERY = "boolean";
-
-	/**
 	 * MIME type for transactions: <tt>application/x-rdftransaction</tt>.
 	 */
 	public static final String TXN_MIME_TYPE = "application/x-rdftransaction";
 
-	public static final String METADATA_NAMESPACE = "http://www.openrdf.org/metadata/repository#";
-
-	public static final String OFFSET = "offset";
-
-	public static final String LIMIT = "limit";
-
-	public static final String CONNECTIONS = "connections";
-
-	public static final String BEGIN = "begin";
-
-	public static final String COMMIT = "commit";
-
-	public static final String ROLLBACK = "rollback";
-
-	public static final String QUERIES = "queries";
-
-	public static final String AMOUNT = "amount";
-
-	public static final String PING = "ping";
-
-	public static final String BNODE = "bnode";
-
-	public static final long MIN_TIME_OUT = 60;
-
-	public static final long MAX_TIME_OUT = 3 * MIN_TIME_OUT;
-
-	public static final TimeUnit TIME_OUT_UNITS = TimeUnit.SECONDS;
-
-	public static final String NODE_ID = "nodeID";
-
-	public static final String PREFIX = "prefix";
-
-	public static final String NAMESPACE = "namespace";
-
 	/**
-	 * Relative location of the session resource.
+	 * MIME type for www forms: <tt>application/x-www-form-urlencoded</tt>.
 	 */
-	public static final String SESSION = "session";
-
-	public static final String SESSION_COOKIE = "sesame_session";
+	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
 
 	private static String getServerDir(String serverLocation) {
-		if (!serverLocation.endsWith("/")) {
-			serverLocation += "/";
+		if (serverLocation.endsWith("/")) {
+			return serverLocation;
 		}
-		return serverLocation;
+		else {
+			return serverLocation + "/";
+		}
 	}
 
 	/**
@@ -230,17 +183,6 @@ public abstract class Protocol {
 	}
 
 	/**
-	 * Get the location of the schemas resource on the specified server.
-	 * 
-	 * @param serverLocation
-	 *        the base location of a server implementing this REST protocol.
-	 * @return the location of the schemas resource on the specified server
-	 */
-	public static final String getSchemasLocation(String serverLocation) {
-		return getServerDir(serverLocation) + SCHEMAS;
-	}
-
-	/**
 	 * Get the location of the server configuration resource on the specified
 	 * server.
 	 * 
@@ -251,17 +193,6 @@ public abstract class Protocol {
 	 */
 	public static final String getConfigLocation(String serverLocation) {
 		return getServerDir(serverLocation) + CONFIG;
-	}
-
-	/**
-	 * Get the location of the session resource on the specified server.
-	 * 
-	 * @param serverLocation
-	 *        the base location of a server implementing this REST protocol.
-	 * @return the location of the session resource on the specified server
-	 */
-	public static final String getSessionLocation(String serverLocation) {
-		return getServerDir(serverLocation) + SESSION;
 	}
 
 	/**
@@ -289,27 +220,6 @@ public abstract class Protocol {
 	 */
 	public static final String getRepositoryLocation(String serverLocation, String repositoryID) {
 		return getRepositoriesLocation(serverLocation) + "/" + repositoryID;
-	}
-
-	/**
-	 * Get the base location of the server containing the specified repository
-	 * resource.
-	 * 
-	 * @param repositoryLocation
-	 *        the location of a repository implementing this REST protocol.
-	 * @return the base location of a server implementing this REST protocol.
-	 */
-	public static final String getServerLocation(String repositoryLocation) {
-		// Try to parse the server URL from the repository URL
-		Pattern urlPattern = Pattern.compile("(.*)/" + Protocol.REPOSITORIES + "/[^/]*/?");
-		Matcher matcher = urlPattern.matcher(repositoryLocation);
-
-		if (matcher.matches() && matcher.groupCount() == 1) {
-			return matcher.group(1);
-		}
-		else {
-			return null;
-		}
 	}
 
 	/**
@@ -492,7 +402,7 @@ public abstract class Protocol {
 	 *         If the <tt>contexts</tt> is <tt>null</tt>.
 	 */
 	public static String[] encodeContexts(Resource... contexts) {
-		contexts = OpenRDFUtil.notNull(contexts);
+		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		String[] result = new String[contexts.length];
 		for (int index = 0; index < contexts.length; index++) {

@@ -7,7 +7,6 @@ package org.openrdf.sail.rdbms.algebra.factories;
 
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
@@ -15,6 +14,7 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * algebra nodes into an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlExprFactory {
 
@@ -85,7 +85,7 @@ public class SqlExprFactory {
 	}
 
 	public SqlExpr createBooleanExpr(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		return bool.createBooleanExpr(arg);
 	}
@@ -133,7 +133,7 @@ public class SqlExprFactory {
 	}
 
 	public SqlExpr createHashExpr(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		return hash.createHashExpr(arg);
 	}

@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * A particular column in an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class IdColumn extends RdbmsQueryModelNodeBase implements SqlExpr {
 
@@ -74,32 +75,25 @@ public class IdColumn extends RdbmsQueryModelNodeBase implements SqlExpr {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		final IdColumn other = (IdColumn)obj;
 		if (alias == null) {
-			if (other.alias != null) {
+			if (other.alias != null)
 				return false;
-			}
 		}
-		else if (!alias.equals(other.alias)) {
+		else if (!alias.equals(other.alias))
 			return false;
-		}
 		if (column == null) {
-			if (other.column != null) {
+			if (other.column != null)
 				return false;
-			}
 		}
-		else if (!column.equals(other.column)) {
+		else if (!column.equals(other.column))
 			return false;
-		}
 		return true;
 	}
 }

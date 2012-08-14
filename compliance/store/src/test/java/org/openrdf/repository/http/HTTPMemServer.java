@@ -1,90 +1,117 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.http;
 
 import java.io.File;
-import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.nio.BlockingChannelConnector;
+import org.mortbay.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.server.SesameServer;
-import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.manager.templates.ConfigTemplate;
-import org.openrdf.store.StoreConfigException;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.manager.SystemRepository;
+import org.openrdf.repository.sail.config.SailRepositoryConfig;
+import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
+import org.openrdf.sail.memory.config.MemoryStoreConfig;
 
 /**
  * @author Herko ter Horst
  */
 public class HTTPMemServer {
 
-	public static final String TEST_REPO_ID = "memory";
+	private static final String HOST = "localhost";
 
-	public static final String TEST_INFERENCE_REPO_ID = "memory-rdfs";
+	private static final int PORT = 18080;
 
-	public static int DEFAULT_PORT = 18080;
+	private static final String TEST_REPO_ID = "Test";
 
-	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
+	private static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
 
-	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(HTTPMemServer.SERVER_URL,
-			TEST_REPO_ID);
+	private static final String OPENRDF_CONTEXT = "/openrdf";
 
-	public static String INFERENCE_REPOSITORY_URL = Protocol.getRepositoryLocation(HTTPMemServer.SERVER_URL,
+	private static final String SERVER_URL = "http://" + HOST + ":" + PORT + OPENRDF_CONTEXT;
+
+	public static final String REPOSITORY_URL = Protocol.getRepositoryLocation(SERVER_URL, TEST_REPO_ID);
+
+	public static String INFERENCE_REPOSITORY_URL = Protocol.getRepositoryLocation(SERVER_URL,
 			TEST_INFERENCE_REPO_ID);
 
-	private final SesameServer server;
+	private final Server jetty;
 
-	private final File dataDir;
+	public HTTPMemServer() {
+		System.clearProperty("DEBUG");
 
-	public HTTPMemServer()
-		throws StoreConfigException, IOException
-	{
-		dataDir = FileUtil.createTempDir("sesame-test");
-		server = new SesameServer(dataDir, DEFAULT_PORT);
-	}
+		jetty = new Server();
+
+		Connector conn = new BlockingChannelConnector();
+		conn.setHost(HOST);
+		conn.setPort(PORT);
+		jetty.addConnector(conn);
+
+		WebAppContext webapp = new WebAppContext();
+		webapp.setContextPath(OPENRDF_CONTEXT);
+		// warPath configured in pom.xml maven-war-plugin configuration
+		webapp.setWar("./target/openrdf-sesame");
+		jetty.addHandler(webapp);	}
 
 	public void start()
 		throws Exception
 	{
-		server.start();
+		File dataDir = new File(System.getProperty("user.dir") + "/target/datadir");
+		dataDir.mkdirs();
+		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+
+		jetty.start();
+
 		createTestRepositories();
 	}
 
 	public void stop()
 		throws Exception
 	{
-		server.stop();
-
+		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
+				SystemRepository.ID));
+		RepositoryConnection con = systemRepo.getConnection();
 		try {
-			FileUtil.deleteDir(dataDir);
+			con.clear();
 		}
-		catch (IOException e) {
-			e.printStackTrace();
+		finally {
+			con.close();
 		}
+
+		jetty.stop();
+		System.clearProperty("org.mortbay.log.class");
 	}
 
-//	public void setMaxCacheAge(int maxCacheAge) {
-//		server.setMaxCacheAge(maxCacheAge);
-//	}
-
-	public RepositoryManager getRepositoryManager() {
-		return server.getRepositoryManager();
-	}
-
-	/**
-	 * @throws StoreException
-	 */
 	private void createTestRepositories()
-		throws StoreException, StoreConfigException
+		throws RepositoryException, RepositoryConfigException
 	{
-		RepositoryManager manager = server.getRepositoryManager();
-		ConfigTemplate memory = manager.getConfigTemplateManager().getTemplate("memory");
-		manager.addRepositoryConfig(TEST_REPO_ID, memory.createConfig(null));
-		ConfigTemplate memory_rdfs_dt = manager.getConfigTemplateManager().getTemplate("memory-rdfs");
-		manager.addRepositoryConfig(TEST_INFERENCE_REPO_ID, memory_rdfs_dt.createConfig(null));
+		Repository systemRep = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
+				SystemRepository.ID));
+
+		// create a (non-inferencing) memory store
+		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
+		SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
+		RepositoryConfig repConfig = new RepositoryConfig(TEST_REPO_ID, sailRepConfig);
+
+		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
+
+		// create an inferencing memory store
+		ForwardChainingRDFSInferencerConfig inferMemStoreConfig = new ForwardChainingRDFSInferencerConfig(
+				new MemoryStoreConfig());
+		sailRepConfig = new SailRepositoryConfig(inferMemStoreConfig);
+		repConfig = new RepositoryConfig(TEST_INFERENCE_REPO_ID, sailRepConfig);
+
+		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
 	}
 }

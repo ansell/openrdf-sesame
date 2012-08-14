@@ -8,7 +8,7 @@ package org.openrdf.http.protocol.transaction.operations;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Operation that removes the namespace for a specific prefix.
@@ -36,7 +36,7 @@ public class RemoveNamespaceOperation implements TransactionOperation {
 	}
 
 	public void execute(RepositoryConnection con)
-		throws StoreException
+		throws RepositoryException
 	{
 		con.removeNamespace(prefix);
 	}

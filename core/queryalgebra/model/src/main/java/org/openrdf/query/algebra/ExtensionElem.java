@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public class ExtensionElem extends QueryModelNodeBase {
 
-	private static final long serialVersionUID = 9219499840115634313L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -77,6 +75,20 @@ public class ExtensionElem extends QueryModelNodeBase {
 	@Override
 	public String getSignature() {
 		return super.getSignature() + " (" + name + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ExtensionElem) {
+			ExtensionElem o = (ExtensionElem)other;
+			return name.equals(o.getName()) && expr.equals(o.getExpr());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode() ^ expr.hashCode();
 	}
 
 	@Override

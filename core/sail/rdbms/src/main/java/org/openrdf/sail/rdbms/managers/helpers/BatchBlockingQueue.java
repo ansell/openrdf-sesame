@@ -13,13 +13,15 @@ import java.util.LinkedHashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.openrdf.sail.rdbms.managers.base.ManagerBase;
 import org.openrdf.sail.rdbms.schema.Batch;
 
 /**
+ * 
  * @author James Leigh
  */
-public class BatchBlockingQueue extends AbstractQueue<Batch> implements BlockingQueue<Batch> {
+public class BatchBlockingQueue extends AbstractQueue<Batch> implements
+		BlockingQueue<org.openrdf.sail.rdbms.schema.Batch>
+{
 
 	private LinkedHashSet<Batch> queue;
 
@@ -27,12 +29,9 @@ public class BatchBlockingQueue extends AbstractQueue<Batch> implements Blocking
 
 	private int size;
 
-	private ManagerBase callback;
-
-	public BatchBlockingQueue(int capacity, ManagerBase callback) {
+	public BatchBlockingQueue(int capacity) {
 		queue = new LinkedHashSet<Batch>(capacity / 16);
 		this.capacity = capacity;
-		this.callback = callback;
 	}
 
 	@Override
@@ -61,14 +60,12 @@ public class BatchBlockingQueue extends AbstractQueue<Batch> implements Blocking
 	}
 
 	public boolean offer(Batch e) {
-		boolean added;
 		synchronized (queue) {
-			added = queue.add(e);
+			boolean added = queue.add(e);
 			size += e.size();
 			queue.notify();
+			return added;
 		}
-		callback.queueIncreased();
-		return added;
 	}
 
 	public Batch peek() {
@@ -135,7 +132,6 @@ public class BatchBlockingQueue extends AbstractQueue<Batch> implements Blocking
 			size += e.size();
 			queue.notify();
 		}
-		callback.queueIncreased();
 	}
 
 	public int remainingCapacity() {

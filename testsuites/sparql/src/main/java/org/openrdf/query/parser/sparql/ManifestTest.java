@@ -12,6 +12,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.jar.JarFile;
 
+import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
 import org.slf4j.Logger;
@@ -20,21 +21,22 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.ZipUtil;
 import info.aduna.io.FileUtil;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.turtle.TurtleParser;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 
 public class ManifestTest {
 
@@ -42,61 +44,78 @@ public class ManifestTest {
 
 	private static final boolean REMOTE = false;
 
-	public static final String MANIFEST_FILE;
-
-	static {
+	public static TestSuite suite(SPARQLQueryTest.Factory factory)
+		throws Exception
+	{
+		final String manifestFile;
+		final File tmpDir;
+		
 		if (REMOTE) {
-			MANIFEST_FILE = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/manifest-evaluation.ttl";
+			manifestFile = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/manifest-evaluation.ttl";
+			tmpDir = null;
 		}
 		else {
 			URL url = ManifestTest.class.getResource("/testcases-dawg/data-r2/manifest-evaluation.ttl");
-
+			
 			if ("jar".equals(url.getProtocol())) {
 				// Extract manifest files to a temporary directory
 				try {
-					File destDir = FileUtil.createTempDir("sparql");
-
+					tmpDir = FileUtil.createTempDir("sparql-evaluation");
+					
 					JarURLConnection con = (JarURLConnection)url.openConnection();
 					JarFile jar = con.getJarFile();
-
-					ZipUtil.extract(jar, destDir);
-
-					destDir.deleteOnExit();
-					File localFile = new File(destDir, con.getEntryName());
-					destDir.deleteOnExit();
-					MANIFEST_FILE = localFile.toURI().toURL().toString();
+					
+					ZipUtil.extract(jar, tmpDir);
+					
+					File localFile = new File(tmpDir, con.getEntryName());
+					manifestFile = localFile.toURI().toURL().toString();
 				}
 				catch (IOException e) {
 					throw new AssertionError(e);
 				}
 			}
 			else {
-				MANIFEST_FILE = url.toString();
+				manifestFile = url.toString();
+				tmpDir = null;
 			}
 		}
-	}
+		
+		TestSuite suite = new TestSuite(factory.getClass().getName()) {
 
-	public static TestSuite suite(SPARQLQueryTest.Factory factory)
-		throws Exception
-	{
-		TestSuite suite = new TestSuite(factory.getClass().getName());
+			@Override
+			public void run(TestResult result) {
+				try {
+					super.run(result);
+				}
+				finally {
+					if (tmpDir != null) {
+						try {
+							FileUtil.deleteDir(tmpDir);
+						}
+						catch (IOException e) {
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': " + e.getMessage());
+						}
+					}
+				}
+			}
+		};
 
 		Repository manifestRep = new SailRepository(new MemoryStore());
 		manifestRep.initialize();
 		RepositoryConnection con = manifestRep.getConnection();
 
-		addTurtle(con, new URL(MANIFEST_FILE), MANIFEST_FILE);
+		addTurtle(con, new URL(manifestFile), manifestFile);
 
 		String query = "SELECT DISTINCT manifestFile FROM {x} rdf:first {manifestFile} "
 				+ "USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
 
-		TupleResult manifestResults = con.prepareTupleQuery(QueryLanguage.SERQL, query, MANIFEST_FILE).evaluate();
+		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SERQL, query, manifestFile).evaluate();
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
-			String manifestFile = bindingSet.getValue("manifestFile").toString();
-			suite.addTest(SPARQLQueryTest.suite(manifestFile, factory));
+			String subManifestFile = bindingSet.getValue("manifestFile").toString();
+			suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory));
 		}
 
 		manifestResults.close();
@@ -108,7 +127,7 @@ public class ManifestTest {
 	}
 
 	static void addTurtle(RepositoryConnection con, URL url, String baseURI, Resource... contexts)
-		throws IOException, StoreException, RDFParseException
+		throws IOException, RepositoryException, RDFParseException
 	{
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
@@ -117,7 +136,8 @@ public class ManifestTest {
 		InputStream in = url.openStream();
 
 		try {
-			final ValueFactory vf = con.getValueFactory();
+			OpenRDFUtil.verifyContextNotNull(contexts);
+			final ValueFactory vf = con.getRepository().getValueFactory();
 			RDFParser rdfParser = new TurtleParser();
 			rdfParser.setValueFactory(vf);
 
@@ -129,19 +149,27 @@ public class ManifestTest {
 			rdfInserter.enforceContext(contexts);
 			rdfParser.setRDFHandler(rdfInserter);
 
-			con.begin();
+			boolean autoCommit = con.isAutoCommit();
+			con.setAutoCommit(false);
+
 			try {
 				rdfParser.parse(in, baseURI);
-				con.commit();
 			}
 			catch (RDFHandlerException e) {
-				con.rollback();
-				// RDFInserter only throws wrapped StoreExceptions
-				throw (StoreException)e.getCause();
+				if (autoCommit) {
+					con.rollback();
+				}
+				// RDFInserter only throws wrapped RepositoryExceptions
+				throw (RepositoryException)e.getCause();
 			}
 			catch (RuntimeException e) {
-				con.rollback();
+				if (autoCommit) {
+					con.rollback();
+				}
 				throw e;
+			}
+			finally {
+				con.setAutoCommit(autoCommit);
 			}
 		}
 		finally {

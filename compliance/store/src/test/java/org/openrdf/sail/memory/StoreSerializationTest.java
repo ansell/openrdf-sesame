@@ -10,19 +10,22 @@ import java.io.File;
 import junit.framework.TestCase;
 
 import info.aduna.io.FileUtil;
+import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.URIFactory;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
 public class StoreSerializationTest extends TestCase {
 
@@ -58,17 +61,19 @@ public class StoreSerializationTest extends TestCase {
 		MemoryStore store = new MemoryStore(dataDir);
 		store.initialize();
 
-		URIFactory factory = store.getURIFactory();
+		ValueFactory factory = store.getValueFactory();
 		URI foo = factory.createURI("http://www.foo.example/foo");
 		URI bar = factory.createURI("http://www.foo.example/bar");
 
 		SailConnection con = store.getConnection();
 		con.addStatement(foo, RDF.TYPE, bar);
+		con.commit();
 
-		TupleQueryModel query = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+		ParsedTupleQuery query = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
 				"SELECT X, P, Y FROM {X} P {Y}", null);
+		TupleExpr tupleExpr = query.getTupleExpr();
 
-		Cursor<? extends BindingSet> iter = con.evaluate(query,
+		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter = con.evaluate(tupleExpr, null,
 				EmptyBindingSet.getInstance(), false);
 
 		BindingSet bindingSet = iter.next();
@@ -84,13 +89,13 @@ public class StoreSerializationTest extends TestCase {
 		store = new MemoryStore(dataDir);
 		store.initialize();
 
-		factory = store.getURIFactory();
+		factory = store.getValueFactory();
 		foo = factory.createURI("http://www.foo.example/foo");
 		bar = factory.createURI("http://www.foo.example/bar");
 
 		con = store.getConnection();
 
-		iter = con.evaluate(query, EmptyBindingSet.getInstance(), false);
+		iter = con.evaluate(tupleExpr, null, EmptyBindingSet.getInstance(), false);
 
 		bindingSet = iter.next();
 
@@ -100,6 +105,7 @@ public class StoreSerializationTest extends TestCase {
 
 		iter.close();
 		con.addStatement(bar, RDF.TYPE, foo);
+		con.commit();
 		con.close();
 		
 		store.shutDown();
@@ -111,7 +117,7 @@ public class StoreSerializationTest extends TestCase {
 		MemoryStore store = new MemoryStore(dataDir);
 		store.initialize();
 
-		URIFactory factory = store.getURIFactory();
+		ValueFactory factory = store.getValueFactory();
 		URI foo = factory.createURI("http://www.foo.example/foo");
 
 		StringBuilder sb = new StringBuilder(66000);
@@ -119,10 +125,12 @@ public class StoreSerializationTest extends TestCase {
 			sb.append('a');
 		}
 
-		Literal longLiteral = store.getLiteralFactory().createLiteral(sb.toString());
+		Literal longLiteral = factory.createLiteral(sb.toString());
 
 		SailConnection con = store.getConnection();
 		con.addStatement(foo, RDF.TYPE, longLiteral);
+		con.commit();
+
 		con.close();
 		store.shutDown();
 
@@ -131,9 +139,10 @@ public class StoreSerializationTest extends TestCase {
 
 		con = store.getConnection();
 
-		Cursor<? extends Statement> iter = con.getStatements(foo, RDF.TYPE, null,
+		CloseableIteration<? extends Statement, SailException> iter = con.getStatements(foo, RDF.TYPE, null,
 				false);
-		assertTrue(iter.next() != null);
+		assertTrue(iter.hasNext());
+		iter.next();
 		iter.close();
 
 		con.close();

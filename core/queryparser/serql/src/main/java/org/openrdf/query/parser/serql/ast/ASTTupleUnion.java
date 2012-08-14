@@ -33,7 +33,8 @@ public class ASTTupleUnion extends ASTTupleQuerySet {
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		String result = super.toString();
 
 		if (distinct) {

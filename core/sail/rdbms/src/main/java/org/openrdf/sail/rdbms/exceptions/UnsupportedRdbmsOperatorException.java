@@ -5,15 +5,16 @@
  */
 package org.openrdf.sail.rdbms.exceptions;
 
-import org.openrdf.query.EvaluationException;
+import org.openrdf.query.QueryEvaluationException;
 
 /**
  * Indicates that an operation is not supported on the database side and must be
  * evaluated on the client.
  * 
  * @author James Leigh
+ * 
  */
-public class UnsupportedRdbmsOperatorException extends EvaluationException {
+public class UnsupportedRdbmsOperatorException extends QueryEvaluationException {
 
 	private static final long serialVersionUID = 2135660777365106900L;
 

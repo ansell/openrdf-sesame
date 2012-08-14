@@ -15,8 +15,6 @@ package org.openrdf.query.algebra;
  */
 public class GroupElem extends QueryModelNodeBase {
 
-	private static final long serialVersionUID = 6964450231466745847L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -78,6 +76,20 @@ public class GroupElem extends QueryModelNodeBase {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof GroupElem) {
+			GroupElem o = (GroupElem)other;
+			return name.equals(o.getName()) && operator.equals(o.getOperator());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode() ^ operator.hashCode();
 	}
 
 	@Override

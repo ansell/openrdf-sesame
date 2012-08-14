@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -25,21 +25,22 @@ import junit.framework.TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.IOUtil;
 import info.aduna.io.FileUtil;
+import info.aduna.io.IOUtil;
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.inferencer.fc.DirectTypeHierarchyInferencer;
@@ -75,7 +76,6 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	 *--------------*/
 
 	public interface Factory {
-
 		Test createTest(String name, String dataFile, List<String> graphNames, String queryFile,
 				String resultFile, String entailment);
 	}
@@ -103,60 +103,42 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-		Collection<Statement> actualStatements, expectedStatements;
-
 		String query = readQuery();
+		Repository dataRep = createRepository(entailment);
 
-		File dataDir = FileUtil.createTempDir("serql");
-		Repository dataRep = createRepository(dataDir, entailment);
-		try {
-			RepositoryConnection con = dataRep.getConnection();
-			try {
-				// Add unnamed graph
-				con.add(url(dataFile), base(dataFile), RDFFormat.forFileName(dataFile));
+		RepositoryConnection dataCon = dataRep.getConnection();
 
-				// add named graphs
-				for (String graphName : graphNames) {
-					con.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new URIImpl(
-							graphName));
-				}
+		// Add unnamed graph
+		dataCon.add(url(dataFile), base(dataFile), RDFFormat.forFileName(dataFile));
 
-				// Evaluate the query on the query data
-				GraphResult result = con.prepareGraphQuery(getQueryLanguage(), query).evaluate();
-				try {
-					actualStatements = result.asList();
-				}
-				finally {
-					result.close();
-				}
-			}
-			finally {
-				con.close();
-			}
+		// add named graphs
+		for (String graphName : graphNames) {
+			dataCon.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new URIImpl(graphName));
 		}
-		finally {
-			dataRep.shutDown();
-			FileUtil.deleteDir(dataDir);
-		}
+
+		// Evaluate the query on the query data
+		GraphQueryResult result = dataCon.prepareGraphQuery(getQueryLanguage(), query).evaluate();
+		Collection<Statement> actualStatements = Iterations.addAll(result, new ArrayList<Statement>(1));
+		result.close();
+
+		dataCon.close();
+		dataRep.shutDown();
+		discardRepository(dataRep);
 
 		// Create a repository with the expected result data
-		dataDir = FileUtil.createTempDir("serql");
-		Repository expectedResultRep = createRepository(dataDir);
-		try {
-			RepositoryConnection con = expectedResultRep.getConnection();
-			try {
-				con.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
+		Repository expectedResultRep = new SailRepository(newSail());
+		expectedResultRep.initialize();
 
-				expectedStatements = con.match(null, null, null, false).asList();
-			}
-			finally {
-				con.close();
-			}
-		}
-		finally {
-			expectedResultRep.shutDown();
-			FileUtil.deleteDir(dataDir);
-		}
+		RepositoryConnection erCon = expectedResultRep.getConnection();
+
+		erCon.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
+
+		Collection<Statement> expectedStatements = Iterations.addAll(erCon.getStatements(null, null, null,
+				false), new ArrayList<Statement>(1));
+
+		erCon.close();
+		expectedResultRep.shutDown();
+		discardRepository(expectedResultRep);
 
 		// Compare query result to expected data
 		if (!ModelUtil.equals(actualStatements, expectedStatements)) {
@@ -202,37 +184,34 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 	}
 
-	protected Repository createRepository(File dataDir, String entailment)
-		throws Exception
-	{
-		Repository dataRep = new SailRepository(createSail(entailment));
-		dataRep.setDataDir(dataDir);
+	protected Repository createRepository(String entailment)
+			throws Exception {
+		Repository dataRep;
+		if ("RDF".equals(entailment)) {
+			dataRep = newRepository();
+		} else {
+			dataRep = newRepository(entailment);
+		}
 		dataRep.initialize();
-
 		RepositoryConnection con = dataRep.getConnection();
 		try {
 			con.clear();
 			con.clearNamespaces();
-		}
-		finally {
+		} finally {
 			con.close();
 		}
-
 		return dataRep;
 	}
 
-	protected Repository createRepository(File dataDir)
-		throws Exception
-	{
-		Repository repository = new SailRepository(newSail());
-		repository.setDataDir(dataDir);
-		repository.initialize();
-		return repository;
+	protected Repository newRepository() throws Exception {
+		return new SailRepository(newSail());
 	}
 
-	protected NotifyingSail createSail(String entailment)
-		throws Exception
-	{
+	protected Repository newRepository(String entailment) throws Exception {
+		return new SailRepository(createSail(entailment));
+	}
+
+	protected NotifyingSail createSail(String entailment) throws Exception {
 		NotifyingSail sail = newSail();
 
 		if ("RDF".equals(entailment)) {
@@ -246,18 +225,24 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 			sail = new DirectTypeHierarchyInferencer(sail);
 		}
 		else {
+			sail.shutDown();
 			fail("Invalid value for entailment level:" + entailment);
 		}
 		return sail;
 	}
 
-	/**
-	 * Creates a new, unitialized Sail to be used for testing SeRQL query
-	 * evaluation.
-	 */
-	protected abstract NotifyingSail newSail()
-		throws Exception;
+	protected abstract NotifyingSail newSail() throws Exception;
 
+	protected void discardRepository(Repository rep) {
+		File dataDir = rep.getDataDir();
+		if (dataDir != null && dataDir.isDirectory()) {
+			try {
+				FileUtil.deleteDir(dataDir);
+			}
+			catch (IOException e) {
+			}
+		}
+	}
 	private String readQuery()
 		throws IOException
 	{
@@ -296,7 +281,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>, "
 				+ "  tck = <urn:openrdf.org:sesame:tests#> ";
 
-		TupleResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 		while (tests.hasNext()) {
 			BindingSet testBindings = tests.next();
 			String testName = ((Literal)testBindings.getValue("testName")).getLabel();
@@ -313,7 +298,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 			List<String> graphNames = new ArrayList<String>();
 
-			TupleResult graphs = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+			TupleQueryResult graphs = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 			while (graphs.hasNext()) {
 				BindingSet graphBindings = graphs.next();
 				graphNames.add(graphBindings.getValue("graph").toString());
@@ -335,35 +320,30 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	}
 
 	private static URL url(String uri)
-		throws MalformedURLException
-	{
-		if (!uri.startsWith("injar:")) {
+			throws MalformedURLException {
+		if (!uri.startsWith("injar:"))
 			return new URL(uri);
-		}
 		int start = uri.indexOf(':') + 3;
 		int end = uri.indexOf('/', start);
 		String encoded = uri.substring(start, end);
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
 
 	private static String base(String uri) {
-		if (!uri.startsWith("jar:")) {
+		if (!uri.startsWith("jar:"))
 			return uri;
-		}
 		int start = uri.indexOf(':') + 1;
 		int end = uri.lastIndexOf('!');
 		String jar = uri.substring(start, end);
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

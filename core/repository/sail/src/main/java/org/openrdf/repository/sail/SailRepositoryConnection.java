@@ -1,35 +1,40 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.sail;
 
+import info.aduna.iteration.CloseableIteration;
+
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Operation;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.parser.BooleanQueryModel;
-import org.openrdf.query.parser.GraphQueryModel;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedOperation;
+import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.query.parser.TupleQueryModel;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryReadOnlyException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.base.RepositoryConnectionBase;
-import org.openrdf.repository.util.ModelNamespaceResult;
-import org.openrdf.result.ContextResult;
-import org.openrdf.result.ModelResult;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.impl.ContextResultImpl;
-import org.openrdf.result.impl.NamespaceResultImpl;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
+import org.openrdf.sail.SailReadOnlyException;
 
 /**
  * An implementation of the {@link RepositoryConnection} interface that wraps a
@@ -74,83 +79,54 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return sailConnection;
 	}
 
-	public ValueFactory getValueFactory() {
-		return sailConnection.getValueFactory();
-	}
-
-	public boolean isOpen()
-		throws StoreException
-	{
-		return sailConnection.isOpen();
-	}
-
-	public void close()
-		throws StoreException
-	{
-		sailConnection.close();
-	}
-
-	public Isolation getTransactionIsolation()
-		throws StoreException
-	{
-		return sailConnection.getTransactionIsolation();
-	}
-
-	public void setTransactionIsolation(Isolation isolation)
-		throws StoreException
-	{
-		sailConnection.setTransactionIsolation(isolation);
-	}
-
-	public boolean isReadOnly()
-		throws StoreException
-	{
-		return sailConnection.isReadOnly();
-	}
-
-	public void setReadOnly(boolean readOnly)
-		throws StoreException
-	{
-		sailConnection.setReadOnly(readOnly);
-	}
-
-	public boolean isAutoCommit()
-		throws StoreException
-	{
-		return sailConnection.isAutoCommit();
-	}
-
-	public void begin()
-		throws StoreException
-	{
-		sailConnection.begin();
-	}
-
 	public void commit()
-		throws StoreException
+		throws RepositoryException
 	{
-		sailConnection.commit();
+		try {
+			sailConnection.commit();
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	public void rollback()
-		throws StoreException
+		throws RepositoryException
 	{
-		sailConnection.rollback();
+		try {
+			sailConnection.rollback();
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	@Override
+	public void close()
+		throws RepositoryException
+	{
+		try {
+			sailConnection.close();
+			super.close();
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		QueryModel parsedQuery = QueryParserUtil.parseQuery(ql, queryString, baseURI);
+		ParsedQuery parsedQuery = QueryParserUtil.parseQuery(ql, queryString, baseURI);
 
-		if (parsedQuery instanceof TupleQueryModel) {
-			return new SailTupleQuery((TupleQueryModel)parsedQuery, this);
+		if (parsedQuery instanceof ParsedTupleQuery) {
+			return new SailTupleQuery((ParsedTupleQuery)parsedQuery, this);
 		}
-		else if (parsedQuery instanceof GraphQueryModel) {
-			return new SailGraphQuery((GraphQueryModel)parsedQuery, this);
+		else if (parsedQuery instanceof ParsedGraphQuery) {
+			return new SailGraphQuery((ParsedGraphQuery)parsedQuery, this);
 		}
-		else if (parsedQuery instanceof BooleanQueryModel) {
-			return new SailBooleanQuery((BooleanQueryModel)parsedQuery, this);
+		else if (parsedQuery instanceof ParsedBooleanQuery) {
+			return new SailBooleanQuery((ParsedBooleanQuery)parsedQuery, this);
 		}
 		else {
 			throw new RuntimeException("Unexpected query type: " + parsedQuery.getClass());
@@ -160,45 +136,74 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	public SailTupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		TupleQueryModel parsedQuery = QueryParserUtil.parseTupleQuery(ql, queryString, baseURI);
+		ParsedTupleQuery parsedQuery = QueryParserUtil.parseTupleQuery(ql, queryString, baseURI);
 		return new SailTupleQuery(parsedQuery, this);
 	}
 
 	public SailGraphQuery prepareGraphQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		GraphQueryModel parsedQuery = QueryParserUtil.parseGraphQuery(ql, queryString, baseURI);
+		ParsedGraphQuery parsedQuery = QueryParserUtil.parseGraphQuery(ql, queryString, baseURI);
 		return new SailGraphQuery(parsedQuery, this);
 	}
 
 	public SailBooleanQuery prepareBooleanQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
-		BooleanQueryModel parsedQuery = QueryParserUtil.parseBooleanQuery(ql, queryString, baseURI);
+		ParsedBooleanQuery parsedQuery = QueryParserUtil.parseBooleanQuery(ql, queryString, baseURI);
 		return new SailBooleanQuery(parsedQuery, this);
 	}
 
-	public ContextResult getContextIDs()
-		throws StoreException
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
+		throws RepositoryException, MalformedQueryException
 	{
-		return new ContextResultImpl(sailConnection.getContextIDs());
+		ParsedUpdate parsedUpdate = QueryParserUtil.parseUpdate(ql, update, baseURI);
+
+		return new SailUpdate(parsedUpdate, this);
 	}
 
-	public ModelResult match(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	public RepositoryResult<Resource> getContextIDs()
+		throws RepositoryException
 	{
-		return new ModelNamespaceResult(this, sailConnection.getStatements(subj, pred, obj, includeInferred,
-				contexts));
+		try {
+			return createRepositoryResult(sailConnection.getContextIDs());
+		}
+		catch (SailException e) {
+			throw new RepositoryException("Unable to get context IDs from Sail", e);
+		}
 	}
 
-	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			H handler, Resource... contexts)
-		throws StoreException, RDFHandlerException
+	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
+		throws RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
+		try {
+			return createRepositoryResult(sailConnection.getStatements(subj, pred, obj, includeInferred,
+					contexts));
+		}
+		catch (SailException e) {
+			throw new RepositoryException("Unable to get statements from Sail", e);
+		}
+	}
+
+	@Override
+	public boolean isEmpty()
+		throws RepositoryException
+	{
+		// The following is more efficient than "size() == 0" for Sails
+		return !hasStatement(null, null, null, false);
+	}
+
+	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+			RDFHandler handler, Resource... contexts)
+		throws RepositoryException, RDFHandlerException
 	{
 		handler.startRDF();
 
 		// Export namespace information
-		NamespaceResult nsIter = getNamespaces();
+		CloseableIteration<? extends Namespace, RepositoryException> nsIter = getNamespaces();
 		try {
 			while (nsIter.hasNext()) {
 				Namespace ns = nsIter.next();
@@ -210,7 +215,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		// Export statements
-		ModelResult stIter = match(subj, pred, obj, includeInferred, contexts);
+		CloseableIteration<? extends Statement, RepositoryException> stIter = getStatements(subj, pred, obj,
+				includeInferred, contexts);
 
 		try {
 			while (stIter.hasNext()) {
@@ -222,62 +228,149 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		handler.endRDF();
-		return handler;
 	}
 
-	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
+	public long size(Resource... contexts)
+		throws RepositoryException
 	{
-		return sailConnection.size(subject, predicate, object, includeInferred, contexts);
+		try {
+			return sailConnection.size(contexts);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
 	{
-		sailConnection.addStatement(subject, predicate, object, contexts);
+		try {
+			sailConnection.addStatement(subject, predicate, object, contexts);
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
-	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
 	{
-		sailConnection.removeStatements(subject, predicate, object, contexts);
+		try {
+			sailConnection.removeStatements(subject, predicate, object, contexts);
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	@Override
+	protected void autoCommit()
+		throws RepositoryException
+	{
+		super.autoCommit();
 	}
 
 	@Override
 	public void clear(Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
-		sailConnection.removeStatements(null, null, null, contexts);
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
+		try {
+			sailConnection.clear(contexts);
+			autoCommit();
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	public void setNamespace(String prefix, String name)
-		throws StoreException
+		throws RepositoryException
 	{
-		sailConnection.setNamespace(prefix, name);
+		try {
+			sailConnection.setNamespace(prefix, name);
+			autoCommit();
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	public void removeNamespace(String prefix)
-		throws StoreException
+		throws RepositoryException
 	{
-		sailConnection.removeNamespace(prefix);
+		try {
+			sailConnection.removeNamespace(prefix);
+			autoCommit();
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	public void clearNamespaces()
-		throws StoreException
+		throws RepositoryException
 	{
-		sailConnection.clearNamespaces();
+		try {
+			sailConnection.clearNamespaces();
+			autoCommit();
+		}
+		catch (SailReadOnlyException e) {
+			throw new RepositoryReadOnlyException(e.getMessage(), e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
-	public NamespaceResult getNamespaces()
-		throws StoreException
+	public RepositoryResult<Namespace> getNamespaces()
+		throws RepositoryException
 	{
-		return new NamespaceResultImpl(sailConnection.getNamespaces());
+		try {
+			return createRepositoryResult(sailConnection.getNamespaces());
+		}
+		catch (SailException e) {
+			throw new RepositoryException("Unable to get namespaces from Sail", e);
+		}
 	}
 
 	public String getNamespace(String prefix)
-		throws StoreException
+		throws RepositoryException
 	{
-		return sailConnection.getNamespace(prefix);
+		try {
+			return sailConnection.getNamespace(prefix);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
+
+	/**
+	 * Wraps a CloseableIteration coming from a Sail in a RepositoryResult
+	 * object, applying the required conversions
+	 */
+	protected <E> RepositoryResult<E> createRepositoryResult(
+			CloseableIteration<? extends E, SailException> sailIter)
+	{
+		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
+	}
+
 }

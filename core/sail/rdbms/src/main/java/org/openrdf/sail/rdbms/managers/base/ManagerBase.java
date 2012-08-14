@@ -5,7 +5,11 @@
  */
 package org.openrdf.sail.rdbms.managers.base;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
+import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,20 +27,36 @@ public abstract class ManagerBase {
 
 	private static final boolean USE_THREAD = true;
 
-	volatile Exception exc;
+	Exception exc;
 
-	Logger logger = LoggerFactory.getLogger(ManagerBase.class);
+	private Logger logger = LoggerFactory.getLogger(ManagerBase.class);
 
-	public final BatchBlockingQueue queue = new BatchBlockingQueue(MAX_QUEUE, this);
+	public final BlockingQueue<Batch> queue = new BatchBlockingQueue(MAX_QUEUE);
 
-	final Object working = new Object();
+	private final Object working = new Object();
 
-	private volatile Batch wb;
+	private Batch wb;
 
 	private Thread thread;
 
-	public BatchBlockingQueue getQueue() {
-		return queue;
+	private int count;
+
+	@SuppressWarnings("unchecked")
+	public BlockingQueue<Batch> getQueue() {
+		ClassLoader cl = getClass().getClassLoader();
+		Class<?>[] classes = new Class[] { BlockingQueue.class };
+		InvocationHandler h = new InvocationHandler() {
+
+			public Object invoke(Object proxy, Method method, Object[] args)
+				throws Throwable
+			{
+				Object result = method.invoke(queue, args);
+				checkQueueSize();
+				return result;
+			}
+		};
+		Object proxy = Proxy.newProxyInstance(cl, classes, h);
+		return (BlockingQueue<Batch>)proxy;
 	}
 
 	public void close()
@@ -68,6 +88,7 @@ public abstract class ManagerBase {
 				flush(wb);
 				wb = null;
 			}
+			count = 0;
 		}
 	}
 
@@ -75,8 +96,14 @@ public abstract class ManagerBase {
 		queue.clear();
 	}
 
-	public void queueIncreased() {
-		if (thread == null && queue.size() >= MIN_QUEUE && USE_THREAD) {
+	protected void optimize()
+		throws SQLException
+	{
+		// allow subclasses to optimise table
+	}
+
+	void checkQueueSize() {
+		if (++count >= MIN_QUEUE && thread == null && USE_THREAD) {
 			String name = getClass().getSimpleName() + "-flusher";
 			thread = new Thread(new Runnable() {
 
@@ -92,12 +119,6 @@ public abstract class ManagerBase {
 			}, name);
 			thread.start();
 		}
-	}
-
-	protected void optimize()
-		throws SQLException
-	{
-		// allow subclasses to optimise table
 	}
 
 	protected void flush(Batch batch)

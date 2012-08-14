@@ -15,9 +15,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
-import org.openrdf.store.StoreException;
 
 /**
  * An RDFHandler that adds RDF data to a repository.
@@ -106,7 +106,8 @@ public class RDFInserter extends RDFHandlerBase {
 	 *        context(s) should be enforced.
 	 */
 	public void enforceContext(Resource... contexts) {
-		this.contexts = OpenRDFUtil.notNull(contexts);
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		this.contexts = contexts;
 	}
 
 	/**
@@ -145,7 +146,7 @@ public class RDFInserter extends RDFHandlerBase {
 					con.setNamespace(prefix, name);
 				}
 			}
-			catch (StoreException e) {
+			catch (RepositoryException e) {
 				throw new RDFHandlerException(e);
 			}
 		}
@@ -159,7 +160,7 @@ public class RDFInserter extends RDFHandlerBase {
 		// FIXME: set namespaces directly when they are properly handled wrt
 		// rollback
 		// don't replace earlier declarations
-		if (prefix != null && prefix.trim().length() > 0 && !namespaceMap.containsKey(prefix)) {
+		if (prefix != null && !namespaceMap.containsKey(prefix)) {
 			namespaceMap.put(prefix, name);
 		}
 	}
@@ -195,7 +196,7 @@ public class RDFInserter extends RDFHandlerBase {
 				con.add(subj, pred, obj, ctxt);
 			}
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
@@ -205,13 +206,13 @@ public class RDFInserter extends RDFHandlerBase {
 	 * Consecutive calls with equal BNode objects returns the same object
 	 * everytime.
 	 * 
-	 * @throws StoreException
+	 * @throws RepositoryException
 	 */
 	private BNode mapBNode(BNode bNode) {
 		BNode result = bNodesMap.get(bNode.getID());
 
 		if (result == null) {
-			result = con.getValueFactory().createBNode();
+			result = con.getRepository().getValueFactory().createBNode();
 			bNodesMap.put(bNode.getID(), result);
 		}
 

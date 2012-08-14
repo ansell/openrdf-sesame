@@ -13,7 +13,7 @@
 		</mediaobject>
 	</figure>
 	<para>
-		Being an RDF-oriented framework, all parts of Sesame are to some extend
+		Being an RDF-oriented framework, all parts of Sesame are to some extent
 		related to the RDF model. This model defines interfaces for the RDF
 		entities "URI", "blank node", "literal" and "statement".
 	</para>

@@ -6,7 +6,6 @@
 package org.openrdf.repository.config;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * A RepositoryFactory takes care of creating and initializing a specific type
@@ -37,10 +36,10 @@ public interface RepositoryFactory {
 	 * @param config
 	 *        TODO
 	 * @return The created (but un-initialized) repository.
-	 * @throws StoreConfigException
+	 * @throws RepositoryConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	public Repository getRepository(RepositoryImplConfig config)
-		throws StoreConfigException;
+		throws RepositoryConfigException;
 }

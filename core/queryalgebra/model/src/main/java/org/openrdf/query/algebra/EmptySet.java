@@ -13,10 +13,8 @@ import java.util.Set;
  */
 public class EmptySet extends QueryModelNodeBase implements TupleExpr {
 
-	private static final long serialVersionUID = 4104685834098140176L;
-
 	public Set<String> getBindingNames() {
-		return Collections.emptySet();
+		return getAssuredBindingNames();
 	}
 
 	public Set<String> getAssuredBindingNames() {
@@ -27,6 +25,16 @@ public class EmptySet extends QueryModelNodeBase implements TupleExpr {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof EmptySet;
+	}
+
+	@Override
+	public int hashCode() {
+		return "EmptySet".hashCode();
 	}
 
 	@Override

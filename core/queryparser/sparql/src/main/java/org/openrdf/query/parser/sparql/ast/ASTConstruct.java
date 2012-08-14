@@ -18,4 +18,9 @@ public class ASTConstruct extends SimpleNode {
 	{
 		return visitor.visit(this, data);
 	}
+
+	public boolean isWildcard() {
+		return this.jjtGetNumChildren() == 0;
+	}
+
 }

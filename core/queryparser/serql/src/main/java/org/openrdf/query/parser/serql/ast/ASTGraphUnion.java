@@ -33,7 +33,8 @@ public class ASTGraphUnion extends ASTGraphQuerySet {
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		String result = super.toString();
 
 		if (distinct) {

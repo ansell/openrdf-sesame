@@ -12,15 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.aduna.collections.iterators.Iterators;
-
 import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.util.iterators.Iterators;
 
 /**
  * @author Arjohn Kampman
@@ -29,10 +26,10 @@ public class ModelUtil {
 
 	/**
 	 * Compares two models, defined by two statement collections, and returns
-	 * <tt>true</tt> if they are equal. Models are equal if they contain the same
-	 * set of statements. Blank node IDs are not relevant for model equality,
-	 * they are mapped from one model to the other by using the attached
-	 * properties.
+	 * <tt>true</tt> if they are equal. Models are equal if they contain the
+	 * same set of statements. Blank node IDs are not relevant for model
+	 * equality, they are mapped from one model to the other by using the
+	 * attached properties.
 	 */
 	public static boolean equals(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2) {
 		// Filter duplicates
@@ -47,10 +44,10 @@ public class ModelUtil {
 
 	/**
 	 * Compares two models, defined by two statement collections, and returns
-	 * <tt>true</tt> if they are equal. Models are equal if they contain the same
-	 * set of statements. Blank node IDs are not relevant for model equality,
-	 * they are mapped from one model to the other by using the attached
-	 * properties.
+	 * <tt>true</tt> if they are equal. Models are equal if they contain the
+	 * same set of statements. Blank node IDs are not relevant for model
+	 * equality, they are mapped from one model to the other by using the
+	 * attached properties.
 	 */
 	public static boolean equals(Set<? extends Statement> model1, Set<? extends Statement> model2) {
 		// Compare the number of statements in both sets
@@ -249,323 +246,5 @@ public class ModelUtil {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Gets the subject of the statement(s) with the specified predicate and
-	 * object from the specified contexts in the supplied model. The combination
-	 * of predicate, object and contexts must match at least one statement. In
-	 * case more than one statement matches -- for example statements from
-	 * multiple contexts -- all these statements should have the same subject. A
-	 * {@link ModelException} is thrown if these conditions are not met. See
-	 * {@link Model#filter(Resource, URI, Value, Resource...)} for a description
-	 * of the parameter values.
-	 * 
-	 * @return The subject of the matched statement(s).
-	 * @throws ModelException
-	 *         If the statements matched by the specified parameters do not have
-	 *         exactly one unique subject.
-	 */
-	public static Resource getUniqueSubject(Model model, URI pred, Value obj, Resource... contexts)
-		throws ModelException
-	{
-		Set<Resource> subjects = model.filter(null, pred, obj, contexts).subjects();
-
-		if (subjects.size() == 1) {
-			return subjects.iterator().next();
-		}
-		else if (subjects.isEmpty()) {
-			throw new ModelException("Missing property: " + pred);
-		}
-		else {
-			throw new ModelException("Multiple " + pred + " properties found");
-		}
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getUniqueSubject(Model, URI, Value, Resource[])} to a URI, or
-	 * throws a ModelUtilException if that value is not a URI.
-	 * 
-	 * @return The subject of the matched statement(s).
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getUniqueSubject(Model, URI, Value, Resource[])} or if its
-	 *         return value is not a URI.
-	 */
-	public static URI getUniqueSubjectURI(Model model, URI pred, Value obj, Resource... contexts)
-		throws ModelException
-	{
-		Resource subject = getUniqueSubject(model, pred, obj, contexts);
-
-		if (subject instanceof URI) {
-			return (URI)subject;
-		}
-		else {
-			throw new ModelException("Expected URI for subject " + subject);
-		}
-	}
-
-	/**
-	 * Gets the subject of the statement(s) with the specified predicate and
-	 * object from the specified contexts in the supplied model. If the
-	 * combination of predicate, object and contexts matches one or more
-	 * statements, all these statements should have the same subject. A
-	 * {@link ModelException} is thrown if this is not the case. See
-	 * {@link Model#filter(Resource, URI, Value, Resource...)} for a description
-	 * of the parameter values.
-	 * 
-	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
-	 * @throws ModelException
-	 *         If the statements matched by the specified parameters have more
-	 *         than one unique subject.
-	 */
-	public static Resource getOptionalSubject(Model model, URI pred, Value obj, Resource... contexts)
-		throws ModelException
-	{
-		Set<Resource> subjects = model.filter(null, pred, obj, contexts).subjects();
-
-		if (subjects.isEmpty()) {
-			return null;
-		}
-		else if (subjects.size() == 1) {
-			return subjects.iterator().next();
-		}
-		else {
-			throw new ModelException("Multiple " + pred + " properties found");
-		}
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getOptionalSubject(Model, URI, Value, Resource[])} to a URI, or
-	 * throws a ModelUtilException if that value is not a URI.
-	 * 
-	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalSubject(Model, URI, Value, Resource[])} or if
-	 *         its return value is not a URI.
-	 */
-	public static URI getOptionalSubjectURI(Model model, URI pred, Value obj, Resource... contexts)
-		throws ModelException
-	{
-		Resource subject = getOptionalSubject(model, pred, obj, contexts);
-
-		if (subject instanceof URI) {
-			return (URI)subject;
-		}
-		else {
-			throw new ModelException("Expected URI for subject " + subject);
-		}
-	}
-
-	/**
-	 * Gets the object of the statement(s) with the specified subject and
-	 * predicate from the specified contexts in the supplied model. The
-	 * combination of subject, predicate and contexts must match at least one
-	 * statement. In case more than one statement matches -- for example
-	 * statements from multiple contexts -- all these statements should have the
-	 * same object. A {@link ModelException} is thrown if these conditions are
-	 * not met. See {@link Model#filter(Resource, URI, Value, Resource...)} for a
-	 * description of the parameter values.
-	 * 
-	 * @return The object of the matched statement(s).
-	 * @throws ModelException
-	 *         If the statements matched by the specified parameters do not have
-	 *         exactly one unique object.
-	 */
-	public static Value getUniqueObject(Model model, Resource subj, URI pred, Resource... contexts)
-		throws ModelException
-	{
-		Set<Value> objects = model.filter(subj, pred, null, contexts).objects();
-
-		if (objects.size() == 1) {
-			return objects.iterator().next();
-		}
-		else if (objects.isEmpty()) {
-			throw new ModelException("Missing property: " + pred);
-		}
-		else {
-			throw new ModelException("Multiple " + pred + " properties found");
-		}
-	}
-
-	/**
-	 * Adds the specified statement and makes sure that no other statements are
-	 * present in the Model with the same subject and predicate. When contexts
-	 * are specified, the (subj, pred) pair will occur exactly once in each
-	 * context, else the (subj, pred) pair will occur exactly once in the entire
-	 * Model.
-	 */
-	public static void setUniqueObject(Model model, Resource subj, URI pred, Value obj, Resource... contexts) {
-		model.remove(subj, pred, null, contexts);
-		model.add(subj, pred, obj, contexts);
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getUniqueObject(Model, Resource, URI, Resource[])} to a Resource,
-	 * or throws a ModelUtilException if that value is not a Resource.
-	 * 
-	 * @return The object of the matched statement(s).
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getUniqueObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a Resource.
-	 */
-	public static Resource getUniqueObjectResource(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		Value obj = getUniqueObject(model, subj, pred);
-
-		if (obj instanceof Resource) {
-			return (Resource)obj;
-		}
-		else {
-			throw new ModelException("Expected URI or blank node for property " + pred);
-		}
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getUniqueObject(Model, Resource, URI, Resource[])} to a URI, or
-	 * throws a ModelUtilException if that value is not a URI.
-	 * 
-	 * @return The object of the matched statement(s).
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getUniqueObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a URI.
-	 */
-	public static URI getUniqueObjectURI(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		Value obj = getUniqueObject(model, subj, pred);
-
-		if (obj instanceof URI) {
-			return (URI)obj;
-		}
-		else {
-			throw new ModelException("Expected URI for property " + pred);
-		}
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getUniqueObject(Model, Resource, URI, Resource[])} to a Literal,
-	 * or throws a ModelUtilException if that value is not a Literal.
-	 * 
-	 * @return The object of the matched statement(s).
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getUniqueObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a Literal.
-	 */
-	public static Literal getUniqueObjectLiteral(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		Value obj = getUniqueObject(model, subj, pred);
-
-		if (obj instanceof Literal) {
-			return (Literal)obj;
-		}
-		else {
-			throw new ModelException("Expected literal for property " + pred);
-		}
-	}
-
-	/**
-	 * Gets the object of the statement(s) with the specified subject and
-	 * predicate from the specified contexts in the supplied model. If the
-	 * combination of subject, predicate and contexts matches one or more
-	 * statements, all these statements should have the same object. A
-	 * {@link ModelException} is thrown if this is not the case. See
-	 * {@link Model#filter(Resource, URI, Value, Resource...)} for a description
-	 * of the parameter values.
-	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
-	 * @throws ModelException
-	 *         If the statements matched by the specified parameters have more
-	 *         than one unique object.
-	 */
-	public static Value getOptionalObject(Model model, Resource subj, URI pred, Resource... contexts)
-		throws ModelException
-	{
-		return model.filter(subj, pred, null, contexts).objectValue();
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])} to a
-	 * Resource, or throws a ModelUtilException if that value is not a Resource.
-	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a Resource.
-	 */
-	public static Resource getOptionalObjectResource(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		return model.filter(subj, pred, null).objectResource();
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])} to a URI, or
-	 * throws a ModelUtilException if that value is not a URI.
-	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a URI.
-	 */
-	public static URI getOptionalObjectURI(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		return model.filter(subj, pred, null).objectURI();
-	}
-
-	/**
-	 * Utility method that casts the return value of
-	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])} to a Literal,
-	 * or throws a ModelUtilException if that value is not a Literal.
-	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])} or if
-	 *         its return value is not a Literal.
-	 */
-	public static Literal getOptionalObjectLiteral(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		return model.filter(subj, pred, null).objectLiteral();
-	}
-
-	/**
-	 * Utility method that returns the value of
-	 * {@link #getOptionalObject(Model, Resource, URI, Resource[])}'s
-	 * stringValue.
-	 * 
-	 * @return The stirngValue of the matched statement's object, or
-	 *         <tt>null</tt> if no matching statements were found.
-	 * @throws ModelException
-	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Model, Resource, URI, Resource[])}.
-	 */
-	public static String getOptionalObjectStringValue(Model model, Resource subj, URI pred)
-		throws ModelException
-	{
-		return model.filter(subj, pred, null).objectString();
 	}
 }

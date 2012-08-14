@@ -8,9 +8,8 @@ package org.openrdf.sail.rdbms.managers;
 import java.sql.SQLException;
 import java.util.Map;
 
-import info.aduna.collections.LRUMap;
-
 import org.openrdf.sail.rdbms.model.RdbmsURI;
+import org.openrdf.sail.rdbms.util.LRUMap;
 
 public class PredicateManager {
 

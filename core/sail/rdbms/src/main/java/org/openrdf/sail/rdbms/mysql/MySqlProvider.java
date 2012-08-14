@@ -13,13 +13,13 @@ import org.openrdf.sail.rdbms.RdbmsProvider;
  * Sesame store.
  * 
  * @author James Leigh
+ * 
  */
 public class MySqlProvider implements RdbmsProvider {
 
 	public RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName, String dbVersion) {
-		if ("MySQL".equalsIgnoreCase(dbName)) {
+		if ("MySQL".equalsIgnoreCase(dbName))
 			return new MySqlConnectionFactory();
-		}
 		return null;
 	}
 

@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public abstract class CompareSubQueryValueOperator extends SubQueryValueOperator {
 
-	private static final long serialVersionUID = -3272603083689331081L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -57,6 +55,21 @@ public abstract class CompareSubQueryValueOperator extends SubQueryValueOperator
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof CompareSubQueryValueOperator && super.equals(other)) {
+			CompareSubQueryValueOperator o = (CompareSubQueryValueOperator)other;
+			return arg.equals(o.getArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ arg.hashCode();
 	}
 
 	@Override

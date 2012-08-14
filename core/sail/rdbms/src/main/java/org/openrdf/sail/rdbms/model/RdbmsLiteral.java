@@ -8,7 +8,6 @@ package org.openrdf.sail.rdbms.model;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
@@ -19,6 +18,7 @@ import org.openrdf.model.impl.LiteralImpl;
  * Wraps a {@link LiteralImpl} providing an internal id and version.
  * 
  * @author James Leigh
+ * 
  */
 public class RdbmsLiteral extends RdbmsValue implements Literal {
 
@@ -89,10 +89,6 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 
 	public String stringValue() {
 		return lit.stringValue();
-	}
-
-	public Duration durationValue() {
-		return lit.durationValue();
 	}
 
 	@Override

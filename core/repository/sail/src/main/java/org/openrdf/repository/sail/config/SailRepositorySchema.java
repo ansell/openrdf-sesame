@@ -18,10 +18,7 @@ import org.openrdf.repository.sail.SailRepository;
  */
 public class SailRepositorySchema {
 
-	/**
-	 * The SailRepository schema namespace (
-	 * <tt>http://www.openrdf.org/config/repository/sail#</tt>).
-	 */
+	/** The SailRepository schema namespace (<tt>http://www.openrdf.org/config/repository/sail#</tt>). */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/sail#";
 
 	/** <tt>http://www.openrdf.org/config/repository/sail#sailImpl</tt> */

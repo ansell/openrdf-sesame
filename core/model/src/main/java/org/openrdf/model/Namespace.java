@@ -21,9 +21,11 @@ public interface Namespace extends Serializable {
 	public String getName();
 
 	/**
-	 * Gets the prefix of the current namespace.
+	 * Gets the prefix of the current namespace. The default namespace is
+	 * represented by an empty prefix string.
 	 * 
-	 * @return prefix of namespace
+	 * @return prefix of namespace, or an empty string in case of the default
+	 *         namespace.
 	 */
 	public String getPrefix();
 }

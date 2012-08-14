@@ -19,7 +19,9 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * @author James Leigh
+ * 
+ * @author james
+ * 
  */
 public class ValueComparatorTest extends TestCase {
 
@@ -60,7 +62,10 @@ public class ValueComparatorTest extends TestCase {
 	public void testBothBnode()
 		throws Exception
 	{
-		assertTrue(cmp.compare(bnode1, bnode2) == 0);
+		assertTrue(cmp.compare(bnode1, bnode1) == 0);
+		assertTrue(cmp.compare(bnode2, bnode2) == 0);
+		assertTrue(cmp.compare(bnode1, bnode2) != cmp.compare(bnode2, bnode1));
+		assertTrue(cmp.compare(bnode1, bnode2) == -1 * cmp.compare(bnode2, bnode1));
 	}
 
 	public void testLeftBnode()

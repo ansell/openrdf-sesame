@@ -5,46 +5,69 @@
  */
 package org.openrdf.repository.http;
 
-import org.openrdf.http.client.GraphQueryClient;
+import java.io.IOException;
+
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.result.GraphResult;
+import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.store.StoreException;
 
 /**
  * GraphQuery implementation specific to the HTTP protocol. Methods in this
- * class may throw the specific StoreException subclasses UnautorizedException
- * and NotAllowedException, the semantics of which are defined by the HTTP
- * protocol.
+ * class may throw the specific RepositoryException subclass
+ * UnautorizedException, the semantics of which is defined by the HTTP protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
- * @see org.openrdf.http.protocol.NotAllowedException
  * @author Arjohn Kampman
  * @author Herko ter Horst
- * @author James Leigh
  */
 public class HTTPGraphQuery extends HTTPQuery implements GraphQuery {
 
-	private GraphQueryClient client;
-
-	public HTTPGraphQuery(String qry, GraphQueryClient client) {
-		super(qry);
-		this.client = client;
+	public HTTPGraphQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
+		super(con, ql, queryString, baseURI);
 	}
 
-	public GraphResult evaluate()
-		throws StoreException
+	public GraphQueryResult evaluate()
+		throws QueryEvaluationException
 	{
-		prepareClient(client);
-		return client.get();
+		HTTPClient client = httpCon.getRepository().getHTTPClient();
+
+		try {
+			return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
+					getBindingsArray());
+		}
+		catch (IOException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
 	}
 
-	public <H extends RDFHandler> H evaluate(H handler)
-		throws StoreException, RDFHandlerException
+	public void evaluate(RDFHandler handler)
+		throws QueryEvaluationException, RDFHandlerException
 	{
-		prepareClient(client);
-		client.get(handler);
-		return handler;
+		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		try {
+			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
+					getBindingsArray());
+		}
+		catch (IOException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
 	}
 }

@@ -15,14 +15,15 @@ import java.util.Map.Entry;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsStore;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.store.StoreException;
 
 /**
  * A convenient way to initialise a PostgreSQL RDF store.
  * 
  * @author James Leigh
+ * 
  */
 public class PgSqlStore extends RdbmsStore {
 
@@ -96,7 +97,7 @@ public class PgSqlStore extends RdbmsStore {
 
 	@Override
 	public void initialize()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			Class.forName("org.postgresql.Driver");
@@ -150,8 +151,7 @@ public class PgSqlStore extends RdbmsStore {
 	private String enc(String text) {
 		try {
 			return URLEncoder.encode(text, "UTF-8");
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

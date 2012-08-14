@@ -11,14 +11,14 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Manages the rows in a value table. These tables have two columns: an internal
  * id column and a value column.
  * 
  * @author James Leigh
+ * 
  */
 public class ValueTable {
 
@@ -48,13 +48,13 @@ public class ValueTable {
 
 	private ValueBatch batch;
 
-	private BatchBlockingQueue queue;
+	private BlockingQueue<Batch> queue;
 
 	private boolean indexingValues;
 
 	private PreparedStatement insertSelect;
 
-	public void setQueue(BatchBlockingQueue queue) {
+	public void setQueue(BlockingQueue<Batch> queue) {
 		this.queue = queue;
 	}
 
@@ -198,9 +198,8 @@ public class ValueTable {
 	}
 
 	public boolean isExpired(ValueBatch batch) {
-		if (batch == null || batch.isFull()) {
+		if (batch == null || batch.isFull())
 			return true;
-		}
 		return queue == null || !queue.remove(batch);
 	}
 
@@ -246,9 +245,8 @@ public class ValueTable {
 	{
 		synchronized (table) {
 			int count = table.executeUpdate(EXPUNGE + condition);
-			if (count < 1) {
+			if (count < 1)
 				return false;
-			}
 			table.modified(0, count);
 			return true;
 		}
@@ -294,14 +292,12 @@ public class ValueTable {
 	public String sql(int type, int length) {
 		switch (type) {
 			case Types.VARCHAR:
-				if (length > 0) {
+				if (length > 0)
 					return "VARCHAR(" + length + ")";
-				}
 				return "TEXT";
 			case Types.LONGVARCHAR:
-				if (length > 0) {
+				if (length > 0)
 					return "LONGVARCHAR(" + length + ")";
-				}
 				return "TEXT";
 			case Types.BIGINT:
 				return "BIGINT";

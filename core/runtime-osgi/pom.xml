@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.openrdf.sesame</groupId>
+		<artifactId>sesame-core</artifactId>
+		<version>2.6.9-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sesame-runtime-osgi</artifactId>
+	<packaging>bundle</packaging>
+	
+	<name>OpenRDF Sesame: Runtime - OSGi</name>
+	<description>OSGi Runtime dependencies for an OpenRDF application</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-http-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-http-server-spring</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<configuration>
+							<target>
+								<mkdir dir="target/services/META-INF/services" />
+								<ant antfile="../build.xml" target="create-service-files" dir="${basedir}" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>   
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.0.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>org.openrdf.sesame2</Bundle-SymbolicName>
+						<Export-Package>!*text-base,!*prop-base,org.openrdf.*,info.aduna.*</Export-Package>
+						<Import-Package>
+							org.slf4j.*, 
+							info.aduna.*;version=0,
+							javax.*;resolution:=optional, 
+							org.apache.*;resolution:=optional,
+							org.springframework.*;resolution:=optional,
+							*
+						</Import-Package>
+						<Include-Resource>
+							{maven-resources},
+							META-INF/services=target/services/META-INF/services
+						</Include-Resource>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/runtime</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/runtime</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/runtime</url>
+	</scm>
+
+</project>

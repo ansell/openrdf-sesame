@@ -1,17 +1,16 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql.ast;
 
-import java.util.List;
-
-import info.aduna.collections.CastingList;
 
 public class ASTConstruct extends SimpleNode {
 
 	private boolean distinct = false;
+
+	private boolean reduced = false;
 
 	private boolean wildcard = false;
 
@@ -38,6 +37,14 @@ public class ASTConstruct extends SimpleNode {
 		return distinct;
 	}
 
+	public void setReduced(boolean reduced) {
+		this.reduced = reduced;
+	}
+
+	public boolean isReduced() {
+		return reduced;
+	}
+
 	public boolean isWildcard() {
 		return wildcard;
 	}
@@ -46,20 +53,26 @@ public class ASTConstruct extends SimpleNode {
 		this.wildcard = wildcard;
 	}
 
-	public List<ASTPathExpr> getPathExprList() {
-		return new CastingList<ASTPathExpr>(children);
+	public ASTPathExpr getPathExpr() {
+		return (ASTPathExpr)children.get(0);
 	}
 
 	@Override
 	public String toString() {
 		String result = super.toString();
 
-		if (distinct) {
-			result += " (distinct)";
-		}
-
-		if (wildcard) {
-			result += " (*)";
+		if (distinct || reduced || wildcard) {
+			result += " (";
+			if (distinct) {
+				result += " distinct";
+			}
+			if (reduced) {
+				result += " reduced";
+			}
+			if (wildcard) {
+				result += " *";
+			}
+			result += " )";
 		}
 
 		return result;

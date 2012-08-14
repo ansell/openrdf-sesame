@@ -12,6 +12,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
  * The SQL NULL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlNull extends SqlConstant<Object> {
 

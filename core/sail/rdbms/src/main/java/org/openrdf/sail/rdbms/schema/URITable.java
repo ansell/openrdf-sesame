@@ -11,6 +11,7 @@ import java.sql.SQLException;
  * Manages the rows in the URI table.
  * 
  * @author James Leigh
+ * 
  */
 public class URITable {
 

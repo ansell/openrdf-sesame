@@ -5,13 +5,16 @@
  */
 package org.openrdf.query.resultio;
 
+import org.openrdf.query.TupleQueryResultHandler;
+import org.openrdf.query.resultio.TupleQueryResultParser;
+
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.TupleQueryResultHandler;
+
 
 /**
- * Base class for {@link TupleQueryResultParser}s offering common functionality
- * for query result parsers.
+ * Base class for {@link TupleQueryResultParser}s offering common functionality for
+ * query result parsers.
  */
 public abstract class TupleQueryResultParserBase implements TupleQueryResultParser {
 

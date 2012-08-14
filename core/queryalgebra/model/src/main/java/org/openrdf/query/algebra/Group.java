@@ -12,7 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import info.aduna.collections.iterators.Iterators;
+import org.openrdf.util.iterators.Iterators;
 
 /**
  * A tuple operator that groups tuples that have a specific set of equivalent
@@ -23,8 +23,6 @@ import info.aduna.collections.iterators.Iterators;
  * @author Arjohn Kampman
  */
 public class Group extends UnaryTupleOperator {
-
-	private static final long serialVersionUID = -2277435833337397267L;
 
 	/*-----------*
 	 * Variables *
@@ -131,14 +129,26 @@ public class Group extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = groupElements.indexOf(current);
-		if (index >= 0) {
-			groupElements.set(index, (GroupElem)replacement);
-			replacement.setParentNode(this);
+
+		if (replaceNodeInList(groupElements, current, replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
+		super.replaceChildNode(current, replacement);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Group && super.equals(other)) {
+			Group o = (Group)other;
+			return groupBindings.equals(o.getGroupBindingNames())
+					&& groupElements.equals(o.getGroupElements());
 		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ groupBindings.hashCode() ^ groupElements.hashCode();
 	}
 
 	@Override
@@ -153,5 +163,24 @@ public class Group extends UnaryTupleOperator {
 		}
 
 		return clone;
+	}
+	
+	@Override
+	public String getSignature() {
+		StringBuilder b = new StringBuilder();
+		b.append(this.getClass().getSimpleName());
+		b.append(" (");
+		
+		Set<String> bindingNames = getGroupBindingNames();
+		int count = 0;
+		for (String name: bindingNames) {
+			b.append(name);
+			count++;
+			if (count < bindingNames.size()) {
+				b.append(", ");
+			}
+		}
+		b.append(")");
+		return b.toString();
 	}
 }

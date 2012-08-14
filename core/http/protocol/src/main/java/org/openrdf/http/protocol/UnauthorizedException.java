@@ -5,9 +5,9 @@
  */
 package org.openrdf.http.protocol;
 
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
-public class UnauthorizedException extends StoreException {
+public class UnauthorizedException extends RepositoryException {
 
 	private static final long serialVersionUID = 4322677542795160482L;
 

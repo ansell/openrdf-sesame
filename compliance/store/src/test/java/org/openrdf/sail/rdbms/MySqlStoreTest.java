@@ -8,8 +8,8 @@ package org.openrdf.sail.rdbms;
 import org.openrdf.sail.RDFStoreTest;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.mysql.MySqlStore;
-import org.openrdf.store.StoreException;
 
 /**
  * An extension of RDFStoreTest for testing the class {@link MySqlStore}.
@@ -30,7 +30,7 @@ public class MySqlStoreTest extends RDFStoreTest {
 
 	@Override
 	protected Sail createSail()
-		throws StoreException
+		throws SailException
 	{
 		MySqlStore sail = new MySqlStore("sesame_test");
 		sail.setUser("sesame");
@@ -38,8 +38,7 @@ public class MySqlStoreTest extends RDFStoreTest {
 		sail.initialize();
 		SailConnection conn = sail.getConnection();
 		try {
-			conn.begin();
-			conn.removeStatements(null, null, null);
+			conn.clear();
 			conn.clearNamespaces();
 			conn.commit();
 		}

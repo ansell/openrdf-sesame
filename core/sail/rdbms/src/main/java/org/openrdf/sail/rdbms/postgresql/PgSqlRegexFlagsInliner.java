@@ -6,7 +6,8 @@
 package org.openrdf.sail.rdbms.postgresql;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.sail.rdbms.algebra.SqlConcat;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
@@ -20,13 +21,14 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * PostgreSQL syntax.
  * 
  * @author James Leigh
+ * 
  */
 public class PgSqlRegexFlagsInliner extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer
 {
 
-	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(this);
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(this);
 	}
 
 	@Override

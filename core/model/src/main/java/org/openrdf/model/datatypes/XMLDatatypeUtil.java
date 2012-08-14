@@ -12,9 +12,10 @@ import java.util.StringTokenizer;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+
+import info.aduna.text.ASCIIUtil;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -73,8 +74,7 @@ public class XMLDatatypeUtil {
 				|| datatype.equals(XMLSchema.NEGATIVE_INTEGER) || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
 				|| datatype.equals(XMLSchema.POSITIVE_INTEGER) || datatype.equals(XMLSchema.UNSIGNED_LONG)
 				|| datatype.equals(XMLSchema.UNSIGNED_INT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)
-				|| datatype.equals(XMLSchema.UNSIGNED_BYTE) || datatype.equals(XMLSchema.DURATION_DAYTIME)
-				|| datatype.equals(XMLSchema.DURATION_YEARMONTH);
+				|| datatype.equals(XMLSchema.UNSIGNED_BYTE);
 	}
 
 	/**
@@ -120,21 +120,6 @@ public class XMLDatatypeUtil {
 	 */
 	public static boolean isFloatingPointDatatype(URI datatype) {
 		return datatype.equals(XMLSchema.FLOAT) || datatype.equals(XMLSchema.DOUBLE);
-	}
-
-	/**
-	 * Checks whether the supplied datatype is equal to <a
-	 * href="http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#duration"
-	 * >xsd:duration</a>, <a href=
-	 * "http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#dayTimeDuration"
-	 * >xsd:dayTimeduration</a>, or <a href=
-	 * "http://www.w3.org/TR/2006/WD-xmlschema11-2-20060217/#yearMonthDuration"
-	 * >xsd:yearMonthDuration</a>.
-	 */
-	public static boolean isDurationDatatype(URI datatype) {
-		return datatype.equals(XMLSchema.DURATION) || datatype.equals(XMLSchema.DURATION_DAYTIME)
-				|| datatype.equals(XMLSchema.DURATION_YEARMONTH);
-
 	}
 
 	/**
@@ -222,6 +207,36 @@ public class XMLDatatypeUtil {
 		}
 		else if (datatype.equals(XMLSchema.DATETIME)) {
 			result = isValidDateTime(value);
+		}
+		else if (datatype.equals(XMLSchema.DATE)) {
+			result = isValidDate(value);
+		}
+		else if (datatype.equals(XMLSchema.TIME)) {
+			result = isValidTime(value);
+		}
+		else if (datatype.equals(XMLSchema.GDAY)) {
+			result = isValidGDay(value);
+		}
+		else if (datatype.equals(XMLSchema.GMONTH)) {
+			result = isValidGMonth(value);
+		}
+		else if (datatype.equals(XMLSchema.GMONTHDAY)) {
+			result = isValidGMonthDay(value);
+		}
+		else if (datatype.equals(XMLSchema.GYEAR)) {
+			result = isValidGYear(value);
+		}
+		else if (datatype.equals(XMLSchema.GYEARMONTH)) {
+			result = isValidGYearMonth(value);
+		}
+		else if (datatype.equals(XMLSchema.DURATION)) {
+			result = isValidDuration(value);
+		}
+		else if (datatype.equals(XMLSchema.DAYTIMEDURATION)) {
+			result = isValidDayTimeDuration(value);
+		}
+		else if (datatype.equals(XMLSchema.QNAME)) {
+			result = isValidQName(value);
 		}
 
 		return result;
@@ -397,10 +412,236 @@ public class XMLDatatypeUtil {
 		}
 	}
 
+	public static boolean isValidDuration(String value) {
+
+		// voodoo regex for checking valid xsd:duration string. See
+		// http://www.w3.org/TR/xmlschema-2/#duration for details.
+		String regex = "-?P((\\d)+Y)?((\\d)+M)?((\\d)+D)?((T(\\d)+H((\\d)+M)?((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+M((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+(\\.(\\d)+)?S))?";
+		return value.length() > 1 && value.matches(regex);
+	}
+
+	public static boolean isValidDayTimeDuration(String value) {
+
+		// regex for checking valid xsd:dayTimeDuration string. See
+		// http://www.schemacentral.com/sc/xsd/t-xsd_dayTimeDuration.html
+		String regex = "-?P((\\d)+D)?((T(\\d)+H((\\d)+M)?((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+M((\\d)+(\\.(\\d)+)?S)?)|(T(\\d)+(\\.(\\d)+)?S))?";
+		return value.length() > 1 && value.matches(regex);
+	}
+
 	public static boolean isValidDateTime(String value) {
 		try {
 			@SuppressWarnings("unused")
 			XMLDateTime dt = new XMLDateTime(value);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:date string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidDate(String value) {
+
+		String regex = "-?\\d\\d\\d\\d-\\d\\d-\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:time string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidTime(String value) {
+
+		String regex = "\\d\\d:\\d\\d:\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:gDay string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGDay(String value) {
+
+		String regex = "---\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:gMonth string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGMonth(String value) {
+
+		String regex = "--\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:gMonthDay string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGMonthDay(String value) {
+
+		String regex = "--\\d\\d-\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:gYear string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGYear(String value) {
+
+		String regex = "-?\\d\\d\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:gYearMonth string.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidGYearMonth(String value) {
+
+		String regex = "-?\\d\\d\\d\\d-\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+
+		if (value.matches(regex)) {
+			return isValidCalendarValue(value);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines if the supplied value is a valid xsd:QName string. Note that
+	 * this method only checks for syntax errors in the supplied string itself.
+	 * It does not validate that the prefix is a declared and in-scope namespace
+	 * prefix.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static boolean isValidQName(String value) {
+
+		String[] split = value.split(":", -2);
+
+		if (split.length != 2) {
+			return false;
+		}
+
+		// check prefix
+		String prefix = split[0];
+		if (!"".equals(prefix)) {
+			if (!isPrefixStartChar(prefix.charAt(0))) {
+				return false;
+			}
+
+			for (int i = 1; i < prefix.length(); i++) {
+				if (!isNameChar(prefix.charAt(i))) {
+					return false;
+				}
+			}
+		}
+
+		String name = split[1];
+
+		if (!"".equals(name)) {
+			// check name
+			if (!isNameStartChar(name.charAt(0))) {
+				return false;
+			}
+
+			for (int i = 1; i < name.length(); i++) {
+				if (!isNameChar(name.charAt(i))) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private static boolean isPrefixStartChar(int c) {
+		return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >= 0x00D8 && c <= 0x00F6 || c >= 0x00F8
+				&& c <= 0x02FF || c >= 0x0370 && c <= 0x037D || c >= 0x037F && c <= 0x1FFF || c >= 0x200C
+				&& c <= 0x200D || c >= 0x2070 && c <= 0x218F || c >= 0x2C00 && c <= 0x2FEF || c >= 0x3001
+				&& c <= 0xD7FF || c >= 0xF900 && c <= 0xFDCF || c >= 0xFDF0 && c <= 0xFFFD || c >= 0x10000
+				&& c <= 0xEFFFF;
+	}
+
+	private static boolean isNameStartChar(int c) {
+		return c == '_' || isPrefixStartChar(c);
+	}
+
+	private static boolean isNameChar(int c) {
+		return isNameStartChar(c) || ASCIIUtil.isNumber(c) || c == '-' || c == 0x00B7 || c >= 0x0300
+				&& c <= 0x036F || c >= 0x203F && c <= 0x2040;
+	}
+
+	/**
+	 * Determines if the supplied string can be parsed to a valid
+	 * XMLGregorianCalendar value.
+	 * 
+	 * @param value
+	 * @return true if the supplied string is a parsable calendar value, false
+	 *         otherwise.
+	 */
+	private static boolean isValidCalendarValue(String value) {
+		try {
+			XMLDatatypeUtil.parseCalendar(value);
 			return true;
 		}
 		catch (IllegalArgumentException e) {
@@ -532,13 +773,11 @@ public class XMLDatatypeUtil {
 	public static String normalizeDecimal(String decimal) {
 		decimal = collapseWhiteSpace(decimal);
 
-		String errMsg = "Not a legal decimal: " + decimal;
-
 		int decLength = decimal.length();
 		StringBuilder result = new StringBuilder(decLength + 2);
 
 		if (decLength == 0) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal decimal: " + decimal);
 		}
 
 		boolean isZeroPointZero = true;
@@ -554,7 +793,7 @@ public class XMLDatatypeUtil {
 		}
 
 		if (idx == decLength) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal decimal: " + decimal);
 		}
 
 		// skip any leading zeros
@@ -581,7 +820,7 @@ public class XMLDatatypeUtil {
 					break;
 				}
 				if (!isDigit(c)) {
-					throwIAE(errMsg);
+					throwIAE("Not a legal decimal: " + decimal);
 				}
 				result.append(c);
 				idx++;
@@ -614,7 +853,7 @@ public class XMLDatatypeUtil {
 				while (idx <= lastIdx) {
 					char c = decimal.charAt(idx);
 					if (!isDigit(c)) {
-						throwIAE(errMsg);
+						throwIAE("Not a legal decimal: " + decimal);
 					}
 					result.append(c);
 					idx++;
@@ -736,12 +975,10 @@ public class XMLDatatypeUtil {
 	private static String normalizeIntegerValue(String integer, String minValue, String maxValue) {
 		integer = collapseWhiteSpace(integer);
 
-		String errMsg = "Not a legal integer: " + integer;
-
 		int intLength = integer.length();
 
 		if (intLength == 0) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal integer: " + integer);
 		}
 
 		int idx = 0;
@@ -757,7 +994,7 @@ public class XMLDatatypeUtil {
 		}
 
 		if (idx == intLength) {
-			throwIAE(errMsg);
+			throwIAE("Not a legal integer: " + integer);
 		}
 
 		if (integer.charAt(idx) == '0' && idx < intLength - 1) {
@@ -774,7 +1011,7 @@ public class XMLDatatypeUtil {
 		// Check that all characters in 'norm' are digits
 		for (int i = 0; i < norm.length(); i++) {
 			if (!isDigit(norm.charAt(i))) {
-				throwIAE(errMsg);
+				throwIAE("Not a legal integer: " + integer);
 			}
 		}
 
@@ -1014,6 +1251,7 @@ public class XMLDatatypeUtil {
 	// s = StringUtil.gsub("\n", " ", s);
 	// return s;
 	// }
+
 	/**
 	 * Replaces all contiguous sequences of #x9 (tab), #xA (line feed) and #xD
 	 * (carriage return) with a single #x20 (space) character, and removes any
@@ -1639,19 +1877,6 @@ public class XMLDatatypeUtil {
 	}
 
 	/**
-	 * Parses the supplied duration value string and returns its value.
-	 * 
-	 * @param s
-	 *        A string representation of an xsd:duration.
-	 * @return The duration value represented by the supplied string argument.
-	 * @throws NumberFormatException
-	 *         If the supplied string is not a valid duration value.
-	 */
-	public static Duration parseDuration(String s) {
-		return dtFactory.newDuration(s);
-	}
-
-	/**
 	 * Parses the supplied calendar value string and returns its value.
 	 * 
 	 * @param s
@@ -1719,12 +1944,6 @@ public class XMLDatatypeUtil {
 		}
 		else if (DatatypeConstants.DURATION.equals(qname)) {
 			return XMLSchema.DURATION;
-		}
-		else if (DatatypeConstants.DURATION_DAYTIME.equals(qname)) {
-			return XMLSchema.DURATION_DAYTIME;
-		}
-		else if (DatatypeConstants.DURATION_YEARMONTH.equals(qname)) {
-			return XMLSchema.DURATION_YEARMONTH;
 		}
 		else {
 			throw new IllegalArgumentException("QName cannot be mapped to an XML Schema URI: "

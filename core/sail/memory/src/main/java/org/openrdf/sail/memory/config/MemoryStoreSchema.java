@@ -18,10 +18,7 @@ import org.openrdf.sail.memory.MemoryStore;
  */
 public class MemoryStoreSchema {
 
-	/**
-	 * The MemoryStore schema namespace (
-	 * <tt>http://www.openrdf.org/config/sail/memory#</tt>).
-	 */
+	/** The MemoryStore schema namespace (<tt>http://www.openrdf.org/config/sail/memory#</tt>). */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/memory#";
 
 	/** <tt>http://www.openrdf.org/config/sail/memory#persist</tt> */

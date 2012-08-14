@@ -50,9 +50,21 @@ public class StringCast implements Function {
 				else if (XMLDatatypeUtil.isNumericDatatype(datatype) || datatype.equals(XMLSchema.BOOLEAN)
 						|| datatype.equals(XMLSchema.DATETIME))
 				{
-					// FIXME: conversion to xsd:string is much more complex than
-					// this, see
-					// http://www.w3.org/TR/xpath-functions/#casting-from-primitive-to-primitive
+					// FIXME Slightly simplified wrt the spec, we just always use the canonical value of the
+					// source literal as the target lexical value. This is not 100% compliant with handling of 
+					// some date-related datatypes. 
+					// 
+					// See http://www.w3.org/TR/xpath-functions/#casting-from-primitive-to-primitive
+					if (XMLDatatypeUtil.isValidValue(literal.getLabel(), datatype)) {
+						String normalizedValue = XMLDatatypeUtil.normalize(literal.getLabel(), datatype);
+						return valueFactory.createLiteral(normalizedValue, XMLSchema.STRING);
+					}
+					else {
+						return valueFactory.createLiteral(literal.getLabel(), XMLSchema.STRING);
+					}
+				}
+				else {
+					// for unknown datatypes, just use the lexical value.
 					return valueFactory.createLiteral(literal.getLabel(), XMLSchema.STRING);
 				}
 			}

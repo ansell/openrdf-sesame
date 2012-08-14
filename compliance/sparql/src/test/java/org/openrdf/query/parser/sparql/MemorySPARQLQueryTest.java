@@ -9,8 +9,8 @@ import junit.framework.Test;
 
 import org.openrdf.query.Dataset;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.dataset.DatasetSail;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class MemorySPARQLQueryTest extends SPARQLQueryTest {
@@ -23,7 +23,15 @@ public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, false);
+			}
+			
+			public MemorySPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			{
+				return new MemorySPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, checkOrder);
 			}
 		});
 	}
@@ -31,10 +39,16 @@ public class MemorySPARQLQueryTest extends SPARQLQueryTest {
 	protected MemorySPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
+	}
+
+	protected MemorySPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+	{
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
 	}
 
 	protected Repository newRepository() {
-		return new SailRepository(new DatasetSail(new MemoryStore()));
+		return new DatasetRepository(new SailRepository(new MemoryStore()));
 	}
 }

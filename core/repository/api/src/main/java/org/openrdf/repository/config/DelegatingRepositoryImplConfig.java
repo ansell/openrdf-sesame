@@ -5,6 +5,7 @@
  */
 package org.openrdf.repository.config;
 
+
 /**
  * @author Herko ter Horst
  */

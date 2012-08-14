@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -35,6 +35,16 @@ public interface MemValue extends Value {
 	 * used by the second Sail.
 	 */
 	public Object getCreator();
+
+	/**
+	 * Checks whether this MemValue has any statements. A MemValue object has
+	 * statements if there is at least one statement where it is used as the
+	 * subject, predicate, object or context value.
+	 * 
+	 * @return <tt>true</tt> if the MemValue has statements, <tt>false</tt>
+	 *         otherwise.
+	 */
+	public boolean hasStatements();
 
 	/**
 	 * Gets the list of statements for which this MemValue is the object.

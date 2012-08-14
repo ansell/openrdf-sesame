@@ -12,6 +12,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlConstant;
  * A static long value in an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class NumberValue extends SqlConstant<Number> {
 

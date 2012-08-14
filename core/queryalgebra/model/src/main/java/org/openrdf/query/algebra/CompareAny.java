@@ -11,8 +11,6 @@ import org.openrdf.query.algebra.Compare.CompareOp;
  */
 public class CompareAny extends CompareSubQueryValueOperator {
 
-	private static final long serialVersionUID = -3401122323745631889L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -53,6 +51,20 @@ public class CompareAny extends CompareSubQueryValueOperator {
 	@Override
 	public String getSignature() {
 		return super.getSignature() + " (" + operator.getSymbol() + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof CompareAny && super.equals(other)) {
+			CompareAny o = (CompareAny)other;
+			return operator.equals(o.getOperator());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ operator.hashCode() ^ "CompareAny".hashCode();
 	}
 
 	@Override

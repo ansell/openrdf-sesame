@@ -6,17 +6,16 @@
 package org.openrdf.repository.http.config;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.http.HTTPRepository;
-import org.openrdf.store.StoreConfigException;
 
 /**
- * A {@link RepositoryFactory} that creates {@link HTTPRepository}s based on RDF
- * configuration data.
+ * A {@link RepositoryFactory} that creates {@link HTTPRepository}s based on
+ * RDF configuration data.
  * 
  * @author Arjohn Kampman
- * @author James Leigh
  */
 public class HTTPRepositoryFactory implements RepositoryFactory {
 
@@ -39,20 +38,17 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 	}
 
 	public Repository getRepository(RepositoryImplConfig config)
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		HTTPRepository result = null;
-
+		
 		if (config instanceof HTTPRepositoryConfig) {
 			HTTPRepositoryConfig httpConfig = (HTTPRepositoryConfig)config;
 			result = new HTTPRepository(httpConfig.getURL());
-			result.setSubjectSpace(httpConfig.getSubjectSpace());
-			result.setReadOnly(httpConfig.isReadOnly());
-			// result.setUsernameAndPassword(httpConfig.getUsername(),
-			// httpConfig.getPassword());
+//			result.setUsernameAndPassword(httpConfig.getUsername(), httpConfig.getPassword());
 		}
 		else {
-			throw new StoreConfigException("Invalid configuration class: " + config.getClass());
+			throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
 		}
 		return result;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,7 +8,6 @@ package org.openrdf.sail.nativerdf.btree;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -19,9 +18,14 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.io.ByteArrayUtil;
+import info.aduna.io.NioFile;
 
 /**
  * Implementation of an on-disk B-Tree using the <tt>java.nio</tt> classes that
@@ -46,9 +50,19 @@ public class BTree {
 	 *-----------*/
 
 	/**
-	 * The file format version number.
+	 * Magic number "BTree File" to detect whether the file is actually a BTree
+	 * file. The first three bytes of the file should be equal to this magic
+	 * number. Note: this header has only been introduced in Sesame 2.3. The old
+	 * "header" can be recognized using {@link BTree#OLD_MAGIC_NUMBER}.
 	 */
-	private static final int FILE_FORMAT_VERSION = 1;
+	private static final byte[] MAGIC_NUMBER = new byte[] { 'b', 't', 'f' };
+
+	private static final byte[] OLD_MAGIC_NUMBER = new byte[] { 0, 0, 0 };
+
+	/**
+	 * The file format version number, stored as the fourth byte in BTree files.
+	 */
+	private static final byte FILE_FORMAT_VERSION = 1;
 
 	/**
 	 * The length of the header field.
@@ -71,21 +85,12 @@ public class BTree {
 	 * Variables *
 	 *-----------*/
 
-	/**
-	 * The BTree file.
-	 */
-	private final File file;
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
-	 * A RandomAccessFile used to open and close a read/write FileChannel on the
-	 * BTree file.
+	 * The BTree file, accessed using java.nio-channels.
 	 */
-	private final RandomAccessFile raf;
-
-	/**
-	 * The file channel used to read and write data from/to the BTree file.
-	 */
-	private final FileChannel fileChannel;
+	private final NioFile nioFile;
 
 	/**
 	 * Flag indicating whether file writes should be forced to disk using
@@ -183,9 +188,15 @@ public class BTree {
 
 	/**
 	 * The depth of this BTree (the cache variable), < 0 indicating it is
-	 * unknown.
+	 * unknown, 0 for an empty BTree, 1 for a BTree with just a root node, and so
+	 * on.
 	 */
 	private volatile int height = -1;
+
+	/**
+	 * Flag indicating whether this BTree has been closed.
+	 */
+	private volatile boolean closed = false;
 
 	/*--------------*
 	 * Constructors *
@@ -317,25 +328,15 @@ public class BTree {
 			throw new IllegalArgumentException("comparator muts not be null");
 		}
 
-		this.file = new File(dataDir, filenamePrefix + ".dat");
+		File file = new File(dataDir, filenamePrefix + ".dat");
+		this.nioFile = new NioFile(file);
 		this.comparator = comparator;
 		this.forceSync = forceSync;
-
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file: " + file);
-			}
-		}
-
-		// Open a read/write channel to the file
-		raf = new RandomAccessFile(file, "rw");
-		fileChannel = raf.getChannel();
 
 		File allocFile = new File(dataDir, filenamePrefix + ".alloc");
 		allocatedNodesList = new AllocatedNodesList(allocFile, this);
 
-		if (fileChannel.size() == 0L) {
+		if (nioFile.size() == 0L) {
 			// Empty file, initialize it with the specified parameters
 			this.blockSize = blockSize;
 			this.valueSize = valueSize;
@@ -344,25 +345,46 @@ public class BTree {
 
 			writeFileHeader();
 
-			sync();
+			// sync();
 		}
 		else {
 			// Read parameters from file
 			ByteBuffer buf = ByteBuffer.allocate(HEADER_LENGTH);
-			fileChannel.read(buf, 0L);
+			nioFile.read(buf, 0L);
 
 			buf.rewind();
 
-			@SuppressWarnings("unused")
-			int fileFormatVersion = buf.getInt();
+			byte[] magicNumber = new byte[MAGIC_NUMBER.length];
+			buf.get(magicNumber);
+			byte version = buf.get();
 			this.blockSize = buf.getInt();
 			this.valueSize = buf.getInt();
 			this.rootNodeID = buf.getInt();
 
+			if (Arrays.equals(MAGIC_NUMBER, magicNumber)) {
+				if (version > FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read BTree file " + file + "; it uses a newer file format");
+				}
+				else if (version != FILE_FORMAT_VERSION) {
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
+				}
+			}
+			else if (Arrays.equals(OLD_MAGIC_NUMBER, magicNumber)) {
+				if (version != 1) {
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
+				}
+				// Write new magic number to file
+				logger.info("Updating file header for btree file '{}'", file.getAbsolutePath());
+				writeFileHeader();
+			}
+			else {
+				throw new IOException("File doesn't contain (compatible) BTree data: " + file);
+			}
+
 			// Verify that the value sizes match
 			if (this.valueSize != valueSize) {
 				throw new IOException("Specified value size (" + valueSize
-						+ ") is different from what is stored on disk (" + this.valueSize + ")");
+						+ ") is different from what is stored on disk (" + this.valueSize + ") in " + file);
 			}
 		}
 
@@ -389,7 +411,7 @@ public class BTree {
 	 * Gets the file that this BTree operates on.
 	 */
 	public File getFile() {
-		return file;
+		return nioFile.getFile();
 	}
 
 	/**
@@ -400,10 +422,10 @@ public class BTree {
 	public boolean delete()
 		throws IOException
 	{
-		close();
+		close(false);
 
 		boolean success = allocatedNodesList.delete();
-		success &= file.delete();
+		success &= nioFile.delete();
 		return success;
 	}
 
@@ -415,17 +437,43 @@ public class BTree {
 	public void close()
 		throws IOException
 	{
+		close(true);
+	}
+
+	/**
+	 * Closes any opened files and release any resources used by this B-Tree. Any
+	 * pending changes are optionally synchronized to disk before closing. Once
+	 * the B-Tree has been closed, it can no longer be used.
+	 * 
+	 * @param syncChanges
+	 *        Flag indicating whether pending changes should be synchronized to
+	 *        disk.
+	 */
+	private void close(boolean syncChanges)
+		throws IOException
+	{
 		btreeLock.writeLock().lock();
 		try {
-			if (fileChannel.isOpen()) {
+			if (closed) {
+				return;
+			}
+
+			if (syncChanges) {
 				sync();
+			}
 
-				synchronized (nodeCache) {
-					nodeCache.clear();
-					mruNodes.clear();
-				}
+			closed = true;
 
-				raf.close();
+			synchronized (nodeCache) {
+				nodeCache.clear();
+				mruNodes.clear();
+			}
+
+			try {
+				nioFile.close();
+			}
+			finally {
+				allocatedNodesList.close(syncChanges);
 			}
 		}
 		finally {
@@ -453,7 +501,7 @@ public class BTree {
 			}
 
 			if (forceSync) {
-				fileChannel.force(false);
+				nioFile.force(false);
 			}
 
 			allocatedNodesList.sync();
@@ -785,6 +833,7 @@ public class BTree {
 				rootNode = createNewNode();
 				rootNodeID = rootNode.getID();
 				writeFileHeader();
+				height = 1;
 			}
 
 			InsertResult insertResult = insertInTree(value, 0, rootNode);
@@ -985,18 +1034,18 @@ public class BTree {
 				value = node.removeValueRight(valueIdx);
 			}
 			else {
-				// Replace the matching value with the smallest value from the right
+				// Replace the matching value with the largest value from the left
 				// child node
 				value = node.getValue(valueIdx);
 
-				Node rightChildNode = node.getChildNode(valueIdx + 1);
-				byte[] smallestValue = removeSmallestValueFromTree(rightChildNode);
+				Node leftChildNode = node.getChildNode(valueIdx);
+				byte[] largestValue = removeLargestValueFromTree(leftChildNode);
 
-				node.setValue(valueIdx, smallestValue);
+				node.setValue(valueIdx, largestValue);
 
-				balanceChildNode(node, rightChildNode, valueIdx + 1);
+				balanceChildNode(node, leftChildNode, valueIdx);
 
-				rightChildNode.release();
+				leftChildNode.release();
 			}
 		}
 		else if (!node.isLeaf()) {
@@ -1014,8 +1063,8 @@ public class BTree {
 	}
 
 	/**
-	 * Removes the smallest value from the tree starting at the specified node
-	 * and returns the removed value.
+	 * Removes the largest value from the tree starting at the specified node and
+	 * returns the removed value.
 	 * 
 	 * @param node
 	 *        The root of the (sub) tree.
@@ -1025,20 +1074,22 @@ public class BTree {
 	 * @throws IllegalArgumentException
 	 *         If the supplied node is an empty leaf node
 	 */
-	private byte[] removeSmallestValueFromTree(Node node)
+	private byte[] removeLargestValueFromTree(Node node)
 		throws IOException
 	{
+		int nodeValueCount = node.getValueCount();
+
 		if (node.isLeaf()) {
 			if (node.isEmpty()) {
-				throw new IllegalArgumentException("Trying to remove smallest value from an empty node");
+				throw new IllegalArgumentException("Trying to remove largest value from an empty node in " + getFile());
 			}
-			return node.removeValueLeft(0);
+			return node.removeValueRight(nodeValueCount - 1);
 		}
 		else {
-			// Recurse into left-most child node
-			Node childNode = node.getChildNode(0);
-			byte[] value = removeSmallestValueFromTree(childNode);
-			balanceChildNode(node, childNode, 0);
+			// Recurse into right-most child node
+			Node childNode = node.getChildNode(nodeValueCount);
+			byte[] value = removeLargestValueFromTree(childNode);
+			balanceChildNode(node, childNode, nodeValueCount);
 			childNode.release();
 			return value;
 		}
@@ -1055,9 +1106,7 @@ public class BTree {
 
 			if (rightSibling != null && rightSibling.getValueCount() > minValueCount) {
 				// Right sibling has enough values to give one up
-				childNode.insertValueNodeIDPair(childNode.getValueCount(), parentNode.getValue(childIdx),
-						rightSibling.getChildNodeID(0));
-				parentNode.setValue(childIdx, rightSibling.removeValueLeft(0));
+				parentNode.rotateLeft(childIdx, childNode, rightSibling);
 			}
 			else {
 				// Right sibling does not have enough values to give one up, try its
@@ -1066,10 +1115,7 @@ public class BTree {
 
 				if (leftSibling != null && leftSibling.getValueCount() > minValueCount) {
 					// Left sibling has enough values to give one up
-					childNode.insertNodeIDValuePair(0, leftSibling.getChildNodeID(leftSibling.getValueCount()),
-							parentNode.getValue(childIdx - 1));
-					parentNode.setValue(childIdx - 1,
-							leftSibling.removeValueRight(leftSibling.getValueCount() - 1));
+					parentNode.rotateRight(childIdx, leftSibling, childNode);
 				}
 				else {
 					// Both siblings contain the minimum amount of values,
@@ -1108,10 +1154,12 @@ public class BTree {
 				nodeCache.clear();
 				mruNodes.clear();
 			}
-			fileChannel.truncate(HEADER_LENGTH);
+			nioFile.truncate(HEADER_LENGTH);
 
-			rootNodeID = 0;
-			writeFileHeader();
+			if (rootNodeID != 0) {
+				rootNodeID = 0;
+				writeFileHeader();
+			}
 
 			allocatedNodesList.clear();
 		}
@@ -1154,7 +1202,7 @@ public class BTree {
 		throws IOException
 	{
 		if (id <= 0) {
-			throw new IllegalArgumentException("id must be larger than 0, is: " + id);
+			throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getFile());
 		}
 
 		// Check node cache
@@ -1210,7 +1258,7 @@ public class BTree {
 				int maxNodeID = allocatedNodesList.getMaxNodeID();
 				if (node.getID() > maxNodeID) {
 					// Shrink file
-					fileChannel.truncate(nodeID2offset(maxNodeID) + nodeSize);
+					nioFile.truncate(nodeID2offset(maxNodeID) + nodeSize);
 				}
 			}
 		}
@@ -1246,15 +1294,15 @@ public class BTree {
 		throws IOException
 	{
 		ByteBuffer buf = ByteBuffer.allocate(HEADER_LENGTH);
-		// for backwards compatibility in future versions
-		buf.putInt(FILE_FORMAT_VERSION);
+		buf.put(MAGIC_NUMBER);
+		buf.put(FILE_FORMAT_VERSION);
 		buf.putInt(blockSize);
 		buf.putInt(valueSize);
 		buf.putInt(rootNodeID);
 
 		buf.rewind();
 
-		fileChannel.write(buf, 0L);
+		nioFile.write(buf, 0L);
 	}
 
 	private long nodeID2offset(int id) {
@@ -1272,10 +1320,10 @@ public class BTree {
 	class Node {
 
 		/** This node's ID. */
-		private int id;
+		private final int id;
 
 		/** This node's data. */
-		private byte[] data;
+		private final byte[] data;
 
 		/** The number of values containined in this node. */
 		private int valueCount;
@@ -1287,7 +1335,7 @@ public class BTree {
 		private boolean dataChanged;
 
 		/** Registered listeners that want to be notified of changes to the node. */
-		private LinkedList<NodeListener> listeners = new LinkedList<NodeListener>();
+		private final LinkedList<NodeListener> listeners = new LinkedList<NodeListener>();
 
 		/**
 		 * Creates a new Node object with the specified ID.
@@ -1299,7 +1347,7 @@ public class BTree {
 		 */
 		public Node(int id) {
 			if (id <= 0) {
-				throw new IllegalArgumentException("id must be larger than 0, is: " + id);
+				throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getFile());
 			}
 
 			this.id = id;
@@ -1641,6 +1689,24 @@ public class BTree {
 			rightSibling.notifyNodeMerged(this, rightIdx);
 		}
 
+		public void rotateLeft(int valueIdx, Node leftChildNode, Node rightChildNode)
+			throws IOException
+		{
+			leftChildNode.insertValueNodeIDPair(leftChildNode.getValueCount(), this.getValue(valueIdx),
+					rightChildNode.getChildNodeID(0));
+			setValue(valueIdx, rightChildNode.removeValueLeft(0));
+			notifyRotatedLeft(valueIdx, leftChildNode, rightChildNode);
+		}
+
+		public void rotateRight(int valueIdx, Node leftChildNode, Node rightChildNode)
+			throws IOException
+		{
+			rightChildNode.insertNodeIDValuePair(0, leftChildNode.getChildNodeID(leftChildNode.getValueCount()),
+					this.getValue(valueIdx - 1));
+			setValue(valueIdx - 1, leftChildNode.removeValueRight(leftChildNode.getValueCount() - 1));
+			notifyRotatedRight(valueIdx, leftChildNode, rightChildNode);
+		}
+
 		public void register(NodeListener listener) {
 			synchronized (listeners) {
 				assert !listeners.contains(listener);
@@ -1675,6 +1741,36 @@ public class BTree {
 				while (iter.hasNext()) {
 					// Deregister if listener return true
 					if (iter.next().valueRemoved(this, index)) {
+						iter.remove();
+					}
+				}
+			}
+		}
+
+		private void notifyRotatedLeft(int index, Node leftChildNode, Node rightChildNode)
+			throws IOException
+		{
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
+
+				while (iter.hasNext()) {
+					// Deregister if listener return true
+					if (iter.next().rotatedLeft(this, index, leftChildNode, rightChildNode)) {
+						iter.remove();
+					}
+				}
+			}
+		}
+
+		private void notifyRotatedRight(int index, Node leftChildNode, Node rightChildNode)
+			throws IOException
+		{
+			synchronized (listeners) {
+				Iterator<NodeListener> iter = listeners.iterator();
+
+				while (iter.hasNext()) {
+					// Deregister if listener return true
+					if (iter.next().rotatedRight(this, index, leftChildNode, rightChildNode)) {
 						iter.remove();
 					}
 				}
@@ -1721,7 +1817,7 @@ public class BTree {
 			// Don't fill the spare slot in data:
 			buf.limit(nodeSize);
 
-			int bytesRead = fileChannel.read(buf, nodeID2offset(id));
+			int bytesRead = nioFile.read(buf, nodeID2offset(id));
 			assert bytesRead == nodeSize : "Read operation didn't read the entire node (" + bytesRead + " of "
 					+ nodeSize + " bytes)";
 
@@ -1736,7 +1832,7 @@ public class BTree {
 			// Don't write the spare slot in data to the file:
 			buf.limit(nodeSize);
 
-			int bytesWritten = fileChannel.write(buf, nodeID2offset(id));
+			int bytesWritten = nioFile.write(buf, nodeID2offset(id));
 			assert bytesWritten == nodeSize : "Write operation didn't write the entire node (" + bytesWritten
 					+ " of " + nodeSize + " bytes)";
 
@@ -1806,6 +1902,12 @@ public class BTree {
 		 *         result of this event.
 		 */
 		public boolean valueRemoved(Node node, int index);
+
+		public boolean rotatedLeft(Node node, int index, Node leftChildNode, Node rightChildNode)
+			throws IOException;
+
+		public boolean rotatedRight(Node node, int index, Node leftChildNode, Node rightChildNode)
+			throws IOException;
 
 		/**
 		 * Signals to registered node listeners that a node has been split.
@@ -1921,27 +2023,29 @@ public class BTree {
 
 	private class RangeIterator implements RecordIterator, NodeListener {
 
-		private byte[] searchKey;
+		private final byte[] searchKey;
 
-		private byte[] searchMask;
+		private final byte[] searchMask;
 
-		private byte[] minValue;
+		private final byte[] minValue;
 
-		private byte[] maxValue;
+		private final byte[] maxValue;
 
 		private boolean started;
 
 		private Node currentNode;
 
+		private final AtomicBoolean revisitValue = new AtomicBoolean();
+
 		/**
 		 * Tracks the parent nodes of {@link #currentNode}.
 		 */
-		private LinkedList<Node> parentNodeStack = new LinkedList<Node>();
+		private final LinkedList<Node> parentNodeStack = new LinkedList<Node>();
 
 		/**
 		 * Tracks the index of child nodes in parent nodes.
 		 */
-		private LinkedList<Integer> parentIndexStack = new LinkedList<Integer>();
+		private final LinkedList<Integer> parentIndexStack = new LinkedList<Integer>();
 
 		private int currentIdx;
 
@@ -1963,7 +2067,7 @@ public class BTree {
 					findMinimum();
 				}
 
-				byte[] value = findNext(false);
+				byte[] value = findNext(revisitValue.getAndSet(false));
 				while (value != null) {
 					if (maxValue != null && comparator.compareBTreeValues(maxValue, value, 0, value.length) < 0) {
 						// Reached maximum value, stop iterating
@@ -2023,12 +2127,9 @@ public class BTree {
 					break;
 				}
 				else {
-					parentNodeStack.add(currentNode);
-					parentIndexStack.add(currentIdx);
-
-					currentNode = currentNode.getChildNode(currentIdx);
-					currentNode.register(this);
-					currentIdx = 0;
+					// [SES-725] must change stacks after node loading has succeeded
+					Node childNode = currentNode.getChildNode(currentIdx);
+					pushStacks(childNode);
 				}
 			}
 		}
@@ -2043,10 +2144,7 @@ public class BTree {
 			if (returnedFromRecursion || currentNode.isLeaf()) {
 				if (currentIdx >= currentNode.getValueCount()) {
 					// No more values in this node, continue with parent node
-					currentNode.deregister(this);
-					currentNode.release();
-					currentNode = popNodeStack();
-					currentIdx = popIndexStack();
+					popStacks();
 					return findNext(true);
 				}
 				else {
@@ -2054,13 +2152,9 @@ public class BTree {
 				}
 			}
 			else {
-				parentNodeStack.add(currentNode);
-				parentIndexStack.add(currentIdx);
-
-				currentNode = currentNode.getChildNode(currentIdx);
-				currentNode.register(this);
-				currentIdx = 0;
-
+				// [SES-725] must change stacks after node loading has succeeded
+				Node childNode = currentNode.getChildNode(currentIdx);
+				pushStacks(childNode);
 				return findNext(false);
 			}
 		}
@@ -2084,34 +2178,45 @@ public class BTree {
 		{
 			btreeLock.readLock().lock();
 			try {
-				while (currentNode != null) {
-					currentNode.deregister(this);
-					currentNode.release();
-					currentNode = popNodeStack();
-				}
+				while (popStacks());
 
 				assert parentNodeStack.isEmpty();
-				parentIndexStack.clear();
+				assert parentIndexStack.isEmpty();
 			}
 			finally {
 				btreeLock.readLock().unlock();
 			}
 		}
-
-		private Node popNodeStack() {
-			if (!parentNodeStack.isEmpty()) {
-				return parentNodeStack.removeLast();
-			}
-
-			return null;
+		
+		private void pushStacks(Node newChildNode) {
+			newChildNode.register(this);
+			parentNodeStack.add(currentNode);
+			parentIndexStack.add(currentIdx);
+			currentNode = newChildNode;
+			currentIdx = 0;
 		}
 
-		private int popIndexStack() {
-			if (!parentIndexStack.isEmpty()) {
-				return parentIndexStack.removeLast();
+		private boolean popStacks()
+			throws IOException
+		{
+			if (currentNode == null) {
+				// There's nothing to pop
+				return false;
 			}
 
-			return 0;
+			currentNode.deregister(this);
+			currentNode.release();
+
+			if (!parentNodeStack.isEmpty()) {
+				currentNode = parentNodeStack.removeLast();
+				currentIdx = parentIndexStack.removeLast();
+				return true;
+			}
+			else {
+				currentNode = null;
+				currentIdx = 0;
+				return false;
+			}
 		}
 
 		public boolean valueAdded(Node node, int addedIndex) {
@@ -2156,6 +2261,82 @@ public class BTree {
 
 						break;
 					}
+				}
+			}
+
+			return false;
+		}
+
+		public boolean rotatedLeft(Node node, int valueIndex, Node leftChildNode, Node rightChildNode)
+			throws IOException
+		{
+			if (currentNode == node) {
+				if (valueIndex == currentIdx - 1) {
+					// the value that was removed had just been visited
+					currentIdx = valueIndex;
+					revisitValue.set(true);
+				}
+			}
+			else if (currentNode == rightChildNode) {
+				if (currentIdx == 0) {
+					// the value that would be visited next has been moved to the
+					// parent node
+					popStacks();
+					currentIdx = valueIndex;
+					revisitValue.set(true);
+				}
+			}
+			else {
+				for (int i = 0; i < parentNodeStack.size(); i++) {
+					Node stackNode = parentNodeStack.get(i);
+
+					if (stackNode == rightChildNode ) {
+						int stackIdx = parentIndexStack.get(i);
+
+						if (stackIdx == 0) {
+							// this node is no longer the parent, replace with left
+							// sibling
+							rightChildNode.deregister(this);
+							rightChildNode.release();
+
+							leftChildNode.use();
+							leftChildNode.register(this);
+
+							parentNodeStack.set(i, leftChildNode);
+							parentIndexStack.set(i, leftChildNode.getValueCount());
+						}
+
+						break;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		public boolean rotatedRight(Node node, int valueIndex, Node leftChildNode, Node rightChildNode)
+			throws IOException
+		{
+			for (int i = 0; i < parentNodeStack.size(); i++) {
+				Node stackNode = parentNodeStack.get(i);
+
+				if (stackNode == leftChildNode) {
+					int stackIdx = parentIndexStack.get(i);
+
+					if (stackIdx == leftChildNode.getValueCount()) {
+						// this node is no longer the parent, replace with right
+						// sibling
+						leftChildNode.deregister(this);
+						leftChildNode.release();
+
+						rightChildNode.use();
+						rightChildNode.register(this);
+
+						parentNodeStack.set(i, rightChildNode);
+						parentIndexStack.set(i, 0);
+					}
+
+					break;
 				}
 			}
 
@@ -2373,8 +2554,8 @@ public class BTree {
 		int valueCount = 0;
 
 		ByteBuffer buf = ByteBuffer.allocate(nodeSize);
-		for (long offset = blockSize; offset < fileChannel.size(); offset += blockSize) {
-			fileChannel.read(buf, offset);
+		for (long offset = blockSize; offset < nioFile.size(); offset += blockSize) {
+			nioFile.read(buf, offset);
 			buf.rewind();
 
 			int nodeID = offset2nodeID(offset);

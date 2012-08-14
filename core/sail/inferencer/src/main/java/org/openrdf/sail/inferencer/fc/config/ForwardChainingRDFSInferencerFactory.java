@@ -6,10 +6,10 @@
 package org.openrdf.sail.inferencer.fc.config;
 
 import org.openrdf.sail.Sail;
+import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * A {@link SailFactory} that creates {@link ForwardChainingRDFSInferencer}s
@@ -38,10 +38,10 @@ public class ForwardChainingRDFSInferencerFactory implements SailFactory {
 	}
 
 	public Sail getSail(SailImplConfig config)
-		throws StoreConfigException
+		throws SailConfigException
 	{
 		if (!SAIL_TYPE.equals(config.getType())) {
-			throw new StoreConfigException("Invalid Sail type: " + config.getType());
+			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
 
 		return new ForwardChainingRDFSInferencer();

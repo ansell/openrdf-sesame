@@ -21,7 +21,7 @@ public class ASTExists extends ASTBooleanExpr {
 	{
 		return visitor.visit(this, data);
 	}
-
+	
 	public ASTTupleQuery getOperand() {
 		return (ASTTupleQuery)children.get(0);
 	}

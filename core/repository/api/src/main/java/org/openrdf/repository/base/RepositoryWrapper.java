@@ -7,14 +7,11 @@ package org.openrdf.repository.base;
 
 import java.io.File;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * A {@link DelegatingRepository} implementation that, by default, forwards all
@@ -49,12 +46,6 @@ public class RepositoryWrapper implements DelegatingRepository {
 		return delegate;
 	}
 
-	public RepositoryMetaData getMetaData()
-		throws StoreException
-	{
-		return getDelegate().getMetaData();
-	}
-
 	public void setDataDir(File dataDir) {
 		getDelegate().setDataDir(dataDir);
 	}
@@ -64,29 +55,27 @@ public class RepositoryWrapper implements DelegatingRepository {
 	}
 
 	public void initialize()
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().initialize();
 	}
 
 	public void shutDown()
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().shutDown();
 	}
 
+	public boolean isWritable()
+		throws RepositoryException
+	{
+		return getDelegate().isWritable();
+	}
+
 	public RepositoryConnection getConnection()
-		throws StoreException
+		throws RepositoryException
 	{
 		return getDelegate().getConnection();
-	}
-
-	public LiteralFactory getLiteralFactory() {
-		return getDelegate().getLiteralFactory();
-	}
-
-	public URIFactory getURIFactory() {
-		return getDelegate().getURIFactory();
 	}
 
 	public ValueFactory getValueFactory() {
@@ -95,5 +84,9 @@ public class RepositoryWrapper implements DelegatingRepository {
 
 	public String toString() {
 		return getDelegate().toString();
+	}
+
+	public boolean isInitialized() {
+		return getDelegate().isInitialized();
 	}
 }

@@ -15,7 +15,7 @@ import org.openrdf.query.parser.sparql.ast.ASTBasicGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
 import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
 import org.openrdf.query.parser.sparql.ast.ASTCollection;
-import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
+import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
 import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilderTreeConstants;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -26,9 +26,9 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class BlankNodeVarProcessor extends ASTVisitorBase {
+public class BlankNodeVarProcessor extends ASTVisitorBase {
 
-	public static void process(ASTQueryContainer qc)
+	public static void process(ASTOperationContainer qc)
 		throws MalformedQueryException
 	{
 		try {
@@ -92,16 +92,13 @@ class BlankNodeVarProcessor extends ASTVisitorBase {
 			return super.visit(node, data);
 		}
 
-		private String findVarName(String bnodeID)
-			throws VisitorException
-		{
-			if (bnodeID == null) {
+		private String findVarName(String bnodeID) throws VisitorException {
+			if (bnodeID == null)
 				return null;
-			}
 			String varName = conversionMap.get(bnodeID);
-			if (varName == null && usedBNodeIDs.contains(bnodeID)) {
-				throw new VisitorException("BNodeID already used in another scope: " + bnodeID);
-			}
+			if (varName == null && usedBNodeIDs.contains(bnodeID))
+				throw new VisitorException(
+						"BNodeID already used in another scope: " + bnodeID);
 			return varName;
 		}
 

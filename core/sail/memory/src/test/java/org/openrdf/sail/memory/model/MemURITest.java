@@ -5,10 +5,10 @@
  */
 package org.openrdf.sail.memory.model;
 
-import junit.framework.TestCase;
-
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
+
+import junit.framework.TestCase;
 
 /**
  * Unit tests for class {@link MemURI}.

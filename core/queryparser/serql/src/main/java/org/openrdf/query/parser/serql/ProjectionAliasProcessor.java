@@ -37,15 +37,15 @@ class ProjectionAliasProcessor extends ASTVisitorBase {
 
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			ASTProjectionElem projElem = (ASTProjectionElem)node.jjtGetChild(i);
-
+			
 			String alias = projElem.getAlias();
 			if (alias == null && projElem.getValueExpr() instanceof ASTVar) {
 				alias = ((ASTVar)projElem.getValueExpr()).getName();
 			}
-
+			
 			if (alias != null) {
 				boolean isUnique = aliases.add(alias);
-
+				
 				if (!isUnique) {
 					throw new VisitorException("Duplicate projection element names: '" + alias + "'");
 				}

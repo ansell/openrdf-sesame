@@ -10,12 +10,13 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.event.NotifyingRepository;
 import org.openrdf.repository.event.NotifyingRepositoryConnection;
 import org.openrdf.repository.event.RepositoryConnectionListener;
 import org.openrdf.repository.event.RepositoryListener;
-import org.openrdf.store.StoreException;
 
 /**
  * This notifying decorator allows listeners to register with the repository or
@@ -70,8 +71,8 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	/**
-	 * Registers a <tt>RepositoryListener</tt> that will receive notifications of
-	 * operations that are performed on this repository.
+	 * Registers a <tt>RepositoryListener</tt> that will receive notifications
+	 * of operations that are performed on this repository.
 	 */
 	public void addRepositoryListener(RepositoryListener listener) {
 		listeners.add(listener);
@@ -105,57 +106,58 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 	@Override
 	public NotifyingRepositoryConnection getConnection()
-		throws StoreException
+		throws RepositoryException
 	{
-		NotifyingRepositoryConnection con = new NotifyingRepositoryConnectionWrapper(this,
-				super.getConnection(), getDefaultReportDeltas());
+		RepositoryConnection con = getDelegate().getConnection();
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.getConnection(this, con);
+				listener.getConnection(getDelegate(), con);
 			}
 		}
-
+		NotifyingRepositoryConnection ncon = new NotifyingRepositoryConnectionWrapper(this,
+				con, getDefaultReportDeltas());
 		for (RepositoryConnectionListener l : conListeners) {
-			con.addRepositoryConnectionListener(l);
+			ncon.addRepositoryConnectionListener(l);
 		}
 
-		return con;
+		return ncon;
 	}
 
 	@Override
 	public void initialize()
-		throws StoreException
+		throws RepositoryException
 	{
 		super.initialize();
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.initialize(this);
+				listener.initialize(getDelegate());
 			}
 		}
 	}
 
 	@Override
-	public void setDataDir(File dataDir) {
+	public void setDataDir(File dataDir)
+	{
 		super.setDataDir(dataDir);
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.setDataDir(this, dataDir);
+				listener.setDataDir(getDelegate(), dataDir);
 			}
 		}
 	}
 
 	@Override
 	public void shutDown()
-		throws StoreException
+		throws RepositoryException
 	{
 		super.shutDown();
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.shutDown(this);
+				listener.shutDown(getDelegate());
 			}
 		}
 	}

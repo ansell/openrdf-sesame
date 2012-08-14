@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql;
 
 import org.openrdf.query.parser.serql.ast.ASTAnd;
+import org.openrdf.query.parser.serql.ast.ASTArgList;
 import org.openrdf.query.parser.serql.ast.ASTBNode;
 import org.openrdf.query.parser.serql.ast.ASTBasicPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTBasicPathExprTail;
@@ -26,12 +27,14 @@ import org.openrdf.query.parser.serql.ast.ASTGraphIntersect;
 import org.openrdf.query.parser.serql.ast.ASTGraphMinus;
 import org.openrdf.query.parser.serql.ast.ASTGraphUnion;
 import org.openrdf.query.parser.serql.ast.ASTIn;
+import org.openrdf.query.parser.serql.ast.ASTInList;
 import org.openrdf.query.parser.serql.ast.ASTIsBNode;
 import org.openrdf.query.parser.serql.ast.ASTIsLiteral;
 import org.openrdf.query.parser.serql.ast.ASTIsResource;
 import org.openrdf.query.parser.serql.ast.ASTIsURI;
 import org.openrdf.query.parser.serql.ast.ASTLabel;
 import org.openrdf.query.parser.serql.ast.ASTLang;
+import org.openrdf.query.parser.serql.ast.ASTLangMatches;
 import org.openrdf.query.parser.serql.ast.ASTLike;
 import org.openrdf.query.parser.serql.ast.ASTLimit;
 import org.openrdf.query.parser.serql.ast.ASTLiteral;
@@ -46,13 +49,20 @@ import org.openrdf.query.parser.serql.ast.ASTOffset;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExprTail;
 import org.openrdf.query.parser.serql.ast.ASTOr;
+import org.openrdf.query.parser.serql.ast.ASTOrderBy;
+import org.openrdf.query.parser.serql.ast.ASTOrderExpr;
+import org.openrdf.query.parser.serql.ast.ASTPathExprList;
+import org.openrdf.query.parser.serql.ast.ASTPathExprUnion;
 import org.openrdf.query.parser.serql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.serql.ast.ASTQName;
 import org.openrdf.query.parser.serql.ast.ASTQueryBody;
 import org.openrdf.query.parser.serql.ast.ASTQueryContainer;
+import org.openrdf.query.parser.serql.ast.ASTRegex;
 import org.openrdf.query.parser.serql.ast.ASTReifiedStat;
+import org.openrdf.query.parser.serql.ast.ASTSameTerm;
 import org.openrdf.query.parser.serql.ast.ASTSelect;
 import org.openrdf.query.parser.serql.ast.ASTSelectQuery;
+import org.openrdf.query.parser.serql.ast.ASTStr;
 import org.openrdf.query.parser.serql.ast.ASTString;
 import org.openrdf.query.parser.serql.ast.ASTTupleIntersect;
 import org.openrdf.query.parser.serql.ast.ASTTupleMinus;
@@ -168,6 +178,18 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTOrderBy node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTOrderExpr node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTLimit node, Object data)
 		throws VisitorException
 	{
@@ -175,6 +197,18 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTOffset node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTPathExprList node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTPathExprUnion node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);
@@ -282,7 +316,19 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTLangMatches node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTExists node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSameTerm node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);
@@ -312,7 +358,19 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTRegex node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTIn node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTInList node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);
@@ -360,7 +418,19 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 		return node.childrenAccept(this, data);
 	}
 
+	public Object visit(ASTStr node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
 	public Object visit(ASTFunctionCall node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTArgList node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

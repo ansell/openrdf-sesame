@@ -7,7 +7,7 @@ package org.openrdf.query.parser.sparql.ast;
 
 import java.util.List;
 
-public abstract class ASTQuery extends SimpleNode {
+public abstract class ASTQuery extends ASTOperation {
 
 	public ASTQuery(int id) {
 		super(id);
@@ -17,16 +17,24 @@ public abstract class ASTQuery extends SimpleNode {
 		super(p, id);
 	}
 
-	public List<ASTDatasetClause> getDatasetClauseList() {
-		return jjtGetChildren(ASTDatasetClause.class);
-	}
-
 	public ASTWhereClause getWhereClause() {
 		return jjtGetChild(ASTWhereClause.class);
 	}
 
 	public ASTOrderClause getOrderClause() {
 		return jjtGetChild(ASTOrderClause.class);
+	}
+
+	public ASTGroupClause getGroupClause() {
+		return jjtGetChild(ASTGroupClause.class);
+	}
+
+	public ASTHavingClause getHavingClause() {
+		return jjtGetChild(ASTHavingClause.class);
+	}
+
+	public ASTBindingsClause getBindingsClause() {
+		return jjtGetChild(ASTBindingsClause.class);
 	}
 
 	public boolean hasLimit() {

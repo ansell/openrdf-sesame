@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007-2009.
+ * Copyright James Leigh (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -8,19 +8,20 @@ package org.openrdf.repository.event;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryConnection;
 
 /**
  * Listener interface for connection modification.
  * 
  * @author James Leigh
- * @author Arjohn Kampman
  */
 public interface RepositoryConnectionListener {
 
 	public abstract void close(RepositoryConnection conn);
 
-	public abstract void begin(RepositoryConnection conn);
+	public abstract void setAutoCommit(RepositoryConnection conn, boolean autoCommit);
 
 	public abstract void commit(RepositoryConnection conn);
 
@@ -39,4 +40,7 @@ public interface RepositoryConnectionListener {
 	public abstract void removeNamespace(RepositoryConnection conn, String prefix);
 
 	public abstract void clearNamespaces(RepositoryConnection conn);
+
+	public abstract void execute(RepositoryConnection conn, QueryLanguage ql, String update,
+			String baseURI, Update operation);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,8 +11,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -22,10 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.ByteArrayUtil;
 
+import org.openrdf.sail.SailException;
+import org.openrdf.sail.nativerdf.TxnStatusFile.TxnStatus;
 import org.openrdf.sail.nativerdf.btree.BTree;
 import org.openrdf.sail.nativerdf.btree.RecordComparator;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
-import org.openrdf.store.StoreException;
 
 /**
  * File-based indexed storage and retrieval of RDF statements. TripleStore
@@ -37,8 +42,6 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  */
 class TripleStore {
-
-	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
 	 * Constants *
@@ -126,6 +129,8 @@ class TripleStore {
 	 * Variables *
 	 *-----------*/
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	/**
 	 * The directory that is used to store the index files.
 	 */
@@ -137,23 +142,13 @@ class TripleStore {
 	private final Properties properties;
 
 	/**
-	 * The array of triple indexes that are used to store and retrieve triples.
+	 * The list of triple indexes that are used to store and retrieve triples.
 	 */
-	private final TripleIndex[] indexes;
+	private final List<TripleIndex> indexes = new ArrayList<TripleIndex>();
 
 	private final boolean forceSync;
 
-	/**
-	 * Flag indicating whether one or more triples have been flagged as "added"
-	 * during the current transaction.
-	 */
-	private volatile boolean txnAddedTriples = false;
-
-	/**
-	 * Flag indicating whether one or more triples have been flagged as "removed"
-	 * during the current transaction.
-	 */
-	private volatile boolean txnRemovedTriples = false;
+	private final TxnStatusFile txnStatusFile;
 
 	private volatile RecordCache updatedTriplesCache;
 
@@ -162,87 +157,120 @@ class TripleStore {
 	 *--------------*/
 
 	public TripleStore(File dir, String indexSpecStr)
-		throws IOException, StoreException
+		throws IOException, SailException
 	{
 		this(dir, indexSpecStr, false);
 	}
 
 	public TripleStore(File dir, String indexSpecStr, boolean forceSync)
-		throws IOException, StoreException
+		throws IOException, SailException
 	{
 		this.dir = dir;
 		this.forceSync = forceSync;
-		properties = new Properties();
+		this.txnStatusFile = new TxnStatusFile(dir);
 
-		// Read triple properties file, restore indexes, re-index
 		File propFile = new File(dir, PROPERTIES_FILE);
 
-		if (propFile.exists()) {
-			loadProperties(propFile);
+		if (!propFile.exists()) {
+			// newly created native store
+			properties = new Properties();
 
-			// Check version number
-			String versionStr = properties.getProperty(VERSION_KEY);
-			if (versionStr == null) {
-				logger.warn("version missing in TripleStore's properties file");
-			}
-			else {
-				try {
-					int version = Integer.parseInt(versionStr);
-					if (version < 10) {
-						throw new StoreException("Directory contains incompatible triple data");
-					}
-					else if (version > SCHEME_VERSION) {
-						throw new StoreException("Directory contains data that uses a newer data format");
-					}
-				}
-				catch (NumberFormatException e) {
-					logger.warn("Malformed version number in TripleStore's properties file");
-				}
-			}
-		}
+			Set<String> indexSpecs = parseIndexSpecList(indexSpecStr);
 
-		Set<String> indexSpecs = parseIndexSpecList(indexSpecStr);
-
-		if (indexSpecs.isEmpty()) {
-			// No indexes specified, use existing indexes if possible
-			indexSpecStr = getCurrentIndexSpecStr();
-			indexSpecs = parseIndexSpecList(indexSpecStr);
-
-			if (indexSpecs.size() > 0) {
-				logger.debug("No indexes specified, using existing indexes: {}", indexSpecStr);
-			}
-			else {
-				// Create default indexes
+			if (indexSpecs.isEmpty()) {
+				logger.debug("No indexes specified, using default indexes: {}", DEFAULT_INDEXES);
 				indexSpecStr = DEFAULT_INDEXES;
 				indexSpecs = parseIndexSpecList(indexSpecStr);
-				logger.debug("No indexes specified or found, defaulting to indexes: {}", indexSpecStr);
+			}
+
+			initIndexes(indexSpecs);
+		}
+		else {
+			// Read triple properties file and check format version number
+			properties = loadProperties(propFile);
+			checkVersion();
+
+			// Initialize existing indexes
+			Set<String> indexSpecs = getIndexSpecs();
+			initIndexes(indexSpecs);
+
+			// Check transaction status
+			TxnStatus txnStatus = txnStatusFile.getTxnStatus();
+			if (txnStatus == TxnStatus.NONE) {
+				logger.trace("No uncompleted transactions found");
+			}
+			else {
+				processUncompletedTransaction(txnStatus);
+			}
+
+			// Compare the existing indexes with the requested indexes
+			Set<String> reqIndexSpecs = parseIndexSpecList(indexSpecStr);
+
+			if (reqIndexSpecs.isEmpty()) {
+				// No indexes specified, use the existing ones
+				indexSpecStr = properties.getProperty(INDEXES_KEY);
+			}
+			else if (!reqIndexSpecs.equals(indexSpecs)) {
+				// Set of indexes needs to be changed
+				reindex(indexSpecs, reqIndexSpecs);
 			}
 		}
 
-		// Initialize added indexes and delete removed ones:
-		reindex(indexSpecs);
-
 		if (!String.valueOf(SCHEME_VERSION).equals(properties.getProperty(VERSION_KEY))
-				|| !indexSpecStr.equals(getCurrentIndexSpecStr()))
+				|| !indexSpecStr.equals(properties.getProperty(INDEXES_KEY)))
 		{
 			// Store up-to-date properties
 			properties.setProperty(VERSION_KEY, String.valueOf(SCHEME_VERSION));
 			properties.setProperty(INDEXES_KEY, indexSpecStr);
 			storeProperties(propFile);
 		}
-
-		// Create specified indexes
-		indexes = new TripleIndex[indexSpecs.size()];
-		int i = 0;
-		for (String fieldSeq : indexSpecs) {
-			logger.debug("Activating index '" + fieldSeq + "'...");
-			indexes[i++] = new TripleIndex(fieldSeq);
-		}
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	private void checkVersion()
+		throws SailException
+	{
+		// Check version number
+		String versionStr = properties.getProperty(VERSION_KEY);
+		if (versionStr == null) {
+			logger.warn("{} missing in TripleStore's properties file", VERSION_KEY);
+		}
+		else {
+			try {
+				int version = Integer.parseInt(versionStr);
+				if (version < 10) {
+					throw new SailException("Directory contains incompatible triple data");
+				}
+				else if (version > SCHEME_VERSION) {
+					throw new SailException("Directory contains data that uses a newer data format");
+				}
+			}
+			catch (NumberFormatException e) {
+				logger.warn("Malformed version number in TripleStore's properties file");
+			}
+		}
+	}
+
+	private Set<String> getIndexSpecs()
+		throws SailException
+	{
+		String indexesStr = properties.getProperty(INDEXES_KEY);
+
+		if (indexesStr == null) {
+			throw new SailException(INDEXES_KEY + " missing in TripleStore's properties file");
+		}
+
+		Set<String> indexSpecs = parseIndexSpecList(indexesStr);
+
+		if (indexSpecs.isEmpty()) {
+			throw new SailException("No " + INDEXES_KEY + " found in TripleStore's properties file");
+		}
+
+		return indexSpecs;
+	}
 
 	/**
 	 * Parses a comma/whitespace-separated list of index specifications. Index
@@ -254,7 +282,7 @@ class TripleStore {
 	 * @return A Set containing the parsed index specifications.
 	 */
 	private Set<String> parseIndexSpecList(String indexSpecStr)
-		throws StoreException
+		throws SailException
 	{
 		Set<String> indexes = new HashSet<String>();
 
@@ -267,7 +295,7 @@ class TripleStore {
 				if (index.length() != 4 || index.indexOf('s') == -1 || index.indexOf('p') == -1
 						|| index.indexOf('o') == -1 || index.indexOf('c') == -1)
 				{
-					throw new StoreException("invalid value '" + index + "' in index specification: "
+					throw new SailException("invalid value '" + index + "' in index specification: "
 							+ indexSpecStr);
 				}
 
@@ -278,57 +306,104 @@ class TripleStore {
 		return indexes;
 	}
 
-	private void reindex(Set<String> newIndexSpecs)
-		throws IOException, StoreException
+	private void initIndexes(Set<String> indexSpecs)
+		throws IOException
 	{
-		// Check if the index specification has changed and update indexes if
-		// necessary
-		String currentIndexSpecStr = getCurrentIndexSpecStr();
-		if (currentIndexSpecStr == null) {
-			return;
+		for (String fieldSeq : indexSpecs) {
+			logger.trace("Initializing index '{}'...", fieldSeq);
+			indexes.add(new TripleIndex(fieldSeq));
+		}
+	}
+
+	private void processUncompletedTransaction(TxnStatus txnStatus)
+		throws IOException
+	{
+		switch (txnStatus) {
+			case COMMITTING:
+				logger.info("Detected uncompleted commit, trying to complete");
+				try {
+					commit();
+					logger.info("Uncompleted commit completed successfully");
+				}
+				catch (IOException e) {
+					logger.error("Failed to restore from uncompleted commit", e);
+					throw e;
+				}
+				break;
+			case ROLLING_BACK:
+				logger.info("Detected uncompleted rollback, trying to complete");
+				try {
+					rollback();
+					logger.info("Uncompleted rollback completed successfully");
+				}
+				catch (IOException e) {
+					logger.error("Failed to restore from uncompleted rollback", e);
+					throw e;
+				}
+				break;
+			case ACTIVE:
+				logger.info("Detected unfinished transaction, trying to roll back");
+				try {
+					rollback();
+					logger.info("Unfinished transaction rolled back successfully");
+				}
+				catch (IOException e) {
+					logger.error("Failed to roll back unfinished transaction", e);
+					throw e;
+				}
+				break;
+			case UNKNOWN:
+				logger.info("Read invalid or unknown transaction status, trying to roll back");
+				try {
+					rollback();
+					logger.info("Successfully performed a rollback for invalid or unknown transaction status");
+				}
+				catch (IOException e) {
+					logger.error("Failed to perform rollback for invalid or unknown transaction status", e);
+					throw e;
+				}
+				break;
+		}
+	}
+
+	private void reindex(Set<String> currentIndexSpecs, Set<String> newIndexSpecs)
+		throws IOException, SailException
+	{
+		Map<String, TripleIndex> currentIndexes = new HashMap<String, TripleIndex>();
+		for (TripleIndex index : indexes) {
+			currentIndexes.put(new String(index.getFieldSeq()), index);
 		}
 
-		Set<String> currentIndexSpecs = parseIndexSpecList(currentIndexSpecStr);
-
-		if (currentIndexSpecs.isEmpty()) {
-			throw new StoreException("Invalid index specification found in index properties");
-		}
-
-		// Determine the set of newly added indexes
+		// Determine the set of newly added indexes and initialize these using an
+		// existing index as source
 		Set<String> addedIndexSpecs = new HashSet<String>(newIndexSpecs);
 		addedIndexSpecs.removeAll(currentIndexSpecs);
 
 		if (!addedIndexSpecs.isEmpty()) {
-			// Initialize new indexes using an existing index as source
-			String sourceIndexSpec = currentIndexSpecs.iterator().next();
-			TripleIndex sourceIndex = new TripleIndex(sourceIndexSpec);
+			TripleIndex sourceIndex = indexes.get(0);
 
-			try {
-				for (String fieldSeq : addedIndexSpecs) {
-					logger.debug("Initializing new index '" + fieldSeq + "'...");
+			for (String fieldSeq : addedIndexSpecs) {
+				logger.debug("Initializing new index '{}'...", fieldSeq);
 
-					TripleIndex addedIndex = new TripleIndex(fieldSeq);
-					BTree addedBTree = addedIndex.getBTree();
+				TripleIndex addedIndex = new TripleIndex(fieldSeq);
+				BTree addedBTree = addedIndex.getBTree();
 
-					RecordIterator sourceIter = sourceIndex.getBTree().iterateAll();
-					try {
-						byte[] value = null;
-						while ((value = sourceIter.next()) != null) {
-							addedBTree.insert(value);
-						}
+				RecordIterator sourceIter = sourceIndex.getBTree().iterateAll();
+				try {
+					byte[] value = null;
+					while ((value = sourceIter.next()) != null) {
+						addedBTree.insert(value);
 					}
-					finally {
-						sourceIter.close();
-					}
-
-					addedBTree.close();
+					addedBTree.sync();
+				}
+				finally {
+					sourceIter.close();
 				}
 
-				logger.debug("New index(es) initialized");
+				currentIndexes.put(fieldSeq, addedIndex);
 			}
-			finally {
-				sourceIndex.getBTree().close();
-			}
+
+			logger.debug("New index(es) initialized");
 		}
 
 		// Determine the set of removed indexes
@@ -337,7 +412,7 @@ class TripleStore {
 
 		// Delete files for removed indexes
 		for (String fieldSeq : removedIndexSpecs) {
-			TripleIndex removedIndex = new TripleIndex(fieldSeq);
+			TripleIndex removedIndex = currentIndexes.remove(fieldSeq);
 
 			boolean deleted = removedIndex.getBTree().delete();
 
@@ -348,6 +423,12 @@ class TripleStore {
 				logger.warn("Unable to delete file(s) for removed {} index", fieldSeq);
 			}
 		}
+
+		// Update the indexes variable, using the specified index order
+		indexes.clear();
+		for (String fieldSeq : newIndexSpecs) {
+			indexes.add(currentIndexes.remove(fieldSeq));
+		}
 	}
 
 	private String getCurrentIndexSpecStr() {
@@ -357,8 +438,16 @@ class TripleStore {
 	public void close()
 		throws IOException
 	{
-		for (int i = 0; i < indexes.length; i++) {
-			indexes[i].getBTree().close();
+		for (TripleIndex index : indexes) {
+			index.getBTree().close();
+		}
+		
+		txnStatusFile.close();
+		
+		// Should have been removed upon commit() or rollback(), but just to be sure
+		if (updatedTriplesCache != null) {
+			updatedTriplesCache.discard();
+			updatedTriplesCache = null;
 		}
 	}
 
@@ -475,11 +564,6 @@ class TripleStore {
 		{
 			wrappedIter.close();
 		}
-
-		@Override
-		public String toString() {
-			return "StatementFilter " + wrappedIter.toString();
-		}
 	} // end inner class ExplicitStatementFilter
 
 	private RecordIterator getTriples(int subj, int pred, int obj, int context, int flags, int flagsMask)
@@ -560,8 +644,8 @@ class TripleStore {
 	public void clear()
 		throws IOException
 	{
-		for (int i = 0; i < indexes.length; i++) {
-			indexes[i].getBTree().clear();
+		for (TripleIndex index : indexes) {
+			index.getBTree().clear();
 		}
 	}
 
@@ -574,10 +658,10 @@ class TripleStore {
 	public boolean storeTriple(int subj, int pred, int obj, int context, boolean explicit)
 		throws IOException
 	{
-		boolean result = false;
+		boolean stAdded = false;
 
 		byte[] data = getData(subj, pred, obj, context, 0);
-		byte[] storedData = indexes[0].getBTree().get(data);
+		byte[] storedData = indexes.get(0).getBTree().get(data);
 
 		if (storedData == null) {
 			// Statement does not yet exist
@@ -586,53 +670,52 @@ class TripleStore {
 				data[FLAG_IDX] |= EXPLICIT_FLAG;
 			}
 
-			result = true;
-			txnAddedTriples = true;
+			stAdded = true;
 		}
 		else {
 			// Statement already exists, only modify its flags, see txn-flags.txt
 			// for a description of the flag transformations
 			byte flags = storedData[FLAG_IDX];
-			boolean isExplicit = (flags & EXPLICIT_FLAG) != 0;
-			boolean added = (flags & ADDED_FLAG) != 0;
-			boolean removed = (flags & REMOVED_FLAG) != 0;
-			boolean toggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+			boolean wasExplicit = (flags & EXPLICIT_FLAG) != 0;
+			boolean wasAdded = (flags & ADDED_FLAG) != 0;
+			boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+			boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
 
-			if (added) {
+			if (wasAdded) {
 				// Statement has been added in the current transaction and is
-				// invisible to other connections
+				// invisible to other connections, we can simply modify its flags
 				data[FLAG_IDX] |= ADDED_FLAG;
-				if (explicit || isExplicit) {
+				if (explicit || wasExplicit) {
 					data[FLAG_IDX] |= EXPLICIT_FLAG;
 				}
 			}
 			else {
 				// Committed statement, must keep explicit flag the same
-				if (isExplicit) {
+				if (wasExplicit) {
 					data[FLAG_IDX] |= EXPLICIT_FLAG;
 				}
 
 				if (explicit) {
-					if (!isExplicit) {
+					if (!wasExplicit) {
 						// Make inferred statement explicit
 						data[FLAG_IDX] |= TOGGLE_EXPLICIT_FLAG;
 					}
 				}
 				else {
-					if (removed) {
-						if (isExplicit) {
+					if (wasRemoved) {
+						if (wasExplicit) {
 							// Re-add removed explicit statement as inferred
 							data[FLAG_IDX] |= TOGGLE_EXPLICIT_FLAG;
 						}
 					}
-					else if (toggled) {
+					else if (wasToggled) {
 						data[FLAG_IDX] |= TOGGLE_EXPLICIT_FLAG;
 					}
 				}
 			}
 
-			// Statement is new when it used to be removed
-			result = removed;
+			// Statement is new if it was removed before
+			stAdded = wasRemoved;
 		}
 
 		if (storedData == null || !Arrays.equals(data, storedData)) {
@@ -643,7 +726,7 @@ class TripleStore {
 			updatedTriplesCache.storeRecord(data);
 		}
 
-		return result;
+		return stAdded;
 	}
 
 	public int removeTriples(int subj, int pred, int obj, int context)
@@ -684,7 +767,7 @@ class TripleStore {
 		byte[] data = iter.next();
 
 		if (data == null) {
-			// no discarded triples
+			// no triples to remove
 			return 0;
 		}
 
@@ -706,6 +789,7 @@ class TripleStore {
 			count = (int)removedTriplesCache.getRecordCount();
 			updatedTriplesCache.storeRecords(removedTriplesCache);
 
+			// Set the REMOVED flag by overwriting the affected records
 			for (TripleIndex index : indexes) {
 				BTree btree = index.getBTree();
 
@@ -724,77 +808,34 @@ class TripleStore {
 			removedTriplesCache.discard();
 		}
 
-		if (count > 0) {
-			txnRemovedTriples = true;
-		}
-
 		return count;
-	}
-
-	private void discardTriples(RecordIterator iter)
-		throws IOException
-	{
-		byte[] data = iter.next();
-
-		if (data == null) {
-			// no discarded triples
-			return;
-		}
-
-		// Store the values that need to be discarded in a tmp file and then
-		// iterate over this file to discard the values
-		RecordCache recordCache = new SequentialRecordCache(dir, RECORD_LENGTH);
-		try {
-			while (data != null) {
-				recordCache.storeRecord(data);
-				data = iter.next();
-			}
-			iter.close();
-
-			for (TripleIndex index : indexes) {
-				BTree btree = index.getBTree();
-
-				RecordIterator recIter = recordCache.getRecords();
-				try {
-					while ((data = recIter.next()) != null) {
-						btree.remove(data);
-					}
-				}
-				finally {
-					recIter.close();
-				}
-			}
-		}
-		finally {
-			recordCache.discard();
-		}
 	}
 
 	public void startTransaction()
 		throws IOException
 	{
+		txnStatusFile.setTxnStatus(TxnStatus.ACTIVE);
+
 		// Create a record cache for storing updated triples with a maximum of
 		// some 10% of the number of triples
-		long maxRecords = indexes[0].getBTree().getValueCountEstimate() / 10L;
-		updatedTriplesCache = new SortedRecordCache(dir, RECORD_LENGTH, maxRecords,
-				new TripleComparator("spoc"));
+		long maxRecords = indexes.get(0).getBTree().getValueCountEstimate() / 10L;
+		if (updatedTriplesCache == null) {
+			updatedTriplesCache = new SortedRecordCache(dir, RECORD_LENGTH, maxRecords, new TripleComparator(
+					"spoc"));
+		}
+		else {
+			assert updatedTriplesCache.getRecordCount() == 0L : "updatedTripleCache should have been cleared upon commit or rollback";
+			updatedTriplesCache.setMaxRecords(maxRecords);
+		}
 	}
 
 	public void commit()
 		throws IOException
 	{
-		if (txnRemovedTriples) {
-			RecordIterator iter = getTriples(-1, -1, -1, -1, REMOVED_FLAG, REMOVED_FLAG);
-			try {
-				discardTriples(iter);
-			}
-			finally {
-				txnRemovedTriples = false;
-				iter.close();
-			}
-		}
+		txnStatusFile.setTxnStatus(TxnStatus.COMMITTING);
 
-		boolean validCache = updatedTriplesCache.isValid();
+		// updatedTriplesCache will be null when recovering from a crashed commit
+		boolean validCache = updatedTriplesCache != null && updatedTriplesCache.isValid();
 
 		for (TripleIndex index : indexes) {
 			BTree btree = index.getBTree();
@@ -810,23 +851,21 @@ class TripleStore {
 			}
 
 			try {
-				byte[] data = null;
+				byte[] data;
 				while ((data = iter.next()) != null) {
 					byte flags = data[FLAG_IDX];
-					boolean added = (flags & ADDED_FLAG) != 0;
-					boolean removed = (flags & REMOVED_FLAG) != 0;
-					boolean toggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+					boolean wasAdded = (flags & ADDED_FLAG) != 0;
+					boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+					boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
 
-					if (removed) {
-						// Record has been discarded earlier, do not put it back in!
-						continue;
+					if (wasRemoved) {
+						btree.remove(data);
 					}
-
-					if (added || toggled) {
-						if (toggled) {
+					else if (wasAdded || wasToggled) {
+						if (wasToggled) {
 							data[FLAG_IDX] ^= EXPLICIT_FLAG;
 						}
-						if (added) {
+						if (wasAdded) {
 							data[FLAG_IDX] ^= ADDED_FLAG;
 						}
 
@@ -846,27 +885,47 @@ class TripleStore {
 			}
 		}
 
-		updatedTriplesCache.discard();
-		updatedTriplesCache = null;
+		if (updatedTriplesCache != null) {
+			updatedTriplesCache.clear();
+		}
 
 		sync();
+
+		txnStatusFile.setTxnStatus(TxnStatus.NONE);
+		// checkAllCommitted();
+	}
+
+	private void checkAllCommitted()
+		throws IOException
+	{
+		for (TripleIndex index : indexes) {
+			System.out.println("Checking " + index + " index");
+			BTree btree = index.getBTree();
+			RecordIterator iter = btree.iterateAll();
+			try {
+				for (byte[] data = iter.next(); data != null; data = iter.next()) {
+					byte flags = data[FLAG_IDX];
+					boolean wasAdded = (flags & ADDED_FLAG) != 0;
+					boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+					boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+					if (wasAdded || wasRemoved || wasToggled) {
+						System.out.println("unexpected triple: " + ByteArrayUtil.toHexString(data));
+					}
+				}
+			}
+			finally {
+				iter.close();
+			}
+		}
 	}
 
 	public void rollback()
 		throws IOException
 	{
-		if (txnAddedTriples) {
-			RecordIterator iter = getTriples(-1, -1, -1, -1, ADDED_FLAG, ADDED_FLAG);
-			try {
-				discardTriples(iter);
-			}
-			finally {
-				txnAddedTriples = false;
-				iter.close();
-			}
-		}
+		txnStatusFile.setTxnStatus(TxnStatus.ROLLING_BACK);
 
-		boolean validCache = updatedTriplesCache.isValid();
+		// updatedTriplesCache will be null when recovering from a crash
+		boolean validCache = updatedTriplesCache != null && updatedTriplesCache.isValid();
 
 		byte txnFlagsMask = ~(ADDED_FLAG | REMOVED_FLAG | TOGGLE_EXPLICIT_FLAG);
 
@@ -887,19 +946,25 @@ class TripleStore {
 				byte[] data = null;
 				while ((data = iter.next()) != null) {
 					byte flags = data[FLAG_IDX];
-					boolean removed = (flags & REMOVED_FLAG) != 0;
-					boolean toggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
+					boolean wasAdded = (flags & ADDED_FLAG) != 0;
+					boolean wasRemoved = (flags & REMOVED_FLAG) != 0;
+					boolean wasToggled = (flags & TOGGLE_EXPLICIT_FLAG) != 0;
 
-					if (removed || toggled) {
-						data[FLAG_IDX] &= txnFlagsMask;
+					if (wasAdded) {
+						btree.remove(data);
+					}
+					else {
+						if (wasRemoved || wasToggled) {
+							data[FLAG_IDX] &= txnFlagsMask;
 
-						if (validCache) {
-							// We're iterating the cache
-							btree.insert(data);
-						}
-						else {
-							// We're iterating the BTree itself
-							iter.set(data);
+							if (validCache) {
+								// We're iterating the cache
+								btree.insert(data);
+							}
+							else {
+								// We're iterating the BTree itself
+								iter.set(data);
+							}
 						}
 					}
 				}
@@ -909,17 +974,20 @@ class TripleStore {
 			}
 		}
 
-		updatedTriplesCache.discard();
-		updatedTriplesCache = null;
+		if (updatedTriplesCache != null) {
+			updatedTriplesCache.clear();
+		}
 
 		sync();
+
+		txnStatusFile.setTxnStatus(TxnStatus.NONE);
 	}
 
 	protected void sync()
 		throws IOException
 	{
-		for (int i = 0; i < indexes.length; i++) {
-			indexes[i].getBTree().sync();
+		for (TripleIndex index : indexes) {
+			index.getBTree().sync();
 		}
 	}
 
@@ -983,13 +1051,14 @@ class TripleStore {
 		return maxValue;
 	}
 
-	private void loadProperties(File propFile)
+	private Properties loadProperties(File propFile)
 		throws IOException
 	{
 		InputStream in = new FileInputStream(propFile);
 		try {
-			properties.clear();
+			Properties properties = new Properties();
 			properties.load(in);
+			return properties;
 		}
 		finally {
 			in.close();
@@ -1014,9 +1083,9 @@ class TripleStore {
 
 	private class TripleIndex {
 
-		private TripleComparator tripleComparator;
+		private final TripleComparator tripleComparator;
 
-		private BTree btree;
+		private final BTree btree;
 
 		public TripleIndex(String fieldSeq)
 			throws IOException
@@ -1031,10 +1100,6 @@ class TripleStore {
 
 		public char[] getFieldSeq() {
 			return tripleComparator.getFieldSeq();
-		}
-
-		public File getFile() {
-			return btree.getFile();
 		}
 
 		public BTree getBTree() {
@@ -1092,6 +1157,11 @@ class TripleStore {
 
 			return score;
 		}
+
+		@Override
+		public String toString() {
+			return new String(getFieldSeq());
+		}
 	}
 
 	/*------------------------------*
@@ -1104,7 +1174,7 @@ class TripleStore {
 	 */
 	private static class TripleComparator implements RecordComparator {
 
-		private char[] fieldSeq;
+		private final char[] fieldSeq;
 
 		public TripleComparator(String fieldSeq) {
 			this.fieldSeq = fieldSeq.toCharArray();

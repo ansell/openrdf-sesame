@@ -10,8 +10,6 @@ package org.openrdf.query.algebra;
  */
 public class Not extends UnaryValueOperator {
 
-	private static final long serialVersionUID = 6840464078544033786L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -31,6 +29,16 @@ public class Not extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Not && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Not".hashCode();
 	}
 
 	@Override

@@ -1,13 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql.ast;
 
-import java.util.List;
-
-import info.aduna.collections.CastingList;
 
 public class ASTFunctionCall extends ASTValueExpr {
 
@@ -30,7 +27,7 @@ public class ASTFunctionCall extends ASTValueExpr {
 		return (ASTValue)children.get(0);
 	}
 
-	public List<ASTValueExpr> getArgList() {
-		return new CastingList<ASTValueExpr>(children.subList(1, children.size()));
+	public ASTArgList getArgList() {
+		return (ASTArgList)children.get(1);
 	}
 }

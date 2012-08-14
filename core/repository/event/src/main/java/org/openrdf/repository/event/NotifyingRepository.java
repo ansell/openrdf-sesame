@@ -8,13 +8,14 @@ package org.openrdf.repository.event;
 import org.openrdf.repository.Repository;
 
 /**
+ *
  * @author Herko ter Horst
  */
 public interface NotifyingRepository extends Repository {
 
 	/**
-	 * Registers a <tt>RepositoryListener</tt> that will receive notifications of
-	 * operations that are performed on this repository.
+	 * Registers a <tt>RepositoryListener</tt> that will receive notifications
+	 * of operations that are performed on this repository.
 	 */
 	public void addRepositoryListener(RepositoryListener listener);
 

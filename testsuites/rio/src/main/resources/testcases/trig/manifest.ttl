@@ -10,30 +10,30 @@
      [  mf:name      "Example Document 1" ;
         rdfs:comment "Example Document 1 from TriG spec" ;
         mf:action [ qt:data   <example1.trig> ] ;
-        mf:result  <example1.trix>
+        mf:result  <example1.out>
      ]
 
      [  mf:name      "Example Document 2" ;
         rdfs:comment "Example Document 2 from TriG spec" ;
         mf:action [ qt:data   <example2.trig> ] ;
-        mf:result  <example2.trix>
+        mf:result  <example2.out>
      ]
 
      [  mf:name      "Example Document 3" ;
         rdfs:comment "Example Document 3 from TriG spec" ;
         mf:action [ qt:data   <example3.trig> ] ;
-        mf:result  <example3.nt>
+        mf:result  <example3.out>
      ]
 
      [  mf:name      "Empty graphs" ;
         rdfs:comment "Several encodings of empty graphs" ;
         mf:action [ qt:data   <test-01.trig> ] ;
-        mf:result  <test-01.nt>
+        mf:result  <test-01.out>
      ]
      
      [  mf:name      "bnode graph names" ;
         rdfs:comment "Blank nodes as graph names" ;
         mf:action [ qt:data   <test-02.trig> ] ;
-        mf:result  <test-02.nt>
+        mf:result  <test-02.out>
      ]
    ).

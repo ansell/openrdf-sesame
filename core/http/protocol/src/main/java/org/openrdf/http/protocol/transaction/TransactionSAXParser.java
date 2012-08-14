@@ -192,7 +192,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		List<Resource> contexts = new ArrayList<Resource>();
 
 		for (int i = startIdx; i < parsedValues.size(); i++) {
-			Value contextCandidate = parsedValues.get(startIdx);
+			Value contextCandidate = parsedValues.get(i);
 
 			if (contextCandidate == null || contextCandidate instanceof Resource) {
 				contexts.add((Resource)contextCandidate);

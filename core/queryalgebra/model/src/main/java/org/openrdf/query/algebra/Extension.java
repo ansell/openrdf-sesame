@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -15,8 +15,6 @@ import java.util.Set;
  * values are defined by {@link ValueExpr value expressions}.
  */
 public class Extension extends UnaryTupleOperator {
-
-	private static final long serialVersionUID = 6757351376006917206L;
 
 	/*-----------*
 	 * Variables *
@@ -77,7 +75,7 @@ public class Extension extends UnaryTupleOperator {
 
 	@Override
 	public Set<String> getBindingNames() {
-		Set<String> bindingNames = new LinkedHashSet<String>(getArg().getBindingNames());
+		Set<String> bindingNames = new LinkedHashSet<String>(arg.getBindingNames());
 
 		for (ExtensionElem pe : elements) {
 			bindingNames.add(pe.getName());
@@ -105,14 +103,24 @@ public class Extension extends UnaryTupleOperator {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = elements.indexOf(current);
-		if (index >= 0) {
-			elements.set(index, (ExtensionElem)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(elements, current, replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
+		super.replaceChildNode(current, replacement);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Extension && super.equals(other)) {
+			Extension o = (Extension)other;
+			return elements.equals(o.getElements());
 		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ elements.hashCode();
 	}
 
 	@Override

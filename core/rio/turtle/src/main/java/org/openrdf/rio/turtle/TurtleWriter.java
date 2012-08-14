@@ -38,8 +38,6 @@ public class TurtleWriter implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
-	protected String baseURI;
-
 	protected IndentingWriter writer;
 
 	/**
@@ -93,10 +91,6 @@ public class TurtleWriter implements RDFWriter {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TURTLE;
-	}
-
-	public void setBaseURI(String baseURI) {
-		this.baseURI = baseURI;
 	}
 
 	public void startRDF()

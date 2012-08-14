@@ -15,8 +15,6 @@ import java.util.Set;
  */
 public class ProjectionElemList extends QueryModelNodeBase {
 
-	private static final long serialVersionUID = -6598982775837381713L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -68,16 +66,6 @@ public class ProjectionElemList extends QueryModelNodeBase {
 		pe.setParentNode(this);
 	}
 
-	public Set<String> getSourceNames() {
-		Set<String> sourceNames = new LinkedHashSet<String>(elements.size());
-
-		for (ProjectionElem pe : elements) {
-			sourceNames.add(pe.getSourceName());
-		}
-
-		return sourceNames;
-	}
-
 	public Set<String> getTargetNames() {
 		Set<String> targetNames = new LinkedHashSet<String>(elements.size());
 
@@ -119,14 +107,24 @@ public class ProjectionElemList extends QueryModelNodeBase {
 
 	@Override
 	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = elements.indexOf(current);
-		if (index >= 0) {
-			elements.set(index, (ProjectionElem)replacement);
-			replacement.setParentNode(this);
+		if (replaceNodeInList(elements, current, replacement)) {
+			return;
 		}
-		else {
-			super.replaceChildNode(current, replacement);
+		super.replaceChildNode(current, replacement);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ProjectionElemList) {
+			ProjectionElemList o = (ProjectionElemList)other;
+			return elements.equals(o.getElements());
 		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return elements.hashCode();
 	}
 
 	@Override

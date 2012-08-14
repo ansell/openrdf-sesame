@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,13 +7,11 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailMetaData;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.StackableSail;
-import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the StackableSail interface that wraps another Sail
@@ -38,7 +36,7 @@ public class SailWrapper implements StackableSail {
 
 	/**
 	 * Creates a new SailWrapper. The base Sail for the created SailWrapper can
-	 * be set later using {@link #setDelegate}.
+	 * be set later using {@link #setBaseSail}.
 	 */
 	public SailWrapper() {
 	}
@@ -47,24 +45,18 @@ public class SailWrapper implements StackableSail {
 	 * Creates a new SailWrapper that wraps the supplied Sail.
 	 */
 	public SailWrapper(Sail baseSail) {
-		setDelegate(baseSail);
+		setBaseSail(baseSail);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public SailMetaData getMetaData()
-		throws StoreException
-	{
-		return baseSail.getMetaData();
-	}
-
-	public void setDelegate(Sail baseSail) {
+	public void setBaseSail(Sail baseSail) {
 		this.baseSail = baseSail;
 	}
 
-	public Sail getDelegate() {
+	public Sail getBaseSail() {
 		return baseSail;
 	}
 
@@ -83,33 +75,35 @@ public class SailWrapper implements StackableSail {
 	}
 
 	public void initialize()
-		throws StoreException
+		throws SailException
 	{
 		verifyBaseSailSet();
 		baseSail.initialize();
 	}
 
 	public void shutDown()
-		throws StoreException
+		throws SailException
 	{
 		verifyBaseSailSet();
 		baseSail.shutDown();
 	}
 
+	public boolean isWritable()
+		throws SailException
+	{
+		verifyBaseSailSet();
+		return baseSail.isWritable();
+	}
+
 	public SailConnection getConnection()
-		throws StoreException
+		throws SailException
 	{
 		verifyBaseSailSet();
 		return baseSail.getConnection();
 	}
 
-	public URIFactory getURIFactory() {
+	public ValueFactory getValueFactory() {
 		verifyBaseSailSet();
-		return baseSail.getURIFactory();
-	}
-
-	public LiteralFactory getLiteralFactory() {
-		verifyBaseSailSet();
-		return baseSail.getLiteralFactory();
+		return baseSail.getValueFactory();
 	}
 }

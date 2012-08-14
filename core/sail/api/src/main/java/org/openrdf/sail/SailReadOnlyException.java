@@ -5,23 +5,17 @@
  */
 package org.openrdf.sail;
 
-import org.openrdf.store.StoreException;
-
 /**
  * Indicates that the current write operation did not succeed because the SAIL
  * cannot be written to, it can only be read from.
  * 
  * @author James Leigh
  */
-public class SailReadOnlyException extends StoreException {
-
+public class SailReadOnlyException extends SailException {
 	private static final long serialVersionUID = 2439801771913652923L;
-
-	public SailReadOnlyException() {
-		super();
-	}
 
 	public SailReadOnlyException(String msg) {
 		super(msg);
 	}
+
 }

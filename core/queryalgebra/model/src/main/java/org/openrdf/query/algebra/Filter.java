@@ -15,8 +15,6 @@ package org.openrdf.query.algebra;
  */
 public class Filter extends UnaryTupleOperator {
 
-	private static final long serialVersionUID = -3445678053512493672L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -71,6 +69,20 @@ public class Filter extends UnaryTupleOperator {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Filter && super.equals(other)) {
+			Filter o = (Filter)other;
+			return condition.equals(o.getCondition());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ condition.hashCode();
 	}
 
 	@Override

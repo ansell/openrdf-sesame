@@ -15,6 +15,9 @@ import junit.framework.Test;
 import junit.framework.TestListener;
 import junit.framework.TestResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
@@ -22,12 +25,12 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -44,14 +47,16 @@ public class EarlReport {
 
 	protected static Resource asserterNode;
 
+	private static Logger logger = LoggerFactory.getLogger(EarlReport.class);
+	
 	public static void main(String[] args)
 		throws Exception
 	{
 		earlRepository = new SailRepository(new MemoryStore());
 		earlRepository.initialize();
+		vf = earlRepository.getValueFactory();
 		con = earlRepository.getConnection();
-		vf = con.getValueFactory();
-		con.begin();
+		con.setAutoCommit(false);
 
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.setNamespace("xsd", XMLSchema.NAMESPACE);
@@ -65,23 +70,30 @@ public class EarlReport {
 		con.add(projectNode, DOAP.NAME, vf.createLiteral("OpenRDF Sesame"));
 		con.add(projectNode, DOAP.RELEASE, releaseNode);
 		con.add(releaseNode, RDF.TYPE, DOAP.VERSION);
-		con.add(releaseNode, DOAP.NAME, vf.createLiteral("Sesame 2.0-SNAPSHOT"));
+		con.add(releaseNode, DOAP.NAME, vf.createLiteral("Sesame 2.6.6"));
 		SimpleDateFormat xsdDataFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String currentDate = xsdDataFormat.format(new Date());
 		con.add(releaseNode, DOAP.CREATED, vf.createLiteral(currentDate, XMLSchema.DATE));
 
 		asserterNode = vf.createBNode();
 		con.add(asserterNode, RDF.TYPE, EARL.SOFTWARE);
-		con.add(asserterNode, DC.TITLE, vf.createLiteral("OpenRDF SPARQL compliance test"));
+		con.add(asserterNode, DC.TITLE, vf.createLiteral("OpenRDF SPARQL 1.1 compliance tests"));
 
 		TestResult testResult = new TestResult();
 		EarlTestListener listener = new EarlTestListener();
 		testResult.addListener(listener);
 
-		MemorySPARQLQueryTest.suite().run(testResult);
-		SPARQLSyntaxTest.suite().run(testResult);
-
-		con.commit();
+		logger.info("running query evaluation tests..");
+		MemorySPARQL11QueryTest.suite().run(testResult);
+		
+		logger.info("running syntax tests...");
+		CoreSPARQL11SyntaxTest.suite().run(testResult);
+		
+		logger.info("running update tests...");
+		MemorySPARQLUpdateConformanceTest.suite().run(testResult);
+		logger.info("tests complete, generating EARL report...");
+		
+		con.setAutoCommit(true);
 
 		RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(RDFFormat.TURTLE);
 		File outFile = File.createTempFile("sesame-sparql-compliance", "."
@@ -97,7 +109,7 @@ public class EarlReport {
 		con.close();
 		earlRepository.shutDown();
 
-		System.out.println("EARL output written to " + outFile);
+		logger.info("EARL output written to " + outFile);
 	}
 
 	protected static class EarlTestListener implements TestListener {
@@ -116,8 +128,11 @@ public class EarlReport {
 			if (test instanceof SPARQLQueryTest) {
 				testURI = ((SPARQLQueryTest)test).testURI;
 			}
-			else if (test instanceof SPARQLSyntaxTest) {
-				testURI = ((SPARQLSyntaxTest)test).testURI;
+			else if (test instanceof SPARQL11SyntaxTest) {
+				testURI = ((SPARQL11SyntaxTest)test).testURI;
+			}
+			else if (test instanceof SPARQLUpdateConformanceTest) {
+				testURI = ((SPARQLUpdateConformanceTest)test).testURI;
 			}
 			else {
 				throw new RuntimeException("Unexpected test type: " + test.getClass());
@@ -144,7 +159,7 @@ public class EarlReport {
 					con.add(resultNode, EARL.OUTCOME, EARL.PASS);
 				}
 			}
-			catch (StoreException e) {
+			catch (RepositoryException e) {
 				throw new RuntimeException(e);
 			}
 		}

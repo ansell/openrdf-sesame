@@ -38,6 +38,14 @@ public class ASTSelectQuery extends ASTTupleQuery {
 		return null;
 	}
 
+	public boolean hasOrderBy() {
+		return getOrderBy() != null;
+	}
+
+	public ASTOrderBy getOrderBy() {
+		return jjtGetChild(ASTOrderBy.class);
+	}
+
 	public boolean hasLimit() {
 		return getLimit() != null;
 	}

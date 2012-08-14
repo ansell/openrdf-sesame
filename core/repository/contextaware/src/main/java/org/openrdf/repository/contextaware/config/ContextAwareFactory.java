@@ -6,10 +6,10 @@
 package org.openrdf.repository.contextaware.config;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.contextaware.ContextAwareRepository;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * A {@link RepositoryFactory} that creates {@link ContextAwareRepository}s
@@ -46,7 +46,7 @@ public class ContextAwareFactory implements RepositoryFactory {
 	}
 
 	public Repository getRepository(RepositoryImplConfig configuration)
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		if (configuration instanceof ContextAwareConfig) {
 			ContextAwareConfig config = (ContextAwareConfig)configuration;
@@ -56,15 +56,16 @@ public class ContextAwareFactory implements RepositoryFactory {
 			repo.setIncludeInferred(config.isIncludeInferred());
 			repo.setMaxQueryTime(config.getMaxQueryTime());
 			repo.setQueryLanguage(config.getQueryLanguage());
+			repo.setBaseURI(config.getBaseURI());
 			repo.setReadContexts(config.getReadContexts());
 			repo.setAddContexts(config.getAddContexts());
 			repo.setRemoveContexts(config.getRemoveContexts());
 			repo.setArchiveContexts(config.getArchiveContexts());
-			repo.setQueryResultLimit(config.getQueryResultLimit());
-
+			repo.setInsertContext(config.getInsertContext());
+			
 			return repo;
 		}
 
-		throw new StoreConfigException("Invalid configuration class: " + configuration.getClass());
+		throw new RepositoryConfigException("Invalid configuration class: " + configuration.getClass());
 	}
 }

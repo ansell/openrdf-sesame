@@ -20,7 +20,9 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * @author James Leigh
+ * 
+ * @author james
+ * 
  */
 public class LiteralComparatorTest extends TestCase {
 

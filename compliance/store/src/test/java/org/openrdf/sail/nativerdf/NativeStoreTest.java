@@ -12,7 +12,7 @@ import info.aduna.io.FileUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 /**
  * An extension of RDFStoreTest for testing the class {@link NativeStore}.
@@ -59,7 +59,7 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 
 	@Override
 	protected NotifyingSail createSail()
-		throws StoreException
+		throws SailException
 	{
 		NotifyingSail sail = new NativeStore(dataDir, "spoc,posc");
 		sail.initialize();
@@ -71,6 +71,7 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 		throws Exception
 	{
 		con.setNamespace("rdf", RDF.NAMESPACE);
+		con.commit();
 		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));
 
 		con.close();

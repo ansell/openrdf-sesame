@@ -7,43 +7,36 @@ package org.openrdf.sail;
 
 import java.io.File;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
-import org.openrdf.store.StoreException;
+import org.openrdf.model.ValueFactory;
 
 /**
  * An interface for an RDF Storage. RDF Sails can store RDF statements and
- * evaluate queries over them. Statements can optionally be stored in contexts,
- * which are identified by URIs or blank nodes. Contexts can be used to group
- * sets of statements that logically belong together, for example because they
- * come from the same source.
+ * evaluate queries over them. Statements can be stored in named contexts or in
+ * the null context. Contexts can be used to group sets of statements that
+ * logically belong together, for example because they come from the same
+ * source. Both URIs and bnodes can be used as context identifiers.
  * 
  * @author Arjohn Kampman
  */
 public interface Sail {
 
+	/**
+	 * Sets the data directory for the Sail. The Sail can use this directory for
+	 * storage of data, parameters, etc. This directory must be set before the
+	 * Sail is {@link #initialize() initialized}.
+	 * 
+	 * @throws IllegalStateException
+	 *         If this method is called when the Sail has already been
+	 *         initialized.
+	 */
 	public void setDataDir(File dataDir);
 
+	/**
+	 * Gets the Sail's data directory.
+	 * 
+	 * @see #setDataDir(File)
+	 */
 	public File getDataDir();
-
-	public SailMetaData getMetaData()
-		throws StoreException;
-
-	/**
-	 * Gets a URIFactory object that can be used to create Sail-specific URI
-	 * objects.
-	 * 
-	 * @return a URIFactory object for this Sail object.
-	 */
-	public URIFactory getURIFactory();
-
-	/**
-	 * Gets a LiteralFactory object that can be used to create Sail-specific
-	 * literal objects.
-	 * 
-	 * @return a LiteralFactory object for this Sail object.
-	 */
-	public LiteralFactory getLiteralFactory();
 
 	/**
 	 * Initializes the Sail. Care should be taken that required initialization
@@ -51,11 +44,13 @@ public interface Sail {
 	 * specific Sail implementation for information about the relevant
 	 * parameters.
 	 * 
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the Sail could not be initialized.
+	 * @throws IllegalStateException
+	 *         If the Sail has already been initialized.
 	 */
 	public void initialize()
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Shuts down the Sail, giving it the opportunity to synchronize any stale
@@ -63,12 +58,19 @@ public interface Sail {
 	 * before an application exits to avoid potential loss of data. Once shut
 	 * down, a Sail can no longer be used until it is re-initialized.
 	 * 
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
 	public void shutDown()
-		throws StoreException;
+		throws SailException;
+
+	/**
+	 * Checks whether this Sail object is writable, i.e. if the data contained in
+	 * this Sail object can be changed.
+	 */
+	public boolean isWritable()
+		throws SailException;
 
 	/**
 	 * Opens a connection on the Sail which can be used to query and update data.
@@ -76,10 +78,20 @@ public interface Sail {
 	 * this method might block when there is another open connection on this
 	 * Sail.
 	 * 
-	 * @throws StoreException
-	 *         If the Sail object encountered an error or unexpected situation
-	 *         internally.
+	 * @throws SailException
+	 *         If no transaction could be started, for example because the Sail
+	 *         is not writable.
+	 * @throws IllegalStateException
+	 *         If the Sail has not been initialized or has been shut down.
 	 */
 	public SailConnection getConnection()
-		throws StoreException;
+		throws SailException;
+
+	/**
+	 * Gets a ValueFactory object that can be used to create URI-, blank node-,
+	 * literal- and statement objects.
+	 * 
+	 * @return a ValueFactory object for this Sail object.
+	 */
+	public ValueFactory getValueFactory();
 }
