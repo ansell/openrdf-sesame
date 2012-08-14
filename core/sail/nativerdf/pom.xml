@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sail-nativerdf</artifactId>
@@ -66,9 +66,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/3.0-archive/core/sail/nativerdf</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/3.0-archive/core/sail/nativerdf</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/3.0-archive/core/sail/nativerdf</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/sail/nativerdf</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/sail/nativerdf</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/sail/nativerdf</url>
 	</scm>
 
 </project>
