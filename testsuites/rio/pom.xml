@@ -60,9 +60,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/rio/base</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/compliance/rio/base</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/compliance/rio/base</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/3.0-archive/compliance/rio/base</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/3.0-archive/compliance/rio/base</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/3.0-archive/compliance/rio/base</url>
 	</scm>
 
 </project>

@@ -56,9 +56,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra/evaluation</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/queryalgebra/evaluation</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/queryalgebra/evaluation</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/3.0-archive/core/queryalgebra/evaluation</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/3.0-archive/core/queryalgebra/evaluation</developerConnection>
+		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/branches/3.0-archive/core/queryalgebra/evaluation</url>
 	</scm>
 
 </project>
