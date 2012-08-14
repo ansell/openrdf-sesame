@@ -5,25 +5,18 @@
  */
 package org.openrdf.sail.inferencer.fc;
 
-import static java.lang.System.arraycopy;
-import static org.openrdf.sail.inferencer.fc.RDFSRules.RULENAMES;
-
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailMetaData;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
-import org.openrdf.sail.helpers.SailMetaDataWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerFactory;
-import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
-import org.openrdf.store.StoreException;
 
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a
  * href="http://www.w3.org/TR/2004/REC-rdf-mt-20040210/">RDF Semantics
- * Recommendation (10 February 2004)</a>. This inferencer can be used to add RDF
- * Schema semantics to any Sail that returns {@link InferencerConnection}s from
- * their {@link Sail#getConnection()} method.
+ * Recommendation (10 February 2004)</a>. This inferencer can be used to add
+ * RDF Schema semantics to any Sail that returns {@link InferencerConnection}s
+ * from their {@link Sail#getConnection()} method.
  */
 public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 
@@ -44,17 +37,15 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	 *---------*/
 
 	@Override
-	public InferencerConnection getConnection()
-		throws StoreException
+	public ForwardChainingRDFSInferencerConnection getConnection()
+		throws SailException
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			con = new ForwardChainingRDFSInferencerConnection(con);
-			con = new AutoCommitInferencerConnection(con);
-			return con;
+			return new ForwardChainingRDFSInferencerConnection(con);
 		}
 		catch (ClassCastException e) {
-			throw new StoreException(e.getMessage(), e);
+			throw new SailException(e.getMessage(), e);
 		}
 	}
 
@@ -63,57 +54,17 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	 */
 	@Override
 	public void initialize()
-		throws StoreException
+		throws SailException
 	{
 		super.initialize();
 
-		InferencerConnection con = getConnection();
+		ForwardChainingRDFSInferencerConnection con = getConnection();
 		try {
-			con.begin();
-			ForwardChainingRDFSInferencerConnection.addAxiomStatements(con);
+			con.addAxiomStatements();
 			con.commit();
 		}
 		finally {
 			con.close();
 		}
-	}
-
-	@Override
-	public SailMetaData getMetaData()
-		throws StoreException
-	{
-		return new SailMetaDataWrapper(super.getMetaData()) {
-
-			@Override
-			public String[] getReasoners() {
-				String[] reasoners = super.getReasoners();
-				String[] result = new String[reasoners.length + 1];
-				result[reasoners.length] = ForwardChainingRDFSInferencerFactory.SAIL_TYPE;
-				return result;
-			}
-
-			@Override
-			public boolean isInferencing() {
-				return true;
-			}
-
-			@Override
-			public String[] getInferenceRules() {
-				String[] rules = super.getInferenceRules();
-				String[] result = new String[rules.length + RDFSRules.RULENAMES.length];
-				arraycopy(RULENAMES, 0, result, rules.length, RULENAMES.length);
-				return result;
-			}
-
-			@Override
-			public boolean isHierarchicalInferencing() {
-				return true;
-			}
-
-			@Override
-			public boolean isRDFSInferencing() {
-				return true;
-			}
-		};
 	}
 }

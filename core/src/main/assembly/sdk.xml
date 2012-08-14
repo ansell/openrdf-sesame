@@ -22,7 +22,7 @@
 
 	<fileSets>
 		<fileSet>
-			<directory>/</directory>
+			<directory>.</directory>
 			<outputDirectory/>
 			<includes>
 				<include>*.txt</include>
@@ -42,36 +42,18 @@
 
 	<files>
 		<file>
-			<source>src/main/dist/bin/start-server.bat</source>
-			<outputDirectory>bin</outputDirectory>
-			<lineEnding>dos</lineEnding>
-			<filtered>true</filtered>
+			<source>http/server/target/openrdf-sesame.war</source>
+			<outputDirectory>war</outputDirectory>
 		</file>
 		<file>
-			<source>src/main/dist/bin/stop-server.bat</source>
-			<outputDirectory>bin</outputDirectory>
-			<lineEnding>dos</lineEnding>
-			<filtered>true</filtered>
+			<source>http/workbench/target/openrdf-workbench.war</source>
+			<outputDirectory>war</outputDirectory>
 		</file>
+
 		<file>
 			<source>src/main/dist/bin/console.bat</source>
 			<outputDirectory>bin</outputDirectory>
 			<lineEnding>dos</lineEnding>
-			<filtered>true</filtered>
-		</file>
-
-		<file>
-			<source>src/main/dist/bin/start-server.sh</source>
-			<outputDirectory>bin</outputDirectory>
-			<fileMode>755</fileMode>
-			<lineEnding>unix</lineEnding>
-			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/dist/bin/stop-server.sh</source>
-			<outputDirectory>bin</outputDirectory>
-			<fileMode>755</fileMode>
-			<lineEnding>unix</lineEnding>
 			<filtered>true</filtered>
 		</file>
 		<file>

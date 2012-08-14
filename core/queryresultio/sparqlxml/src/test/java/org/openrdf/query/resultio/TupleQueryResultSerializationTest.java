@@ -18,40 +18,40 @@ import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.result.TupleResult;
-import org.openrdf.result.impl.TupleResultImpl;
-import org.openrdf.result.util.QueryResultUtil;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.impl.TupleQueryResultImpl;
 
 public class TupleQueryResultSerializationTest extends TestCase {
 
 	public void testSPARQLResultFormat()
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, StoreException
+		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		testQueryResultFormat(TupleQueryResultFormat.SPARQL);
 	}
 
 	private void testQueryResultFormat(TupleQueryResultFormat format)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, StoreException
+		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
-		TupleResult input = createQueryResult();
-		TupleResult expected = createQueryResult();
+		TupleQueryResult input = createQueryResult();
+		TupleQueryResult expected = createQueryResult();
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);
 		input.close();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parse(in, format);
 
 		assertTrue(QueryResultUtil.equals(expected, output));
 	}
 
-	private TupleResult createQueryResult() {
+	private TupleQueryResult createQueryResult() {
 		List<String> bindingNames = Arrays.asList("a", "b", "c");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
@@ -65,7 +65,7 @@ public class TupleQueryResultSerializationTest extends TestCase {
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
 
-		TupleResultImpl result = new TupleResultImpl(bindingNames, bindingSetList);
+		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
 		return result;
 	}

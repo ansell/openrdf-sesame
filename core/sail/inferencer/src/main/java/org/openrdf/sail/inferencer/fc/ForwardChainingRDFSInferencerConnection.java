@@ -10,22 +10,23 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iterations;
 import info.aduna.text.ASCIIUtil;
 
-import org.openrdf.cursor.Cursor;
-import org.openrdf.model.Model;
+import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.helpers.InferencerConnectionWrapper;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 
 /**
  * Forward-chaining RDF Schema inferencer, using the rules from the <a
@@ -56,9 +57,9 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	/**
 	 * Contains the statements that have been reported by the base Sail as
 	 */
-	private Model newStatements;
+	private Graph newStatements;
 
-	private Model newThisIteration;
+	private Graph newThisIteration;
 
 	/**
 	 * Flags indicating which rules should be evaluated.
@@ -98,7 +99,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		}
 
 		if (newStatements == null) {
-			newStatements = new LinkedHashModel();
+			newStatements = new GraphImpl();
 		}
 		newStatements.add(st);
 	}
@@ -111,22 +112,17 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	@Override
 	public void flushUpdates()
-		throws StoreException
+		throws SailException
 	{
 		super.flushUpdates();
 
 		if (statementsRemoved) {
 			logger.debug("statements removed, starting inferencing from scratch");
-			removeInferredStatements(null, null, null);
-			logger.debug("Inserting axiom statements");
-			addAxiomStatements(this);
+			clearInferred();
+			addAxiomStatements();
 
-			newStatements = new LinkedHashModel();
-			Cursor<? extends Statement> cursor = getDelegate().getStatements(null, null, null, true);
-			Statement st;
-			while ((st = cursor.next()) != null) {
-				newStatements.add(st);
-			}
+			newStatements = new GraphImpl();
+			Iterations.addAll(getWrappedConnection().getStatements(null, null, null, true), newStatements);
 
 			statementsRemoved = false;
 		}
@@ -136,7 +132,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	@Override
 	public void rollback()
-		throws StoreException
+		throws SailException
 	{
 		super.rollback();
 
@@ -148,72 +144,74 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	 * Adds all basic set of axiom statements from which the complete set can be
 	 * inferred to the underlying Sail.
 	 */
-	protected static void addAxiomStatements(InferencerConnection con)
-		throws StoreException
+	protected void addAxiomStatements()
+		throws SailException
 	{
+		logger.debug("Inserting axiom statements");
+
 		// RDF axiomatic triples (from RDF Semantics, section 3.1):
 
-		con.addInferredStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY);
-		con.addInferredStatement(RDF.SUBJECT, RDF.TYPE, RDF.PROPERTY);
-		con.addInferredStatement(RDF.PREDICATE, RDF.TYPE, RDF.PROPERTY);
-		con.addInferredStatement(RDF.OBJECT, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.SUBJECT, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.PREDICATE, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.OBJECT, RDF.TYPE, RDF.PROPERTY);
 
-		con.addInferredStatement(RDF.FIRST, RDF.TYPE, RDF.PROPERTY);
-		con.addInferredStatement(RDF.REST, RDF.TYPE, RDF.PROPERTY);
-		con.addInferredStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.FIRST, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.REST, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
 
-		con.addInferredStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
+		addInferredStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 
 		// RDFS axiomatic triples (from RDF Semantics, section 4.1):
 
-		con.addInferredStatement(RDF.TYPE, RDFS.DOMAIN, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.DOMAIN, RDFS.DOMAIN, RDF.PROPERTY);
-		con.addInferredStatement(RDFS.RANGE, RDFS.DOMAIN, RDF.PROPERTY);
-		con.addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.DOMAIN, RDF.PROPERTY);
-		con.addInferredStatement(RDFS.SUBCLASSOF, RDFS.DOMAIN, RDFS.CLASS);
-		con.addInferredStatement(RDF.SUBJECT, RDFS.DOMAIN, RDF.STATEMENT);
-		con.addInferredStatement(RDF.PREDICATE, RDFS.DOMAIN, RDF.STATEMENT);
-		con.addInferredStatement(RDF.OBJECT, RDFS.DOMAIN, RDF.STATEMENT);
-		con.addInferredStatement(RDFS.MEMBER, RDFS.DOMAIN, RDFS.RESOURCE);
-		con.addInferredStatement(RDF.FIRST, RDFS.DOMAIN, RDF.LIST);
-		con.addInferredStatement(RDF.REST, RDFS.DOMAIN, RDF.LIST);
-		con.addInferredStatement(RDFS.SEEALSO, RDFS.DOMAIN, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.ISDEFINEDBY, RDFS.DOMAIN, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.COMMENT, RDFS.DOMAIN, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.LABEL, RDFS.DOMAIN, RDFS.RESOURCE);
-		con.addInferredStatement(RDF.VALUE, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDF.TYPE, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.DOMAIN, RDFS.DOMAIN, RDF.PROPERTY);
+		addInferredStatement(RDFS.RANGE, RDFS.DOMAIN, RDF.PROPERTY);
+		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.DOMAIN, RDF.PROPERTY);
+		addInferredStatement(RDFS.SUBCLASSOF, RDFS.DOMAIN, RDFS.CLASS);
+		addInferredStatement(RDF.SUBJECT, RDFS.DOMAIN, RDF.STATEMENT);
+		addInferredStatement(RDF.PREDICATE, RDFS.DOMAIN, RDF.STATEMENT);
+		addInferredStatement(RDF.OBJECT, RDFS.DOMAIN, RDF.STATEMENT);
+		addInferredStatement(RDFS.MEMBER, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDF.FIRST, RDFS.DOMAIN, RDF.LIST);
+		addInferredStatement(RDF.REST, RDFS.DOMAIN, RDF.LIST);
+		addInferredStatement(RDFS.SEEALSO, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.COMMENT, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.LABEL, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDF.VALUE, RDFS.DOMAIN, RDFS.RESOURCE);
 
-		con.addInferredStatement(RDF.TYPE, RDFS.RANGE, RDFS.CLASS);
-		con.addInferredStatement(RDFS.DOMAIN, RDFS.RANGE, RDFS.CLASS);
-		con.addInferredStatement(RDFS.RANGE, RDFS.RANGE, RDFS.CLASS);
-		con.addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.RANGE, RDF.PROPERTY);
-		con.addInferredStatement(RDFS.SUBCLASSOF, RDFS.RANGE, RDFS.CLASS);
-		con.addInferredStatement(RDF.SUBJECT, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDF.PREDICATE, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDF.OBJECT, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.MEMBER, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDF.FIRST, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDF.REST, RDFS.RANGE, RDF.LIST);
-		con.addInferredStatement(RDFS.SEEALSO, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.ISDEFINEDBY, RDFS.RANGE, RDFS.RESOURCE);
-		con.addInferredStatement(RDFS.COMMENT, RDFS.RANGE, RDFS.LITERAL);
-		con.addInferredStatement(RDFS.LABEL, RDFS.RANGE, RDFS.LITERAL);
-		con.addInferredStatement(RDF.VALUE, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.TYPE, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDFS.DOMAIN, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDFS.RANGE, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.RANGE, RDF.PROPERTY);
+		addInferredStatement(RDFS.SUBCLASSOF, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDF.SUBJECT, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.PREDICATE, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.OBJECT, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDFS.MEMBER, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.FIRST, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.REST, RDFS.RANGE, RDF.LIST);
+		addInferredStatement(RDFS.SEEALSO, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDFS.COMMENT, RDFS.RANGE, RDFS.LITERAL);
+		addInferredStatement(RDFS.LABEL, RDFS.RANGE, RDFS.LITERAL);
+		addInferredStatement(RDF.VALUE, RDFS.RANGE, RDFS.RESOURCE);
 
-		con.addInferredStatement(RDF.ALT, RDFS.SUBCLASSOF, RDFS.CONTAINER);
-		con.addInferredStatement(RDF.BAG, RDFS.SUBCLASSOF, RDFS.CONTAINER);
-		con.addInferredStatement(RDF.SEQ, RDFS.SUBCLASSOF, RDFS.CONTAINER);
-		con.addInferredStatement(RDFS.CONTAINERMEMBERSHIPPROPERTY, RDFS.SUBCLASSOF, RDF.PROPERTY);
+		addInferredStatement(RDF.ALT, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		addInferredStatement(RDF.BAG, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		addInferredStatement(RDF.SEQ, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		addInferredStatement(RDFS.CONTAINERMEMBERSHIPPROPERTY, RDFS.SUBCLASSOF, RDF.PROPERTY);
 
-		con.addInferredStatement(RDFS.ISDEFINEDBY, RDFS.SUBPROPERTYOF, RDFS.SEEALSO);
+		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.SUBPROPERTYOF, RDFS.SEEALSO);
 
-		con.addInferredStatement(RDF.XMLLITERAL, RDF.TYPE, RDFS.DATATYPE);
-		con.addInferredStatement(RDF.XMLLITERAL, RDFS.SUBCLASSOF, RDFS.LITERAL);
-		con.addInferredStatement(RDFS.DATATYPE, RDFS.SUBCLASSOF, RDFS.CLASS);
+		addInferredStatement(RDF.XMLLITERAL, RDF.TYPE, RDFS.DATATYPE);
+		addInferredStatement(RDF.XMLLITERAL, RDFS.SUBCLASSOF, RDFS.LITERAL);
+		addInferredStatement(RDFS.DATATYPE, RDFS.SUBCLASSOF, RDFS.CLASS);
 	}
 
 	protected void doInferencing()
-		throws StoreException
+		throws SailException
 	{
 		if (!hasNewStatements()) {
 			// There's nothing to do
@@ -281,7 +279,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		}
 
 		newThisIteration = newStatements;
-		newStatements = new LinkedHashModel();
+		newStatements = new GraphImpl();
 	}
 
 	protected boolean hasNewStatements() {
@@ -304,7 +302,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	}
 
 	protected int applyRule(int rule)
-		throws StoreException
+		throws SailException
 	{
 		if (!checkRule[rule]) {
 			return 0;
@@ -319,7 +317,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	}
 
 	protected int applyRuleInternal(int rule)
-		throws StoreException
+		throws SailException
 	{
 		int result = 0;
 
@@ -398,11 +396,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx aaa yyy --> aaa rdf:type rdf:Property
 	private int applyRuleRdf1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, null, null);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -419,11 +417,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx aaa yyy (nt) && aaa rdfs:domain zzz (t1) --> xxx rdf:type zzz
 	private int applyRuleRdfs2_1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, null, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -431,11 +429,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Resource xxx = nt.getSubject();
 			URI aaa = nt.getPredicate();
 
-			Cursor<? extends Statement> t1Iter;
-			t1Iter = getDelegate().getStatements(aaa, RDFS.DOMAIN, null, true);
+			CloseableIteration<? extends Statement, SailException> t1Iter;
+			t1Iter = getWrappedConnection().getStatements(aaa, RDFS.DOMAIN, null, true);
 
-			Statement t1;
-			while ((t1 = t1Iter.next()) != null) {
+			while (t1Iter.hasNext()) {
+				Statement t1 = t1Iter.next();
 
 				Value zzz = t1.getObject();
 				if (zzz instanceof Resource) {
@@ -453,11 +451,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// aaa rdfs:domain zzz (nt) && xxx aaa yyy (t1) --> xxx rdf:type zzz
 	private int applyRuleRdfs2_2()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.DOMAIN, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.DOMAIN, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -466,11 +464,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value zzz = nt.getObject();
 
 			if (aaa instanceof URI && zzz instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(null, (URI)aaa, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Resource xxx = t1.getSubject();
 					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz);
@@ -487,11 +485,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx aaa uuu (nt) && aaa rdfs:range zzz (t1) --> uuu rdf:type zzz
 	private int applyRuleRdfs3_1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, null, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -500,11 +498,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value uuu = nt.getObject();
 
 			if (uuu instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(aaa, RDFS.RANGE, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(aaa, RDFS.RANGE, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Value zzz = t1.getObject();
 					if (zzz instanceof Resource) {
@@ -522,11 +520,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// aaa rdfs:range zzz (nt) && xxx aaa uuu (t1) --> uuu rdf:type zzz
 	private int applyRuleRdfs3_2()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.RANGE, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.RANGE, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -535,11 +533,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value zzz = nt.getObject();
 
 			if (aaa instanceof URI && zzz instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(null, (URI)aaa, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Value uuu = t1.getObject();
 					if (uuu instanceof Resource) {
@@ -559,11 +557,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx aaa yyy --> xxx rdf:type rdfs:Resource
 	private int applyRuleRdfs4a()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, null, null);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -579,11 +577,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx aaa uuu --> uuu rdf:type rdfs:Resource
 	private int applyRuleRdfs4b()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, null, null);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -603,11 +601,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	// aaa rdfs:subPropertyOf bbb (nt) && bbb rdfs:subPropertyOf ccc (t1)
 	// --> aaa rdfs:subPropertyOf ccc
 	private int applyRuleRdfs5_1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.SUBPROPERTYOF, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.SUBPROPERTYOF, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -616,11 +614,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value bbb = nt.getObject();
 
 			if (bbb instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements((Resource)bbb, RDFS.SUBPROPERTYOF, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements((Resource)bbb, RDFS.SUBPROPERTYOF, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Value ccc = t1.getObject();
 					if (ccc instanceof Resource) {
@@ -641,11 +639,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	// bbb rdfs:subPropertyOf ccc (nt) && aaa rdfs:subPropertyOf bbb (t1)
 	// --> aaa rdfs:subPropertyOf ccc
 	private int applyRuleRdfs5_2()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.SUBPROPERTYOF, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.SUBPROPERTYOF, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -654,11 +652,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value ccc = nt.getObject();
 
 			if (ccc instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(null, RDFS.SUBPROPERTYOF, bbb, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(null, RDFS.SUBPROPERTYOF, bbb, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Resource aaa = t1.getSubject();
 					boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc);
@@ -675,11 +673,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx rdf:type rdf:Property --> xxx rdfs:subPropertyOf xxx
 	private int applyRuleRdfs6()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.filter(null, RDF.TYPE, RDF.PROPERTY).iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, RDF.TYPE, RDF.PROPERTY);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -696,11 +694,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx aaa yyy (nt) && aaa rdfs:subPropertyOf bbb (t1) --> xxx bbb yyy
 	private int applyRuleRdfs7_1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, null, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -709,11 +707,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			URI aaa = nt.getPredicate();
 			Value yyy = nt.getObject();
 
-			Cursor<? extends Statement> t1Iter;
-			t1Iter = getDelegate().getStatements(aaa, RDFS.SUBPROPERTYOF, null, true);
+			CloseableIteration<? extends Statement, SailException> t1Iter;
+			t1Iter = getWrappedConnection().getStatements(aaa, RDFS.SUBPROPERTYOF, null, true);
 
-			Statement t1;
-			while ((t1 = t1Iter.next()) != null) {
+			while (t1Iter.hasNext()) {
+				Statement t1 = t1Iter.next();
 
 				Value bbb = t1.getObject();
 				if (bbb instanceof URI) {
@@ -731,11 +729,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// aaa rdfs:subPropertyOf bbb (nt) && xxx aaa yyy (t1) --> xxx bbb yyy
 	private int applyRuleRdfs7_2()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.SUBPROPERTYOF, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.SUBPROPERTYOF, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -744,11 +742,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value bbb = nt.getObject();
 
 			if (aaa instanceof URI && bbb instanceof URI) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(null, (URI)aaa, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Resource xxx = t1.getSubject();
 					Value yyy = t1.getObject();
@@ -767,11 +765,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx rdf:type rdfs:Class --> xxx rdfs:subClassOf rdfs:Resource
 	private int applyRuleRdfs8()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.filter(null, RDF.TYPE, RDFS.CLASS).iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, RDF.TYPE, RDFS.CLASS);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -789,11 +787,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx rdfs:subClassOf yyy (nt) && aaa rdf:type xxx (t1) --> aaa rdf:type yyy
 	private int applyRuleRdfs9_1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.SUBCLASSOF, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.SUBCLASSOF, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -802,11 +800,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value yyy = nt.getObject();
 
 			if (yyy instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(null, RDF.TYPE, xxx, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(null, RDF.TYPE, xxx, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Resource aaa = t1.getSubject();
 
@@ -824,11 +822,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// aaa rdf:type xxx (nt) && xxx rdfs:subClassOf yyy (t1) --> aaa rdf:type yyy
 	private int applyRuleRdfs9_2()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDF.TYPE, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDF.TYPE, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -837,11 +835,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value xxx = nt.getObject();
 
 			if (xxx instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements((Resource)xxx, RDFS.SUBCLASSOF, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements((Resource)xxx, RDFS.SUBCLASSOF, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Value yyy = t1.getObject();
 
@@ -861,11 +859,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx rdf:type rdfs:Class --> xxx rdfs:subClassOf xxx
 	private int applyRuleRdfs10()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.filter(null, RDF.TYPE, RDFS.CLASS).iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, RDF.TYPE, RDFS.CLASS);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -884,11 +882,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	// xxx rdfs:subClassOf yyy (nt) && yyy rdfs:subClassOf zzz (t1)
 	// --> xxx rdfs:subClassOf zzz
 	private int applyRuleRdfs11_1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.SUBCLASSOF, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.SUBCLASSOF, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -897,11 +895,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value yyy = nt.getObject();
 
 			if (yyy instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements((Resource)yyy, RDFS.SUBCLASSOF, null, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements((Resource)yyy, RDFS.SUBCLASSOF, null, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Value zzz = t1.getObject();
 
@@ -922,11 +920,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	// yyy rdfs:subClassOf zzz (nt) && xxx rdfs:subClassOf yyy (t1)
 	// --> xxx rdfs:subClassOf zzz
 	private int applyRuleRdfs11_2()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.filter(null, RDFS.SUBCLASSOF, null).iterator();
+		Iterator<Statement> ntIter = newThisIteration.match(null, RDFS.SUBCLASSOF, null);
 
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
@@ -935,11 +933,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Value zzz = nt.getObject();
 
 			if (zzz instanceof Resource) {
-				Cursor<? extends Statement> t1Iter;
-				t1Iter = getDelegate().getStatements(null, RDFS.SUBCLASSOF, yyy, true);
+				CloseableIteration<? extends Statement, SailException> t1Iter;
+				t1Iter = getWrappedConnection().getStatements(null, RDFS.SUBCLASSOF, yyy, true);
 
-				Statement t1;
-				while ((t1 = t1Iter.next()) != null) {
+				while (t1Iter.hasNext()) {
+					Statement t1 = t1Iter.next();
 
 					Resource xxx = t1.getSubject();
 
@@ -958,11 +956,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	// xxx rdf:type rdfs:ContainerMembershipProperty
 	// --> xxx rdfs:subPropertyOf rdfs:member
 	private int applyRuleRdfs12()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.filter(null, RDF.TYPE, RDFS.CONTAINERMEMBERSHIPPROPERTY).iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, RDF.TYPE, RDFS.CONTAINERMEMBERSHIPPROPERTY);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -980,11 +978,11 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 
 	// xxx rdf:type rdfs:Datatype --> xxx rdfs:subClassOf rdfs:Literal
 	private int applyRuleRdfs13()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.filter(null, RDF.TYPE, RDFS.DATATYPE).iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, RDF.TYPE, RDFS.DATATYPE);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();
@@ -1004,12 +1002,12 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	// This is an extra rule for list membership properties (_1, _2, _3, ...).
 	// The RDF MT does not specificy a production for this.
 	private int applyRuleX1()
-		throws StoreException
+		throws SailException
 	{
 		int nofInferred = 0;
 
 		String prefix = RDF.NAMESPACE + "_";
-		Iterator<Statement> iter = newThisIteration.iterator();
+		Iterator<Statement> iter = newThisIteration.match(null, null, null);
 
 		while (iter.hasNext()) {
 			Statement st = iter.next();

@@ -21,6 +21,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 
 /**
+ * 
  * @author James Leigh
  */
 public abstract class IdSequence {
@@ -108,9 +109,8 @@ public abstract class IdSequence {
 	public ValueType valueOf(Number id) {
 		int idx = shift(id);
 		ValueType[] values = ValueType.values();
-		if (idx < 0 || idx >= values.length) {
+		if (idx < 0 || idx >= values.length)
 			throw new IllegalArgumentException("Invalid ID " + id);
-		}
 		return values[idx];
 	}
 
@@ -129,12 +129,10 @@ public abstract class IdSequence {
 	protected long hashLiteralType(MessageDigest digest, Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
-			if (lit.getDatatype() != null) {
+			if (lit.getDatatype() != null)
 				return hash(digest, lit.getDatatype().stringValue());
-			}
-			if (lit.getLanguage() != null) {
+			if (lit.getLanguage() != null)
 				return hash(digest, lit.getLanguage());
-			}
 		}
 		return 0;
 	}
@@ -142,18 +140,14 @@ public abstract class IdSequence {
 	private boolean isZoned(Literal lit) {
 		String stringValue = lit.stringValue();
 		int length = stringValue.length();
-		if (length < 1) {
+		if (length < 1)
 			return false;
-		}
-		if (stringValue.charAt(length - 1) == 'Z') {
+		if (stringValue.charAt(length - 1) == 'Z')
 			return true;
-		}
-		if (length < 6) {
+		if (length < 6)
 			return false;
-		}
-		if (stringValue.charAt(length - 3) != ':') {
+		if (stringValue.charAt(length - 3) != ':')
 			return false;
-		}
 		char chr = stringValue.charAt(length - 6);
 		return chr == '+' || chr == '-';
 	}
@@ -168,51 +162,42 @@ public abstract class IdSequence {
 		int length = lit.stringValue().length();
 		if (lang != null) {
 			// language
-			if (length > LONG) {
+			if (length > LONG)
 				return ValueType.LANG_LONG;
-			}
 			return ValueType.LANG;
 		}
 		if (dt == null) {
 			// simple
-			if (length > LONG) {
+			if (length > LONG)
 				return ValueType.SIMPLE_LONG;
-			}
 			return ValueType.SIMPLE;
 		}
-		if (isNumericDatatype(dt)) {
+		if (isNumericDatatype(dt))
 			return ValueType.NUMERIC;
-		}
 		if (isCalendarDatatype(dt)) {
 			// calendar
-			if (isZoned(lit)) {
+			if (isZoned(lit))
 				return ValueType.DATETIME_ZONED;
-			}
 			return ValueType.DATETIME;
 		}
-		if (RDF.XMLLITERAL.equals(dt)) {
+		if (RDF.XMLLITERAL.equals(dt))
 			return ValueType.XML;
-		}
-		if (length > LONG) {
+		if (length > LONG)
 			return ValueType.TYPED_LONG;
-		}
 		return ValueType.TYPED;
 	}
 
 	private ValueType valueOf(URI value) {
-		if (value.stringValue().length() > LONG) {
+		if (value.stringValue().length() > LONG)
 			return ValueType.URI_LONG;
-		}
 		return ValueType.URI;
 	}
 
 	protected ValueType valueOf(Value value) {
-		if (value instanceof URI) {
+		if (value instanceof URI)
 			return valueOf((URI)value);
-		}
-		if (value instanceof Literal) {
+		if (value instanceof Literal)
 			return valueOf((Literal)value);
-		}
 		assert value instanceof BNode : value;
 		return valueOf((BNode)value);
 	}

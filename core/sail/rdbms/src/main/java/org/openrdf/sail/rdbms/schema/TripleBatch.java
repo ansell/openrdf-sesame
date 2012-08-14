@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 
 /**
+ * 
  * @author James Leigh
  */
 public class TripleBatch extends Batch {
@@ -33,12 +34,10 @@ public class TripleBatch extends Batch {
 		this.sailChangedEvent = sailChangedEvent;
 	}
 
-	@Override
 	public boolean isReady() {
 		return table.isReady();
 	}
 
-	@Override
 	public synchronized int flush()
 		throws SQLException
 	{

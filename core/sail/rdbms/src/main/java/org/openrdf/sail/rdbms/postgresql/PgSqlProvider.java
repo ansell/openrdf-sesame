@@ -13,13 +13,13 @@ import org.openrdf.sail.rdbms.RdbmsProvider;
  * Sesame store.
  * 
  * @author James Leigh
+ * 
  */
 public class PgSqlProvider implements RdbmsProvider {
 
 	public RdbmsConnectionFactory createRdbmsConnectionFactory(String dbName, String dbVersion) {
-		if ("PostgreSQL".equalsIgnoreCase(dbName)) {
+		if ("PostgreSQL".equalsIgnoreCase(dbName))
 			return new PgSqlConnectionFactory();
-		}
 		return null;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,9 +11,16 @@ import java.util.Set;
  * An abstract superclass for unary tuple operators which, by definition, has
  * one argument.
  */
-public abstract class UnaryTupleOperator extends NaryTupleOperator {
+public abstract class UnaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
 
-	private static final long serialVersionUID = -3843189239446570796L;
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	/**
+	 * The operator's argument.
+	 */
+	protected TupleExpr arg;
 
 	/*--------------*
 	 * Constructors *
@@ -29,39 +36,34 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator {
 	 *        The operator's argument, must not be <tt>null</tt>.
 	 */
 	public UnaryTupleOperator(TupleExpr arg) {
-		super(arg);
+		setArg(arg);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	@Override
-	public void setArg(int idx, TupleExpr arg) {
-		assert idx == 0;
-		super.setArg(idx, arg);
-	}
-
 	/**
-	 * Gets the only argument of this n-ary tuple operator.
+	 * Gets the argument of this unary tuple operator.
 	 * 
 	 * @return The operator's argument.
 	 */
 	public TupleExpr getArg() {
-		return getArg(0);
+		return arg;
 	}
 
 	/**
-	 * Sets the only argument of this n-ary tuple operator.
+	 * Sets the argument of this unary tuple operator.
 	 * 
 	 * @param arg
 	 *        The (new) argument for this operator, must not be <tt>null</tt>.
 	 */
 	public void setArg(TupleExpr arg) {
-		setArg(0, arg);
+		assert arg != null : "arg must not be null";
+		arg.setParentNode(this);
+		this.arg = arg;
 	}
 
-	@Override
 	public Set<String> getBindingNames() {
 		return getArg().getBindingNames();
 	}
@@ -71,7 +73,41 @@ public abstract class UnaryTupleOperator extends NaryTupleOperator {
 	}
 
 	@Override
+	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
+		throws X
+	{
+		arg.visit(visitor);
+	}
+
+	@Override
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
+		if (arg == current) {
+			setArg((TupleExpr)replacement);
+		}
+		else {
+			super.replaceChildNode(current, replacement);
+		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof UnaryTupleOperator) {
+			UnaryTupleOperator o = (UnaryTupleOperator)other;
+			return arg.equals(o.getArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return arg.hashCode();
+	}
+
+	@Override
 	public UnaryTupleOperator clone() {
-		return (UnaryTupleOperator)super.clone();
+		UnaryTupleOperator clone = (UnaryTupleOperator)super.clone();
+		clone.setArg(getArg().clone());
+		return clone;
 	}
 }

@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.base.UnarySqlOperator;
  * The SQL NOT expression.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlNot extends UnarySqlOperator {
 

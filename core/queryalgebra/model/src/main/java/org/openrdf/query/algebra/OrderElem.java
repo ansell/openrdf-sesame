@@ -10,8 +10,6 @@ package org.openrdf.query.algebra;
  */
 public class OrderElem extends QueryModelNodeBase {
 
-	private static final long serialVersionUID = 7396400799906586625L;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -84,6 +82,24 @@ public class OrderElem extends QueryModelNodeBase {
 	@Override
 	public String getSignature() {
 		return super.getSignature() + " (" + (ascending ? "ASC" : "DESC") + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof OrderElem) {
+			OrderElem o = (OrderElem)other;
+			return ascending == o.isAscending() && expr.equals(o.getExpr());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = expr.hashCode();
+		if (ascending) {
+			result = ~result;
+		}
+		return result;
 	}
 
 	@Override

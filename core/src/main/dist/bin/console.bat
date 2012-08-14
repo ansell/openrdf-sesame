@@ -1,8 +1,5 @@
 @echo off
 
-rem Set the maximum memory heap size as a JVM option
-set JAVA_OPT=-mx512m
-
 rem Set the lib dir relative to the batch file's directory
 set LIB_DIR=%~dp0\..\lib
 rem echo LIB_DIR = %LIB_DIR%
@@ -44,13 +41,13 @@ goto end
 IF ERRORLEVEL 1 goto java6
 rem use java.ext.dirs hack
 rem echo Using java.ext.dirs to set classpath
-"%JAVA%" %JAVA_OPT% -Djava.ext.dirs="%LIB_DIR%" org.openrdf.console.Console %CMD_LINE_ARGS%
+"%JAVA%" -Djava.ext.dirs="%LIB_DIR%" org.openrdf.console.Console %CMD_LINE_ARGS%
 goto end
 
 :java6
 rem use java 6 wildcard feature
 rem echo Using wildcard to set classpath
-"%JAVA%" %JAVA_OPT% -cp "%LIB_DIR%\*" org.openrdf.console.Console %CMD_LINE_ARGS%
+"%JAVA%" -cp "%LIB_DIR%\*" org.openrdf.console.Console %CMD_LINE_ARGS%
 goto end
 
 :end

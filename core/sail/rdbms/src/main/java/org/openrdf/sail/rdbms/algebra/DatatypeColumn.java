@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * Represents a variable's datatype value in an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class DatatypeColumn extends ValueColumnBase {
 

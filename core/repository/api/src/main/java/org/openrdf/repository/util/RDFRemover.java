@@ -8,9 +8,9 @@ package org.openrdf.repository.util;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
-import org.openrdf.store.StoreException;
 
 /**
  * An RDFHandler that removes RDF data from a repository.
@@ -106,13 +106,13 @@ public class RDFRemover extends RDFHandlerBase {
 		try {
 			if (enforceContext) {
 				// Override supplied context info
-				con.removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), context);
+				con.remove(st.getSubject(), st.getPredicate(), st.getObject(), context);
 			}
 			else {
-				con.removeMatch(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+				con.remove(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 		}
-		catch (StoreException e) {
+		catch (RepositoryException e) {
 			throw new RDFHandlerException(e);
 		}
 	}

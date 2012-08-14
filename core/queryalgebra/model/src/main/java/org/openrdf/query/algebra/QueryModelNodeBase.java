@@ -1,9 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra;
+
+import java.util.List;
+import java.util.ListIterator;
 
 import org.openrdf.query.algebra.helpers.QueryModelTreePrinter;
 
@@ -11,8 +14,6 @@ import org.openrdf.query.algebra.helpers.QueryModelTreePrinter;
  * Base implementation of {@link QueryModelNode}.
  */
 public abstract class QueryModelNodeBase implements QueryModelNode {
-
-	private static final long serialVersionUID = -7604638176470413398L;
 
 	/*-----------*
 	 * Variables *
@@ -54,17 +55,16 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 
 	/**
 	 * Default implementation of
-	 * {@link QueryModelNode#replaceChildNode(QueryModelNode, QueryModelNode)}
-	 * that throws an {@link IllegalArgumentException} indicating that
-	 * <tt>current</tt> is not a child node of this node.
+	 * {@link QueryModelNode#replaceWith(QueryModelNode)} that throws an
+	 * {@link IllegalArgumentException} indicating that <tt>current</tt> is not a
+	 * child node of this node.
 	 */
-	public <N extends QueryModelNode> N replaceWith(N replacement) {
+	public void replaceWith(QueryModelNode replacement) {
 		if (parent == null) {
 			throw new IllegalStateException("Node has no parent");
 		}
 
 		parent.replaceChildNode(this, replacement);
-		return replacement;
 	}
 
 	/**
@@ -90,5 +90,22 @@ public abstract class QueryModelNodeBase implements QueryModelNode {
 		catch (CloneNotSupportedException e) {
 			throw new RuntimeException("Query model nodes are required to be cloneable", e);
 		}
+	}
+
+	protected <T extends QueryModelNode> boolean replaceNodeInList(List<T> list, QueryModelNode current, QueryModelNode replacement) {
+		ListIterator<T> iter = list.listIterator();
+		while (iter.hasNext()) {
+			if (iter.next() == current) {
+				iter.set((T)replacement);
+				replacement.setParentNode(this);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	protected boolean nullEquals(Object o1, Object o2) {
+		return o1 == o2 || o1 != null && o1.equals(o2);
 	}
 }

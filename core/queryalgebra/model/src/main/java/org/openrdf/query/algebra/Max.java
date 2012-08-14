@@ -8,12 +8,14 @@ package org.openrdf.query.algebra;
 /**
  * @author David Huynh
  */
-public class Max extends UnaryValueOperator implements AggregateOperator {
-
-	private static final long serialVersionUID = 7342478403996244599L;
+public class Max extends AggregateOperatorBase {
 
 	public Max(ValueExpr arg) {
 		super(arg);
+	}
+	
+	public Max(ValueExpr arg, boolean distinct) {
+		super(arg, distinct);
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
@@ -22,8 +24,14 @@ public class Max extends UnaryValueOperator implements AggregateOperator {
 		visitor.meet(this);
 	}
 
-	public ValueExpr cloneValueExpr() {
-		return clone();
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Max && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Max".hashCode();
 	}
 
 	@Override

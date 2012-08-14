@@ -10,8 +10,6 @@ package org.openrdf.query.algebra;
  */
 public class Exists extends SubQueryValueOperator {
 
-	private static final long serialVersionUID = 3328911404628559582L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -31,6 +29,16 @@ public class Exists extends SubQueryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Exists && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Exists".hashCode();
 	}
 
 	@Override

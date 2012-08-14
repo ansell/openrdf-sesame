@@ -8,8 +8,8 @@ package org.openrdf.query.resultio;
 import java.io.OutputStream;
 
 /**
- * Returns {@link BooleanQueryResultWriter}s for a specific boolean query result
- * format.
+ * Returns {@link BooleanQueryResultWriter}s for a specific boolean query
+ * result format.
  * 
  * @author Arjohn Kampman
  */

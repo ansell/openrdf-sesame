@@ -1,41 +1,41 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail.config;
 
+import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.ModelException;
-import org.openrdf.store.StoreConfigException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
 
 public class SailConfigUtil {
 
-	public static SailImplConfig parseRepositoryImpl(Model model, Resource implNode)
-		throws StoreConfigException
+	public static SailImplConfig parseRepositoryImpl(Graph graph, Resource implNode)
+		throws SailConfigException
 	{
 		try {
-			Literal typeLit = model.filter(implNode, SailConfigSchema.SAILTYPE, null).objectLiteral();
+			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.SAILTYPE);
 
 			if (typeLit != null) {
 				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 				if (factory != null) {
 					SailImplConfig implConfig = factory.getConfig();
-					implConfig.parse(model, implNode);
+					implConfig.parse(graph, implNode);
 					return implConfig;
 				}
 				else {
-					throw new StoreConfigException("Unsupported Sail type: " + typeLit.getLabel());
+					throw new SailConfigException("Unsupported Sail type: " + typeLit.getLabel());
 				}
 			}
 
 			return null;
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new SailConfigException(e.getMessage(), e);
 		}
 	}
 }

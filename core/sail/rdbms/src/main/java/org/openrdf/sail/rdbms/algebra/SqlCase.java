@@ -18,6 +18,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL CASE WHEN THEN END expression.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 
@@ -64,32 +65,25 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) {
+			if (this == obj)
 				return true;
-			}
-			if (obj == null) {
+			if (obj == null)
 				return false;
-			}
-			if (getClass() != obj.getClass()) {
+			if (getClass() != obj.getClass())
 				return false;
-			}
 			final Entry other = (Entry)obj;
 			if (condition == null) {
-				if (other.condition != null) {
+				if (other.condition != null)
 					return false;
-				}
 			}
-			else if (!condition.equals(other.condition)) {
+			else if (!condition.equals(other.condition))
 				return false;
-			}
 			if (result == null) {
-				if (other.result != null) {
+				if (other.result != null)
 					return false;
-				}
 			}
-			else if (!result.equals(other.result)) {
+			else if (!result.equals(other.result))
 				return false;
-			}
 			return true;
 		}
 	}
@@ -164,24 +158,19 @@ public class SqlCase extends RdbmsQueryModelNodeBase implements SqlExpr {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		final SqlCase other = (SqlCase)obj;
 		if (entries == null) {
-			if (other.entries != null) {
+			if (other.entries != null)
 				return false;
-			}
 		}
-		else if (!entries.equals(other.entries)) {
+		else if (!entries.equals(other.entries))
 			return false;
-		}
 		return true;
 	}
 

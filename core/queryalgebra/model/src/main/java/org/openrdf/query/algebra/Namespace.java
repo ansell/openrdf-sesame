@@ -12,8 +12,6 @@ package org.openrdf.query.algebra;
  */
 public class Namespace extends UnaryValueOperator {
 
-	private static final long serialVersionUID = -4488015257656828790L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -33,6 +31,16 @@ public class Namespace extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Namespace && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Namespace".hashCode();
 	}
 
 	@Override

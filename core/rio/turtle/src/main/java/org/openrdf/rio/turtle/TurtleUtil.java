@@ -11,15 +11,15 @@ import info.aduna.text.StringUtil;
 
 /**
  * Utility methods for Turtle encoding/decoding.
+ * 
+ * @see http://www.w3.org/TR/turtle/ 
  */
 public class TurtleUtil {
 
 	/**
 	 * Tries to find an index where the suppied URI can be split into a namespace
 	 * and a local name that comply with the serialization constraints of the
-	 * Turtle format. Specifically, the local name should adhere to Turtle's <a
-	 * href="http://www.dajobe.org/2004/01/turtle/#name">name</a> production
-	 * rule.
+	 * Turtle format.
 	 * 
 	 * @param uri
 	 *        The URI to split.
@@ -81,7 +81,7 @@ public class TurtleUtil {
 	}
 	
 	public static boolean isNameStartChar(int c) {
-		return c == '_' || isPrefixStartChar(c);
+		return c == '_' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
 	}
 
 	public static boolean isNameChar(int c) {

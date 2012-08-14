@@ -28,7 +28,6 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.str;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sub;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -56,7 +55,6 @@ import org.openrdf.sail.rdbms.algebra.SqlCase;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.TrueValue;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
@@ -64,8 +62,9 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * algebra nodes into an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
-public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> {
+public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
 	private static final double HR14 = 14 * 60 * 60 * 1000;
 
@@ -74,43 +73,22 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	private SqlExprFactory sql;
 
 	public SqlExpr createBooleanExpr(ValueExpr expr)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
-		try {
-			result = null;
-			if (expr == null) {
-				return new SqlNull();
-			}
-			expr.visit(this);
-			if (result == null) {
-				return new SqlNull();
-			}
-			return result;
-		}
-		catch (RuntimeException e) {
-			throw e;
-		}
-		catch (UnsupportedRdbmsOperatorException e) {
-			throw e;
-		}
-		catch (RdbmsException e) {
-			throw e;
-		}
-		catch (OpenRDFException e) {
-			// this should not happen
-			throw new AssertionError(e);
-		}
+		result = null;
+		if (expr == null)
+			return new SqlNull();
+		expr.visit(this);
+		if (result == null)
+			return new SqlNull();
+		return result;
 	}
 
 	@Override
 	public void meet(And node)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
-		SqlExpr[] expr = new SqlExpr[node.getNumberOfArguments()];
-		for (int i = 0, n = node.getNumberOfArguments(); i < n; i++) {
-			expr[i] = bool(node.getArg(i));
-		}
-		result = and(expr);
+		result = and(bool(node.getLeftArg()), bool(node.getRightArg()));
 	}
 
 	@Override
@@ -203,20 +181,16 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 
 	@Override
 	public void meet(Not node)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		result = not(bool(node.getArg()));
 	}
 
 	@Override
 	public void meet(Or node)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
-		SqlExpr[] bools = new SqlExpr[node.getNumberOfArguments()];
-		for (int i = 0; i < bools.length; i++) {
-			bools[i] = bool(node.getArg(i));
-		}
-		result = or(bools);
+		result = or(bool(node.getLeftArg()), bool(node.getRightArg()));
 	}
 
 	@Override
@@ -228,7 +202,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 
 	@Override
 	public void meet(SameTerm node)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		ValueExpr left = node.getLeftArg();
 		ValueExpr right = node.getRightArg();
@@ -284,7 +258,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	}
 
 	protected SqlExpr bool(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		return sql.createBooleanExpr(arg);
 	}
@@ -302,7 +276,7 @@ public class BooleanExprFactory extends QueryModelVisitorBase<OpenRDFException> 
 	}
 
 	protected SqlExpr hash(ValueExpr arg)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		return sql.createHashExpr(arg);
 	}

@@ -11,22 +11,22 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 /**
  * SailExcetion from an RDBMS store.
  * 
  * @author James Leigh
+ * 
  */
-public class RdbmsException extends StoreException {
-
+public class RdbmsException extends SailException {
 	private static Logger logger = LoggerFactory.getLogger(RdbmsException.class);
 
 	private static final long serialVersionUID = -4004800841908629772L;
 
 	private static SQLException findInterestingCause(SQLException e) {
 		if (e instanceof BatchUpdateException) {
-			BatchUpdateException b = (BatchUpdateException)e;
+			BatchUpdateException b = (BatchUpdateException) e;
 			logger.error(b.toString(), b);
 			return b.getNextException();
 		}

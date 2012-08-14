@@ -69,7 +69,8 @@ public class TriGParser extends TurtleParser {
 	 *---------*/
 
 	@Override
-	public RDFFormat getRDFFormat() {
+	public RDFFormat getRDFFormat()
+	{
 		return RDFFormat.TRIG;
 	}
 

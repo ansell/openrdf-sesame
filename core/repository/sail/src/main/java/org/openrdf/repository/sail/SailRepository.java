@@ -7,14 +7,14 @@ package org.openrdf.repository.sail;
 
 import java.io.File;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryMetaData;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryLockedException;
+import org.openrdf.repository.base.RepositoryBase;
 import org.openrdf.sail.Sail;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
+import org.openrdf.sail.SailLockedException;
 
 /**
  * An implementation of the {@link Repository} interface that operates on a
@@ -44,7 +44,7 @@ import org.openrdf.store.StoreException;
  * 
  * @author Arjohn Kampman
  */
-public class SailRepository implements Repository {
+public class SailRepository extends RepositoryBase {
 
 	/*-----------*
 	 * Constants *
@@ -70,12 +70,6 @@ public class SailRepository implements Repository {
 	 * Methods *
 	 *---------*/
 
-	public RepositoryMetaData getMetaData()
-		throws StoreException
-	{
-		return new SailRepositoryMetaData(sail.getMetaData());
-	}
-
 	public File getDataDir() {
 		return sail.getDataDir();
 	}
@@ -84,16 +78,34 @@ public class SailRepository implements Repository {
 		sail.setDataDir(dataDir);
 	}
 
-	public void initialize()
-		throws StoreException
+	@Override
+	protected void initializeInternal()
+		throws RepositoryException
 	{
-		sail.initialize();
+		try {
+			sail.initialize();
+		}
+		catch (SailLockedException e) {
+			String l = e.getLockedBy();
+			String r = e.getRequestedBy();
+			String m = e.getMessage();
+			throw new RepositoryLockedException(l, r, m, e);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e.getMessage(), e);
+		}
 	}
 
-	public void shutDown()
-		throws StoreException
+	@Override
+	protected void shutDownInternal()
+		throws RepositoryException
 	{
-		sail.shutDown();
+		try {
+			sail.shutDown();
+		}
+		catch (SailException e) {
+			throw new RepositoryException("Unable to shutdown Sail", e);
+		}
 	}
 
 	/**
@@ -106,22 +118,30 @@ public class SailRepository implements Repository {
 		return sail;
 	}
 
-	public LiteralFactory getLiteralFactory() {
-		return sail.getLiteralFactory();
-	}
-
-	public URIFactory getURIFactory() {
-		return sail.getURIFactory();
+	public boolean isWritable()
+		throws RepositoryException
+	{
+		try {
+			return sail.isWritable();
+		}
+		catch (SailException e) {
+			throw new RepositoryException("Unable to determine writable status of Sail", e);
+		}
 	}
 
 	public ValueFactory getValueFactory() {
-		return new ValueFactoryImpl(getURIFactory(), getLiteralFactory());
+		return sail.getValueFactory();
 	}
 
 	public SailRepositoryConnection getConnection()
-		throws StoreException
+		throws RepositoryException
 	{
-		return new SailRepositoryConnection(this, sail.getConnection());
+		try {
+			return new SailRepositoryConnection(this, sail.getConnection());
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	public String toString() {

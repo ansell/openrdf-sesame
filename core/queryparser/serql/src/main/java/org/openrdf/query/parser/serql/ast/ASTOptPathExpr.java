@@ -1,13 +1,10 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql.ast;
 
-import java.util.List;
-
-import info.aduna.collections.CastingList;
 
 public class ASTOptPathExpr extends ASTPathExpr {
 
@@ -26,14 +23,8 @@ public class ASTOptPathExpr extends ASTPathExpr {
 		return visitor.visit(this, data);
 	}
 
-	public List<ASTPathExpr> getPathExprList() {
-		if (this.hasConstraint()) {
-			// exlude the last child, which is a boolean constraint
-			return new CastingList<ASTPathExpr>(children.subList(0, children.size() - 1));
-		}
-		else {
-			return new CastingList<ASTPathExpr>(children);
-		}
+	public ASTPathExpr getPathExpr() {
+		return (ASTPathExpr)children.get(0);
 	}
 
 	/**

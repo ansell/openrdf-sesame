@@ -272,4 +272,58 @@
          mf:action  <syntax-042.serql> ;
          mf:result  mfx:Correct
       ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-043: IN operator with fixed value list";
+         rdfs:label "syntax-043" ;
+         mf:action  <syntax-043.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-044: SameTerm operator";
+         rdfs:label "syntax-044" ;
+         mf:action  <syntax-044.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-045: Str function";
+         rdfs:label "syntax-045" ;
+         mf:action  <syntax-045.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-046: LangMatches function";
+         rdfs:label "syntax-046" ;
+         mf:action  <syntax-046.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-047: Regex function";
+         rdfs:label "syntax-047" ;
+         mf:action  <syntax-047.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-048: Select reduced";
+         rdfs:label "syntax-048" ;
+         mf:action  <syntax-048.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-049: Construct reduced";
+         rdfs:label "syntax-049" ;
+         mf:action  <syntax-049.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-050: Order by";
+         rdfs:label "syntax-050" ;
+         mf:action  <syntax-050.serql> ;
+         mf:result  mfx:Correct
+      ]
+      [  rdf:type   mf:TestSyntax ;
+         mf:name    "syntax-051: Path expressions union";
+         rdfs:label "syntax-051" ;
+         mf:action  <syntax-051.serql> ;
+         mf:result  mfx:Correct
+      ]
      ).

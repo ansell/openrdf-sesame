@@ -14,14 +14,15 @@ import java.util.Map.Entry;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.rdbms.RdbmsStore;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.store.StoreException;
 
 /**
  * A convenient way to initialise a MySql RDF store.
  * 
  * @author James Leigh
+ * 
  */
 public class MySqlStore extends RdbmsStore {
 
@@ -95,7 +96,7 @@ public class MySqlStore extends RdbmsStore {
 
 	@Override
 	public void initialize()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -142,8 +143,7 @@ public class MySqlStore extends RdbmsStore {
 	private String enc(String text) {
 		try {
 			return URLEncoder.encode(text, "UTF-8");
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

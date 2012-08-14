@@ -18,35 +18,27 @@ import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.EmptyIteration;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.EmptyCursor;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.sail.SailMetaData;
+import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.SailUtil;
-import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
-import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
-import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
-import org.openrdf.sail.memory.model.MemBNodeFactory;
-import org.openrdf.sail.memory.model.MemLiteralFactory;
+import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
-import org.openrdf.sail.memory.model.MemStatementCursor;
+import org.openrdf.sail.memory.model.MemStatementIterator;
 import org.openrdf.sail.memory.model.MemStatementList;
 import org.openrdf.sail.memory.model.MemURI;
-import org.openrdf.sail.memory.model.MemURIFactory;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
 import org.openrdf.sail.memory.model.TxnStatus;
-import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the Sail interface that stores its data in main memory
@@ -60,7 +52,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStore extends InferencerSailBase {
+public class MemoryStore extends NotifyingSailBase {
 
 	/*-----------*
 	 * Constants *
@@ -75,19 +67,9 @@ public class MemoryStore extends InferencerSailBase {
 	 *-----------*/
 
 	/**
-	 * Factory/cache for MemBNode objects.
+	 * Factory/cache for MemValue objects.
 	 */
-	private final MemBNodeFactory bf = new MemBNodeFactory();
-
-	/**
-	 * Factory/cache for MemURI objects.
-	 */
-	private final MemURIFactory uf = new MemURIFactory();
-
-	/**
-	 * Factory/cache for MemLiteral objects.
-	 */
-	private final MemLiteralFactory lf = new MemLiteralFactory();
+	private final MemValueFactory valueFactory = new MemValueFactory();
 
 	/**
 	 * List containing all available statements.
@@ -114,17 +96,12 @@ public class MemoryStore extends InferencerSailBase {
 	 * the statement list.
 	 */
 	private final ReadWriteLockManager statementListLockManager = new ReadPrefReadWriteLockManager(
-			SailUtil.isDebugEnabled());
+			debugEnabled());
 
 	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
-	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
-
-	/**
-	 * Flag indicating whether the Sail has been initialized.
-	 */
-	private volatile boolean initialized = false;
+	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 	private volatile boolean persist = false;
 
@@ -156,7 +133,8 @@ public class MemoryStore extends InferencerSailBase {
 	private volatile long syncDelay = 0L;
 
 	/**
-	 * Semaphore used to synchronize concurrent access to {@link #sync()}.
+	 * Semaphore used to synchronize concurrent access to {@link #syncWithLock()}
+	 * .
 	 */
 	private final Object syncSemaphore = new Object();
 
@@ -215,20 +193,6 @@ public class MemoryStore extends InferencerSailBase {
 	 * Methods *
 	 *---------*/
 
-	@Override
-	public SailMetaData getMetaData() {
-		return new MemoryStoreMetaData(this);
-	}
-
-	@Override
-	public void setDataDir(File dataDir) {
-		if (isInitialized()) {
-			throw new IllegalStateException("sail has already been initialized");
-		}
-
-		super.setDataDir(dataDir);
-	}
-
 	public void setPersist(boolean persist) {
 		if (isInitialized()) {
 			throw new IllegalStateException("sail has already been initialized");
@@ -280,19 +244,14 @@ public class MemoryStore extends InferencerSailBase {
 	 * Initializes this repository. If a persistence file is defined for the
 	 * store, the contents will be restored.
 	 * 
-	 * @throws StoreException
+	 * @throws SailException
 	 *         when initialization of the store failed.
 	 */
-	public void initialize()
-		throws StoreException
+	protected void initializeInternal()
+		throws SailException
 	{
-		if (isInitialized()) {
-			throw new IllegalStateException("sail has already been intialized");
-		}
-
 		logger.debug("Initializing MemoryStore...");
 
-		MemValueFactory valueFactory = createValueFactory();
 		currentSnapshot = 1;
 
 		if (persist) {
@@ -307,7 +266,7 @@ public class MemoryStore extends InferencerSailBase {
 				// Initialize persistent store from file
 				if (!dataFile.canRead()) {
 					logger.error("Data file is not readable: {}", dataFile);
-					throw new StoreException("Can't read data file: " + dataFile);
+					throw new SailException("Can't read data file: " + dataFile);
 				}
 				// try to create a lock for later writing
 				dirLock = locker.tryLock();
@@ -321,12 +280,12 @@ public class MemoryStore extends InferencerSailBase {
 				}
 				else {
 					try {
-						new FileIO(this, valueFactory).read(dataFile);
+						new FileIO(this).read(dataFile);
 						logger.debug("Data file read successfully");
 					}
 					catch (IOException e) {
 						logger.error("Failed to read data file", e);
-						throw new StoreException(e);
+						throw new SailException(e);
 					}
 				}
 			}
@@ -338,61 +297,47 @@ public class MemoryStore extends InferencerSailBase {
 						logger.debug("Creating directory for data file...");
 						if (!dir.mkdirs()) {
 							logger.debug("Failed to create directory for data file: {}", dir);
-							throw new StoreException("Failed to create directory for data file: " + dir);
+							throw new SailException("Failed to create directory for data file: " + dir);
 						}
 					}
 					// try to lock directory or fail
 					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
-					new FileIO(this, valueFactory).write(syncFile, dataFile);
+					new FileIO(this).write(syncFile, dataFile);
 					logger.debug("Data file initialized");
 				}
 				catch (IOException e) {
 					logger.debug("Failed to initialize data file", e);
-					throw new StoreException("Failed to initialize data file " + dataFile, e);
+					throw new SailException("Failed to initialize data file " + dataFile, e);
 				}
-				catch (StoreException e) {
+				catch (SailException e) {
 					logger.debug("Failed to initialize data file", e);
-					throw new StoreException("Failed to initialize data file " + dataFile, e);
+					throw new SailException("Failed to initialize data file " + dataFile, e);
 				}
 			}
 		}
 
 		contentsChanged = false;
-		initialized = true;
 
 		logger.debug("MemoryStore initialized");
 	}
 
-	/**
-	 * Checks whether the Sail has been initialized.
-	 * 
-	 * @return <tt>true</tt> if the Sail has been initialized, <tt>false</tt>
-	 *         otherwise.
-	 */
-	protected final boolean isInitialized() {
-		return initialized;
-	}
-
 	@Override
 	protected void shutDownInternal()
-		throws StoreException
+		throws SailException
 	{
-		if (isInitialized()) {
-			Lock stLock = getStatementsReadLock();
+		try {
+			Lock stLock = statementListLockManager.getWriteLock();
 
 			try {
 				cancelSyncTimer();
-				sync();
+				syncWithLock();
 
+				valueFactory.clear();
 				statements.clear();
-				bf.clear();
-				uf.clear();
-				lf.clear();
 				dataFile = null;
 				syncFile = null;
-				initialized = false;
 			}
 			finally {
 				stLock.release();
@@ -401,6 +346,9 @@ public class MemoryStore extends InferencerSailBase {
 				}
 			}
 		}
+		catch (InterruptedException e) {
+			throw new SailException(e);
+		}
 	}
 
 	/**
@@ -408,42 +356,23 @@ public class MemoryStore extends InferencerSailBase {
 	 * if a read-only data file is used.
 	 */
 	public boolean isWritable() {
-		// Sail is not writable when it has a dataDir, but no directory lock
+		// Sail is not writable when it has a dataDir but no directory lock
 		return !persist || dirLock != null;
 	}
 
 	@Override
-	protected InferencerConnection getConnectionInternal()
-		throws StoreException
+	protected NotifyingSailConnection getConnectionInternal()
+		throws SailException
 	{
-		if (!isInitialized()) {
+		return new MemoryStoreConnection(this);
+	}
+
+	public MemValueFactory getValueFactory() {
+		if (valueFactory == null) {
 			throw new IllegalStateException("sail not initialized.");
 		}
 
-		InferencerConnection con = new MemoryStoreConnection(this);
-		con = new SynchronizedInferencerConnection(con);
-		con = new AutoCommitInferencerConnection(con);
-		return con;
-	}
-
-	public MemURIFactory getURIFactory() {
-		if (uf == null) {
-			throw new IllegalStateException("sail not initialized.");
-		}
-
-		return uf;
-	}
-
-	public MemLiteralFactory getLiteralFactory() {
-		if (lf == null) {
-			throw new IllegalStateException("sail not initialized.");
-		}
-
-		return lf;
-	}
-
-	MemValueFactory createValueFactory() {
-		return new MemValueFactory(bf, uf, lf);
+		return valueFactory;
 	}
 
 	protected MemNamespaceStore getNamespaceStore() {
@@ -459,24 +388,24 @@ public class MemoryStore extends InferencerSailBase {
 	}
 
 	protected Lock getStatementsReadLock()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			return statementListLockManager.getReadLock();
 		}
 		catch (InterruptedException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 	}
 
 	protected Lock getTransactionLock()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			return txnLockManager.getExclusiveLock();
 		}
 		catch (InterruptedException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 	}
 
@@ -485,14 +414,15 @@ public class MemoryStore extends InferencerSailBase {
 	}
 
 	protected boolean hasStatement(Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
-			ReadMode readMode, MemValueFactory vf, Resource... contexts) throws StoreException
+			ReadMode readMode, Resource... contexts)
 	{
-		Cursor<MemStatement> cursor = createStatementIterator(subj, pred, obj, explicitOnly, snapshot, readMode, vf, contexts);
+		CloseableIteration<MemStatement, RuntimeException> iter = createStatementIterator(
+				RuntimeException.class, subj, pred, obj, explicitOnly, snapshot, readMode, contexts);
 		try {
-			return cursor.next() != null;
+			return iter.hasNext();
 		}
 		finally {
-			cursor.close();
+			iter.close();
 		}
 	}
 
@@ -504,41 +434,41 @@ public class MemoryStore extends InferencerSailBase {
 	 * <tt>namedContextsOnly</tt> is set to <tt>true</tt>. The returned
 	 * StatementIterator will assume the specified read mode.
 	 */
-	protected Cursor<MemStatement> createStatementIterator(Resource subj, URI pred, Value obj,
-			boolean explicitOnly, int snapshot, ReadMode readMode, MemValueFactory vf, Resource... contexts)
+	protected <X extends Exception> CloseableIteration<MemStatement, X> createStatementIterator(
+			Class<X> excClass, Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
+			ReadMode readMode, Resource... contexts)
 	{
 		// Perform look-ups for value-equivalents of the specified values
-		MemResource memSubj = vf.getMemResource(subj);
+		MemResource memSubj = valueFactory.getMemResource(subj);
 		if (subj != null && memSubj == null) {
 			// non-existent subject
-			return new EmptyCursor<MemStatement>();
+			return new EmptyIteration<MemStatement, X>();
 		}
 
-		MemURI memPred = vf.getMemURI(pred);
+		MemURI memPred = valueFactory.getMemURI(pred);
 		if (pred != null && memPred == null) {
 			// non-existent predicate
-			return new EmptyCursor<MemStatement>();
+			return new EmptyIteration<MemStatement, X>();
 		}
 
-		MemValue memObj = vf.getMemValue(obj);
+		MemValue memObj = valueFactory.getMemValue(obj);
 		if (obj != null && memObj == null) {
 			// non-existent object
-			return new EmptyCursor<MemStatement>();
+			return new EmptyIteration<MemStatement, X>();
 		}
 
 		MemResource[] memContexts;
 		MemStatementList smallestList;
 
-		contexts = OpenRDFUtil.notNull(contexts);
 		if (contexts.length == 0) {
 			memContexts = new MemResource[0];
 			smallestList = statements;
 		}
 		else if (contexts.length == 1 && contexts[0] != null) {
-			MemResource memContext = vf.getMemResource(contexts[0]);
+			MemResource memContext = valueFactory.getMemResource(contexts[0]);
 			if (memContext == null) {
 				// non-existent context
-				return new EmptyCursor<MemStatement>();
+				return new EmptyIteration<MemStatement, X>();
 			}
 
 			memContexts = new MemResource[] { memContext };
@@ -548,7 +478,7 @@ public class MemoryStore extends InferencerSailBase {
 			Set<MemResource> contextSet = new LinkedHashSet<MemResource>(2 * contexts.length);
 
 			for (Resource context : contexts) {
-				MemResource memContext = vf.getMemResource(context);
+				MemResource memContext = valueFactory.getMemResource(context);
 				if (context == null || memContext != null) {
 					contextSet.add(memContext);
 				}
@@ -556,7 +486,7 @@ public class MemoryStore extends InferencerSailBase {
 
 			if (contextSet.isEmpty()) {
 				// no known contexts specified
-				return new EmptyCursor<MemStatement>();
+				return new EmptyIteration<MemStatement, X>();
 			}
 
 			memContexts = contextSet.toArray(new MemResource[contextSet.size()]);
@@ -584,50 +514,35 @@ public class MemoryStore extends InferencerSailBase {
 			}
 		}
 
-		return new MemStatementCursor(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot, readMode,
-				memContexts);
+		return new MemStatementIterator<X>(smallestList, memSubj, memPred, memObj, explicitOnly, snapshot,
+				readMode, memContexts);
 	}
 
-	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit,
-			MemValueFactory vf)
-		throws StoreException
+	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit)
+		throws SailException
 	{
 		assert txnStatements != null;
-		boolean newValueCreated = false;
 
 		// Get or create MemValues for the operands
-		MemResource memSubj = vf.getMemResource(subj);
-		if (memSubj == null) {
-			memSubj = vf.createMemResource(subj);
-			newValueCreated = true;
-		}
-		MemURI memPred = vf.getMemURI(pred);
-		if (memPred == null) {
-			memPred = vf.createMemURI(pred);
-			newValueCreated = true;
-		}
-		MemValue memObj = vf.getMemValue(obj);
-		if (memObj == null) {
-			memObj = vf.createMemValue(obj);
-			newValueCreated = true;
-		}
-		MemResource memContext = vf.getMemResource(context);
-		if (context != null && memContext == null) {
-			memContext = vf.createMemResource(context);
-			newValueCreated = true;
-		}
+		MemResource memSubj = valueFactory.getOrCreateMemResource(subj);
+		MemURI memPred = valueFactory.getOrCreateMemURI(pred);
+		MemValue memObj = valueFactory.getOrCreateMemValue(obj);
+		MemResource memContext = (context == null) ? null : valueFactory.getOrCreateMemResource(context);
 
-		if (!newValueCreated) {
-			// All values were already present in the graph. Possibly, the
+		if (memSubj.hasStatements() && memPred.hasStatements() && memObj.hasStatements()
+				&& (memContext == null || memContext.hasStatements()))
+		{
+			// All values are used in at least one statement. Possibly, the
 			// statement is already present. Check this.
-			Cursor<MemStatement> stIter = createStatementIterator(memSubj, memPred, memObj, false,
-					currentSnapshot + 1, ReadMode.RAW, vf, memContext);
+			CloseableIteration<MemStatement, SailException> stIter = createStatementIterator(
+					SailException.class, memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
+					memContext);
 
 			try {
-				MemStatement st = stIter.next();
-				if (st != null) {
+				if (stIter.hasNext()) {
 					// statement is already present, update its transaction
 					// status if appropriate
+					MemStatement st = stIter.next();
 
 					txnStatements.put(st, st);
 
@@ -687,14 +602,15 @@ public class MemoryStore extends InferencerSailBase {
 		st.addToComponentLists();
 
 		txnStatements.put(st, st);
-		
-		assert hasStatement(memSubj, memPred, memObj, explicit, currentSnapshot + 1, ReadMode.TRANSACTION, vf, memContext);
+
+		assert hasStatement(memSubj, memPred, memObj, explicit, currentSnapshot + 1, ReadMode.TRANSACTION,
+				memContext);
 
 		return st;
 	}
 
 	protected boolean removeStatement(MemStatement st, boolean explicit)
-		throws StoreException
+		throws SailException
 	{
 		boolean statementsRemoved = false;
 		TxnStatus txnStatus = st.getTxnStatus();
@@ -727,7 +643,7 @@ public class MemoryStore extends InferencerSailBase {
 	}
 
 	protected void startTransaction()
-		throws StoreException
+		throws SailException
 	{
 		cancelSyncTask();
 
@@ -736,7 +652,7 @@ public class MemoryStore extends InferencerSailBase {
 	}
 
 	protected void commit()
-		throws StoreException
+		throws SailException
 	{
 		assert txnStatements != null;
 
@@ -800,7 +716,7 @@ public class MemoryStore extends InferencerSailBase {
 	}
 
 	protected void rollback()
-		throws StoreException
+		throws SailException
 	{
 		assert txnStatements != null;
 		logger.debug("rolling back transaction");
@@ -829,7 +745,7 @@ public class MemoryStore extends InferencerSailBase {
 	}
 
 	protected void scheduleSyncTask()
-		throws StoreException
+		throws SailException
 	{
 		if (!persist) {
 			return;
@@ -856,17 +772,9 @@ public class MemoryStore extends InferencerSailBase {
 					@Override
 					public void run() {
 						try {
-							// Acquire read lock to guarantee that the statement list
-							// doesn't change while writing
-							Lock stLock = getStatementsReadLock();
-							try {
-								sync();
-							}
-							finally {
-								stLock.release();
-							}
+							sync();
 						}
-						catch (StoreException e) {
+						catch (SailException e) {
 							logger.warn("Unable to sync on timer", e);
 						}
 					}
@@ -901,19 +809,42 @@ public class MemoryStore extends InferencerSailBase {
 	 * data in the file are out of sync.
 	 */
 	public void sync()
-		throws StoreException
+		throws SailException
 	{
+		// Acquire read lock to guarantee that the statement list
+		// doesn't change while writing
+		Lock stLock = getStatementsReadLock();
+		try {
+			syncWithLock();
+		}
+		finally {
+			stLock.release();
+		}
+	}
+
+	/**
+	 * Synchronizes the contents of this repository with the data that is stored
+	 * on disk. Data will only be written when the contents of the repository and
+	 * data in the file are out of sync. The calling code must get a read- or
+	 * write lock from {@link #statementListLockManager} before calling this
+	 * method to prevent modifications to the statements list while the
+	 * synchronization is in progress.
+	 */
+	protected void syncWithLock()
+		throws SailException
+	{
+		// syncSemaphore prevents concurrent file synchronizations
 		synchronized (syncSemaphore) {
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					new FileIO(this, createValueFactory()).write(syncFile, dataFile);
+					new FileIO(this).write(syncFile, dataFile);
 					contentsChanged = false;
 					logger.debug("Data synced to file");
 				}
 				catch (IOException e) {
 					logger.error("Failed to sync to file", e);
-					throw new StoreException(e);
+					throw new SailException(e);
 				}
 			}
 		}

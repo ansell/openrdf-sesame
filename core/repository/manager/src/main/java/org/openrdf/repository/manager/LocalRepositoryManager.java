@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.manager;
 
-import static org.openrdf.repository.manager.SystemRepository.REPOSITORYID;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY_CONTEXT;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,27 +21,25 @@ import java.util.Set;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
+import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryRegistry;
 import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
-import org.openrdf.repository.manager.config.LocalConfigManager;
-import org.openrdf.repository.manager.config.SystemConfigManager;
-import org.openrdf.repository.manager.templates.LocalTemplateManager;
-import org.openrdf.store.StoreConfigException;
-import org.openrdf.store.StoreException;
 
 /**
  * An implementation of the {@link RepositoryManager} interface that operates
@@ -54,10 +53,6 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 * Constants *
 	 *-----------*/
 
-	private static final String TEMPLATES = "templates";
-
-	private static final String CONFIGURATIONS = "configurations";
-
 	public static final String REPOSITORIES_DIR = "repositories";
 
 	/*-----------*
@@ -67,7 +62,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * The base dir to resolve any relative paths against.
 	 */
-	private final File baseDir;
+	private File baseDir;
 
 	/*--------------*
 	 * Constructors *
@@ -84,7 +79,6 @@ public class LocalRepositoryManager extends RepositoryManager {
 	public LocalRepositoryManager(File baseDir) {
 		super();
 
-		assert baseDir != null : "baseDir must not be null";
 		this.baseDir = baseDir;
 	}
 
@@ -92,40 +86,16 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 * Methods *
 	 *---------*/
 
-	/**
-	 * Initializes the repository manager.
-	 * 
-	 * @throws StoreException
-	 *         If the manager failed to initialize the SYSTEM repository.
-	 */
 	@Override
-	public void initialize()
-		throws StoreConfigException
+	protected SystemRepository createSystemRepository()
+		throws RepositoryException
 	{
-		LocalTemplateManager templates = new LocalTemplateManager(new File(baseDir, TEMPLATES));
-		templates.init();
-		setConfigTemplateManager(templates);
-		try {
-			if (getRepositoryDir(SystemRepository.ID).isDirectory()) {
-				// Sesame 2.0 directory
-				File systemDir = getRepositoryDir(SystemRepository.ID);
-				SystemRepository systemRepos = new SystemRepository(systemDir);
-				systemRepos.initialize();
+		File systemDir = getRepositoryDir(SystemRepository.ID);
+		SystemRepository systemRepos = new SystemRepository(systemDir);
+		systemRepos.initialize();
 
-				systemRepos.addRepositoryConnectionListener(new ConfigChangeListener());
-				Repository systemRepository = systemRepos;
-				setRepositoryConfigManager(new SystemConfigManager(systemRepository));
-
-				assignSystemRepository(systemRepository);
-			}
-			else {
-				// Sesame 3.0 directory
-				setRepositoryConfigManager(new LocalConfigManager(new File(baseDir, CONFIGURATIONS)));
-			}
-		}
-		catch (StoreException e) {
-			throw new StoreConfigException(e);
-		}
+		systemRepos.addRepositoryConnectionListener(new ConfigChangeListener());
+		return systemRepos;
 	}
 
 	/**
@@ -138,13 +108,9 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * Gets the base dir against which to resolve relative paths.
 	 * 
-	 * @throws MalformedURLException
-	 *         If the path cannot be parsed as a URL
+	 * @throws MalformedURLException If the path cannot be parsed as a URL
 	 */
-	@Override
-	public URL getLocation()
-		throws MalformedURLException
-	{
+	public URL getLocation() throws MalformedURLException {
 		return baseDir.toURI().toURL();
 	}
 
@@ -163,50 +129,58 @@ public class LocalRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
+	public SystemRepository getSystemRepository() {
+		return (SystemRepository)super.getSystemRepository();
+	}
+
+	@Override
 	protected Repository createRepository(String id)
-		throws StoreConfigException, StoreException
+		throws RepositoryConfigException, RepositoryException
 	{
-		Model config = getRepositoryConfig(id);
+		Repository systemRepository = getSystemRepository();
 
-		if (config != null) {
-			RepositoryConfig repConfig = parse(config);
+		RepositoryConnection con = systemRepository.getConnection();
+		try {
+			Repository repository = null;
 
-			Repository repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
-			try {
+			RepositoryConfig repConfig = RepositoryConfigUtil.getRepositoryConfig(systemRepository, id);
+			if (repConfig != null) {
+				repConfig.validate();
+
+				repository = createRepositoryStack(repConfig.getRepositoryImplConfig());
 				repository.setDataDir(getRepositoryDir(id));
 				repository.initialize();
-				return repository;
 			}
-			catch (StoreException e) {
-				repository.shutDown();
-				throw e;
-			}
-			catch (RuntimeException e) {
-				repository.shutDown();
-				throw e;
-			}
-		}
 
-		return null;
+			return repository;
+		}
+		finally {
+			con.close();
+		}
 	}
 
 	/**
 	 * Creates the stack of Repository objects for the repository represented by
-	 * the supplied configuration.
+	 * the specified <tt>repositoryImplNode</tt>.
 	 * 
-	 * @param config
-	 *        The repository configuration.
-	 * @return The created repository.
-	 * @throws StoreConfigException
+	 * @param con
+	 *        A connection to the repository containing the repository
+	 *        configuration.
+	 * @param repositoryImplNode
+	 *        The node representing the to-be-created repository in the
+	 *        configuration.
+	 * @return The created repository, or <tt>null</tt> if no such repository
+	 *         exists.
+	 * @throws RepositoryConfigException
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
 	private Repository createRepositoryStack(RepositoryImplConfig config)
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		RepositoryFactory factory = RepositoryRegistry.getInstance().get(config.getType());
 		if (factory == null) {
-			throw new StoreConfigException("Unsupported repository type: " + config.getType());
+			throw new RepositoryConfigException("Unsupported repository type: " + config.getType());
 		}
 
 		Repository repository = factory.getRepository(config);
@@ -220,7 +194,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 				((DelegatingRepository)repository).setDelegate(delegate);
 			}
 			catch (ClassCastException e) {
-				throw new StoreConfigException(
+				throw new RepositoryConfigException(
 						"Delegate specified for repository that is not a DelegatingRepository: "
 								+ delegate.getClass());
 			}
@@ -230,61 +204,42 @@ public class LocalRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public String addRepositoryConfig(String id, Model config)
-		throws StoreConfigException, StoreException
-	{
-		parse(config);
-		return super.addRepositoryConfig(id, config);
-	}
-
-	private RepositoryConfig parse(Model config)
-		throws StoreConfigException
-	{
-		RepositoryConfig repConfig = RepositoryConfig.create(config);
-		repConfig.validate();
-		return repConfig;
-	}
-
-	@Override
 	public RepositoryInfo getRepositoryInfo(String id)
-		throws StoreConfigException
+		throws RepositoryException
 	{
-		RepositoryInfo repInfo = null;
-
-		if (id.equals(SystemRepository.ID)) {
-			repInfo = new RepositoryInfo(id, SystemRepository.TITLE);
-		}
-		else {
-			Model model = getRepositoryConfig(id);
-
-			if (model != null) {
-				repInfo = new RepositoryInfo(id);
-
-				try {
-					RepositoryConfig config = parse(model);
-					repInfo.setDescription(config.getTitle());
-				}
-				catch (StoreConfigException e) {
-					logger.warn("Failed to parse configuration for store {}: {})", id, e.getMessage());
-				}
+		try {
+			RepositoryConfig config = null;
+			if (id.equals(SystemRepository.ID)) {
+				config = new RepositoryConfig(id, new SystemRepositoryConfig());
 			}
-		}
+			else {
+				config = getRepositoryConfig(id);
+			}
 
-		if (repInfo != null) {
+			RepositoryInfo repInfo = new RepositoryInfo();
+			repInfo.setId(id);
+			repInfo.setDescription(config.getTitle());
 			try {
 				repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
 			}
-			catch (MalformedURLException e) {
-				throw new StoreConfigException("Location of repository does not resolve to a valid URL", e);
+			catch (MalformedURLException mue) {
+				throw new RepositoryException("Location of repository does not resolve to a valid URL", mue);
 			}
-		}
 
-		return repInfo;
+			repInfo.setReadable(true);
+			repInfo.setWritable(true);
+
+			return repInfo;
+		}
+		catch (RepositoryConfigException e) {
+			// FIXME: don't fetch info through config parsing
+			throw new RepositoryException("Unable to read repository configuration", e);
+		}
 	}
 
 	@Override
 	public List<RepositoryInfo> getAllRepositoryInfos(boolean skipSystemRepo)
-		throws StoreConfigException
+		throws RepositoryException
 	{
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
@@ -326,11 +281,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 		private void registerModifiedContexts(RepositoryConnection conn, Resource... contexts) {
 			Set<Resource> modifiedContexts = getModifiedContexts(conn);
 			// wildcard used for context
-			if (contexts != null && contexts.length == 0) {
+			if (contexts == null) {
 				modifiedAllContextsByConnection.put(conn, true);
 			}
 			else {
-				for (Resource context : OpenRDFUtil.notNull(contexts)) {
+				for (Resource context : contexts) {
 					modifiedContexts.add(context);
 				}
 			}
@@ -372,44 +327,84 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 		@Override
 		public void commit(RepositoryConnection con) {
-			// TODO The SYSTEM repository should be replaced
-			try {
-				List<String> ids = new ArrayList<String>();
-
-				for (Resource ctx : con.getContextIDs().asList()) {
-					Model model = new LinkedHashModel();
-					con.match(null, null, null, false, ctx).addTo(model);
-					String id = getConfigId(model);
-					ids.add(id);
-
-					Model currently = getRepositoryConfig(id);
-					if (currently == null || !currently.equals(model)) {
-						addRepositoryConfig(id, model);
+			// refresh all contexts when a wildcard was used
+			// REMIND: this could still be improved if we knew whether or not a
+			// *repositoryconfig* context was actually modified
+			Boolean fullRefreshNeeded = modifiedAllContextsByConnection.remove(con);
+			if (fullRefreshNeeded != null && fullRefreshNeeded.booleanValue()) {
+				logger.debug("Reacting to commit on SystemRepository for all contexts");
+				refresh();
+			}
+			// refresh only modified contexts that actually contain repository
+			// configurations
+			else {
+				Set<Resource> modifiedContexts = modifiedContextsByConnection.remove(con);
+				Set<Resource> removedContexts = removedContextsByConnection.remove(con);
+				if(removedContexts != null && !removedContexts.isEmpty()) {
+					modifiedContexts.removeAll(removedContexts);
+				}
+				if (modifiedContexts != null) {
+					logger.debug("React to commit on SystemRepository for contexts {}", modifiedContexts);
+					try {
+						RepositoryConnection cleanupCon = getSystemRepository().getConnection();
+						
+						try {
+							// refresh all modified contexts
+							for (Resource context : modifiedContexts) {
+							logger.debug("Processing modified context {}.", context);
+								try {
+									if (isRepositoryConfigContext(cleanupCon, context)) {
+										String repositoryID = getRepositoryID(cleanupCon, context);
+										logger.debug("Reacting to modified repository config for {}", repositoryID);
+										Repository repository = removeInitializedRepository(repositoryID);
+										if (repository != null) {
+											logger.debug("Modified repository {} has been initialized, refreshing...", repositoryID);
+											// refresh single repository
+											refreshRepository(cleanupCon, repositoryID, repository);
+										}
+										else {
+											logger.debug("Modified repository {} has not been initialized, skipping...", repositoryID);
+										}
+									}
+									else {
+										logger.debug("Context {} doesn't contain repository config information.", context);
+									}
+								}
+								catch (RepositoryException re) {
+									logger.error("Failed to process repository configuration changes", re);
+								}
+							}
+						}
+						finally {
+							cleanupCon.close();
+						}
+					}
+					catch (RepositoryException re) {
+						logger.error("Failed to process repository configuration changes", re);
 					}
 				}
-
-				Set<String> old = new HashSet<String>(getRepositoryIDs());
-				old.removeAll(ids);
-				for (String id : old) {
-					removeRepositoryConfig(id);
-				}
-			}
-			catch (StoreException e) {
-				throw new AssertionError(e);
-			}
-			catch (StoreConfigException e) {
-				throw new AssertionError(e);
 			}
 		}
 
-		private String getConfigId(Model config)
-			throws StoreConfigException
+		private boolean isRepositoryConfigContext(RepositoryConnection con, Resource context)
+			throws RepositoryException
 		{
-			Set<Value> ids = config.filter(null, REPOSITORYID, null).objects();
-			if (ids.size() != 1) {
-				throw new StoreConfigException("Repository ID not found");
+			logger.debug("Is {} a repository config context?", context);
+			return con.hasStatement(context, RDF.TYPE, REPOSITORY_CONTEXT, true, (Resource)null);
+		}
+
+		private String getRepositoryID(RepositoryConnection con, Resource context)
+			throws RepositoryException
+		{
+			String result = null;
+
+			RepositoryResult<Statement> idStatements = con.getStatements(null, REPOSITORYID, null, true, context);
+			if (idStatements.hasNext()) {
+				Statement idStatement = idStatements.next();
+				result = idStatement.getObject().stringValue();
 			}
-			return ids.iterator().next().stringValue();
+
+			return result;
 		}
 	}
 

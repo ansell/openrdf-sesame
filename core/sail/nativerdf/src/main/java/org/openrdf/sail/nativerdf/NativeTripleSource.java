@@ -6,14 +6,18 @@
 package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.ExceptionConvertingIteration;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.EvaluationException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 
 public class NativeTripleSource implements TripleSource {
@@ -42,14 +46,38 @@ public class NativeTripleSource implements TripleSource {
 	 * Methods *
 	 *---------*/
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws EvaluationException
+	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
+			URI pred, Value obj, Resource... contexts)
+		throws QueryEvaluationException
 	{
 		try {
-			return nativeStore.createStatementCursor(subj, pred, obj, includeInferred, readTransaction, contexts);
+			return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(
+					nativeStore.createStatementIterator(subj, pred, obj, includeInferred, readTransaction,
+							contexts))
+			{
+
+				@Override
+				protected QueryEvaluationException convert(Exception e) {
+					if (e instanceof ClosedByInterruptException) {
+						return new QueryInterruptedException(e);
+					}
+					else if (e instanceof IOException) {
+						return new QueryEvaluationException(e);
+					}
+					else if (e instanceof RuntimeException) {
+						throw (RuntimeException)e;
+					}
+					else if (e == null) {
+						throw new IllegalArgumentException("e must not be null");
+					}
+					else {
+						throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
+					}
+				}
+			};
 		}
 		catch (IOException e) {
-			throw new EvaluationException("Unable to get statements", e);
+			throw new QueryEvaluationException("Unable to get statements", e);
 		}
 	}
 

@@ -14,32 +14,6 @@ import org.openrdf.sail.StackableSail;
 public class SailUtil {
 
 	/**
-	 * Property used to enable/disable store debugging.
-	 */
-	public static final String DEBUG_PROP = "org.openrdf.repository.debug";
-
-	private static boolean debugEnabled;
-
-	static {
-		try {
-			String value = System.getProperty(DEBUG_PROP);
-			debugEnabled = value != null && !value.equals("false");
-		}
-		catch (SecurityException e) {
-			// Thrown when not allowed to read system properties, for example when
-			// running in applets
-			debugEnabled = false;
-		}
-	}
-
-	/**
-	 * Utility method that checks whether store debugging has been enabled.
-	 */
-	public static boolean isDebugEnabled() {
-		return debugEnabled;
-	}
-
-	/**
 	 * Searches a stack of Sails from top to bottom for a Sail that is an
 	 * instance of the suppied class or interface. The first Sail that matches
 	 * (i.e. the one closest to the top) is returned.
@@ -69,7 +43,7 @@ public class SailUtil {
 			// Current Sail is not an instance of sailClass, check the
 			// rest of the stack
 			if (currentSail instanceof StackableSail) {
-				currentSail = ((StackableSail)currentSail).getDelegate();
+				currentSail = ((StackableSail)currentSail).getBaseSail();
 			}
 			else {
 				// We've reached the bottom of the stack

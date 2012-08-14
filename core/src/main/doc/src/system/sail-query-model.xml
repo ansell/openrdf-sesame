@@ -12,8 +12,8 @@
 
 	<para>
 		The class diagram above shows the Sail Query model from package
-			<ulink url="../api/org/openrdf/sesame/sail/query/package-summary.html">
-			org.openrdf.sesame.sail.query</ulink>.
+			<ulink url="../apidocs/org/openrdf/query/algebra/package-summary.html">
+			org.openrdf.query.algebra</ulink>.
 		The Sail Query Model is a generic model for RDF queries. Queries in
 		various languages (SeRQL, RDQL, ...) are parsed to models built from
 		these classes. Objects of type Query can be handed over to Sail objects

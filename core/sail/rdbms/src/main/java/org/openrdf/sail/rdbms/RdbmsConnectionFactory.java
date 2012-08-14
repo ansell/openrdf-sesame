@@ -7,8 +7,6 @@ package org.openrdf.sail.rdbms;
 
 import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -19,6 +17,7 @@ import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.rdbms.evaluation.QueryBuilderFactory;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
@@ -46,7 +45,6 @@ import org.openrdf.sail.rdbms.schema.URITable;
 import org.openrdf.sail.rdbms.schema.ValueTableFactory;
 import org.openrdf.sail.rdbms.util.DatabaseLockManager;
 import org.openrdf.sail.rdbms.util.Tracer;
-import org.openrdf.store.StoreException;
 
 /**
  * Responsible to initialise and wire all components together that will be
@@ -152,7 +150,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void setTriplesIndexed(boolean triplesIndexed)
-		throws StoreException
+		throws SailException
 	{
 		this.triplesIndexed = triplesIndexed;
 		if (tripleTableManager != null) {
@@ -175,7 +173,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void init()
-		throws StoreException
+		throws SailException
 	{
 		databaseLock = createDatabaseLock();
 		try {
@@ -266,7 +264,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public boolean isWritable()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			return !nsAndTableIndexes.isReadOnly();
@@ -276,26 +274,8 @@ public class RdbmsConnectionFactory {
 		}
 	}
 
-	public URL getLocation()
-		throws StoreException
-	{
-		try {
-			String url = nsAndTableIndexes.getMetaData().getURL();
-			if (url == null) {
-				return null;
-			}
-			return new URL(url);
-		}
-		catch (SQLException e) {
-			throw new RdbmsException(e);
-		}
-		catch (MalformedURLException e) {
-			return null;
-		}
-	}
-
 	public SailConnection createConnection()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			Connection db = getConnection();
@@ -358,7 +338,7 @@ public class RdbmsConnectionFactory {
 	}
 
 	public void shutDown()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			if (tripleTableManager != null) {
@@ -404,13 +384,12 @@ public class RdbmsConnectionFactory {
 	}
 
 	protected Lock createDatabaseLock()
-		throws StoreException
+		throws SailException
 	{
 		DatabaseLockManager manager;
 		manager = new DatabaseLockManager(ds, user, password);
-		if (manager.isDebugEnabled()) {
+		if (manager.isDebugEnabled())
 			return manager.tryLock();
-		}
 		return manager.lockOrFail();
 	}
 
@@ -450,9 +429,8 @@ public class RdbmsConnectionFactory {
 	protected Connection getConnection()
 		throws SQLException
 	{
-		if (user == null) {
+		if (user == null)
 			return ds.getConnection();
-		}
 		return ds.getConnection(user, password);
 	}
 

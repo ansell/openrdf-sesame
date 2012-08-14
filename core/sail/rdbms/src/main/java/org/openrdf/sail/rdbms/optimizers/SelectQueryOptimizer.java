@@ -39,16 +39,14 @@ import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
-import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
@@ -71,16 +69,19 @@ import org.openrdf.sail.rdbms.algebra.base.RdbmsQueryModelVisitorBase;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.algebra.factories.SqlExprFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 import org.openrdf.sail.rdbms.managers.TransTableManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
+import org.openrdf.sail.rdbms.schema.IdSequence;
 
 /**
  * Rewrites the core algebra model with a relation optimised model, using SQL.
  * 
  * @author James Leigh
+ * 
  */
-public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsException> implements
+public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeException> implements
 		QueryOptimizer
 {
 
@@ -98,6 +99,8 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	private TransTableManager tables;
 
+	private IdSequence ids;
+
 	public void setSqlExprFactory(SqlExprFactory sql) {
 		this.sql = sql;
 	}
@@ -110,19 +113,19 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 		this.tables = statements;
 	}
 
-	public void optimize(QueryModel query, BindingSet bindings)
-		throws RdbmsException
-	{
-		if (!query.getDefaultGraphs().isEmpty() || !query.getNamedGraphs().isEmpty()) {
-			this.dataset = new DatasetImpl(query.getDefaultGraphs(), query.getNamedGraphs());
-		}
+	public void setIdSequence(IdSequence ids) {
+		this.ids = ids;
+	}
+
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		this.dataset = dataset;
 		this.bindings = bindings;
-		query.visit(this);
+		tupleExpr.visit(this);
 	}
 
 	@Override
 	public void meet(Distinct node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -134,27 +137,24 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	@Override
 	public void meet(Union node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
-		for (TupleExpr arg : node.getArgs()) {
-			if (!(arg instanceof SelectQuery)) {
-				return;
-			}
-			SelectQuery sq = (SelectQuery)arg;
-			if (sq.isComplex()) {
-				return;
-			}
-		}
-		assert node.getNumberOfArguments() > 0;
+		TupleExpr l = node.getLeftArg();
+		TupleExpr r = node.getRightArg();
+		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
+			return;
+		SelectQuery left = (SelectQuery)l;
+		SelectQuery right = (SelectQuery)r;
+		if (left.isComplex() || right.isComplex())
+			return;
 		UnionItem union = new UnionItem("u" + aliasCount++);
+		union.addUnion(left.getFrom().clone());
+		union.addUnion(right.getFrom().clone());
 		SelectQuery query = new SelectQuery();
 		query.setFrom(union);
-		for (TupleExpr arg : node.getArgs()) {
-			SelectQuery sub = (SelectQuery)arg.clone();
-			union.addUnion(sub.getFrom().clone());
-			mergeSelectClause(query, sub);
-		}
+		mergeSelectClause(query, left);
+		mergeSelectClause(query, right);
 		addProjectionsFromUnion(query, union);
 		node.replaceWith(query);
 	}
@@ -180,54 +180,38 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	@Override
 	public void meet(Join node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
-		for (TupleExpr arg : node.getArgs()) {
-			if (!(arg instanceof SelectQuery)) {
-				return;
-			}
-			SelectQuery sq = (SelectQuery)arg;
-			if (sq.isComplex()) {
-				return;
-			}
-		}
-		assert node.getNumberOfArguments() > 0;
-		SelectQuery left = null;
-		for (TupleExpr arg : node.getArgs()) {
-			if (left == null) {
-				left = (SelectQuery)arg.clone();
-			}
-			else {
-				SelectQuery right = (SelectQuery)arg.clone();
-				filterOn(left, right);
-				mergeSelectClause(left, right);
-				left.addJoin(right);
-			}
-		}
+		TupleExpr l = node.getLeftArg();
+		TupleExpr r = node.getRightArg();
+		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
+			return;
+		SelectQuery left = (SelectQuery)l;
+		SelectQuery right = (SelectQuery)r;
+		if (left.isComplex() || right.isComplex())
+			return;
+		left = left.clone();
+		right = right.clone();
+		filterOn(left, right);
+		mergeSelectClause(left, right);
+		left.addJoin(right);
 		node.replaceWith(left);
 	}
 
 	@Override
 	public void meet(LeftJoin node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
 		TupleExpr l = node.getLeftArg();
 		TupleExpr r = node.getRightArg();
-		if (!(l instanceof SelectQuery && r instanceof SelectQuery)) {
+		if (!(l instanceof SelectQuery && r instanceof SelectQuery))
 			return;
-		}
 		SelectQuery left = (SelectQuery)l;
 		SelectQuery right = (SelectQuery)r;
-		if (left.isComplex() || right.isComplex()) {
+		if (left.isComplex() || right.isComplex())
 			return;
-		}
-		Set<String> names = new HashSet<String>(left.getBindingNames());
-		names.retainAll(right.getBindingNames());
-		if (names.isEmpty()) {
-			return;
-		}
 		left = left.clone();
 		right = right.clone();
 		filterOn(left, right);
@@ -251,9 +235,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 	}
 
 	@Override
-	public void meet(StatementPattern sp)
-		throws RdbmsException
-	{
+	public void meet(StatementPattern sp) {
 		super.meet(sp);
 		Var subjVar = sp.getSubjectVar();
 		Var predVar = sp.getPredicateVar();
@@ -273,9 +255,8 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 		}
 
 		Resource[] contexts = getContexts(sp, ctxValue);
-		if (contexts == null) {
+		if (contexts == null)
 			return;
-		}
 
 		String alias = getTableAlias(predValue) + aliasCount++;
 		Number predId = getInternalId(predValue);
@@ -286,7 +267,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 			present = tables.isPredColumnPresent(predId);
 		}
 		catch (SQLException e) {
-			throw new RdbmsException(e);
+			throw new RdbmsRuntimeException(e);
 		}
 		JoinItem from = new JoinItem(alias, tableName, predId);
 
@@ -314,7 +295,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 					from.addFilter(new SqlEq(new RefIdColumn(var), vc));
 				}
 				catch (RdbmsException e) {
-					throw new RdbmsException(e);
+					throw new RdbmsRuntimeException(e);
 				}
 			}
 			else {
@@ -341,7 +322,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 					longValue = new NumberValue(vf.getInternalId(id));
 				}
 				catch (RdbmsException e) {
-					throw new RdbmsException(e);
+					throw new RdbmsRuntimeException(e);
 				}
 				SqlEq eq = new SqlEq(var.clone(), longValue);
 				if (in == null) {
@@ -358,7 +339,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	@Override
 	public void meet(Filter node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -388,7 +369,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	@Override
 	public void meet(Projection node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -413,7 +394,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	@Override
 	public void meet(Slice node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
 		if (node.getArg() instanceof SelectQuery) {
@@ -430,12 +411,11 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	@Override
 	public void meet(Order node)
-		throws RdbmsException
+		throws RuntimeException
 	{
 		super.meet(node);
-		if (!(node.getArg() instanceof SelectQuery)) {
+		if (!(node.getArg() instanceof SelectQuery))
 			return;
-		}
 		SelectQuery query = (SelectQuery)node.getArg();
 		try {
 			for (OrderElem e : node.getElements()) {
@@ -475,43 +455,40 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 		}
 	}
 
-	private Number getInternalId(Value predValue)
-		throws RdbmsException
-	{
+	private Number getInternalId(Value predValue) {
 		try {
 			return vf.getInternalId(predValue);
 		}
 		catch (RdbmsException e) {
-			throw new RdbmsException(e);
+			throw new RdbmsRuntimeException(e);
 		}
 	}
 
 	private Resource[] getContexts(StatementPattern sp, Value ctxValue) {
-		if (dataset == null) {
-			if (ctxValue != null) {
+		Set<URI> graphs = getGraphs(sp);
+		if (graphs == null) {
+			if (ctxValue != null)
 				return new Resource[] { (Resource)ctxValue };
-			}
 			return new Resource[0];
 		}
-		Set<URI> graphs = getGraphs(sp);
-		if (graphs.isEmpty()) {
+		if (graphs.isEmpty())
 			return null; // Search zero contexts
-		}
-		if (ctxValue == null) {
+		if (ctxValue == null)
 			return graphs.toArray(new Resource[graphs.size()]);
-		}
 
-		if (graphs.contains(ctxValue)) {
+		if (graphs.contains(ctxValue))
 			return new Resource[] { (Resource)ctxValue };
-		}
 		// pattern specifies a context that is not part of the dataset
 		return null;
 	}
 
 	private Set<URI> getGraphs(StatementPattern sp) {
-		if (sp.getScope() == Scope.DEFAULT_CONTEXTS) {
+		if (dataset == null)
+			return null;
+		if (dataset.getDefaultGraphs().isEmpty() && dataset.getNamedGraphs().isEmpty())
+			return null;
+		if (sp.getScope() == Scope.DEFAULT_CONTEXTS)
 			return dataset.getDefaultGraphs();
-		}
 		return dataset.getNamedGraphs();
 	}
 
@@ -542,9 +519,8 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 
 	private boolean isLetters(String alias) {
 		for (int i = 0, n = alias.length(); i < n; i++) {
-			if (!Character.isLetter(alias.charAt(i))) {
+			if (!Character.isLetter(alias.charAt(i)))
 				return false;
-			}
 		}
 		return true;
 	}
@@ -571,9 +547,8 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RdbmsExcept
 	private List<ValueExpr> flatten(ValueExpr condition, List<ValueExpr> conditions) {
 		if (condition instanceof And) {
 			And and = (And)condition;
-			for (ValueExpr arg : and.getArgs()) {
-				flatten(arg, conditions);
-			}
+			flatten(and.getLeftArg(), conditions);
+			flatten(and.getRightArg(), conditions);
 		}
 		else {
 			conditions.add(condition);

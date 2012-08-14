@@ -8,24 +8,29 @@ package org.openrdf.query.parser.sparql;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
 /**
- * A graph pattern consisting of (required and optional) tuple expressions and
- * boolean constraints.
+ * A graph pattern consisting of (required and optional) tuple expressions,
+ * binding assignments and boolean constraints.
  * 
  * @author Arjohn Kampman
  */
-class GraphPattern {
+public class GraphPattern {
 
 	/**
 	 * The context of this graph pattern.
@@ -43,9 +48,10 @@ class GraphPattern {
 	private List<TupleExpr> requiredTEs = new ArrayList<TupleExpr>();
 
 	/**
-	 * The optional tuple expressions in this graph pattern.
+	 * The optional tuple expressions in this graph pattern, mapped to a set of
+	 * constraints applicable to each optional.
 	 */
-	private List<TupleExpr> optionalTEs = new ArrayList<TupleExpr>();
+	private Map<TupleExpr, List<ValueExpr>> optionalTEs = new HashMap<TupleExpr, List<ValueExpr>>();
 
 	/**
 	 * The boolean constraints in this graph pattern.
@@ -95,12 +101,22 @@ class GraphPattern {
 		return Collections.unmodifiableList(requiredTEs);
 	}
 
-	public void addOptionalTE(TupleExpr te) {
-		optionalTEs.add(te);
+	/**
+	 * add the supplied tuple expression as an optional expression, with a list
+	 * of constraints that hold as conditions.
+	 * 
+	 * @param te
+	 *        a tuple expression
+	 * @param constraints
+	 *        a list of constraints that form a condition for the LeftJoin to be
+	 *        formed from the optional TE.
+	 */
+	public void addOptionalTE(TupleExpr te, List<ValueExpr> constraints) {
+		optionalTEs.put(te, constraints);
 	}
 
-	public List<TupleExpr> getOptionalTEs() {
-		return Collections.unmodifiableList(optionalTEs);
+	public Map<TupleExpr, List<ValueExpr>> getOptionalTEs() {
+		return Collections.unmodifiableMap(optionalTEs);
 	}
 
 	public void addConstraint(ValueExpr constraint) {
@@ -142,15 +158,34 @@ class GraphPattern {
 		if (requiredTEs.isEmpty()) {
 			result = new SingletonSet();
 		}
-		else if (requiredTEs.size() == 1) {
-			result = requiredTEs.get(0);
-		}
 		else {
-			result = new Join(requiredTEs);
+			result = requiredTEs.get(0);
+
+			for (int i = 1; i < requiredTEs.size(); i++) {
+				TupleExpr te = requiredTEs.get(i);
+				// if (containsProjection(te) || containsProjection(result))
+				// {
+				// result = new BottomUpJoin(result, te);
+				// }
+				// else {
+				result = new Join(result, te);
+				// }
+			}
 		}
 
-		for (TupleExpr optTE : optionalTEs) {
-			result = new LeftJoin(result, optTE);
+		for (TupleExpr optTE : optionalTEs.keySet()) {
+			List<ValueExpr> constraints = optionalTEs.get(optTE);
+			if (constraints != null && !constraints.isEmpty()) {
+				ValueExpr condition = constraints.get(0);
+				for (int i = 1; i < constraints.size(); i++) {
+					condition = new And(condition, constraints.get(i));
+				}
+
+				result = new LeftJoin(result, optTE, condition);
+			}
+			else {
+				result = new LeftJoin(result, optTE);
+			}
 		}
 
 		for (ValueExpr constraint : constraints) {
@@ -159,4 +194,5 @@ class GraphPattern {
 
 		return result;
 	}
+
 }

@@ -12,8 +12,6 @@ package org.openrdf.query.algebra;
  */
 public class LocalName extends UnaryValueOperator {
 
-	private static final long serialVersionUID = 343832787278986470L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -33,6 +31,16 @@ public class LocalName extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof LocalName && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "LocalName".hashCode();
 	}
 
 	@Override

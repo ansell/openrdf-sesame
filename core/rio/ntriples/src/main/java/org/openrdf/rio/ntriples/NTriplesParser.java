@@ -316,7 +316,7 @@ public class NTriplesParser extends RDFParserBase {
 	private int parseObject(int c)
 		throws IOException, RDFParseException
 	{
-		StringBuilder sb = new StringBuilder(100);
+		StringBuilder sb = getBuffer();
 
 		// object is either an uriref (<foo://bar>), a nodeID (_:node1) or a
 		// literal ("foo"-en or "1"^^<xsd:integer>).
@@ -332,8 +332,8 @@ public class NTriplesParser extends RDFParserBase {
 		}
 		else if (c == '"') {
 			// object is a literal
-			StringBuilder lang = new StringBuilder(8);
-			StringBuilder datatype = new StringBuilder(40);
+			StringBuilder lang = getLanguageTagBuffer();
+			StringBuilder datatype = getDatatypeUriBuffer();
 			c = parseLiteral(c, sb, lang, datatype);
 			object = createLiteral(sb.toString(), lang.toString(), datatype.toString());
 		}
@@ -551,4 +551,67 @@ public class NTriplesParser extends RDFParserBase {
 	{
 		throw new RDFParseException("Unexpected end of file");
 	}
+
+	/**
+	 * Return a buffer of zero length and non-zero capacity. The same buffer is
+	 * reused for each thing which is parsed. This reduces the heap churn
+	 * substantially. However, you have to watch out for side-effects and convert
+	 * the buffer to a {@link String} before the buffer is reused.
+	 * 
+	 * @param capacityIsIgnored
+	 * @return
+	 */
+	private StringBuilder getBuffer() {
+		buffer.setLength(0);
+		return buffer;
+	}
+
+	private final StringBuilder buffer = new StringBuilder(100);
+
+	/**
+	 * Return a buffer for the use of parsing literal language tags. The buffer
+	 * is of zero length and non-zero capacity. The same buffer is reused for
+	 * each tag which is parsed. This reduces the heap churn substantially.
+	 * However, you have to watch out for side-effects and convert the buffer to
+	 * a {@link String} before the buffer is reused.
+	 * 
+	 * @param capacityIsIgnored
+	 * @return
+	 */
+	private StringBuilder getLanguageTagBuffer() {
+		languageTagBuffer.setLength(0);
+		return languageTagBuffer;
+	}
+
+	private final StringBuilder languageTagBuffer = new StringBuilder(8);
+
+	/**
+	 * Return a buffer for the use of parsing literal datatype URIs. The buffer
+	 * is of zero length and non-zero capacity. The same buffer is reused for
+	 * each datatype which is parsed. This reduces the heap churn substantially.
+	 * However, you have to watch out for side-effects and convert the buffer to
+	 * a {@link String} before the buffer is reused.
+	 * 
+	 * @param capacityIsIgnored
+	 * @return
+	 */
+	private StringBuilder getDatatypeUriBuffer() {
+		datatypeUriBuffer.setLength(0);
+		return datatypeUriBuffer;
+	}
+
+	private final StringBuilder datatypeUriBuffer = new StringBuilder(40);
+
+	@Override
+	protected void clear() {
+		super.clear();
+		// get rid of anything large left in the buffers.
+		buffer.setLength(0);
+		buffer.trimToSize();
+		languageTagBuffer.setLength(0);
+		languageTagBuffer.trimToSize();
+		datatypeUriBuffer.setLength(0);
+		datatypeUriBuffer.trimToSize();
+	}
+
 }

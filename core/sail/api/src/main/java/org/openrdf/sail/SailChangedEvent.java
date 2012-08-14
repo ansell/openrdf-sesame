@@ -18,17 +18,17 @@ public interface SailChangedEvent {
 
 	/**
 	 * Indicates if statements were added to the Sail.
-	 * 
+	 *
 	 * @return <tt>true</tt> if statements were added during a transaction,
-	 *         <tt>false</tt> otherwise.
+	 * <tt>false</tt> otherwise.
 	 */
 	public boolean statementsAdded();
 
 	/**
 	 * Indicates if statements were removed from the Sail.
-	 * 
+	 *
 	 * @return <tt>true</tt> if statements were removed during a transaction,
-	 *         <tt>false</tt> otherwise.
+	 * <tt>false</tt> otherwise.
 	 */
 	public boolean statementsRemoved();
 

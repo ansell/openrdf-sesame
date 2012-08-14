@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.base.ValueColumnBase;
  * Represents the BNode value of a variable.
  * 
  * @author James Leigh
+ * 
  */
 public class BNodeColumn extends ValueColumnBase {
 

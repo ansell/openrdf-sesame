@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
+import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Resource;
@@ -32,14 +33,19 @@ import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.EvaluationException;
 import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.MutableTupleQueryResult;
+import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
 import org.openrdf.query.resultio.QueryResultIO;
@@ -47,20 +53,15 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
-import org.openrdf.result.GraphResult;
-import org.openrdf.result.TupleResult;
-import org.openrdf.result.impl.MutableTupleResult;
-import org.openrdf.result.util.QueryResultUtil;
-import org.openrdf.result.util.TupleQueryResultBuilder;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.store.StoreException;
 
 public abstract class SPARQLQueryTest extends TestCase {
 
@@ -80,13 +81,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected final boolean laxCardinality;
 
+	protected final boolean checkOrder;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	protected Repository dataRep;
-
-	protected RepositoryConnection con;
 
 	/*--------------*
 	 * Constructors *
@@ -95,6 +96,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality)
 	{
+		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
+	}
+
+	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+	{
 		super(name);
 
 		this.testURI = testURI;
@@ -102,6 +109,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		this.resultFileURL = resultFileURL;
 		this.dataset = dataSet;
 		this.laxCardinality = laxCardinality;
+		this.checkOrder = checkOrder;
 	}
 
 	/*---------*
@@ -129,8 +137,6 @@ public abstract class SPARQLQueryTest extends TestCase {
 				throw exc;
 			}
 		}
-
-		con = dataRep.getConnection();
 	}
 
 	protected Repository createRepository()
@@ -156,11 +162,6 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void tearDown()
 		throws Exception
 	{
-		if (con != null) {
-			con.close();
-			con = null;
-		}
-
 		if (dataRep != null) {
 			dataRep.shutDown();
 			dataRep = null;
@@ -171,54 +172,56 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-		String queryString = readQueryString();
-		Query query = prepareQuery(queryString);
+		RepositoryConnection con = dataRep.getConnection();
+		try {
+			String queryString = readQueryString();
+			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
+			if (dataset != null) {
+				query.setDataset(dataset);
+			}
 
-		if (query instanceof TupleQuery) {
-			TupleResult queryResult = ((TupleQuery)query).evaluate();
+			String name = this.getName();
 
-			TupleResult expectedResult = readExpectedTupleQueryResult();
-			compareTupleQueryResults(queryResult, expectedResult);
+			if (query instanceof TupleQuery) {
+				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
 
-			// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
-			// Graph expectedGraph = readExpectedTupleQueryResult();
-			// compareGraphs(queryGraph, expectedGraph);
+				TupleQueryResult expectedResult = readExpectedTupleQueryResult();
+
+				compareTupleQueryResults(queryResult, expectedResult);
+
+				// Graph queryGraph = RepositoryUtil.asGraph(queryResult);
+				// Graph expectedGraph = readExpectedTupleQueryResult();
+				// compareGraphs(queryGraph, expectedGraph);
+			}
+			else if (query instanceof GraphQuery) {
+				GraphQueryResult gqr = ((GraphQuery)query).evaluate();
+				Set<Statement> queryResult = Iterations.asSet(gqr);
+
+				Set<Statement> expectedResult = readExpectedGraphQueryResult();
+
+				compareGraphs(queryResult, expectedResult);
+			}
+			else if (query instanceof BooleanQuery) {
+				boolean queryResult = ((BooleanQuery)query).evaluate();
+				boolean expectedResult = readExpectedBooleanQueryResult();
+				assertEquals(expectedResult, queryResult);
+			}
+			else {
+				throw new RuntimeException("Unexpected query type: " + query.getClass());
+			}
 		}
-		else if (query instanceof GraphQuery) {
-			GraphResult gqr = ((GraphQuery)query).evaluate();
-			Set<Statement> queryResult = gqr.asSet();
-
-			Set<Statement> expectedResult = readExpectedGraphQueryResult();
-
-			compareGraphs(queryResult, expectedResult);
-		}
-		else if (query instanceof BooleanQuery) {
-			boolean queryResult = ((BooleanQuery)query).ask();
-			boolean expectedResult = readExpectedBooleanQueryResult();
-			assertEquals(expectedResult, queryResult);
-		}
-		else {
-			throw new RuntimeException("Unexpected query type: " + query.getClass());
+		finally {
+			con.close();
 		}
 	}
 
-	protected Query prepareQuery(String queryString)
-		throws StoreException
-	{
-		Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
-		if (dataset != null) {
-			query.setDataset(dataset);
-		}
-		return query;
-	}
-
-	private void compareTupleQueryResults(TupleResult queryResult, TupleResult expectedResult)
+	private void compareTupleQueryResults(TupleQueryResult queryResult, TupleQueryResult expectedResult)
 		throws Exception
 	{
 		// Create MutableTupleQueryResult to be able to re-iterate over the
 		// results
-		MutableTupleResult queryResultTable = new MutableTupleResult(queryResult);
-		MutableTupleResult expectedResultTable = new MutableTupleResult(expectedResult);
+		MutableTupleQueryResult queryResultTable = new MutableTupleQueryResult(queryResult);
+		MutableTupleQueryResult expectedResultTable = new MutableTupleQueryResult(expectedResult);
 
 		boolean resultsEqual;
 		if (laxCardinality) {
@@ -226,6 +229,22 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 		else {
 			resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
+
+			if (checkOrder) {
+				// also check the order in which solutions occur.
+				queryResultTable.beforeFirst();
+				expectedResultTable.beforeFirst();
+
+				while (queryResultTable.hasNext()) {
+					BindingSet bs = queryResultTable.next();
+					BindingSet expectedBs = expectedResultTable.next();
+
+					if (!bs.equals(expectedBs)) {
+						resultsEqual = false;
+						break;
+					}
+				}
+			}
 		}
 
 		if (!resultsEqual) {
@@ -249,8 +268,9 @@ public abstract class SPARQLQueryTest extends TestCase {
 			 * message.append("========================\n");
 			 */
 
-			List<BindingSet> queryBindings = queryResultTable.asList();
-			List<BindingSet> expectedBindings = expectedResultTable.asList();
+			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
+
+			List<BindingSet> expectedBindings = Iterations.asList(expectedResultTable);
 
 			List<BindingSet> missingBindings = new ArrayList<BindingSet>(expectedBindings);
 			missingBindings.removeAll(queryBindings);
@@ -264,6 +284,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			message.append(" =======================\n");
 
 			if (!missingBindings.isEmpty()) {
+
 				message.append("Missing bindings: \n");
 				for (BindingSet bs : missingBindings) {
 					message.append(bs);
@@ -287,9 +308,49 @@ public abstract class SPARQLQueryTest extends TestCase {
 				message.append("========================\n");
 			}
 
+			if (checkOrder && missingBindings.isEmpty() && unexpectedBindings.isEmpty()) {
+				message.append("Results are not in expected order.\n");
+				message.append(" =======================\n");
+				message.append("query result: \n");
+				for (BindingSet bs : queryBindings) {
+					message.append(bs);
+					message.append("\n");
+				}
+				message.append(" =======================\n");
+				message.append("expected result: \n");
+				for (BindingSet bs : expectedBindings) {
+					message.append(bs);
+					message.append("\n");
+				}
+				message.append(" =======================\n");
+
+				System.out.print(message.toString());
+			}
+
 			logger.error(message.toString());
 			fail(message.toString());
 		}
+		/* debugging only: print out result when test succeeds 
+		else {
+			queryResultTable.beforeFirst();
+
+			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
+			StringBuilder message = new StringBuilder(128);
+
+			message.append("\n============ ");
+			message.append(getName());
+			message.append(" =======================\n");
+
+			message.append(" =======================\n");
+			message.append("query result: \n");
+			for (BindingSet bs: queryBindings) {
+				message.append(bs);
+				message.append("\n");
+			}
+			
+			System.out.print(message.toString());
+		}
+		*/
 	}
 
 	private void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)
@@ -368,11 +429,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
-
-		con.begin();
+		con.setAutoCommit(false);
 		try {
 			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
-			RDFParser rdfParser = Rio.createParser(rdfFormat, con.getValueFactory());
+			RDFParser rdfParser = Rio.createParser(rdfFormat, dataRep.getValueFactory());
 			rdfParser.setVerifyData(false);
 			rdfParser.setDatatypeHandling(DatatypeHandling.IGNORE);
 			// rdfParser.setPreserveBNodeIDs(true);
@@ -390,7 +450,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				in.close();
 			}
 
-			con.commit();
+			con.setAutoCommit(true);
 		}
 		finally {
 			con.close();
@@ -409,7 +469,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private TupleResult readExpectedTupleQueryResult()
+	private TupleQueryResult readExpectedTupleQueryResult()
 		throws Exception
 	{
 		TupleQueryResultFormat tqrFormat = QueryResultIO.getParserFormatForFileName(resultFileURL);
@@ -418,6 +478,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
 				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
+				parser.setValueFactory(dataRep.getValueFactory());
 
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
 				parser.setTupleQueryResultHandler(qrBuilder);
@@ -465,6 +526,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			RDFParser parser = Rio.createParser(rdfFormat);
 			parser.setDatatypeHandling(DatatypeHandling.IGNORE);
 			parser.setPreserveBNodeIDs(true);
+			parser.setValueFactory(dataRep.getValueFactory());
 
 			Set<Statement> result = new LinkedHashSet<Statement>();
 			parser.setRDFHandler(new StatementCollector(result));
@@ -488,9 +550,18 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 				String resultFileURL, Dataset dataSet, boolean laxCardinality);
+
+		SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+				String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder);
 	}
 
 	public static TestSuite suite(String manifestFileURL, Factory factory)
+		throws Exception
+	{
+		return suite(manifestFileURL, factory, true);
+	}
+
+	public static TestSuite suite(String manifestFileURL, Factory factory, boolean approvedOnly)
 		throws Exception
 	{
 		logger.info("Building test suite for {}", manifestFileURL);
@@ -509,16 +580,34 @@ public abstract class SPARQLQueryTest extends TestCase {
 		// Extract test case information from the manifest file. Note that we only
 		// select those test cases that are mentioned in the list.
 		StringBuilder query = new StringBuilder(512);
-		query.append(" SELECT DISTINCT testURI, testName, resultFile, action, queryFile, defaultGraph ");
-		query.append(" FROM {} rdf:first {testURI} dawgt:approval {dawgt:Approved}; ");
+		query.append(" SELECT DISTINCT testURI, testName, resultFile, action, queryFile, defaultGraph, ordered ");
+		query.append(" FROM {} rdf:first {testURI} ");
+		if (approvedOnly) {
+			query.append("                          dawgt:approval {dawgt:Approved}; ");
+		}
 		query.append("                             mf:name {testName}; ");
 		query.append("                             mf:result {resultFile}; ");
+		query.append("                             [ mf:checkOrder {ordered} ]; ");
+		query.append("                             [ mf:requires {Requirement} ];");
 		query.append("                             mf:action {action} qt:query {queryFile}; ");
-		query.append("                                               [qt:data {defaultGraph}] ");
+		query.append("                                               [qt:data {defaultGraph}]; ");
+		query.append("                                               [sd:entailmentRegime {Regime} ]");
+
+		// skip tests involving CSV result files, these are not query tests
+		query.append(" WHERE NOT resultFile LIKE \"*.csv\" ");
+		// skip tests involving JSON, sesame currently does not have a SPARQL/JSON
+		// parser.
+		query.append(" AND NOT resultFile LIKE \"*.srj\" ");
+		// skip tests involving entailment regimes
+		query.append(" AND NOT BOUND(Regime) ");
+		// skip test involving basic federation, these are tested separately.
+		query.append(" AND (NOT BOUND(Requirement) OR (Requirement != mf:BasicFederation)) ");
 		query.append(" USING NAMESPACE ");
 		query.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, ");
 		query.append("  dawgt = <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>, ");
-		query.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>");
+		query.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>, ");
+		query.append("  sd = <http://www.w3.org/ns/sparql-service-description#>, ");
+		query.append("  ent = <http://www.w3.org/ns/entailment/> ");
 		TupleQuery testCaseQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
 
 		query.setLength(0);
@@ -535,7 +624,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		TupleQuery laxCardinalityQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
 
 		logger.debug("evaluating query..");
-		TupleResult testCases = testCaseQuery.evaluate();
+		TupleQueryResult testCases = testCaseQuery.evaluate();
 		while (testCases.hasNext()) {
 			BindingSet bindingSet = testCases.next();
 
@@ -545,12 +634,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 			String queryFile = bindingSet.getValue("queryFile").toString();
 			URI defaultGraphURI = (URI)bindingSet.getValue("defaultGraph");
 			Value action = bindingSet.getValue("action");
+			Value ordered = bindingSet.getValue("ordered");
 
 			logger.debug("found test case : {}", testName);
 
 			// Query named graphs
 			namedGraphsQuery.setBinding("action", action);
-			TupleResult namedGraphs = namedGraphsQuery.evaluate();
+			TupleQueryResult namedGraphs = namedGraphsQuery.evaluate();
 
 			DatasetImpl dataset = null;
 
@@ -564,6 +654,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				while (namedGraphs.hasNext()) {
 					BindingSet graphBindings = namedGraphs.next();
 					URI namedGraphURI = (URI)graphBindings.getValue("graph");
+					logger.debug(" adding named graph : {}", namedGraphURI);
 					dataset.addNamedGraph(namedGraphURI);
 				}
 			}
@@ -571,7 +662,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			// Check for lax-cardinality conditions
 			boolean laxCardinality = false;
 			laxCardinalityQuery.setBinding("testURI", testURI);
-			TupleResult laxCardinalityResult = laxCardinalityQuery.evaluate();
+			TupleQueryResult laxCardinalityResult = laxCardinalityQuery.evaluate();
 			try {
 				laxCardinality = laxCardinalityResult.hasNext();
 			}
@@ -579,8 +670,26 @@ public abstract class SPARQLQueryTest extends TestCase {
 				laxCardinalityResult.close();
 			}
 
+			// if this is enabled, Sesame passes all tests, showing that the only
+			// difference is the semantics of arbitrary-length
+			// paths
+			/*
+			if (!laxCardinality) {
+				// property-path tests always with lax cardinality because Sesame filters out duplicates by design
+				if (testURI.stringValue().contains("property-path")) {
+					laxCardinality = true;
+				}
+			}
+			*/
+
+			// check if we should test for query result ordering
+			boolean checkOrder = false;
+			if (ordered != null) {
+				checkOrder = Boolean.parseBoolean(ordered.stringValue());
+			}
+
 			SPARQLQueryTest test = factory.createSPARQLQueryTest(testURI.toString(), testName, queryFile,
-					resultFile, dataset, laxCardinality);
+					resultFile, dataset, laxCardinality, checkOrder);
 			if (test != null) {
 				suite.addTest(test);
 			}
@@ -596,13 +705,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected static String getManifestName(Repository manifestRep, RepositoryConnection con,
 			String manifestFileURL)
-		throws EvaluationException, StoreException, MalformedQueryException
+		throws QueryEvaluationException, RepositoryException, MalformedQueryException
 	{
 		// Try to extract suite name from manifest file
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
 				"SELECT ManifestName FROM {ManifestURL} rdfs:label {ManifestName}");
-		manifestNameQuery.setBinding("ManifestURL", con.getValueFactory().createURI(manifestFileURL));
-		TupleResult manifestNames = manifestNameQuery.evaluate();
+		manifestNameQuery.setBinding("ManifestURL", manifestRep.getValueFactory().createURI(manifestFileURL));
+		TupleQueryResult manifestNames = manifestNameQuery.evaluate();
 		try {
 			if (manifestNames.hasNext()) {
 				return manifestNames.next().getValue("ManifestName").stringValue();

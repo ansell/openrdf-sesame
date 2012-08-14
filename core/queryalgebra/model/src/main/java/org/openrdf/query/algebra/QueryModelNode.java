@@ -5,12 +5,10 @@
  */
 package org.openrdf.query.algebra;
 
-import java.io.Serializable;
-
 /**
  * Main interface for all query model nodes.
  */
-public interface QueryModelNode extends Cloneable, Serializable {
+public interface QueryModelNode extends Cloneable {
 
 	/**
 	 * Visits this node. The node reports itself to the visitor with the proper
@@ -65,7 +63,13 @@ public interface QueryModelNode extends Cloneable, Serializable {
 	 * @throws ClassCastException
 	 *         If <tt>replacement</tt> is of an incompatible type.
 	 */
-	public <N extends QueryModelNode> N replaceWith(N replacement);
+	public void replaceWith(QueryModelNode replacement);
+
+	/**
+	 * Returns <tt>true</tt> if this query model node and its children are
+	 * recursively equal to <tt>o</tt> and its children.
+	 */
+	public boolean equals(Object o);
 
 	/**
 	 * Returns an indented print of the node tree, starting from this node.

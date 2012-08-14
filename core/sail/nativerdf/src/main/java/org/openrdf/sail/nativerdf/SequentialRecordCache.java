@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,10 +7,10 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.NoSuchElementException;
+
+import info.aduna.io.NioFile;
 
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
@@ -20,19 +20,30 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * 
  * @author Arjohn Kampman
  */
-class SequentialRecordCache extends RecordCache {
+final class SequentialRecordCache extends RecordCache {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+	/**
+	 * Magic number "Sequential Record Cache" to detect whether the file is
+	 * actually a sequential record cache file. The first three bytes of the file
+	 * should be equal to this magic number.
+	 */
+	private static final byte[] MAGIC_NUMBER = new byte[] { 's', 'r', 'c' };
 
-	protected final File cacheFile;
+	/**
+	 * The file format version number, stored as the fourth byte in sequential
+	 * record cache files.
+	 */
+	private static final byte FILE_FORMAT_VERSION = 1;
 
-	protected final RandomAccessFile raf;
+	private static final int HEADER_LENGTH = MAGIC_NUMBER.length + 1;
 
-	protected final FileChannel fileChannel;
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
-	protected final int recordSize;
+	private final NioFile nioFile;
+
+	private final int recordSize;
 
 	/*--------------*
 	 * Constructors *
@@ -50,9 +61,12 @@ class SequentialRecordCache extends RecordCache {
 		super(maxRecords);
 		this.recordSize = recordSize;
 
-		this.cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
-		raf = new RandomAccessFile(cacheFile, "rw");
-		fileChannel = raf.getChannel();
+		File cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
+		nioFile = new NioFile(cacheFile);
+
+		// Write file header
+		nioFile.writeBytes(MAGIC_NUMBER, 0);
+		nioFile.writeByte(FILE_FORMAT_VERSION, MAGIC_NUMBER.length);
 	}
 
 	/*---------*
@@ -63,28 +77,25 @@ class SequentialRecordCache extends RecordCache {
 	public void discard()
 		throws IOException
 	{
-		try {
-			try {
-				fileChannel.close();
-			}
-			finally {
-				raf.close();
-			}
-		}
-		finally {
-			cacheFile.delete();
-		}
+		nioFile.delete();
 	}
 
 	@Override
-	public void storeRecordInternal(byte[] data)
+	protected void clearInternal()
 		throws IOException
 	{
-		fileChannel.write(ByteBuffer.wrap(data), fileChannel.size());
+		nioFile.truncate(HEADER_LENGTH);
 	}
 
 	@Override
-	public RecordIterator getRecordsInternal() {
+	protected void storeRecordInternal(byte[] data)
+		throws IOException
+	{
+		nioFile.writeBytes(data, nioFile.size());
+	}
+
+	@Override
+	protected RecordIterator getRecordsInternal() {
 		return new RecordCacheIterator();
 	}
 
@@ -94,16 +105,16 @@ class SequentialRecordCache extends RecordCache {
 
 	protected class RecordCacheIterator implements RecordIterator {
 
-		private long position = 0L;
+		private long position = HEADER_LENGTH;
 
 		public byte[] next()
 			throws IOException
 		{
-			if (position + recordSize <= fileChannel.size()) {
+			if (position + recordSize <= nioFile.size()) {
 				byte[] data = new byte[recordSize];
 				ByteBuffer buf = ByteBuffer.wrap(data);
 
-				int bytesRead = fileChannel.read(buf, position);
+				int bytesRead = nioFile.read(buf, position);
 
 				if (bytesRead < 0) {
 					throw new NoSuchElementException("No more elements available");
@@ -120,8 +131,8 @@ class SequentialRecordCache extends RecordCache {
 		public void set(byte[] value)
 			throws IOException
 		{
-			if (position >= recordSize && position <= fileChannel.size()) {
-				fileChannel.write(ByteBuffer.wrap(value), position - recordSize);
+			if (position >= HEADER_LENGTH + recordSize && position <= nioFile.size()) {
+				nioFile.writeBytes(value, position - recordSize);
 			}
 		}
 

@@ -6,23 +6,22 @@
 package org.openrdf.sail.rdbms.postgresql;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
 
 /**
  * Includes the {@link PgSqlRegexFlagsInliner} is the optimisation process.
  * 
  * @author James Leigh
+ * 
  */
 public class PgSqlQueryOptimizer extends RdbmsQueryOptimizer {
 
 	@Override
-	protected void rdbmsOptimizations(QueryModel query, BindingSet bindings)
-		throws RdbmsException
-	{
-		super.rdbmsOptimizations(query, bindings);
-		new PgSqlRegexFlagsInliner().optimize(query, bindings);
+	protected void rdbmsOptimizations(TupleExpr expr, Dataset dataset, BindingSet bindings) {
+		super.rdbmsOptimizations(expr, dataset, bindings);
+		new PgSqlRegexFlagsInliner().optimize(expr, dataset, bindings);
 	}
 
 }

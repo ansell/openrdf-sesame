@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,9 +9,21 @@ package org.openrdf.query.algebra;
  * An abstract superclass for binary tuple operators which, by definition, has
  * two arguments.
  */
-public abstract class BinaryTupleOperator extends NaryTupleOperator implements TupleExpr {
+public abstract class BinaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
 
-	private static final long serialVersionUID = -2448897680662339140L;
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	/**
+	 * The operator's left argument.
+	 */
+	protected TupleExpr leftArg;
+
+	/**
+	 * The operator's right argument.
+	 */
+	protected TupleExpr rightArg;
 
 	/*--------------*
 	 * Constructors *
@@ -29,7 +41,8 @@ public abstract class BinaryTupleOperator extends NaryTupleOperator implements T
 	 *        The operator's right argument, must not be <tt>null</tt>.
 	 */
 	public BinaryTupleOperator(TupleExpr leftArg, TupleExpr rightArg) {
-		super(leftArg, rightArg);
+		setLeftArg(leftArg);
+		setRightArg(rightArg);
 	}
 
 	/*---------*
@@ -42,7 +55,7 @@ public abstract class BinaryTupleOperator extends NaryTupleOperator implements T
 	 * @return The operator's left argument.
 	 */
 	public TupleExpr getLeftArg() {
-		return getArg(0);
+		return leftArg;
 	}
 
 	/**
@@ -53,7 +66,9 @@ public abstract class BinaryTupleOperator extends NaryTupleOperator implements T
 	 *        <tt>null</tt>.
 	 */
 	public void setLeftArg(TupleExpr leftArg) {
-		setArg(0, leftArg);
+		assert leftArg != null : "leftArg must not be null";
+		leftArg.setParentNode(this);
+		this.leftArg = leftArg;
 	}
 
 	/**
@@ -62,7 +77,7 @@ public abstract class BinaryTupleOperator extends NaryTupleOperator implements T
 	 * @return The operator's right argument.
 	 */
 	public TupleExpr getRightArg() {
-		return getArg(1);
+		return rightArg;
 	}
 
 	/**
@@ -73,11 +88,52 @@ public abstract class BinaryTupleOperator extends NaryTupleOperator implements T
 	 *        <tt>null</tt>.
 	 */
 	public void setRightArg(TupleExpr rightArg) {
-		setArg(1, rightArg);
+		assert rightArg != null : "rightArg must not be null";
+		rightArg.setParentNode(this);
+		this.rightArg = rightArg;
+	}
+
+	@Override
+	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
+		throws X
+	{
+		leftArg.visit(visitor);
+		rightArg.visit(visitor);
+	}
+
+	@Override
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
+		if (leftArg == current) {
+			setLeftArg((TupleExpr)replacement);
+		}
+		else if (rightArg == current) {
+			setRightArg((TupleExpr)replacement);
+		}
+		else {
+			super.replaceChildNode(current, replacement);
+		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof BinaryTupleOperator) {
+			BinaryTupleOperator o = (BinaryTupleOperator)other;
+			return leftArg.equals(o.getLeftArg()) && rightArg.equals(o.getRightArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return leftArg.hashCode() ^ rightArg.hashCode();
 	}
 
 	@Override
 	public BinaryTupleOperator clone() {
-		return (BinaryTupleOperator)super.clone();
+		BinaryTupleOperator clone = (BinaryTupleOperator)super.clone();
+		clone.setLeftArg(getLeftArg().clone());
+		clone.setRightArg(getRightArg().clone());
+		return clone;
 	}
 }

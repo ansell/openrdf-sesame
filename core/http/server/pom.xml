@@ -5,86 +5,111 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-http</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>2.6.9-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-http-server</artifactId>
+	<packaging>war</packaging>
 
-	<name>OpenRDF Sesame: HTTP server - core</name>
+	<name>OpenRDF Sesame: HTTP server</name>
 	<description>HTTP server implementing a REST-style protocol</description>
-
-	<repositories>
-		<repository>
-			<id>maven-restlet</id>
-			<name>Public online Restlet repository</name>
-			<url>http://maven.restlet.org</url>
-		</repository>
-	</repositories>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-queryalgebra-evaluation</artifactId>
+			<artifactId>sesame-http-server-spring</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-runtime</artifactId>
+			<artifactId>sesame-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>info.aduna.appbase</groupId>
-			<artifactId>aduna-appbase-core</artifactId>
+			<groupId>org.tuckey</groupId>
+			<artifactId>urlrewritefilter</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.restlet.jee</groupId>
-			<artifactId>org.restlet</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>org.restlet.jee</groupId>
-			<artifactId>org.restlet.ext.xml</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<!-- needed for restlet -->
 			<groupId>org.slf4j</groupId>
-			<artifactId>jul-to-slf4j</artifactId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
+
+	<scm>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/http/server</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/http/server</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/http/server</url>
+	</scm>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
+				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-					<encoding>utf8</encoding>
+					<warName>openrdf-sesame</warName>
+					<archiveClasses>true</archiveClasses>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tomcat-maven-plugin</artifactId>
+				<configuration>
+					<warFile>${project.build.directory}/${project.artifactId}.war</warFile>
+					<server>localhost</server>
+					<path>/openrdf-sesame</path>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
-	<scm>
-		<connection>scm:svn:http://repo.aduna-software.org/svn/sandbox/arjohn/server-restlet</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/sandbox/arjohn/server-restlet</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/sandbox/arjohn/server-restlet</url>
-	</scm>
+	<profiles>
+		<profile>
+			<id>spring.ide</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-eclipse-plugin</artifactId>
+						<configuration>
+							<wtpversion>1.5</wtpversion>
+							<wtpContextName>openrdf-sesame</wtpContextName>
+							<additionalBuildcommands>
+								<buildCommand>
+									<name>
+										org.springframework.ide.eclipse.core.springbuilder
+									</name>
+								</buildCommand>
+							</additionalBuildcommands>
+							<additionalProjectnatures>
+								<projectnature>
+									org.springframework.ide.eclipse.core.springnature
+								</projectnature>
+							</additionalProjectnatures>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

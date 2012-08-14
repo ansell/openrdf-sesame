@@ -22,16 +22,16 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -72,7 +72,7 @@ public abstract class TriGParserTestCase {
 				+ "USING NAMESPACE " + "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
 				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
 
-		TupleResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 
 		// Add all positive parser tests to the test suite
 		while (queryResult.hasNext()) {
@@ -165,29 +165,20 @@ public abstract class TriGParserTestCase {
 			turtleParser.setRDFHandler(inputCollector);
 
 			InputStream in = inputURL.openStream();
-			try {
-				turtleParser.parse(in, base(baseURL));
-			}
-			finally {
-				in.close();
-			}
+			turtleParser.parse(in, base(baseURL));
+			in.close();
 
 			// Parse expected output data
-			RDFFormat outputFormat = Rio.getParserFormatForFileName(outputURL.toExternalForm());
-			RDFParser outputParser = Rio.createParser(outputFormat);
-			outputParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			NTriplesParser ntriplesParser = new NTriplesParser();
+			ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
 			StatementCollector outputCollector = new StatementCollector(outputCollection);
-			outputParser.setRDFHandler(outputCollector);
+			ntriplesParser.setRDFHandler(outputCollector);
 
 			in = outputURL.openStream();
-			try {
-				outputParser.parse(in, base(baseURL));
-			}
-			finally {
-				in.close();
-			}
+			ntriplesParser.parse(in, base(baseURL));
+			in.close();
 
 			// Check equality of the two models
 			if (!ModelUtil.equals(inputCollection, outputCollection)) {
@@ -268,8 +259,7 @@ public abstract class TriGParserTestCase {
 	} // end inner class NegativeParserTest
 
 	private static URL url(String uri)
-		throws MalformedURLException
-	{
+			throws MalformedURLException {
 		if (!uri.startsWith("injar:"))
 			return new URL(uri);
 		int start = uri.indexOf(':') + 3;
@@ -278,8 +268,7 @@ public abstract class TriGParserTestCase {
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -293,8 +282,7 @@ public abstract class TriGParserTestCase {
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

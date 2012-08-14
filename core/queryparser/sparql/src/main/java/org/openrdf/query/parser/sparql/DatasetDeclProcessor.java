@@ -9,12 +9,14 @@ import java.util.List;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.sparql.ast.ASTDatasetClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
-import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
+import org.openrdf.query.parser.sparql.ast.ASTOperation;
+import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 
 /**
  * Extracts a SPARQL {@link Dataset} from an ASTQueryContainer, if one is
@@ -34,30 +36,40 @@ public class DatasetDeclProcessor {
 	 * @throws MalformedQueryException
 	 *         If DatasetClause does not contain a valid URI.
 	 */
-	public static Dataset process(ASTQueryContainer qc)
+	public static Dataset process(ASTOperationContainer qc)
 		throws MalformedQueryException
 	{
 		DatasetImpl dataset = null;
 
-		List<ASTDatasetClause> datasetClauses = qc.getQuery().getDatasetClauseList();
+		ASTOperation op = qc.getOperation();
+		if (op != null) {
 
-		if (!datasetClauses.isEmpty()) {
-			dataset = new DatasetImpl();
+			List<ASTDatasetClause> datasetClauses = op.getDatasetClauseList();
 
-			for (ASTDatasetClause dc : datasetClauses) {
-				ASTIRI astIri = dc.jjtGetChild(ASTIRI.class);
+			if (!datasetClauses.isEmpty()) {
+				dataset = new DatasetImpl();
 
-				try {
-					URI uri = new URIImpl(astIri.getValue());
-					if (dc.isNamed()) {
-						dataset.addNamedGraph(uri);
+				for (ASTDatasetClause dc : datasetClauses) {
+
+					ASTIRI astIri = dc.jjtGetChild(ASTIRI.class);
+
+					try {
+						URI uri = SESAME.NIL;
+						
+						if (astIri != null) {
+							uri = new URIImpl(astIri.getValue());
+						}
+						
+						if (dc.isNamed()) {
+							dataset.addNamedGraph(uri);
+						}
+						else {
+							dataset.addDefaultGraph(uri);
+						}
 					}
-					else {
-						dataset.addDefaultGraph(uri);
+					catch (IllegalArgumentException e) {
+						throw new MalformedQueryException(e.getMessage(), e);
 					}
-				}
-				catch (IllegalArgumentException e) {
-					throw new MalformedQueryException(e.getMessage(), e);
 				}
 			}
 		}

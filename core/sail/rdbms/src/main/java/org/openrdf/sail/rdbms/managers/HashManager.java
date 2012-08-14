@@ -30,6 +30,7 @@ import org.openrdf.sail.rdbms.schema.HashTable;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 
 /**
+ * 
  * @author James Leigh
  */
 public class HashManager extends ManagerBase {
@@ -38,7 +39,7 @@ public class HashManager extends ManagerBase {
 
 	private static final boolean USE_THREAD = true;
 
-	Logger logger = LoggerFactory.getLogger(HashManager.class);
+	private Logger logger = LoggerFactory.getLogger(HashManager.class);
 
 	private HashTable table;
 
@@ -54,15 +55,15 @@ public class HashManager extends ManagerBase {
 
 	private Thread lookupThread;
 
-	Object assignIds = new Object();
+	private Object assignIds = new Object();
 
-	Object working = new Object();
+	private Object working = new Object();
 
 	private BlockingQueue<RdbmsValue> queue;
 
 	private IdSequence idseq;
 
-	volatile Exception exc;
+	Exception exc;
 
 	RdbmsValue closeSignal = new RdbmsValue() {
 
@@ -123,9 +124,8 @@ public class HashManager extends ManagerBase {
 	public void close()
 		throws SQLException
 	{
-		if (queue == null) {
+		if (queue == null)
 			return;
-		}
 		try {
 			flush();
 			if (lookupThread != null) {
@@ -144,7 +144,6 @@ public class HashManager extends ManagerBase {
 		return version.intValue();
 	}
 
-	@Override
 	public void optimize()
 		throws SQLException
 	{
@@ -281,9 +280,8 @@ public class HashManager extends ManagerBase {
 				queue.add(taken);
 				break;
 			}
-			if (taken == null) {
+			if (taken == null)
 				break;
-			}
 			values.add(taken);
 		}
 		Map<Long, Number> existing = lookup(values, map);
@@ -333,12 +331,10 @@ public class HashManager extends ManagerBase {
 	}
 
 	private Integer getIdVersion(RdbmsValue value) {
-		if (value instanceof RdbmsLiteral) {
+		if (value instanceof RdbmsLiteral)
 			return literals.getIdVersion();
-		}
-		if (value instanceof RdbmsURI) {
+		if (value instanceof RdbmsURI)
 			return uris.getIdVersion();
-		}
 		assert value instanceof RdbmsBNode;
 		return bnodes.getIdVersion();
 	}

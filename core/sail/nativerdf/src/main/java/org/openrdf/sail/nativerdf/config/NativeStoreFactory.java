@@ -6,10 +6,10 @@
 package org.openrdf.sail.nativerdf.config;
 
 import org.openrdf.sail.Sail;
+import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.nativerdf.NativeStore;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * A {@link SailFactory} that creates {@link NativeStore}s based on RDF
@@ -38,17 +38,32 @@ public class NativeStoreFactory implements SailFactory {
 	}
 
 	public Sail getSail(SailImplConfig config)
-		throws StoreConfigException
+		throws SailConfigException
 	{
 		if (!SAIL_TYPE.equals(config.getType())) {
-			throw new StoreConfigException("Invalid Sail type: " + config.getType());
+			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
 
 		NativeStore nativeStore = new NativeStore();
 
 		if (config instanceof NativeStoreConfig) {
 			NativeStoreConfig nativeConfig = (NativeStoreConfig)config;
+
 			nativeStore.setTripleIndexes(nativeConfig.getTripleIndexes());
+			nativeStore.setForceSync(nativeConfig.getForceSync());
+
+			if (nativeConfig.getValueCacheSize() >= 0) {
+				nativeStore.setValueCacheSize(nativeConfig.getValueCacheSize());
+			}
+			if (nativeConfig.getValueIDCacheSize() >= 0) {
+				nativeStore.setValueIDCacheSize(nativeConfig.getValueIDCacheSize());
+			}
+			if (nativeConfig.getNamespaceCacheSize() >= 0) {
+				nativeStore.setNamespaceCacheSize(nativeConfig.getNamespaceCacheSize());
+			}
+			if (nativeConfig.getNamespaceIDCacheSize() >= 0) {
+				nativeStore.setNamespaceIDCacheSize(nativeConfig.getNamespaceIDCacheSize());
+			}
 		}
 
 		return nativeStore;

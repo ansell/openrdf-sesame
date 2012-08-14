@@ -11,10 +11,7 @@ import org.openrdf.model.Value;
 
 /**
  * An extension of {@link StatementImpl} that adds a context field.
- * 
- * @deprecated Use {@link StatementImpl} instead.
  */
-@Deprecated
 public class ContextStatementImpl extends StatementImpl {
 
 	/*-----------*
@@ -22,6 +19,15 @@ public class ContextStatementImpl extends StatementImpl {
 	 *-----------*/
 
 	private static final long serialVersionUID = -4747275587477906748L;
+
+	/**
+	 * The statement's context, if applicable.
+	 */
+	private final Resource context;
+
+	/*--------------*
+	 * Constructors *
+	 *--------------*/
 
 	/**
 	 * Creates a new Statement with the supplied subject, predicate and object
@@ -38,6 +44,28 @@ public class ContextStatementImpl extends StatementImpl {
 	 *        associated.
 	 */
 	public ContextStatementImpl(Resource subject, URI predicate, Value object, Resource context) {
-		super(subject, predicate, object, context);
+		super(subject, predicate, object);
+		this.context = context;
+	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
+
+	@Override
+	public Resource getContext()
+	{
+		return context;
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder(256);
+
+		sb.append(super.toString());
+		sb.append(" [").append(getContext()).append("]");
+
+		return sb.toString();
 	}
 }

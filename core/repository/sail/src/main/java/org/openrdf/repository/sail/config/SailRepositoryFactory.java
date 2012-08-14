@@ -6,20 +6,21 @@
 package org.openrdf.repository.sail.config;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.StackableSail;
 import org.openrdf.sail.config.DelegatingSailImplConfig;
+import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.config.SailRegistry;
-import org.openrdf.store.StoreConfigException;
 
 /**
- * A {@link RepositoryFactory} that creates {@link SailRepository}s based on RDF
- * configuration data.
+ * A {@link RepositoryFactory} that creates {@link SailRepository}s based on
+ * RDF configuration data.
  * 
  * @author Arjohn Kampman
  */
@@ -52,20 +53,25 @@ public class SailRepositoryFactory implements RepositoryFactory {
 	}
 
 	public Repository getRepository(RepositoryImplConfig config)
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		if (config instanceof SailRepositoryConfig) {
 			SailRepositoryConfig sailRepConfig = (SailRepositoryConfig)config;
 
-			Sail sail = createSailStack(sailRepConfig.getSailImplConfig());
-			return new SailRepository(sail);
+			try {
+				Sail sail = createSailStack(sailRepConfig.getSailImplConfig());
+				return new SailRepository(sail);
+			}
+			catch (SailConfigException e) {
+				throw new RepositoryConfigException(e.getMessage(), e);
+			}
 		}
 
-		throw new StoreConfigException("Invalid configuration class: " + config.getClass());
+		throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
 	}
 
 	private Sail createSailStack(SailImplConfig config)
-		throws StoreConfigException
+		throws RepositoryConfigException, SailConfigException
 	{
 		Sail sail = createSail(config);
 
@@ -80,7 +86,7 @@ public class SailRepositoryFactory implements RepositoryFactory {
 	}
 
 	private Sail createSail(SailImplConfig config)
-		throws StoreConfigException
+		throws RepositoryConfigException, SailConfigException
 	{
 		SailFactory sailFactory = SailRegistry.getInstance().get(config.getType());
 
@@ -88,19 +94,19 @@ public class SailRepositoryFactory implements RepositoryFactory {
 			return sailFactory.getSail(config);
 		}
 
-		throw new StoreConfigException("Unsupported Sail type: " + config.getType());
+		throw new RepositoryConfigException("Unsupported Sail type: " + config.getType());
 	}
 
 	private void addDelegate(SailImplConfig config, Sail sail)
-		throws StoreConfigException
+		throws RepositoryConfigException, SailConfigException
 	{
 		Sail delegateSail = createSailStack(config);
 
 		try {
-			((StackableSail)sail).setDelegate(delegateSail);
+			((StackableSail)sail).setBaseSail(delegateSail);
 		}
 		catch (ClassCastException e) {
-			throw new StoreConfigException("Delegate configured but " + sail.getClass()
+			throw new RepositoryConfigException("Delegate configured but " + sail.getClass()
 					+ " is not a StackableSail");
 		}
 	}

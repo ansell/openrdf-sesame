@@ -8,15 +8,17 @@ package org.openrdf.repository.sail.config;
 import static org.openrdf.repository.sail.config.SailRepositorySchema.SAILIMPL;
 import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 
+import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.config.SailRegistry;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -44,52 +46,61 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 
 	@Override
 	public void validate()
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		super.validate();
 		if (sailImplConfig == null) {
-			throw new StoreConfigException("No Sail implementation specified for Sail repository");
+			throw new RepositoryConfigException("No Sail implementation specified for Sail repository");
 		}
 
-		sailImplConfig.validate();
+		try {
+			sailImplConfig.validate();
+		}
+		catch (SailConfigException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
+		}
 	}
 
 	@Override
-	public Resource export(Model model) {
-		Resource repImplNode = super.export(model);
+	public Resource export(Graph graph)
+	{
+		Resource repImplNode = super.export(graph);
 
 		if (sailImplConfig != null) {
-			Resource sailImplNode = sailImplConfig.export(model);
-			model.add(repImplNode, SAILIMPL, sailImplNode);
+			Resource sailImplNode = sailImplConfig.export(graph);
+			graph.add(repImplNode, SAILIMPL, sailImplNode);
 		}
 
 		return repImplNode;
 	}
 
 	@Override
-	public void parse(Model model, Resource repImplNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource repImplNode)
+		throws RepositoryConfigException
 	{
 		try {
-			Resource sailImplNode = model.filter(repImplNode, SAILIMPL, null).objectResource();
+			Resource sailImplNode = GraphUtil.getOptionalObjectResource(graph, repImplNode, SAILIMPL);
 
 			if (sailImplNode != null) {
-				Literal typeLit = model.filter(sailImplNode, SAILTYPE, null).objectLiteral();
+				Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, sailImplNode, SAILTYPE);
 
 				if (typeLit != null) {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
 					if (factory == null) {
-						throw new StoreConfigException("Unsupported Sail type: " + typeLit.getLabel());
+						throw new RepositoryConfigException("Unsupported Sail type: " + typeLit.getLabel());
 					}
 
 					sailImplConfig = factory.getConfig();
-					sailImplConfig.parse(model, sailImplNode);
+					sailImplConfig.parse(graph, sailImplNode);
 				}
 			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
+		}
+		catch (SailConfigException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 }

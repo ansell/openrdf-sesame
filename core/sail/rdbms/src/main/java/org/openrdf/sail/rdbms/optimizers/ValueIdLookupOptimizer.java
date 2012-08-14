@@ -6,7 +6,8 @@
 package org.openrdf.sail.rdbms.optimizers;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
@@ -16,6 +17,7 @@ import org.openrdf.sail.rdbms.RdbmsValueFactory;
  * Iterates through the query and converting the values into RDBMS values.
  * 
  * @author James Leigh
+ * 
  */
 public class ValueIdLookupOptimizer implements QueryOptimizer {
 
@@ -26,8 +28,8 @@ public class ValueIdLookupOptimizer implements QueryOptimizer {
 		this.vf = vf;
 	}
 
-	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(new VarVisitor());
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(new VarVisitor());
 	}
 
 	protected class VarVisitor extends QueryModelVisitorBase<RuntimeException> {

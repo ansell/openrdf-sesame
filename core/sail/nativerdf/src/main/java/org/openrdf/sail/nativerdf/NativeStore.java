@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -14,34 +14,25 @@ import java.util.List;
 
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
-import info.aduna.concurrent.locks.ReadWriteLockManager;
-import info.aduna.concurrent.locks.WritePrefReadWriteLockManager;
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.ConvertingIteration;
+import info.aduna.iteration.DistinctIteration;
+import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.ReducedIteration;
+import info.aduna.iteration.UnionIteration;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.ConvertingCursor;
-import org.openrdf.cursor.Cursor;
-import org.openrdf.cursor.EmptyCursor;
-import org.openrdf.model.LiteralFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.algebra.evaluation.cursors.DistinctCursor;
-import org.openrdf.query.algebra.evaluation.cursors.NamedContextCursor;
-import org.openrdf.query.algebra.evaluation.cursors.ReducedCursor;
-import org.openrdf.query.algebra.evaluation.cursors.UnionCursor;
-import org.openrdf.sail.SailMetaData;
+import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.SailUtil;
-import org.openrdf.sail.inferencer.InferencerConnection;
-import org.openrdf.sail.inferencer.helpers.AutoCommitInferencerConnection;
-import org.openrdf.sail.inferencer.helpers.InferencerSailBase;
-import org.openrdf.sail.inferencer.helpers.SynchronizedInferencerConnection;
+import org.openrdf.sail.helpers.NotifyingSailBase;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
-import org.openrdf.store.StoreException;
 
 /**
  * A SAIL implementation using B-Tree indexing on disk for storing and querying
@@ -50,7 +41,7 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class NativeStore extends InferencerSailBase {
+public class NativeStore extends NotifyingSailBase {
 
 	/*-----------*
 	 * Variables *
@@ -68,6 +59,14 @@ public class NativeStore extends InferencerSailBase {
 	 */
 	private volatile boolean forceSync = false;
 
+	private volatile int valueCacheSize = ValueStore.VALUE_CACHE_SIZE;
+
+	private volatile int valueIDCacheSize = ValueStore.VALUE_ID_CACHE_SIZE;
+
+	private volatile int namespaceCacheSize = ValueStore.NAMESPACE_CACHE_SIZE;
+
+	private volatile int namespaceIDCacheSize = ValueStore.NAMESPACE_ID_CACHE_SIZE;
+
 	private volatile TripleStore tripleStore;
 
 	private volatile ValueStore valueStore;
@@ -75,19 +74,9 @@ public class NativeStore extends InferencerSailBase {
 	private volatile NamespaceStore namespaceStore;
 
 	/**
-	 * Lock manager used to synchronize read and write access to the store.
-	 */
-	private volatile ReadWriteLockManager storeLockManager;
-
-	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
-	private volatile ExclusiveLockManager txnLockManager;
-
-	/**
-	 * Flag indicating whether the Sail has been initialized.
-	 */
-	private volatile boolean initialized;
+	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
 
 	/**
 	 * Data directory lock.
@@ -102,7 +91,7 @@ public class NativeStore extends InferencerSailBase {
 	 * Creates a new NativeStore.
 	 */
 	public NativeStore() {
-		initialized = false;
+		super();
 	}
 
 	public NativeStore(File dataDir) {
@@ -118,11 +107,6 @@ public class NativeStore extends InferencerSailBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
-
-	@Override
-	public SailMetaData getMetaData() {
-		return new NativeStoreMetaData(this);
-	}
 
 	/**
 	 * Sets the triple indexes for the native store, must be called before
@@ -157,42 +141,52 @@ public class NativeStore extends InferencerSailBase {
 		return forceSync;
 	}
 
+	public void setValueCacheSize(int valueCacheSize) {
+		this.valueCacheSize = valueCacheSize;
+	}
+
+	public void setValueIDCacheSize(int valueIDCacheSize) {
+		this.valueIDCacheSize = valueIDCacheSize;
+	}
+
+	public void setNamespaceCacheSize(int namespaceCacheSize) {
+		this.namespaceCacheSize = namespaceCacheSize;
+	}
+
+	public void setNamespaceIDCacheSize(int namespaceIDCacheSize) {
+		this.namespaceIDCacheSize = namespaceIDCacheSize;
+	}
+
 	/**
 	 * Initializes this NativeStore.
 	 * 
-	 * @exception StoreException
-	 *            If this RdfRepository could not be initialized using the
+	 * @exception SailException
+	 *            If this NativeStore could not be initialized using the
 	 *            parameters that have been set.
 	 */
-	public void initialize()
-		throws StoreException
+	@Override
+	protected void initializeInternal()
+		throws SailException
 	{
-		if (isInitialized()) {
-			throw new IllegalStateException("sail has already been intialized");
-		}
-
 		logger.debug("Initializing NativeStore...");
-
-		storeLockManager = new WritePrefReadWriteLockManager(SailUtil.isDebugEnabled());
-		txnLockManager = new ExclusiveLockManager(SailUtil.isDebugEnabled());
 
 		// Check initialization parameters
 		File dataDir = getDataDir();
 
 		if (dataDir == null) {
-			throw new StoreException("Data dir has not been set");
+			throw new SailException("Data dir has not been set");
 		}
 		else if (!dataDir.exists()) {
 			boolean success = dataDir.mkdirs();
 			if (!success) {
-				throw new StoreException("Unable to create data directory: " + dataDir);
+				throw new SailException("Unable to create data directory: " + dataDir);
 			}
 		}
 		else if (!dataDir.isDirectory()) {
-			throw new StoreException("The specified path does not denote a directory: " + dataDir);
+			throw new SailException("The specified path does not denote a directory: " + dataDir);
 		}
 		else if (!dataDir.canRead()) {
-			throw new StoreException("Not allowed to read from the specified directory: " + dataDir);
+			throw new SailException("Not allowed to read from the specified directory: " + dataDir);
 		}
 
 		// try to lock the directory or fail
@@ -202,57 +196,52 @@ public class NativeStore extends InferencerSailBase {
 
 		try {
 			namespaceStore = new NamespaceStore(dataDir);
-			valueStore = new ValueStore(dataDir, forceSync);
+			valueStore = new ValueStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
+					namespaceCacheSize, namespaceIDCacheSize);
 			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			// NativeStore initialization failed, release any allocated files
+			if (valueStore != null) {
+				try {
+					valueStore.close();
+				}
+				catch (IOException e1) {
+					logger.warn("Failed to close value store after native store initialization failure", e);
+				}
+				valueStore = null;
+			}
+			if (namespaceStore != null) {
+				namespaceStore.close();
+				namespaceStore = null;
+			}
+
+			dirLock.release();
+
+			throw new SailException(e);
 		}
 
-		initialized = true;
 		logger.debug("NativeStore initialized");
-	}
-
-	/**
-	 * Checks whether the Sail has been initialized.
-	 * 
-	 * @return <tt>true</tt> if the Sail has been initialized, <tt>false</tt>
-	 *         otherwise.
-	 */
-	protected final boolean isInitialized() {
-		return initialized;
 	}
 
 	@Override
 	protected void shutDownInternal()
-		throws StoreException
+		throws SailException
 	{
-		if (isInitialized()) {
-			logger.debug("Shutting down NativeStore...");
+		logger.debug("Shutting down NativeStore...");
 
-			Lock txnLock = getTransactionLock();
-			try {
-				Lock writeLock = getWriteLock();
-				try {
-					tripleStore.close();
-					valueStore.close();
-					namespaceStore.close();
+		try {
+			tripleStore.close();
+			valueStore.close();
+			namespaceStore.close();
 
-					initialized = false;
-
-					logger.debug("NativeStore shut down");
-				}
-				catch (IOException e) {
-					throw new StoreException(e);
-				}
-				finally {
-					writeLock.release();
-				}
-			}
-			finally {
-				txnLock.release();
-				dirLock.release();
-			}
+			logger.debug("NativeStore shut down");
+		}
+		catch (IOException e) {
+			throw new SailException(e);
+		}
+		finally {
+			dirLock.release();
 		}
 	}
 
@@ -261,30 +250,15 @@ public class NativeStore extends InferencerSailBase {
 	}
 
 	@Override
-	protected InferencerConnection getConnectionInternal()
-		throws StoreException
+	protected NotifyingSailConnection getConnectionInternal()
+		throws SailException
 	{
-		if (!isInitialized()) {
-			throw new IllegalStateException("sail not initialized.");
-		}
-
 		try {
-			InferencerConnection con = new NativeStoreConnection(this);
-			con = new SynchronizedInferencerConnection(con);
-			con = new AutoCommitInferencerConnection(con);
-			return con;
+			return new NativeStoreConnection(this);
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
-	}
-
-	public URIFactory getURIFactory() {
-		return valueStore;
-	}
-
-	public LiteralFactory getLiteralFactory() {
-		return valueStore;
 	}
 
 	public ValueFactory getValueFactory() {
@@ -303,47 +277,25 @@ public class NativeStore extends InferencerSailBase {
 		return namespaceStore;
 	}
 
-	protected Lock getReadLock()
-		throws StoreException
-	{
-		try {
-			return storeLockManager.getReadLock();
-		}
-		catch (InterruptedException e) {
-			throw new StoreException(e);
-		}
-	}
-
-	protected Lock getWriteLock()
-		throws StoreException
-	{
-		try {
-			return storeLockManager.getWriteLock();
-		}
-		catch (InterruptedException e) {
-			throw new StoreException(e);
-		}
-	}
-
 	protected Lock getTransactionLock()
-		throws StoreException
+		throws SailException
 	{
 		try {
 			return txnLockManager.getExclusiveLock();
 		}
 		catch (InterruptedException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 	}
 
 	protected List<Integer> getContextIDs(Resource... contexts)
 		throws IOException
 	{
-		assert contexts == null || contexts.length > 0 : "contexts must not be empty";
+		assert contexts.length > 0 : "contexts must not be empty";
 
 		// Filter duplicates
 		LinkedHashSet<Resource> contextSet = new LinkedHashSet<Resource>();
-		Collections.addAll(contextSet, OpenRDFUtil.notNull(contexts));
+		Collections.addAll(contextSet, contexts);
 
 		// Fetch IDs, filtering unknown resources from the result
 		List<Integer> contextIDs = new ArrayList<Integer>(contextSet.size());
@@ -362,48 +314,49 @@ public class NativeStore extends InferencerSailBase {
 		return contextIDs;
 	}
 
-	protected Cursor<Resource> getContextIDs(boolean readTransaction)
+	protected CloseableIteration<Resource, IOException> getContextIDs(boolean readTransaction)
 		throws IOException
 	{
-		Cursor<? extends Statement> stIter;
-		Cursor<Resource> ctxIter;
+		CloseableIteration<? extends Statement, IOException> stIter;
+		CloseableIteration<Resource, IOException> ctxIter;
 		RecordIterator btreeIter;
 		btreeIter = tripleStore.getAllTriplesSortedByContext(readTransaction);
 		if (btreeIter == null) {
 			// Iterator over all statements
-			stIter = createStatementCursor(null, null, null, true, readTransaction);
+			stIter = createStatementIterator(null, null, null, true, readTransaction);
 		}
 		else {
-			stIter = new NativeStatementCursor(btreeIter, valueStore);
+			stIter = new NativeStatementIterator(btreeIter, valueStore);
 		}
 		// Filter statements without context resource
-		stIter = new NamedContextCursor(stIter);
+		stIter = new FilterIteration<Statement, IOException>(stIter) {
+
+			@Override
+			protected boolean accept(Statement st) {
+				return st.getContext() != null;
+			}
+		};
 		// Return the contexts of the statements
-		ctxIter = new ConvertingCursor<Statement, Resource>(stIter) {
+		ctxIter = new ConvertingIteration<Statement, Resource, IOException>(stIter) {
 
 			@Override
 			protected Resource convert(Statement st) {
 				return st.getContext();
 			}
-
-			@Override
-			protected String getName() {
-				return "Context";
-			}
 		};
 		if (btreeIter == null) {
 			// Filtering any duplicates
-			ctxIter = new DistinctCursor<Resource>(ctxIter);
+			ctxIter = new DistinctIteration<Resource, IOException>(ctxIter);
 		}
 		else {
 			// Filtering sorted duplicates
-			ctxIter = new ReducedCursor<Resource>(ctxIter);
+			ctxIter = new ReducedIteration<Resource, IOException>(ctxIter);
 		}
 		return ctxIter;
 	}
 
 	/**
-	 * Creates a statement cursor based on the supplied pattern.
+	 * Creates a statement iterator based on the supplied pattern.
 	 * 
 	 * @param subj
 	 *        The subject of the pattern, or <tt>null</tt> to indicate a
@@ -417,18 +370,18 @@ public class NativeStore extends InferencerSailBase {
 	 *        The context(s) of the pattern. Note that this parameter is a vararg
 	 *        and as such is optional. If no contexts are supplied the method
 	 *        operates on the entire repository.
-	 * @return A Cursor that can be used to iterate over the statements that
-	 *         match the specified pattern.
+	 * @return A StatementIterator that can be used to iterate over the
+	 *         statements that match the specified pattern.
 	 */
-	protected Cursor<? extends Statement> createStatementCursor(Resource subj, URI pred, Value obj,
-			boolean includeInferred, boolean readTransaction, Resource... contexts)
+	protected CloseableIteration<? extends Statement, IOException> createStatementIterator(Resource subj,
+			URI pred, Value obj, boolean includeInferred, boolean readTransaction, Resource... contexts)
 		throws IOException
 	{
 		int subjID = NativeValue.UNKNOWN_ID;
 		if (subj != null) {
 			subjID = valueStore.getID(subj);
 			if (subjID == NativeValue.UNKNOWN_ID) {
-				return new EmptyCursor<Statement>();
+				return new EmptyIteration<Statement, IOException>();
 			}
 		}
 
@@ -436,7 +389,7 @@ public class NativeStore extends InferencerSailBase {
 		if (pred != null) {
 			predID = valueStore.getID(pred);
 			if (predID == NativeValue.UNKNOWN_ID) {
-				return new EmptyCursor<Statement>();
+				return new EmptyIteration<Statement, IOException>();
 			}
 		}
 
@@ -444,11 +397,10 @@ public class NativeStore extends InferencerSailBase {
 		if (obj != null) {
 			objID = valueStore.getID(obj);
 			if (objID == NativeValue.UNKNOWN_ID) {
-				return new EmptyCursor<Statement>();
+				return new EmptyIteration<Statement, IOException>();
 			}
 		}
 
-		contexts = OpenRDFUtil.notNull(contexts);
 		List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
 		if (contexts.length == 0) {
 			contextIDList.add(NativeValue.UNKNOWN_ID);
@@ -468,7 +420,7 @@ public class NativeStore extends InferencerSailBase {
 			}
 		}
 
-		ArrayList<NativeStatementCursor> perContextIterList = new ArrayList<NativeStatementCursor>(
+		ArrayList<NativeStatementIterator> perContextIterList = new ArrayList<NativeStatementIterator>(
 				contextIDList.size());
 
 		for (int contextID : contextIDList) {
@@ -483,17 +435,14 @@ public class NativeStore extends InferencerSailBase {
 				btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, true, readTransaction);
 			}
 
-			perContextIterList.add(new NativeStatementCursor(btreeIter, valueStore));
+			perContextIterList.add(new NativeStatementIterator(btreeIter, valueStore));
 		}
 
 		if (perContextIterList.size() == 1) {
 			return perContextIterList.get(0);
 		}
-		else if (perContextIterList.isEmpty()) {
-			return EmptyCursor.getInstance();
-		}
 		else {
-			return new UnionCursor<Statement>(perContextIterList);
+			return new UnionIteration<Statement, IOException>(perContextIterList);
 		}
 	}
 

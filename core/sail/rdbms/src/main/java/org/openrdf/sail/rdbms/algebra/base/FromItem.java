@@ -16,6 +16,7 @@ import org.openrdf.sail.rdbms.algebra.ColumnVar;
  * An item in the SQL from clause.
  * 
  * @author James Leigh
+ * 
  */
 public abstract class FromItem extends RdbmsQueryModelNodeBase {
 
@@ -60,9 +61,8 @@ public abstract class FromItem extends RdbmsQueryModelNodeBase {
 	public ColumnVar getVarForChildren(String name) {
 		for (FromItem join : joins) {
 			ColumnVar var = join.getVar(name);
-			if (var != null) {
+			if (var != null)
 				return var;
-			}
 		}
 		return null;
 	}
@@ -92,27 +92,23 @@ public abstract class FromItem extends RdbmsQueryModelNodeBase {
 	}
 
 	public FromItem getFromItem(String alias) {
-		if (this.alias.equals(alias)) {
+		if (this.alias.equals(alias))
 			return this;
-		}
 		for (FromItem join : joins) {
 			FromItem result = join.getFromItem(alias);
-			if (result != null) {
+			if (result != null)
 				return result;
-			}
 		}
 		return null;
 	}
 
 	public FromItem getFromItemNotInUnion(String alias) {
-		if (this.alias.equals(alias)) {
+		if (this.alias.equals(alias))
 			return this;
-		}
 		for (FromItem join : joins) {
 			FromItem result = join.getFromItemNotInUnion(alias);
-			if (result != null) {
+			if (result != null)
 				return result;
-			}
 		}
 		return null;
 	}

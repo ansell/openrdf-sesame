@@ -12,13 +12,13 @@ import static java.sql.Types.VARCHAR;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Factory class used to create or load the database tables.
  * 
  * @author James Leigh
+ * 
  */
 public class ValueTableFactory {
 
@@ -73,7 +73,7 @@ public class ValueTableFactory {
 		this.sequenced = sequenced;
 	}
 
-	public HashTable createHashTable(Connection conn, BatchBlockingQueue queue)
+	public HashTable createHashTable(Connection conn, BlockingQueue<Batch> queue)
 		throws SQLException
 	{
 		ValueTable table = newValueTable();
@@ -90,14 +90,14 @@ public class ValueTableFactory {
 		return new NamespacesTable(createTable(conn, NAMESPACES));
 	}
 
-	public BNodeTable createBNodeTable(Connection conn, BatchBlockingQueue queue)
+	public BNodeTable createBNodeTable(Connection conn, BlockingQueue<Batch> queue)
 		throws SQLException
 	{
 		ValueTable table = createValueTable(conn, queue, BNODE_VALUES, VARCHAR, VCS);
 		return new BNodeTable(table);
 	}
 
-	public URITable createURITable(Connection conn, BatchBlockingQueue queue)
+	public URITable createURITable(Connection conn, BlockingQueue<Batch> queue)
 		throws SQLException
 	{
 		ValueTable shorter = createValueTable(conn, queue, URI_VALUES, VARCHAR, VCL);
@@ -105,7 +105,7 @@ public class ValueTableFactory {
 		return new URITable(shorter, longer);
 	}
 
-	public LiteralTable createLiteralTable(Connection conn, BatchBlockingQueue queue)
+	public LiteralTable createLiteralTable(Connection conn, BlockingQueue<Batch> queue)
 		throws SQLException
 	{
 		ValueTable lbs = createValueTable(conn, queue, LBS, VARCHAR, VCL);
@@ -133,14 +133,14 @@ public class ValueTableFactory {
 		return factory.createTable(conn, name);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BatchBlockingQueue queue, String name, int sqlType)
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name, int sqlType)
 		throws SQLException
 	{
 		return createValueTable(conn, queue, name, sqlType, -1);
 	}
 
-	protected ValueTable createValueTable(Connection conn, BatchBlockingQueue queue, String name, int sqlType,
-			int length)
+	protected ValueTable createValueTable(Connection conn, BlockingQueue<Batch> queue, String name,
+			int sqlType, int length)
 		throws SQLException
 	{
 		ValueTable table = newValueTable();
@@ -160,7 +160,7 @@ public class ValueTableFactory {
 		return new ValueTable();
 	}
 
-	private void initValueTable(ValueTable table, BatchBlockingQueue queue, int sqlType, int length,
+	private void initValueTable(ValueTable table, BlockingQueue<Batch> queue, int sqlType, int length,
 			boolean indexValues)
 		throws SQLException
 	{

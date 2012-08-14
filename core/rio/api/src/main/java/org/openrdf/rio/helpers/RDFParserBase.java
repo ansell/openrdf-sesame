@@ -5,13 +5,14 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import info.aduna.net.ParsedURI;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.BNodeFactory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -19,10 +20,12 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.MappedBNodeFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.XMLSchema;
+
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -34,6 +37,32 @@ import org.openrdf.rio.RDFParser;
  * @author Arjohn Kampman
  */
 public abstract class RDFParserBase implements RDFParser {
+
+	/**
+	 * Vocabulary Prefixes of W3C Documents (Recommendations or Notes)
+	 * 
+	 * @see http://www.w3.org/2011/rdfa-context/rdfa-1.1
+	 */
+	private static final Map<String, String> defaultPrefix;
+	static {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("grddl", "http://www.w3.org/2003/g/data-view#");
+		map.put("ma", "http://www.w3.org/ns/ma-ont#");
+		map.put("owl", "http://www.w3.org/2002/07/owl#");
+		map.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+		map.put("rdfa", "http://www.w3.org/ns/rdfa#");
+		map.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+		map.put("rif", "http://www.w3.org/2007/rif#");
+		map.put("skos", "http://www.w3.org/2004/02/skos/core#");
+		map.put("skosxl", "http://www.w3.org/2008/05/skos-xl#");
+		map.put("wdr", "http://www.w3.org/2007/05/powder#");
+		map.put("void", "http://rdfs.org/ns/void#");
+		map.put("wdrs", "http://www.w3.org/2007/05/powder-s#");
+		map.put("xhv", "http://www.w3.org/1999/xhtml/vocab#");
+		map.put("xml", "http://www.w3.org/XML/1998/namespace");
+		map.put("xsd", "http://www.w3.org/2001/XMLSchema#");
+		defaultPrefix = Collections.unmodifiableMap(new HashMap<String, String>(map));
+	}
 
 	/*-----------*
 	 * Variables *
@@ -54,11 +83,6 @@ public abstract class RDFParserBase implements RDFParser {
 	 * line- and column numbers to.
 	 */
 	private ParseLocationListener locationListener;
-
-	/**
-	 * The ValueFactory passed to the parser.
-	 */
-	private ValueFactory originalValueFactory;
 
 	/**
 	 * The ValueFactory to use for creating RDF model objects.
@@ -93,6 +117,13 @@ public abstract class RDFParserBase implements RDFParser {
 	private ParsedURI baseURI;
 
 	/**
+	 * Mapping from blank node identifiers as used in the RDF document to the
+	 * object created for it by the ValueFactory. This mapping is used to return
+	 * identical BNode objects for recurring blank node identifiers.
+	 */
+	private Map<String, BNode> bNodeIDMap;
+
+	/**
 	 * Mapping from namespace prefixes to namespace names.
 	 */
 	private Map<String, String> namespaceTable;
@@ -110,29 +141,26 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Creates a new TurtleParser that will use the supplied ValueFactory to
+	 * Creates a new RDFParserBase that will use the supplied ValueFactory to
 	 * create RDF model objects.
 	 * 
 	 * @param valueFactory
 	 *        A ValueFactory.
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
+		bNodeIDMap = new HashMap<String, BNode>(16);
 		namespaceTable = new HashMap<String, String>(16);
 
 		setValueFactory(valueFactory);
-		setVerifyData(true);
-		setPreserveBNodeIDs(false);
-		setStopAtFirstError(true);
-		setDatatypeHandling(DatatypeHandling.VERIFY);
+		setParserConfig(new ParserConfig());
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public void setValueFactory(ValueFactory vf) {
-		this.originalValueFactory = vf;
-		clearBNodeIDMap();
+	public void setValueFactory(ValueFactory valueFactory) {
+		this.valueFactory = valueFactory;
 	}
 
 	public void setRDFHandler(RDFHandler handler) {
@@ -159,6 +187,17 @@ public abstract class RDFParserBase implements RDFParser {
 		return locationListener;
 	}
 
+	public void setParserConfig(ParserConfig config) {
+		setVerifyData(config.verifyData());
+		setStopAtFirstError(config.stopAtFirstError());
+		setDatatypeHandling(config.datatypeHandling());
+		setPreserveBNodeIDs(config.isPreserveBNodeIDs());
+	}
+
+	public ParserConfig getParserConfig() {
+		return new ParserConfig(verifyData(), stopAtFirstError(), preserveBNodeIDs(), datatypeHandling());
+	}
+
 	public void setVerifyData(boolean verifyData) {
 		this.verifyData = verifyData;
 	}
@@ -169,7 +208,6 @@ public abstract class RDFParserBase implements RDFParser {
 
 	public void setPreserveBNodeIDs(boolean preserveBNodeIDs) {
 		this.preserveBNodeIDs = preserveBNodeIDs;
-		clearBNodeIDMap();
 	}
 
 	public boolean preserveBNodeIDs() {
@@ -218,10 +256,27 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Gets the namespace that is associated with the specified prefix, if any.
+	 * Gets the namespace that is associated with the specified prefix or throws
+	 * an {@link RDFParseException}.
+	 * 
+	 * @throws RDFParseException
+	 *         if no namespace is associated with this prefix
 	 */
-	protected String getNamespace(String prefix) {
-		return namespaceTable.get(prefix);
+	protected String getNamespace(String prefix)
+		throws RDFParseException
+	{
+		if (namespaceTable.containsKey(prefix))
+			return namespaceTable.get(prefix);
+		String msg = "Namespace prefix '" + prefix + "' used but not defined";
+		if (defaultPrefix.containsKey(prefix)) {
+			reportError(msg);
+			return defaultPrefix.get(prefix);
+		}
+		else if ("".equals(prefix)) {
+			msg = "Default namespace used but not defined";
+		}
+		reportFatalError(msg);
+		throw new RDFParseException(msg);
 	}
 
 	/**
@@ -241,13 +296,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 * bnode scope ends.
 	 */
 	protected void clearBNodeIDMap() {
-		if (preserveBNodeIDs) {
-			valueFactory = originalValueFactory;
-		}
-		else if (originalValueFactory != null) {
-			BNodeFactory map = new MappedBNodeFactory(originalValueFactory);
-			valueFactory = new ValueFactoryImpl(map, originalValueFactory);
-		}
+		bNodeIDMap.clear();
 	}
 
 	/**
@@ -314,13 +363,28 @@ public abstract class RDFParserBase implements RDFParser {
 	protected BNode createBNode(String nodeID)
 		throws RDFParseException
 	{
-		try {
-			return valueFactory.createBNode(nodeID);
+		// Maybe the node ID has been used before:
+		BNode result = bNodeIDMap.get(nodeID);
+
+		if (result == null) {
+			// This is a new node ID, create a new BNode object for it
+			try {
+				if (preserveBNodeIDs) {
+					result = valueFactory.createBNode(nodeID);
+				}
+				else {
+					result = valueFactory.createBNode();
+				}
+			}
+			catch (Exception e) {
+				reportFatalError(e);
+			}
+
+			// Remember it, the nodeID might occur again.
+			bNodeIDMap.put(nodeID, result);
 		}
-		catch (RuntimeException e) {
-			reportFatalError(e);
-			throw e;
-		}
+
+		return result;
 	}
 
 	/**
@@ -330,6 +394,19 @@ public abstract class RDFParserBase implements RDFParser {
 		throws RDFParseException
 	{
 		if (datatype != null) {
+			if (verifyData && datatypeHandling != DatatypeHandling.IGNORE) {
+				if (!XMLDatatypeUtil.isBuiltInDatatype(datatype)) { 
+					// report a warning on all unrecognized datatypes
+					if (datatype.stringValue().startsWith("xsd")) {
+						reportWarning("datatype '" + datatype
+								+ "' seems be a prefixed name, should be a full URI instead.");
+					}
+					else {
+						reportWarning("'" + datatype + "' is not recognized as a supported xsd datatype.");
+					}
+				}
+			}
+
 			if (datatypeHandling == DatatypeHandling.VERIFY) {
 				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
 					reportError("'" + label + "' is not a valid value for datatype " + datatype);
@@ -351,6 +428,11 @@ public abstract class RDFParserBase implements RDFParser {
 				return valueFactory.createLiteral(label, datatype);
 			}
 			else if (lang != null) {
+				if (verifyData()) {
+					if (!isValidLanguageTag(lang)) {
+						reportError("'" + lang + "' is not a valid language tag ");
+					}
+				}
 				return valueFactory.createLiteral(label, lang);
 			}
 			else {
@@ -361,6 +443,22 @@ public abstract class RDFParserBase implements RDFParser {
 			reportFatalError(e);
 			return null; // required by compiler
 		}
+	}
+
+	/**
+	 * Checks that the supplied language tag conforms to lexical formatting as
+	 * specified in RFC-3066.
+	 * 
+	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
+	 * @param languageTag
+	 * @return true if the language tag is lexically valid, false otherwise.
+	 */
+	protected boolean isValidLanguageTag(String languageTag) {
+		// language tag is RFC3066-conformant if it matches this regex:
+		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
+		boolean result = Pattern.matches("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", languageTag);
+
+		return result;
 	}
 
 	/**

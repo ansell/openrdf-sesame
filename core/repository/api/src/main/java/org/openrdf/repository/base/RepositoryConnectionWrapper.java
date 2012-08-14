@@ -1,5 +1,5 @@
 /*
- * Copyright James Leigh (c) 2007-2009.
+ * Copyright James Leigh (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,31 +11,30 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.Iteration;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.Update;
 import org.openrdf.repository.DelegatingRepositoryConnection;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.result.ContextResult;
-import org.openrdf.result.ModelResult;
-import org.openrdf.result.NamespaceResult;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
 
 /**
  * Delegates all calls to the delegate RepositoryConnection. Conditionally
@@ -43,9 +42,7 @@ import org.openrdf.store.StoreException;
  * override.
  * 
  * @author James Leigh
- * @author Arjohn Kampman
  * @see #isDelegatingAdd()
- * @see #isDelegatingImport()
  * @see #isDelegatingRemove()
  * @see #isDelegatingRead()
  */
@@ -54,8 +51,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 {
 
 	private volatile RepositoryConnection delegate;
-
-	private ValueFactory vf;
 
 	public RepositoryConnectionWrapper(Repository repository) {
 		super(repository);
@@ -67,101 +62,117 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	public RepositoryConnection getDelegate()
-		throws StoreException
+		throws RepositoryException
 	{
 		return delegate;
 	}
 
 	public void setDelegate(RepositoryConnection delegate) {
 		this.delegate = delegate;
-		this.vf = delegate.getValueFactory();
 	}
 
 	/**
-	 * If true then each add method will call
-	 * {@link #add(Resource, URI, Value, Resource[])}.
+	 * If false then the following add methods will call
+	 * {@link #addWithoutCommit(Resource, URI, Value, Resource[])}.
 	 * 
-	 * @return <code>false</code>
-	 * @throws StoreException
+	 * @see #add(Iterable, Resource...)
+	 * @see #add(Iteration, Resource...)
+	 * @see #add(Statement, Resource...)
+	 * @see #add(File, String, RDFFormat, Resource...)
+	 * @see #add(InputStream, String, RDFFormat, Resource...)
+	 * @see #add(Reader, String, RDFFormat, Resource...)
+	 * @see #add(Resource, URI, Value, Resource...)
+	 * @see #add(URL, String, RDFFormat, Resource...)
+	 * @see #getParserConfig()
+	 * @see #setParserConfig(ParserConfig)
+	 * @return <code>true</code> to delegate add methods, <code>false</code> to
+	 *         call {@link #addWithoutCommit(Resource, URI, Value, Resource[])}
+	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingAdd()
-		throws StoreException
+		throws RepositoryException
 	{
 		return true;
 	}
 
 	/**
-	 * If true then each import method (parsed RDF) will call
-	 * {@link #add(Resource, URI, Value, Resource[])}.
+	 * If false then the following has/export/isEmpty methods will call
+	 * {@link #getStatements(Resource, URI, Value, boolean, Resource[])}.
 	 * 
-	 * @return <code>false</code>
-	 * @throws StoreException
-	 */
-	protected boolean isDelegatingImport()
-		throws StoreException
-	{
-		return isDelegatingAdd();
-	}
-
-	/**
-	 * If true then the has/export/isEmpty methods will call
-	 * {@link #match(Resource, URI, Value, boolean, Resource[])}.
-	 * 
-	 * @return <code>false</code>
-	 * @throws StoreException
+	 * @see #exportStatements(Resource, URI, Value, boolean, RDFHandler,
+	 *      Resource...)
+	 * @see #hasStatement(Statement, boolean, Resource...)
+	 * @see #hasStatement(Resource, URI, Value, boolean, Resource...)
+	 * @see #isEmpty()
+	 * @return <code>true</code> to delegate read methods, <code>false</code> to
+	 *         call
+	 *         {@link #getStatements(Resource, URI, Value, boolean, Resource[])}
+	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingRead()
-		throws StoreException
+		throws RepositoryException
 	{
 		return true;
 	}
 
 	/**
-	 * If true then each remove method will call
-	 * {@link #removeMatch(Resource, URI, Value, Resource[])}.
+	 * If false then the following remove methods will call
+	 * {@link #removeWithoutCommit(Resource, URI, Value, Resource[])}.
 	 * 
-	 * @return <code>false</code>
-	 * @throws StoreException
+	 * @see #clear(Resource...)
+	 * @see #remove(Iterable, Resource...)
+	 * @see #remove(Iteration, Resource...)
+	 * @see #remove(Statement, Resource...)
+	 * @see #remove(Resource, URI, Value, Resource...)
+	 * @return <code>true</code> to delegate remove methods, <code>false</code> to
+	 *         call
+	 *         {@link #removeWithoutCommit(Resource, URI, Value, Resource...)}
+	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingRemove()
-		throws StoreException
+		throws RepositoryException
 	{
 		return true;
-	}
-
-	public ValueFactory getValueFactory() {
-		return vf;
-	}
-
-	public Isolation getTransactionIsolation()
-		throws StoreException
-	{
-		return getDelegate().getTransactionIsolation();
-	}
-
-	public void setTransactionIsolation(Isolation level)
-		throws StoreException
-	{
-		getDelegate().setTransactionIsolation(level);
-	}
-
-	public boolean isReadOnly()
-		throws StoreException
-	{
-		return getDelegate().isReadOnly();
-	}
-
-	public void setReadOnly(boolean readOnly)
-		throws StoreException
-	{
-		getDelegate().setReadOnly(readOnly);
 	}
 
 	@Override
+	public void setParserConfig(ParserConfig parserConfig) {
+		try {
+			if (isDelegatingAdd()) {
+				getDelegate().setParserConfig(parserConfig);
+			}
+			else {
+				super.setParserConfig(parserConfig);
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Error while trying to configure parser", e);
+		}
+
+	}
+	
+	@Override
+	public ParserConfig getParserConfig() {
+		try {
+			if (isDelegatingAdd()) {
+				return getDelegate().getParserConfig();
+			}
+			else {
+				return super.getParserConfig();
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Error while trying to retrieve parser config", e);
+		}
+		return null;
+	}
+
+
+	@Override
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
-		if (isDelegatingImport()) {
+		if (isDelegatingAdd()) {
 			getDelegate().add(file, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -171,9 +182,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	@Override
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
-		if (isDelegatingImport()) {
+		if (isDelegatingAdd()) {
 			getDelegate().add(in, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -183,7 +194,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	@Override
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingAdd()) {
 			getDelegate().add(statements, contexts);
@@ -194,8 +205,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void add(Cursor<? extends Statement> statementIter, Resource... contexts)
-		throws StoreException
+	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
+			Resource... contexts)
+		throws RepositoryException, E
 	{
 		if (isDelegatingAdd()) {
 			getDelegate().add(statementIter, contexts);
@@ -207,9 +219,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	@Override
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
-		if (isDelegatingImport()) {
+		if (isDelegatingAdd()) {
 			getDelegate().add(reader, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -218,8 +230,20 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		if (isDelegatingAdd()) {
+			getDelegate().add(subject, predicate, object, contexts);
+		}
+		else {
+			super.add(subject, predicate, object, contexts);
+		}
+	}
+
+	@Override
 	public void add(Statement st, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingAdd()) {
 			getDelegate().add(st, contexts);
@@ -231,9 +255,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	@Override
 	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, StoreException
+		throws IOException, RDFParseException, RepositoryException
 	{
-		if (isDelegatingImport()) {
+		if (isDelegatingAdd()) {
 			getDelegate().add(url, baseURI, dataFormat, contexts);
 		}
 		else {
@@ -243,7 +267,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	@Override
 	public void clear(Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingRemove()) {
 			getDelegate().clear(contexts);
@@ -253,86 +277,71 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
+	@Override
 	public void close()
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().close();
-	}
-
-	public boolean isAutoCommit()
-		throws StoreException
-	{
-		return getDelegate().isAutoCommit();
-	}
-
-	public void begin()
-		throws StoreException
-	{
-		getDelegate().begin();
+		super.close();
 	}
 
 	public void commit()
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().commit();
 	}
 
-	public void rollback()
-		throws StoreException
-	{
-		getDelegate().rollback();
-	}
-
-	public <H extends RDFHandler> H exportMatch(Resource subj, URI pred, Value obj, boolean includeInferred,
-			H handler, Resource... contexts)
-		throws StoreException, RDFHandlerException
+	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+			RDFHandler handler, Resource... contexts)
+		throws RepositoryException, RDFHandlerException
 	{
 		if (isDelegatingRead()) {
-			return getDelegate().exportMatch(subj, pred, obj, includeInferred, handler, contexts);
+			getDelegate().exportStatements(subj, pred, obj, includeInferred, handler, contexts);
 		}
 		else {
-			exportStatements(match(subj, pred, obj, includeInferred, contexts), handler);
-			return handler;
+			exportStatements(getStatements(subj, pred, obj, includeInferred, contexts), handler);
 		}
 	}
 
-	public ContextResult getContextIDs()
-		throws StoreException
+	public RepositoryResult<Resource> getContextIDs()
+		throws RepositoryException
 	{
 		return getDelegate().getContextIDs();
 	}
 
 	public String getNamespace(String prefix)
-		throws StoreException
+		throws RepositoryException
 	{
 		return getDelegate().getNamespace(prefix);
 	}
 
-	public NamespaceResult getNamespaces()
-		throws StoreException
+	public RepositoryResult<Namespace> getNamespaces()
+		throws RepositoryException
 	{
 		return getDelegate().getNamespaces();
 	}
 
-	public ModelResult match(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
+		throws RepositoryException
 	{
-		return getDelegate().match(subj, pred, obj, includeInferred, contexts);
+		return getDelegate().getStatements(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
-	public boolean hasMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws RepositoryException
 	{
 		if (isDelegatingRead()) {
-			return getDelegate().hasMatch(subj, pred, obj, includeInferred, contexts);
+			return getDelegate().hasStatement(subj, pred, obj, includeInferred, contexts);
 		}
-		return super.hasMatch(subj, pred, obj, includeInferred, contexts);
+		return super.hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
 	public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingRead()) {
 			return getDelegate().hasStatement(st, includeInferred, contexts);
@@ -341,8 +350,15 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
+	public boolean isAutoCommit()
+		throws RepositoryException
+	{
+		return getDelegate().isAutoCommit();
+	}
+
+	@Override
 	public boolean isEmpty()
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingRead()) {
 			return getDelegate().isEmpty();
@@ -350,39 +366,46 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return super.isEmpty();
 	}
 
+	@Override
 	public boolean isOpen()
-		throws StoreException
+		throws RepositoryException
 	{
 		return getDelegate().isOpen();
 	}
 
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareGraphQuery(ql, query, baseURI);
 	}
 
 	public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareQuery(ql, query, baseURI);
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareTupleQuery(ql, query, baseURI);
 	}
 
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
-		throws MalformedQueryException, StoreException
+		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareBooleanQuery(ql, query, baseURI);
 	}
 
+	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
+		throws MalformedQueryException, RepositoryException
+	{
+		return getDelegate().prepareUpdate(ql, update, baseURI);
+	}
+
 	@Override
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingRemove()) {
 			getDelegate().remove(statements, contexts);
@@ -393,8 +416,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void remove(Cursor<? extends Statement> statementIter, Resource... contexts)
-		throws StoreException
+	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
+			Resource... contexts)
+		throws RepositoryException, E
 	{
 		if (isDelegatingRemove()) {
 			getDelegate().remove(statementIter, contexts);
@@ -405,8 +429,20 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
+	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		if (isDelegatingRemove()) {
+			getDelegate().remove(subject, predicate, object, contexts);
+		}
+		else {
+			super.remove(subject, predicate, object, contexts);
+		}
+	}
+
+	@Override
 	public void remove(Statement st, Resource... contexts)
-		throws StoreException
+		throws RepositoryException
 	{
 		if (isDelegatingRemove()) {
 			getDelegate().remove(st, contexts);
@@ -417,63 +453,68 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	public void removeNamespace(String prefix)
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().removeNamespace(prefix);
 	}
 
 	public void clearNamespaces()
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().clearNamespaces();
 	}
 
+	public void rollback()
+		throws RepositoryException
+	{
+		getDelegate().rollback();
+	}
+
+	@Override
+	public void setAutoCommit(boolean autoCommit)
+		throws RepositoryException
+	{
+		super.setAutoCommit(autoCommit);
+		getDelegate().setAutoCommit(autoCommit);
+	}
+
 	public void setNamespace(String prefix, String name)
-		throws StoreException
+		throws RepositoryException
 	{
 		getDelegate().setNamespace(prefix, name);
 	}
 
-	public long sizeMatch(Resource subject, URI predicate, Value object, boolean includeInferred,
-			Resource... contexts)
-		throws StoreException
+	public long size(Resource... contexts)
+		throws RepositoryException
 	{
-		return getDelegate().sizeMatch(subject, predicate, object, includeInferred, contexts);
+		return getDelegate().size(contexts);
 	}
 
 	@Override
-	public String toString() {
-		try {
-			return getClass().getSimpleName() + " " + getDelegate().toString();
-		}
-		catch (StoreException e) {
-			return getClass().getSimpleName();
-		}
-	}
-
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
+	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
 	{
 		getDelegate().add(subject, predicate, object, contexts);
 	}
 
-	public void removeMatch(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
 	{
-		getDelegate().removeMatch(subject, predicate, object, contexts);
+		getDelegate().remove(subject, predicate, object, contexts);
 	}
 
 	/**
 	 * Exports all statements contained in the supplied statement iterator and
 	 * all relevant namespace information to the supplied RDFHandler.
 	 */
-	private void exportStatements(ModelResult stIter, RDFHandler handler)
-		throws StoreException, RDFHandlerException
+	protected void exportStatements(RepositoryResult<Statement> stIter, RDFHandler handler)
+		throws RepositoryException, RDFHandlerException
 	{
 		try {
 			handler.startRDF();
 			// Export namespace information
-			NamespaceResult nsIter = getNamespaces();
+			RepositoryResult<Namespace> nsIter = getNamespaces();
 			try {
 				while (nsIter.hasNext()) {
 					Namespace ns = nsIter.next();

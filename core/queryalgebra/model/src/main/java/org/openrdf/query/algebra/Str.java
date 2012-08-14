@@ -15,8 +15,6 @@ package org.openrdf.query.algebra;
  */
 public class Str extends UnaryValueOperator {
 
-	private static final long serialVersionUID = -4494819155989766072L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -36,6 +34,16 @@ public class Str extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Str && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Str".hashCode();
 	}
 
 	@Override

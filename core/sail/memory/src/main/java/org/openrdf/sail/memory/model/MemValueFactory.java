@@ -1,19 +1,31 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail.memory.model;
 
+import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Set;
+
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.MappedIllegalBNodeFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.impl.BNodeImpl;
+import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.util.URIUtil;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * A factory for MemValue objects that keeps track of created objects to prevent
@@ -21,48 +33,50 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * 
  * @author Arjohn Kampman
  * @author David Huynh
- * @author James Leigh
  */
-public class MemValueFactory extends ValueFactoryImpl {
+public class MemValueFactory extends ValueFactoryBase {
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
-	private final MemBNodeFactory bf;
+	/**
+	 * Registry containing the set of MemURI objects as used by a MemoryStore.
+	 * This registry enables the reuse of objects, minimizing the number of
+	 * objects in main memory.
+	 */
+	private final WeakObjectRegistry<MemURI> uriRegistry = new WeakObjectRegistry<MemURI>();
 
-	private final MemURIFactory uf;
+	/**
+	 * Registry containing the set of MemBNode objects as used by a MemoryStore.
+	 * This registry enables the reuse of objects, minimizing the number of
+	 * objects in main memory.
+	 */
+	private final WeakObjectRegistry<MemBNode> bnodeRegistry = new WeakObjectRegistry<MemBNode>();
 
-	private final MemLiteralFactory lf;
+	/**
+	 * Registry containing the set of MemLiteral objects as used by a
+	 * MemoryStore. This registry enables the reuse of objects, minimizing the
+	 * number of objects in main memory.
+	 */
+	private final WeakObjectRegistry<MemLiteral> literalRegistry = new WeakObjectRegistry<MemLiteral>();
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public MemValueFactory(MemBNodeFactory bf, MemURIFactory uf, MemLiteralFactory lf) {
-		super(new MappedIllegalBNodeFactory(bf), uf, lf);
-		this.bf = bf;
-		this.uf = uf;
-		this.lf = lf;
-	}
+	/**
+	 * Registry containing the set of namespce strings as used by MemURI objects
+	 * in a MemoryStore. This registry enables the reuse of objects, minimizing
+	 * the number of objects in main memory.
+	 */
+	private final WeakObjectRegistry<String> namespaceRegistry = new WeakObjectRegistry<String>();
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	@Override
-	public MemBNodeFactory getBNodeFactory() {
-		return bf;
-	}
-
-	@Override
-	public MemLiteralFactory getLiteralFactory() {
-		return lf;
-	}
-
-	@Override
-	public MemURIFactory getURIFactory() {
-		return uf;
+	public void clear() {
+		uriRegistry.clear();
+		bnodeRegistry.clear();
+		literalRegistry.clear();
+		namespaceRegistry.clear();
 	}
 
 	/**
@@ -112,27 +126,45 @@ public class MemValueFactory extends ValueFactoryImpl {
 	/**
 	 * See getMemValue() for description.
 	 */
-	public MemURI getMemURI(URI uri) {
-		return uf.getMemURI(uri);
-	}
-
-	/**
-	 * See getMemValue() for description.
-	 */
-	public MemBNode getMemBNode(BNode bnode) {
-		try {
-			return bf.getMemBNode(bnode);
+	public synchronized MemURI getMemURI(URI uri) {
+		if (isOwnMemValue(uri)) {
+			return (MemURI)uri;
 		}
-		catch (IllegalArgumentException e) {
-			return (MemBNode)createBNode(bnode.getID());
+		else {
+			return uriRegistry.get(uri);
 		}
 	}
 
 	/**
 	 * See getMemValue() for description.
 	 */
-	public MemLiteral getMemLiteral(Literal literal) {
-		return lf.getMemLiteral(literal);
+	public synchronized MemBNode getMemBNode(BNode bnode) {
+		if (isOwnMemValue(bnode)) {
+			return (MemBNode)bnode;
+		}
+		else {
+			return bnodeRegistry.get(bnode);
+		}
+	}
+
+	/**
+	 * See getMemValue() for description.
+	 */
+	public synchronized MemLiteral getMemLiteral(Literal literal) {
+		if (isOwnMemValue(literal)) {
+			return (MemLiteral)literal;
+		}
+		else {
+			return literalRegistry.get(literal);
+		}
+	}
+
+	/**
+	 * Checks whether the supplied value is an instance of <tt>MemValue</tt> and
+	 * whether it has been created by this MemValueFactory.
+	 */
+	private boolean isOwnMemValue(Value value) {
+		return value instanceof MemValue && ((MemValue)value).getCreator() == this;
 	}
 
 	/**
@@ -145,7 +177,7 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
 	public Set<MemURI> getMemURIs() {
-		return uf.getMemURIs();
+		return Collections.unmodifiableSet(uriRegistry);
 	}
 
 	/**
@@ -158,7 +190,7 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * @return An unmodifiable Set of MemBNode objects.
 	 */
 	public Set<MemBNode> getMemBNodes() {
-		return bf.getMemBNodes();
+		return Collections.unmodifiableSet(bnodeRegistry);
 	}
 
 	/**
@@ -171,23 +203,25 @@ public class MemValueFactory extends ValueFactoryImpl {
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
 	public Set<MemLiteral> getMemLiterals() {
-		return lf.getMemLiterals();
+		return Collections.unmodifiableSet(literalRegistry);
 	}
 
 	/**
-	 * Creates a MemValue for the supplied Value. The supplied value should not
-	 * already have an associated MemValue. The created MemValue is returned.
+	 * Gets or creates a MemValue for the supplied Value. If the factory already
+	 * contains a MemValue object that is equivalent to the supplied value then
+	 * this equivalent value will be returned. Otherwise a new MemValue will be
+	 * created, stored for future calls and then returned.
 	 * 
 	 * @param value
 	 *        A Resource or Literal.
-	 * @return The created MemValue.
+	 * @return The existing or created MemValue.
 	 */
-	public MemValue createMemValue(Value value) {
+	public MemValue getOrCreateMemValue(Value value) {
 		if (value instanceof Resource) {
-			return createMemResource((Resource)value);
+			return getOrCreateMemResource((Resource)value);
 		}
 		else if (value instanceof Literal) {
-			return createMemLiteral((Literal)value);
+			return getOrCreateMemLiteral((Literal)value);
 		}
 		else {
 			throw new IllegalArgumentException("value is not a Resource or Literal: " + value);
@@ -195,14 +229,14 @@ public class MemValueFactory extends ValueFactoryImpl {
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public MemResource createMemResource(Resource resource) {
+	public MemResource getOrCreateMemResource(Resource resource) {
 		if (resource instanceof URI) {
-			return createMemURI((URI)resource);
+			return getOrCreateMemURI((URI)resource);
 		}
 		else if (resource instanceof BNode) {
-			return createMemBNode((BNode)resource);
+			return getOrCreateMemBNode((BNode)resource);
 		}
 		else {
 			throw new IllegalArgumentException("resource is not a URI or BNode: " + resource);
@@ -210,28 +244,192 @@ public class MemValueFactory extends ValueFactoryImpl {
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public MemURI createMemURI(URI uri) {
-		return uf.createMemURI(uri);
+	public synchronized MemURI getOrCreateMemURI(URI uri) {
+		MemURI memURI = getMemURI(uri);
+
+		if (memURI == null) {
+			// Namespace strings are relatively large objects and are shared
+			// between uris
+			String namespace = uri.getNamespace();
+			String sharedNamespace = namespaceRegistry.get(namespace);
+
+			if (sharedNamespace == null) {
+				// New namespace, add it to the registry
+				namespaceRegistry.add(namespace);
+			}
+			else {
+				// Use the shared namespace
+				namespace = sharedNamespace;
+			}
+
+			// Create a MemURI and add it to the registry
+			memURI = new MemURI(this, namespace, uri.getLocalName());
+			boolean wasNew = uriRegistry.add(memURI);
+			assert wasNew : "Created a duplicate MemURI for URI " + uri;
+		}
+
+		return memURI;
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public MemBNode createMemBNode(BNode bnode) {
-		try {
-			return bf.createMemBNode(bnode);
+	public synchronized MemBNode getOrCreateMemBNode(BNode bnode) {
+		MemBNode memBNode = getMemBNode(bnode);
+
+		if (memBNode == null) {
+			memBNode = new MemBNode(this, bnode.getID());
+			boolean wasNew = bnodeRegistry.add(memBNode);
+			assert wasNew : "Created a duplicate MemBNode for bnode " + bnode;
 		}
-		catch (IllegalArgumentException e) {
-			return (MemBNode)createBNode(bnode.getID());
-		}
+
+		return memBNode;
 	}
 
 	/**
-	 * See createMemValue() for description.
+	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public MemLiteral createMemLiteral(Literal literal) {
-		return lf.createMemLiteral(literal);
+	public synchronized MemLiteral getOrCreateMemLiteral(Literal literal) {
+		MemLiteral memLiteral = getMemLiteral(literal);
+
+		if (memLiteral == null) {
+			String label = literal.getLabel();
+			URI datatype = literal.getDatatype();
+			
+			if (datatype != null) {
+				try {
+					if (XMLDatatypeUtil.isIntegerDatatype(datatype)) {
+						memLiteral = new IntegerMemLiteral(this, label, literal.integerValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.DECIMAL)) {
+						memLiteral = new DecimalMemLiteral(this, label, literal.decimalValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.FLOAT)) {
+						memLiteral = new NumericMemLiteral(this, label, literal.floatValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.DOUBLE)) {
+						memLiteral = new NumericMemLiteral(this, label, literal.doubleValue(), datatype);
+					}
+					else if (datatype.equals(XMLSchema.BOOLEAN)) {
+						memLiteral = new BooleanMemLiteral(this, label, literal.booleanValue());
+					}
+					else if (datatype.equals(XMLSchema.DATETIME)) {
+						memLiteral = new CalendarMemLiteral(this, label, datatype, literal.calendarValue());
+					}
+					else {
+						memLiteral = new MemLiteral(this, label, datatype);
+					}
+				}
+				catch (IllegalArgumentException e) {
+					// Unable to parse literal label to primitive type
+					memLiteral = new MemLiteral(this, label, datatype);
+				}
+			}
+			else if (literal.getLanguage() != null) {
+				memLiteral = new MemLiteral(this, label, literal.getLanguage());
+			}
+			else {
+				memLiteral = new MemLiteral(this, label);
+			}
+
+			boolean wasNew = literalRegistry.add(memLiteral);
+			assert wasNew : "Created a duplicate MemLiteral for literal " + literal;
+		}
+
+		return memLiteral;
+	}
+
+	public synchronized URI createURI(String uri) {
+		URI tempURI = new URIImpl(uri);
+		return getOrCreateMemURI(tempURI);
+	}
+
+	public synchronized URI createURI(String namespace, String localName) {
+		URI tempURI = null;
+
+		// Reuse supplied namespace and local name strings if possible
+		if (URIUtil.isCorrectURISplit(namespace, localName)) {
+			if (namespace.indexOf(':') == -1) {
+				throw new IllegalArgumentException("Not a valid (absolute) URI: " + namespace + localName);
+			}
+
+			tempURI = new MemURI(null, namespace, localName);
+		}
+		else {
+			tempURI = new URIImpl(namespace + localName);
+		}
+
+		return getOrCreateMemURI(tempURI);
+	}
+
+	public synchronized BNode createBNode(String nodeID) {
+		BNode tempBNode = new BNodeImpl(nodeID);
+		return getOrCreateMemBNode(tempBNode);
+	}
+
+	public synchronized Literal createLiteral(String value) {
+		Literal tempLiteral = new LiteralImpl(value);
+		return getOrCreateMemLiteral(tempLiteral);
+	}
+
+	public synchronized Literal createLiteral(String value, String language) {
+		Literal tempLiteral = new LiteralImpl(value, language);
+		return getOrCreateMemLiteral(tempLiteral);
+	}
+
+	public synchronized Literal createLiteral(String value, URI datatype) {
+		Literal tempLiteral = new LiteralImpl(value, datatype);
+		return getOrCreateMemLiteral(tempLiteral);
+	}
+
+	@Override
+	public synchronized Literal createLiteral(boolean value) {
+		MemLiteral newLiteral = new BooleanMemLiteral(this, value);
+		return getSharedLiteral(newLiteral);
+	}
+
+	@Override
+	protected synchronized Literal createIntegerLiteral(Number n, URI datatype) {
+		MemLiteral newLiteral = new IntegerMemLiteral(this, BigInteger.valueOf(n.longValue()), datatype);
+		return getSharedLiteral(newLiteral);
+	}
+
+	@Override
+	protected synchronized Literal createFPLiteral(Number n, URI datatype) {
+		MemLiteral newLiteral = new NumericMemLiteral(this, n, datatype);
+		return getSharedLiteral(newLiteral);
+	}
+
+	@Override
+	public synchronized Literal createLiteral(XMLGregorianCalendar calendar) {
+		MemLiteral newLiteral = new CalendarMemLiteral(this, calendar);
+		return getSharedLiteral(newLiteral);
+	}
+
+	private Literal getSharedLiteral(MemLiteral newLiteral) {
+		MemLiteral sharedLiteral = literalRegistry.get(newLiteral);
+
+		if (sharedLiteral == null) {
+			boolean wasNew = literalRegistry.add(newLiteral);
+			assert wasNew : "Created a duplicate MemLiteral for literal " + newLiteral;
+			sharedLiteral = newLiteral;
+		}
+
+		return sharedLiteral;
+	}
+
+	public Statement createStatement(Resource subject, URI predicate, Value object) {
+		return new StatementImpl(subject, predicate, object);
+	}
+
+	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
+		if (context == null) {
+			return new StatementImpl(subject, predicate, object);
+		}
+		else {
+			return new ContextStatementImpl(subject, predicate, object, context);
+		}
 	}
 }

@@ -14,14 +14,13 @@ import java.net.URLEncoder;
 import junit.framework.TestCase;
 
 import info.aduna.io.IOUtil;
-import info.aduna.net.http.HttpClientUtil;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 
 public class ProtocolTest extends TestCase {
@@ -69,8 +68,7 @@ public class ProtocolTest extends TestCase {
 		throws Exception
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		location = HttpClientUtil.appendParameter(location, Protocol.CONTEXT_PARAM_NAME,
-				Protocol.NULL_PARAM_VALUE);
+		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + Protocol.NULL_PARAM_VALUE;
 		putFile(location, "/testcases/default-graph-1.ttl");
 	}
 
@@ -82,8 +80,7 @@ public class ProtocolTest extends TestCase {
 		throws Exception
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		location = HttpClientUtil.appendParameter(location, Protocol.CONTEXT_PARAM_NAME,
-				Protocol.NULL_PARAM_VALUE);
+		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + Protocol.NULL_PARAM_VALUE;
 		delete(location);
 	}
 
@@ -96,7 +93,7 @@ public class ProtocolTest extends TestCase {
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
 		String encContext = Protocol.encodeValue(new URIImpl("urn:x-local:graph1"));
-		location = HttpClientUtil.appendParameter(location, Protocol.CONTEXT_PARAM_NAME, encContext);
+		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		putFile(location, "/testcases/named-graph-1.ttl");
 	}
 
@@ -109,7 +106,7 @@ public class ProtocolTest extends TestCase {
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
 		String encContext = Protocol.encodeValue(new URIImpl("urn:x-local:graph1"));
-		location = HttpClientUtil.appendParameter(location, Protocol.CONTEXT_PARAM_NAME, encContext);
+		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		delete(location);
 	}
 
@@ -120,7 +117,7 @@ public class ProtocolTest extends TestCase {
 	public void testSeRQLselect()
 		throws Exception
 	{
-		TupleResult queryResult = evaluate(TestServer.REPOSITORY_URL, "select * from {X} P {Y}",
+		TupleQueryResult queryResult = evaluate(TestServer.REPOSITORY_URL, "select * from {X} P {Y}",
 				QueryLanguage.SERQL);
 		QueryResultIO.write(queryResult, TupleQueryResultFormat.SPARQL, System.out);
 	}
@@ -186,7 +183,7 @@ public class ProtocolTest extends TestCase {
 		}
 	}
 
-	private TupleResult evaluate(String location, String query, QueryLanguage queryLn)
+	private TupleQueryResult evaluate(String location, String query, QueryLanguage queryLn)
 		throws Exception
 	{
 		location += "?query=" + URLEncoder.encode(query, "UTF-8") + "&queryLn=" + queryLn.getName();

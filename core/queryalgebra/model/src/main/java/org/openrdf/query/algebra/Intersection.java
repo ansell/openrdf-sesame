@@ -14,8 +14,6 @@ import java.util.Set;
  */
 public class Intersection extends BinaryTupleOperator {
 
-	private static final long serialVersionUID = -6155595773038518175L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -40,7 +38,6 @@ public class Intersection extends BinaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
-	@Override
 	public Set<String> getBindingNames() {
 		Set<String> bindingNames = new LinkedHashSet<String>(16);
 		bindingNames.addAll(getLeftArg().getBindingNames());
@@ -59,6 +56,16 @@ public class Intersection extends BinaryTupleOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Intersection && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Intersection".hashCode();
 	}
 
 	@Override

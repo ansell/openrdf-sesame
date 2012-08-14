@@ -7,35 +7,31 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
-import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
- * Splits conjunctive constraints into separate constraints. Treats LeftJoin
- * condition as a filter if only references variables from the right side.
+ * Splits conjunctive constraints into seperate constraints.
  * 
  * @author Arjohn Kampman
  */
 public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 
-	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(new ConstraintVisitor(query));
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(new ConstraintVisitor(tupleExpr));
 	}
 
-	protected class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		protected final TupleExpr tupleExpr;
 
@@ -43,44 +39,9 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 			this.tupleExpr = tupleExpr;
 		}
 
-		/**
-		 * If any conjunctive constraints only reference the right side, split
-		 * them out of the condition into the right side.
-		 */
 		@Override
-		public void meet(LeftJoin node) {
-			super.meet(node);
-			ValueExpr condition = node.getCondition();
-			if (condition != null) {
-				And and = new And();
-				List<ValueExpr> constraints = new ArrayList<ValueExpr>(16);
-				getConjunctiveConstraints(condition, constraints);
-
-				for (int i = constraints.size() - 1; i >= 0; i--) {
-					ValueExpr constraint = constraints.get(i);
-					TupleExpr right = node.getRightArg();
-					Set<String> filterVars = new VarFinder(constraint).getVars();
-					if (right.getBindingNames().containsAll(filterVars)) {
-						node.setRightArg(new Filter(right.clone(), constraint.clone()));
-					}
-					else {
-						and.addArg(constraint);
-					}
-				}
-				if (and.getNumberOfArguments() > 1) {
-					node.setCondition(and);
-				}
-				else if (and.getNumberOfArguments() == 1) {
-					node.setCondition(and.getArg(0));
-				}
-				else {
-					node.setCondition(null);
-				}
-			}
-		}
-
-		@Override
-		public void meet(Filter filter) {
+		public void meet(Filter filter)
+		{
 			super.meet(filter);
 
 			List<ValueExpr> conjunctiveConstraints = new ArrayList<ValueExpr>(16);
@@ -97,38 +58,45 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 			filter.setArg(filterArg);
 		}
 
+		@Override
+		public void meet(LeftJoin node) {
+			super.meet(node);
+
+			if (node.getCondition() != null) {
+				List<ValueExpr> conjunctiveConstraints = new ArrayList<ValueExpr>(16);
+				getConjunctiveConstraints(node.getCondition(), conjunctiveConstraints);
+	
+				TupleExpr arg = node.getRightArg();
+				ValueExpr condition = null;
+	
+				for (ValueExpr constraint : conjunctiveConstraints) {
+					if (isWithinBindingScope(constraint, arg)) {
+						arg = new Filter(arg, constraint);
+					} else if (condition == null) {
+						condition = constraint;
+					} else {
+						condition = new And(condition, constraint);
+					}
+				}
+	
+				node.setCondition(condition);
+				node.setRightArg(arg);
+			}
+		}
+
 		protected void getConjunctiveConstraints(ValueExpr valueExpr, List<ValueExpr> conjunctiveConstraints) {
 			if (valueExpr instanceof And) {
 				And and = (And)valueExpr;
-				for (ValueExpr arg : and.getArgs()) {
-					getConjunctiveConstraints(arg, conjunctiveConstraints);
-				}
+				getConjunctiveConstraints(and.getLeftArg(), conjunctiveConstraints);
+				getConjunctiveConstraints(and.getRightArg(), conjunctiveConstraints);
 			}
 			else {
 				conjunctiveConstraints.add(valueExpr);
 			}
 		}
 
-		class VarFinder extends QueryModelVisitorBase<RuntimeException> {
-
-			private QueryModelNode node;
-
-			private Set<String> vars;
-
-			public VarFinder(QueryModelNode node) {
-				this.node = node;
-			}
-
-			public Set<String> getVars() {
-				vars = new HashSet<String>();
-				node.visit(this);
-				return vars;
-			}
-
-			@Override
-			public void meet(Var var) {
-				vars.add(var.getName());
-			}
+		private boolean isWithinBindingScope(ValueExpr condition, TupleExpr node) {
+			return node.getBindingNames().containsAll(VarNameCollector.process(condition));
 		}
 	}
 }

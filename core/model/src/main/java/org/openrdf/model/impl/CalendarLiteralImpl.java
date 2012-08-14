@@ -24,8 +24,7 @@ public class CalendarLiteralImpl extends LiteralImpl {
 
 	/**
 	 * Creates a literal for the specified calendar using a datatype appropriate
-	 * for the value indicated by {@link XMLGregorianCalendar#getXMLSchemaType()}
-	 * .
+	 * for the value indicated by {@link XMLGregorianCalendar#getXMLSchemaType()}.
 	 */
 	public CalendarLiteralImpl(XMLGregorianCalendar calendar) {
 		super(calendar.toXMLFormat(), XMLDatatypeUtil.qnameToURI(calendar.getXMLSchemaType()));
@@ -33,7 +32,8 @@ public class CalendarLiteralImpl extends LiteralImpl {
 	}
 
 	@Override
-	public XMLGregorianCalendar calendarValue() {
+	public XMLGregorianCalendar calendarValue()
+	{
 		return calendar;
 	}
 }

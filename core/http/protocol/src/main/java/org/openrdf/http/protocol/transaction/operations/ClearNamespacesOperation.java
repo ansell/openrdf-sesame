@@ -6,7 +6,7 @@
 package org.openrdf.http.protocol.transaction.operations;
 
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Operation that removes all namespace declarations.
@@ -20,7 +20,7 @@ public class ClearNamespacesOperation implements TransactionOperation {
 	}
 
 	public void execute(RepositoryConnection con)
-		throws StoreException
+		throws RepositoryException
 	{
 		con.clearNamespaces();
 	}

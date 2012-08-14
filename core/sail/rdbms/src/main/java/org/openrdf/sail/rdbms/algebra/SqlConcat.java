@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL concatenate expression (||).
  * 
  * @author James Leigh
+ * 
  */
 public class SqlConcat extends BinarySqlOperator {
 

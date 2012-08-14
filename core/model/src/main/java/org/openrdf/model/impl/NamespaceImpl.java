@@ -21,12 +21,12 @@ public class NamespaceImpl implements Namespace {
 	/**
 	 * The namespace's prefix.
 	 */
-	private final String prefix;
+	private String prefix;
 
 	/**
 	 * The namespace's name.
 	 */
-	private final String name;
+	private String name;
 
 	/*--------------*
 	 * Constructors *
@@ -41,10 +41,8 @@ public class NamespaceImpl implements Namespace {
 	 *        The namespace's name.
 	 */
 	public NamespaceImpl(String prefix, String name) {
-		assert prefix != null : "prefix must not be null";
-		assert name != null : "name must not be null";
-		this.prefix = prefix;
-		this.name = name;
+		setPrefix(prefix);
+		setName(name);
 	}
 
 	/*---------*
@@ -61,6 +59,16 @@ public class NamespaceImpl implements Namespace {
 	}
 
 	/**
+	 * Sets the prefix of the namespace.
+	 * 
+	 * @param prefix
+	 *        The (new) prefix for this namespace.
+	 */
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
+	/**
 	 * Gets the name of the namespace.
 	 * 
 	 * @return name of the namespace
@@ -69,23 +77,14 @@ public class NamespaceImpl implements Namespace {
 		return name;
 	}
 
-	@Override
-	public int hashCode() {
-		return name.hashCode() + 31 * prefix.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (obj instanceof NamespaceImpl) {
-			NamespaceImpl other = (NamespaceImpl)obj;
-			return name.equals(other.name) && prefix.equals(other.prefix);
-		}
-
-		return false;
+	/**
+	 * Sets the name of the namespace.
+	 * 
+	 * @param name
+	 *        The (new) name for this namespace.
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	/**

@@ -9,6 +9,7 @@ package org.openrdf.sail.rdbms.algebra.base;
  * A boolean value of true or false.
  * 
  * @author James Leigh
+ * 
  */
 public abstract class BooleanValue extends SqlConstant<Boolean> {
 

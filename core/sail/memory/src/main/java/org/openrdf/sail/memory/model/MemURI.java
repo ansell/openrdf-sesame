@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -16,9 +16,9 @@ public class MemURI implements URI, MemResource {
 
 	private static final long serialVersionUID = 9118488004995852467L;
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
+	/*------------*
+	 * Attributes *
+	 *------------*/
 
 	/**
 	 * The URI's namespace.
@@ -132,6 +132,11 @@ public class MemURI implements URI, MemResource {
 
 	public Object getCreator() {
 		return creator;
+	}
+
+	public boolean hasStatements() {
+		return subjectStatements != null || predicateStatements != null || objectStatements != null
+				|| contextStatements != null;
 	}
 
 	public MemStatementList getSubjectStatementList() {

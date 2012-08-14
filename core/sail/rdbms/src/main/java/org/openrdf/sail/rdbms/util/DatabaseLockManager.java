@@ -58,8 +58,7 @@ public class DatabaseLockManager implements LockManager {
 			// Both BasicDataSource and MysqlDataSource have getUrl
 			Method getUrl = ds.getClass().getMethod("getUrl");
 			return getUrl.invoke(ds).toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// getUrl cannot be accessed
 		}
 		return ds.toString();

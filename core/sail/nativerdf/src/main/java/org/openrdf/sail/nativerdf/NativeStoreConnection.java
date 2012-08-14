@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,23 +12,24 @@ import java.util.Collections;
 import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
+import info.aduna.iteration.ExceptionConvertingIteration;
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.CollectionCursor;
-import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.EvaluationException;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.evaluation.cursors.LockingCursor;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -36,19 +37,19 @@ import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.OrderLimitOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.QueryModelPruner;
+import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
-import org.openrdf.query.algebra.evaluation.util.QueryOptimizerList;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -80,79 +81,72 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected NativeStoreConnection(NativeStore nativeStore)
 		throws IOException
 	{
+		super(nativeStore);
 		this.nativeStore = nativeStore;
 		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
-
-		// Set default isolation level (serializable since we don't allow
-		// concurrent transactions yet)
-		try {
-			setTransactionIsolation(Isolation.SERIALIZABLE);
-		}
-		catch (StoreException e) {
-			throw new RuntimeException("unexpected exception", e);
-		}
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public ValueFactory getValueFactory() {
-		return nativeStore.getValueFactory();
+	@Override
+	protected void closeInternal() {
+		// FIXME we should check for open iteration objects.
 	}
 
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
+			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
 	{
-		logger.trace("Incoming query model:\n{}", query);
+		logger.trace("Incoming query model:\n{}", tupleExpr);
 
 		// Clone the tuple expression to allow for more aggressive optimizations
-		query = query.clone();
+		tupleExpr = tupleExpr.clone();
 
-		Lock readLock = nativeStore.getReadLock();
+		if (!(tupleExpr instanceof QueryRoot)) {
+			// Add a dummy root node to the tuple expressions to allow the
+			// optimizers to modify the actual root node
+			tupleExpr = new QueryRoot(tupleExpr);
+		}
 
 		try {
-			replaceValues(query);
+			replaceValues(tupleExpr);
 
 			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred,
-					!isAutoCommit());
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, query);
+					transactionActive());
+			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
 
-			QueryOptimizerList optimizerList = new QueryOptimizerList();
-			optimizerList.add(new BindingAssigner());
-			optimizerList.add(new ConstantOptimizer(strategy));
-			optimizerList.add(new CompareOptimizer());
-			optimizerList.add(new ConjunctiveConstraintSplitter());
-			optimizerList.add(new DisjunctiveConstraintOptimizer());
-			optimizerList.add(new SameTermFilterOptimizer());
-			optimizerList.add(new QueryModelPruner());
-			optimizerList.add(new QueryJoinOptimizer(new NativeEvaluationStatistics(nativeStore)));
-			optimizerList.add(new FilterOptimizer());
+			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
+			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
+			new CompareOptimizer().optimize(tupleExpr, dataset, bindings);
+			new ConjunctiveConstraintSplitter().optimize(tupleExpr, dataset, bindings);
+			new DisjunctiveConstraintOptimizer().optimize(tupleExpr, dataset, bindings);
+			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
+//			new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			new QueryJoinOptimizer(new NativeEvaluationStatistics(nativeStore)).optimize(tupleExpr, dataset,
+					bindings);
+			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
+			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
 
-			optimizerList.optimize(query, bindings);
-			logger.trace("Optimized query model:\n{}", query);
+			logger.trace("Optimized query model:\n{}", tupleExpr);
 
-			Cursor<BindingSet> iter;
-			iter = strategy.evaluate(query, EmptyBindingSet.getInstance());
-			iter = new LockingCursor<BindingSet>(readLock, iter);
-			return iter;
+			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
 		}
-		catch (EvaluationException e) {
-			readLock.release();
-			throw e;
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
+		catch (QueryEvaluationException e) {
+			throw new SailException(e);
 		}
 	}
 
 	protected void replaceValues(TupleExpr tupleExpr)
-		throws StoreException
+		throws SailException
 	{
 		// Replace all Value objects stored in variables with NativeValue objects,
 		// which cache internal IDs
-		tupleExpr.visit(new QueryModelVisitorBase<StoreException>() {
+		tupleExpr.visit(new QueryModelVisitorBase<SailException>() {
 
 			@Override
 			public void meet(Var var) {
@@ -163,96 +157,93 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		});
 	}
 
-	public Cursor<? extends Resource> getContextIDs()
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
+		throws SailException
 	{
 		// Which resources are used as context identifiers is not stored
 		// separately. Iterate over all statements and extract their context.
-		Lock readLock = nativeStore.getReadLock();
 		try {
-			Cursor<? extends Resource> contextIter;
-			contextIter = nativeStore.getContextIDs(!isAutoCommit());
-			// releasing the read lock when the iterator is closed
-			contextIter = new LockingCursor<Resource>(readLock, contextIter);
+			CloseableIteration<? extends Resource, IOException> contextIter = nativeStore.getContextIDs(transactionActive());
 
-			return contextIter;
+			return new ExceptionConvertingIteration<Resource, SailException>(contextIter) {
+
+				@Override
+				protected SailException convert(Exception e) {
+					if (e instanceof IOException) {
+						return new SailException(e);
+					}
+					else if (e instanceof RuntimeException) {
+						throw (RuntimeException)e;
+					}
+					else if (e == null) {
+						throw new IllegalArgumentException("e must not be null");
+					}
+					else {
+						throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
+					}
+				}
+			};
 		}
 		catch (IOException e) {
-			readLock.release();
-			throw new StoreException(e);
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
+			throw new SailException(e);
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws SailException
 	{
-		Lock readLock = nativeStore.getReadLock();
 		try {
-			Cursor<? extends Statement> iter;
-			iter = nativeStore.createStatementCursor(subj, pred, obj, includeInferred, !isAutoCommit(), contexts);
-			iter = new LockingCursor<Statement>(readLock, iter);
+			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
+					subj, pred, obj, includeInferred, transactionActive(), contexts);
 
-			return iter;
+			return new ExceptionConvertingIteration<Statement, SailException>(iter) {
+
+				@Override
+				protected SailException convert(Exception e) {
+					if (e instanceof IOException) {
+						return new SailException(e);
+					}
+					else if (e instanceof RuntimeException) {
+						throw (RuntimeException)e;
+					}
+					else if (e == null) {
+						throw new IllegalArgumentException("e must not be null");
+					}
+					else {
+						throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
+					}
+				}
+			};
 		}
 		catch (IOException e) {
-			readLock.release();
-			throw new StoreException("Unable to get statements", e);
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
+			throw new SailException("Unable to get statements", e);
 		}
 	}
 
-	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	@Override
+	protected long sizeInternal(Resource... contexts)
+		throws SailException
 	{
-		Lock readLock = nativeStore.getReadLock();
+		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
-			ValueStore valueStore = nativeStore.getValueStore();
-
-			int subjID = NativeValue.UNKNOWN_ID;
-			if (subj != null) {
-				subjID = valueStore.getID(subj);
-				if (subjID == NativeValue.UNKNOWN_ID) {
-					return 0;
-				}
-			}
-			int predID = NativeValue.UNKNOWN_ID;
-			if (pred != null) {
-				predID = valueStore.getID(pred);
-				if (predID == NativeValue.UNKNOWN_ID) {
-					return 0;
-				}
-			}
-			int objID = NativeValue.UNKNOWN_ID;
-			if (obj != null) {
-				objID = valueStore.getID(obj);
-				if (objID == NativeValue.UNKNOWN_ID) {
-					return 0;
-				}
-			}
 			List<Integer> contextIDs;
-			if (contexts != null && contexts.length == 0) {
+			if (contexts.length == 0) {
 				contextIDs = Arrays.asList(NativeValue.UNKNOWN_ID);
 			}
 			else {
-				contextIDs = nativeStore.getContextIDs(OpenRDFUtil.notNull(contexts));
+				contextIDs = nativeStore.getContextIDs(contexts);
 			}
 
 			long size = 0L;
 
 			for (int contextID : contextIDs) {
 				// Iterate over all explicit statements
-				RecordIterator iter = nativeStore.getTripleStore().getTriples(subjID, predID, objID, contextID,
-						!includeInferred, !isAutoCommit());
-
+				RecordIterator iter = nativeStore.getTripleStore().getTriples(-1, -1, -1, contextID, true,
+						transactionActive());
 				try {
 					while (iter.next() != null) {
 						size++;
@@ -266,98 +257,81 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			return size;
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
-		}
-		finally {
-			readLock.release();
-		}
-	}
-
-	public Cursor<? extends Namespace> getNamespaces()
-		throws StoreException
-	{
-		Lock readLock = nativeStore.getReadLock();
-		try {
-			return new LockingCursor<NamespaceImpl>(readLock, new CollectionCursor<NamespaceImpl>(
-					nativeStore.getNamespaceStore()));
-		}
-		catch (RuntimeException e) {
-			readLock.release();
-			throw e;
-		}
-	}
-
-	public String getNamespace(String prefix)
-		throws StoreException
-	{
-		Lock readLock = nativeStore.getReadLock();
-		try {
-			return nativeStore.getNamespaceStore().getNamespace(prefix);
-		}
-		finally {
-			readLock.release();
+			throw new SailException(e);
 		}
 	}
 
 	@Override
-	public void begin()
-		throws StoreException
+	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
+		throws SailException
+	{
+		return new CloseableIteratorIteration<NamespaceImpl, SailException>(
+				nativeStore.getNamespaceStore().iterator());
+	}
+
+	@Override
+	protected String getNamespaceInternal(String prefix)
+		throws SailException
+	{
+		return nativeStore.getNamespaceStore().getNamespace(prefix);
+	}
+
+	@Override
+	protected void startTransactionInternal()
+		throws SailException
 	{
 		txnLock = nativeStore.getTransactionLock();
+		boolean relaseLock = true;
 
 		try {
 			nativeStore.getTripleStore().startTransaction();
-			super.begin();
+			relaseLock = false;
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
+		}
+		finally {
+			if (relaseLock) {
+				txnLock.release();
+			}
 		}
 	}
 
 	@Override
-	public void commit()
-		throws StoreException
+	protected void commitInternal()
+		throws SailException
 	{
-		Lock storeReadLock = nativeStore.getReadLock();
-
 		try {
 			nativeStore.getValueStore().sync();
-			nativeStore.getTripleStore().commit();
 			nativeStore.getNamespaceStore().sync();
+			nativeStore.getTripleStore().commit();
 
 			txnLock.release();
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 		catch (RuntimeException e) {
 			logger.error("Encountered an unexpected problem while trying to commit", e);
 			throw e;
-		}
-		finally {
-			storeReadLock.release();
 		}
 
 		nativeStore.notifySailChanged(sailChangedEvent);
 
 		// create a fresh event object.
 		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
-		super.commit();
 	}
 
 	@Override
-	public void rollback()
-		throws StoreException
+	protected void rollbackInternal()
+		throws SailException
 	{
-		Lock storeReadLock = nativeStore.getReadLock();
-
 		try {
 			nativeStore.getValueStore().sync();
 			nativeStore.getTripleStore().rollback();
-			super.rollback();
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 		catch (RuntimeException e) {
 			logger.error("Encountered an unexpected problem while trying to roll back", e);
@@ -365,25 +339,42 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		finally {
 			txnLock.release();
-			storeReadLock.release();
 		}
 	}
 
-	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
 		addStatement(subj, pred, obj, true, contexts);
 	}
 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
-		return addStatement(subj, pred, obj, false, contexts);
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				return addStatement(subj, pred, obj, false, contexts);
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
 	}
 
 	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
 		boolean result = false;
 
 		try {
@@ -392,11 +383,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			int predID = valueStore.storeValue(pred);
 			int objID = valueStore.storeValue(obj);
 
-			if (contexts != null && contexts.length == 0) {
+			if (contexts.length == 0) {
 				contexts = new Resource[] { null };
 			}
 
-			for (Resource context : OpenRDFUtil.notNull(contexts)) {
+			for (Resource context : contexts) {
 				int contextID = 0;
 				if (context != null) {
 					contextID = valueStore.storeValue(context);
@@ -426,7 +417,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			}
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 		catch (RuntimeException e) {
 			logger.error("Encountered an unexpected problem while trying to add a statement", e);
@@ -436,22 +427,40 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		return result;
 	}
 
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
 		removeStatements(subj, pred, obj, true, contexts);
 	}
 
-	public boolean removeInferredStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
-		int removeCount = removeStatements(subj, pred, obj, false, contexts);
-		return removeCount > 0;
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				int removeCount = removeStatements(subj, pred, obj, false, contexts);
+				return removeCount > 0;
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
 	}
 
 	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
 		try {
 			TripleStore tripleStore = nativeStore.getTripleStore();
 			ValueStore valueStore = nativeStore.getValueStore();
@@ -478,7 +487,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 				}
 			}
 
-			contexts = OpenRDFUtil.notNull(contexts);
 			List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
 			if (contexts.length == 0) {
 				contextIDList.add(NativeValue.UNKNOWN_ID);
@@ -510,13 +518,9 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 					RecordIterator btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, explicit,
 							true);
 
-					NativeStatementCursor iter = new NativeStatementCursor(btreeIter, valueStore);
+					NativeStatementIterator iter = new NativeStatementIterator(btreeIter, valueStore);
 
-					removedStatements = new ArrayList<Statement>();
-					Statement st;
-					while ((st = iter.next()) != null) {
-						removedStatements.add(st);
-					}
+					removedStatements = Iterations.asList(iter);
 				}
 
 				removeCount += tripleStore.removeTriples(subjID, predID, objID, contextID, explicit);
@@ -533,7 +537,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			return removeCount;
 		}
 		catch (IOException e) {
-			throw new StoreException(e);
+			throw new SailException(e);
 		}
 		catch (RuntimeException e) {
 			logger.error("Encountered an unexpected problem while trying to remove statements", e);
@@ -541,24 +545,55 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
+	@Override
+	protected void clearInternal(Resource... contexts)
+		throws SailException
+	{
+		removeStatements(null, null, null, true, contexts);
+	}
+
+	public void clearInferred(Resource... contexts)
+		throws SailException
+	{
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				autoStartTransaction();
+				removeStatements(null, null, null, false, contexts);
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
+	}
+
 	public void flushUpdates() {
 		// no-op; changes are reported as soon as they come in
 	}
 
-	public void setNamespace(String prefix, String name)
-		throws StoreException
+	@Override
+	protected void setNamespaceInternal(String prefix, String name)
+		throws SailException
 	{
 		nativeStore.getNamespaceStore().setNamespace(prefix, name);
 	}
 
-	public void removeNamespace(String prefix)
-		throws StoreException
+	@Override
+	protected void removeNamespaceInternal(String prefix)
+		throws SailException
 	{
 		nativeStore.getNamespaceStore().removeNamespace(prefix);
 	}
 
-	public void clearNamespaces()
-		throws StoreException
+	@Override
+	protected void clearNamespacesInternal()
+		throws SailException
 	{
 		nativeStore.getNamespaceStore().clear();
 	}

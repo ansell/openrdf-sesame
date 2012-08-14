@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,17 +7,37 @@ package org.openrdf.sail.nativerdf.btree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.BitSet;
 
 import info.aduna.io.ByteArrayUtil;
-import info.aduna.io.IOUtil;
+import info.aduna.io.NioFile;
 
 /**
  * List of allocated BTree nodes, persisted to a file on disk.
  * 
  * @author Arjohn Kampman
  */
-public class AllocatedNodesList {
+class AllocatedNodesList {
+
+	/*-----------*
+	 * Constants *
+	 *-----------*/
+
+	/**
+	 * Magic number "Allocated Nodes File" to detect whether the file is actually
+	 * an allocated nodes file. The first three bytes of the file should be equal
+	 * to this magic number.
+	 */
+	private static final byte[] MAGIC_NUMBER = new byte[] { 'a', 'n', 'f' };
+
+	/**
+	 * The file format version number, stored as the fourth byte in allocated
+	 * nodes files.
+	 */
+	private static final byte FILE_FORMAT_VERSION = 1;
+
+	private static final int HEADER_LENGTH = MAGIC_NUMBER.length + 1;
 
 	/*-----------*
 	 * Variables *
@@ -31,7 +51,7 @@ public class AllocatedNodesList {
 	/**
 	 * The allocated nodes file.
 	 */
-	private final File allocNodesFile;
+	private final NioFile nioFile;
 
 	/**
 	 * Bit set recording which nodes have been allocated, using node IDs as
@@ -52,7 +72,9 @@ public class AllocatedNodesList {
 	/**
 	 * Creates a new AllocatedNodelist for the specified BTree.
 	 */
-	public AllocatedNodesList(File allocNodesFile, BTree btree) {
+	public AllocatedNodesList(File allocNodesFile, BTree btree)
+		throws IOException
+	{
 		if (allocNodesFile == null) {
 			throw new IllegalArgumentException("allocNodesFile must not be null");
 		}
@@ -60,7 +82,7 @@ public class AllocatedNodesList {
 			throw new IllegalArgumentException("btree muts not be null");
 		}
 
-		this.allocNodesFile = allocNodesFile;
+		this.nioFile = new NioFile(allocNodesFile);
 		this.btree = btree;
 	}
 
@@ -72,7 +94,13 @@ public class AllocatedNodesList {
 	 * Gets the allocated nodes file.
 	 */
 	public File getFile() {
-		return allocNodesFile;
+		return nioFile.getFile();
+	}
+
+	public synchronized void close()
+		throws IOException
+	{
+		close(true);
 	}
 
 	/**
@@ -83,9 +111,19 @@ public class AllocatedNodesList {
 	public synchronized boolean delete()
 		throws IOException
 	{
+		close(false);
+		return nioFile.delete();
+	}
+
+	public synchronized void close(boolean syncChanges)
+		throws IOException
+	{
+		if (syncChanges) {
+			sync();
+		}
 		allocatedNodes = null;
 		needsSync = false;
-		return allocNodesFile.delete();
+		nioFile.close();
 	}
 
 	/**
@@ -104,9 +142,14 @@ public class AllocatedNodesList {
 				bitSet = allocatedNodes.get(0, bitSetLength);
 			}
 
-			// Write bit set to file
 			byte[] data = ByteArrayUtil.toByteArray(bitSet);
-			IOUtil.writeBytes(data, allocNodesFile);
+
+			// Write bit set to file
+			nioFile.truncate(HEADER_LENGTH + data.length);
+			nioFile.writeBytes(MAGIC_NUMBER, 0);
+			nioFile.writeByte(FILE_FORMAT_VERSION, MAGIC_NUMBER.length);
+			nioFile.writeBytes(data, HEADER_LENGTH);
+
 			needsSync = false;
 		}
 	}
@@ -115,12 +158,7 @@ public class AllocatedNodesList {
 		throws IOException
 	{
 		if (needsSync == false) {
-			if (allocNodesFile.exists()) {
-				boolean success = allocNodesFile.delete();
-				if (!success) {
-					throw new IOException("Failed to delete " + allocateNode());
-				}
-			}
+			nioFile.truncate(0);
 			needsSync = true;
 		}
 	}
@@ -190,7 +228,7 @@ public class AllocatedNodesList {
 		throws IOException
 	{
 		if (allocatedNodes == null) {
-			if (allocNodesFile.exists()) {
+			if (nioFile.size() > 0L) {
 				loadAllocatedNodesInfo();
 			}
 			else {
@@ -202,7 +240,28 @@ public class AllocatedNodesList {
 	private void loadAllocatedNodesInfo()
 		throws IOException
 	{
-		byte[] data = IOUtil.readBytes(allocNodesFile);
+		byte[] data;
+
+		if (nioFile.size() >= HEADER_LENGTH
+				&& Arrays.equals(MAGIC_NUMBER, nioFile.readBytes(0, MAGIC_NUMBER.length)))
+		{
+			byte version = nioFile.readByte(MAGIC_NUMBER.length);
+			if (version > FILE_FORMAT_VERSION) {
+				throw new IOException("Unable to read allocated nodes file; it uses a newer file format");
+			}
+			else if (version != FILE_FORMAT_VERSION) {
+				throw new IOException("Unable to read allocated nodes file; invalid file format version: "
+						+ version);
+			}
+
+			data = nioFile.readBytes(HEADER_LENGTH, (int)(nioFile.size() - HEADER_LENGTH));
+		}
+		else {
+			// assume header is missing (old file format)
+			data = nioFile.readBytes(0, (int)nioFile.size());
+			scheduleSync();
+		}
+
 		allocatedNodes = ByteArrayUtil.toBitSet(data);
 	}
 
@@ -215,6 +274,8 @@ public class AllocatedNodesList {
 		if (rootNode != null) {
 			crawlAllocatedNodes(rootNode);
 		}
+
+		scheduleSync();
 	}
 
 	private void crawlAllocatedNodes(BTree.Node node)

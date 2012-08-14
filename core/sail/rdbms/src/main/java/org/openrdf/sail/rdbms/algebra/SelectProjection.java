@@ -15,6 +15,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * A collection of SQL expressions that form an RDF value binding.
  * 
  * @author James Leigh
+ * 
  */
 public class SelectProjection extends RdbmsQueryModelNodeBase {
 
@@ -132,56 +133,43 @@ public class SelectProjection extends RdbmsQueryModelNodeBase {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		final SelectProjection other = (SelectProjection)obj;
 		if (datatype == null) {
-			if (other.datatype != null) {
+			if (other.datatype != null)
 				return false;
-			}
 		}
-		else if (!datatype.equals(other.datatype)) {
+		else if (!datatype.equals(other.datatype))
 			return false;
-		}
 		if (id == null) {
-			if (other.id != null) {
+			if (other.id != null)
 				return false;
-			}
 		}
-		else if (!id.equals(other.id)) {
+		else if (!id.equals(other.id))
 			return false;
-		}
 		if (language == null) {
-			if (other.language != null) {
+			if (other.language != null)
 				return false;
-			}
 		}
-		else if (!language.equals(other.language)) {
+		else if (!language.equals(other.language))
 			return false;
-		}
 		if (stringValue == null) {
-			if (other.stringValue != null) {
+			if (other.stringValue != null)
 				return false;
-			}
 		}
-		else if (!stringValue.equals(other.stringValue)) {
+		else if (!stringValue.equals(other.stringValue))
 			return false;
-		}
 		if (var == null) {
-			if (other.var != null) {
+			if (other.var != null)
 				return false;
-			}
 		}
-		else if (!var.equals(other.var)) {
+		else if (!var.equals(other.var))
 			return false;
-		}
 		return true;
 	}
 

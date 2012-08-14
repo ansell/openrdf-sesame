@@ -8,7 +8,8 @@ package org.openrdf.sail.memory.model;
 import java.io.Serializable;
 
 /**
- * A type-safe enumeration for transaction status information on MemStatements.
+ * A type-safe enumeration for transaction status information on
+ * MemStatements.
  */
 public enum TxnStatus implements Serializable {
 
@@ -20,8 +21,8 @@ public enum TxnStatus implements Serializable {
 
 	/**
 	 * Constant indicating that a statement has been newly added as part of a
-	 * transaction, but has not yet been committed. Such statements should not be
-	 * queried to prevent 'dirty reads'.
+	 * transaction, but has not yet been committed. Such statements should not
+	 * be queried to prevent 'dirty reads'.
 	 */
 	NEW,
 
@@ -30,18 +31,18 @@ public enum TxnStatus implements Serializable {
 	 * should be removed upon commit.
 	 */
 	DEPRECATED,
-
+	
 	/**
 	 * Constant indicating that an existing inferred statement has been added
 	 * explicitly as part of a transaction and that it should be marked as such
 	 * upon commit.
 	 */
 	EXPLICIT,
-
+	
 	/**
 	 * Constant indicating that an existing explicit statement has been removed
-	 * as part of a transaction, but that it can still be inferred from the other
-	 * statements.
+	 * as part of a transaction, but that it can still be inferred from the
+	 * other statements.
 	 */
 	INFERRED,
 

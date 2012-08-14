@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -7,72 +7,59 @@ package org.openrdf.repository.sail;
 
 import java.util.ArrayList;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultUtil;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.algebra.Slice;
-import org.openrdf.query.parser.TupleQueryModel;
-import org.openrdf.result.TupleResult;
-import org.openrdf.result.impl.TupleResultImpl;
-import org.openrdf.result.util.QueryResultUtil;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
 /**
  * @author Arjohn Kampman
- * @author James Leigh
  */
 public class SailTupleQuery extends SailQuery implements TupleQuery {
 
-	protected int offset = 0;
-
-	protected int limit = -1;
-
-	protected SailTupleQuery(TupleQueryModel tupleQuery, SailRepositoryConnection sailConnection) {
+	protected SailTupleQuery(ParsedTupleQuery tupleQuery, SailRepositoryConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-
-	public int getOffset() {
-		return offset;
-	}
-
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-
-	public int getLimit() {
-		return limit;
-	}
-
 	@Override
-	public TupleQueryModel getParsedQuery() {
-		return (TupleQueryModel)super.getParsedQuery();
+	public ParsedTupleQuery getParsedQuery() {
+		return (ParsedTupleQuery)super.getParsedQuery();
 	}
 
-	public TupleResult evaluate()
-		throws StoreException
+	public TupleQueryResult evaluate()
+		throws QueryEvaluationException
 	{
-		TupleQueryModel query = getParsedQuery();
+		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
-		if (getOffset() > 0 || getLimit() >= 0) {
-			query.setArg(new Slice(query.getArg(), getOffset(), getLimit()));
+		try {
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
+
+			SailConnection sailCon = getConnection().getSailConnection();
+			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
+
+			bindingsIter = enforceMaxQueryTime(bindingsIter);
+
+			return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
 		}
-
-		Cursor<? extends BindingSet> bindingsIter = evaluate(query);
-
-		return new TupleResultImpl(new ArrayList<String>(query.getBindingNames()), bindingsIter);
+		catch (SailException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
 	}
 
-	public <H extends TupleQueryResultHandler> H evaluate(H handler)
-		throws StoreException, TupleQueryResultHandlerException
+	public void evaluate(TupleQueryResultHandler handler)
+		throws QueryEvaluationException, TupleQueryResultHandlerException
 	{
-		TupleResult queryResult = evaluate();
+		TupleQueryResult queryResult = evaluate();
 		QueryResultUtil.report(queryResult, handler);
-		return handler;
 	}
 }

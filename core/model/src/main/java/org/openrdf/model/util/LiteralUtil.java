@@ -11,11 +11,10 @@ import java.util.Locale;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import info.aduna.i18n.languagetag.LanguageTag;
-import info.aduna.i18n.languagetag.LanguageTagSyntaxException;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.language.LanguageTag;
+import org.openrdf.model.util.language.LanguageTagSyntaxException;
 
 /**
  * Various utility methods related to {@link Literal}.

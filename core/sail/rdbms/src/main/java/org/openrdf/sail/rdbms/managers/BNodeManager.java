@@ -15,6 +15,7 @@ import org.openrdf.sail.rdbms.schema.BNodeTable;
  * Manages BNodes. Including creating, inserting, and looking up their IDs.
  * 
  * @author James Leigh
+ * 
  */
 public class BNodeManager extends ValueManagerBase<RdbmsBNode> {
 

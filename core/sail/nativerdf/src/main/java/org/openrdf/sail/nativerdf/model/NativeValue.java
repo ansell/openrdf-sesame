@@ -29,9 +29,9 @@ public interface NativeValue extends Value {
 	 * Gets the revision of the value store that created this value. The value's
 	 * internal ID is only valid when it's value store revision is equal to the
 	 * value store's current revision.
-	 * 
+	 *
 	 * @return The revision of the value store that created this value at the
-	 *         time it last set the value's internal ID.
+	 * time it last set the value's internal ID.
 	 */
 	public ValueStoreRevision getValueStoreRevision();
 }

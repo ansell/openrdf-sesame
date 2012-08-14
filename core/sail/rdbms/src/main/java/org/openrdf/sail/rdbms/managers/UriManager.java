@@ -15,6 +15,7 @@ import org.openrdf.sail.rdbms.schema.URITable;
  * Manages URIs. Including creating, inserting, and looking up their IDs.
  * 
  * @author James Leigh
+ * 
  */
 public class UriManager extends ValueManagerBase<RdbmsURI> {
 

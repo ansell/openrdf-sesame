@@ -30,7 +30,8 @@ public class ASTDescribe extends SimpleNode {
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		String result = super.toString();
 
 		if (wildcard) {

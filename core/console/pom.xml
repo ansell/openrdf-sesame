@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>2.6.9-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-console</artifactId>
@@ -21,11 +21,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-http-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-sail-rdbms</artifactId>
+			<artifactId>sesame-query</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
@@ -39,14 +35,13 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-ntriples</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-io</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-config</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>info.aduna.commons</groupId>
-			<artifactId>aduna-commons-text</artifactId>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-util</artifactId>
 		</dependency>
 
 		<dependency>
@@ -56,8 +51,9 @@
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
+			<artifactId>jcl-over-slf4j</artifactId>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -82,9 +78,9 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/console</connection>
-		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/trunk/core/console</developerConnection>
-		<url>http://repo.aduna-software.org/viewvc/org.openrdf/sesame/trunk/core/console</url>
+		<connection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/console</connection>
+		<developerConnection>scm:svn:https://repo.aduna-software.org/svn/org.openrdf/sesame/branches/2.6/core/console</developerConnection>
+		<url>http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/branches/2.6/core/console</url>
 	</scm>
 
 </project>

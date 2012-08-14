@@ -12,11 +12,10 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.result.TupleResult;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.store.StoreException;
 
 public abstract class TupleQueryResultTest extends TestCase {
 
@@ -26,7 +25,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 	private String emptyResultQuery;
 
-	// private String singleResultQuery;
+	private String singleResultQuery;
 
 	private String multipleResultQuery;
 
@@ -73,19 +72,21 @@ public abstract class TupleQueryResultTest extends TestCase {
 	 */
 	private void buildQueries() {
 		StringBuilder query = new StringBuilder();
+
 		query.append("SELECT * ");
 		query.append("FROM {X} P {Y} ");
 		query.append("WHERE X != X ");
+
 		emptyResultQuery = query.toString();
 
-		/*
 		query = new StringBuilder();
+
 		query.append("SELECT DISTINCT P ");
 		query.append("FROM {} dc:publisher {P} ");
 		query.append("USING NAMESPACE ");
 		query.append("   dc = <http://purl.org/dc/elements/1.1/>");
+
 		singleResultQuery = query.toString();
-		 */
 
 		query = new StringBuilder();
 		query.append("SELECT DISTINCT P, D ");
@@ -93,11 +94,12 @@ public abstract class TupleQueryResultTest extends TestCase {
 		query.append("        dc:date {D} ");
 		query.append("USING NAMESPACE ");
 		query.append("   dc = <http://purl.org/dc/elements/1.1/>");
+
 		multipleResultQuery = query.toString();
 	}
 
 	private void addData()
-		throws IOException, UnsupportedRDFormatException, RDFParseException, StoreException
+		throws IOException, UnsupportedRDFormatException, RDFParseException, RepositoryException
 	{
 		InputStream defaultGraph = TupleQueryResultTest.class.getResourceAsStream("/testcases/default-graph-1.ttl");
 		try {
@@ -111,7 +113,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	public void testGetBindingNames()
 		throws Exception
 	{
-		TupleResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
+		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
 		try {
 			List<String> headers = result.getBindingNames();
 
@@ -159,7 +161,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	public void testIterator()
 		throws Exception
 	{
-		TupleResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
+		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, multipleResultQuery).evaluate();
 
 		try {
 			int count = 0;
@@ -180,7 +182,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	public void testIsEmpty()
 		throws Exception
 	{
-		TupleResult result = con.prepareTupleQuery(QueryLanguage.SERQL, emptyResultQuery).evaluate();
+		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, emptyResultQuery).evaluate();
 
 		try {
 			if (result.hasNext()) {

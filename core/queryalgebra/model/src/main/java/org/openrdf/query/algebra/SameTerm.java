@@ -10,8 +10,6 @@ package org.openrdf.query.algebra;
  */
 public class SameTerm extends BinaryValueOperator {
 
-	private static final long serialVersionUID = 7944459129263948643L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -31,6 +29,16 @@ public class SameTerm extends BinaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof SameTerm && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "SameTerm".hashCode();
 	}
 
 	@Override

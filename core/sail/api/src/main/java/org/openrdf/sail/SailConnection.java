@@ -1,21 +1,22 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 
 /**
  * A connection to an RDF Sail object. A SailConnection is active from the
@@ -36,86 +37,25 @@ public interface SailConnection {
 	 * @see SailConnection#close
 	 */
 	public boolean isOpen()
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Closes the connection. Any updates that haven't been committed yet will be
 	 * rolled back. The connection can no longer be used once it is closed.
 	 */
 	public void close()
-		throws StoreException;
-
-	/**
-	 * Retrieves this connection's current transaction isolation level.
-	 * 
-	 * @return The current transaction isolation level.
-	 * @exception StoreException
-	 *            If an access error occurs or this method is called on a closed
-	 *            connection
-	 * @see #setTransactionIsolation
-	 */
-	public Isolation getTransactionIsolation()
-		throws StoreException;
-
-	/**
-	 * Attempts to change the transaction isolation level for this connection to
-	 * the specified value.
-	 * <P>
-	 * <B>Note:</B> If this method is called during a transaction, the result is
-	 * implementation-defined.
-	 * 
-	 * @param isolation
-	 *        Any Isolation except for {@link Isolation#NONE NONE}, since that
-	 *        indicates that transactions are not supported.
-	 * @exception StoreException
-	 *            If an access error occurs, this method is called on a closed
-	 *            connection
-	 * @see #getTransactionIsolation
-	 */
-	public void setTransactionIsolation(Isolation isolation)
-		throws StoreException;
-
-	/**
-	 * Indicates whether this connection is in read-only mode.
-	 * 
-	 * @return <tt>true</tt> if this Connection object is read-only;
-	 *         <tt>false</tt> otherwise.
-	 * @throws StoreException
-	 *         If a repository access error occurs.
-	 */
-	public boolean isReadOnly()
-		throws StoreException;
-
-	/**
-	 * Puts this connection in read-only mode as a hint to the driver to enable
-	 * repository optimizations.
-	 * <p>
-	 * <b>Note:</b> This method cannot be called during a transaction.
-	 * 
-	 * @param readOnly
-	 *        <tt>true</tt> enables read-only mode; <tt>false</tt> disables it
-	 * @throws StoreException
-	 *         If a repository access error occurs or this method is called
-	 *         during a transaction.
-	 */
-	public void setReadOnly(boolean readOnly)
-		throws StoreException;
-
-	/**
-	 * Gets a ValueFactory object that can be used to create URI-, blank node-,
-	 * literal- and statement objects.
-	 * 
-	 * @return a ValueFactory object for this Sail object.
-	 */
-	public ValueFactory getValueFactory();
+		throws SailException;
 
 	/**
 	 * Evaluates the supplied TupleExpr on the data contained in this Sail
 	 * object, using the (optional) dataset and supplied bindings as input
 	 * parameters.
 	 * 
-	 * @param query
-	 *        The query to evaluate.
+	 * @param tupleExpr
+	 *        The tuple expression to evaluate.
+	 * @param dataset
+	 *        The dataset to use for evaluating the query, <tt>null</tt> to use
+	 *        the Sail's default dataset.
 	 * @param bindings
 	 *        A set of input parameters for the query evaluation. The keys
 	 *        reference variable names that should be bound to the value they map
@@ -125,12 +65,19 @@ public interface SailConnection {
 	 *        query result. If false, no inferred statements are returned; if
 	 *        true, inferred statements are returned if available
 	 * @return The TupleQueryResult.
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
-		throws StoreException;
+	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
+			Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException;
+
+	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
+		throws SailException;
 
 	/**
 	 * Returns the set of all unique context identifiers that are used to store
@@ -138,9 +85,11 @@ public interface SailConnection {
 	 * 
 	 * @return An iterator over the context identifiers, should not contain any
 	 *         duplicates.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
-	public Cursor<? extends Resource> getContextIDs()
-		throws StoreException;
+	public CloseableIteration<? extends Resource, SailException> getContextIDs()
+		throws SailException;
 
 	/**
 	 * Gets all statements from the specified contexts that have a specific
@@ -164,79 +113,56 @@ public interface SailConnection {
 	 *        method operates on the entire repository. A <tt>null</tt> value can
 	 *        be used to match context-less statements.
 	 * @return The statements matching the specified pattern.
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException;
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+			Value obj, boolean includeInferred, Resource... contexts)
+		throws SailException;
 
 	/**
-	 * Returns the number of statements matching the specified pattern.
+	 * Returns the number of (explicit) statements in the store, or in specific
+	 * contexts.
 	 * 
-	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
-	 * @param pred
-	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
-	 * @param obj
-	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
-	 * @param includeInferred
-	 *        Indicates whether inferred statements should be counted.
 	 * @param contexts
-	 *        The context(s) to get the data from. Note that this parameter is a
-	 *        vararg and as such is optional. If no contexts are supplied the
-	 *        method operates on the entire repository.
-	 * @return The number of explicit statements in this Sail.
+	 *        The context(s) to determine the size of. Note that this parameter
+	 *        is a vararg and as such is optional. If no contexts are specified
+	 *        the method operates on the entire repository. A <tt>null</tt> value
+	 *        can be used to match context-less statements.
+	 * @return The number of explicit statements in this store, or in the
+	 *         specified context(s).
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
-	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException;
-
-	/**
-	 * Indicates if the connection is in auto-commit mode. The connection is
-	 * <em>not</em> in auto-commit when {@link #begin()} has been called but
-	 * {@link #commit()} or {@link #rollback()} still has to be called to finish
-	 * the transaction.
-	 * 
-	 * @throws StoreException
-	 *         If a repository access error occurs.
-	 */
-	public boolean isAutoCommit()
-		throws StoreException;
-
-	/**
-	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to close the transaction.
-	 * 
-	 * @throws StoreException
-	 *         If the connection could not start a transaction, or if it already
-	 *         has an active transaction.
-	 * @see #isAutoCommit()
-	 */
-	public void begin()
-		throws StoreException;
+	public long size(Resource... contexts)
+		throws SailException;
 
 	/**
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 
-	 * @throws StoreException
-	 *         If the SailConnection could not be committed, or if the connection
-	 *         does not have an active connection.
+	 * @throws SailException
+	 *         If the SailConnection could not be committed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void commit()
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Rolls back the SailConnection, discarding any uncommitted changes that
 	 * have been made in this SailConnection.
 	 * 
-	 * @throws StoreException
-	 *         If the SailConnection could not be rolled back, or if the
-	 *         connection does not have an active connection.
+	 * @throws SailException
+	 *         If the SailConnection could not be rolled back.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void rollback()
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Adds a statement to the store.
@@ -251,11 +177,13 @@ public interface SailConnection {
 	 *        The context(s) to add the statement to. Note that this parameter is
 	 *        a vararg and as such is optional. If no contexts are specified, a
 	 *        context-less statement will be added.
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the statement could not be added.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Removes all statements matching the specified subject, predicate and
@@ -276,65 +204,111 @@ public interface SailConnection {
 	 *        parameter is a vararg and as such is optional. If no contexts are
 	 *        specified the method operates on the entire repository. A
 	 *        <tt>null</tt> value can be used to match context-less statements.
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the statement could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException;
+		throws SailException;
+
+	/**
+	 * Removes all statements from the specified/all contexts. If no contexts are
+	 * specified the method operates on the entire repository.
+	 * 
+	 * @param contexts
+	 *        The context(s) from which to remove the statements. Note that this
+	 *        parameter is a vararg and as such is optional. If no contexts are
+	 *        specified the method operates on the entire repository. A
+	 *        <tt>null</tt> value can be used to match context-less statements.
+	 * @throws SailException
+	 *         If the statements could not be removed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
+	 */
+	public void clear(Resource... contexts)
+		throws SailException;
 
 	/**
 	 * Gets the namespaces relevant to the data contained in this Sail object.
 	 * 
 	 * @return An iterator over the relevant namespaces, should not contain any
 	 *         duplicates.
-	 * @throws StoreException
+	 * @throws SailException
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
-	public Cursor<? extends Namespace> getNamespaces()
-		throws StoreException;
+	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
+		throws SailException;
 
 	/**
-	 * Gets the namespace that is mapped to the specified prefix.
+	 * Gets the namespace that is associated with the specified prefix, if any.
 	 * 
 	 * @param prefix
-	 *        A namespace prefix.
-	 * @return The namespace name that the specified prefix maps to.
+	 *        A namespace prefix, or an empty string in case of the default
+	 *        namespace.
+	 * @return The namespace name that is associated with the specified prefix,
+	 *         or <tt>null</tt> if there is no such namespace.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> is <tt>null</tt>.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public String getNamespace(String prefix)
-		throws StoreException;
+		throws SailException;
 
 	/**
-	 * Sets the prefix of a namespace.
+	 * Sets the prefix for a namespace.
 	 * 
 	 * @param prefix
-	 *        The new prefix.
+	 *        The new prefix, or an empty string in case of the default
+	 *        namespace.
 	 * @param name
 	 *        The namespace name that the prefix maps to.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> or <tt>name</tt> is <tt>null</tt>.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void setNamespace(String prefix, String name)
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Removes a namespace declaration by removing the association between a
 	 * prefix and a namespace name.
 	 * 
 	 * @param prefix
-	 *        The namespace prefix of which the assocation with a namespace name
-	 *        is to be removed.
-	 * @throws StoreException
-	 *         If the namespace prefix could not be removed.
+	 *        The namespace prefix, or an empty string in case of the default
+	 *        namespace.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws NullPointerException
+	 *         In case <tt>prefix</tt> is <tt>null</tt>.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void removeNamespace(String prefix)
-		throws StoreException;
+		throws SailException;
 
 	/**
 	 * Removes all namespace declarations from the repository.
 	 * 
-	 * @throws StoreException
-	 *         If the namespaces could not be removed.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
 	 */
 	public void clearNamespaces()
-		throws StoreException;
+		throws SailException;
 
 }

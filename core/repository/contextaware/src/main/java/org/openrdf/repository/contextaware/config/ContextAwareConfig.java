@@ -7,27 +7,28 @@ package org.openrdf.repository.contextaware.config;
 
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ADD_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.ARCHIVE_CONTEXT;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.BASE_URI;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INCLUDE_INFERRED;
+import static org.openrdf.repository.contextaware.config.ContextAwareSchema.INSERT_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.MAX_QUERY_TIME;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_LANGUAGE;
-import static org.openrdf.repository.contextaware.config.ContextAwareSchema.QUERY_RESULT_LIMIT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.READ_CONTEXT;
 import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMOVE_CONTEXT;
 
 import java.util.Set;
 
+import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * @author James Leigh
@@ -40,9 +41,9 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	private int maxQueryTime = 0;
 
-	private int queryResultLimit = -1;
-
 	private QueryLanguage queryLanguage = QueryLanguage.SPARQL;
+
+	private String baseURI;
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
@@ -51,6 +52,8 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	private URI[] removeContexts = ALL_CONTEXTS;
 
 	private URI[] archiveContexts = ALL_CONTEXTS;
+
+	private URI insertContext = null;
 
 	public ContextAwareConfig() {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
@@ -64,17 +67,10 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		this.maxQueryTime = maxQueryTime;
 	}
 
-	public int getQueryResultLimit() {
-		return queryResultLimit;
-	}
-
-	public void setQueryResultLimit(int queryResultLimit) {
-		this.queryResultLimit = queryResultLimit;
-	}
-
 	/**
 	 * @see ContextAwareConnection#getAddContexts()
 	 */
+	@Deprecated
 	public URI[] getAddContexts() {
 		return addContexts;
 	}
@@ -82,8 +78,16 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	/**
 	 * @see ContextAwareConnection#getArchiveContexts()
 	 */
+	@Deprecated
 	public URI[] getArchiveContexts() {
 		return archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#getInsertContext()
+	 */
+	public URI getInsertContext() {
+		return insertContext;
 	}
 
 	/**
@@ -91,6 +95,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	 */
 	public QueryLanguage getQueryLanguage() {
 		return queryLanguage;
+	}
+
+	/**
+	 * @return Returns the default baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
 	}
 
 	/**
@@ -117,6 +128,7 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	/**
 	 * @see ContextAwareConnection#setAddContexts(URI[])
 	 */
+	@Deprecated
 	public void setAddContexts(URI... addContexts) {
 		this.addContexts = addContexts;
 	}
@@ -124,8 +136,16 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	/**
 	 * @see ContextAwareConnection#setArchiveContexts(URI[])
 	 */
+	@Deprecated
 	public void setArchiveContexts(URI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#setInsertContext(URI)
+	 */
+	public void setInsertContext(URI insertContext) {
+		this.insertContext = insertContext;
 	}
 
 	/**
@@ -143,6 +163,13 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
+	 * @param baseURI The default baseURI to set.
+	 */
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
+	}
+
+	/**
 	 * @see ContextAwareConnection#setReadContexts(URI[])
 	 */
 	public void setReadContexts(URI... readContexts) {
@@ -157,81 +184,89 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	@Override
-	public Resource export(Model model) {
-		Resource repImplNode = super.export(model);
+	public Resource export(Graph graph) {
+		Resource repImplNode = super.export(graph);
 
-		ValueFactory vf = ValueFactoryImpl.getInstance();
+		ValueFactory vf = graph.getValueFactory();
 
 		if (includeInferred != null) {
 			Literal bool = vf.createLiteral(includeInferred);
-			model.add(repImplNode, INCLUDE_INFERRED, bool);
+			graph.add(repImplNode, INCLUDE_INFERRED, bool);
 		}
 		if (maxQueryTime > 0) {
-			model.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
-		}
-		if (queryResultLimit >= 0) {
-			model.add(repImplNode, QUERY_RESULT_LIMIT, vf.createLiteral(queryResultLimit));
+			graph.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
 		}
 		if (queryLanguage != null) {
-			model.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
+			graph.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
+		}
+		if (baseURI != null) {
+			graph.add(repImplNode, BASE_URI, vf.createURI(baseURI));
 		}
 		for (URI uri : readContexts) {
-			model.add(repImplNode, READ_CONTEXT, uri);
+			graph.add(repImplNode, READ_CONTEXT, uri);
 		}
 		for (URI resource : addContexts) {
-			model.add(repImplNode, ADD_CONTEXT, resource);
+			graph.add(repImplNode, ADD_CONTEXT, resource);
 		}
 		for (URI resource : removeContexts) {
-			model.add(repImplNode, REMOVE_CONTEXT, resource);
+			graph.add(repImplNode, REMOVE_CONTEXT, resource);
 		}
 		for (URI resource : archiveContexts) {
-			model.add(repImplNode, ARCHIVE_CONTEXT, resource);
+			graph.add(repImplNode, ARCHIVE_CONTEXT, resource);
+		}
+		if (insertContext != null) {
+			graph.add(repImplNode, INSERT_CONTEXT, insertContext);
 		}
 
 		return repImplNode;
 	}
 
 	@Override
-	public void parse(Model model, Resource implNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource implNode)
+		throws RepositoryConfigException
 	{
-		super.parse(model, implNode);
+		super.parse(graph, implNode);
 
 		try {
-			Literal includeInferred = model.filter(implNode, INCLUDE_INFERRED, null).objectLiteral();
-			if (includeInferred != null) {
-				setIncludeInferred(includeInferred.booleanValue());
+			Literal lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, INCLUDE_INFERRED);
+			if (lit != null) {
+				setIncludeInferred(lit.booleanValue());
 			}
-			Literal maxQueryTime = model.filter(implNode, MAX_QUERY_TIME, null).objectLiteral();
-			if (maxQueryTime != null) {
-				setMaxQueryTime(maxQueryTime.intValue());
+			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, MAX_QUERY_TIME);
+			if (lit != null) {
+				setMaxQueryTime(lit.intValue());
 			}
-			Literal queryResultLimit = model.filter(implNode, QUERY_RESULT_LIMIT, null).objectLiteral();
-			if (queryResultLimit != null) {
-				setQueryResultLimit(queryResultLimit.intValue());
+			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
+			if (lit != null) {
+				setQueryLanguage(QueryLanguage.valueOf(lit.getLabel()));
 			}
-			Literal queryLanguage = model.filter(implNode, QUERY_LANGUAGE, null).objectLiteral();
-			if (queryLanguage != null) {
-				setQueryLanguage(QueryLanguage.valueOf(queryLanguage.getLabel()));
+			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
+			if (uri != null) {
+				setBaseURI(uri.stringValue());
 			}
 
-			Set<Value> objects = model.filter(implNode, READ_CONTEXT, null).objects();
+			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
 			setReadContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = model.filter(implNode, ADD_CONTEXT, null).objects();
+			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
 			setAddContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = model.filter(implNode, REMOVE_CONTEXT, null).objects();
+			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
 			setRemoveContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = model.filter(implNode, ARCHIVE_CONTEXT, null).objects();
+			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
 			setArchiveContexts(objects.toArray(new URI[objects.size()]));
+
+			uri = GraphUtil.getOptionalObjectURI(graph, implNode, INSERT_CONTEXT);
+			if (uri != null) {
+				setInsertContext(uri);
+			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e);
 		}
 		catch (ArrayStoreException e) {
-			throw new StoreConfigException(e);
+			throw new RepositoryConfigException(e);
 		}
 	}
 }

@@ -13,8 +13,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.result.TupleResult;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.TupleQueryResult;
 
 public abstract class SparqlRegexTest extends TestCase {
 
@@ -48,7 +47,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryInline);
-		TupleResult result = query.evaluate();
+		TupleQueryResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -59,7 +58,7 @@ public abstract class SparqlRegexTest extends TestCase {
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBinding);
 		query.setBinding("pattern", vf.createLiteral("@work.example"));
-		TupleResult result = query.evaluate();
+		TupleQueryResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -71,7 +70,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBindingFlags);
 		query.setBinding("pattern", vf.createLiteral("@Work.example"));
 		query.setBinding("flags", vf.createLiteral("i"));
-		TupleResult result = query.evaluate();
+		TupleQueryResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -86,7 +85,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		conn.add(bnode, pattern, vf.createLiteral("@Work.example"));
 		conn.add(bnode, flags, vf.createLiteral("i"));
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryExpr);
-		TupleResult result = query.evaluate();
+		TupleQueryResult result = query.evaluate();
 		assertEquals(hunt, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
@@ -97,12 +96,12 @@ public abstract class SparqlRegexTest extends TestCase {
 		throws Exception
 	{
 		repository = createRepository();
-		conn = repository.getConnection();
-		vf = conn.getValueFactory();
+		vf = repository.getValueFactory();
 		hunt = vf.createLiteral("James Leigh Hunt");
 		createUser("james", "James Leigh", "james@leigh");
 		createUser("megan", "Megan Leigh", "megan@leigh");
 		createUser("hunt", "James Leigh Hunt", "james@work.example");
+		conn = repository.getConnection();
 	}
 
 	protected Repository createRepository()
@@ -136,7 +135,7 @@ public abstract class SparqlRegexTest extends TestCase {
 	}
 
 	private void createUser(String id, String name, String email)
-		throws StoreException
+		throws RepositoryException
 	{
 		RepositoryConnection conn = repository.getConnection();
 		URI subj = vf.createURI("http://example.org/ns#", id);

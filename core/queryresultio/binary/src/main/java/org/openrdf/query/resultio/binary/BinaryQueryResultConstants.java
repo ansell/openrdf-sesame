@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -18,11 +18,11 @@ import java.io.DataOutput;
  * <p>
  * The file header is 13 bytes long:
  * <ul>
- * <li>Bytes 1-4 contain the ASCII codes for the string "BRTR", which stands for
- * Binary RDF Table Result.
- * <li>Bytes 5-8 specify the format version (an integer). The current format
- * version is <tt>4</tt>.
- * <li>Bytes 9-12 specify the number of columns of the query result that will
+ * <li>Bytes 1-4 contain the ASCII codes for the string "BRTR", which stands
+ * for Binary RDF Table Result.
+ * <li>Bytes 5-8 specify the format version (an integer).
+ * <li>Byte 9 specifies some flags, specifically 'distinct' and 'ordered'.
+ * <li>Bytes 10-13 specify the number of columns of the query result that will
  * follow (an integer).
  * </ul>
  * Following this are the column headers, which are encoded as UTF-8 strings.
@@ -72,9 +72,8 @@ import java.io.DataOutput;
  * This indicates a datatyped literal. The record type marker is followed by an
  * UTF-8 encoded string for the literal's label. Following this label is either
  * a QNAME or URI record for the literal's datatype.
- * <li><tt>EMPTY_TUPLE</tt> (byte value: 32):<br>
- * This indicates a tuple with zero result records. These records can only be
- * used if there are also zero column headers.
+ * <li><tt>EMPTY_ROW</tt> (byte value: 9):<br>
+ * This indicates a row with zero values.
  * <li><tt>ERROR</tt> (byte value: 126):<br>
  * This record indicates a error. The type of error is indicates by the byte
  * directly following the record type marker: <tt>1</tt> for a malformed query
@@ -118,8 +117,8 @@ public interface BinaryQueryResultConstants {
 	public static final int LANG_LITERAL_RECORD_MARKER = 7;
 
 	public static final int DATATYPE_LITERAL_RECORD_MARKER = 8;
-
-	public static final int EMPTY_TUPLE_RECORD_MARKER = 32;
+	
+	public static final int EMPTY_ROW_RECORD_MARKER = 9;
 
 	public static final int ERROR_RECORD_MARKER = 126;
 

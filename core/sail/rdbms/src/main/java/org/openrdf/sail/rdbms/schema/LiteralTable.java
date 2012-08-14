@@ -12,6 +12,7 @@ import java.sql.SQLException;
  * datatypes, numeric values, and dateTime values.
  * 
  * @author James Leigh
+ * 
  */
 public class LiteralTable {
 

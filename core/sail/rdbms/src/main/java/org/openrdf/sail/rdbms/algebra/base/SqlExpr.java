@@ -11,6 +11,7 @@ import org.openrdf.query.algebra.QueryModelNode;
  * An SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public interface SqlExpr extends QueryModelNode {
 

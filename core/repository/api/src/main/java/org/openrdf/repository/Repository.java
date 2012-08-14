@@ -7,10 +7,7 @@ package org.openrdf.repository;
 
 import java.io.File;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.store.StoreException;
 
 /**
  * A Sesame repository that contains RDF data that can be queried and updated.
@@ -27,9 +24,6 @@ import org.openrdf.store.StoreException;
  * @author Arjohn Kampman
  */
 public interface Repository {
-
-	public RepositoryMetaData getMetaData()
-		throws StoreException;
 
 	/**
 	 * Set the directory where data and logging for this repository is stored.
@@ -50,11 +44,19 @@ public interface Repository {
 	 * Initializes this repository. A repository needs to be initialized before
 	 * it can be used.
 	 * 
-	 * @throws StoreException
+	 * @throws RepositoryException
 	 *         If the initialization failed.
 	 */
 	public void initialize()
-		throws StoreException;
+		throws RepositoryException;
+
+	/**
+	 * Indicates if the Repository has been initialized. Note that the
+	 * initialization status may change if the Repository is shut down.
+	 * 
+	 * @return true iff the repository has been initialized.
+	 */
+	public boolean isInitialized();
 
 	/**
 	 * Shuts the repository down, releasing any resources that it keeps hold of.
@@ -62,7 +64,16 @@ public interface Repository {
 	 * re-initialized.
 	 */
 	public void shutDown()
-		throws StoreException;
+		throws RepositoryException;
+
+	/**
+	 * Checks whether this repository is writable, i.e. if the data contained in
+	 * this repository can be changed. The writability of the repository is
+	 * determined by the writability of the Sail that this repository operates
+	 * on.
+	 */
+	public boolean isWritable()
+		throws RepositoryException;
 
 	/**
 	 * Opens a connection to this repository that can be used for querying and
@@ -81,31 +92,16 @@ public interface Repository {
 	 * </pre>
 	 * 
 	 * @return A connection that allows operations on this repository.
-	 * @throws StoreException
+	 * @throws RepositoryException
 	 *         If something went wrong during the creation of the Connection.
 	 */
 	public RepositoryConnection getConnection()
-		throws StoreException;
-
-	/**
-	 * Gets a URIFactory for this Repository.
-	 * 
-	 * @return A repository-specific URIFactory.
-	 */
-	public URIFactory getURIFactory();
-
-	/**
-	 * Gets a LiteralFactory for this Repository.
-	 * 
-	 * @return A repository-specific LiteralFactory.
-	 */
-	public LiteralFactory getLiteralFactory();
+		throws RepositoryException;
 
 	/**
 	 * Gets a ValueFactory for this Repository.
 	 * 
 	 * @return A repository-specific ValueFactory.
 	 */
-	@Deprecated
 	public ValueFactory getValueFactory();
 }

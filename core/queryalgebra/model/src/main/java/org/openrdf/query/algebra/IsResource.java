@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public class IsResource extends UnaryValueOperator {
 
-	private static final long serialVersionUID = -4552582845932698642L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -28,6 +26,16 @@ public class IsResource extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsResource && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() & "IsResource".hashCode();
 	}
 
 	@Override

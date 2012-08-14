@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 
  * @author James Leigh
  */
 public class HashBatch extends ValueBatch {

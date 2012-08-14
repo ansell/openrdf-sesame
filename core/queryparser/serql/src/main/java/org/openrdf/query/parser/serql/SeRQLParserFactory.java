@@ -16,7 +16,7 @@ import org.openrdf.query.parser.QueryParserFactory;
  */
 public class SeRQLParserFactory implements QueryParserFactory {
 
-	private SeRQLParser sharedParser = null;
+	private final SeRQLParser singleton = new SeRQLParser();
 
 	/**
 	 * Returns {@link QueryLanguage#SERQL}.
@@ -29,10 +29,6 @@ public class SeRQLParserFactory implements QueryParserFactory {
 	 * Returns a shared, thread-safe, instance of SeRQLParser.
 	 */
 	public QueryParser getParser() {
-		if (sharedParser == null) {
-			sharedParser = new SeRQLParser();
-		}
-
-		return sharedParser;
+		return singleton;
 	}
 }

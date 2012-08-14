@@ -11,7 +11,7 @@ import info.aduna.io.FileUtil;
 
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConcurrencyTest;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 /**
  * An extension of {@link SailConcurrencyTest} for testing the class
@@ -59,7 +59,7 @@ public class NativeStoreConcurrencyTest extends SailConcurrencyTest {
 
 	@Override
 	protected Sail createSail()
-		throws StoreException
+		throws SailException
 	{
 		return new NativeStore(dataDir, "spoc,posc");
 	}

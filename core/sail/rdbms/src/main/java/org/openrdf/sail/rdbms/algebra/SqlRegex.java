@@ -14,6 +14,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The regular SQL expression - notation varies between databases.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlRegex extends BinarySqlOperator {
 
@@ -103,24 +104,19 @@ public class SqlRegex extends BinarySqlOperator {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (!super.equals(obj)) {
+		if (!super.equals(obj))
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		final SqlRegex other = (SqlRegex)obj;
 		if (flagsArg == null) {
-			if (other.flagsArg != null) {
+			if (other.flagsArg != null)
 				return false;
-			}
 		}
-		else if (!flagsArg.equals(other.flagsArg)) {
+		else if (!flagsArg.equals(other.flagsArg))
 			return false;
-		}
 		return true;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -32,16 +32,18 @@ import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 
 class ConstructorBuilder {
 
-	public TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr, boolean distinct) {
-		return buildConstructor(bodyExpr, constructExpr, true, distinct);
+	public TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr, boolean distinct,
+			boolean reduced)
+	{
+		return buildConstructor(bodyExpr, constructExpr, true, distinct, reduced);
 	}
 
-	public TupleExpr buildConstructor(TupleExpr bodyExpr, boolean distinct) {
-		return buildConstructor(bodyExpr, bodyExpr, false, distinct);
+	public TupleExpr buildConstructor(TupleExpr bodyExpr, boolean distinct, boolean reduced) {
+		return buildConstructor(bodyExpr, bodyExpr, false, distinct, reduced);
 	}
 
-	private TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr, boolean explicit,
-			boolean distinct)
+	private TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr,
+			boolean explicitConstructor, boolean distinct, boolean reduced)
 	{
 		TupleExpr result = bodyExpr;
 
@@ -55,7 +57,7 @@ class ConstructorBuilder {
 		// step, any bnodes that need to be generated are added to each solution
 		// and these solutions are projected to subject-predicate-object bindings.
 		// Finally, the spo-bindings are again filtered for duplicates.
-		if (distinct) {
+		if (distinct || reduced) {
 			// Create projection that removes all bindings that are not used in the
 			// constructor
 			ProjectionElemList projElemList = new ProjectionElemList();
@@ -71,7 +73,12 @@ class ConstructorBuilder {
 			result = new Projection(result, projElemList);
 
 			// Filter the duplicates from these projected bindings
-			result = new Distinct(result);
+			if (distinct) {
+				result = new Distinct(result);
+			}
+			else {
+				result = new Reduced(result);
+			}
 		}
 
 		// Create BNodeGenerator's for all anonymous variables
@@ -84,7 +91,7 @@ class ConstructorBuilder {
 				if (var.hasValue()) {
 					valueExpr = new ValueConstant(var.getValue());
 				}
-				else if (explicit) {
+				else if (explicitConstructor) {
 					// only generate bnodes in case of an explicit constructor
 					valueExpr = new BNodeGenerator();
 				}
@@ -125,15 +132,15 @@ class ConstructorBuilder {
 				// Add another distinct to filter duplicate statements
 				result = new Distinct(result);
 			}
+			else if (reduced) {
+				result = new Reduced(result);
+			}
 		}
 		else {
 			// Empty constructor
 			result = new EmptySet();
 		}
 
-		if (!distinct) {
-			result = new Reduced(result);
-		}
 		return result;
 	}
 

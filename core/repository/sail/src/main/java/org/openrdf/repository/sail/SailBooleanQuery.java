@@ -1,49 +1,63 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.sail;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.parser.BooleanQueryModel;
-import org.openrdf.result.BooleanResult;
-import org.openrdf.result.impl.BooleanResultImpl;
-import org.openrdf.store.StoreException;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
 /**
  * @author Arjohn Kampman
- * @author James Leigh
  */
 public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
-	protected SailBooleanQuery(BooleanQueryModel tupleQuery, SailRepositoryConnection sailConnection) {
+	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailRepositoryConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
 	@Override
-	public BooleanQueryModel getParsedQuery() {
-		return (BooleanQueryModel)super.getParsedQuery();
+	public ParsedBooleanQuery getParsedQuery() {
+		return (ParsedBooleanQuery)super.getParsedQuery();
 	}
 
-	public BooleanResult evaluate()
-		throws StoreException
+	public boolean evaluate()
+		throws QueryEvaluationException
 	{
-		return new BooleanResultImpl(ask());
-	}
-
-	public boolean ask()
-		throws StoreException
-	{
-		Cursor<? extends BindingSet> bindingsIter = evaluate(getParsedQuery());
+		ParsedBooleanQuery parsedBooleanQuery = getParsedQuery();
+		TupleExpr tupleExpr = parsedBooleanQuery.getTupleExpr();
+		Dataset dataset = getDataset();
+		if (dataset == null) {
+			// No external dataset specified, use query's own dataset (if any)
+			dataset = parsedBooleanQuery.getDataset();
+		}
 
 		try {
-			return bindingsIter.next() != null;
+			SailConnection sailCon = getConnection().getSailConnection();
+
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
+			bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());
+
+			bindingsIter = enforceMaxQueryTime(bindingsIter);
+
+			try {
+				return bindingsIter.hasNext();
+			}
+			finally {
+				bindingsIter.close();
+			}
 		}
-		finally {
-			bindingsIter.close();
+		catch (SailException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
 }

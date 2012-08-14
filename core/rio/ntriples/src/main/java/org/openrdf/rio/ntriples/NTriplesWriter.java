@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2011.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,12 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -33,7 +28,7 @@ public class NTriplesWriter implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
-	private Writer writer;
+	private final Writer writer;
 
 	private boolean writingStarted;
 
@@ -68,10 +63,6 @@ public class NTriplesWriter implements RDFWriter {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
-	}
-
-	public void setBaseURI(String baseURI) {
-		// ignore, N-Triples doesn't support this
 	}
 
 	public void startRDF()
@@ -113,29 +104,13 @@ public class NTriplesWriter implements RDFWriter {
 			throw new RuntimeException("Document writing has not yet been started");
 		}
 
-		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
-		Value obj = st.getObject();
-
 		try {
-			// SUBJECT
-			writeResource(subj);
+			NTriplesUtil.append(st.getSubject(), writer);
 			writer.write(" ");
-
-			// PREDICATE
-			writeURI(pred);
+			NTriplesUtil.append(st.getPredicate(), writer);
 			writer.write(" ");
-
-			// OBJECT
-			if (obj instanceof Resource) {
-				writeResource((Resource)obj);
-			}
-			else if (obj instanceof Literal) {
-				writeLiteral((Literal)obj);
-			}
-
-			writer.write(" .");
-			writeNewLine();
+			NTriplesUtil.append(st.getObject(), writer);
+			writer.write(" .\n");
 		}
 		catch (IOException e) {
 			throw new RDFHandlerException(e);
@@ -148,45 +123,10 @@ public class NTriplesWriter implements RDFWriter {
 		try {
 			writer.write("# ");
 			writer.write(comment);
-			writeNewLine();
+			writer.write("\n");
 		}
 		catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
-	}
-
-	private void writeResource(Resource res)
-		throws IOException
-	{
-		if (res instanceof BNode) {
-			writeBNode((BNode)res);
-		}
-		else {
-			writeURI((URI)res);
-		}
-	}
-
-	private void writeURI(URI uri)
-		throws IOException
-	{
-		writer.write(NTriplesUtil.toNTriplesString(uri));
-	}
-
-	private void writeBNode(BNode bNode)
-		throws IOException
-	{
-		writer.write(NTriplesUtil.toNTriplesString(bNode));
-	}
-
-	private void writeLiteral(Literal lit)
-		throws IOException
-	{
-		writer.write(NTriplesUtil.toNTriplesString(lit));
-	}
-
-	private void writeNewLine()
-		throws IOException
-	{
-		writer.write("\n");
 	}
 }

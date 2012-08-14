@@ -12,15 +12,16 @@ import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailChangedListener;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 /**
- * This class extends {@link SailBase} with {@link NotifyingSail} support.
+ * SailBase is an abstract Sail implementation that takes care of common sail
+ * tasks, including proper closing of active connections and a grace period for
+ * active connections during shutdown of the store.
  * 
  * @author Herko ter Horst
  * @author jeen
  * @author Arjohn Kampman
- * @author James Leigh
  */
 public abstract class NotifyingSailBase extends SailBase implements NotifyingSail {
 
@@ -39,14 +40,14 @@ public abstract class NotifyingSailBase extends SailBase implements NotifyingSai
 
 	@Override
 	public NotifyingSailConnection getConnection()
-		throws StoreException
+		throws SailException
 	{
 		return (NotifyingSailConnection)super.getConnection();
 	}
 
 	@Override
 	protected abstract NotifyingSailConnection getConnectionInternal()
-		throws StoreException;
+		throws SailException;
 
 	public void addSailChangedListener(SailChangedListener listener) {
 		synchronized (sailChangedListeners) {

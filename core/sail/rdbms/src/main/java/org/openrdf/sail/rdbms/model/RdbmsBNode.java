@@ -12,6 +12,7 @@ import org.openrdf.model.impl.BNodeImpl;
  * Wraps a {@link BNodeImpl} providing an internal id and version.
  * 
  * @author James Leigh
+ * 
  */
 public class RdbmsBNode extends RdbmsResource implements BNode {
 
@@ -43,9 +44,8 @@ public class RdbmsBNode extends RdbmsResource implements BNode {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
 		return bnode.equals(o);
 	}
 

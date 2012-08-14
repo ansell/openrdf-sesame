@@ -45,6 +45,8 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * the line. The Turtle grammar doesn't allow comments to be used inside triple
  * constructs that extend over multiple lines, but the author's own parser
  * deviates from this too.</li>
+ * <li>The localname part of a prefixed named is allowed to start with a number
+ * (cf. <a href="http://www.w3.org/TR/turtle/">the W3C Turtle Working Draft</a>).</li>
  * </ul>
  * 
  * @author Arjohn Kampman
@@ -874,9 +876,6 @@ public class TurtleParser extends RDFParserBase {
 		if (c == ':') {
 			// qname using default namespace
 			namespace = getNamespace("");
-			if (namespace == null) {
-				reportError("Default namespace used but not defined");
-			}
 		}
 		else {
 			// c is the first letter of the prefix
@@ -901,9 +900,6 @@ public class TurtleParser extends RDFParserBase {
 			verifyCharacter(c, ":");
 
 			namespace = getNamespace(prefix.toString());
-			if (namespace == null) {
-				reportError("Namespace prefix '" + prefix.toString() + "' used but not defined");
-			}
 		}
 
 		// c == ':', read optional local name
@@ -1007,12 +1003,12 @@ public class TurtleParser extends RDFParserBase {
 	 * @return The next character that will be returned by <tt>reader</tt>.
 	 */
 	protected int skipWSC()
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		int c = read();
 		while (TurtleUtil.isWhitespace(c) || c == '#') {
 			if (c == '#') {
-				skipLine();
+				processComment();
 			}
 
 			c = read();
@@ -1024,13 +1020,16 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Consumes characters from reader until the first EOL has been read.
+	 * Consumes characters from reader until the first EOL has been read. This
+	 * line of text is then passed to the {@link #rdfHandler} as a comment.
 	 */
-	protected void skipLine()
-		throws IOException
+	protected void processComment()
+		throws IOException, RDFHandlerException
 	{
+		StringBuilder comment = new StringBuilder(64);
 		int c = read();
 		while (c != -1 && c != 0xD && c != 0xA) {
+			comment.append((char)c);
 			c = read();
 		}
 
@@ -1043,7 +1042,7 @@ public class TurtleParser extends RDFParserBase {
 				unread(c);
 			}
 		}
-
+		rdfHandler.handleComment(comment.toString());
 		reportLocation();
 	}
 

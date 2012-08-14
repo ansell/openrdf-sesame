@@ -5,26 +5,20 @@
  */
 package org.openrdf.sail.rdbms.config;
 
-import static java.text.MessageFormat.format;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.DATABASE;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.HOST;
+import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.MAX_TRIPLE_TABLES;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PORT;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL_PROPERTIES;
-import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.URL_TEMPLATE;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.USER;
 
+import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * Holds the JDBC Driver, URL, user and password, as well as the database
@@ -102,86 +96,77 @@ public class RdbmsStoreConfig extends SailImplConfigBase {
 
 	@Override
 	public void validate()
-		throws StoreConfigException
+		throws SailConfigException
 	{
 		super.validate();
 
 		if (url == null) {
-			throw new StoreConfigException("No URL specified for RdbmsStore");
+			throw new SailConfigException("No URL specified for RdbmsStore");
 		}
 	}
 
 	@Override
-	public Resource export(Model model) {
-		Resource implNode = super.export(model);
+	public Resource export(Graph graph) {
+		Resource implNode = super.export(graph);
 
-		ValueFactory vf = ValueFactoryImpl.getInstance();
+		ValueFactory vf = graph.getValueFactory();
 
 		if (jdbcDriver != null) {
-			model.add(implNode, JDBC_DRIVER, vf.createLiteral(jdbcDriver));
+			graph.add(implNode, JDBC_DRIVER, vf.createLiteral(jdbcDriver));
 		}
 		if (url != null) {
-			model.add(implNode, URL, vf.createLiteral(url));
+			graph.add(implNode, URL, vf.createLiteral(url));
 		}
 		if (user != null) {
-			model.add(implNode, USER, vf.createLiteral(user));
+			graph.add(implNode, USER, vf.createLiteral(user));
 		}
 		if (password != null) {
-			model.add(implNode, PASSWORD, vf.createLiteral(password));
+			graph.add(implNode, PASSWORD, vf.createLiteral(password));
 		}
-		model.add(implNode, MAX_TRIPLE_TABLES, vf.createLiteral(maxTripleTables));
+		graph.add(implNode, MAX_TRIPLE_TABLES, vf.createLiteral(maxTripleTables));
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Model model, Resource implNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource implNode)
+		throws SailConfigException
 	{
-		super.parse(model, implNode);
+		super.parse(graph, implNode);
 
 		try {
-			Literal jdbcDriverLit = model.filter(implNode, JDBC_DRIVER, null).objectLiteral();
+			Literal jdbcDriverLit = getOptionalObjectLiteral(graph, implNode, JDBC_DRIVER);
 			if (jdbcDriverLit != null) {
 				setJdbcDriver(jdbcDriverLit.getLabel());
 			}
 
-			String template = model.filter(implNode, URL_TEMPLATE, null).objectString();
-			String host = model.filter(implNode, HOST, null).objectString();
-			String port = model.filter(implNode, PORT, null).objectString();
-			String database = model.filter(implNode, DATABASE, null).objectString();
-			String properties = model.filter(implNode, URL_PROPERTIES, null).objectString();
-			if (template != null && database != null) {
-				setUrl(format(template, host, port, database, properties));
-			}
-
-			Literal urlLit = model.filter(implNode, URL, null).objectLiteral();
+			Literal urlLit = getOptionalObjectLiteral(graph, implNode, URL);
 			if (urlLit != null) {
 				setUrl(urlLit.getLabel());
 			}
 
-			Literal userLit = model.filter(implNode, USER, null).objectLiteral();
+			Literal userLit = getOptionalObjectLiteral(graph, implNode, USER);
 			if (userLit != null) {
 				setUser(userLit.getLabel());
 			}
 
-			Literal passwordLit = model.filter(implNode, PASSWORD, null).objectLiteral();
+			Literal passwordLit = getOptionalObjectLiteral(graph, implNode, PASSWORD);
 			if (passwordLit != null) {
 				setPassword(passwordLit.getLabel());
 			}
 
-			Literal maxTripleTablesLit = model.filter(implNode, MAX_TRIPLE_TABLES, null).objectLiteral();
+			Literal maxTripleTablesLit = getOptionalObjectLiteral(graph, implNode, MAX_TRIPLE_TABLES);
 			if (maxTripleTablesLit != null) {
 				try {
 					setMaxTripleTables(maxTripleTablesLit.intValue());
 				}
 				catch (NumberFormatException e) {
-					throw new StoreConfigException("Invalid value for maxTripleTables: " + maxTripleTablesLit);
+					throw new SailConfigException("Invalid value for maxTripleTables: " + maxTripleTablesLit);
 				}
 			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new SailConfigException(e.getMessage(), e);
 		}
 	}
 }

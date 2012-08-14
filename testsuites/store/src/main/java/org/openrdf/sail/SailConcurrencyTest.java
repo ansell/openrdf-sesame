@@ -9,10 +9,10 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.store.StoreException;
 
 /**
  * Tests concurrent read and write access to a Sail implementation.
@@ -61,7 +61,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 	}
 
 	protected abstract Sail createSail()
-		throws StoreException;
+		throws SailException;
 
 	@Override
 	protected void tearDown()
@@ -90,7 +90,6 @@ public abstract class SailConcurrencyTest extends TestCase {
 					SailConnection connection = store.getConnection();
 					try {
 						while (continueRunning) {
-							connection.begin();
 							for (int i = 0; i < 10; i++) {
 								insertTestStatement(connection, insertRandomizer.nextInt() % MAX_STATEMENT_IDX);
 								removeTestStatement(connection, removeRandomizer.nextInt() % MAX_STATEMENT_IDX);
@@ -119,11 +118,11 @@ public abstract class SailConcurrencyTest extends TestCase {
 					SailConnection connection = store.getConnection();
 					try {
 						while (continueRunning) {
-							Cursor<? extends Resource> contextIter = connection.getContextIDs();
+							CloseableIteration<? extends Resource, SailException> contextIter = connection.getContextIDs();
 							try {
 								int contextCount = 0;
-								Resource context;
-								while ((context = contextIter.next()) != null) {
+								while (contextIter.hasNext()) {
+									Resource context = contextIter.next();
 									assertNotNull(context);
 									contextCount++;
 								}
@@ -187,7 +186,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 	}
 
 	protected void insertTestStatement(SailConnection connection, int i)
-		throws StoreException
+		throws SailException
 	{
 		// System.out.print("+");
 		connection.addStatement(new URIImpl("http://test#s" + i), new URIImpl("http://test#p" + i),
@@ -195,7 +194,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 	}
 
 	protected void removeTestStatement(SailConnection connection, int i)
-		throws StoreException
+		throws SailException
 	{
 		// System.out.print("-");
 		connection.removeStatements(new URIImpl("http://test#s" + i), new URIImpl("http://test#p" + i),

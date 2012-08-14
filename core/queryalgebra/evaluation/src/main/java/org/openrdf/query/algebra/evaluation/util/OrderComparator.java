@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -12,15 +12,15 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.store.StoreException;
 
 /**
- * @author James Leigh
+ * @author james
  */
 public class OrderComparator implements Comparator<BindingSet> {
 
@@ -50,20 +50,21 @@ public class OrderComparator implements Comparator<BindingSet> {
 					return element.isAscending() ? compare : -compare;
 				}
 			}
+
 			return 0;
 		}
-		catch (StoreException e) {
-			logger.error(e.getMessage(), e);
+		catch (QueryEvaluationException e) {
+			logger.debug(e.getMessage(), e);
 			return 0;
 		}
 		catch (IllegalArgumentException e) {
-			logger.error(e.getMessage(), e);
+			logger.debug(e.getMessage(), e);
 			return 0;
 		}
 	}
 
 	private Value evaluate(ValueExpr valueExpr, BindingSet o)
-		throws StoreException
+		throws QueryEvaluationException
 	{
 		try {
 			return strategy.evaluate(valueExpr, o);

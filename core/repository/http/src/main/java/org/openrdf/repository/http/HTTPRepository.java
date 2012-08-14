@@ -5,117 +5,70 @@
  */
 package org.openrdf.repository.http;
 
-import static org.openrdf.http.protocol.Protocol.MIN_TIME_OUT;
-import static org.openrdf.http.protocol.Protocol.TIME_OUT_UNITS;
-
 import java.io.File;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.openrdf.http.client.ConnectionClient;
-import org.openrdf.http.client.NamespaceClient;
-import org.openrdf.http.client.RepositoryClient;
-import org.openrdf.http.client.SesameClient;
-import org.openrdf.http.client.connections.HTTPConnectionPool;
-import org.openrdf.http.protocol.Protocol;
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.URIFactory;
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BNodeFactoryImpl;
-import org.openrdf.model.impl.LiteralFactoryImpl;
-import org.openrdf.model.impl.URIFactoryImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.LiteralUtil;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryMetaData;
-import org.openrdf.repository.http.helpers.CachedNamespaceResult;
-import org.openrdf.repository.http.helpers.RepositoryCache;
-import org.openrdf.result.NamespaceResult;
-import org.openrdf.result.impl.NamespaceResultImpl;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.base.RepositoryBase;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.store.StoreException;
 
 /**
  * A repository that serves as a proxy for a remote repository on a Sesame
- * server. Methods in this class may throw the specific StoreException
- * subclasses UnautorizedException and NotAllowedException, the semantics of
- * which are defined by the HTTP protocol.
+ * server. Methods in this class may throw the specific RepositoryException
+ * subclass UnautorizedException, the semantics of which is defined by the HTTP
+ * protocol.
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
- * @see org.openrdf.http.protocol.NotAllowedException
  * @author Arjohn Kampman
  * @author jeen
  * @author Herko ter Horst
  */
-public class HTTPRepository implements Repository {
+public class HTTPRepository extends RepositoryBase {
 
-	/*------------*
-	 * Attributes *
-	 *------------*/
-
-	final Logger logger = LoggerFactory.getLogger(HTTPRepository.class);
-
-	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
-	private final URIFactory uf = new URIFactoryImpl();
-
-	private final LiteralFactory lf = new LiteralFactoryImpl();
-	
-	private final HTTPConnectionPool pool;
+	/*-----------*
+	 * Variables *
+	 *-----------*/
 
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private final RepositoryClient client;
-
-	private final RepositoryCache cache;
-
-	private CachedNamespaceResult namespaces;
+	private final HTTPClient httpClient;
 
 	private File dataDir;
-
-	private boolean initialized = false;
-
-	private RepositoryMetaData metadata;
-
-	private boolean readOnly;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
+	private HTTPRepository() {
+		httpClient = new HTTPClient();
+		httpClient.setValueFactory(new ValueFactoryImpl());
+	}
+
 	public HTTPRepository(String serverURL, String repositoryID) {
-		ValueFactory vf = new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf);
-		pool = new HTTPConnectionPool(serverURL, vf);
-		client = new SesameClient(pool).repositories().slash(repositoryID);
-		cache = new RepositoryCache(client);
+		this();
+		httpClient.setServerURL(serverURL);
+		httpClient.setRepositoryID(repositoryID);
 	}
 
 	public HTTPRepository(String repositoryURL) {
-		ValueFactory vf = new ValueFactoryImpl(new BNodeFactoryImpl(), uf, lf);
-		String serverURL = Protocol.getServerLocation(repositoryURL);
-		if (serverURL != null) {
-			pool = new HTTPConnectionPool(serverURL, vf).location(repositoryURL);
-		}
-		else {
-			pool = new HTTPConnectionPool(repositoryURL, vf);
-		}
-		client = new RepositoryClient(pool);
-		cache = new RepositoryCache(client);
+		this();
+		httpClient.setRepositoryURL(repositoryURL);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
+	/* ---------------*
+	 * public methods *
+	 * ---------------*/
 
 	public void setDataDir(File dataDir) {
 		this.dataDir = dataDir;
@@ -125,100 +78,66 @@ public class HTTPRepository implements Repository {
 		return dataDir;
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
-
-	public void setSubjectSpace(Set<String> uriSpace) {
-		cache.setSubjectSpace(uriSpace);
-	}
-
-	public void initialize()
-		throws StoreException
-	{
-		initialized = true;
-	}
-
-	public RepositoryMetaData getMetaData()
-		throws StoreException
-	{
-		if (metadata == null) {
-			metadata = HTTPRepositoryMetaData.create(this, client.metadata().get());
-		}
-		return metadata;
-	}
-
-	public void shutDown()
-		throws StoreException
-	{
-		initialized = false;
-		pool.shutdown();
-		executor.shutdown();
-	}
-
-	public URIFactory getURIFactory() {
-		return uf;
-	}
-
-	public LiteralFactory getLiteralFactory() {
-		return lf;
-	}
-
 	public ValueFactory getValueFactory() {
-		return new ValueFactoryImpl(uf, lf);
+		return httpClient.getValueFactory();
 	}
 
 	public RepositoryConnection getConnection()
-		throws StoreException
+		throws RepositoryException
 	{
-		final ConnectionClient connection = client.connections().post();
-		final HTTPRepositoryConnection con = new HTTPRepositoryConnection(this, connection);
-		executor.scheduleAtFixedRate(new Runnable() {
-
-			public void run() {
-				try {
-					if (con.isOpen()) {
-						connection.ping();
-					}
-					else {
-						throw new RuntimeException("connection already closed");
-					}
-				}
-				catch (StoreException e) {
-					logger.warn(e.toString());
-					throw new RuntimeException(e);
-				}
-			}
-		}, MIN_TIME_OUT, MIN_TIME_OUT, TIME_OUT_UNITS);
-		return con;
+		return new HTTPRepositoryConnection(this);
 	}
 
 	public boolean isWritable()
-		throws StoreException
+		throws RepositoryException
 	{
-		if (!initialized) {
+		if (!isInitialized()) {
 			throw new IllegalStateException("HTTPRepository not initialized.");
 		}
-		return !getMetaData().isReadOnly();
+
+		boolean isWritable = false;
+		String repositoryURL = httpClient.getRepositoryURL();
+
+		try {
+			TupleQueryResult repositoryList = httpClient.getRepositoryList();
+			try {
+				while (repositoryList.hasNext()) {
+					BindingSet bindingSet = repositoryList.next();
+					Value uri = bindingSet.getValue("uri");
+
+					if (uri != null && uri.stringValue().equals(repositoryURL)) {
+						isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+						break;
+					}
+				}
+			}
+			finally {
+				repositoryList.close();
+			}
+		}
+		catch (QueryEvaluationException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IOException e) {
+			throw new RepositoryException(e);
+		}
+
+		return isWritable;
 	}
 
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
-	 * supplied {@link TupleQueryResultFormat}, overriding the default
-	 * preference. Setting this parameter is not necessary in most cases as the
-	 * default indicates a preference for the most compact and efficient format
-	 * available.
+	 * supplied {@link TupleQueryResultFormat}, overriding the {@link HTTPClient}
+	 * 's default preference. Setting this parameter is not necessary in most
+	 * cases as the {@link HTTPClient} by default indicates a preference for the
+	 * most compact and efficient format available.
 	 * 
 	 * @param format
 	 *        the preferred {@link TupleQueryResultFormat}. If set to 'null' no
 	 *        explicit preference will be stated.
 	 */
 	public void setPreferredTupleQueryResultFormat(TupleQueryResultFormat format) {
-		pool.setPreferredTupleQueryResultFormat(format);
+		httpClient.setPreferredTupleQueryResultFormat(format);
 	}
 
 	/**
@@ -228,14 +147,15 @@ public class HTTPRepository implements Repository {
 	 *         defined.
 	 */
 	public TupleQueryResultFormat getPreferredTupleQueryResultFormat() {
-		return pool.getPreferredTupleQueryResultFormat();
+		return httpClient.getPreferredTupleQueryResultFormat();
 	}
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the default preference. Setting this
-	 * parameter is not necessary in most cases as the default indicates a
-	 * preference for the most compact and efficient format available.
+	 * {@link RDFFormat}, overriding the {@link HTTPClient}'s default preference.
+	 * Setting this parameter is not necessary in most cases as the
+	 * {@link HTTPClient} by default indicates a preference for the most compact
+	 * and efficient format available.
 	 * <p>
 	 * Use with caution: if set to a format that does not support context
 	 * serialization any context info contained in the query result will be lost.
@@ -245,7 +165,7 @@ public class HTTPRepository implements Repository {
 	 *        preference will be stated.
 	 */
 	public void setPreferredRDFFormat(RDFFormat format) {
-		pool.setPreferredRDFFormat(format);
+		httpClient.setPreferredRDFFormat(format);
 	}
 
 	/**
@@ -255,7 +175,7 @@ public class HTTPRepository implements Repository {
 	 *         defined.
 	 */
 	public RDFFormat getPreferredRDFFormat() {
-		return pool.getPreferredRDFFormat();
+		return httpClient.getPreferredRDFFormat();
 	}
 
 	/**
@@ -268,89 +188,39 @@ public class HTTPRepository implements Repository {
 	 *        the password. Setting this to null will disable authentication.
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		pool.setUsernameAndPassword(username, password);
+		httpClient.setUsernameAndPassword(username, password);
 	}
+	
+
+	/* -------------------*
+	 * non-public methods *
+	 * -------------------*/
 
 	@Override
-	public String toString() {
-		return client.toString();
-	}
-
-	/**
-	 * Indicates that the cache needs validation.
-	 */
-	void modified() {
-		cache.stale();
-		if (namespaces != null) {
-			namespaces.stale();
-		}
-	}
-
-	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred, Resource[] contexts)
-		throws StoreException
+	protected void initializeInternal()
+		throws RepositoryException
 	{
-		return cache.hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
-	/**
-	 * Will never connect to the remote server.
-	 * 
-	 * @return if this statement cannot be stored in the remote server
-	 */
-	boolean isIllegal(Resource subj, URI pred, Value obj, Resource... contexts) {
-		return cache.isIllegal(subj, pred, obj, contexts);
-	}
-
-	/**
-	 * Will never connect to the remote server.
-	 * 
-	 * @return if it is known that this pattern (or super set) has no matches.
-	 */
-	boolean noMatch(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	protected void shutDownInternal()
+		throws RepositoryException
 	{
-		return cache.noMatch(subj, pred, obj, includeInferred, contexts);
+		// httpclient shutdown moved to finalize method, to avoid problems with
+		// shutdown followed by re-initialization. See SES-1059.
+		// httpClient.shutDown();
 	}
-
-	/**
-	 * Uses cache of given pattern or super patterns before loading size.
-	 */
-	long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	
+	@Override
+	protected void finalize()
+		throws Throwable
 	{
-		return cache.size(subj, pred, obj, includeInferred, contexts);
+		httpClient.shutDown();
+		super.finalize();
 	}
-
-	NamespaceResult getNamespaces()
-		throws StoreException
-	{
-		return new NamespaceResultImpl(getNamespaceMap());
-	}
-
-	String getNamespace(String prefix)
-		throws StoreException
-	{
-		return getNamespaceMap().get(prefix);
-	}
-
-	private Map<String, String> getNamespaceMap()
-		throws StoreException
-	{
-		long now = System.currentTimeMillis();
-		if (namespaces == null || !namespaces.isFresh(now)) {
-			NamespaceClient client = this.client.namespaces();
-			if (namespaces != null) {
-				client.ifNoneMatch(namespaces.getETag());
-			}
-			NamespaceResult result = client.list();
-			if (result == null) {
-				assert namespaces != null;
-				namespaces.refreshed(now, client.getMaxAge());
-			}
-			else {
-				namespaces = new CachedNamespaceResult(result.asMap(), client.getETag());
-			}
-		}
-		return namespaces.getNamespaces();
+	
+	
+	// httpClient is shared with HTTPConnection
+	HTTPClient getHTTPClient() {
+		return httpClient;
 	}
 }

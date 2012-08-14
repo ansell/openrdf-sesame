@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.store.StoreException;
 
 /**
  * A query optimizer that contains a list of other query optimizers, which are
- * called consecutively when the list's
- * {@link #optimize(QueryModel, BindingSet)} method is called.
+ * called consecutively when the list's {@link #optimize(TupleExpr, Dataset, BindingSet)}
+ * method is called.
  * 
  * @author Arjohn Kampman
  */
@@ -43,11 +43,9 @@ public class QueryOptimizerList implements QueryOptimizer {
 		optimizers.add(optimizer);
 	}
 
-	public void optimize(QueryModel query, BindingSet bindings)
-		throws StoreException
-	{
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		for (QueryOptimizer optimizer : optimizers) {
-			optimizer.optimize(query, bindings);
+			optimizer.optimize(tupleExpr, dataset, bindings);
 		}
 	}
 }

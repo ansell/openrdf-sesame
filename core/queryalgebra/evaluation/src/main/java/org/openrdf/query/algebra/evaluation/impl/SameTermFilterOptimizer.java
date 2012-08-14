@@ -1,31 +1,23 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2008.
  * Copyright James Leigh (c) 2006.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
-import org.openrdf.query.algebra.Join;
-import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.NaryTupleOperator;
 import org.openrdf.query.algebra.ProjectionElem;
-import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.SameTerm;
-import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -48,11 +40,11 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
 	 */
-	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(new SameTermFilterVisitor());
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(new SameTermFilterVisitor());
 	}
 
-	protected class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Filter filter) {
@@ -68,9 +60,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 
 				// Verify that vars are (potentially) bound by filterArg
 				Set<String> bindingNames = filterArg.getBindingNames();
-				if (leftArg instanceof Var && !bindingNames.contains(((Var)leftArg).getName())
-						|| rightArg instanceof Var && !bindingNames.contains(((Var)rightArg).getName()))
-				{
+				if (isUnboundVar(leftArg, bindingNames) || isUnboundVar(rightArg, bindingNames)) {
 					// One or both var(s) are unbound, this expression will never
 					// return any results
 					filter.replaceWith(new EmptySet());
@@ -78,24 +68,48 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				}
 
 				Set<String> assuredBindingNames = filterArg.getAssuredBindingNames();
-				if (leftArg instanceof Var && !assuredBindingNames.contains(((Var)leftArg).getName())
-						|| rightArg instanceof Var && !assuredBindingNames.contains(((Var)rightArg).getName()))
-				{
+				if (isUnboundVar(leftArg, assuredBindingNames) || isUnboundVar(rightArg, assuredBindingNames)) {
 					// One or both var(s) are potentially unbound, inlining could
 					// invalidate the result e.g. in case of left joins
 					return;
 				}
 
-				if (leftArg instanceof Var && rightArg instanceof Var) {
-					// Rename rightArg to leftArg
+				Value leftValue = getValue(leftArg);
+				Value rightValue = getValue(rightArg);
+
+				if (leftValue != null && rightValue != null) {
+					// ConstantOptimizer should have taken care of this
+				}
+				else if (leftValue != null && rightArg instanceof Var) {
+					bindVar((Var)rightArg, leftValue, filter);
+				}
+				else if (rightValue != null && leftArg instanceof Var) {
+					bindVar((Var)leftArg, rightValue, filter);
+				}
+				else if (leftArg instanceof Var && rightArg instanceof Var) {
+					// Two unbound variables, rename rightArg to leftArg
 					renameVar((Var)rightArg, (Var)leftArg, filter);
 				}
-				else if (leftArg instanceof Var && rightArg instanceof ValueConstant) {
-					bindVar((Var)leftArg, (ValueConstant)rightArg, filter);
-				}
-				else if (rightArg instanceof Var && leftArg instanceof ValueConstant) {
-					bindVar((Var)rightArg, (ValueConstant)leftArg, filter);
-				}
+			}
+		}
+
+		private boolean isUnboundVar(ValueExpr valueExpr, Set<String> bindingNames) {
+			if (valueExpr instanceof Var) {
+				Var var = (Var)valueExpr;
+				return !var.hasValue() && !bindingNames.contains(var.getName());
+			}
+			return false;
+		}
+
+		private Value getValue(ValueExpr valueExpr) {
+			if (valueExpr instanceof ValueConstant) {
+				return ((ValueConstant)valueExpr).getValue();
+			}
+			else if (valueExpr instanceof Var) {
+				return ((Var)valueExpr).getValue();
+			}
+			else {
+				return null;
 			}
 		}
 
@@ -110,26 +124,17 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			filter.replaceWith(extension);
 		}
 
-		private void bindVar(Var var, ValueConstant valueConstant, Filter filter) {
-			filter.getArg().visit(new VarBinder(var.getName(), valueConstant.getValue()));
-
-			// No need to keep the comparison, but we do need to make sure
-			// that the variable is not null in case it comes from an
-			// optional statement pattern. Replace the SameTerm constraint with a
-			// Bound constraint.
-			filter.setCondition(new Bound(var));
-
-			// Check if the variable is used in a pattern outside of a left join.
-			// If so, removed this filter condition
-			filter.visit(new BoundOptimizer());
+		private void bindVar(Var var, Value value, Filter filter) {
+			// Set the value on all occurences of the variable
+			filter.getArg().visit(new VarBinder(var.getName(), value));
 		}
 	}
 
-	protected class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
 
-		private String oldName;
+		private final String oldName;
 
-		private String newName;
+		private final String newName;
 
 		public VarRenamer(String oldName, String newName) {
 			this.oldName = oldName;
@@ -153,11 +158,11 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 	}
 
-	protected class VarBinder extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarBinder extends QueryModelVisitorBase<RuntimeException> {
 
-		private String varName;
+		private final String varName;
 
-		private Value value;
+		private final Value value;
 
 		public VarBinder(String varName, Value value) {
 			this.varName = varName;
@@ -168,96 +173,6 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		public void meet(Var var) {
 			if (var.getName().equals(varName)) {
 				var.setValue(value);
-			}
-		}
-	}
-
-	protected class BoundOptimizer extends QueryModelVisitorBase<RuntimeException> {
-
-		private boolean inSP;
-
-		private List<Boolean> innerJoins = new ArrayList<Boolean>();
-
-		private List<Var> vars = new ArrayList<Var>();
-
-		@Override
-		public void meet(Filter filter) {
-			if (filter.getCondition() instanceof Bound) {
-				Bound bound = (Bound)filter.getCondition();
-				vars.add(bound.getArg());
-				innerJoins.add(Boolean.FALSE);
-				filter.getArg().visit(this);
-				vars.remove(vars.size() - 1);
-				if (innerJoins.remove(innerJoins.size() - 1)) {
-					filter.replaceWith(filter.getArg());
-				}
-			}
-			else {
-				filter.visitChildren(this);
-			}
-		}
-
-		@Override
-		public void meet(Join join)
-			throws RuntimeException
-		{
-			// search for statement patterns
-			join.visitChildren(this);
-		}
-
-		@Override
-		public void meet(LeftJoin leftJoin)
-			throws RuntimeException
-		{
-			// search the left side, but not the optional right side
-			leftJoin.getLeftArg().visit(this);
-		}
-
-		@Override
-		public void meet(Union union)
-			throws RuntimeException
-		{
-			assert union.getNumberOfArguments() > 0;
-			List<Boolean> orig = innerJoins;
-
-			// search left (independent of right)
-			List<Boolean> left = innerJoins = new ArrayList<Boolean>(orig);
-			union.getArg(0).visit(this);
-			for (int i = 1, n = union.getNumberOfArguments(); i > n; i++) {
-				// search right (independent of left)
-				List<Boolean> right = innerJoins = new ArrayList<Boolean>(orig);
-				union.getArg(i).visit(this);
-				// compare results
-				if (!left.equals(right)) {
-					// not found on both sides
-					innerJoins = orig;
-					return;
-				}
-			}
-		}
-
-		@Override
-		protected void meetNaryTupleOperator(NaryTupleOperator node)
-			throws RuntimeException
-		{
-			// don't search any more
-		}
-
-		@Override
-		public void meet(StatementPattern sp)
-			throws RuntimeException
-		{
-			inSP = true;
-			super.meet(sp);
-			inSP = false;
-		}
-
-		@Override
-		public void meet(Var var)
-			throws RuntimeException
-		{
-			if (inSP && vars.contains(var)) {
-				innerJoins.set(vars.indexOf(var), Boolean.TRUE);
 			}
 		}
 	}

@@ -14,8 +14,6 @@ import java.util.Set;
  */
 public class Difference extends BinaryTupleOperator {
 
-	private static final long serialVersionUID = -8298294746871540229L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -39,7 +37,6 @@ public class Difference extends BinaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
-	@Override
 	public Set<String> getBindingNames() {
 		return getLeftArg().getBindingNames();
 	}
@@ -52,6 +49,16 @@ public class Difference extends BinaryTupleOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Difference && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Difference".hashCode();
 	}
 
 	@Override

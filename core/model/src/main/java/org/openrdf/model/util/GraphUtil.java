@@ -9,9 +9,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import info.aduna.collections.iterators.ConvertingIterator;
-import info.aduna.collections.iterators.Iterators;
-
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -19,6 +16,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.util.iterators.ConvertingIterator;
+import org.openrdf.util.iterators.Iterators;
 
 /**
  * Utility methods for working with {@link Graph} objects.
@@ -459,6 +458,11 @@ public class GraphUtil {
 	 *        specified, statements will match disregarding their context. If one
 	 *        or more contexts are specified, statements with a context matching
 	 *        one of these will match.
+	 * @throws IllegalArgumentException
+	 *         If a <tt>null</tt>-array is specified as the value for
+	 *         <tt>contexts</tt>. See
+	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
+	 *         info.
 	 */
 	public static void remove(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
 		Iterator<Statement> statements = graph.match(subj, pred, obj, contexts);

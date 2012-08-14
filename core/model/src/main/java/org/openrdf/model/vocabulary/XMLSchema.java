@@ -31,6 +31,9 @@ public class XMLSchema {
 	/** <tt>http://www.w3.org/2001/XMLSchema#dateTime</tt> */
 	public final static URI DATETIME;
 
+	/** <tt>http://www.w3.org/2001/XMLSchema#dayTimeDuration</tt> */
+	public static final URI DAYTIMEDURATION;
+	
 	/** <tt>http://www.w3.org/2001/XMLSchema#time</tt> */
 	public final static URI TIME;
 
@@ -161,19 +164,15 @@ public class XMLSchema {
 	/** <tt>http://www.w3.org/2001/XMLSchema#unsignedByte</tt> */
 	public final static URI UNSIGNED_BYTE;
 
-	/** <tt>http://www.w3.org/2001/XMLSchema#dayTimeDuration</tt> */
-	public final static URI DURATION_DAYTIME;
-
-	/** <tt>http://www.w3.org/2001/XMLSchema#yearMonthDuration</tt> */
-	public final static URI DURATION_YEARMONTH;
-
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-
+		ValueFactory factory = new ValueFactoryImpl();
+		
 		DURATION = factory.createURI(XMLSchema.NAMESPACE, "duration");
 
 		DATETIME = factory.createURI(XMLSchema.NAMESPACE, "dateTime");
 
+		DAYTIMEDURATION = factory.createURI(NAMESPACE, "dayTimeDuration");
+		
 		TIME = factory.createURI(XMLSchema.NAMESPACE, "time");
 
 		DATE = factory.createURI(XMLSchema.NAMESPACE, "date");
@@ -257,9 +256,5 @@ public class XMLSchema {
 		UNSIGNED_SHORT = factory.createURI(XMLSchema.NAMESPACE, "unsignedShort");
 
 		UNSIGNED_BYTE = factory.createURI(XMLSchema.NAMESPACE, "unsignedByte");
-
-		DURATION_DAYTIME = factory.createURI(XMLSchema.NAMESPACE, "dayTimeDuration");
-
-		DURATION_YEARMONTH = factory.createURI(XMLSchema.NAMESPACE, "yearMonthDuration");
 	}
 }

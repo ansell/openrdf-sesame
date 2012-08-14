@@ -75,6 +75,22 @@ public interface RDFParser {
 	public void setParseLocationListener(ParseLocationListener ll);
 
 	/**
+	 * Sets all supplied parser configuration options.
+	 * 
+	 * @param config
+	 *        a parser configuration object.
+	 */
+	public void setParserConfig(ParserConfig config);
+
+	/**
+	 * Retrieves the current parser configuration as a single object.
+	 * 
+	 * @return a parser configuration object representing the current
+	 *         configuration of the parser.
+	 */
+	public ParserConfig getParserConfig();
+
+	/**
 	 * Sets whether the parser should verify the data it parses (default value is
 	 * <tt>true</tt>).
 	 */

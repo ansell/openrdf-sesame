@@ -23,10 +23,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.result.TupleResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -43,6 +43,8 @@ public abstract class N3ParserTestCase {
 	/*-----------*
 	 * Constants *
 	 *-----------*/
+
+	private static String BASE_URL = "http://www.w3.org/2000/10/swap/test/";
 
 	private static String MANIFEST_URL = "http://www.w3.org/2000/10/swap/test/n3parser.tests";
 
@@ -71,8 +73,8 @@ public abstract class N3ParserTestCase {
 				+ "               n3test:outputDocument {outputURL} "
 				+ "USING NAMESPACE n3test = <http://www.w3.org/2004/11/n3test#>";
 
-		TupleResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
-		while (queryResult.hasNext()) {
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		while(queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String testURI = bindingSet.getValue("testURI").toString();
 			String inputURL = bindingSet.getValue("inputURL").toString();
@@ -84,13 +86,14 @@ public abstract class N3ParserTestCase {
 		queryResult.close();
 
 		// Add all negative parser tests to the test suite
-		query = "SELECT testURI, inputURL " + "FROM {testURI} rdf:type {n3test:NegativeParserTest}; "
+		query = "SELECT testURI, inputURL "
+				+ "FROM {testURI} rdf:type {n3test:NegativeParserTest}; "
 				+ "               n3test:inputDocument {inputURL} "
 				+ "USING NAMESPACE n3test = <http://www.w3.org/2004/11/n3test#>";
 
 		queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
 
-		while (queryResult.hasNext()) {
+		while(queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String testURI = bindingSet.getValue("testURI").toString();
 			String inputURL = bindingSet.getValue("inputURL").toString();
@@ -244,35 +247,30 @@ public abstract class N3ParserTestCase {
 	} // end inner class NegativeParserTest
 
 	private static URL url(String uri)
-		throws MalformedURLException
-	{
-		if (!uri.startsWith("injar:")) {
+			throws MalformedURLException {
+		if (!uri.startsWith("injar:"))
 			return new URL(uri);
-		}
 		int start = uri.indexOf(':') + 3;
 		int end = uri.indexOf('/', start);
 		String encoded = uri.substring(start, end);
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
 
 	private static String base(String uri) {
-		if (!uri.startsWith("jar:")) {
+		if (!uri.startsWith("jar:"))
 			return uri;
-		}
 		int start = uri.indexOf(':') + 1;
 		int end = uri.lastIndexOf('!');
 		String jar = uri.substring(start, end);
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

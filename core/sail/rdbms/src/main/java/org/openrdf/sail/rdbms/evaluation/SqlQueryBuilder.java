@@ -11,26 +11,27 @@ import java.util.List;
  * Facilitates the building of a SQL query.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlQueryBuilder {
 
 	private QueryBuilderFactory factory;
 
-	private boolean distinct;
+	protected boolean distinct;
 
-	private SqlExprBuilder select;
+	protected SqlExprBuilder select;
 
-	private SqlJoinBuilder from;
+	protected SqlJoinBuilder from;
 
-	private StringBuilder group = new StringBuilder();
+	protected StringBuilder group = new StringBuilder();
 
-	private SqlExprBuilder order;
+	protected SqlExprBuilder order;
 
-	private SqlQueryBuilder union;
+	protected SqlQueryBuilder union;
 
-	private Integer offset;
+	protected Long offset;
 
-	private Integer limit;
+	protected Long limit;
 
 	public SqlQueryBuilder(QueryBuilderFactory factory) {
 		super();
@@ -56,9 +57,8 @@ public class SqlQueryBuilder {
 	}
 
 	public SqlExprBuilder select() {
-		if (!select.isEmpty()) {
+		if (!select.isEmpty())
 			select.append(",\n ");
-		}
 		return select;
 	}
 
@@ -137,20 +137,19 @@ public class SqlQueryBuilder {
 	}
 
 	public SqlExprBuilder orderBy() {
-		if (!order.isEmpty()) {
+		if (!order.isEmpty())
 			order.append(",\n ");
-		}
 		return order;
 	}
 
-	public void offset(Integer offset) {
+	public void offset(Long offset) {
 		this.offset = offset;
 		if (limit == null) {
-			limit = Integer.MAX_VALUE;
+			limit = Long.MAX_VALUE;
 		}
 	}
 
-	public void limit(Integer limit) {
+	public void limit(Long limit) {
 		this.limit = limit;
 	}
 }

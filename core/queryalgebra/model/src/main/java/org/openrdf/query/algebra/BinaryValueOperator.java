@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -9,9 +9,21 @@ package org.openrdf.query.algebra;
  * An abstract superclass for binary value operators which, by definition, has
  * two arguments.
  */
-public abstract class BinaryValueOperator extends NaryValueOperator implements ValueExpr {
+public abstract class BinaryValueOperator extends QueryModelNodeBase implements ValueExpr {
 
-	private static final long serialVersionUID = -7714266279877237115L;
+	/*-----------*
+	 * Variables *
+	 *-----------*/
+
+	/**
+	 * The operator's left argument.
+	 */
+	protected ValueExpr leftArg;
+
+	/**
+	 * The operator's right argument.
+	 */
+	protected ValueExpr rightArg;
 
 	/*--------------*
 	 * Constructors *
@@ -29,7 +41,8 @@ public abstract class BinaryValueOperator extends NaryValueOperator implements V
 	 *        The operator's right argument, must not be <tt>null</tt>.
 	 */
 	public BinaryValueOperator(ValueExpr leftArg, ValueExpr rightArg) {
-		super(leftArg, rightArg);
+		setLeftArg(leftArg);
+		setRightArg(rightArg);
 	}
 
 	/*---------*
@@ -42,7 +55,7 @@ public abstract class BinaryValueOperator extends NaryValueOperator implements V
 	 * @return The operator's left argument.
 	 */
 	public ValueExpr getLeftArg() {
-		return getArg(0);
+		return leftArg;
 	}
 
 	/**
@@ -53,7 +66,9 @@ public abstract class BinaryValueOperator extends NaryValueOperator implements V
 	 *        <tt>null</tt>.
 	 */
 	public void setLeftArg(ValueExpr leftArg) {
-		setArg(0, leftArg);
+		assert leftArg != null : "leftArg must not be null";
+		leftArg.setParentNode(this);
+		this.leftArg = leftArg;
 	}
 
 	/**
@@ -62,7 +77,7 @@ public abstract class BinaryValueOperator extends NaryValueOperator implements V
 	 * @return The operator's right argument.
 	 */
 	public ValueExpr getRightArg() {
-		return getArg(1);
+		return rightArg;
 	}
 
 	/**
@@ -73,11 +88,52 @@ public abstract class BinaryValueOperator extends NaryValueOperator implements V
 	 *        <tt>null</tt>.
 	 */
 	public void setRightArg(ValueExpr rightArg) {
-		setArg(1, rightArg);
+		assert rightArg != null : "rightArg must not be null";
+		rightArg.setParentNode(this);
+		this.rightArg = rightArg;
+	}
+
+	@Override
+	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
+		throws X
+	{
+		leftArg.visit(visitor);
+		rightArg.visit(visitor);
+	}
+
+	@Override
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
+		if (leftArg == current) {
+			setLeftArg((ValueExpr)replacement);
+		}
+		else if (rightArg == current) {
+			setRightArg((ValueExpr)replacement);
+		}
+		else {
+			super.replaceChildNode(current, replacement);
+		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof BinaryValueOperator) {
+			BinaryValueOperator o = (BinaryValueOperator)other;
+			return leftArg.equals(o.getLeftArg()) && rightArg.equals(o.getRightArg());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return leftArg.hashCode() ^ rightArg.hashCode();
 	}
 
 	@Override
 	public BinaryValueOperator clone() {
-		return (BinaryValueOperator)super.clone();
+		BinaryValueOperator clone = (BinaryValueOperator)super.clone();
+		clone.setLeftArg(getLeftArg().clone());
+		clone.setRightArg(getRightArg().clone());
+		return clone;
 	}
 }

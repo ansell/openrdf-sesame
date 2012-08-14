@@ -15,6 +15,7 @@ import org.openrdf.repository.RepositoryConnection;
  * Listener interface for Repository state changes.
  * 
  * @author James Leigh
+ * 
  */
 public interface RepositoryListener extends EventListener {
 

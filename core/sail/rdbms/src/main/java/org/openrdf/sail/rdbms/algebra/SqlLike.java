@@ -13,6 +13,7 @@ import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
  * The SQL LIKE operator.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlLike extends BinarySqlOperator {
 

@@ -5,6 +5,7 @@
  */
 package org.openrdf.model;
 
+
 /**
  * The supertype of all RDF resources (URIs and blank nodes).
  */

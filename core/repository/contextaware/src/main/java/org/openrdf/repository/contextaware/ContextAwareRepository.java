@@ -8,8 +8,8 @@ package org.openrdf.repository.contextaware;
 import org.openrdf.model.URI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
-import org.openrdf.store.StoreException;
 
 /**
  * Allows contexts to be specified at the repository level.
@@ -24,9 +24,9 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private int maxQueryTime;
 
-	private int queryResultLimit = -1;
-
 	private QueryLanguage ql = QueryLanguage.SPARQL;
+
+	private String baseURI;
 
 	private URI[] readContexts = ALL_CONTEXTS;
 
@@ -35,6 +35,8 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	private URI[] removeContexts = ALL_CONTEXTS;
 
 	private URI[] archiveContexts = ALL_CONTEXTS;
+
+	private URI insertContext = null;
 
 	public ContextAwareRepository() {
 		super();
@@ -52,17 +54,10 @@ public class ContextAwareRepository extends RepositoryWrapper {
 		this.maxQueryTime = maxQueryTime;
 	}
 
-	public int getQueryResultLimit() {
-		return queryResultLimit;
-	}
-
-	public void setQueryResultLimit(int queryResultLimit) {
-		this.queryResultLimit = queryResultLimit;
-	}
-
 	/**
 	 * @see ContextAwareConnection#getAddContexts()
 	 */
+	@Deprecated
 	public URI[] getAddContexts() {
 		return addContexts;
 	}
@@ -70,8 +65,16 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	/**
 	 * @see ContextAwareConnection#getArchiveContexts()
 	 */
+	@Deprecated
 	public URI[] getArchiveContexts() {
 		return archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#getInsertContext()
+	 */
+	public URI getInsertContext() {
+		return insertContext;
 	}
 
 	/**
@@ -79,6 +82,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	 */
 	public QueryLanguage getQueryLanguage() {
 		return ql;
+	}
+
+	
+	/**
+	 * @return Returns the default baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
 	}
 
 	/**
@@ -105,6 +116,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	/**
 	 * @see ContextAwareConnection#setAddContexts(URI[])
 	 */
+	@Deprecated
 	public void setAddContexts(URI... addContexts) {
 		this.addContexts = addContexts;
 	}
@@ -112,8 +124,16 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	/**
 	 * @see ContextAwareConnection#setArchiveContexts(URI[])
 	 */
+	@Deprecated
 	public void setArchiveContexts(URI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
+	}
+
+	/**
+	 * @see ContextAwareConnection#setInsertContext(URI)
+	 */
+	public void setInsertContext(URI insertContext) {
+		this.insertContext = insertContext;
 	}
 
 	/**
@@ -128,6 +148,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	 */
 	public void setQueryLanguage(QueryLanguage ql) {
 		this.ql = ql;
+	}
+
+	
+	/**
+	 * @param baseURI The default baseURI to set.
+	 */
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
 	}
 
 	/**
@@ -146,17 +174,19 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	@Override
 	public ContextAwareConnection getConnection()
-		throws StoreException
+		throws RepositoryException
 	{
 		ContextAwareConnection con = new ContextAwareConnection(this, super.getConnection());
 		con.setIncludeInferred(isIncludeInferred());
 		con.setMaxQueryTime(getMaxQueryTime());
 		con.setQueryLanguage(getQueryLanguage());
+		con.setBaseURI(getBaseURI());
 		con.setReadContexts(getReadContexts());
 		con.setAddContexts(getAddContexts());
 		con.setRemoveContexts(getRemoveContexts());
 		con.setArchiveContexts(getArchiveContexts());
-		con.setQueryResultLimit(getQueryResultLimit());
+		con.setInsertContext(getInsertContext());
 		return con;
 	}
+
 }

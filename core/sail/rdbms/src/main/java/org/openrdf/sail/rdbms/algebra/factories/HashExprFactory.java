@@ -19,18 +19,18 @@ import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlNull;
 import org.openrdf.sail.rdbms.algebra.base.SqlExpr;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
 
 /**
+ * 
  * @author James Leigh
  */
-public class HashExprFactory extends QueryModelVisitorBase<RdbmsException> {
+public class HashExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
 	protected SqlExpr result;
 
 	private RdbmsValueFactory vf;
-
-	private QueryModelNode unsupported;
 
 	public HashExprFactory(RdbmsValueFactory vf) {
 		super();
@@ -38,33 +38,24 @@ public class HashExprFactory extends QueryModelVisitorBase<RdbmsException> {
 	}
 
 	public SqlExpr createHashExpr(ValueExpr expr)
-		throws UnsupportedRdbmsOperatorException, RdbmsException
+		throws UnsupportedRdbmsOperatorException
 	{
 		result = null;
-		if (expr == null) {
+		if (expr == null)
 			return new SqlNull();
-		}
 		expr.visit(this);
-		if (unsupported != null) {
-			throw unsupported(unsupported);
-		}
-		if (result == null) {
+		if (result == null)
 			return new SqlNull();
-		}
 		return result;
 	}
 
 	@Override
-	public void meet(ValueConstant vc)
-		throws RdbmsException
-	{
+	public void meet(ValueConstant vc) {
 		result = valueOf(vc.getValue());
 	}
 
 	@Override
-	public void meet(Var var)
-		throws RdbmsException
-	{
+	public void meet(Var var) {
 		if (var.getValue() == null) {
 			result = new RefIdColumn(var);
 		}
@@ -74,21 +65,18 @@ public class HashExprFactory extends QueryModelVisitorBase<RdbmsException> {
 	}
 
 	@Override
-	protected void meetNode(QueryModelNode arg) {
-		result = null;
-		if (unsupported != null) {
-			unsupported = arg;
-		}
+	protected void meetNode(QueryModelNode arg)
+		throws UnsupportedRdbmsOperatorException
+	{
+		throw unsupported(arg);
 	}
 
-	public SqlExpr valueOf(Value value)
-		throws RdbmsException
-	{
+	public SqlExpr valueOf(Value value) {
 		try {
 			return new NumberValue(vf.getInternalId(value));
 		}
 		catch (RdbmsException e) {
-			throw new RdbmsException(e);
+			throw new RdbmsRuntimeException(e);
 		}
 	}
 

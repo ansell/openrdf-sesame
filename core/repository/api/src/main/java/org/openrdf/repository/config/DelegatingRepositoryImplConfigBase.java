@@ -7,10 +7,10 @@ package org.openrdf.repository.config;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.DELEGATE;
 
-import org.openrdf.model.Model;
+import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.ModelException;
-import org.openrdf.store.StoreConfigException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
 
 /**
  * @author Herko ter Horst
@@ -53,41 +53,42 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 
 	@Override
 	public void validate()
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
 		super.validate();
 		if (delegate == null) {
-			throw new StoreConfigException("No delegate specified for " + getType() + " repository");
+			throw new RepositoryConfigException("No delegate specified for " + getType() + " repository");
 		}
 		delegate.validate();
 	}
 
 	@Override
-	public Resource export(Model model) {
-		Resource implNode = super.export(model);
+	public Resource export(Graph graph)
+	{
+		Resource implNode = super.export(graph);
 
 		if (delegate != null) {
-			Resource delegateNode = delegate.export(model);
-			model.add(implNode, DELEGATE, delegateNode);
+			Resource delegateNode = delegate.export(graph);
+			graph.add(implNode, DELEGATE, delegateNode);
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Model model, Resource implNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource implNode)
+		throws RepositoryConfigException
 	{
-		super.parse(model, implNode);
+		super.parse(graph, implNode);
 
 		try {
-			Resource delegateNode = model.filter(implNode, DELEGATE, null).objectResource();
+			Resource delegateNode = GraphUtil.getOptionalObjectResource(graph, implNode, DELEGATE);
 			if (delegateNode != null) {
-				setDelegate(create(model, delegateNode));
+				setDelegate(create(graph, delegateNode));
 			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 }

@@ -9,7 +9,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.store.StoreException;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Operation to remove statements matching specific pattern of subject,
@@ -32,9 +32,9 @@ public class RemoveStatementsOperation extends StatementOperation {
 	}
 
 	public void execute(RepositoryConnection con)
-		throws StoreException
+		throws RepositoryException
 	{
-		con.removeMatch(getSubject(), getPredicate(), getObject(), getContexts());
+		con.remove(getSubject(), getPredicate(), getObject(), getContexts());
 	}
 
 	@Override

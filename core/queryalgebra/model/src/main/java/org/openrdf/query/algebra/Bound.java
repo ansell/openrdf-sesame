@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -11,15 +11,17 @@ package org.openrdf.query.algebra;
  * Language for RDF</a>; checks if a variable is bound.
  * 
  * @author Arjohn Kampman
- * @author James Leigh
  */
-public class Bound extends UnaryValueOperator implements ValueExpr {
-
-	private static final long serialVersionUID = 7222248835654567074L;
+public class Bound extends QueryModelNodeBase implements ValueExpr {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	/**
+	 * The operator's argument.
+	 */
+	protected Var arg;
 
 	/*--------------*
 	 * Constructors *
@@ -41,9 +43,8 @@ public class Bound extends UnaryValueOperator implements ValueExpr {
 	 * 
 	 * @return The operator's argument.
 	 */
-	@Override
 	public Var getArg() {
-		return (Var)super.getArg();
+		return arg;
 	}
 
 	/**
@@ -52,15 +53,53 @@ public class Bound extends UnaryValueOperator implements ValueExpr {
 	 * @param arg
 	 *        The (new) argument for this operator, must not be <tt>null</tt>.
 	 */
-	@Override
-	public void setArg(ValueExpr arg) {
-		assert arg instanceof Var;
-		super.setArg(arg);
+	public void setArg(Var arg) {
+		assert arg != null : "arg must not be null";
+		arg.setParentNode(this);
+		this.arg = arg;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
+		throws X
+	{
+		arg.visit(visitor);
+	}
+
+	@Override
+	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
+		if (arg == current) {
+			setArg((Var)replacement);
+		}
+		else {
+			super.replaceChildNode(current, replacement);
+		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Bound) {
+			Bound o = (Bound)other;
+			return arg.equals(o.getArg());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return arg.hashCode() ^ "Bound".hashCode();
+	}
+
+	@Override
+	public Bound clone() {
+		Bound clone = (Bound)super.clone();
+		clone.setArg(getArg().clone());
+		return clone;
 	}
 }

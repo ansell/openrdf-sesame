@@ -18,8 +18,6 @@ import java.util.Set;
  */
 public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 
-	private static final long serialVersionUID = -6167861066584739956L;
-
 	/*------------*
 	 * enum Scope *
 	 *------------*/
@@ -164,7 +162,7 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 	public Set<String> getBindingNames() {
 		return getAssuredBindingNames();
 	}
-	
+
 	public Set<String> getAssuredBindingNames() {
 		Set<String> bindingNames = new HashSet<String>(8);
 
@@ -188,6 +186,9 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		return getVars(new ArrayList<Var>(4));
 	}
 
+	/**
+	 * Adds the variables of this statement pattern to the supplied collection.
+	 */
 	public <L extends Collection<Var>> L getVars(L varCollection) {
 		if (subjectVar != null) {
 			varCollection.add(subjectVar);
@@ -261,6 +262,31 @@ public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof StatementPattern) {
+			StatementPattern o = (StatementPattern)other;
+			return subjectVar.equals(o.getSubjectVar()) && predicateVar.equals(o.getPredicateVar())
+					&& objectVar.equals(o.getObjectVar()) && nullEquals(contextVar, o.getContextVar())
+					&& scope.equals(o.getScope());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = subjectVar.hashCode();
+		result ^= predicateVar.hashCode();
+		result ^= objectVar.hashCode();
+		if (contextVar != null) {
+			result ^= contextVar.hashCode();
+		}
+		if (scope == Scope.NAMED_CONTEXTS) {
+			result = ~result;
+		}
+		return result;
 	}
 
 	@Override

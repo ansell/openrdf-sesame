@@ -6,27 +6,25 @@
 package org.openrdf.repository.config;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
+import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMPL;
-import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTITLE;
-
-import java.util.Set;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * @author Arjohn Kampman
  */
 public class RepositoryConfig {
+
+	private String id;
 
 	private String title;
 
@@ -41,23 +39,41 @@ public class RepositoryConfig {
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
-	public RepositoryConfig(RepositoryImplConfig implConfig) {
+	public RepositoryConfig(String id) {
+		this();
+		setID(id);
+	}
+
+	/**
+	 * Create a new RepositoryConfigImpl.
+	 */
+	public RepositoryConfig(String id, RepositoryImplConfig implConfig) {
+		this(id);
 		setRepositoryImplConfig(implConfig);
 	}
 
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
-	public RepositoryConfig(String title) {
+	public RepositoryConfig(String id, String title) {
+		this(id);
 		setTitle(title);
 	}
 
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
-	public RepositoryConfig(String title, RepositoryImplConfig implConfig) {
-		this(title);
+	public RepositoryConfig(String id, String title, RepositoryImplConfig implConfig) {
+		this(id, title);
 		setRepositoryImplConfig(implConfig);
+	}
+
+	public String getID() {
+		return id;
+	}
+
+	public void setID(String id) {
+		this.id = id;
 	}
 
 	public String getTitle() {
@@ -77,101 +93,78 @@ public class RepositoryConfig {
 	}
 
 	/**
-	 * Validates this configuration. A {@link StoreConfigException} is thrown
-	 * when the configuration is invalid. The exception should contain an error
-	 * message that indicates why the configuration is invalid.
+	 * Validates this configuration. A {@link RepositoryConfigException} is
+	 * thrown when the configuration is invalid. The exception should contain an
+	 * error message that indicates why the configuration is invalid.
 	 * 
-	 * @throws StoreConfigException
+	 * @throws RepositoryConfigException
 	 *         If the configuration is invalid.
 	 */
 	public void validate()
-		throws StoreConfigException
+		throws RepositoryConfigException
 	{
+		if (id == null) {
+			throw new RepositoryConfigException("Repository ID missing");
+		}
 		if (implConfig == null) {
-			throw new StoreConfigException("Repository implementation for repository missing");
+			throw new RepositoryConfigException("Repository implementation for repository missing");
 		}
 		implConfig.validate();
 	}
 
-	public Model export() {
-		Model model = new LinkedHashModel();
-		export(model);
-		return model;
-	}
-
-	public void export(Model model) {
-		ValueFactory vf = ValueFactoryImpl.getInstance();
+	public void export(Graph graph) {
+		ValueFactory vf = graph.getValueFactory();
 
 		BNode repositoryNode = vf.createBNode();
 
-		model.add(repositoryNode, RDF.TYPE, REPOSITORY);
+		graph.add(repositoryNode, RDF.TYPE, REPOSITORY);
 
+		if (id != null) {
+			graph.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
+		}
 		if (title != null) {
-			model.add(repositoryNode, REPOSITORYTITLE, vf.createLiteral(title));
-			model.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
+			graph.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
 		}
 		if (implConfig != null) {
-			Resource implNode = implConfig.export(model);
-			model.add(repositoryNode, REPOSITORYIMPL, implNode);
+			Resource implNode = implConfig.export(graph);
+			graph.add(repositoryNode, REPOSITORYIMPL, implNode);
 		}
 	}
 
-	public void parse(Model model, Resource repositoryNode)
-		throws StoreConfigException
+	public void parse(Graph graph, Resource repositoryNode)
+		throws RepositoryConfigException
 	{
 		try {
-			Literal titleLit = model.filter(repositoryNode, RDFS.LABEL, null).objectLiteral();
+			Literal idLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, REPOSITORYID);
+			if (idLit != null) {
+				setID(idLit.getLabel());
+			}
+
+			Literal titleLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, RDFS.LABEL);
 			if (titleLit != null) {
 				setTitle(titleLit.getLabel());
 			}
 
-			titleLit = model.filter(repositoryNode, REPOSITORYTITLE, null).objectLiteral();
-			if (titleLit != null) {
-				setTitle(titleLit.getLabel());
-			}
-
-			Resource implNode = model.filter(repositoryNode, REPOSITORYIMPL, null).objectResource();
+			Resource implNode = GraphUtil.getOptionalObjectResource(graph, repositoryNode, REPOSITORYIMPL);
 			if (implNode != null) {
-				setRepositoryImplConfig(RepositoryImplConfigBase.create(model, implNode));
+				setRepositoryImplConfig(RepositoryImplConfigBase.create(graph, implNode));
 			}
 		}
-		catch (ModelException e) {
-			throw new StoreConfigException(e.getMessage(), e);
+		catch (GraphUtilException e) {
+			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 
 	/**
 	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
-	 * supplying the <tt>model</tt> and <tt>repositoryNode</tt> to its
-	 * {@link #parse(Model, Resource) parse} method.
+	 * supplying the <tt>graph</tt> and <tt>repositoryNode</tt> to its
+	 * {@link #parse(Graph, Resource) parse} method.
 	 */
-	public static RepositoryConfig create(Model model)
-		throws StoreConfigException
-	{
-		Set<Resource> repositoryNodes = model.filter(null, RDF.TYPE, REPOSITORY).subjects();
-
-		if (repositoryNodes.isEmpty()) {
-			throw new StoreConfigException("Found no resources of type " + REPOSITORY);
-		}
-		else if (repositoryNodes.size() > 1) {
-			throw new StoreConfigException("Found multiple resources of type " + REPOSITORY);
-		}
-		else {
-			Resource repositoryNode = repositoryNodes.iterator().next();
-			return create(model, repositoryNode);
-		}
-	}
-
-	/**
-	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
-	 * supplying the <tt>model</tt> and <tt>repositoryNode</tt> to its
-	 * {@link #parse(Model, Resource) parse} method.
-	 */
-	public static RepositoryConfig create(Model model, Resource repositoryNode)
-		throws StoreConfigException
+	public static RepositoryConfig create(Graph graph, Resource repositoryNode)
+		throws RepositoryConfigException
 	{
 		RepositoryConfig config = new RepositoryConfig();
-		config.parse(model, repositoryNode);
+		config.parse(graph, repositoryNode);
 		return config;
 	}
 }

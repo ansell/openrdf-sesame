@@ -1,11 +1,12 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.parser.serql;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.model.Literal;
@@ -34,18 +35,24 @@ import org.openrdf.query.algebra.IsResource;
 import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Label;
 import org.openrdf.query.algebra.Lang;
+import org.openrdf.query.algebra.LangMatches;
+import org.openrdf.query.algebra.Like;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
+import org.openrdf.query.algebra.Order;
+import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
@@ -73,12 +80,14 @@ import org.openrdf.query.parser.serql.ast.ASTGraphIntersect;
 import org.openrdf.query.parser.serql.ast.ASTGraphMinus;
 import org.openrdf.query.parser.serql.ast.ASTGraphUnion;
 import org.openrdf.query.parser.serql.ast.ASTIn;
+import org.openrdf.query.parser.serql.ast.ASTInList;
 import org.openrdf.query.parser.serql.ast.ASTIsBNode;
 import org.openrdf.query.parser.serql.ast.ASTIsLiteral;
 import org.openrdf.query.parser.serql.ast.ASTIsResource;
 import org.openrdf.query.parser.serql.ast.ASTIsURI;
 import org.openrdf.query.parser.serql.ast.ASTLabel;
 import org.openrdf.query.parser.serql.ast.ASTLang;
+import org.openrdf.query.parser.serql.ast.ASTLangMatches;
 import org.openrdf.query.parser.serql.ast.ASTLike;
 import org.openrdf.query.parser.serql.ast.ASTLimit;
 import org.openrdf.query.parser.serql.ast.ASTLiteral;
@@ -92,14 +101,20 @@ import org.openrdf.query.parser.serql.ast.ASTOffset;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTOptPathExprTail;
 import org.openrdf.query.parser.serql.ast.ASTOr;
+import org.openrdf.query.parser.serql.ast.ASTOrderBy;
+import org.openrdf.query.parser.serql.ast.ASTOrderExpr;
 import org.openrdf.query.parser.serql.ast.ASTPathExpr;
 import org.openrdf.query.parser.serql.ast.ASTPathExprTail;
+import org.openrdf.query.parser.serql.ast.ASTPathExprUnion;
 import org.openrdf.query.parser.serql.ast.ASTProjectionElem;
 import org.openrdf.query.parser.serql.ast.ASTQueryBody;
 import org.openrdf.query.parser.serql.ast.ASTQueryContainer;
+import org.openrdf.query.parser.serql.ast.ASTRegex;
 import org.openrdf.query.parser.serql.ast.ASTReifiedStat;
+import org.openrdf.query.parser.serql.ast.ASTSameTerm;
 import org.openrdf.query.parser.serql.ast.ASTSelect;
 import org.openrdf.query.parser.serql.ast.ASTSelectQuery;
+import org.openrdf.query.parser.serql.ast.ASTStr;
 import org.openrdf.query.parser.serql.ast.ASTString;
 import org.openrdf.query.parser.serql.ast.ASTTupleIntersect;
 import org.openrdf.query.parser.serql.ast.ASTTupleMinus;
@@ -108,6 +123,7 @@ import org.openrdf.query.parser.serql.ast.ASTURI;
 import org.openrdf.query.parser.serql.ast.ASTValueExpr;
 import org.openrdf.query.parser.serql.ast.ASTVar;
 import org.openrdf.query.parser.serql.ast.ASTWhere;
+import org.openrdf.query.parser.serql.ast.Node;
 import org.openrdf.query.parser.serql.ast.VisitorException;
 
 class QueryModelBuilder extends ASTVisitorBase {
@@ -128,7 +144,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 	 * Variables *
 	 *-----------*/
 
-	private ValueFactory valueFactory;
+	private final ValueFactory valueFactory;
 
 	private int constantVarID = 1;
 
@@ -151,6 +167,19 @@ class QueryModelBuilder extends ASTVisitorBase {
 		var.setAnonymous(true);
 		var.setValue(value);
 		return var;
+	}
+
+	private GraphPattern parseGraphPattern(Node node)
+		throws VisitorException
+	{
+		graphPattern = new GraphPattern(graphPattern);
+		try {
+			node.jjtAccept(this, null);
+			return graphPattern;
+		}
+		finally {
+			graphPattern = graphPattern.getParent();
+		}
 	}
 
 	@Override
@@ -250,6 +279,13 @@ class QueryModelBuilder extends ASTVisitorBase {
 			tupleExpr = new SingletonSet();
 		}
 
+		// Apply result ordering
+		ASTOrderBy orderByNode = node.getOrderBy();
+		if (orderByNode != null) {
+			List<OrderElem> orderElemements = (List<OrderElem>)orderByNode.jjtAccept(this, null);
+			tupleExpr = new Order(tupleExpr, orderElemements);
+		}
+
 		// Apply projection
 		tupleExpr = (TupleExpr)node.getSelectClause().jjtAccept(this, tupleExpr);
 
@@ -310,6 +346,9 @@ class QueryModelBuilder extends ASTVisitorBase {
 		if (node.isDistinct()) {
 			result = new Distinct(result);
 		}
+		else if (node.isReduced()) {
+			result = new Reduced(result);
+		}
 
 		return result;
 	}
@@ -328,16 +367,24 @@ class QueryModelBuilder extends ASTVisitorBase {
 			tupleExpr = new SingletonSet();
 		}
 
+		// Apply result ordering
+		ASTOrderBy orderByNode = node.getOrderBy();
+		if (orderByNode != null) {
+			List<OrderElem> orderElemements = (List<OrderElem>)orderByNode.jjtAccept(this, null);
+			tupleExpr = new Order(tupleExpr, orderElemements);
+		}
+
 		// Create constructor
 		ConstructorBuilder cb = new ConstructorBuilder();
 		ASTConstruct constructNode = node.getConstructClause();
 
 		if (!constructNode.isWildcard()) {
 			TupleExpr constructExpr = (TupleExpr)constructNode.jjtAccept(this, null);
-			tupleExpr = cb.buildConstructor(tupleExpr, constructExpr, constructNode.isDistinct());
+			tupleExpr = cb.buildConstructor(tupleExpr, constructExpr, constructNode.isDistinct(),
+					constructNode.isReduced());
 		}
 		else if (node.hasQueryBody()) {
-			tupleExpr = cb.buildConstructor(tupleExpr, constructNode.isDistinct());
+			tupleExpr = cb.buildConstructor(tupleExpr, constructNode.isDistinct(), constructNode.isReduced());
 		}
 		// else: "construct *" without query body, just return the SingletonSet
 
@@ -368,14 +415,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 	{
 		assert !node.isWildcard() : "Cannot build constructor for wildcards";
 
-		graphPattern = new GraphPattern(graphPattern);
-		try {
-			super.visit(node, data);
-			return graphPattern.buildTupleExpr();
-		}
-		finally {
-			graphPattern = graphPattern.getParent();
-		}
+		return parseGraphPattern(node.getPathExpr()).buildTupleExpr();
 	}
 
 	@Override
@@ -418,20 +458,41 @@ class QueryModelBuilder extends ASTVisitorBase {
 		graphPattern.setStatementPatternScope(scope);
 		graphPattern.setContextVar(contextVar);
 
-		for (ASTPathExpr pathExprNode : node.getPathExprList()) {
-			pathExprNode.jjtAccept(this, null);
-		}
+		node.getPathExpr().jjtAccept(this, null);
 
 		return null;
 	}
 
 	@Override
-	public Integer visit(ASTWhere node, Object data)
+	public Object visit(ASTWhere node, Object data)
 		throws VisitorException
 	{
 		ValueExpr valueExpr = (ValueExpr)node.getCondition().jjtAccept(this, null);
 		graphPattern.addConstraint(valueExpr);
 		return null;
+	}
+
+	@Override
+	public List<OrderElem> visit(ASTOrderBy node, Object data)
+		throws VisitorException
+	{
+		List<ASTOrderExpr> orderExprList = node.getOrderExprList();
+
+		List<OrderElem> elements = new ArrayList<OrderElem>(orderExprList.size());
+
+		for (ASTOrderExpr orderExpr : orderExprList) {
+			elements.add((OrderElem)orderExpr.jjtAccept(this, null));
+		}
+
+		return elements;
+	}
+
+	@Override
+	public OrderElem visit(ASTOrderExpr node, Object data)
+		throws VisitorException
+	{
+		ValueExpr valueExpr = (ValueExpr)node.getValueExpr().jjtAccept(this, null);
+		return new OrderElem(valueExpr, node.isAscending());
 	}
 
 	@Override
@@ -446,6 +507,25 @@ class QueryModelBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		return node.getValue();
+	}
+
+	@Override
+	public Object visit(ASTPathExprUnion node, Object data)
+		throws VisitorException
+	{
+		Iterator<ASTPathExpr> args = node.getPathExprList().iterator();
+
+		// Create new sub-graph pattern for optional path expressions
+		TupleExpr unionExpr = parseGraphPattern(args.next()).buildTupleExpr();
+
+		while (args.hasNext()) {
+			TupleExpr argExpr = parseGraphPattern(args.next()).buildTupleExpr();
+			unionExpr = new Union(unionExpr, argExpr);
+		}
+
+		graphPattern.addRequiredTE(unionExpr);
+
+		return null;
 	}
 
 	@Override
@@ -631,28 +711,32 @@ class QueryModelBuilder extends ASTVisitorBase {
 	public ValueExpr visit(ASTOr node, Object data)
 		throws VisitorException
 	{
-		Or or = new Or();
+		Iterator<ASTBooleanExpr> iter = node.getOperandList().iterator();
 
-		for (ASTBooleanExpr expr : node.getOperandList()) {
-			ValueExpr arg = (ValueExpr)expr.jjtAccept(this, null);
-			or.addArg(arg);
+		ValueExpr result = (ValueExpr)iter.next().jjtAccept(this, null);
+
+		while (iter.hasNext()) {
+			ValueExpr operand = (ValueExpr)iter.next().jjtAccept(this, null);
+			result = new Or(result, operand);
 		}
 
-		return or;
+		return result;
 	}
 
 	@Override
 	public ValueExpr visit(ASTAnd node, Object data)
 		throws VisitorException
 	{
-		And and = new And();
+		Iterator<ASTBooleanExpr> iter = node.getOperandList().iterator();
 
-		for (ASTBooleanExpr expr : node.getOperandList()) {
-			ValueExpr arg = (ValueExpr)expr.jjtAccept(this, null);
-			and.addArg(arg);
+		ValueExpr result = (ValueExpr)iter.next().jjtAccept(this, null);
+
+		while (iter.hasNext()) {
+			ValueExpr operand = (ValueExpr)iter.next().jjtAccept(this, null);
+			result = new And(result, operand);
 		}
 
-		return and;
+		return result;
 	}
 
 	@Override
@@ -705,10 +789,28 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public LangMatches visit(ASTLangMatches node, Object data)
+		throws VisitorException
+	{
+		ValueExpr tag = (ValueExpr)node.getLanguageTag().jjtAccept(this, null);
+		ValueExpr range = (ValueExpr)node.getLanguageRange().jjtAccept(this, null);
+		return new LangMatches(tag, range);
+	}
+
+	@Override
 	public Exists visit(ASTExists node, Object data)
 		throws VisitorException
 	{
 		return new Exists((TupleExpr)super.visit(node, data));
+	}
+
+	@Override
+	public SameTerm visit(ASTSameTerm node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.getLeftOperand().jjtAccept(this, null);
+		ValueExpr rightArg = (ValueExpr)node.getRightOperand().jjtAccept(this, null);
+		return new SameTerm(leftArg, rightArg);
 	}
 
 	@Override
@@ -745,14 +847,28 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Regex visit(ASTLike node, Object data)
+	public Like visit(ASTLike node, Object data)
 		throws VisitorException
 	{
 		ValueExpr expr = (ValueExpr)node.getValueExpr().jjtAccept(this, null);
 		String pattern = (String)node.getPattern().jjtAccept(this, null);
 		boolean caseSensitive = !node.ignoreCase();
 
-		return new Regex(expr, pattern, caseSensitive);
+		return new Like(expr, pattern, caseSensitive);
+	}
+
+	@Override
+	public Regex visit(ASTRegex node, Object data)
+		throws VisitorException
+	{
+		ValueExpr text = (ValueExpr)node.getText().jjtAccept(this, null);
+		ValueExpr pattern = (ValueExpr)node.getPattern().jjtAccept(this, null);
+		ValueExpr flags = null;
+		if (node.hasFlags()) {
+			flags = (ValueExpr)node.getFlags().jjtAccept(this, null);
+		}
+
+		return new Regex(text, pattern, flags);
 	}
 
 	@Override
@@ -762,6 +878,32 @@ class QueryModelBuilder extends ASTVisitorBase {
 		ValueExpr valueExpr = (ValueExpr)node.getLeftOperand().jjtAccept(this, null);
 		TupleExpr tupleExpr = (TupleExpr)node.getRightOperand().jjtAccept(this, null);
 		return new In(valueExpr, tupleExpr);
+	}
+
+	@Override
+	public ValueExpr visit(ASTInList node, Object data)
+		throws VisitorException
+	{
+		ValueExpr leftArg = (ValueExpr)node.getValueExpr().jjtAccept(this, null);
+
+		ValueExpr result = null;
+
+		for (ASTValueExpr argExpr : node.getArgList().getElements()) {
+			ValueExpr rightArg = (ValueExpr)argExpr.jjtAccept(this, null);
+
+			if (result == null) {
+				// First argument
+				result = new SameTerm(leftArg, rightArg);
+			}
+			else {
+				SameTerm sameTerm = new SameTerm(leftArg.clone(), rightArg);
+				result = new Or(result, sameTerm);
+			}
+		}
+
+		assert result != null;
+
+		return result;
 	}
 
 	@Override
@@ -809,6 +951,13 @@ class QueryModelBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public Str visit(ASTStr node, Object data)
+		throws VisitorException
+	{
+		return new Str((ValueExpr)super.visit(node, data));
+	}
+
+	@Override
 	public FunctionCall visit(ASTFunctionCall node, Object data)
 		throws VisitorException
 	{
@@ -817,7 +966,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 
 		FunctionCall functionCall = new FunctionCall(vc.getValue().toString());
 
-		for (ASTValueExpr argExpr : node.getArgList()) {
+		for (ASTValueExpr argExpr : node.getArgList().getElements()) {
 			functionCall.addArg((ValueExpr)argExpr.jjtAccept(this, null));
 		}
 

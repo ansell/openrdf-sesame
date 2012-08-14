@@ -15,6 +15,7 @@ import org.openrdf.sail.rdbms.algebra.SqlCompare;
  * Assemblies an SQL expression.
  * 
  * @author James Leigh
+ * 
  */
 public class SqlExprBuilder {
 

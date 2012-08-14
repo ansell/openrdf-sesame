@@ -2,10 +2,10 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
-import java.util.List;
+public class ASTQueryContainer extends ASTOperationContainer {
 
-public class ASTQueryContainer extends SimpleNode {
-
+	private String sourceString;
+	
 	public ASTQueryContainer(int id) {
 		super(id);
 	}
@@ -20,16 +20,24 @@ public class ASTQueryContainer extends SimpleNode {
 	{
 		return visitor.visit(this, data);
 	}
-
-	public ASTBaseDecl getBaseDecl() {
-		return super.jjtGetChild(ASTBaseDecl.class);
-	}
-
-	public List<ASTPrefixDecl> getPrefixDeclList() {
-		return super.jjtGetChildren(ASTPrefixDecl.class);
+	
+	public boolean containsQuery() {
+		return (getQuery() != null);
 	}
 
 	public ASTQuery getQuery() {
 		return super.jjtGetChild(ASTQuery.class);
 	}
+
+	@Override
+	public void setSourceString(String source) {
+		sourceString = source;
+		
+	}
+
+	@Override
+	public String getSourceString() {
+		return sourceString;
+	}
+
 }

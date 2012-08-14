@@ -1,13 +1,11 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra;
 
 public class Reduced extends UnaryTupleOperator {
-
-	private static final long serialVersionUID = 3622200326118326417L;
 
 	/*--------------*
 	 * Constructors *
@@ -28,6 +26,16 @@ public class Reduced extends UnaryTupleOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Reduced && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "Reduced".hashCode();
 	}
 
 	@Override

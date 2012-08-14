@@ -1,17 +1,17 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2008.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2008-2009.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Intersection;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.QueryModel;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -27,7 +27,9 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  * and/or by reducing complex parts with simpler parts.
  * 
  * @author Arjohn Kampman
+ * @deprecated Replaced by {@link QueryModelNormalizer}.
  */
+@Deprecated
 public class QueryModelPruner implements QueryOptimizer {
 
 	public QueryModelPruner() {
@@ -37,34 +39,29 @@ public class QueryModelPruner implements QueryOptimizer {
 	 * Applies generally applicable optimizations: path expressions are sorted
 	 * from more to less specific.
 	 * 
-	 * @param query
+	 * @param tupleExpr
 	 */
-	public void optimize(QueryModel query, BindingSet bindings) {
-		query.visit(new TreeSanitizer());
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
+		tupleExpr.visit(new TreeSanitizer());
 	}
 
-	protected class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
 		public void meet(Join join) {
 			super.meet(join);
 
-			for (TupleExpr arg : join.getArgs()) {
-				if (arg instanceof EmptySet) {
-					// Any join with an empty set always result in an empty set
-					join.replaceWith(new EmptySet());
-					return;
-				}
+			TupleExpr leftArg = join.getLeftArg();
+			TupleExpr rightArg = join.getRightArg();
 
-				// singletons can be safely removed from a join, but be careful not
-				// to create an empty join
-				if (arg instanceof SingletonSet && join.getNumberOfArguments() > 1) {
-					join.removeArg(arg);
-				}
+			if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
+				join.replaceWith(new EmptySet());
 			}
-
-			if (join.getNumberOfArguments() == 1) {
-				join.replaceWith(join.getArg(0));
+			else if (leftArg instanceof SingletonSet) {
+				join.replaceWith(rightArg);
+			}
+			else if (rightArg instanceof SingletonSet) {
+				join.replaceWith(leftArg);
 			}
 		}
 
@@ -108,25 +105,17 @@ public class QueryModelPruner implements QueryOptimizer {
 		public void meet(Union union) {
 			super.meet(union);
 
-			for (TupleExpr arg : union.getArgs()) {
-				if (arg instanceof EmptySet) {
-					union.removeArg(arg);
-				}
-			}
+			TupleExpr leftArg = union.getLeftArg();
+			TupleExpr rightArg = union.getRightArg();
 
-			if (union.getNumberOfArguments() == 0) {
-				union.replaceWith(new EmptySet());
+			if (leftArg instanceof EmptySet) {
+				union.replaceWith(rightArg);
 			}
-			else if (union.getNumberOfArguments() == 1) {
-				union.replaceWith(union.getArg(0));
+			else if (rightArg instanceof EmptySet) {
+				union.replaceWith(leftArg);
 			}
-			else {
-				for (TupleExpr arg : union.getArgs()) {
-					if (!(arg instanceof SingletonSet)) {
-						return;
-					}
-				}
-				union.replaceWith(new SingletonSet());
+			else if (leftArg instanceof SingletonSet && rightArg instanceof SingletonSet) {
+				union.replaceWith(leftArg);
 			}
 		}
 
@@ -155,11 +144,8 @@ public class QueryModelPruner implements QueryOptimizer {
 			TupleExpr leftArg = intersection.getLeftArg();
 			TupleExpr rightArg = intersection.getRightArg();
 
-			if (leftArg instanceof EmptySet) {
-				intersection.replaceWith(leftArg);
-			}
-			else if (rightArg instanceof EmptySet) {
-				intersection.replaceWith(rightArg);
+			if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
+				intersection.replaceWith(new EmptySet());
 			}
 		}
 	}

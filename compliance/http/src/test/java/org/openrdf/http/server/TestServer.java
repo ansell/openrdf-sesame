@@ -1,92 +1,109 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.http.server;
 
 import java.io.File;
-import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.nio.BlockingChannelConnector;
+import org.mortbay.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.http.HTTPRepository;
+import org.openrdf.repository.manager.SystemRepository;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
 import org.openrdf.sail.memory.config.MemoryStoreConfig;
-import org.openrdf.store.StoreConfigException;
-import org.openrdf.store.StoreException;
 
 /**
  * @author Herko ter Horst
- * @author James Leigh
  */
 public class TestServer {
 
-	public static final String TEST_REPO_ID = "Test";
+	private static final String HOST = "localhost";
 
-	public static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
+	private static final int PORT = 18080;
 
-	public static int DEFAULT_PORT = 18080;
+	private static final String TEST_REPO_ID = "Test";
 
-	public static String SERVER_URL = "http://localhost:" + DEFAULT_PORT;
+	private static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
 
-	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(TestServer.SERVER_URL, TEST_REPO_ID);
+	private static final String OPENRDF_CONTEXT = "/openrdf";
 
-	public static String INFERENCE_REPOSITORY_URL = Protocol.getRepositoryLocation(TestServer.SERVER_URL,
-			TEST_INFERENCE_REPO_ID);
+	private static final String SERVER_URL = "http://" + HOST + ":" + PORT + OPENRDF_CONTEXT;
 
-	private SesameServer server;
-	
-	private final File dataDir;
+	public static String REPOSITORY_URL = Protocol.getRepositoryLocation(SERVER_URL, TEST_REPO_ID);
 
-	public TestServer()
-		throws StoreConfigException, IOException
-	{
-		dataDir = FileUtil.createTempDir("sesame-test");
-		server = new SesameServer(dataDir, DEFAULT_PORT);
+	private final Server jetty;
+
+	public TestServer() {
+		System.clearProperty("DEBUG");
+
+		jetty = new Server();
+
+		Connector conn = new BlockingChannelConnector();
+		conn.setHost(HOST);
+		conn.setPort(PORT);
+		jetty.addConnector(conn);
+
+		WebAppContext webapp = new WebAppContext();
+		webapp.setContextPath(OPENRDF_CONTEXT);
+		// warPath configured in pom.xml maven-war-plugin configuration
+		webapp.setWar("./target/openrdf-sesame");
+		jetty.addHandler(webapp);
 	}
 
 	public void start()
 		throws Exception
 	{
-		server.start();
+		File dataDir = new File(System.getProperty("user.dir") + "/target/datadir");
+		dataDir.mkdirs();
+		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+
+		jetty.start();
+
 		createTestRepositories();
 	}
 
 	public void stop()
 		throws Exception
 	{
-		server.stop();
-
+		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
+				SystemRepository.ID));
+		RepositoryConnection con = systemRepo.getConnection();
 		try {
-			FileUtil.deleteDir(dataDir);
+			con.clear();
 		}
-		catch (IOException e) {
-			e.printStackTrace();
+		finally {
+			con.close();
 		}
+
+		jetty.stop();
+		System.clearProperty("org.mortbay.log.class");
 	}
 
-//	public void setMaxCacheAge(int maxCacheAge) {
-//		server.setMaxCacheAge(maxCacheAge);
-//	}
-
-	/**
-	 * @throws StoreException
-	 */
 	private void createTestRepositories()
-		throws StoreException, StoreConfigException
+		throws RepositoryException, RepositoryConfigException
 	{
-		RepositoryManager manager = server.getRepositoryManager();
+		Repository systemRep = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
+				SystemRepository.ID));
 
 		// create a (non-inferencing) memory store
 		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
 		SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
 		RepositoryConfig repConfig = new RepositoryConfig(TEST_REPO_ID, sailRepConfig);
 
-		manager.addRepositoryConfig(TEST_REPO_ID, repConfig.export());
+		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
 
 		// create an inferencing memory store
 		ForwardChainingRDFSInferencerConfig inferMemStoreConfig = new ForwardChainingRDFSInferencerConfig(
@@ -94,6 +111,6 @@ public class TestServer {
 		sailRepConfig = new SailRepositoryConfig(inferMemStoreConfig);
 		repConfig = new RepositoryConfig(TEST_INFERENCE_REPO_ID, sailRepConfig);
 
-		manager.addRepositoryConfig(TEST_INFERENCE_REPO_ID, repConfig.export());
+		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
 	}
 }

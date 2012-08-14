@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import info.aduna.xml.SimpleSAXAdapter;
 import info.aduna.xml.SimpleSAXParser;
@@ -107,10 +108,23 @@ public class TriXParser extends RDFParserBase {
 
 			rdfHandler.endRDF();
 		}
+		catch (SAXParseException e) {
+			Exception wrappedExc = e.getException();
+
+			if (wrappedExc == null) {
+				reportFatalError(e, e.getLineNumber(), e.getColumnNumber());
+			}
+			else {
+				reportFatalError(wrappedExc, e.getLineNumber(), e.getColumnNumber());
+			}
+		}
 		catch (SAXException e) {
 			Exception wrappedExc = e.getException();
 
-			if (wrappedExc instanceof RDFParseException) {
+			if (wrappedExc == null) {
+				reportFatalError(e);
+			}
+			else if (wrappedExc instanceof RDFParseException) {
 				throw (RDFParseException)wrappedExc;
 			}
 			else if (wrappedExc instanceof RDFHandlerException) {

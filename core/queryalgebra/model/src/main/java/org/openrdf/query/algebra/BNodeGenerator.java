@@ -11,8 +11,8 @@ package org.openrdf.query.algebra;
  */
 public class BNodeGenerator extends QueryModelNodeBase implements ValueExpr {
 
-	private static final long serialVersionUID = -5178853853484084984L;
-
+	private ValueExpr nodeIdExpr = null;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -20,15 +20,36 @@ public class BNodeGenerator extends QueryModelNodeBase implements ValueExpr {
 	public BNodeGenerator() {
 		super();
 	}
-
+	public BNodeGenerator(ValueExpr nodeIdExpr) {
+		super();
+		setNodeIdExpr(nodeIdExpr);
+	}
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	public ValueExpr getNodeIdExpr() {
+		return nodeIdExpr;
+	}
+	
+	public void setNodeIdExpr(ValueExpr nodeIdExpr) {
+		this.nodeIdExpr = nodeIdExpr;
+	}
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof BNodeGenerator;
+	}
+
+	@Override
+	public int hashCode() {
+		return "BNodeGenerator".hashCode();
 	}
 
 	@Override

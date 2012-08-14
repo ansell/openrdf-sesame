@@ -38,7 +38,8 @@ public class ASTURI extends ASTValue {
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return super.toString() + " (" + value + ")";
 	}
 }

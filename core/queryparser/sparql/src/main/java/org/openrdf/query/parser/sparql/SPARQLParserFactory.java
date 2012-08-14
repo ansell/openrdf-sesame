@@ -16,7 +16,7 @@ import org.openrdf.query.parser.QueryParserFactory;
  */
 public class SPARQLParserFactory implements QueryParserFactory {
 
-	private SPARQLParser sharedParser = null;
+	private final SPARQLParser singleton = new SPARQLParser();
 
 	/**
 	 * Returns {@link QueryLanguage#SPARQL}.
@@ -29,10 +29,6 @@ public class SPARQLParserFactory implements QueryParserFactory {
 	 * Returns a shared, thread-safe, instance of SPARQLParser.
 	 */
 	public QueryParser getParser() {
-		if (sharedParser == null) {
-			sharedParser = new SPARQLParser();
-		}
-
-		return sharedParser;
+		return singleton;
 	}
 }

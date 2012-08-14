@@ -5,6 +5,7 @@
  */
 package org.openrdf.sail.config;
 
+
 /**
  * @author Arjohn Kampman
  */

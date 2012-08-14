@@ -5,7 +5,6 @@
  */
 package org.openrdf.sail.rdbms;
 
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -18,15 +17,10 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import org.openrdf.model.LiteralFactory;
-import org.openrdf.model.URIFactory;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailMetaData;
-import org.openrdf.sail.helpers.AutoCommitSailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.SailBase;
-import org.openrdf.sail.helpers.SynchronizedSailConnection;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
-import org.openrdf.store.StoreException;
 
 /**
  * The RDBMS SAIL for relational database storage in Sesame. This class acts
@@ -109,11 +103,6 @@ public class RdbmsStore extends SailBase {
 		this.password = password;
 	}
 
-	@Override
-	public SailMetaData getMetaData() {
-		return new RdbmsStoreMetaData(this);
-	}
-
 	public int getMaxNumberOfTripleTables() {
 		return maxTripleTables;
 	}
@@ -127,7 +116,7 @@ public class RdbmsStore extends SailBase {
 	}
 
 	public void setIndexed(boolean indexed)
-		throws StoreException
+		throws SailException
 	{
 		triplesIndexed = indexed;
 		if (factory != null) {
@@ -143,14 +132,15 @@ public class RdbmsStore extends SailBase {
 		this.sequenced = useSequence;
 	}
 
-	public void initialize()
-		throws StoreException
+	@Override
+	protected void initializeInternal()
+		throws SailException
 	{
 		if (factory == null) {
 			try {
 				factory = createFactory(jdbcDriver, url, user, password);
 			}
-			catch (StoreException e) {
+			catch (SailException e) {
 				throw e;
 			}
 			catch (Exception e) {
@@ -164,23 +154,9 @@ public class RdbmsStore extends SailBase {
 	}
 
 	public boolean isWritable()
-		throws StoreException
+		throws SailException
 	{
 		return factory.isWritable();
-	}
-
-	public URL getLocation()
-		throws StoreException
-	{
-		return factory.getLocation();
-	}
-
-	public URIFactory getURIFactory() {
-		return factory.getValueFactory();
-	}
-
-	public LiteralFactory getLiteralFactory() {
-		return factory.getValueFactory();
 	}
 
 	public RdbmsValueFactory getValueFactory() {
@@ -189,17 +165,14 @@ public class RdbmsStore extends SailBase {
 
 	@Override
 	protected SailConnection getConnectionInternal()
-		throws StoreException
+		throws SailException
 	{
-		SailConnection con = factory.createConnection();
-		con = new SynchronizedSailConnection(con);
-		con = new AutoCommitSailConnection(con);
-		return con;
+		return factory.createConnection();
 	}
 
 	@Override
 	protected void shutDownInternal()
-		throws StoreException
+		throws SailException
 	{
 		factory.shutDown();
 		try {
@@ -276,9 +249,8 @@ public class RdbmsStore extends SailBase {
 		while (providers.hasNext()) {
 			RdbmsProvider provider = providers.next();
 			factory = provider.createRdbmsConnectionFactory(dbn, dbv);
-			if (factory != null) {
+			if (factory != null)
 				return factory;
-			}
 		}
 		return new RdbmsConnectionFactory();
 	}

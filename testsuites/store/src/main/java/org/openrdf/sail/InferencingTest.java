@@ -1,5 +1,5 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2006.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2010.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -10,10 +10,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.HashSet;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.util.ModelUtil;
@@ -38,15 +40,15 @@ public class InferencingTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	protected final Sail sailStack;
+	protected Sail sailStack;
 
-	protected final String inputData;
+	protected String inputData;
 
-	protected final String outputData;
+	protected String outputData;
 
-	protected final boolean isPositiveTest;
+	protected boolean isPositiveTest;
 
-	protected final String name;
+	protected String name;
 
 	/*--------------*
 	 * Constructors *
@@ -55,22 +57,22 @@ public class InferencingTest extends TestCase {
 	/**
 	 * Creates a new inferencing test. This test can either be positive or
 	 * negative. For positive tests, all triples from <tt>outputData</tt> should
-	 * be present in the triples returned by the supplied store after the triples
-	 * from <tt>intputData</tt> have been added to it. For negative tests, none
-	 * of the triples from <tt>outputData</tt> should be present in the returned
-	 * triples.
+	 * be present in the triples returned by the supplied RdfSchemaRepository
+	 * after the triples from <tt>intputData</tt> have been added to it. For
+	 * negative tests, none of the triples from <tt>outputData</tt> should be
+	 * present in the returned triples.
 	 * 
 	 * @param name
 	 *        The name of the test.
 	 * @param sailStack
-	 *        The store to test.
+	 *        The sail stack to test.
 	 * @param inputData
 	 *        The URL of the (N-Triples) data containing the triples that should
-	 *        be added to the store.
+	 *        be added to the RdfSchemaRepository.
 	 * @param outputData
 	 *        The URL of the (N-Triples) data containing the triples that should
 	 *        or should not (depending on the value of <tt>isPositiveTest</tt> be
-	 *        present in the statements returned by the store.
+	 *        present in the statements returned by the RdfSchemaRepository.
 	 * @param isPositiveTest
 	 *        Flag indicating whether this is a positive or a negative
 	 *        inferencing test; <tt>true</tt> for a positive test, <tt>false</tt>
@@ -104,15 +106,20 @@ public class InferencingTest extends TestCase {
 		repository.initialize();
 
 		RepositoryConnection con = repository.getConnection();
+		con.setAutoCommit(false);
 
 		// clear the input store
 		con.clear();
+		con.commit();
 
 		// Upload input data
 		InputStream stream = getClass().getResourceAsStream(inputData);
 		try {
 			con.add(stream, inputData, RDFFormat.NTRIPLES);
-			entailedStatements = con.match(null, null, null, true).asSet();
+			con.commit();
+
+			entailedStatements = Iterations.addAll(con.getStatements(null, null, null, true),
+					new HashSet<Statement>());
 		}
 		finally {
 			stream.close();
@@ -123,11 +130,15 @@ public class InferencingTest extends TestCase {
 		Repository outputRepository = new SailRepository(new MemoryStore());
 		outputRepository.initialize();
 		con = outputRepository.getConnection();
+		con.setAutoCommit(false);
 
 		stream = getClass().getResourceAsStream(outputData);
 		try {
 			con.add(stream, outputData, RDFFormat.NTRIPLES);
-			expectedStatements = con.match(null, null, null, false).asSet();
+			con.commit();
+
+			expectedStatements = Iterations.addAll(con.getStatements(null, null, null, false),
+					new HashSet<Statement>());
 		}
 		finally {
 			stream.close();
@@ -179,9 +190,7 @@ public class InferencingTest extends TestCase {
 	 * Static methods *
 	 *----------------*/
 
-	public static Test suite(Sail sailStack, String name) {
-		TestSuite suite = new TestSuite(name);
-
+	public static void addTests(TestSuite suite, Sail sailStack) {
 		suite.addTest(createTestCase(sailStack, "subclassof", "test001", true));
 		suite.addTest(createTestCase(sailStack, "subclassof", "test002", true));
 		suite.addTest(createTestCase(sailStack, "subclassof", "test003", true));
@@ -201,8 +210,6 @@ public class InferencingTest extends TestCase {
 		suite.addTest(createTestCase(sailStack, "type", "test005", true));
 		suite.addTest(createTestCase(sailStack, "type", "error001", false));
 		suite.addTest(createTestCase(sailStack, "type", "error002", false));
-
-		return suite;
 	}
 
 	private static TestCase createTestCase(Sail sailStack, String subdir, String testName,

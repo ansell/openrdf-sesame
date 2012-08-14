@@ -5,12 +5,10 @@
  */
 package org.openrdf.repository;
 
-import org.openrdf.store.StoreException;
-
 public interface DelegatingRepositoryConnection extends RepositoryConnection {
 
 	public RepositoryConnection getDelegate()
-		throws StoreException;
-
+		throws RepositoryException;
+	
 	public void setDelegate(RepositoryConnection delegate);
 }

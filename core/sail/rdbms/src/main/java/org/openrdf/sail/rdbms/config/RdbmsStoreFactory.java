@@ -5,10 +5,10 @@
  */
 package org.openrdf.sail.rdbms.config;
 
+import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.rdbms.RdbmsStore;
-import org.openrdf.store.StoreConfigException;
 
 /**
  * A {@link SailFactory} that creates {@link RdbmsStore}s based on RDF
@@ -37,10 +37,10 @@ public class RdbmsStoreFactory implements SailFactory {
 	}
 
 	public RdbmsStore getSail(SailImplConfig config)
-		throws StoreConfigException
+		throws SailConfigException
 	{
 		if (!SAIL_TYPE.equals(config.getType())) {
-			throw new StoreConfigException("Invalid Sail type: " + config.getType());
+			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
 
 		if (config instanceof RdbmsStoreConfig) {

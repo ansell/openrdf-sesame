@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.openrdf.model.Value;
 
 /**
+ * 
  * @author James Leigh
  */
 public class IntegerIdSequence extends IdSequence {
@@ -26,22 +27,18 @@ public class IntegerIdSequence extends IdSequence {
 
 	private ConcurrentMap<ValueType, AtomicInteger> seq = new ConcurrentHashMap<ValueType, AtomicInteger>();
 
-	@Override
 	public int getShift() {
 		return SHIFT;
 	}
 
-	@Override
 	public int getJdbcIdType() {
 		return Types.INTEGER;
 	}
 
-	@Override
 	public String getSqlType() {
 		return "INTEGER";
 	}
 
-	@Override
 	public void init()
 		throws SQLException
 	{
@@ -53,7 +50,8 @@ public class IntegerIdSequence extends IdSequence {
 			for (Number max : getHashTable().maxIds(getShift(), getMod())) {
 				ValueType code = valueOf(max);
 				if (max.intValue() > minId(code).intValue()) {
-					if (!seq.containsKey(code) || seq.get(code).intValue() < max.intValue()) {
+					if (!seq.containsKey(code)
+							|| seq.get(code).intValue() < max.intValue()) {
 						seq.put(code, new AtomicInteger(max.intValue()));
 					}
 				}
@@ -61,22 +59,18 @@ public class IntegerIdSequence extends IdSequence {
 		}
 	}
 
-	@Override
 	public Number idOf(Number number) {
 		return number.intValue();
 	}
 
-	@Override
 	public Number maxId(ValueType type) {
 		return minId(type).intValue() + SPAN;
 	}
 
-	@Override
 	public Number minId(ValueType type) {
 		return minIds[type.index()];
 	}
 
-	@Override
 	public Number nextId(Value value) {
 		ValueType code = valueOf(value);
 		if (!seq.containsKey(code)) {

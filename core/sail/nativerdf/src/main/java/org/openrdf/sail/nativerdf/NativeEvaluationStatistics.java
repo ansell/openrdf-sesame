@@ -16,7 +16,6 @@ import org.openrdf.model.Value;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
-import org.openrdf.store.StoreException;
 
 /**
  * @author Arjohn Kampman
@@ -40,16 +39,27 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 	protected class NativeCardinalityCalculator extends CardinalityCalculator {
 
 		@Override
-		protected double getCardinality(StatementPattern sp)
-			throws StoreException
-		{
-			Resource subj = (Resource)getConstantValue(sp.getSubjectVar());
-			URI pred = (URI)getConstantValue(sp.getPredicateVar());
-			Value obj = getConstantValue(sp.getObjectVar());
-			Resource context = (Resource)getConstantValue(sp.getContextVar());
-
+		protected double getCardinality(StatementPattern sp) {
 			try {
-				return nativeStore.cardinality(subj, pred, obj, context);
+				Value subj = getConstantValue(sp.getSubjectVar());
+				if (!(subj instanceof Resource)) {
+					// can happen when a previous optimizer has inlined a comparison operator. 
+					// this can cause, for example, the subject variable to be equated to a literal value. 
+					// See SES-970 
+					subj = null;
+				}
+				Value pred = getConstantValue(sp.getPredicateVar());
+				if (!(pred instanceof URI)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
+					pred = null;
+				}
+				Value obj = getConstantValue(sp.getObjectVar());
+				Value context = getConstantValue(sp.getContextVar());
+				if (!(context instanceof Resource)) {
+					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
+					context = null;
+				}
+				return nativeStore.cardinality((Resource)subj, (URI)pred, obj, (Resource)context);
 			}
 			catch (IOException e) {
 				log.error(

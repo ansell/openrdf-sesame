@@ -7,8 +7,6 @@ package org.openrdf.query.algebra;
 
 public class IsURI extends UnaryValueOperator {
 
-	private static final long serialVersionUID = -108367711132309508L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -28,6 +26,16 @@ public class IsURI extends UnaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof IsURI && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "IsURI".hashCode();
 	}
 
 	@Override

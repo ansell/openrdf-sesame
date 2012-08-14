@@ -10,7 +10,6 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.util.Stack;
 
 import org.openrdf.model.BNode;
@@ -19,7 +18,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.rio.RDFHandlerException;
@@ -37,12 +35,13 @@ import org.openrdf.rio.rdfxml.RDFXMLWriter;
  * is broken.
  * <p>
  * The abbreviations used are <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes"
- * >typed node elements</a>, <a href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements"
- * >empty property elements</a> and <a href=
- * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements"
- * >striped syntax</a>. Note that these abbreviations require that statements
- * are written in the appropriate order.
+ * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes">typed
+ * node elements</a>, <a
+ * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements">empty
+ * property elements</a> and <a
+ * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements">striped
+ * syntax</a>. Note that these abbreviations require that statements are
+ * written in the appropriate order.
  * <p>
  * Striped syntax means that when the object of a statement is the subject of
  * the next statement we can nest the descriptions in each other.
@@ -112,8 +111,6 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * one for subjects/objects.
 	 */
 
-	private java.net.URI relativeURI;
-
 	/**
 	 * Stack for remembering the nodes (subjects/objects) of statements at each
 	 * level.
@@ -159,34 +156,9 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		throws IOException
 	{
 		// This export format needs the RDF Schema namespace to be defined:
-		setNamespace("rdfs", RDFS.NAMESPACE, false);
+		setNamespace("rdfs", RDFS.NAMESPACE);
 
 		super.writeHeader();
-	}
-
-	@Override
-	public void setBaseURI(String baseURI) {
-		super.setBaseURI(baseURI);
-		try {
-			if (baseURI == null) {
-				relativeURI = null;
-			}
-			else if (baseURI.charAt(baseURI.length() - 1) == '/') {
-				relativeURI = new java.net.URI(baseURI);
-			}
-			else {
-				String ns = new URIImpl(baseURI).getNamespace();
-				if (ns.charAt(ns.length() - 1) == '/') {
-					relativeURI = new java.net.URI(ns);
-				}
-				else {
-					relativeURI = null;
-				}
-			}
-		}
-		catch (URISyntaxException e) {
-			relativeURI = null;
-		}
 	}
 
 	public void flush()
@@ -197,7 +169,14 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				writeHeader();
 			}
 
-			flushPendingStatements();
+			try {
+				flushPendingStatements();
+			}
+			catch (RDFHandlerException e) {
+				IOException ioe = new IOException();
+				ioe.initCause(e);
+				throw ioe;
+			}
 
 			writer.flush();
 		}
@@ -228,7 +207,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 	@Override
 	protected void flushPendingStatements()
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		if (!nodeStack.isEmpty()) {
 			popStacks(null);
@@ -242,7 +221,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * @param newSubject
 	 */
 	private void popStacks(Resource newSubject)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		// Write start tags for the part of the stacks that are not yet
 		// written
@@ -389,7 +368,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * writeEmptySubject.
 	 */
 	private void writeNodeStartOfStartTag(Node node)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		Value value = node.getValue();
 
@@ -404,7 +383,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 		if (value instanceof URI) {
 			URI uri = (URI)value;
-			writeAttribute(RDF.NAMESPACE, "about", relativize(uri.stringValue()));
+			writeAttribute(RDF.NAMESPACE, "about", uri.toString());
 		}
 		else {
 			BNode bNode = (BNode)value;
@@ -412,35 +391,11 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		}
 	}
 
-	private String relativize(String stringValue) {
-		if (baseURI == null) {
-			return stringValue;
-		}
-		if (stringValue.equals(baseURI)) {
-			return "";
-		}
-		if (stringValue.length() > baseURI.length() && '#' == stringValue.charAt(baseURI.length())) {
-			return stringValue.substring(baseURI.length());
-		}
-		if (relativeURI == null) {
-			return stringValue;
-		}
-		try {
-			if (stringValue.startsWith(relativeURI.toString())) {
-				return relativeURI.relativize(new java.net.URI(stringValue)).toString();
-			}
-		}
-		catch (URISyntaxException e) {
-			// can't create a relative URI
-		}
-		return stringValue;
-	}
-
 	/**
 	 * Write out the opening tag of the subject or object of a statement.
 	 */
 	private void writeNodeStartTag(Node node)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		writeNodeStartOfStartTag(node);
 		writeEndOfStartTag();
@@ -466,7 +421,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Write out an empty tag for the subject or object of a statement.
 	 */
 	private void writeNodeEmptyTag(Node node)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		writeNodeStartOfStartTag(node);
 		writeEndOfEmptyTag();
@@ -476,7 +431,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Write out an empty property element.
 	 */
 	private void writeAbbreviatedPredicate(URI pred, Value obj)
-		throws IOException
+		throws IOException, RDFHandlerException
 	{
 		writeStartOfStartTag(pred.getNamespace(), pred.getLocalName());
 
@@ -485,7 +440,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 			if (objRes instanceof URI) {
 				URI uri = (URI)objRes;
-				writeAttribute(RDF.NAMESPACE, "resource", relativize(uri.stringValue()));
+				writeAttribute(RDF.NAMESPACE, "resource", uri.toString());
 			}
 			else {
 				BNode bNode = (BNode)objRes;

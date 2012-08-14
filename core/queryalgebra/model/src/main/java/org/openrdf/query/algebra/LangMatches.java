@@ -11,8 +11,6 @@ package org.openrdf.query.algebra;
  */
 public class LangMatches extends BinaryValueOperator {
 
-	private static final long serialVersionUID = -3409980627884318885L;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -32,6 +30,16 @@ public class LangMatches extends BinaryValueOperator {
 		throws X
 	{
 		visitor.meet(this);
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof LangMatches && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "LangMatches".hashCode();
 	}
 
 	@Override

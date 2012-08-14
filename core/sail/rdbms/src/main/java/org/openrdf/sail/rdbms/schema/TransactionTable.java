@@ -8,15 +8,16 @@ package org.openrdf.sail.rdbms.schema;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.concurrent.BlockingQueue;
 
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.rdbms.managers.helpers.BatchBlockingQueue;
 
 /**
  * Manages a temporary table used when uploading new statements with the same
  * predicate into the database.
  * 
  * @author James Leigh
+ * 
  */
 public class TransactionTable {
 
@@ -34,7 +35,7 @@ public class TransactionTable {
 
 	private TripleBatch batch;
 
-	private BatchBlockingQueue queue;
+	private BlockingQueue<Batch> queue;
 
 	private DefaultSailChangedEvent sailChangedEvent;
 
@@ -46,7 +47,7 @@ public class TransactionTable {
 		this.ids = ids;
 	}
 
-	public void setQueue(BatchBlockingQueue queue) {
+	public void setQueue(BlockingQueue<Batch> queue) {
 		this.queue = queue;
 	}
 

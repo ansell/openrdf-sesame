@@ -5,10 +5,10 @@
  */
 package org.openrdf.repository;
 
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.result.ModelResult;
 
 /**
  * @author jeen
@@ -43,88 +43,113 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.add(name, RDFS.DOMAIN, person);
 		testCon.add(bob, name, nameBob);
 
-		assertTrue(testCon.hasMatch(bob, RDF.TYPE, person, true));
+		assertTrue(testCon.hasStatement(bob, RDF.TYPE, person, true));
 	}
 
 	public void testSubClassInference()
 		throws Exception
 	{
-		testCon.begin();
+		testCon.setAutoCommit(false);
 		testCon.add(woman, RDFS.SUBCLASSOF, person);
 		testCon.add(man, RDFS.SUBCLASSOF, person);
 		testCon.add(alice, RDF.TYPE, woman);
-		testCon.commit();
+		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
+		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
 	}
 
 	public void testMakeExplicit()
 		throws Exception
 	{
-		testCon.begin();
+		testCon.setAutoCommit(false);
 		testCon.add(woman, RDFS.SUBCLASSOF, person);
 		testCon.add(alice, RDF.TYPE, woman);
-		testCon.commit();
+		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
+		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
 
 		testCon.add(alice, RDF.TYPE, person);
 
-		assertTrue(testCon.hasMatch(alice, RDF.TYPE, person, true));
+		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
 	}
 
 	public void testExplicitFlag()
 		throws Exception
 	{
-		ModelResult result = testCon.match(RDF.TYPE, RDF.TYPE, null, true);
+		RepositoryResult<Statement> result = testCon.getStatements(RDF.TYPE, RDF.TYPE, null, true);
 		try {
 			assertTrue("result should not be empty", result.hasNext());
 		}
 		finally {
-			result.close();
+		result.close();
 		}
 
-		result = testCon.match(RDF.TYPE, RDF.TYPE, null, false);
+		result = testCon.getStatements(RDF.TYPE, RDF.TYPE, null, false);
 		try {
 			assertFalse("result should be empty", result.hasNext());
 		}
 		finally {
-			result.close();
+		result.close();
 		}
 	}
 
 	public void testInferencerUpdates()
 		throws Exception
 	{
-		testCon.begin();
-		testCon.add(bob, name, nameBob);
-		testCon.removeMatch(bob, name, nameBob);
-		testCon.commit();
+		testCon.setAutoCommit(false);
 
-		assertFalse(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		testCon.add(bob, name, nameBob);
+		testCon.remove(bob, name, nameBob);
+
+		testCon.setAutoCommit(true);
+
+		assertFalse(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
 
 	public void testInferencerQueryDuringTransaction()
 		throws Exception
 	{
-		testCon.begin();
+		testCon.setAutoCommit(false);
+
 		testCon.add(bob, name, nameBob);
-		assertTrue(testCon.hasMatch(bob, RDF.TYPE, RDFS.RESOURCE, true));
-		testCon.commit();
+		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+
+		testCon.setAutoCommit(true);
 	}
 
 	public void testInferencerTransactionIsolation()
 		throws Exception
 	{
-		testCon.begin();
-		testCon.add(woman, RDFS.SUBCLASSOF, person);
+		testCon.setAutoCommit(false);
+		testCon.add(bob, name, nameBob);
 
-		assertTrue(testCon.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
-		assertFalse(testCon2.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
+		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertFalse(testCon2.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
 
-		testCon.commit();
+		testCon.setAutoCommit(true);
 
-		assertTrue(testCon.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
-		assertTrue(testCon2.hasMatch(woman, RDF.TYPE, RDFS.CLASS, true));
+		assertTrue(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+		assertTrue(testCon2.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
+	}
+
+	@Override
+	public void testDefaultContext()
+		throws Exception
+	{
+		// ignore
+	}
+
+	@Override
+	public void testDefaultInsertContext()
+		throws Exception
+	{
+		// ignore
+	}
+
+	@Override
+	public void testExclusiveNullContext()
+		throws Exception
+	{
+		// ignore
 	}
 }

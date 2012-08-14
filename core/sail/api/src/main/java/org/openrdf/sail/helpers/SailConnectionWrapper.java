@@ -1,22 +1,24 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2009.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2008.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.sail.helpers;
 
-import org.openrdf.cursor.Cursor;
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 /**
  * An implementation of the Transaction interface that wraps another Transaction
@@ -33,7 +35,7 @@ public class SailConnectionWrapper implements SailConnection {
 	/**
 	 * The wrapped SailConnection.
 	 */
-	private final SailConnection delegate;
+	private SailConnection wrappedCon;
 
 	/*--------------*
 	 * Constructors *
@@ -43,8 +45,8 @@ public class SailConnectionWrapper implements SailConnection {
 	 * Creates a new TransactionWrapper object that wraps the supplied
 	 * connection.
 	 */
-	public SailConnectionWrapper(SailConnection delegate) {
-		this.delegate = delegate;
+	public SailConnectionWrapper(SailConnection wrappedCon) {
+		this.wrappedCon = wrappedCon;
 	}
 
 	/*---------*
@@ -57,138 +59,118 @@ public class SailConnectionWrapper implements SailConnection {
 	 * @return The SailConnection object that was supplied to the constructor of
 	 *         this class.
 	 */
-	protected SailConnection getDelegate() {
-		return delegate;
+	public SailConnection getWrappedConnection() {
+		return wrappedCon;
 	}
 
 	public boolean isOpen()
-		throws StoreException
+		throws SailException
 	{
-		return getDelegate().isOpen();
+		return wrappedCon.isOpen();
 	}
 
 	public void close()
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().close();
+		wrappedCon.close();
 	}
 
-	public Isolation getTransactionIsolation()
-		throws StoreException
+	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
+			Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
 	{
-		return getDelegate().getTransactionIsolation();
+		return wrappedCon.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
 
-	public void setTransactionIsolation(Isolation isolation)
-		throws StoreException
+	public CloseableIteration<? extends Resource, SailException> getContextIDs()
+		throws SailException
 	{
-		getDelegate().setTransactionIsolation(isolation);
+		return wrappedCon.getContextIDs();
 	}
 
-	public boolean isReadOnly()
-		throws StoreException
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+			Value obj, boolean includeInferred, Resource... contexts)
+		throws SailException
 	{
-		return getDelegate().isReadOnly();
+		return wrappedCon.getStatements(subj, pred, obj, includeInferred, contexts);
 	}
 
-	public void setReadOnly(boolean readOnly)
-		throws StoreException
+	public long size(Resource... contexts)
+		throws SailException
 	{
-		getDelegate().setReadOnly(readOnly);
+		return wrappedCon.size(contexts);
 	}
 
-	public boolean isAutoCommit()
-		throws StoreException
+	public long size(Resource context)
+		throws SailException
 	{
-		return getDelegate().isAutoCommit();
-	}
-
-	public void begin()
-		throws StoreException
-	{
-		getDelegate().begin();
+		return wrappedCon.size(context);
 	}
 
 	public void commit()
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().commit();
+		wrappedCon.commit();
 	}
 
 	public void rollback()
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().rollback();
-	}
-
-	public ValueFactory getValueFactory() {
-		return getDelegate().getValueFactory();
-	}
-
-	public Cursor<? extends BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
-		throws StoreException
-	{
-		return getDelegate().evaluate(query, bindings, includeInferred);
-	}
-
-	public Cursor<? extends Resource> getContextIDs()
-		throws StoreException
-	{
-		return getDelegate().getContextIDs();
-	}
-
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return getDelegate().getStatements(subj, pred, obj, includeInferred, contexts);
-	}
-
-	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
-	{
-		return getDelegate().size(subj, pred, obj, includeInferred, contexts);
+		wrappedCon.rollback();
 	}
 
 	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().addStatement(subj, pred, obj, contexts);
+		wrappedCon.addStatement(subj, pred, obj, contexts);
 	}
 
 	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().removeStatements(subj, pred, obj, contexts);
+		wrappedCon.removeStatements(subj, pred, obj, contexts);
 	}
 
-	public Cursor<? extends Namespace> getNamespaces()
-		throws StoreException
+	public void clear(Resource... contexts)
+		throws SailException
 	{
-		return getDelegate().getNamespaces();
+		wrappedCon.clear(contexts);
+	}
+
+	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
+		throws SailException
+	{
+		return wrappedCon.getNamespaces();
 	}
 
 	public String getNamespace(String prefix)
-		throws StoreException
+		throws SailException
 	{
-		return getDelegate().getNamespace(prefix);
+		return wrappedCon.getNamespace(prefix);
 	}
 
 	public void setNamespace(String prefix, String name)
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().setNamespace(prefix, name);
+		wrappedCon.setNamespace(prefix, name);
 	}
 
 	public void removeNamespace(String prefix)
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().removeNamespace(prefix);
+		wrappedCon.removeNamespace(prefix);
 	}
 
 	public void clearNamespaces()
-		throws StoreException
+		throws SailException
 	{
-		getDelegate().clearNamespaces();
+		wrappedCon.clearNamespaces();
+	}
+
+	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
+			boolean includeInferred)
+		throws SailException
+	{
+		wrappedCon.executeUpdate(updateExpr, dataset, bindings, includeInferred);
 	}
 }

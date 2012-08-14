@@ -6,41 +6,43 @@
 package org.openrdf.sail.rdbms;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.cursor.Cursor;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModel;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.SailConnectionBase;
-import org.openrdf.sail.rdbms.cursor.RdbmsResourceCursor;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
+import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
+import org.openrdf.sail.rdbms.iteration.RdbmsResourceIteration;
 import org.openrdf.sail.rdbms.managers.NamespaceManager;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
 import org.openrdf.sail.rdbms.model.RdbmsURI;
 import org.openrdf.sail.rdbms.model.RdbmsValue;
 import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
-import org.openrdf.store.Isolation;
-import org.openrdf.store.StoreException;
 
 /**
  * Coordinates the triple store, namespace manager, optimizer, and evaluation
  * strategy into the {@link SailConnection} interface.
  * 
  * @author James Leigh
+ * 
  */
 public class RdbmsConnection extends SailConnectionBase {
 
@@ -61,22 +63,10 @@ public class RdbmsConnection extends SailConnectionBase {
 	private Lock lock;
 
 	public RdbmsConnection(RdbmsStore sail, RdbmsTripleRepository triples) {
+		super(sail);
 		this.sail = sail;
 		this.vf = sail.getValueFactory();
 		this.triples = triples;
-
-		// Set default isolation level (serializable since we don't allow
-		// concurrent transactions yet)
-		try {
-			setTransactionIsolation(Isolation.SERIALIZABLE);
-		}
-		catch (StoreException e) {
-			throw new RuntimeException("unexpected exception", e);
-		}
-	}
-
-	public RdbmsValueFactory getValueFactory() {
-		return vf;
 	}
 
 	public void setNamespaces(NamespaceManager namespaces) {
@@ -95,15 +85,16 @@ public class RdbmsConnection extends SailConnectionBase {
 		this.lockManager = lock;
 	}
 
-	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
 		try {
-			if (contexts != null && contexts.length == 0) {
+			if (contexts.length == 0) {
 				triples.add(vf.createStatement(subj, pred, obj));
 			}
 			else {
-				for (Resource ctx : OpenRDFUtil.notNull(contexts)) {
+				for (Resource ctx : contexts) {
 					triples.add(vf.createStatement(subj, pred, obj, ctx));
 				}
 			}
@@ -117,8 +108,15 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	public void close()
-		throws StoreException
+	protected void clearInternal(Resource... contexts)
+		throws SailException
+	{
+		removeStatementsInternal(null, null, null, contexts);
+	}
+
+	@Override
+	protected void closeInternal()
+		throws SailException
 	{
 		try {
 			triples.close();
@@ -127,14 +125,13 @@ public class RdbmsConnection extends SailConnectionBase {
 			throw new RdbmsException(e);
 		}
 		finally {
-			super.close();
 			unlock();
 		}
 	}
 
 	@Override
-	public void commit()
-		throws StoreException
+	protected void commitInternal()
+		throws SailException
 	{
 		try {
 			triples.commit();
@@ -147,15 +144,13 @@ public class RdbmsConnection extends SailConnectionBase {
 			throw new RdbmsException(e);
 		}
 
-		// sail.notifySailChanged(triples.getSailChangedEvent());
-
 		// create a fresh event object.
 		triples.setSailChangedEvent(new DefaultSailChangedEvent(sail));
-		super.commit();
 	}
 
-	public RdbmsResourceCursor getContextIDs()
-		throws StoreException
+	@Override
+	protected RdbmsResourceIteration getContextIDsInternal()
+		throws SailException
 	{
 		try {
 			return triples.findContexts();
@@ -165,9 +160,10 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public Cursor<? extends Statement> getStatements(Resource subj, URI pred, Value obj,
-			boolean includeInferred, Resource... contexts)
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws SailException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
 		RdbmsURI p = vf.asRdbmsURI(pred);
@@ -176,8 +172,9 @@ public class RdbmsConnection extends SailConnectionBase {
 		return triples.find(s, p, o, c);
 	}
 
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
-		throws StoreException
+	@Override
+	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
 		RdbmsURI p = vf.asRdbmsURI(pred);
@@ -187,12 +184,11 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	public void rollback()
-		throws StoreException
+	protected void rollbackInternal()
+		throws SailException
 	{
 		try {
 			triples.rollback();
-			super.rollback();
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
@@ -202,59 +198,69 @@ public class RdbmsConnection extends SailConnectionBase {
 		}
 	}
 
-	public Cursor<BindingSet> evaluate(QueryModel query, BindingSet bindings, boolean includeInferred)
-		throws StoreException
+	@Override
+	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateInternal(TupleExpr expr,
+			Dataset dataset, BindingSet bindings, boolean includeInferred)
+		throws SailException
 	{
 		triples.flush();
-		TupleExpr tupleExpr;
-		EvaluationStrategy strategy;
-		strategy = factory.createRdbmsEvaluation(query);
-		tupleExpr = optimizer.optimize(query, bindings, strategy);
-		return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
+		try {
+			TupleExpr tupleExpr;
+			EvaluationStrategy strategy;
+			strategy = factory.createRdbmsEvaluation(dataset);
+			tupleExpr = optimizer.optimize(expr, dataset, bindings, strategy);
+			return strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
+		}
+		catch (QueryEvaluationException e) {
+			throw new SailException(e);
+		}
 	}
 
-	public void clearNamespaces()
-		throws StoreException
+	@Override
+	protected void clearNamespacesInternal()
+		throws SailException
 	{
 		namespaces.clearPrefixes();
 	}
 
-	public String getNamespace(String prefix)
-		throws StoreException
+	@Override
+	protected String getNamespaceInternal(String prefix)
+		throws SailException
 	{
 		Namespace ns = namespaces.findByPrefix(prefix);
-		if (ns == null) {
+		if (ns == null)
 			return null;
-		}
 		return ns.getName();
 	}
 
-	public Cursor<? extends Namespace> getNamespaces()
-		throws StoreException
+	@Override
+	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
+		throws SailException
 	{
-		return namespaces.getNamespacesWithPrefix();
+		Collection<? extends Namespace> ns = namespaces.getNamespacesWithPrefix();
+		return new NamespaceIteration(ns.iterator());
 	}
 
-	public void removeNamespace(String prefix)
-		throws StoreException
+	@Override
+	protected void removeNamespaceInternal(String prefix)
+		throws SailException
 	{
 		namespaces.removePrefix(prefix);
 	}
 
-	public void setNamespace(String prefix, String name)
-		throws StoreException
+	@Override
+	protected void setNamespaceInternal(String prefix, String name)
+		throws SailException
 	{
 		namespaces.setPrefix(prefix, name);
 	}
 
-	public long size(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws StoreException
+	@Override
+	protected long sizeInternal(Resource... contexts)
+		throws SailException
 	{
 		try {
-			RdbmsResource s = vf.asRdbmsResource(subj);
-			RdbmsURI p = vf.asRdbmsURI(pred);
-			RdbmsValue o = vf.asRdbmsValue(obj);
-			return triples.size(s, p, o, vf.asRdbmsResource(contexts));
+			return triples.size(vf.asRdbmsResource(contexts));
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
@@ -262,18 +268,19 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	public void begin()
-		throws StoreException
+	protected void startTransactionInternal()
+		throws SailException
 	{
 		try {
 			lock();
 			triples.begin();
-			super.begin();
 		}
 		catch (SQLException e) {
+			unlock();
 			throw new RdbmsException(e);
 		}
 		catch (InterruptedException e) {
+			unlock();
 			throw new RdbmsException(e);
 		}
 	}
@@ -286,9 +293,7 @@ public class RdbmsConnection extends SailConnectionBase {
 		super.finalize();
 	}
 
-	private void lock()
-		throws InterruptedException
-	{
+	private void lock() throws InterruptedException {
 		if (lockManager != null) {
 			lock = lockManager.getExclusiveLock();
 		}

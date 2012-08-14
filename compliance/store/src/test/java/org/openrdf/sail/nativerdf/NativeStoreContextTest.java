@@ -11,7 +11,7 @@ import info.aduna.io.FileUtil;
 
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
-import org.openrdf.store.StoreException;
+import org.openrdf.sail.SailException;
 
 /**
  * An extension of RDFStoreTest for testing the class {@link NativeStore}.
@@ -58,9 +58,9 @@ public class NativeStoreContextTest extends RDFNotifyingStoreTest {
 
 	@Override
 	protected NotifyingSail createSail()
-		throws StoreException
+		throws SailException
 	{
-		NotifyingSail sail = new NativeStore(dataDir, "spoc,posc,cspo");
+		NotifyingSail sail = new NativeStore(dataDir, "cspo");
 		sail.initialize();
 		return sail;
 	}

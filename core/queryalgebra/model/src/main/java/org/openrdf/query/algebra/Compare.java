@@ -10,8 +10,6 @@ package org.openrdf.query.algebra;
  */
 public class Compare extends BinaryValueOperator {
 
-	private static final long serialVersionUID = 1526058328982063476L;
-
 	/*---------------*
 	 * enum Operator *
 	 *---------------*/
@@ -90,6 +88,20 @@ public class Compare extends BinaryValueOperator {
 	@Override
 	public String getSignature() {
 		return super.getSignature() + " (" + operator.getSymbol() + ")";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Compare && super.equals(other)) {
+			Compare o = (Compare)other;
+			return operator.equals(o.getOperator());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ operator.hashCode();
 	}
 
 	@Override
