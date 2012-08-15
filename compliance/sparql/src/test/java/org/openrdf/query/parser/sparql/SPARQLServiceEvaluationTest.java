@@ -376,18 +376,20 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		execute("/testcases-service/service11.rq", "/testcases-service/service11.srx", false);		
 	}
 	
-	/**
-	 * This is a manual test to see the Fallback in action. Query asks
-	 * DBpedia, which does not support BINDINGS
-	 * 
-	 * @throws Exception
-	 */
-	public void testFallbackWithDBpedia() throws Exception {
-		/* test vectored join with more intermediate results */
-		// clears the repository and adds new data + execute
-		prepareTest("/testcases-service/data12.ttl", Collections.<String>emptyList());
-		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
-	}
+// test on remote DBpedia endpoint disabled. Only enable for manual testing, should not be enabled for 
+// Surefire or Hudson.
+//	 /**
+//	 * This is a manual test to see the Fallback in action. Query asks
+//	 * DBpedia, which does not support BINDINGS
+//	 * 
+//	 * @throws Exception
+//	 */
+//	public void testFallbackWithDBpedia() throws Exception {
+//		/* test vectored join with more intermediate results */
+//		// clears the repository and adds new data + execute
+//		prepareTest("/testcases-service/data12.ttl", Collections.<String>emptyList());
+//		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
+//	}
 	
 	@Test
 	public void test13() throws Exception {
