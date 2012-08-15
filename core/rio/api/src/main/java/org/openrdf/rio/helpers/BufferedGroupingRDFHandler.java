@@ -14,13 +14,14 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
- * An {@link RDFHandlerWrapper} that buffers statements internally and passes them
- * to underlying handlers grouped by context, then subject, then predicate.
+ * An {@link RDFHandlerWrapper} that buffers statements internally and passes
+ * them to underlying handlers grouped by context, then subject, then predicate.
  * 
  * @author Jeen Broekstra
  */
@@ -89,46 +90,33 @@ public class BufferedGroupingRDFHandler extends RDFHandlerWrapper {
 	{
 		// primary grouping per context.
 		for (Resource context : contexts) {
-			Iterator<Statement> contextStatements = bufferedStatements.match(null, null, null, context);
+			Set<Resource> subjects = GraphUtil.getSubjects(bufferedStatements, null, null, context);
+			for (Resource subject : subjects) {
+				Set<URI> processedPredicates = new HashSet<URI>();
 
-			// store processed subjects per context to avoid adding data about the
-			// same subject multiple times.
-			Set<Resource> processedSubjects = new HashSet<Resource>();
-			
-			while (contextStatements.hasNext()) {
-				Statement contextStatement = contextStatements.next();
+				// give rdf:type preference over other predicates.
+				Iterator<Statement> typeStatements = bufferedStatements.match(subject, RDF.TYPE, null, context);
+				while (typeStatements.hasNext()) {
+					Statement typeStatement = typeStatements.next();
+					super.handleStatement(typeStatement);
+				}
 
-				// secondary grouping per subject
-				Resource subject = contextStatement.getSubject();
+				processedPredicates.add(RDF.TYPE);
 
-				if (!processedSubjects.contains(subject)) {
-					Set<URI> processedPredicates = new HashSet<URI>();
-
-					// give rdf:type preference over other predicates.
-					Iterator<Statement> subjectTypes = bufferedStatements.match(subject, RDF.TYPE, null, context);
-					while (subjectTypes.hasNext()) {
-						Statement typeStatement = subjectTypes.next();
-						super.handleStatement(typeStatement);
-					}
-
-					processedPredicates.add(RDF.TYPE);
-
-					// retrieve other statement from this context with the same
-					// subject, and output them grouped by predicate
-					Iterator<Statement> subjectStatements = bufferedStatements.match(subject, null, null, context);
-					while (subjectStatements.hasNext()) {
-						Statement subjectStatement = subjectStatements.next();
-						URI predicate = subjectStatement.getPredicate();
-						if (!processedPredicates.contains(predicate)) {
-							Iterator<Statement> toWrite = bufferedStatements.match(subject, predicate, null, context);
-							while (toWrite.hasNext()) {
-								Statement toWriteSt = toWrite.next();
-								super.handleStatement(toWriteSt);
-							}
-							processedPredicates.add(predicate);
+				// retrieve other statement from this context with the same
+				// subject, and output them grouped by predicate
+				Iterator<Statement> subjectStatements = bufferedStatements.match(subject, null, null, context);
+				while (subjectStatements.hasNext()) {
+					Statement subjectStatement = subjectStatements.next();
+					URI predicate = subjectStatement.getPredicate();
+					if (!processedPredicates.contains(predicate)) {
+						Iterator<Statement> toWrite = bufferedStatements.match(subject, predicate, null, context);
+						while (toWrite.hasNext()) {
+							Statement toWriteSt = toWrite.next();
+							super.handleStatement(toWriteSt);
 						}
+						processedPredicates.add(predicate);
 					}
-					processedSubjects.add(subject);
 				}
 			}
 		}
