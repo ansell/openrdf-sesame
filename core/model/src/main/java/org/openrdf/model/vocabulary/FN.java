@@ -24,6 +24,11 @@ public class FN {
 	 */
 	public static final String NAMESPACE = "http://www.w3.org/2005/xpath-functions#";
 
+	/**
+	 * Recommended prefix for the XPath Functions namespace: "fn"
+	 */
+	public static final String PREFIX = "fn";
+	
 	/** fn:concat */
 	public static final URI CONCAT;
 

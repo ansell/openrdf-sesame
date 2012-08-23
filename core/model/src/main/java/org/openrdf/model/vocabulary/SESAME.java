@@ -17,6 +17,11 @@ public class SESAME {
 	/** The Sesame Schema namespace (<tt>http://www.openrdf.org/schema/sesame#</tt>). */
 	public static final String NAMESPACE = "http://www.openrdf.org/schema/sesame#";
 
+	/**
+	 * Recommended prefix for the Sesame Schema namespace: "sesame"
+	 */
+	public static final String PREFIX = "sesame";
+	
 	/** <tt>http://www.openrdf.org/schema/sesame#directSubClassOf</tt> */
 	public final static URI DIRECTSUBCLASSOF;
 
