@@ -267,7 +267,7 @@ public class SKOS {
 	
 	
 	static {
-		final ValueFactory f = new ValueFactoryImpl();
+		final ValueFactory f = ValueFactoryImpl.getInstance();
 
 		CONCEPT = f.createURI(NAMESPACE, "Concept");
 		CONCEPT_SCHEME = f.createURI(NAMESPACE, "ConceptScheme");

@@ -98,7 +98,7 @@ public class DC {
 	public static final URI TYPE;
 
 	static {
-		final ValueFactory f = new ValueFactoryImpl();
+		final ValueFactory f = ValueFactoryImpl.getInstance();
 
 		CONTRIBUTOR = f.createURI(NAMESPACE, "contributor");
 		COVERAGE = f.createURI(NAMESPACE, "coverage");
