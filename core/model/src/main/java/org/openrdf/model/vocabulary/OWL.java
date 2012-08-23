@@ -11,12 +11,19 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * Constants for OWL primitives and for the OWL namespace.
+ * 
+ * @see http://www.w3.org/TR/owl-ref/
  */
 public class OWL {
 
-	/** http://www.w3.org/2002/07/owl# */
+	/** The OWL namespace: http://www.w3.org/2002/07/owl# */
 	public static final String NAMESPACE = "http://www.w3.org/2002/07/owl#";
 
+	/** 
+	 * Recommended prefix for the OWL namespace: "owl"
+	 */
+	public static final String PREFIX = "owl";
+	
 	// OWL Lite
 
 	/** http://www.w3.org/2002/07/owl#Class */

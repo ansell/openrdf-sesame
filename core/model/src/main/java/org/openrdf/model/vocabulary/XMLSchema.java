@@ -10,7 +10,9 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Defines constants for the standard XML Schema datatypes.
+ * Constants for the standard <a href="http://www.w3.org/TR/xmlschema-2/">XML Schema datatypes</a>.
+ * 
+ * @see http://www.w3.org/TR/xmlschema-2/
  */
 public class XMLSchema {
 
@@ -20,6 +22,12 @@ public class XMLSchema {
 
 	/** The XML Schema namespace (<tt>http://www.w3.org/2001/XMLSchema#</tt>). */
 	public static final String NAMESPACE = "http://www.w3.org/2001/XMLSchema#";
+	
+	/** 
+	 * Recommended prefix for XML Schema datatypes: "xsd"
+	 */
+	public static final String PREFIX = "xsd";
+	
 
 	/*
 	 * Primitive datatypes

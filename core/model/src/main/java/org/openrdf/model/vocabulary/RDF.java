@@ -11,6 +11,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * Constants for RDF primitives and for the RDF namespace.
+ * 
+ * @see http://www.w3.org/TR/REC-rdf-syntax/
  */
 public class RDF {
 
@@ -18,6 +20,11 @@ public class RDF {
 	public static final String NAMESPACE =
 			"http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
+	/** 
+	 * Recommended prefix for the RDF namespace: "rdf"
+	 */
+	public static final String PREFIX = "rdf";
+	
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#type */
 	public final static URI TYPE;
 
