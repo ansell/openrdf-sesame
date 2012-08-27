@@ -54,6 +54,7 @@ import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
 import org.openrdf.repository.sparql.query.SPARQLTupleQuery;
+import org.openrdf.repository.sparql.query.SPARQLUpdate;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -404,16 +405,12 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throw new UnsupportedOperationException();
 	}
 
-	public Update prepareUpdate(QueryLanguage ql, String update)
-		throws RepositoryException, MalformedQueryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
-		throw new UnsupportedOperationException();
+		if (SPARQL.equals(ql))
+			return new SPARQLUpdate(client, queryEndpointUrl, baseURI, update);
+		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
 	private void setBindings(Query query, Resource subj, URI pred, Value obj, Resource... contexts)

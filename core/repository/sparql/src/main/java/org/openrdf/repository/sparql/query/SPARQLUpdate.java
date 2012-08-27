@@ -1,47 +1,34 @@
 /*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2011.
+ * Copyright Aduna (http://www.aduna-software.com/) (c) 2012.
  *
  * Licensed under the Aduna BSD-style license.
  */
 package org.openrdf.repository.sparql.query;
 
-import info.aduna.net.ParsedURI;
-
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.openrdf.model.Literal;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.sparql.SPARQLConnection;
 
+
 /**
- * Provides an execution thread for background result parsing and inlines
- * binding in a SPARQL query.
- * 
- * @author James Leigh
- * 
+ *
+ * @author jeen
  */
-public abstract class SPARQLQuery extends SPARQLOperation implements Query {
-	
-	private int maxQueryTime = 0;
+public class SPARQLUpdate extends SPARQLOperation implements Update {
 
 	/**
 	 * @param client
@@ -49,27 +36,26 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 	 * @param base
 	 * @param operation
 	 */
-	public SPARQLQuery(HttpClient client, String url, String base, String operation) {
+	public SPARQLUpdate(HttpClient client, String url, String base, String operation) {
 		super(client, url, base, operation);
+		// TODO Auto-generated constructor stub
 	}
 
-	public int getMaxQueryTime() {
-		return maxQueryTime; 
+	public void execute()
+		throws UpdateExecutionException
+	{
+		
+		// TODO Auto-generated method stub
+		
 	}
 
-	public void setMaxQueryTime(int maxQueryTime) {
-		this.maxQueryTime = maxQueryTime;
-		this.client.getParams().setConnectionManagerTimeout(1000L * maxQueryTime);
-	}
-
-	protected abstract String getAccept();
-	
 	protected HttpMethodBase getResponse()
 			throws HttpException, IOException, QueryEvaluationException
 		{
 			PostMethod post = new PostMethod(getUrl());
-			post.addParameter("query", getQueryString());
+			post.addParameter("update", getQueryString());
 			
+			// TODO is setting parameters like this part of SPARQL protocol?
 			Dataset dataset = getDataset();
 			if (dataset != null) {
 				for (URI graph : dataset.getDefaultGraphs()) {
@@ -79,7 +65,9 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 					post.addParameter("named-graph-uri", String.valueOf(graph));
 				}
 			}
-			post.addRequestHeader("Accept", getAccept());
+			
+			// TODO check correct mime type and header name
+			post.addRequestHeader("Content-type", "application/x-sparql-update");
 			Map<String, String> additionalHeaders = (Map<String, String>)client.getParams().getParameter(
 					SPARQLConnection.ADDITIONAL_HEADER_NAME);
 			if (additionalHeaders != null) {
@@ -100,4 +88,5 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 				}
 			}
 		}
+
 }
