@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -375,18 +376,20 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		execute("/testcases-service/service11.rq", "/testcases-service/service11.srx", false);		
 	}
 	
-	/**
-	 * This is a manual test to see the Fallback in action. Query asks
-	 * DBpedia, which does not support BINDINGS
-	 * 
-	 * @throws Exception
-	 */
-	public void testFallbackWithDBpedia() throws Exception {
-		/* test vectored join with more intermediate results */
-		// clears the repository and adds new data + execute
-		prepareTest("/testcases-service/data12.ttl", Collections.<String>emptyList());
-		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
-	}
+// test on remote DBpedia endpoint disabled. Only enable for manual testing, should not be enabled for 
+// Surefire or Hudson.
+//	 /**
+//	 * This is a manual test to see the Fallback in action. Query asks
+//	 * DBpedia, which does not support BINDINGS
+//	 * 
+//	 * @throws Exception
+//	 */
+//	public void testFallbackWithDBpedia() throws Exception {
+//		/* test vectored join with more intermediate results */
+//		// clears the repository and adds new data + execute
+//		prepareTest("/testcases-service/data12.ttl", Collections.<String>emptyList());
+//		execute("/testcases-service/service12.rq", "/testcases-service/service12.srx", false);		
+//	}
 	
 	@Test
 	public void test13() throws Exception {
@@ -403,12 +406,6 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	}
 	
 
-	public void testJoinOrderOfSubquery() throws Exception {
-		/* manual test for bug SES-1017 */
-		prepareTest("/testcases-service/data16local.ttl", Collections.<String>emptyList());
-		execute("/testcases-service/service16.rq", "/testcases-service/service16.srx", false);	
-	}
-	
 	@Test
 	public void testNotProjectedCount() throws Exception {
 		/* test projection of subqueries - SES-1000 */
