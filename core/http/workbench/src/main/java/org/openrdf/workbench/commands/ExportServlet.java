@@ -47,7 +47,10 @@ public class ExportServlet extends TupleServlet {
 			RepositoryConnection con = repository.getConnection();
 			try {
 				RDFWriterFactory factory = getInstance().get(format);
-				con.export(factory.getWriter(resp.getWriter()));
+				if (format.getCharset() != null) {
+					resp.setCharacterEncoding(format.getCharset().name());
+				}
+				con.export(factory.getWriter(resp.getOutputStream()));
 			}
 			finally {
 				con.close();
