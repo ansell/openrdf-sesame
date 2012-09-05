@@ -31,6 +31,12 @@ public class OWL {
 
 	/** http://www.w3.org/2002/07/owl#Individual */
 	public final static URI INDIVIDUAL;
+	
+	/** http://www.w3.org/2002/07/owl#Thing */
+	public static final URI THING;
+	
+	/** http://www.w3.org/2002/07/owl#Nothing */
+	public static final URI NOTHING;
 
 	/** http://www.w3.org/2002/07/owl#equivalentClass */
 	public final static URI EQUIVALENTCLASS;
@@ -147,6 +153,10 @@ public class OWL {
 		
 		CLASS = factory.createURI(OWL.NAMESPACE, "Class");
 		INDIVIDUAL = factory.createURI(OWL.NAMESPACE, "Individual");
+		
+		THING = factory.createURI(OWL.NAMESPACE, "Thing");
+		NOTHING = factory.createURI(NAMESPACE, "Nothing");
+		
 		EQUIVALENTCLASS = factory.createURI(OWL.NAMESPACE, "equivalentClass");
 		EQUIVALENTPROPERTY = factory.createURI(OWL.NAMESPACE,
 				"equivalentProperty");
