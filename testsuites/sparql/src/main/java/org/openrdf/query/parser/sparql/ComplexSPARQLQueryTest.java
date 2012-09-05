@@ -26,6 +26,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
@@ -78,7 +79,7 @@ public abstract class ComplexSPARQLQueryTest {
 		f = rep.getValueFactory();
 		conn = rep.getConnection();
 
-		loadTestData();
+		conn.clear(); // clear existing data from repo
 
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
@@ -104,7 +105,10 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testNullContext1() {
+	public void testNullContext1()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(" SELECT * ");
 		query.append(" FROM DEFAULT ");
@@ -134,8 +138,10 @@ public abstract class ComplexSPARQLQueryTest {
 				Resource s = (Resource)bs.getValue("s");
 
 				assertNotNull(s);
-				assertFalse(bob.equals(s)); // should not be present in default graph
-				assertFalse(alice.equals(s)); // should not be present in default graph
+				assertFalse(bob.equals(s)); // should not be present in default
+														// graph
+				assertFalse(alice.equals(s)); // should not be present in default
+														// graph
 			}
 			result.close();
 		}
@@ -144,9 +150,12 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	@Test
-	public void testNullContext2() {
+	public void testNullContext2()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append(" SELECT * ");
@@ -177,8 +186,10 @@ public abstract class ComplexSPARQLQueryTest {
 				Resource s = (Resource)bs.getValue("s");
 
 				assertNotNull(s);
-				assertFalse(bob.equals(s)); // should not be present in default graph
-				assertFalse(alice.equals(s)); // should not be present in default graph
+				assertFalse(bob.equals(s)); // should not be present in default
+														// graph
+				assertFalse(alice.equals(s)); // should not be present in default
+														// graph
 			}
 			result.close();
 		}
@@ -188,9 +199,12 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 	}
 
-
 	@Test
-	public void testGroupConcatDistinct() {
+	public void testGroupConcatDistinct()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
+
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append("SELECT (GROUP_CONCAT(DISTINCT ?l) AS ?concat)");
@@ -242,7 +256,10 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSameTermRepeatInOptional() {
+	public void testSameTermRepeatInOptional()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append(" SELECT ?l ?opt1 ?opt2 ");
@@ -312,7 +329,10 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSameTermRepeatInUnion() {
+	public void testSameTermRepeatInUnion()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
 		StringBuilder query = new StringBuilder();
 		query.append("PREFIX foaf:<http://xmlns.com/foaf/0.1/>\n");
 		query.append("SELECT * {\n");
@@ -368,7 +388,11 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSameTermRepeatInUnionAndOptional() {
+	public void testSameTermRepeatInUnionAndOptional()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
+
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append("SELECT * {\n");
@@ -443,7 +467,11 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testPropertyPathInTree() {
+	public void testPropertyPathInTree()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
+
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append(" SELECT ?node ?name ");
@@ -484,7 +512,10 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testFilterRegexBoolean() {
+	public void testFilterRegexBoolean()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
 
 		// test case for issue SES-1050
 		StringBuilder query = new StringBuilder();
@@ -535,7 +566,10 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testGroupConcatNonDistinct() {
+	public void testGroupConcatNonDistinct()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append("SELECT (GROUP_CONCAT(?l) AS ?concat)");
@@ -587,6 +621,120 @@ public abstract class ComplexSPARQLQueryTest {
 
 	}
 
+	@Test
+	/**
+	 * @see http://www.openrdf.org/issues/browse/SES-1091
+	 * @throws Exception
+	 */
+	public void testArbitraryLengthPathWithBinding()
+		throws Exception
+	{
+		loadTestData("/testdata-query/alp-testdata.ttl");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?parent ?child ");
+		query.append("WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . }");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			// first execute without binding
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(7, count);
+			
+			// execute again, but this time setting a binding
+			tq.setBinding("parent", OWL.THING);
+			
+			result = tq.evaluate();
+			assertNotNull(result);
+
+			count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(4, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
+	@Test
+	/**
+	 * @see http://www.openrdf.org/issues/browse/SES-1091
+	 * @throws Exception
+	 */
+	public void testArbitraryLengthPathWithFilter()
+		throws Exception
+	{
+		loadTestData("/testdata-query/alp-testdata.ttl");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?parent ?child ");
+		query.append("WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(4, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+	
+	/* private / protected methods */
+
 	private int countCharOccurrences(String string, char ch) {
 		int count = 0;
 		for (int i = 0; i < string.length(); i++) {
@@ -600,15 +748,13 @@ public abstract class ComplexSPARQLQueryTest {
 	/**
 	 * Get a set of useful namespace prefix declarations.
 	 * 
-	 * @return namespace prefix declarations for rdf, rdfs, dc, foaf and ex.
+	 * @return namespace prefix declarations for dc, foaf and ex.
 	 */
 	protected String getNamespaceDeclarations() {
 		StringBuilder declarations = new StringBuilder();
-		declarations.append("PREFIX rdf: <" + RDF.NAMESPACE + "> \n");
-		declarations.append("PREFIX rdfs: <" + RDFS.NAMESPACE + "> \n");
 		declarations.append("PREFIX dc: <" + DC.NAMESPACE + "> \n");
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
-		declarations.append("PREFIX sesame: <" + SESAME.NAMESPACE +"> \n");
+		declarations.append("PREFIX sesame: <" + SESAME.NAMESPACE + "> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
 		declarations.append("\n");
 
@@ -618,13 +764,13 @@ public abstract class ComplexSPARQLQueryTest {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	protected void loadTestData()
+	protected void loadTestData(String dataFile)
 		throws RDFParseException, RepositoryException, IOException
 	{
-		logger.debug("loading dataset...");
-		InputStream dataset = ComplexSPARQLQueryTest.class.getResourceAsStream("/testdata-query/dataset-query.trig");
+		logger.debug("loading dataset {}", dataFile);
+		InputStream dataset = ComplexSPARQLQueryTest.class.getResourceAsStream(dataFile);
 		try {
-			conn.add(dataset, "", RDFFormat.TRIG);
+			conn.add(dataset, "", RDFFormat.forFileName(dataFile));
 		}
 		finally {
 			dataset.close();
