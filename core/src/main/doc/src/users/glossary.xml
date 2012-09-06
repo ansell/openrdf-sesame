@@ -1,0 +1,40 @@
+<glossary>
+  <title>Glossary</title>
+  <glossdiv>
+	 <title>R</title>
+	 <glossentry id="rdf">
+		<glossterm>Resource Description Framework</glossterm>
+		<acronym>RDF</acronym>
+		<glossdef>
+		  <para>
+			 The Resource Description Framework (RDF) is a family of World Wide Web Consortium (W3C) specifications originally designed as a metadata data model. It has come to be used as a general method for conceptual description or modeling of information that is implemented in web resources, using a variety of syntax formats.
+		  </para>
+		  <para>
+			 External references:
+			 <itemizedlist>
+				<listitem><ulink url="http://www.w3.org/RDF"/></listitem>
+			 </itemizedlist>
+		  </para>
+		</glossdef>
+	 </glossentry>
+  </glossdiv>
+  <glossdiv>
+	 <title>S</title>
+	 <glossentry id="sparql"><glossterm>SPARQL Protocol and RDF Query Language</glossterm>
+		<acronym>SPARQL</acronym>
+		<glossdef>
+		  <para>
+			 SPARQL (pronounced "sparkle", a recursive acronym for SPARQL Protocol and RDF Query Language) is an RDF query language, that is, a query language for databases, able to retrieve and manipulate data stored in Resource Description Framework format. In addition, SPARQL defines a Protocol for accessing RDF data sources over the Web.
+		  </para>
+		  <para>
+			 External references:
+			 <itemizedlist>
+				<listitem><ulink url="http://www.w3.org/TR/sparql11-query/">SPARQL 1.1 Query Language</ulink></listitem>
+				<listitem><ulink url="http://www.w3.org/TR/sparql11-protocol/">SPARQL 1.1 Protocol</ulink></listitem>
+			 </itemizedlist>
+		  </para>
+		  <glossseealso otherterm="rdf" />
+		</glossdef>
+	 </glossentry>
+  </glossdiv>
+</glossary>
