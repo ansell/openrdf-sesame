@@ -399,7 +399,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 								if (!v1.equals(v2)) {
 									valueQueue.add(vp);
 								}
-								((QueryBindingSet)nextElement).addBinding(endVar.getName(), endValue);
+								if (!nextElement.hasBinding(endVar.getName())) {
+									((QueryBindingSet)nextElement).addBinding(endVar.getName(), endValue);
+								}
 								return nextElement;
 							}
 							else {
