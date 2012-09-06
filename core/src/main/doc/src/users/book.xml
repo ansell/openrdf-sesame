@@ -11,17 +11,19 @@
 <!ENTITY serverinstall SYSTEM "serverinstall.xml">
 <!ENTITY console SYSTEM "console.xml">
 <!ENTITY repository-api SYSTEM "repository-api.xml">
+<!ENTITY http-protocol SYSTEM "http-protocol.xml">
 <!ENTITY serql-usermanual SYSTEM "serql-usermanual.xml">
+<!ENTITY glossary SYSTEM "glossary.xml">
 
 ]>
 
 <book>
-	<title>User Guide for Sesame 2.3</title>
+	<title>User Guide for Sesame 2.7</title>
 
 	<bookinfo>
 		<copyright>
-			<year>2002-2011</year>
-			<holder>Aduna B.V.</holder>
+			<year>2002-2012</year>
+			<holder>Aduna</holder>
 		</copyright>
 	</bookinfo>
 
@@ -34,6 +36,7 @@
 &serverinstall;
 &console;
 &repository-api;
+&http-protocol;
 &serql-usermanual;
-
+&glossary;
 </book>

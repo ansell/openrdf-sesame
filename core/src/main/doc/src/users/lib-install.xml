@@ -27,23 +27,50 @@
 			included, you can download the complete SDK and select (from the
 			<filename>lib</filename> directory) those sesame libraries that you
 			require.
-		</para>
+		 </para>
+	  </section>
+	  <section>
+		  <title>Using Apache Maven</title>
 		<para>
 			An alternative to picking libraries by hand is to use
-			maven. <ulink href="http://maven.apache.org/">Apache
+			Maven. <ulink url="http://maven.apache.org/">Apache
 			    Maven</ulink> is a software management tool that
 			helps you by offering things like library version
 			management and dependency management (which is very
 			useful because it means that once you decide you need a
-			particular Sesame library, maven automatically
+			particular Sesame library, Maven automatically
 			downloads all the libraries that your library of choice
 			requires in turn), and giving you a handy-dandy build
-			environment. For details on how to start using maven,
+			environment. For details on how to start using Maven,
 			we advise you to take a look at the Apache Maven
 			website at <ulink url="http://maven.apache.org/"/>. If
 			you are familiar with Maven, here are a few pointers to
 			help set up your maven project.
-		</para>
+		 </para>
+		 <section>
+			<title>Maven Repository</title>
+			<para>
+			  OpenRDF Sesame has its own Maven repository. To configure you project to use the correct repository, add the following to your project's <filename>pom.xml</filename> (or to your Maven configuration file: <filename>settings.xml</filename>):
+			<screen><![CDATA[
+<repositories>
+				 ...
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>aduna-opensource.releases</id>
+			<name>Aduna Open Source - Maven releases</name>
+			<url>http://repo.aduna-software.org/maven2/releases</url>
+		</repository>
+	</repositories>
+]]></screen>
+			</para>
+		 </section>
+		 <section>
+			 <title>Maven Artifacts</title>
 	    <para>
 		The groupId for all Sesame core artifacts is
 		<filename>org.openrdf.sesame</filename>.  For many projects you
@@ -59,7 +86,8 @@
 		To include a maven dependency in your project that
 		automatically gets you the entire Sesame core framework, use
 		artifactId <filename>sesame-runtime</filename>. 
-	    </para>
+	 </para>
+  </section>
 	</section>
 
 	<section>

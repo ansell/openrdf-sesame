@@ -30,28 +30,34 @@
 			this one jar file to your classpath and you can start programming
 			against it.
 		</listitem>
-	</itemizedlist>
+	 </itemizedlist>
+	 <section>
+	<title>Maven artifacts</title>
 	<para>
-		Apart from these binary downloads, the Sesame libraries are
-		also available as maven artifacts in a <emphasis>maven
-		    repository</emphasis>.  This maven repository is located at
-		<ulink url="http://repo.aduna-software.org/maven2/releases/"/>.
-		Developers using maven can use this repository to automatically
-		resolve library dependencies and to get the latest released
-		versions of each library. See <xref
-		    linkend="chapter-lib-install"/> for some tips.
-	    </para>
+		The Sesame libraries are also available as maven artifacts in a
+		<emphasis>maven repository</emphasis>. This maven repository is located
+		at <ulink url="http://repo.aduna-software.org/maven2/releases/"/>.
+		Developers using maven can use this repository to automatically resolve
+		library dependencies and to get the latest released versions of each
+		library. See <xref linkend="chapter-lib-install"/> for more information on how to set up your POM and which dependencies to include.
+	 </para>
 	    <para>
 		For instructions how to use the maven build system, see
 		<ulink url="http://maven.apache.org/"/>.
-	    </para>
+	 </para>
+  </section>
+  <section>
+	 <title>Subversion code repository</title>
 	<para>
 		Sesame's source code is available from our Subversion (SVN) repository:
 		<ulink url="http://repo.aduna-software.org/svn/org.openrdf/sesame/"/>.
-		There is an SVN Web Viewer available as well at
-		<ulink url="http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/"/>.
-		Source code for each release can be found in the <filename>tags</filename>
-		directory, the development version of the code is in the
-		<filename>trunk</filename> directory.
-	</para>
+		There is an SVN Web Viewer available as well at <ulink
+		  url="http://repo.aduna-software.org/websvn/listing.php?repname=aduna&amp;path=/org.openrdf/sesame/"/>.
+		Source code for each release can be found in the
+		<filename>tags</filename> directory, the development version of the code
+		is in the <filename>trunk</filename> directory. Branches exist for each
+		major release (2.4, 2.5, 2.6, etc.), with consecutive minor releases
+		(2.6.1, 2.6.2, etc.) being developed within that branch.
+	 </para>
+  </section>
 </chapter>
