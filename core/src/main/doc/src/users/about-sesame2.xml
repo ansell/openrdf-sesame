@@ -1,8 +1,5 @@
 <chapter id="chapter-sesame2-whats-new">
 	<title>rdf:about Sesame 2</title>
-
-	<section>
-		<title>What is it?</title>
 		<para>
 			Sesame is an open source Java framework for storage and querying of
 			RDF data. The framework is fully extensible and configurable with
@@ -38,5 +35,4 @@
 			to <ulink url="http://www.aduna-software.com/contact/">contact
 				us</ulink> for more information.
 		</para>
-	</section>
 </chapter>

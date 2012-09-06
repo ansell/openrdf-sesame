@@ -26,10 +26,10 @@
 	</section>
 
 	<section id="section-sesame-server-installation" xreflabel="Sesame server installation">
-		<title>Sesame server installation</title>
+		<title>Sesame Server and Workbench installation</title>
 		<para>
-			The Sesame 2.0 server software comes in the form of two Java Web
-			Applications: <emphasis>Sesame (HTTP) server</emphasis> and
+			The Sesame 2 server software comes in the form of two Java Web
+			Applications: <emphasis>OpenRDF Sesame Server</emphasis> and
 			<emphasis>OpenRDF Workbench</emphasis>.
 		</para>
 		<para>
@@ -44,7 +44,7 @@
 		<para>
 			If you have not done so already, you will first need to
 			<ulink url="http://www.openrdf.org/download.jsp">download</ulink>
-			the Sesame 2.0 SDK. Both Sesame Server and OpenRDF Workbench can be
+			the Sesame 2 SDK. Both Sesame Server and OpenRDF Workbench can be
 			found in the <filename>war</filename> directory of the SDK. The
 			war-files in this directory need to be deployed in a Java Servlet
 			Container (see <xref linkend="section-server-required-software"/>).
@@ -55,7 +55,7 @@
 			After you have deployed the Sesame Server webapp, you should be able
 			to access it, by default, at path <filename>/openrdf-sesame</filename>.
 			You can point your browser at this location to verify that the
-			deployment succeeded. Your browser should show the Sesame welcome
+			deployment succeeded<footnote><para>There is a known issue (<ulink url="http://www.openrdf.org/issues/browse/SES-845">SES-845</ulink>) with deployment of the Sesame Server in <emphasis>Apache Tomcat version 7</emphasis>, where this link does not redirect to the correct location as expected. If you are running Sesameo on Tomcat 7, try accessing <filename>/openrdf-sesame/home/overview.view</filename> instead</para></footnote>. Your browser should show the Sesame welcome
 			screen as well as some options to view the server logs, among other
 			things. Similarly, after deployment, the OpenRDF Workbench should be
 			available at path <filename>/openrdf-workbench</filename>.
@@ -75,15 +75,14 @@
 			directories.
 		</para>
 		<para>
-			The default log level is <parameter>INFO</parameter>, indicating
-			that only important status messages, warnings and errors are logged.
-			The log level and -behaviour can be adjusted by modifying the
-			<filename>.../conf/logback.xml</filename> file. This file will be
-			generated when the server is first run. Please consult the logback
-			manual for configuration instructions.
+			The default log level is <parameter>INFO</parameter>, indicating that
+			only important status messages, warnings and errors are logged.  The
+			log level and -behaviour can be adjusted by modifying the
+			<filename>[ADUNA_DATA]/OpenRDF Sesame/conf/logback.xml</filename>
+			file. This file will be generated when the server is first run. Please
+			consult the logback manual for configuration instructions.
 		</para>
 	</section>
-
 	<section>
 		<title>Repository Configuration</title>
 		<para>
@@ -96,10 +95,10 @@
 			the server configuration.
 		</para>
 		<para>
-			For now, the best way to create and manage repositories in a SYSTEM
-			repository is to use the Sesame Console or OpenRDF Workebench
-			(experimental). The Sesame Console is a command-line application for
-			interacting with Sesame, see <xref linkend="chapter-console"/>.
+			The best way to create and manage repositories in a SYSTEM repository
+			is to use the Sesame Console or OpenRDF Workbench. The Sesame Console
+			is a command-line application for interacting with Sesame, see <xref
+			  linkend="chapter-console"/>.
 		</para>
 	</section>
 </chapter>

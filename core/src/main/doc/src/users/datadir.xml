@@ -42,5 +42,8 @@
 		the Windows Services configuration tool to set this property. Other users
 		can either edit the Tomcat startup script or set the property some
 		other way.
-	</para>
+	 </para>
+	 <para>
+		One easy way to find out what the directory is in a running instance of the Sesame Server, is to go to <filename>http://localhost:8080/openrdf-sesame</filename> in your browser and click on 'System' in the navigation menu on the left. The data directory will be listed as one of the configuration settings of the current server.
+	 </para>
 </chapter>
