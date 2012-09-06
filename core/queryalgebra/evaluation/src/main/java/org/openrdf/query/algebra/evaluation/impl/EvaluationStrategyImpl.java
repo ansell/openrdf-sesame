@@ -399,8 +399,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 								if (!v1.equals(v2)) {
 									valueQueue.add(vp);
 								}
+								if (!nextElement.hasBinding(startVar.getName())) {
+									((QueryBindingSet)nextElement).addBinding(startVar.getName(), v1);
+								}
 								if (!nextElement.hasBinding(endVar.getName())) {
-									((QueryBindingSet)nextElement).addBinding(endVar.getName(), endValue);
+									((QueryBindingSet)nextElement).addBinding(endVar.getName(), v2);
 								}
 								return nextElement;
 							}
@@ -419,7 +422,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 							if (!v1.equals(v2)) {
 								valueQueue.add(vp);
 							}
-
+							if (!nextElement.hasBinding(startVar.getName())) {
+								((QueryBindingSet)nextElement).addBinding(startVar.getName(), v1);
+							}
+							if (!nextElement.hasBinding(endVar.getName())) {
+								((QueryBindingSet)nextElement).addBinding(endVar.getName(), v2);
+							}
 							return nextElement;
 						}
 					}
