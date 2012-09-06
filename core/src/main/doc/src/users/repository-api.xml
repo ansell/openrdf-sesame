@@ -25,7 +25,6 @@
 	 </para>
 	<section>
 		<title>Creating a Repository object</title>
-
 		<para>
 			The first step in any action that involves Sesame repositories
 			is to create a <classname>Repository</classname> for it.
@@ -40,8 +39,8 @@
 				<classname>org.openrdf.repository.sail.SailRepository</classname>
 				is a <classname>Repository</classname> that operates directly on
 				top of a <classname>Sail</classname>. This is the class most
-				commonly used when accessing a local Sesame repository.
-				<classname>SailRepository</classname>'s operate on (stacks of)
+				commonly used when accessing/creating a local Sesame repository.
+				<classname>SailRepository</classname> operates on a (stack of)
 				Sail object(s) for storage and retrieval of RDF data. An important
 				thing to remember is that the behaviour of a repository is
 				determined by the Sail(s) that it operates on; for example, the
@@ -55,6 +54,12 @@
 				available on a remote Sesame server, accessible through
 				HTTP.
 			</listitem>
+			<listitem>
+				<classname>org.openrdf.repository.sparql.SPARQLRepository</classname>
+				is a <classname>Repository</classname> implementation that acts as
+				a proxy to any remote SPARQL endpoint (whether that endpoint is
+				implemented using Sesame or not). 
+			</listitem>
 		</itemizedlist>
 		<para>
 			In the following section, we will first take a look at the use of
@@ -66,9 +71,9 @@
 			<para>
 				One of the simplest configurations is a repository that just
 				stores RDF data in main memory without applying any
-				inferencing or whatsoever. This is also by far the fastest
+				inferencing. This is also by far the fastest
 				type of repository that can be used. The following code
-				creates and initialize a non-inferencing main-memory
+				creates and initializes a non-inferencing main-memory
 				repository:
 			</para>
 			<programlisting><![CDATA[
@@ -79,22 +84,20 @@ import org.openrdf.sail.memory.MemoryStore;
 
 ...
 
-Repository myRepository = new SailRepository(new MemoryStore());
-myRepository.initialize();]]></programlisting>
+Repository repo = new SailRepository(new MemoryStore());
+repo.initialize();]]></programlisting>
 			<para>
 				The constructor of the <classname>SailRepository</classname>
 				class accepts any object of type <classname>Sail</classname>,
 				so we simply pass it a new main-memory store object (which is,
 				of course, a <classname>Sail</classname> implementation).
 				Following this, the repository needs to be initialized to
-				prepare the Sail(s) that it operates on, which includes
-				operations such as restoring previously stored data, setting
-				up connections to a relational database, etc.
+				prepare the Sail(s) that it operates on.
 			</para>
 			<para>
 				The repository that is created by the above code is
 				<emphasis>volatile</emphasis>: its contents are lost when the
-				object is garbage collected or when the program is shut down.
+				object is garbage collected or when your Java program is shut down.
 				This is fine for cases where, for example, the repository is
 				used as a means for manipulating an RDF model in memory.
 			</para>
@@ -105,12 +108,12 @@ myRepository.initialize();]]></programlisting>
 				directory parameter that specifies a data directory for
 				persisent storage. If specified, the MemoryStore will write its
 				contents to this directory so that it can restore it when it is
-				initialized in a future session:
+				re-initialized in a future session:
 			</para>
 			<programlisting><![CDATA[
 File dataDir = new File("c:\\temp\\myRepository\\");
-Repository myRepository = new SailRepository( new MemoryStore(dataDir) );
-myRepository.initialize();]]></programlisting>
+Repository repo = new SailRepository( new MemoryStore(dataDir) );
+repo.initialize();]]></programlisting>
 			<para>
 				As you can see, we can fine-tune the configuration of our
 				repository by passing parameters to the constructor of the
@@ -127,8 +130,8 @@ File dataDir = new File("c:\\temp\\myRepository\\");
 MemoryStore memStore = new MemoryStore(dataDir);
 memStore.setSyncDelay(1000L);
 
-Repository myRepository = new SailRepository(memStore);
-myRepository.initialize();]]></programlisting>
+Repository repo = new SailRepository(memStore);
+repo.initialize();]]></programlisting>
 		</section> <!-- Creating a main memory RDF Repository -->
 		<section>
 			<title>Creating a Native RDF Repository</title>
@@ -151,8 +154,8 @@ import org.openrdf.sail.nativerdf.NativeStore;
 
 ...
 File dataDir = new File("/path/to/datadir/");
-Repository myRepository = new SailRepository(new NativeStore(dataDir));
-myRepository.initialize();]]></programlisting>
+Repository repo = new SailRepository(new NativeStore(dataDir));
+repo.initialize();]]></programlisting>
 			<para>
 			  By default, the Native store creates a set of two indexes (see
 			  <xref linkend="section-native-store-config"/>). To
@@ -170,10 +173,9 @@ import org.openrdf.sail.nativerdf.NativeStore;
 ...
 File dataDir = new File("/path/to/datadir/");
 String indexes = "spoc,posc,cosp";
-Repository myRepository = new SailRepository(new NativeStore(dataDir, indexes));
-myRepository.initialize();]]></programlisting>
+Repository repo = new SailRepository(new NativeStore(dataDir, indexes));
+repo.initialize();]]></programlisting>
 		</section> <!-- Creating a Native RDF Repository -->
-
 		<section>
 			<title>Creating a repository with RDF Schema inferencing</title>
 			<para>
@@ -193,10 +195,10 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 
 ...
 
-Repository myRepository = new SailRepository(
+Repository repo = new SailRepository(
                           new ForwardChainingRDFSInferencer(
                           new MemoryStore()));
-myRepository.initialize();]]></programlisting>
+repo.initialize();]]></programlisting>
 			<para>
 				Each layer in the Sail stack is created by a constructor
 				that takes the underlying Sail as a parameter. Finally, we
@@ -208,7 +210,7 @@ myRepository.initialize();]]></programlisting>
 				used in this example is a generic RDF Schema inferencer; it can
 				be used on top of any Sail that supports the methods it
 				requires. Both <classname>MemoryStore</classname> and 
-				<classname>NativeStore</classname> support these methods.
+				<classname>NativeStore</classname> support these methods. However, a word of warning: the Sesame inferencers add a significant performance overhead when adding and removing data to a repository, an overhead that gets progressively worse as the total size of the repository increases. For small to medium-sized datasets it peforms fine, but for larger datasets you are advised not to use it and to switch to alternatives.
 			</para>
 		</section> <!-- Creating a repository with RDF Schema inferencing -->
 
@@ -225,7 +227,7 @@ myRepository.initialize();]]></programlisting>
 				A requirement is of course that there is a Sesame 2 server
 				running on some remote system, which is accessible over HTTP.
 				For example, suppose that at
-				<filename>http://example.org/sesame2/</filename> a
+				<filename>http://example.org/openrdf-sesame/</filename> a
 				Sesame server is running, which has a repository with the
 				identification 'example-db'. We can access this repository in
 				our code as follows:
@@ -236,11 +238,11 @@ import org.openrdf.repository.http.HTTPRepository;
 
 ...
 
-String sesameServer = "http://example.org/sesame2";
+String sesameServer = "http://example.org/openrdf-sesame/";
 String repositoryID = "example-db";
 
-Repository myRepository = new HTTPRepository(sesameServer, repositoryID);
-myRepository.initialize();]]></programlisting>
+Repository repo = new HTTPRepository(sesameServer, repositoryID);
+repo.initialize();]]></programlisting>
 		</section> <!-- Accessing a remote repository -->
 	</section> <!-- Creating a Repository object -->
 
@@ -295,7 +297,7 @@ File file = new File("/path/to/example.rdf");
 String baseURI = "http://example.org/example/local";
 
 try {
-   RepositoryConnection con = myRepository.getConnection();
+   RepositoryConnection con = repo.getConnection();
    try {
       con.add(file, baseURI, RDFFormat.RDFXML);
 
@@ -369,17 +371,22 @@ import org.openrdf.query.QueryLanguage;
 ...
 
 try {
-   RepositoryConnection con = myRepository.getConnection();
+   RepositoryConnection con = repo.getConnection();
    try {
-      String queryString = "SELECT x, y FROM {x} p {y}";
-      TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SERQL, queryString);
-      TupleQueryResult result = tupleQuery.evaluate();
-      try {
-         .... // do something with the result
-      }
-      finally {
-         result.close();
-      }
+	  String queryString = "SELECT ?x ?y WHERE { ?x ?p ?y } ";
+	  TupleQuery tupleQuery = con.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+
+	  TupleQueryResult result = tupleQuery.evaluate();
+	  try {
+			BindingSet bindingSet = result.next();
+			Value valueOfX = bindingSet.getValue("x");
+			Value valueOfY = bindingSet.getValue("y");
+
+			// do something interesting with the values here...
+	  }
+	  finaly {
+	      result.close();
+	  }
    }
    finally {
       con.close();
@@ -389,7 +396,7 @@ catch (OpenRDFException e) {
    // handle exception
 }]]></programlisting>
 				<para>
-					This evaluates a SeRQL query and returns a
+					This evaluates a SPARQL query and returns a
 					<classname>TupleQueryResult</classname>, which consists of a
 					sequence of <classname>BindingSet</classname> objects. Each
 					<classname>BindingSet</classname> contains a set of
@@ -398,21 +405,10 @@ catch (OpenRDFException e) {
 					a value.
 				</para>
 				<para>
-					We can use the <classname>TupleQueryResult</classname> to iterate
+					As you can see, we use the <classname>TupleQueryResult</classname> to iterate
 					over all results and get each individual result for
-					<varname>x</varname> and <varname>y</varname>:
-				</para>
-				<programlisting><![CDATA[
-while (result.hasNext()) {
-   BindingSet bindingSet = result.next();
-   Value valueOfX = bindingSet.getValue("x");
-   Value valueOfY = bindingSet.getValue("y");
-
-   // do something interesting with the values here...
-}]]></programlisting>
-
-				<para>
-					As you can see, we retrieve values by name rather than by an
+					<varname>x</varname> and <varname>y</varname>.
+					We retrieve values by name rather than by an
 					index. The names used should be the names of variables as
 					specified in your query. The
 					<classname>TupleQueryResult.getBindingNames()</classname> method
@@ -431,7 +427,7 @@ while (result.hasNext()) {
    // do something interesting with the values here...
 }]]></programlisting>
 				<para>
-					It is important to invoke the <function>close()</function>
+					Finally, it is important to invoke the <function>close()</function>
 					operation on the <classname>TupleQueryResult</classname>,
 					after we are done with it. A
 					<classname>TupleQueryResult</classname> evaluates lazily and
@@ -508,7 +504,7 @@ finally {
 import org.openrdf.query.GraphQueryResult;
 
 GraphQueryResult graphResult = con.prepareGraphQuery(
-      QueryLanguage.SERQL, "CONSTRUCT * FROM {x} p {y}").evaluate();]]></programlisting>
+QueryLanguage.SPARQL, "CONSTRUCT { ?s ?p ?o } WHERE {?s ?p ?o }".evaluate();]]></programlisting>
 				<para>
 					A <classname>GraphQueryResult</classname> is similar to
 					<classname>TupleQueryResult</classname> in that is an object
@@ -535,20 +531,22 @@ while (graphResult.hasNext()) {
 					etc.) implement the <classname>RDFHandler</classname> interface. This
 					allows them to be used in combination with querying quite easily. In the
 					following example, we use a <classname>TurtleWriter</classname>
-					to write the result of a SeRQL graph query to standard output
+					to write the result of a SPARQL graph query to standard output
 					in Turtle format:
 				</para>
 				<programlisting><![CDATA[
-import org.openrdf.rio.turtle.TurtleWriter;
+import org.openrdf.rio.Rio;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFWriter;
 
 ...
 
-RepositoryConnection con = myRepository.getConnection();
+RepositoryConnection con = repo.getConnection();
 try {
-   TurtleWriter turtleWriter = new TurtleWriter(System.out);
+   RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, System.out);
 
-   con.prepareGraphQuery(QueryLanguage.SERQL,
-         "CONSTRUCT * FROM {x} p {y}").evaluate(turtleWriter);
+	con.prepareGraphQuery(QueryLanguage.SPARQL, 
+	     "CONSTRUCT {?s ?p ?o } WHERE {?s ?p ?o } ").evaluate(writer);
 }
 finally {
    con.close();
@@ -592,16 +590,15 @@ finally {
 					functionality, as follows:
 				</para>
 				<programlisting><![CDATA[
-RepositoryConnection con = myRepository.getConnection();
-
+RepositoryConnection con = repo.getConnection();
 try {
    // First, prepare a query that retrieves all names of persons
-   TupleQuery nameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
-         "SELECT name FROM {person} ex:name {name}");
+   TupleQuery nameQuery = con.prepareTupleQuery(QueryLanguage.SPARQL,
+         "SELECT ?name WHERE { ?person ex:name ?name . }");
 
    // Then, prepare another query that retrieves all e-mail addresses of persons:
-   TupleQuery mailQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
-         "SELECT mail FROM {person} ex:mail {mail}; ex:name {name}");
+   TupleQuery mailQuery = con.prepareTupleQuery(QueryLanguage.SPARQL,
+         "SELECT ?mail WHERE { ?person ex:mail ?mail ; ex:name ?name . }");
 
    // Evaluate the first query to get all names
    TupleQueryResult nameResult = nameQuery.evaluate();
@@ -654,13 +651,13 @@ String keyword = "foobar";
 // We prepare a query that retrieves all documents for a keyword.
 // Notice that in this query the 'keyword' variable is not bound to
 // any specific value yet.
-TupleQuery keywordQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
-      "SELECT document FROM {document} ex:keyword {keyword}");
+TupleQuery keywordQuery = con.prepareTupleQuery(QueryLanguage.SPARQL,
+      "SELECT ?document WHERE { ?document ex:keyword ?keyword . }");
 
 // Then we set the binding to a literal representation of our keyword.
 // Evaluation of the query object will now effectively be the same as
 // if we had specified the query as follows:
-//   SELECT document FROM {document} ex:keyword {"foobar"}
+//   SELECT ?document WHERE { ?document ex:keyword "foobar". }
 keywordQuery.setBinding("keyword", factory.createLiteral(keyword));
 
 // We then evaluate the prepared query and can process the result:
@@ -732,7 +729,7 @@ catch (OpenRDFException e) {
 				you can import the vocabulary classes
 				<classname>org.openrdf.model.vocabulary.RDF</classname> and
 				<classname>RDFS</classname> which provide you static references to
-				the vocabulary primitives.
+				the vocabulary primitives. Sesame provides several vocabulary classes, see the <ulink href="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/vocabulary/package-summary.html"><classname>org.openrdf.model.vocabulary</classname> package Javadoc</ulink> for details.
 			</para>
 			<para>
 				Retrieving statements works in a very similar way. One way of
@@ -801,7 +798,7 @@ con.remove(alice, null, null);]]></programlisting>
 		</section>
 
 		<section>
-			<title>Working with Collections and Iterations</title>
+			<title>Working with Graphs, Collections and Iterations</title>
 			<para>
 				Most of these examples have been on the level of individual
 				statements. However, the Repository API offers several methods
@@ -811,25 +808,28 @@ con.remove(alice, null, null);]]></programlisting>
 			<para>
 				For example, in the following bit of code, we first retrieve all
 				statements about Alice, put them in a
-				<classname>Collection</classname> and then remove them:
+				<classname>org.openrdf.model.Graph</classname> (which is an implementation of a Java <classname>Collection</classname>) and then remove them:
 			</para>
 			<programlisting><![CDATA[
 import info.aduna.iteration.Iterations;
+import org.openrdf.model.Graph;
+import org.openrdf.model.impl.GraphImpl;
 
-// Retrieve all statements about Alice and put them in a list
+// Retrieve all statements about Alice and put them in a Graph
 RepositoryResult<Statement> statements = con.getStatements(alice, null, null, true));
-List<Statement> aboutAlice = Iterations.addAll(statements, new ArrayList<Statement>());
+Graph aboutAlice = Iterations.addAll(statements, new GraphImpl());
 
 // Then, remove them from the repository
 con.remove(aboutAlice);]]></programlisting>
 			<para>
 				As you can see, the
-				<classname>info.aduna.iteration.Iterations</classname>
-				class provides a convenient method that takes an
+				<classname>info.aduna.iteration.Iterations</classname> class
+				provides a convenient method that takes an
 				<classname>Iteration</classname> (of which
 				<classname>RepositoryResult</classname> is a subclass) and a
-				Collection as input, and returns the Collection with the contents
-				of the iterator added to it. It also automatically closes the
+				Collection (of which <classname>GraphImpl</classname> is a
+				subclass) as input, and returns the Collection with the contents of
+				the iterator added to it. It also automatically closes the
 				Iteration for you.
 			</para>
 			<para>
@@ -842,9 +842,31 @@ con.remove(aboutAlice);]]></programlisting>
 con.remove(con.getStatements(alice, null, null, true));]]></programlisting>
 			<para>
 				The <classname>RepositoryConnection</classname> interface has several variations of
-				add, retrieve and remove operations. See the Javadoc API
-				documentation for a full overview of the options.
-			</para>
+				add, retrieve and remove operations. See the <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/repository/RepositoryConnection.html">RepositoryConnection Javadoc</ulink> for a full overview of the options.
+			 </para>
+			 <section>
+				<title>More on Graphs and GraphUtil</title>
+				<para>
+				  In the above example, we used a <classname>Graph</classname> (see <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/Graph.html">Graph Javadoc</ulink>) as a collection class for statements. The <classname>Graph</classname> class has several advantages over using just any old <classname>Collection</classname> class. First of all, it provides a <function>match</function> that can be used to retrieve statements from the collection that match a specific subject, predicate and object. In addition, you can use <classname>GraphUtil</classname> to easily retrieve specific parts of information from the statement collection. 
+				</para>
+				<para>
+				  For example, imagine we have a <classname>Graph<classname> containing names and e-mails for several persons (using the FOAF vocabulary). To easily retrieve each e-mail address for each person, we can do something like this:
+				</para>
+			<programlisting><![CDATA[
+import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.FOAF;
+
+Graph graph = ... ; // we initialized our graph before (for example by doing a query on our repository)
+
+for (Resource subject: GraphUtil.getSubjects(graph, RDF.TYPE, FOAF.PERSON)) {
+   Literal nameOfSubject = GraphUtil.getUniqueObjectLiteral(graph, subject, FOAF.NAME); 
+   Literal mboxOfSubject = GraphUtil.getUniqueObjectLiteral(graph, subject, FOAF.MBOX); 
+}]]></programlisting>
+			 </section>
 		</section>
 
 		<section>

@@ -32,35 +32,16 @@
 	  <section>
 		  <title>Using Apache Maven</title>
 		<para>
-			An alternative to picking libraries by hand is to use
-			Maven. <ulink url="http://maven.apache.org/">Apache
-			    Maven</ulink> is a software management tool that
-			helps you by offering things like library version
-			management and dependency management (which is very
-			useful because it means that once you decide you need a
-			particular Sesame library, Maven automatically
-			downloads all the libraries that your library of choice
-			requires in turn), and giving you a handy-dandy build
-			environment. For details on how to start using Maven,
-			we advise you to take a look at the Apache Maven
-			website at <ulink url="http://maven.apache.org/"/>. If
-			you are familiar with Maven, here are a few pointers to
-			help set up your maven project.
+			An alternative to picking libraries by hand is to use Maven. <ulink url="http://maven.apache.org/">Apache Maven</ulink> is a software management tool that helps you by offering things like library version management and dependency management (which is very useful because it means that once you decide you need a particular Sesame library, Maven automatically downloads all the libraries that your library of choice requires in turn), and giving you a handy-dandy build environment. For details on how to start using Maven, we advise you to take a look at the Apache Maven website at <ulink url="http://maven.apache.org/"/>. If you are familiar with Maven, here are a few pointers to help set up your maven project.
 		 </para>
 		 <section>
 			<title>Maven Repository</title>
 			<para>
-			  OpenRDF Sesame has its own Maven repository. To configure you project to use the correct repository, add the following to your project's <filename>pom.xml</filename> (or to your Maven configuration file: <filename>settings.xml</filename>):
+			  OpenRDF Sesame has its own Maven repository. To configure your project to use the correct repository, add the following to your project's <filename>pom.xml</filename> (or to your Maven configuration file: <filename>settings.xml</filename>):
 			<screen><![CDATA[
 <repositories>
 				 ...
 		<repository>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
 			<id>aduna-opensource.releases</id>
 			<name>Aduna Open Source - Maven releases</name>
 			<url>http://repo.aduna-software.org/maven2/releases</url>
@@ -89,7 +70,6 @@
 	 </para>
   </section>
 	</section>
-
 	<section>
 		<title>Logging: SLF4J initialization</title>
 		<para>
@@ -107,19 +87,22 @@
 			Logging, Logback, log4j, etc. See the SLF4J website for more info.
 		</para>
 		<para>
-			What you need to do is to determine/decide which
-			logging implementation you (are going to) use and
-			include the appropriate SLF4J-bridge jar-file in your
-			classpath. For example, if you decide to use <ulink
-			    url="http://logging.apache.org/log4j/">Apache
-			    log4j</ulink>, you need to include the
-			SLF4J-to-log4j bridge in your classpath. The SLF4J
-			release packages include bridges to various logging
-			implementations; just download the SLF4J release
-			package and include the appropriate bridge in your
-			classpath (or, when using Maven, set the appropriate
-			dependency); <filename>slf4j-logj12-1.6.1.jar</filename>,
-			for example. That's all!
-		</para>
+		  What you need to do is to determine/decide which
+		  logging implementation you (are going to) use and
+		  include the appropriate SLF4J logger adapter in your
+		  classpath. For example, if you decide to use <ulink
+			 url="http://logging.apache.org/log4j/">Apache
+			 log4j</ulink>, you need to include the
+		  SFL4J-Log4J adapter in your classpath. The SLF4J
+		  release packages includes adapters for various logging
+		  implementations; just download the SLF4J release
+		  package and include the appropriate adapter in your
+		  classpath (or, when using Maven, set the appropriate
+		  dependency); <filename>slf4j-log4j12-(version).jar</filename>,
+		  for example. 
+		 </para>
+		 <para>
+			One thing to keep in mind when configuring logging is that SLF4J expects only a single logger implementation on the classpath. Thus, you should choose only a single logger. In addition, if parts of your code depend on projects that use other logging frameworks directly, you can include a <ulink url="http://www.slf4j.org/legacy.html">Legacy Bridge</ulink> which makes sure calls to the legacy logger get redirected to SLF4J (and from there on, to your logger of choice. When you set this up correctly, you can have a single logger configuration for your entire project.
+		 </para>
 	</section>
 </chapter>

@@ -35,7 +35,7 @@
 			As indicated in the previous section, the console connects to its own
 			set of repositories by default. Using the <command>connect</command>
 			command you can make the console connect to a Sesame Server or to a
-			set of repositories of your file system. For example, to connect to a
+			set of repositories on your file system. For example, to connect to a
 			Sesame Server that is listening to port 8080 on localhost, enter the
 			following command:
 		</para>
@@ -83,14 +83,6 @@
 			<listitem>
 				<parameter>native-rdfs-dt</parameter>
 				-- a native repository with RDF Schema and direct type hierarchy inferencing
-			</listitem>
-			<listitem>
-				<parameter>pgsql</parameter>
-				-- a repository that stores data in a PostgreSQL database
-			</listitem>
-			<listitem>
-				<parameter>mysql</parameter>
-				-- a repository that stores data in a MySQL database
 			</listitem>
 			<listitem>
 				<parameter>remote</parameter>
@@ -182,7 +174,7 @@ Repository created]]></screen>
 			<para>
 				A native store stores and retrieves its data directly to/from
 				disk. The advantage of this over the memory store is that it
-				scales much better as it isn't limited to the size of available
+				scales much better as it is not limited to the size of available
 				memory. Of course, since it has to access the disk, it is also
 				slower than the in-memory store, but it is a good solution for
 				larger data sets.
@@ -208,7 +200,7 @@ Repository created]]></screen>
 					By default, the native repository only uses two indexes, one
 					with a subject-predicate-object-context (spoc) key pattern
 					and one with a predicate-object-subject-context (posc) key
-					pattern.  However, it is possible to define more or other
+					pattern. However, it is possible to define more or other
 					indexes for the native repository, using the
 					<parameter>Triple indexes</parameter> parameter. This can be
 					used to optimize performance for query patterns that occur
@@ -238,106 +230,10 @@ Repository created]]></screen>
 			</section>
 		</section> <!-- native store configuration -->
 	
-		<section id="section-rdbms-store-config">
-			<title>RDBMS store configuration</title>
-			<para>
-				An RDBMS store is an RDF repository that stores its data in a
-				relational database. Currently, PostgreSQL and MySQL are
-				supported. Both RDBMS's have their own configuration template,
-				"pgsql" and "mysql" respectively, but these have the same set
-				of parameters.
-			</para>
-			<section>
-				<title>JDBC driver</title>
-				<para>
-					The RDBMS store communicates with a database via a JDBC driver
-					for the concerning RDBMS. These JDBC drivers are not included
-					in the Sesame SDK; you will need to add these jar-files to the
-					Console and/or Sesame server for these to be able to run the
-					RDBMS store. Note that you don't need to add the driver to the
-					Console if you only use it to configure an RDBMS store on a
-					Sesame server.
-				</para>
-				<para>
-					To add the JDBC driver to the Sesame Console, just put the JDBC
-					jar-file in the SDK's <filename>lib</filename> directory with
-					all the other jar-files. To add it to a Sesame server, add the
-					jar-file to the web application's <filename>WEB-INF/lib</filename>
-					directory.
-				</para>
-			</section>
-
-			<section>
-				<title>JDBC parameters</title>
-				<para>
-					The database that the RDBMS should use is defined using the
-					following set of parameters:
-				</para>
-				<itemizedlist>
-					<listitem>
-						<parameter>JDBC driver</parameter> -- specifies which JDBC
-						driver an RDBMS store should use. The default value
-						specified by the configuration templates should used
-						in most cases.
-					</listitem>
-					<listitem>
-						<parameter>Host</parameter> -- specifies the name of the
-						machine that is running the database.
-					</listitem>
-					<listitem>
-						<parameter>Port</parameter> -- specifies the port to use
-						for communication with the host machine. The
-						configuration templates specify the default port
-						numbers for their RDBMS's.
-					</listitem>
-					<listitem>
-						<parameter>Database</parameter> -- specifies the name of
-						the database that should be used.
-					</listitem>
-					<listitem>
-						<parameter>Connection properties</parameter> -- can
-						optionally be used to specify additional properties for
-						the JDBC driver. Please consult the documentation of the
-						RDBMS's JDBC driver for more info.
-					</listitem>
-					<listitem>
-						<parameter>User name</parameter> -- the user name or role
-						that should be used to authenticate with the RDBMS.
-					</listitem>
-					<listitem>
-						<parameter>Password</parameter> -- the password for the
-						specified user name or role.
-					</listitem>
-				</itemizedlist>
-			</section>
-
-			<section>
-				<title>Table layout parameters</title>
-				<para>
-					The database's table layout can be tweaked using the
-					<parameter>Max number of triple tables</parameter> parameter. The
-					RDBMS store supports both a "monolithic" schema with a single
-					table that stores all statements, as well as a vertical schema
-					that stores statements in a per-predicate table.
-				</para>
-				<para>
-					The vertical layout has better query evaluation performance on
-					most data sets, but potentially leads to huge amounts of tables,
-					depending on the number of unique predicates in your data. If
-					the number of tables becomes too large, the database's performance
-					can start to decrease or it can even fail completely. To prevent
-					these problem, you can specify the maximum number of triple tables
-					that should be created. Setting this parameter to 1 results in a
-					monolithic schema, setting it to 0 or a negative value disables
-					the limit.
-				</para>
-			</section>
-		</section> <!-- RDBMS store configuration -->
-	
 		<section>
 			<title>HTTP repository configuration</title>
 			<para>
-				An HTTP repository isn't an actual store, but serves as a proxy for
+				An HTTP repository is not an actual store by itself, but serves as a proxy for
 				a store on a (remote) Sesame server. Apart from the standard
 				<parameter>ID</parameter> and <parameter>title</parameter> parameters,
 				this type of repository has a <parameter>Sesame server location</parameter>
@@ -357,10 +253,11 @@ Repository created]]></screen>
 			<section>
 				<title>Remote repository ID</title>
 				<para>
-					This is the ID of the <emphasis>remote</emphasis> repository that the
-					HTTP repository should communicate with. Please note an HTTP repository
-					two repository ID parameters: one identifying the remote repository and
-					one that specifies the HTTP repository's own ID.
+					This is the ID of the <emphasis>remote</emphasis> repository
+					that the HTTP repository should communicate with. Please note an
+					HTTP repository in the Console has two repository ID parameters:
+					one identifying the remote repository and one that specifies the
+					HTTP repository's own ID.
 				</para>
 			</section>
 		</section> <!-- HTTP repository configuration -->
@@ -429,7 +326,7 @@ Repository created]]></screen>
 		</para>
 		<para>
 			The URIs that are used in the templates are the URIs that are specified by the
-			<classname>RepsitoryConfig</classname> and <classname>SailConfig</classname> classes
+			<classname>RepositoryConfig</classname> and <classname>SailConfig</classname> classes
 			of Sesame's repository configuration mechanism. The relevant namespaces and URIs can
 			be found in these javadoc or source of these classes.
 		</para>

@@ -42,16 +42,16 @@
 		Sesame.
 	</para>
 	<para> 
-		The Storage And Inference Layer (Sail) API is a low level System API
-		(SPI) for RDF stores and inferencers. Its purpose is to abstract from
-		the storage and inference details, allowing various types of storage and
-		inference to be used. The Sail API is mainly of interest for those who
-		are developing Sail implementations, for all others it suffices to know
-		how to create and configure one. There are several implementations of
-		the Sail API, for example the <classname>MemoryStore</classname> which
-		stores RDF data in main memory, and the
-		<classname>NativeStore</classname> which uses dedicated on-disk data
-		structures for storage.
+		The Storage And Inference Layer (SAIL) API is a low level System API
+		(SPI) for RDF stores and inferencers. Its purpose is to abstract from the
+		storage and inference details, allowing various types of storage and
+		inference to be used. The SAIL API is mainly of interest for those who
+		are developing SAIL implementations (typically, triplestore developers),
+		for all others it suffices to know how to create and configure one. There
+		are several implementations of the Sail API, for example the
+		<classname>MemoryStore</classname> which stores RDF data in main memory,
+		and the <classname>NativeStore</classname> which uses dedicated on-disk
+		data structures for storage.
 	</para>
 	<para> 
 		The Repository API is a higer level API that offers a large number of
@@ -62,7 +62,7 @@
 		this API, the ones shown in this figure are the
 		<classname>SailRepository</classname> and the
 		<classname>HTTPRepository</classname>. The former translates calls to a
-		Sail implementation of choice, the latter offers transparent
+		SAIL implementation of choice, the latter offers transparent
 		client-server communication with a Sesame server over HTTP.
 	</para>
 	<para>
@@ -77,7 +77,7 @@
 	<para>
 		While each part of the Sesame code is publicly available and extensible,
 		most application developers will be primarily interested in the
-		Repository API. This API is described in more detail in one of the
-		following chapters.
+		Repository API. This API is described in more detail in <xref
+				linkend="chapter-repository-api"/>.
 	</para>
 </chapter>

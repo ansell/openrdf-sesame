@@ -14,7 +14,7 @@
 			jar files and a set of Web Archive (.war) files for easy
 			deployment of Sesame's web applications (see <xref
 				linkend="chapter-server-install"/>). It also includes
-			documentation (such as  this user manual, and the API documentation).
+			 documentation (such as  this user manual, and the API documentation), as well as startup scripts for the Sesame command console (see <xref linkend="chapter-console"/>).
 		</listitem>
 		<listitem>
 			<filename>openrdf-sesame-(version)-sdk.zip</filename>.
@@ -34,16 +34,15 @@
 	 <section>
 	<title>Maven artifacts</title>
 	<para>
-		The Sesame libraries are also available as maven artifacts in a
-		<emphasis>maven repository</emphasis>. This maven repository is located
+		The Sesame libraries are also available as artifacts in a
+		<emphasis>Maven repository</emphasis>. This Maven repository is located
 		at <ulink url="http://repo.aduna-software.org/maven2/releases/"/>.
-		Developers using maven can use this repository to automatically resolve
+		Developers using Maven can use this repository to automatically resolve
 		library dependencies and to get the latest released versions of each
 		library. See <xref linkend="chapter-lib-install"/> for more information on how to set up your POM and which dependencies to include.
 	 </para>
 	    <para>
-		For instructions how to use the maven build system, see
-		<ulink url="http://maven.apache.org/"/>.
+		For instructions how to use the Maven build system, see <ulink url="http://maven.apache.org/"/>.
 	 </para>
   </section>
   <section>
