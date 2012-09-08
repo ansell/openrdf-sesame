@@ -32,9 +32,9 @@
 &download;
 &sesame-intro;
 &lib-install;
-&datadir;
 &serverinstall;
 &console;
+&datadir;
 &repository-api;
 &http-protocol;
 &serql-usermanual;
