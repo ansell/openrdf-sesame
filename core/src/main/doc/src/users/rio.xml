@@ -48,7 +48,7 @@
 java.net.URL documentUrl = new URL(“http://example.org/example.ttl”);
 InputStream inputStream = documentUrl.openStream();]]></programlisting>
 <para>
-  We now have an open InputStream to our RDF file. Now we need a RDFParser object that reads this InputStream and creates RDF statements out of it. Since we are reading a Turtle file, we create a TurtleParser object:
+  We now have an open InputStream to our RDF file. Now we need a RDFParser object that reads this InputStream and creates RDF statements out of it. Since we are reading a Turtle file, we create a RDFParser object for the <classname>RDFFormat.TURTLE</classname> syntax format:
 </para>
 <programlisting><![CDATA[
 RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);]]></programlisting>
