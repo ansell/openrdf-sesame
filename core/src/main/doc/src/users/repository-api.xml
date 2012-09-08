@@ -43,15 +43,12 @@ Statement typeStatement = factory.createStatement(bob, RDF.TYPE, FOAF.PERSON);]]
 		machinery.
 	</para>
 	<para>
-		In this chapter, we will try to explain the basics of how to program
-		against the Repository API. The interfaces for the Repository API
-		can be found in package
-		<classname>org.openrdf.repository</classname>.  Several
-		implementations for these interface exist in various sub-packages.
-		The Javadoc reference for the API is available <ulink
-			url="http://www.openrdf.org/doc/sesame2/api/">online</ulink> and
-		can also be found in the <filename>doc</filename> directory of the
-		download.
+		The interfaces for the Repository API can be found in package
+		<classname>org.openrdf.repository</classname>.  Several implementations
+		for these interface exist in various sub-packages.  The Javadoc reference
+		for the API is available <ulink
+		  url="http://www.openrdf.org/doc/sesame2/api/">online</ulink> and can
+		also be found in the <filename>doc</filename> directory of the download.
 	 </para>
 	 <para>
 		If you need more information about how to set up your environment
@@ -827,7 +824,7 @@ con.remove(alice, name, alicesName);]]></programlisting>
 			<programlisting><![CDATA[
 con.remove(alice, null, null);]]></programlisting>
 		</section>
-
+	 </section>
 		<section>
 			<title>Working with Graphs, Collections and Iterations</title>
 			<para>
@@ -1111,6 +1108,5 @@ finally {
 				cancelled and none of the files is added to the repository.
 			</para>
 		</section> <!-- transaction -->
-	 </section> <!-- using a repository -->
   </section> <!-- Repository API -->
 </chapter>

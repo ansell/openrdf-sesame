@@ -82,7 +82,14 @@ pre.screen {
     background-color: #DFF0C0;
 }
 
-
 img {
+}
+
+.toc {
+    border-bottom: 1px solid;
+}
+
+.toc dt, .list-of-figures dt, .list-of-tables dt {
+    font-size: 90%;
 }
 

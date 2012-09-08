@@ -82,7 +82,7 @@
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch the protocol version</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -129,7 +129,7 @@ Content-Length: 1
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch the repository list</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -240,7 +240,7 @@ Content-Type: application/sparql-results+xml;charset=UTF-8
 				<section>
 				  <title>Requests examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Evaluate a SeRQL-select query on repository "mem-ref"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -267,7 +267,7 @@ Content-Type: application/sparql-results+xml;charset=UTF-8
 </sparql>]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Evaluate a SPARQL-construct query on repository "mem-ref"
 						using a POST request</title>
 					 <para>Request:</para>
@@ -288,7 +288,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 </rdf:RDF>]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Evaluate a SPARQL-ask query on repository "mem-ref"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -321,7 +321,7 @@ true]]></screen>
 				</para>
 				<section>
 				  <title>Request examples</title>
-				  <section>
+				  <section role="NotInToc">
 					 <title>Remove the "mem-rdf" repository</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -446,7 +446,7 @@ HTTP/1.1 204 NO CONTENT]]></screen>
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all statements from repository "mem-rdf"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -461,7 +461,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 [RDF/XML ENCODED RDF DATA]]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all statements from a specific context in repository "mem-rdf"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -476,7 +476,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 [RDF/XML ENCODED RDF DATA]]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Remove all statements from the "mem-rdf" repository</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -487,7 +487,7 @@ Host: localhost]]></screen>
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Add data to the "mem-rdf" repository</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -501,7 +501,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Add data to the "mem-rdf" repository, replacing any and
 						all existing data</title>
 					 <para>Request:</para>
@@ -516,7 +516,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Add data to a specific context in the "mem-rdf"
 						repository, replacing any data that is currently in this
 						context</title>
@@ -532,7 +532,7 @@ Content-Type: application/x-turtle;charset=UTF-8
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Add statements without a context to the "mem-rdf"
 						repository, ignoring any context information that is
 						encoded in the supplied data</title>
@@ -548,7 +548,7 @@ Content-Type: application/x-turtle;charset=UTF-8
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Perform update described in a SPARQL 1.1 Update string</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -562,7 +562,7 @@ update=INSERT%20{?s%20?p%20?o}%20WHERE%20{?s%20?p%20?o}]]></screen>
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Perform updates described in a transaction document and
 						treat it as a single transaction</title>
 					 <para>Request:</para>
@@ -612,7 +612,7 @@ HTTP/1.1 204 NO CONTENT]]></screen>
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all context identifiers from repository "mem-rdf"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -676,7 +676,7 @@ Content-Type: application/sparql-results+xml
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all namespace declaration info</title>
 					 <para>Request</para>
 					 <screen><![CDATA[
@@ -707,7 +707,7 @@ Content-Type: application/sparql-results+xml
 </sparql>]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Remove all namespace declarations from the repository.</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -749,7 +749,7 @@ HTTP/1.1 204 NO CONTENT]]></screen>
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Get the namespace for prefix 'rdf'</title>
 					 <para>Request</para>
 					 <screen><![CDATA[
@@ -763,7 +763,7 @@ Content-Type: text/plain;charset=UTF-8
 http://www.w3.org/1999/02/22-rdf-syntax-ns#]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Set the namespace for a specific prefix</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -777,7 +777,7 @@ http://www.example.com]]></screen>
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Remove the namespace for a specific prefix</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -826,7 +826,7 @@ HTTP/1.1 204 NO CONTENT]]></screen>
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Get the size of repository 'mem-rdf'</title>
 					 <para>Request</para>
 					 <screen><![CDATA[
@@ -840,7 +840,7 @@ Content-Type: text/plain
 123456]]></screen>
 				  </section>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Get the size of a specific context in repository 'mem-rdf'</title>
 					 <para>Request</para>
 					 <screen><![CDATA[
@@ -901,7 +901,7 @@ Content-Type: text/plain
 				<section>
 				  <title>Request examples</title>
 
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all statements from a directly referenced named graph  in repository "mem-rdf"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -915,7 +915,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 
 [RDF/XML ENCODED RDF DATA]]]></screen>
 				  </section>
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all statements from an indirectly referenced named graph  in repository "mem-rdf"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -929,7 +929,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 
 [RDF/XML ENCODED RDF DATA]]]></screen>
 				  </section>
-				  <section>
+				  <section role="NotInToc">
 					 <title>Fetch all statements from the default graph in repository "mem-rdf"</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -943,7 +943,7 @@ Content-Type: application/rdf+xml;charset=UTF-8
 
 [RDF/XML ENCODED RDF DATA]]]></screen>
 				  </section>
-				  <section>
+				  <section role="NotInToc">
 					 <title>Add statements to a directly referenced named graph in the "mem-rdf" repository</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
@@ -956,7 +956,7 @@ Content-Type: application/x-turtle;charset=UTF-8
 					 <screen><![CDATA[
 HTTP/1.1 204 NO CONTENT]]></screen>
 				  </section>
-				  <section>
+				  <section role="NotInToc">
 					 <title>Clear a directly referenced named graph in the "mem-rdf" repository</title>
 					 <para>Request:</para>
 					 <screen><![CDATA[
