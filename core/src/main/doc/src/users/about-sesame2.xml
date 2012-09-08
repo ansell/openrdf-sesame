@@ -1,5 +1,7 @@
 <chapter id="chapter-sesame2-whats-new">
 	<title>rdf:about Sesame 2</title>
+	<section>
+	  <title>Introduction</title>
 		<para>
 			Sesame is an open source Java framework for storage and querying of
 			RDF data. The framework is fully extensible and configurable with
@@ -34,5 +36,25 @@
 			also offers commercial support and consultency services, feel free
 			to <ulink url="http://www.aduna-software.com/contact/">contact
 				us</ulink> for more information.
-		</para>
+		  </para>
+		</section>
+		<section>
+		  <title>How this manual is organized</title>
+		  <para>
+			 This user manual covers most aspects of working with Sesame in a
+			 variety of settings. In <xref linkend="chapter-download" />, we
+			 explain how and where to obtain Sesame binaries, source code and/or
+			 Maven artifacts. <xref linkend="chapter-sesame-intro" /> gives a
+			 brief overview of the architecture of the framework, and is a
+			 recommend background read for anyone who intends to start using
+			 Sesame. <xref linkend="chapter-lib-install" /> explains how to set up
+			 your development enviroment and is useful if you intend to write your
+			 own (Java) programs using the Sesame libraries.  In
+			 <xref linkend="chapter-server-install" /> we explain how to install the Sesame
+			 Server and Workbench web applications, and <xref linkend="chapter-console"/> explains the workings of the Sesame command line console, which is a useful tool to quickly create and use a (local) RDF store, but which can also be used as a command line client to connect with a Sesame Server. In <xref linkend="chapter-datadir-config"/> we explain where Sesame Server, Workbench and Console stores their data and how you can reconfigure that location.
+		  </para> 
+		  <para>
+			 The basics of programming with Sesame are covered in <xref linkend="chapter-repository-api"/>. <xref linkend="chapter-http-protocol"/> gives an overview of the structure of the HTTP REST protocol for the Sesame Server, which is useful if you want to communicate with a Sesame Server from a programming language other than Java. Finally, <xref linkend="chapter-serql"/> documents Sesame's SeRQL query language.
+		  </para>
+		</section>
 </chapter>

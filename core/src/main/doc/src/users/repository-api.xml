@@ -1,5 +1,40 @@
 <chapter id="chapter-repository-api">
-	<title>The Repository API</title>
+  <title>Basic Programming with Sesame</title>
+  <para>
+	 In this chapter, we introduce the basics of programming with the Sesame framework. We assume that you have at least a basic understanding of programming in Java and of how the Resource Description Framework models data.
+  </para>
+  <section id="section-model-api">
+	 <title>The RDF Model API</title>
+	 <para>
+		The core of the Sesame framework is the RDF Model API (see the <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/package-summary.html">Model API Javadoc</ulink>). This API defines how the building blocks of RDF (statements, URIs, blank nodes, literals) are represented. 
+	 </para>
+	 <para>
+		RDF statements are represented by the <classname>org.openrdf.model.Statement</classname> interface. Each <classname>Statement</classname> has a subject, predicate, object and (optionally) a context (more about contexts below, in the section about the Repository API). Each of these 4 items is a <classname>org.openrdf.model.Value</classname>. The <classname>Value</classname> interface is further specialized into <classname>org.openrdf.model.Resource</classname>, and <classname>org.openrdf.model.Literal</classname>. <classname>Resource</classname> represents any RDF value that is either a blank node or a URI (in fact, it specializes further into <classname>org.openrdf.model.URI</classname> and <classname>org.openrdf.model.BNode</classname>). <classname>Literal</classname> represents RDF literal values (strings, dates, integer numbers, and so on).
+	 </para>	
+	 <para>
+		To create new values and statements, we can use a <classname>org.openrdf.model.ValueFactory</classname>. You can use a default <classname>ValueFactory</classname> implementation called <classname>org.openrdf.model.impl.ValueFactoryImpl</classname>:
+	 </para>
+		<programlisting><![CDATA[
+ValueFactory factory = ValueFactoryImpl.getInstance();]]></programlisting>
+	 <para>
+		You can also obtain a <classname>ValueFactory</classname> from the <classname>Repository</classname> you are working with, and in fact, this is the recommend approach. More about that in the next section.
+	 </para>
+	 <para>
+		Regardless of how you obtain your <classname>ValueFactory</classname>, once you have it, you can use it to create new URIs, Literals, and Statements:
+		<programlisting><![CDATA[
+URI bob = factory.createURI("http://example.org/bob");
+URI name = factory.createURI("http://example.org/name");
+Literal bobsName = factory.createLiteral("Bob");
+Statement nameStatement = factory.createStatement(bob, name, bobsName);]]></programlisting>
+	 </para>
+	 <para>
+		The Model API also provides pre-defined URIs for several well-known vocabularies, such as <classname>RDF</classname>, <classname>RDFS</classname>, <classname>OWL</classname>, <classname>DC</classname> (Dublin Core), <classname>FOAF</classname> (Friend-of-a-Friend), and more. These constants can all be found in the <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/vocabulary/package-summary.html">org.openrdf.model.vocabulary</ulink> package, and can be quite handy in quick creation of RDF statements (or in querying a Repository, as we shall see later):
+	 </para>
+	 <programlisting><![CDATA[
+Statement typeStatement = factory.createStatement(bob, RDF.TYPE, FOAF.PERSON);]]></programlisting>
+  </section>
+  <section>
+	 <title>The Repository API</title>
 	<para>
 		The Repository API is the central access point for Sesame repositories.
 		Its purpose is to give a developer-friendly access point to RDF
@@ -32,7 +67,7 @@
 		<para>
 			The central interface of the repository API is the
 			<classname>Repository</classname> interface. There are several
-			implementations available of this interface:
+			implementations available of this interface. The three main ones are:
 		</para>
 		<itemizedlist>
 			<listitem>
@@ -81,7 +116,6 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
-
 ...
 
 Repository repo = new SailRepository(new MemoryStore());
@@ -111,7 +145,7 @@ repo.initialize();]]></programlisting>
 				re-initialized in a future session:
 			</para>
 			<programlisting><![CDATA[
-File dataDir = new File("c:\\temp\\myRepository\\");
+File dataDir = new File("C:\\temp\\myRepository\\");
 Repository repo = new SailRepository( new MemoryStore(dataDir) );
 repo.initialize();]]></programlisting>
 			<para>
@@ -126,7 +160,7 @@ repo.initialize();]]></programlisting>
 				the data file, e.g.:
 			</para>
 			<programlisting><![CDATA[
-File dataDir = new File("c:\\temp\\myRepository\\");
+File dataDir = new File("C:\\temp\\myRepository\\");
 MemoryStore memStore = new MemoryStore(dataDir);
 memStore.setSyncDelay(1000L);
 
@@ -275,7 +309,7 @@ repo.initialize();]]></programlisting>
 			<para>
 				We perform operations on a repository by requesting a
 				<classname>RepositoryConnection</classname> from the repository. On this
-				<classname>RepositoryConnection</classname> object we can the various
+				<classname>RepositoryConnection</classname> object we can perform various
 				operations, such as query evaluation, getting, adding, or
 				removing statements, etc.
 			</para>
@@ -301,7 +335,7 @@ try {
    try {
       con.add(file, baseURI, RDFFormat.RDFXML);
 
-      URL url = new URL("http://example.org/example/remote");
+      URL url = new URL("http://example.org/example/remote.rdf");
       con.add(url, url.toString(), RDFFormat.RDFXML);
    }
    finally {
@@ -332,26 +366,27 @@ catch (java.io.IOEXception e) {
 				The result of a tuple query is a set of tuples (or variable
 				bindings), where each tuple represents a solution of a query.
 				This type of query is commonly used to get specific values (URIs,
-				blank nodes, literals) from the stored RDF data.
+				blank nodes, literals) from the stored RDF data. SPARQL SELECT queries are tuple queries.
 			</para>
 			<para>
 				The result of graph queries is an RDF graph (or set of statements).
 				This type of query is very useful for extracting sub-graphs from
 				the stored RDF data, which can then be queried further, serialized
-				to an RDF document, etc.
+				to an RDF document, etc. SPARQL CONSTRUCT and DESCRIBE queries are graph queries.
 			</para>
 			<para>
 				The result of boolean queries is a simple boolean value, i.e.
 				<parameter>true</parameter> or <parameter>false</parameter>.
 				This type of query can be used to check if a repository contains
-				specific information.
+				specific information. SPARQL ASK queries are boolean queries.
 			</para>
 			<para>
 				<emphasis>Note:</emphasis> Sesame 2 currently supports two query
 				languages: SeRQL and SPARQL. The former is explained in
 				<xref linkend="chapter-serql"/>, the specification for the latter is
 				available
-				<ulink url="http://www.w3.org/TR/rdf-sparql-query/">online</ulink>.
+				<ulink url="http://www.w3.org/TR/rdf-sparql-query/">online</ulink>. In this chapter,
+				we will use SPARQL queries in our examples.
 			</para>
 
 			<section>
@@ -405,12 +440,13 @@ catch (OpenRDFException e) {
 					a value.
 				</para>
 				<para>
-					As you can see, we use the <classname>TupleQueryResult</classname> to iterate
-					over all results and get each individual result for
-					<varname>x</varname> and <varname>y</varname>.
-					We retrieve values by name rather than by an
-					index. The names used should be the names of variables as
-					specified in your query. The
+					As you can see, we use the
+					<classname>TupleQueryResult</classname> to iterate over all
+					results and get each individual result for <varname>x</varname>
+					and <varname>y</varname>.  We retrieve values by name rather
+					than by an index. The names used should be the names of
+					variables as specified in your query (note that we leave out the
+					'?' or '$' prefixes used in SPARQL). The
 					<classname>TupleQueryResult.getBindingNames()</classname> method
 					returns a list of binding names, in the order in which they were
 					specified in the query. To process the bindings in each binding
@@ -526,7 +562,7 @@ while (graphResult.hasNext()) {
 					process the reported RDF statements in any way it wants.
 				</para>
 				<para>
-					All writers from Rio (such as the <classname>RDFXMLWriter</classname>,
+					All Rio writers (such as the <classname>RDFXMLWriter</classname>,
 					<classname>TurtleWriter</classname>, <classname>TriXWriter</classname>,
 					etc.) implement the <classname>RDFHandler</classname> interface. This
 					allows them to be used in combination with querying quite easily. In the
@@ -609,7 +645,9 @@ try {
          Value name = bindingSet.get("name");
 
          // Retrieve the matching mailbox, by setting the binding for
-         // the variable 'name' to the retrieved value:
+			// the variable 'name' to the retrieved value. Note that we 
+			// can set the same binding name again for each iteration, it will 
+			// overwrite the previous setting.
          mailQuery.setBinding("name", name);
 
          TupleQueryResult mailResult = mailQuery.evaluate();
@@ -720,16 +758,9 @@ catch (OpenRDFException e) {
 				<classname>ValueFactory</classname> to create URIs. In practice,
 				you will find that you quite often retrieve existing URIs from the
 				repository (for example, by evaluating a query) and then use those
-				values to add new statements.
-			</para>
-			<para>
-				As you can see in the above code, for the default RDF and RDF Schema
-				properties (such as 'rdf:type' and 'rdfs:subClassOf') it is not
-				necessary to create new <classname>URI</classname> objects. Instead,
-				you can import the vocabulary classes
-				<classname>org.openrdf.model.vocabulary.RDF</classname> and
-				<classname>RDFS</classname> which provide you static references to
-				the vocabulary primitives. Sesame provides several vocabulary classes, see the <ulink href="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/vocabulary/package-summary.html"><classname>org.openrdf.model.vocabulary</classname> package Javadoc</ulink> for details.
+				values to add new statements. Or indeed, as we have seen in <xref linkend="section-model-api"/>, for several well-knowns vocabularies we can
+				simply reuse the predefined constants found in the
+				<classname>org.openrdf.model.vocabulary</classname> package.
 			</para>
 			<para>
 				Retrieving statements works in a very similar way. One way of
@@ -808,7 +839,7 @@ con.remove(alice, null, null);]]></programlisting>
 			<para>
 				For example, in the following bit of code, we first retrieve all
 				statements about Alice, put them in a
-				<classname>org.openrdf.model.Graph</classname> (which is an implementation of a Java <classname>Collection</classname>) and then remove them:
+				<classname>org.openrdf.model.Graph</classname> (which is an implementation of  <classname>java.util.Collection</classname>) and then remove them:
 			</para>
 			<programlisting><![CDATA[
 import info.aduna.iteration.Iterations;
@@ -847,7 +878,7 @@ con.remove(con.getStatements(alice, null, null, true));]]></programlisting>
 			 <section>
 				<title>More on Graphs and GraphUtil</title>
 				<para>
-				  In the above example, we used a <classname>Graph</classname> (see <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/Graph.html">Graph Javadoc</ulink>) as a collection class for statements. The <classname>Graph</classname> class has several advantages over using just any old <classname>Collection</classname> class. First of all, it provides a <function>match</function> that can be used to retrieve statements from the collection that match a specific subject, predicate and object. In addition, you can use <classname>GraphUtil</classname> to easily retrieve specific parts of information from the statement collection. 
+				  In the above example, we used a <classname>Graph</classname> (see <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/Graph.html">Graph Javadoc</ulink>) as a collection class for statements. The <classname>Graph</classname> class has several advantages over using just any old <classname>Collection</classname> class. First of all, it provides a <function>match</function> method that can be used to retrieve statements from the collection that match a specific subject, predicate and object. In addition, you can use <classname>GraphUtil</classname> to easily retrieve specific parts of information from the statement collection. 
 				</para>
 				<para>
 				  For example, imagine we have a <classname>Graph</classname> containing names and e-mails for several persons (using the FOAF vocabulary). To easily retrieve each e-mail address for each person, we can do something like this:
@@ -1080,5 +1111,6 @@ finally {
 				cancelled and none of the files is added to the repository.
 			</para>
 		</section> <!-- transaction -->
-	</section> <!-- using a repository -->
+	 </section> <!-- using a repository -->
+  </section> <!-- Repository API -->
 </chapter>
