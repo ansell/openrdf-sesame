@@ -11,6 +11,7 @@
 <!ENTITY serverinstall SYSTEM "serverinstall.xml">
 <!ENTITY console SYSTEM "console.xml">
 <!ENTITY repository-api SYSTEM "repository-api.xml">
+<!ENTITY rio SYSTEM "rio.xml">
 <!ENTITY http-protocol SYSTEM "http-protocol.xml">
 <!ENTITY serql-usermanual SYSTEM "serql-usermanual.xml">
 <!ENTITY glossary SYSTEM "glossary.xml">
@@ -36,6 +37,7 @@
 &console;
 &datadir;
 &repository-api;
+&rio;
 &http-protocol;
 &serql-usermanual;
 &glossary;
