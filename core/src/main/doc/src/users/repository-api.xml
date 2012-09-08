@@ -850,7 +850,7 @@ con.remove(con.getStatements(alice, null, null, true));]]></programlisting>
 				  In the above example, we used a <classname>Graph</classname> (see <ulink url="http://www.openrdf.org/doc/sesame2/api/index.html?org/openrdf/model/Graph.html">Graph Javadoc</ulink>) as a collection class for statements. The <classname>Graph</classname> class has several advantages over using just any old <classname>Collection</classname> class. First of all, it provides a <function>match</function> that can be used to retrieve statements from the collection that match a specific subject, predicate and object. In addition, you can use <classname>GraphUtil</classname> to easily retrieve specific parts of information from the statement collection. 
 				</para>
 				<para>
-				  For example, imagine we have a <classname>Graph<classname> containing names and e-mails for several persons (using the FOAF vocabulary). To easily retrieve each e-mail address for each person, we can do something like this:
+				  For example, imagine we have a <classname>Graph</classname> containing names and e-mails for several persons (using the FOAF vocabulary). To easily retrieve each e-mail address for each person, we can do something like this:
 				</para>
 			<programlisting><![CDATA[
 import org.openrdf.model.Graph;

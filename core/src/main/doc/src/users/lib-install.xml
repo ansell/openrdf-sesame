@@ -1,108 +1,158 @@
 <chapter id="chapter-lib-install">
-	<title>Setting up to use the Sesame libraries</title>
-	<para>
-		In this chapter, we explain some basics about setting up your
-		application development environment to work with Sesame. In <xref
-			linkend="chapter-repository-api"/> we go into details of the use
-		of the APIs. If you do not want to program against the Sesame
-		libraries but just want to install and run the Sesame HTTP server,
-		please skip ahead to <xref linkend="chapter-server-install"/>.
-	</para>
+  <title>Setting up to use the Sesame libraries</title>
+  <para>
+	 In this chapter, we explain some basics about setting up your
+	 application development environment to work with Sesame. In <xref
+		linkend="chapter-repository-api"/> we go into details of the use
+	 of the APIs. If you do not want to program against the Sesame
+	 libraries but just want to install and run the Sesame HTTP server,
+	 please skip ahead to <xref linkend="chapter-server-install"/>.
+  </para>
 
-	<section> 
-		<title>Downloading the libraries</title>
-		<para>
-			As was explained in <xref linkend="chapter-download"/>, various
-			download options are available to you. The quickest way to get
-			started with using the Sesame libraries is to download the Sesame
-			<emphasis>onejar</emphasis> library and include it in your classpath. 	
-		</para>
-		<para>
-			However, it is important to note that the Sesame Framework consists
-			of a set of libraries: Sesame is not a monolithic piece of software,
-			you can pick and choose which parts you want and which ones you
-			don't. In those cases where you don't care about picking and
-			choosing and just want to get on with it, the onejar is a good
-			choice. If, however, you want a little more control over what is
-			included, you can download the complete SDK and select (from the
-			<filename>lib</filename> directory) those sesame libraries that you
-			require.
-		 </para>
-	  </section>
-	  <section>
-		  <title>Using Apache Maven</title>
-		<para>
-			An alternative to picking libraries by hand is to use Maven. <ulink url="http://maven.apache.org/">Apache Maven</ulink> is a software management tool that helps you by offering things like library version management and dependency management (which is very useful because it means that once you decide you need a particular Sesame library, Maven automatically downloads all the libraries that your library of choice requires in turn), and giving you a handy-dandy build environment. For details on how to start using Maven, we advise you to take a look at the Apache Maven website at <ulink url="http://maven.apache.org/"/>. If you are familiar with Maven, here are a few pointers to help set up your maven project.
-		 </para>
-		 <section>
-			<title>Maven Repository</title>
-			<para>
-			  OpenRDF Sesame has its own Maven repository. To configure your project to use the correct repository, add the following to your project's <filename>pom.xml</filename> (or to your Maven configuration file: <filename>settings.xml</filename>):
-			<screen><![CDATA[
-<repositories>
-				 ...
-		<repository>
-			<id>aduna-opensource.releases</id>
-			<name>Aduna Open Source - Maven releases</name>
-			<url>http://repo.aduna-software.org/maven2/releases</url>
-		</repository>
-	</repositories>
-]]></screen>
-			</para>
-		 </section>
-		 <section>
-			 <title>Maven Artifacts</title>
-	    <para>
-		The groupId for all Sesame core artifacts is
-		<filename>org.openrdf.sesame</filename>.  For many projects you
-		will need only a part of the Sesame framework. For example, if
-		you require functionality for quick in-memory storage and
-		querying of RDF, you will only need to include dependencies on
-		the SAIL repository module (artifactId
-		<filename>sesame-repository-sail</filename>) and the in-memory
-		storage backend module (artifactId
-		<filename>sesame-sail-memory</filename>).
-	    </para>
-	    <para>
-		To include a maven dependency in your project that
-		automatically gets you the entire Sesame core framework, use
-		artifactId <filename>sesame-runtime</filename>. 
+  <section> 
+	 <title>Downloading the libraries</title>
+	 <para>
+		As was explained in <xref linkend="chapter-download"/>, various
+		download options are available to you. The quickest way to get
+		started with using the Sesame libraries is to download the Sesame
+		<emphasis>onejar</emphasis> library and include it in your classpath. 	
+	 </para>
+	 <para>
+		However, it is important to note that the Sesame Framework consists
+		of a set of libraries: Sesame is not a monolithic piece of software,
+		you can pick and choose which parts you want and which ones you
+		don't. In those cases where you don't care about picking and
+		choosing and just want to get on with it, the onejar is a good
+		choice. If, however, you want a little more control over what is
+		included, you can download the complete SDK and select (from the
+		<filename>lib</filename> directory) those sesame libraries that you
+		require.
 	 </para>
   </section>
-	</section>
-	<section>
-		<title>Logging: SLF4J initialization</title>
+  <section>
+	 <title>Using Apache Maven</title>
+	 <para>
+		An alternative to picking libraries by hand is to use Maven. <ulink url="http://maven.apache.org/">Apache Maven</ulink> is a software management tool that helps you by offering things like library version management and dependency management (which is very useful because it means that once you decide you need a particular Sesame library, Maven automatically downloads all the libraries that your library of choice requires in turn), and giving you a handy-dandy build environment. For details on how to start using Maven, we advise you to take a look at the Apache Maven website at <ulink url="http://maven.apache.org/"/>. If you are familiar with Maven, here are a few pointers to help set up your maven project.
+	 </para>
+	 <section>
+		<title>Maven Repository</title>
 		<para>
-			Before you begin using the Sesame libraries, one important
-			configuration step needs to be taken: the initialization and
-			configuration of a logging framework.
+		  OpenRDF Sesame has its own Maven repository. To configure your project to use the correct repository, add the following to your project's <filename>pom.xml</filename> (or to your Maven configuration file: <filename>settings.xml</filename>):
+		  <screen><![CDATA[
+<repositories>
+  ...
+  <repository>
+	 <id>aduna-opensource.releases</id>
+	 <name>Aduna Open Source - Maven releases</name>
+	 <url>http://repo.aduna-software.org/maven2/releases</url>
+  </repository>
+</repositories>]]></screen>
+		</para>
+	 </section>
+	 <section>
+		<title>Maven Artifacts</title>
+		<para>
+		  The groupId for all Sesame core artifacts is
+		  <filename>org.openrdf.sesame</filename>.  To include a maven dependency
+		  in your project that automatically gets you the entire Sesame core
+		  framework, use artifactId <filename>sesame-runtime</filename>:
+		<screen><![CDATA[
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-runtime</artifactId>
+  <version>${sesame.version}</version>
+</dependency>]]></screen>
 		</para>
 		<para>
-			Sesame uses the <ulink url="http://www.slf4j.org/">Simple Logging
+		  For many projects you will not need the entire Sesame framework, however, and you can fine-tune your dependencies so that you don't include more than you need. Here are some typical scenarios and the dependencies that go with it. Of course, it's up to you to vary on these basic scenarios and figure exactly which components you need (and if you don't want to bother you can always just use the `everything and the kitchen sink' <filename>sesame-runtime</filename> dependency).
+		</para>
+		<section>
+		  <title>Simple local storage and querying of RDF</title>
+		  <para>If you require functionality for quick in-memory storage and querying of RDF, you will need to include dependencies on the SAIL repository module (artifactId <filename>sesame-repository-sail</filename>) and the in-memory storage backend module (artifactId <filename>sesame-sail-memory</filename>):
+		  <screen><![CDATA[
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-repository-sail</artifactId>
+  <version>${sesame.version}</version>
+</dependency>
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-sail-memory</artifactId>
+  <version>${sesame.version}</version>
+</dependency>]]></screen>
+		  </para>
+		  <para>
+			 A straightforward variation on this scenario is of course if you decide you need a more scalable persistent storage instead of (or alongside) simple in-memory storage. In this case, you can include the native store:
+		  </para>
+		  <screen><![CDATA[
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-sail-nativerdf</artifactId>
+  <version>${sesame.version}</version>
+</dependency>]]></screen>
+		</section>
+		<section>
+		  <title>Parsing / writing RDF files</title>
+		  <para>The Sesame parser toolkit is called Rio, and it is split in several modules: one for its main API (<filename>sesame-rio-api</filename>), and one for each specific syntax format. If you require functionality to parse or write an RDF file, you will need to include a dependency on any of the parsers for that you will want to use. For example, if you expect to need an RDF/XML syntax parser and a Turtle syntax writer, include the following 2 dependencies (you do not need to include the API dependency explicitly since each parser implementation depends on it already):
+			 <screen><![CDATA[
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-rio-rdfxml</artifactId>
+  <version>${sesame.version}</version>
+</dependency>
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-rio-turtle</artifactId>
+  <version>${sesame.version}</version>
+</dependency>]]></screen>
+		  </para>
+		  </section>
+		  <section>
+			 <title>Accessing a remote Server</title>
+			 <para>If your project only needs functionality to query/manipulate a remotely running Sesame server, you can stick to just including the <filename>HTTPRepository</filename> module (<filename>sesame-repository-http</filename>):
+				<screen><![CDATA[
+<dependency>
+  <groupId>org.openrdf.sesame</groupId>
+  <artifactId>sesame-repository-http</artifactId>
+  <version>${sesame.version}</version>
+</dependency>]]></screen>
+			 </para>
+			 </section>
+		  </section>
+		</section>
+		<section>
+		  <title>Logging: SLF4J initialization</title>
+		  <para>
+			 Before you begin using any of the Sesame libraries, one important
+			 configuration step needs to be taken: the initialization and
+			 configuration of a logging framework.
+		  </para>
+		  <para>
+			 Sesame uses the <ulink url="http://www.slf4j.org/">Simple Logging
 				Facade for Java (SLF4J)</ulink>, which is a framework for
-			abstracting from the actual logging implementation. SLF4J allows
-			you, as a user of the Sesame framework, to plug in your own favorite
-			logging implementation at deployment time. SLF4J supports the most
-			popular logging implementations such as Java Logging, Apache Commons
-			Logging, Logback, log4j, etc. See the SLF4J website for more info.
-		</para>
-		<para>
-		  What you need to do is to determine/decide which
-		  logging implementation you (are going to) use and
-		  include the appropriate SLF4J logger adapter in your
-		  classpath. For example, if you decide to use <ulink
-			 url="http://logging.apache.org/log4j/">Apache
-			 log4j</ulink>, you need to include the
-		  SFL4J-Log4J adapter in your classpath. The SLF4J
-		  release packages includes adapters for various logging
-		  implementations; just download the SLF4J release
-		  package and include the appropriate adapter in your
-		  classpath (or, when using Maven, set the appropriate
-		  dependency); <filename>slf4j-log4j12-(version).jar</filename>,
-		  for example. 
-		 </para>
-		 <para>
-			One thing to keep in mind when configuring logging is that SLF4J expects only a single logger implementation on the classpath. Thus, you should choose only a single logger. In addition, if parts of your code depend on projects that use other logging frameworks directly, you can include a <ulink url="http://www.slf4j.org/legacy.html">Legacy Bridge</ulink> which makes sure calls to the legacy logger get redirected to SLF4J (and from there on, to your logger of choice. When you set this up correctly, you can have a single logger configuration for your entire project.
-		 </para>
-	</section>
-</chapter>
+			 abstracting from the actual logging implementation. SLF4J allows
+			 you, as a user of the Sesame framework, to plug in your own favorite
+			 logging implementation at deployment time. SLF4J supports the most
+			 popular logging implementations such as Java Logging, Apache Commons
+			 Logging, Logback, log4j, etc. See the SLF4J website for more info.
+		  </para>
+		  <para>
+			 What you need to do is to determine/decide which
+			 logging implementation you (are going to) use and
+			 include the appropriate SLF4J logger adapter in your
+			 classpath. For example, if you decide to use <ulink
+				url="http://logging.apache.org/log4j/">Apache
+				log4j</ulink>, you need to include the
+			 SFL4J-Log4J adapter in your classpath. The SLF4J
+			 release packages includes adapters for various logging
+			 implementations; just download the SLF4J release
+			 package and include the appropriate adapter in your
+			 classpath (or, when using Maven, set the appropriate
+			 dependency); <filename>slf4j-log4j12-(version).jar</filename>,
+			 for example. 
+		  </para>
+		  <para>
+			 One thing to keep in mind when configuring logging is that SLF4J expects only a single logger implementation on the classpath. Thus, you should choose only a single logger. In addition, if parts of your code depend on projects that use other logging frameworks directly, you can include a <ulink url="http://www.slf4j.org/legacy.html">Legacy Bridge</ulink> which makes sure calls to the legacy logger get redirected to SLF4J (and from there on, to your logger of choice. When you set this up correctly, you can have a single logger configuration for your entire project.
+		  </para>
+		</section>
+	 </chapter>
