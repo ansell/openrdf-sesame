@@ -55,10 +55,12 @@
 							<target>
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="userdoc" />
-								</ant>
+								 </ant>
+								 <!-- disabled because we are getting rid of outdate system docs 
 								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
 									<target name="systemdoc" />
 								</ant>
+									-->
 							</target>
 						</configuration>
 						<goals>
