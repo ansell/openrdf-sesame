@@ -88,6 +88,16 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		return contentFileName;
 	}
 
+	/***
+	 * Get the integer value associated with the given parameter name. 
+	 * Internally uses getParameter(String), so looks in this order:
+	 * 1. the query parameters that were parsed at construction, using the 
+	 * last value if multiple exist. 2. Request cookies. 3. The defaults. 
+	 * 
+	 * @returns the value of the parameter, or zero if it is not present
+	 * @throws BadRequestException if the parameter is present but does not
+	 * parse as an integer
+	 */
 	public int getInt(String name)
 		throws BadRequestException
 	{
