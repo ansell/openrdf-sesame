@@ -132,10 +132,8 @@ public class QueryServlet extends TransformationServlet {
 			boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
 			query.setIncludeInferred(infer);
 		}
-		int limit = 0;
-		if (req.isParameterPresent("limit")) {
-			limit = Integer.parseInt(req.getParameter("limit"));
-		}
+		int limit = req.getInt("limit");
+		int offset = req.getInt("offset");
 		RDFFormat format = null;
 		if (req.isParameterPresent("Accept")) {
 			format = RDFFormat.forMIMEType(req.getParameter("Accept"));
@@ -143,13 +141,13 @@ public class QueryServlet extends TransformationServlet {
 		if (query instanceof TupleQuery) {
 			builder.transform(xslPath, "tuple.xsl");
 			builder.start();
-			evaluateTupleQuery(builder, (TupleQuery)query, limit);
+			evaluateTupleQuery(builder, (TupleQuery)query, limit, offset);
 			builder.end();
 		}
 		else if (query instanceof GraphQuery && format == null) {
 			builder.transform(xslPath, "graph.xsl");
 			builder.start();
-			evaluateGraphQuery(builder, (GraphQuery)query, limit);
+			evaluateGraphQuery(builder, (GraphQuery)query, limit, offset);
 			builder.end();
 		}
 		else if (query instanceof GraphQuery) {
@@ -167,7 +165,7 @@ public class QueryServlet extends TransformationServlet {
 			throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
 		}
 	}
-
+	
 	private Query prepareQuery(RepositoryConnection con, QueryLanguage ql, String q)
 		throws RepositoryException, MalformedQueryException
 	{
@@ -202,7 +200,20 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void evaluateTupleQuery(TupleResultBuilder builder, TupleQuery query, int limit)
+	/***
+	 * Evaluate a tuple query, returning a subset of the results defined by 
+	 * limit and offset.
+	 * 
+	 * @param builder response builder helper for generating the XML response
+	 * to the client
+	 * @param query the query to be evaluated
+	 * @param limit the maximum number of results to return in the response
+	 * document
+	 * @param offset result count at which to start inserting  into response
+	 * document
+	 */
+	private void evaluateTupleQuery(TupleResultBuilder builder, 
+			TupleQuery query, int limit, int offset)
 		throws QueryEvaluationException
 	{
 		TupleQueryResult result = query.evaluate();
@@ -211,13 +222,19 @@ public class QueryServlet extends TransformationServlet {
 			builder.variables(names);
 			builder.link("info");
 			builder.flush();
-			for (int l = 0; result.hasNext() && (l < limit || limit < 1); l++) {
-				BindingSet set = result.next();
-				Object[] values = new Object[names.length];
-				for (int i = 0; i < names.length; i++) {
-					values[i] = set.getValue(names[i]);
+			final int max = offset + limit;
+			if (max > 0) {
+				for (int l = 0; l < max && result.hasNext(); l++) {
+					BindingSet set = result.next();
+					if (l < offset) {
+						continue;
+					}
+					Object[] values = new Object[names.length];
+					for (int i = 0; i < names.length; i++) {
+						values[i] = set.getValue(names[i]);
+					}
+					builder.result(values);
 				}
-				builder.result(values);
 			}
 		}
 		finally {
@@ -225,16 +242,35 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void evaluateGraphQuery(TupleResultBuilder builder, GraphQuery query, int limit)
+	/***
+	 * Evaluate a gr aph query, returning a subset of the results defined by 
+	 * limit and offset.
+	 * 
+	 * @param builder response builder helper for generating the XML response
+	 * to the client
+	 * @param query the query to be evaluated
+	 * @param limit the maximum number of results to return in the response
+	 * document
+	 * @param offset result count at which to start inserting  into response
+	 * document
+	 */
+	private void evaluateGraphQuery(TupleResultBuilder builder, 
+			GraphQuery query, int limit, int offset)
 		throws QueryEvaluationException
 	{
 		GraphQueryResult result = query.evaluate();
 		try {
 			builder.variables("subject", "predicate", "object");
 			builder.link("info");
-			for (int l = 0; result.hasNext() && (l < limit || limit < 1); l++) {
-				Statement st = result.next();
-				builder.result(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+			final int max = offset + limit;
+			if (max >= 0) {
+			    for (int l = 0; l < max && result.hasNext(); l++) {
+				    Statement st = result.next();
+				    if (l < offset) {
+					    continue;
+				    }
+				    builder.result(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+			    }
 			}
 		}
 		finally {

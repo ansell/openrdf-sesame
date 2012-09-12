@@ -68,6 +68,7 @@
 	<variable name="delete.label">Delete</variable>
 	<variable name="create.label">Create</variable>
 	<variable name="next.label">Next</variable>
+	<variable name="previous.label">Previous</variable>
 	<variable name="cancel.label">Cancel</variable>
 	<variable name="show.label">Show</variable>
 	<variable name="clear.label">Clear</variable>
