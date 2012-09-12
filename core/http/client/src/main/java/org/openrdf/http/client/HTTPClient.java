@@ -1405,11 +1405,11 @@ public class HTTPClient {
 	}
 	
 	private static void configureProxySettings(HttpClient httpClient) {
-		String proxyHostName = System.getenv("http.proxyHost");
+		String proxyHostName = System.getProperty("http.proxyHost");
 		if (proxyHostName != null && proxyHostName.length() > 0) {
 			int proxyPort = 80; // default
 			try {
-				proxyPort = Integer.parseInt(System.getenv("http.proxyPort"));
+				proxyPort = Integer.parseInt(System.getProperty("http.proxyPort"));
 			}
 			catch (NumberFormatException e) {
 				// do nothing, revert to default
@@ -1417,9 +1417,9 @@ public class HTTPClient {
 			ProxyHost proxyHost = new ProxyHost(proxyHostName, proxyPort);
 			httpClient.getHostConfiguration().setProxyHost(proxyHost);
 			
-			String proxyUser = System.getenv("http.proxyUser");
+			String proxyUser = System.getProperty("http.proxyUser");
 			if (proxyUser != null) {
-				String proxyPassword = System.getenv("http.proxyPassword");
+				String proxyPassword = System.getProperty("http.proxyPassword");
 				httpClient.getState().setProxyCredentials( new AuthScope(proxyHost.getHostName(), proxyHost.getPort()), 
 						new UsernamePasswordCredentials(proxyUser, proxyPassword));
 				httpClient.getParams().setAuthenticationPreemptive(true);
