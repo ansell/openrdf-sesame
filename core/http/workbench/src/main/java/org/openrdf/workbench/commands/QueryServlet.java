@@ -209,7 +209,7 @@ public class QueryServlet extends TransformationServlet {
 	 * @param query the query to be evaluated
 	 * @param limit the maximum number of results to return in the response
 	 * document
-	 * @param offset result count at which to start inserting  into response
+	 * @param offset result count at which to start inserting into response
 	 * document
 	 */
 	private void evaluateTupleQuery(TupleResultBuilder builder, 
@@ -243,7 +243,7 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	/***
-	 * Evaluate a gr aph query, returning a subset of the results defined by 
+	 * Evaluate a graph query, returning a subset of the results defined by 
 	 * limit and offset.
 	 * 
 	 * @param builder response builder helper for generating the XML response

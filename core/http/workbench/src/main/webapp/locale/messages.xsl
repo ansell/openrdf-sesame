@@ -138,6 +138,7 @@
 		N-Triples encoding are:
 	</variable>
 	<variable name="result-limit.label">Limit results</variable>
+	<variable name="result-offset.label">Results offset</variable>
 	<variable name="limit10.label">10</variable>
 	<variable name="limit50.label">50</variable>
 	<variable name="limit100.label">100</variable>
