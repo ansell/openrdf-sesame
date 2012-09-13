@@ -47,18 +47,16 @@
 			}
 			
 			function nextOffset() {
-			    var limit = document.getElementById('limit').value;
-			    var offset = getLastOffset() + parseInt(limit, 10);
+			    var offset = getOffset() + getLimit();
 			    addParam('offset', offset);
 			}
 
 			function previousOffset() {
-			    var limit = document.getElementById('limit').value;
-			    var offset = getLastOffset() - parseInt(limit, 10);
-			    addParam('offset', offset);
+			    var offset = getOffset() - getLimit();
+			    addParam('offset', Math.max(offset, 0));
 			}
 			
-			function getLastOffset() {
+			function getOffset() {
 				var href = document.location.href;
 				var elements = href.substring(href.indexOf('?') + 1).substring(href.indexOf(';') + 1).split(decodeURIComponent('%26'));
 				var offset = 0;
@@ -70,6 +68,32 @@
 					offset = parseInt(pair[1], 10);
 				}
 				return offset;
+			}
+			
+			function getLimit() {
+				var limit = document.getElementById('limit').value;
+				return parseInt(limit, 10);
+			}
+			
+			window.onload = function() {
+			    var limit = getLimit();
+			    var nextButton = document.getElementById('nextX');
+			    var previousButton = document.getElementById('previousX');
+			    
+			    // Using RegExp to preserve any localization.
+			    var buttonWordPattern = /^[A-z]+\s+/
+			    var buttonNumberPattern = /\d+$/
+			    var oldNext = nextButton.value;
+			    var count = parseInt(buttonNumberPattern.exec(oldNext), 10);
+			    nextButton.value = buttonWordPattern.exec(oldNext) + limit;
+			    previousButton.value = 
+			        buttonWordPattern.exec(previousButton.value) + limit;
+			    if (getOffset() <= 0) {
+			        previousButton.disabled = true;
+			    }
+			    if (count < limit) {
+			        nextButton.disabled = true;
+			    }
 			}
 			]]>
 		</script>
@@ -94,13 +118,15 @@
 						</td>
 					</tr>
 					<tr>
-					    <th />
+					    <th>
+							<xsl:value-of select="$result-offset.label" />
+				        </th>
 						<td>
-							<input type="button"
+							<input id="previousX" type="button"
 								value="{$previousX.label}" onclick="previousOffset();" />
 						</td>
 						<td>
-							<input type="button"
+							<input id="nextX" type="button"
 								value="{$nextX.label}" onclick="nextOffset();" />
 						</td>
 					</tr>
