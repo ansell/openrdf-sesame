@@ -5,6 +5,7 @@
  */
 package info.aduna.iteration;
 
+import java.lang.ref.WeakReference;
 import java.util.NoSuchElementException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,8 +30,8 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final TimerTask interruptTask;
-
+	private final WeakReference<TimerTask> taskReference;
+	
 	private volatile boolean isInterrupted = false;
 
 	public TimeLimitIteration(Iteration<? extends E, ? extends X> iter, long timeLimit) {
@@ -38,13 +39,15 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 
 		assert timeLimit > 0 : "time limit must be a positive number, is: " + timeLimit;
 
-		interruptTask = new TimerTask() {
+		TimerTask interruptTask = new TimerTask() {
 
 			@Override
 			public void run() {
 				interrupt();
 			}
 		};
+		
+		taskReference = new WeakReference<TimerTask>(interruptTask);
 
 		getTimer().schedule(interruptTask, timeLimit);
 	}
@@ -85,7 +88,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 	protected void handleClose()
 		throws X
 	{
-		interruptTask.cancel();
+		taskReference.get().cancel();
 		super.handleClose();
 	}
 
