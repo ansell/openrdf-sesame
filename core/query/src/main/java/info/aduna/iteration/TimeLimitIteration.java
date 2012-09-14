@@ -30,7 +30,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final WeakReference<TimerTask> taskReference;
+	private final InterruptTask<E, X> interruptTask;
 	
 	private volatile boolean isInterrupted = false;
 
@@ -39,15 +39,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 
 		assert timeLimit > 0 : "time limit must be a positive number, is: " + timeLimit;
 
-		TimerTask interruptTask = new TimerTask() {
-
-			@Override
-			public void run() {
-				interrupt();
-			}
-		};
-		
-		taskReference = new WeakReference<TimerTask>(interruptTask);
+		interruptTask = new InterruptTask<E, X>(this);
 
 		getTimer().schedule(interruptTask, timeLimit);
 	}
@@ -88,7 +80,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 	protected void handleClose()
 		throws X
 	{
-		taskReference.get().cancel();
+		interruptTask.cancel();
 		super.handleClose();
 	}
 
@@ -103,7 +95,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 	protected abstract void throwInterruptedException()
 		throws X;
 
-	private void interrupt() {
+	void interrupt() {
 		if (!isClosed()) {
 			isInterrupted = true;
 
