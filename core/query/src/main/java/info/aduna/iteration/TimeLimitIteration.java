@@ -5,10 +5,8 @@
  */
 package info.aduna.iteration;
 
-import java.lang.ref.WeakReference;
 import java.util.NoSuchElementException;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
