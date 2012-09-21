@@ -93,6 +93,7 @@
 	<variable name="true.label">Yes</variable>
 	<variable name="false.label">No</variable>
 	<variable name="none.label">None</variable>
+	<variable name="all.label">All</variable>
 	<variable name="readable.label">Readable</variable>
 	<variable name="writeable.label">Writeable</variable>
 
@@ -137,7 +138,7 @@
 		be entered using the N-Triples encoding. Example values in
 		N-Triples encoding are:
 	</variable>
-	<variable name="result-limit.label">Limit results</variable>
+	<variable name="result-limit.label">Results per page</variable>
 	<variable name="result-offset.label">Results offset</variable>
 	<variable name="limit10.label">10</variable>
 	<variable name="limit50.label">50</variable>

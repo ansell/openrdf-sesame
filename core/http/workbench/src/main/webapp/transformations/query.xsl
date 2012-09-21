@@ -73,7 +73,7 @@
 					sb[sb.length] = encodeURIComponent(tag.value);
 				}
 				sb[sb.length] = '&';
-			}
+			}			
 			/* MSIE6 does not like xslt w/ this querystring, so we use url parameters. */
 			function doSubmit() {
 				if (document.getElementById('query').value.length >= 1000) {
@@ -91,7 +91,7 @@
 					addParam(url, 'query');
 					addParam(url, 'limit');
 					addParam(url, 'infer');
-					url[url.length - 1] = '';
+					url[url.length] = 'know_total=false';
 					document.location.href = url.join('');
 					return false;
 				}

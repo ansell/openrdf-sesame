@@ -120,7 +120,7 @@
 					</table>
 				</div>
 				<div id="content">
-					<h1>
+					<h1 id="title_heading">
 						<xsl:value-of select="$title" />
 					</h1>
 					<xsl:apply-templates select="*" />
@@ -285,7 +285,7 @@
 				<xsl:if test="$limit = '0'">
 					<xsl:attribute name="selected">true</xsl:attribute>
 				</xsl:if>
-				<xsl:value-of select="$none.label" />
+				<xsl:value-of select="$all.label" />
 			</option>
 			<option value="10">
 				<xsl:if test="$limit = '10'">
