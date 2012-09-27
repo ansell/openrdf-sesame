@@ -6,6 +6,8 @@
 package org.openrdf.repository.http;
 
 import java.util.Iterator;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
@@ -13,9 +15,14 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.AbstractQuery;
 
 /**
+ * A query to be evaluated over a HTTP connection with a remote repository.
+ * 
+ * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
 public abstract class HTTPQuery extends AbstractQuery {
+
+	private static Executor executor = Executors.newCachedThreadPool();
 
 	protected final HTTPRepositoryConnection httpCon;
 
@@ -45,15 +52,18 @@ public abstract class HTTPQuery extends AbstractQuery {
 		return bindingsArray;
 	}
 
+	protected void execute(Runnable command) {
+		executor.execute(command);
+	}
+
 	@Override
 	public void setMaxQueryTime(int maxQueryTime) {
 		super.setMaxQueryTime(maxQueryTime);
 		this.httpCon.getRepository().getHTTPClient().setConnectionTimeout(1000L * this.maxQueryTime);
 	}
-	
+
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return queryString;
 	}
 }
