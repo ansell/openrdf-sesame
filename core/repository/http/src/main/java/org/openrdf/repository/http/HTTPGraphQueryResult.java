@@ -6,11 +6,7 @@
 package org.openrdf.repository.http;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,16 +22,13 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
 
 /**
- * Provides concurrent access to statements as they are being parsed.
+ * A GraphQueryResult that provides concurrent access to statements as they are being parsed.
  * 
  * @author James Leigh
  * @author Jeen Broekstra
@@ -50,6 +43,7 @@ public class HTTPGraphQueryResult extends GraphQueryResultImpl implements GraphQ
 
 	private String baseURI;
 
+	/** countdown to indicate when namespace declarations have been processed and are available */
 	private CountDownLatch namespacesReady = new CountDownLatch(1);
 
 	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
