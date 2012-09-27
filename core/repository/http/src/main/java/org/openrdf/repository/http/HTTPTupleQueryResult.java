@@ -51,6 +51,7 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements TupleQ
 
 	private List<String> bindingNames;
 
+	/** countdown that indicates when binding names have been processed in the query result */
 	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
 
 	private QueryLanguage queryLanguage;
