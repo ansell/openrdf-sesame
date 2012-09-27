@@ -47,6 +47,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
@@ -79,10 +80,11 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 			"sesame-repository-sparql", "devel");
 
 	/**
-	 * The key under which the (optional) HTTP header are stored in the HttpClientParams
+	 * The key under which the (optional) HTTP header are stored in the
+	 * HttpClientParams
 	 */
 	public static String ADDITIONAL_HEADER_NAME = "additionalHTTPHeaders";
-	
+
 	private HttpClient client;
 
 	private String queryEndpointUrl;
@@ -108,7 +110,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		clientParams.setParameter(HttpMethodParams.USER_AGENT,
 				APP_NAME + "/" + VERSION + " " + clientParams.getParameter(HttpMethodParams.USER_AGENT));
 		// set additional HTTP headers, if desired by the user
-		if (repository.getAdditionalHttpHeaders()!=null)
+		if (repository.getAdditionalHttpHeaders() != null)
 			clientParams.setParameter(ADDITIONAL_HEADER_NAME, repository.getAdditionalHttpHeaders());
 		client = new HttpClient(clientParams, manager);
 	}
@@ -253,23 +255,36 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	public Query prepareQuery(QueryLanguage ql, String query, String base)
 		throws RepositoryException, MalformedQueryException
 	{
-		// TODO implement properly, taking subqueries into account
-		throw new UnsupportedOperationException();
+		if (SPARQL.equals(ql)) {
+			String strippedQuery = QueryParserUtil.removeSPARQLQueryProlog(query).toUpperCase();
+			if (strippedQuery.startsWith("SELECT")) {
+				return prepareTupleQuery(ql, query, base);
+			}
+			else if (strippedQuery.startsWith("ASK")) {
+				return prepareBooleanQuery(ql, query, base);
+			}
+			else {
+				return prepareGraphQuery(ql, query, base);
+			}
+		}
+		throw new UnsupportedOperationException("Unsupported query language " + ql);
 	}
 
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String base)
 		throws RepositoryException, MalformedQueryException
 	{
-		if (SPARQL.equals(ql))
+		if (SPARQL.equals(ql)) {
 			return new SPARQLBooleanQuery(client, queryEndpointUrl, base, query);
+		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String base)
 		throws RepositoryException, MalformedQueryException
 	{
-		if (SPARQL.equals(ql))
+		if (SPARQL.equals(ql)) {
 			return new SPARQLGraphQuery(client, queryEndpointUrl, base, query);
+		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
