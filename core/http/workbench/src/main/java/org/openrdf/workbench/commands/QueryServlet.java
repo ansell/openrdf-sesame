@@ -136,18 +136,6 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void addTotalResultCountCookie(WorkbenchRequest req, HttpServletResponse resp, int value) {
-		Cookie cookie = new Cookie("total_result_count", String.valueOf(value));
-		if (req.getContextPath() != null) {
-			cookie.setPath(req.getContextPath());
-		}
-		else {
-			cookie.setPath("/");
-		}
-		cookie.setMaxAge(Integer.parseInt(config.getInitParameter(COOKIE_AGE_PARAM)));
-		addCookie(req, resp, cookie);
-	}
-	
 	private void service(TupleResultBuilder builder, HttpServletResponse resp, PrintWriter out, 
 			String xslPath, RepositoryConnection con, WorkbenchRequest req)
 		throws Exception
@@ -159,8 +147,10 @@ public class QueryServlet extends TransformationServlet {
 		String q = req.getParameter("query");
 		Query query = prepareQuery(con, ql, q);
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
-			final boolean know_total = req.getBoolean("know_total", false);
-			if (!know_total) {
+			final int know_total = req.getInt("know_total");
+			if (know_total > 0) {
+				addTotalResultCountCookie(req, resp, know_total);
+			} else {
 				final int total_result_count = 
 					(query instanceof GraphQuery) ? 
 					countQueryResults(builder, (GraphQuery)query) :
@@ -501,5 +491,4 @@ public class QueryServlet extends TransformationServlet {
 		builder.link("info");
 		builder.bool(result);
 	}
-
 }

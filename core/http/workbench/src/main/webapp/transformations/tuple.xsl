@@ -33,6 +33,7 @@
 	<xsl:include href="table.xsl" />
 
 	<xsl:template match="sparql:sparql">
+		<script src="../../scripts/paging.js" type="text/javascript">  </script>
 		<script src="../../scripts/tuple.js" type="text/javascript">  </script>
 		<form>
 			<table class="dataentry">

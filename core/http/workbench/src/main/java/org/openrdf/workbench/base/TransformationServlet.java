@@ -24,7 +24,7 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class TransformationServlet extends BaseRepositoryServlet {
 
-	protected static final String COOKIE_AGE_PARAM = "cookie-max-age";
+	private static final String COOKIE_AGE_PARAM = "cookie-max-age";
 
 	private static final String TRANSFORMATIONS_PARAM = "transformations";
 
@@ -119,7 +119,7 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		addCookie(req, resp, cookie);
 	}
 
-	protected void addCookie(WorkbenchRequest req, HttpServletResponse resp, Cookie cookie) {
+	private void addCookie(WorkbenchRequest req, HttpServletResponse resp, Cookie cookie) {
 		Cookie[] cookies = req.getCookies();
 		if (cookies != null) {
 			for (Cookie c : cookies) {
@@ -133,5 +133,27 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 			}
 		}
 		resp.addCookie(cookie);
+	}
+	
+	/**
+	 * Add a 'total_result_count' cookie. Used by both QueryServlet and 
+	 * ExploreServlet.
+	 * 
+	 * @param req the request object
+	 * @param resp the response object
+	 * @value the value to give the cookie
+	 */
+	protected void addTotalResultCountCookie(WorkbenchRequest req, 
+			HttpServletResponse resp, int value) {
+		final Cookie cookie = 
+				new Cookie("total_result_count", String.valueOf(value));
+		if (req.getContextPath() != null) {
+			cookie.setPath(req.getContextPath());
+		} else {
+			cookie.setPath("/");
+		}
+		
+		cookie.setMaxAge(Integer.parseInt(config.getInitParameter(COOKIE_AGE_PARAM)));
+		this.addCookie(req, resp, cookie);
 	}
 }

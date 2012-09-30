@@ -62,7 +62,8 @@ public class ExportServlet extends TupleServlet {
 	}
 
 	@Override
-	protected void service(WorkbenchRequest req, TupleResultBuilder builder, RepositoryConnection con)
+	protected void service(WorkbenchRequest req, HttpServletResponse resp,
+			TupleResultBuilder builder, RepositoryConnection con) 
 		throws Exception
 	{
 		int limit = LIMIT_DEFAULT;

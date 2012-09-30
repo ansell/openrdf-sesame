@@ -83,7 +83,6 @@ function doSubmit() {
 		addParam(url, 'query');
 		addParam(url, 'limit');
 		addParam(url, 'infer');
-		url[url.length] = 'know_total=false';
 		document.location.href = url.join('');
 		return false;
 	}

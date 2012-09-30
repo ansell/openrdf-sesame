@@ -28,7 +28,8 @@ public abstract class TupleServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp,
 			String xslPath) throws Exception {
 		resp.setContentType("application/xml");
-		PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
+		PrintWriter writer = new PrintWriter(
+				new BufferedWriter(resp.getWriter()));
 		TupleResultBuilder builder = new TupleResultBuilder(writer);
 		if (xsl != null) {
 			builder.transform(xslPath, xsl);
@@ -40,7 +41,7 @@ public abstract class TupleServlet extends TransformationServlet {
 			}
 			builder.start(variables);
 			builder.link("info");
-			service(req, builder, con);
+			this.service(req, resp, builder, con);
 			builder.end();
 			writer.flush();
 		} finally {
@@ -48,12 +49,14 @@ public abstract class TupleServlet extends TransformationServlet {
 		}
 	}
 
-	protected void service(WorkbenchRequest req, TupleResultBuilder builder,
-			RepositoryConnection con) throws Exception {
+	protected void service(WorkbenchRequest req, HttpServletResponse resp,
+			TupleResultBuilder builder, RepositoryConnection con) 
+					throws Exception {
 		service(builder, con);
 	}
 
-	protected void service(TupleResultBuilder builder, RepositoryConnection con)
+	protected void service(TupleResultBuilder builder, 
+			RepositoryConnection con)
 			throws Exception {
 	}
 }

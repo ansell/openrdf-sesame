@@ -16,6 +16,18 @@
 		<xsl:value-of select="$explore.title" />
 	</xsl:variable>
 
+	<xsl:variable name="nextX.label">
+		<xsl:value-of select="$next.label" />
+		<xsl:text> </xsl:text>
+		<xsl:value-of select="count(//sparql:result)" />
+	</xsl:variable>
+
+	<xsl:variable name="previousX.label">
+		<xsl:value-of select="$previous.label" />
+		<xsl:text> </xsl:text>
+		<xsl:value-of select="count(//sparql:result)" />
+	</xsl:variable>
+
 	<xsl:include href="template.xsl" />
 
 	<xsl:include href="table.xsl" />
@@ -39,61 +51,8 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
-		<script type="text/javascript">
-			<![CDATA[
-			function textContent(element) {
-				var text = element.innerText || element.textContent;
-				return text.replace(/^\s*/, "").replace(/\s*$/, "");
-			}
-			function removeDuplicates(self) {
-				var lists = document.getElementsByTagName('ul');
-				for (var i=lists.length-1;i + 1;i--) {
-					var items = lists[i].getElementsByTagName('li');
-					for (var j=items.length - 1;j;j--) {
-						var text = textContent(items[j]);
-						if (items[j].innerHTML == items[j-1].innerHTML || text == self) {
-							items[j].parentNode.removeChild(items[j]);
-						}
-					}
-					text = textContent(items[0]);
-					if (text == self) {
-						items[0].parentNode.removeChild(items[0]);
-					}
-					if (items.length == 0) {
-						lists[i].parentNode.parentNode.removeChild(lists[i].parentNode);
-					}
-				}
-			}
-			function populateParameters() {
-				var href = document.location.href;
-				var elements = href.substring(href.indexOf('?') + 1).split(decodeURIComponent('%26'));
-				for (var i=0;elements.length-i;i++) {
-					var pair = elements[i].split('=');
-					var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
-					if (pair[0] == 'resource') {
-						document.getElementById('resource').value = value;
-					}
-					if (pair[0] == 'limit') {
-						var options = document.getElementById('limit').options;
-						for (var j=0;options.length-j;j++) {
-							if (options[j].value == value) {
-								options[j].selected = true;
-							}
-						}
-					}
-				}
-			}
-			window.onload = function() {
-				populateParameters();
-				var title = document.getElementById('content').getElementsByTagName('h1')[0];
-				var value = document.getElementById('resource').value;
-				if (value) {
-					title.appendChild(document.createTextNode(' (' + value + ')'));
-				}
-				removeDuplicates(value);
-			}
-			]]>
-		</script>
+		<script src="../../scripts/paging.js" type="text/javascript">  </script>
+		<script src="../../scripts/explore.js" type="text/javascript">  </script>
 		<xsl:if test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
 		<p id="result-limited">
 			<xsl:value-of select="$result-limited.desc" />
@@ -119,6 +78,62 @@
 				</p>
 			</xsl:for-each>
 		</xsl:if>
+		<form action="explore">
+			<table class="dataentry">
+				<tbody>
+					<tr>
+						<th>
+							<xsl:value-of select="$resource.label" />
+						</th>
+						<td colspan="2">
+							<input id="resource" name="resource"
+								size="48" type="text" />
+						</td>
+						<td></td>
+					</tr>
+				</tbody>
+			</table>
+			<table class="dataentry">
+				<tbody>
+					<tr>
+						<td></td>
+						<td>
+							<span class="error">
+								<xsl:value-of
+									select="//sparql:binding[@name='error-message']" />
+							</span>
+						</td>
+						<td></td>
+					</tr>
+
+					<tr>
+						<th>
+							<xsl:value-of select="$result-limit.label" />
+						</th>
+						<td>
+							<xsl:call-template name="limit-select">
+								<xsl:with-param name="onchange">addLimit();</xsl:with-param>
+							</xsl:call-template>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+					    <th>
+							<xsl:value-of select="$result-offset.label" />
+				        </th>
+						<td>
+							<input id="previousX" type="button"
+								value="{$previousX.label}" onclick="previousOffset();" />
+						</td>
+						<td>
+							<input id="nextX" type="button"
+								value="{$nextX.label}" onclick="nextOffset();" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+		
 		<table class="simple">
 			<tr>
 				<td>
@@ -187,49 +202,6 @@
 				<xsl:apply-templates select="*" />
 			</table>
 		</xsl:if>
-		<form action="explore">
-			<table class="dataentry">
-				<tbody>
-					<tr>
-						<th>
-							<xsl:value-of select="$resource.label" />
-						</th>
-						<td>
-							<input id="resource" name="resource"
-								size="48" type="text" />
-						</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td>
-							<span class="error">
-								<xsl:value-of
-									select="//sparql:binding[@name='error-message']" />
-							</span>
-						</td>
-						<td></td>
-					</tr>
-					<tr>
-						<th>
-							<xsl:value-of select="$result-limit.label" />
-						</th>
-						<td>
-							<xsl:call-template name="limit-select"/>
-						</td>
-						<td></td>
-					</tr>
-
-					<tr>
-						<td></td>
-						<td>
-							<input type="submit" value="{$show.label}" />
-						</td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
-		</form>
 	</xsl:template>
 
 </xsl:stylesheet>
