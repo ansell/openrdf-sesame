@@ -111,43 +111,6 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 			throw new BadRequestException(exc.getMessage(), exc);
 		}
 	}
-	
-	/***
-	 * Get the boolean value associated with the given parameter name. 
-	 * Internally uses getParameter(String), so looks in this order:
-	 * 1. the query parameters that were parsed at construction, using the 
-	 * last value if multiple exist. 2. Request cookies. 3. The defaults.
-	 * 
-	 * 'true' (case-insensitive) or a non-zero integer will resolve as true.
-	 * 'false' (case-insensitive) or an integer == 0 will resolve as false.
-	 * Anything else will result in an exception.
-	 * 
-	 * @returns the value of the parameter, or 'defaultValue' if it is not
-	 * present
-	 * @throws BadRequestException if the parameter is present but is not
-	 * 'true', 'false' or and integer
-	 */
-	public boolean getBoolean(final String name, final boolean defaultValue)
-			throws BadRequestException
-	{
-		boolean rval = defaultValue;
-		final String param = getParameter(name);
-		if (null != param && param.length() > 0){
-			if ("true".equalsIgnoreCase(param)){
-				rval = true;
-			} else if ("false".equalsIgnoreCase(param)) {
-				rval = false;
-			} else {			
-				try {
-					rval = (0 != Integer.parseInt(param));
-				} catch (NumberFormatException exc) {
-					throw new BadRequestException(exc.getMessage(), exc);
-				}
-			}
-		}
-		
-		return rval;
-	}
 
 	@Override
 	public String getParameter(String name) {
