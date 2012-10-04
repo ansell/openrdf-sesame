@@ -7,7 +7,6 @@ package info.aduna.iteration;
 
 import java.util.NoSuchElementException;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +28,8 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final TimerTask interruptTask;
-
+	private final InterruptTask<E, X> interruptTask;
+	
 	private volatile boolean isInterrupted = false;
 
 	public TimeLimitIteration(Iteration<? extends E, ? extends X> iter, long timeLimit) {
@@ -38,13 +37,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 
 		assert timeLimit > 0 : "time limit must be a positive number, is: " + timeLimit;
 
-		interruptTask = new TimerTask() {
-
-			@Override
-			public void run() {
-				interrupt();
-			}
-		};
+		interruptTask = new InterruptTask<E, X>(this);
 
 		getTimer().schedule(interruptTask, timeLimit);
 	}
@@ -100,7 +93,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 	protected abstract void throwInterruptedException()
 		throws X;
 
-	private void interrupt() {
+	void interrupt() {
 		if (!isClosed()) {
 			isInterrupted = true;
 
