@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -28,6 +30,7 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.SingletonIteration;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -46,6 +49,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryConnection;
@@ -325,19 +329,47 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	public void add(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
+		List<Statement> list = new ArrayList<Statement>(1);
+		list.add(st);
 
+		String sparqlCommand = createInsertDataCommand(list, contexts);
+
+		Update update;
+		try {
+			update = prepareUpdate(QueryLanguage.SPARQL, sparqlCommand);
+			update.execute();
+		}
+		catch (MalformedQueryException e) {
+			throw new RuntimeException("unexpected error creating SPARQL update command", e);
+		}
+		catch (UpdateExecutionException e) {
+			throw new RepositoryException("error executing update", e);
+		}
 	}
 
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
+		String sparqlCommand = createInsertDataCommand(statements, contexts);
+
+		Update update;
+		try {
+			update = prepareUpdate(QueryLanguage.SPARQL, sparqlCommand);
+			update.execute();
+		}
+		catch (MalformedQueryException e) {
+			throw new RuntimeException("unexpected error creating SPARQL update command", e);
+		}
+		catch (UpdateExecutionException e) {
+			throw new RepositoryException("error executing update", e);
+		}
 	}
 
 	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
 		throws RepositoryException, E
 	{
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -428,6 +460,8 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
+	/* protected/private methods */
+
 	private void setBindings(Query query, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws RepositoryException
 	{
@@ -466,5 +500,42 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	private String createInsertDataCommand(Iterable<? extends Statement> statements, Resource... contexts) {
+		StringBuilder qb = new StringBuilder();
+		qb.append("INSERT DATA \n");
+		qb.append("{ \n");
+		if (contexts != null) {
+			for (Resource context : contexts) {
+				if (context != null) {
+					qb.append("    GRAPH <" + context.stringValue() + "> { \n");
+				}
+				createDataBody(qb, statements);
+				if (context != null) {
+					qb.append(" } \n");
+				}
+			}
+		}
+		else {
+			createDataBody(qb, statements);
+		}
+		qb.append("}");
+
+		return qb.toString();
+	}
+
+	private void createDataBody(StringBuilder qb, Iterable<? extends Statement> statements) {
+		for (Statement st : statements) {
+			qb.append("<" + st.getSubject().stringValue() + "> ");
+			qb.append("<" + st.getPredicate().stringValue() + "> ");
+			if (st.getObject() instanceof Literal) {
+				qb.append(st.getObject().stringValue() + " ");
+			}
+			else {
+				qb.append("<" + st.getObject().stringValue() + "> ");
+			}
+			qb.append(". \n");
+		}
 	}
 }

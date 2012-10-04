@@ -9,6 +9,7 @@ import static java.lang.Integer.parseInt;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,11 +61,15 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 			req.setCharacterEncoding("UTF-8");
 		}
 		resp.setCharacterEncoding("UTF-8");
+		resp.setDateHeader("Expires", new Date().getTime() - 10000L);
+		resp.setHeader("Cache-Control", "no-cache, no-store");
+		
 		String contextPath = req.getContextPath();
 		String path = config.getInitParameter(TRANSFORMATIONS_PARAM);
 		String xslPath = contextPath + path;
 		try {
 			WorkbenchRequest wreq = new WorkbenchRequest(repository, req, defaults);
+			
 			updateCookies(wreq, resp);
 			if ("POST".equals(req.getMethod())) {
 				doPost(wreq, resp, xslPath);
