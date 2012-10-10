@@ -210,7 +210,8 @@ public abstract class RepositoryManager {
 	 *         inconsistent configuration data in the system repository. For
 	 *         example, this happens when there are multiple existing
 	 *         configurations with the concerning ID.
-	 * @deprecated use {@link removeRepository(String repositoryID)} instead.
+	 * @deprecated since 2.6.7. Use {@link #removeRepository(String repositoryID)}
+	 *             instead.
 	 */
 	@Deprecated
 	public boolean removeRepositoryConfig(String repositoryID)
@@ -251,6 +252,7 @@ public abstract class RepositoryManager {
 	 * repository configuration. <strong>NB this operation can not be
 	 * undone!</strong>
 	 * 
+	 * @since 2.6.7
 	 * @param repositoryID
 	 *        The ID of the repository that needs to be removed.
 	 * @throws RepositoryException
