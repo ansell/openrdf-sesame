@@ -24,12 +24,6 @@ public class EmptyRdbmsResourceIteration extends RdbmsResourceIteration {
 	}
 
 	@Override
-	public void close()
-		throws SailException
-	{
-	}
-
-	@Override
 	public boolean hasNext()
 		throws SailException
 	{

@@ -469,7 +469,11 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	{
 		getDelegate().rollback();
 	}
-
+	
+	/**
+	 * @deprecated use {@link #begin()} instead.
+	 */
+	@Deprecated
 	@Override
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException
@@ -533,5 +537,23 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		finally {
 			stIter.close();
 		}
+	}
+
+	public void begin()
+		throws RepositoryException
+	{
+		getDelegate().begin();
+	}
+
+	public boolean isReadOnly()
+		throws RepositoryException
+	{
+		return getDelegate().isReadOnly();
+	}
+
+	public void setReadOnly(boolean readOnly)
+		throws RepositoryException
+	{
+		getDelegate().setReadOnly(readOnly);
 	}
 }

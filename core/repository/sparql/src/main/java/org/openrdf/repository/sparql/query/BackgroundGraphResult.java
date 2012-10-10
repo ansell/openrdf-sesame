@@ -15,7 +15,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.httpclient.HttpMethod;
+
+import info.aduna.iteration.IterationWrapper;
+
+import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.rio.RDFHandler;
@@ -27,30 +32,41 @@ import org.openrdf.rio.RDFParser;
  * Provides concurrent access to statements as they are being parsed.
  * 
  * @author James Leigh
- * 
  */
-public class BackgroundGraphResult implements GraphQueryResult, Runnable,
-		RDFHandler {
+public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEvaluationException> implements
+		GraphQueryResult, Runnable, RDFHandler
+{
+
 	private volatile boolean closed;
+
 	private volatile Thread parserThread;
+
 	private RDFParser parser;
+
 	private Charset charset;
+
 	private InputStream in;
+
 	private String baseURI;
+
 	private CountDownLatch namespacesReady = new CountDownLatch(1);
+
 	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
+
 	private QueueCursor<Statement> queue;
+
 	private HttpMethod method;
 
-	public BackgroundGraphResult(RDFParser parser, InputStream in,
-			Charset charset, String baseURI, HttpMethod method) {
-		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI,
-				method);
+	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI,
+			HttpMethod method)
+	{
+		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI, method);
 	}
 
-	public BackgroundGraphResult(QueueCursor<Statement> queue,
-			RDFParser parser, InputStream in, Charset charset, String baseURI,
-			HttpMethod method) {
+	public BackgroundGraphResult(QueueCursor<Statement> queue, RDFParser parser, InputStream in,
+			Charset charset, String baseURI, HttpMethod method)
+	{
+		super(queue);
 		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
@@ -59,19 +75,29 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable,
 		this.method = method;
 	}
 
-	public boolean hasNext() throws QueryEvaluationException {
+	public boolean hasNext()
+		throws QueryEvaluationException
+	{
 		return queue.hasNext();
 	}
 
-	public Statement next() throws QueryEvaluationException {
+	public Statement next()
+		throws QueryEvaluationException
+	{
 		return queue.next();
 	}
 
-	public void remove() throws QueryEvaluationException {
+	public void remove()
+		throws QueryEvaluationException
+	{
 		queue.remove();
 	}
 
-	public void close() throws QueryEvaluationException {
+	@Override
+	protected void handleClose()
+		throws QueryEvaluationException
+	{
+		super.handleClose();
 		closed = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
@@ -79,7 +105,8 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable,
 		try {
 			queue.close();
 			in.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new QueryEvaluationException(e);
 		}
 	}
@@ -91,18 +118,23 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable,
 			parser.setRDFHandler(this);
 			if (charset == null) {
 				parser.parse(in, baseURI);
-			} else {
+			}
+			else {
 				parser.parse(new InputStreamReader(in, charset), baseURI);
 			}
 			method.releaseConnection();
 			completed = true;
-		} catch (RDFHandlerException e) {
+		}
+		catch (RDFHandlerException e) {
 			// parsing was cancelled or interrupted
-		} catch (RDFParseException e) {
+		}
+		catch (RDFParseException e) {
 			queue.toss(e);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			queue.toss(e);
-		} finally {
+		}
+		finally {
 			parserThread = null;
 			queue.done();
 			if (!completed) {
@@ -111,7 +143,9 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable,
 		}
 	}
 
-	public void startRDF() throws RDFHandlerException {
+	public void startRDF()
+		throws RDFHandlerException
+	{
 		// no-op
 	}
 
@@ -119,33 +153,61 @@ public class BackgroundGraphResult implements GraphQueryResult, Runnable,
 		try {
 			namespacesReady.await();
 			return namespaces;
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new UndeclaredThrowableException(e);
 		}
 	}
 
-	public void handleComment(String comment) throws RDFHandlerException {
+	public void handleComment(String comment)
+		throws RDFHandlerException
+	{
 		// ignore
 	}
 
 	public void handleNamespace(String prefix, String uri)
-			throws RDFHandlerException {
+		throws RDFHandlerException
+	{
 		namespaces.put(prefix, uri);
 	}
 
-	public void handleStatement(Statement st) throws RDFHandlerException {
+	public void handleStatement(Statement st)
+		throws RDFHandlerException
+	{
 		namespacesReady.countDown();
 		if (closed)
 			throw new RDFHandlerException("Result closed");
 		try {
 			queue.put(st);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
 
-	public void endRDF() throws RDFHandlerException {
+	public void endRDF()
+		throws RDFHandlerException
+	{
 		namespacesReady.countDown();
+	}
+
+	public Statement singleResult()
+		throws QueryEvaluationException
+	{
+		Statement result = null;
+		if (hasNext()) {
+			result = next();
+		}
+		close();
+		return result;
+	}
+
+	public Graph asGraph()
+		throws QueryEvaluationException
+	{
+		Graph graph = new GraphImpl();
+		addTo(graph);
+		return graph;
 	}
 
 }

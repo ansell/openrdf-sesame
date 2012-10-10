@@ -37,10 +37,11 @@ import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * Main interface for updating data in and performing queries on a Sesame
- * repository. By default, a RepositoryConnection is in autoCommit mode, meaning
- * that each operation corresponds to a single transaction on the underlying
- * store. autoCommit can be switched off in which case it is up to the user to
- * handle transaction commit/rollback. Note that care should be taking to always
+ * repository. By default, a RepositoryConnection is in auto-commit mode,
+ * meaning that each operation corresponds to a single transaction on the
+ * underlying store. Auto-commit can be {@link #begin() switched off} in which
+ * case it is up to the user to handle transaction {@link #commit() commit}/
+ * {@link #rollback() rollback}. Note that care should be taking to always
  * properly close a RepositoryConnection after one is finished with it, to free
  * up resources and avoid unnecessary locks.
  * <p>
@@ -56,6 +57,7 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * Examples:
  * 
  * <pre>
+ * {@code
  * // Ex 1: this method retrieves all statements that appear in either context1 or
  * // context2, or both.
  * RepositoryConnection.getStatements(null, null, null, true, context1, context2);
@@ -70,20 +72,18 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * RepositoryConnection.getStatements(null, null, null, true, (Resource)null);
  * 
  * // Ex 4: this method adds a statement to the store. If the statement object
- * // itself has
- * // a context (i.e. statement.getContext() != null) the statement is added to
- * // that context. Otherwise,
- * // it is added without any associated context.
+ * // itself has a context (i.e. statement.getContext() != null) the statement is added 
+ * // to that context. Otherwise, it is added without any associated context.
  * RepositoryConnection.add(statement);
  * 
  * // Ex 5: this method adds a statement to context1 in the store. It completely
- * // ignores any
- * // context the statement itself has.
+ * // ignores any context the statement itself has.
  * RepositoryConnection.add(statement, context1);
+ * }
  * </pre>
  * 
  * @author Arjohn Kampman
- * @author jeen
+ * @author Jeen Broekstra
  */
 public interface RepositoryConnection {
 
@@ -494,40 +494,101 @@ public interface RepositoryConnection {
 	 * <b>NOTE:</b> If this connection is switched to auto-commit mode during a
 	 * transaction, the transaction is committed.
 	 * 
+	 * @deprecated As of release 2.7.0, use {@link #begin()} instead.
 	 * @throws RepositoryException
 	 *         In case the mode switch failed, for example because a currently
 	 *         active transaction failed to commit.
-	 * @see #commit
+	 * @see #commit()
 	 */
+	@Deprecated
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException;
 
 	/**
-	 * Checks whether the connection is in auto-commit mode.
+	 * Indicates if the connection is in auto-commit mode. The connection is in
+	 * auto-commit mode when no transaction is currently active, that is, when:
+	 * <ol>
+	 * <li> {@link #begin()} has not been called or;
+	 * <li> {@link #commit()} or {@link #rollback()} have been called to finish
+	 * the transaction.
+	 * </ol>
 	 * 
-	 * @see #setAutoCommit
+	 * @throws RepositoryException
+	 *         If a repository access error occurs.
 	 */
 	public boolean isAutoCommit()
 		throws RepositoryException;
 
 	/**
-	 * Commits all updates that have been performed as part of this connection
-	 * sofar.
+	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
+	 * be called to close the transaction.
 	 * 
 	 * @throws RepositoryException
-	 *         If the connection could not be committed.
+	 *         If the connection could not start a transaction, or if it already
+	 *         has an active transaction.
+	 * @see #isAutoCommit()
+	 * @see #commit()
+	 * @see #rollback()
+	 * @since 2.7.0
+	 */
+	public void begin()
+		throws RepositoryException;
+
+	/**
+	 * Commits the active transaction. This operation closes the active
+	 * transaction.
+	 * 
+	 * @throws RepositoryException
+	 *         If the connection could not be committed, or if the connection
+	 *         does not have an active connection.
+	 * @see #isAutoCommit()
+	 * @see #begin()
+	 * @see #rollback()
 	 */
 	public void commit()
 		throws RepositoryException;
 
 	/**
-	 * Rolls back all updates that have been performed as part of this connection
-	 * sofar.
+	 * Rolls back all updates in the active transaction. This operation closes
+	 * the active transaction.
 	 * 
-	 * @throws RepositoryException
-	 *         If the connection could not be rolled back.
+	 * @throws StoreException
+	 *         If the transaction could not be rolled back, or if the connection
+	 *         does not have an active transaction.
+	 * @see #isAutoCommit()
+	 * @see #begin()
+	 * @see #commit()
 	 */
 	public void rollback()
+		throws RepositoryException;
+
+	/**
+	 * Indicates whether this connection is in read-only mode.
+	 * 
+	 * @return <tt>true</tt> if this Connection object is read-only;
+	 *         <tt>false</tt> otherwise.
+	 * @throws RepositoryException
+	 *         If a repository access error occurs.
+	 * @see #setReadOnly(boolean)
+	 * @since 2.7.0
+	 */
+	public boolean isReadOnly()
+		throws RepositoryException;
+
+	/**
+	 * Puts this connection in read-only mode as a hint to the driver to enable
+	 * repository optimizations.
+	 * <p>
+	 * <b>Note:</b> This method cannot be called during a transaction.
+	 * 
+	 * @param readOnly
+	 *        <tt>true</tt> enables read-only mode; <tt>false</tt> disables it
+	 * @throws RepositoryException
+	 *         If a repository access error occurs or this method is called
+	 *         during a transaction.
+	 * @since 2.7.0
+	 */
+	public void setReadOnly(boolean readOnly)
 		throws RepositoryException;
 
 	/**

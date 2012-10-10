@@ -11,8 +11,7 @@ import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.Iteration;
-import info.aduna.iteration.Iterations;
+import info.aduna.iteration.IterationWrapper;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -21,15 +20,15 @@ import org.openrdf.query.TupleQueryResult;
 /**
  * A generic implementation of the {@link TupleQueryResult} interface.
  */
-public class TupleQueryResultImpl implements TupleQueryResult {
+public class TupleQueryResultImpl extends IterationWrapper<BindingSet, QueryEvaluationException>
+		implements TupleQueryResult
+{
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	private final List<String> bindingNames;
-
-	private final Iteration<? extends BindingSet, QueryEvaluationException> bindingSetIter;
 
 	/*--------------*
 	 * Constructors *
@@ -64,41 +63,30 @@ public class TupleQueryResultImpl implements TupleQueryResult {
 	public TupleQueryResultImpl(List<String> bindingNames,
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingSetIter)
 	{
+		super(bindingSetIter);
 		// Don't allow modifications to the binding names when it is accessed
 		// through getBindingNames:
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
-		this.bindingSetIter = bindingSetIter;
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public List<String> getBindingNames() {
+	public List<String> getBindingNames()
+		throws QueryEvaluationException
+	{
 		return bindingNames;
 	}
 
-	public void close()
+	public BindingSet singleResult()
 		throws QueryEvaluationException
 	{
-		Iterations.closeCloseable(bindingSetIter);
-	}
-
-	public boolean hasNext()
-		throws QueryEvaluationException
-	{
-		return bindingSetIter.hasNext();
-	}
-
-	public BindingSet next()
-		throws QueryEvaluationException
-	{
-		return bindingSetIter.next();
-	}
-
-	public void remove()
-		throws QueryEvaluationException
-	{
-		bindingSetIter.remove();
+		BindingSet result = null;
+		if (hasNext()) {
+			result = next();
+		}
+		close();
+		return result;
 	}
 }

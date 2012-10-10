@@ -173,4 +173,16 @@ public class SailConnectionWrapper implements SailConnection {
 	{
 		wrappedCon.executeUpdate(updateExpr, dataset, bindings, includeInferred);
 	}
+
+	public void begin()
+		throws SailException
+	{
+		wrappedCon.begin();
+	}
+
+	public boolean isReadOnly()
+		throws SailException
+	{	
+		return wrappedCon.isReadOnly();
+	}
 }

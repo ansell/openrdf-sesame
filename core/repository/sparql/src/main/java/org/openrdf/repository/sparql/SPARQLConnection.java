@@ -318,6 +318,13 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		// no-op
 	}
 
+	public void begin()
+		throws RepositoryException
+	{
+		// no-op
+	}
+
+	@Deprecated
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException
 	{

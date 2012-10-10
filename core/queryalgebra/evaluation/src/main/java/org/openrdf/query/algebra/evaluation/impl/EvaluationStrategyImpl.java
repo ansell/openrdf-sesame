@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIterationBase;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DelayedIteration;
 import info.aduna.iteration.DistinctIteration;
@@ -1112,7 +1113,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		// TODO handle existing bindings?
 
-		result = new CloseableIteration<BindingSet, QueryEvaluationException>() {
+		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
 			public boolean hasNext()
 				throws QueryEvaluationException
@@ -1129,13 +1130,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			public void remove()
 				throws QueryEvaluationException
 			{
-				// TODO Auto-generated method stub
-			}
-
-			public void close()
-				throws QueryEvaluationException
-			{
-				// TODO Auto-generated method stub
+				iter.remove();
 			}
 		};
 

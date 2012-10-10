@@ -257,4 +257,32 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 		clone.bindingSets = new LinkedList<BindingSet>(bindingSets);
 		return clone;
 	}
+
+	public BindingSet singleResult()
+		throws QueryEvaluationException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public <C extends Collection<? super BindingSet>> C addTo(C collection)
+		throws QueryEvaluationException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<BindingSet> asList()
+		throws QueryEvaluationException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Set<BindingSet> asSet()
+		throws QueryEvaluationException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

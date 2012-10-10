@@ -22,6 +22,8 @@ public interface TupleQueryResult extends QueryResult<BindingSet> {
 	 * Gets the names of the bindings, in order of projection.
 	 * 
 	 * @return The binding names, in order of projection.
+	 * @throws QueryEvaluationException
 	 */
-	public List<String> getBindingNames();
+	public List<String> getBindingNames()
+		throws QueryEvaluationException;
 }

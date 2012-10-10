@@ -95,6 +95,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	private Throwable creatorTrace;
 
+	private boolean readOnly;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -140,6 +142,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		finally {
 			super.finalize();
 		}
+	}
+
+	public void begin()
+		throws RepositoryException
+	{
+		verifyIsOpen();
+		verifyNotTxnActive("Connection already has an active transaction");
+
+//		client.begin();
+//		autoCommit = false;
 	}
 
 	/**
@@ -300,6 +312,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		super.close();
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+	
 	@Override
 	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
 			Resource... contexts)
@@ -438,5 +458,53 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		return new HTTPUpdate(this, ql, update, baseURI);
+	}
+	
+	/**
+	 * Verifies that the connection is open, throws a {@link StoreException} if
+	 * it isn't.
+	 */
+	protected void verifyIsOpen()
+		throws RepositoryException
+	{
+		if (!isOpen()) {
+			throw new RepositoryException("Connection has been closed");
+		}
+	}
+
+	/**
+	 * Verifies that the connection is not in read-only mode, throws a
+	 * {@link StoreException} if it is.
+	 */
+	protected void verifyNotReadOnly()
+		throws RepositoryException
+	{
+		if (isReadOnly()) {
+			throw new RepositoryException("Connection is in read-only mode");
+		}
+	}
+
+	/**
+	 * Verifies that the connection has an active transaction, throws a
+	 * {@link StoreException} if it hasn't.
+	 */
+	protected void verifyTxnActive()
+		throws RepositoryException
+	{
+		if (isAutoCommit()) {
+			throw new RepositoryException("Connection does not have an active transaction");
+		}
+	}
+
+	/**
+	 * Verifies that the connection does not have an active transaction, throws a
+	 * {@link StoreException} if the connection is it has.
+	 */
+	protected void verifyNotTxnActive(String msg)
+		throws RepositoryException
+	{
+		if (!isAutoCommit()) {
+			throw new RepositoryException(msg);
+		}
 	}
 }

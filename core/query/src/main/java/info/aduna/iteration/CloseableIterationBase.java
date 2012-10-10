@@ -6,8 +6,12 @@
 
 package info.aduna.iteration;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 
 /**
  * Base class for {@link CloseableIteration}s offering common functionality.
@@ -49,6 +53,31 @@ public abstract class CloseableIterationBase<E, X extends Exception> implements 
 		if (closed.compareAndSet(false, true)) {
 			handleClose();
 		}
+	}
+
+	public <C extends Collection<? super E>> C addTo(C collection)
+		throws X
+	{
+		while (hasNext()) {
+			collection.add(next());
+		}
+		return collection;
+	}
+
+	public List<E> asList()
+		throws X
+	{
+		List<E> list = new ArrayList<E>();
+		list = addTo(list);
+		return list;
+	}
+
+	public Set<E> asSet()
+		throws X
+	{
+		Set<E> set = new HashSet<E>();
+		set = addTo(set);
+		return set;
 	}
 
 	/**

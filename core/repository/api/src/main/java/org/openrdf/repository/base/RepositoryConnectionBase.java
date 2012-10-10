@@ -78,8 +78,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	private final Repository repository;
 
 	private volatile ParserConfig parserConfig = new ParserConfig(true, false, false, DatatypeHandling.VERIFY);
-	
+
 	private volatile boolean isOpen;
+
+	private volatile boolean isReadOnly;
 
 	private volatile boolean autoCommit;
 
@@ -92,10 +94,11 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void setParserConfig(ParserConfig parserConfig) {
 		this.parserConfig = parserConfig;
 	}
-	
+
 	public ParserConfig getParserConfig() {
 		return parserConfig;
 	}
+
 	public Repository getRepository() {
 		return repository;
 	}
@@ -108,6 +111,18 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws RepositoryException
 	{
 		return isOpen;
+	}
+
+	public boolean isReadOnly()
+		throws RepositoryException
+	{
+		return isReadOnly;
+	}
+
+	public void setReadOnly(boolean isReadOnly)
+		throws RepositoryException
+	{
+		this.isReadOnly = isReadOnly;
 	}
 
 	public void close()
@@ -177,6 +192,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		exportStatements(null, null, null, false, handler, contexts);
 	}
 
+	/**
+	 * @deprecated use {@link #begin()} instead.
+	 */
+	@Deprecated
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException
 	{
@@ -300,7 +319,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws IOException, RDFParseException, RepositoryException
 	{
 		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+
+		if (autoCommit) {
+			begin();
+		}
 
 		try {
 			ZipInputStream zipIn = new ZipInputStream(in);
@@ -339,6 +361,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			}
 			finally {
 				zipIn.close();
+			}
+
+			if (autoCommit) {
+				commit();
 			}
 		}
 		catch (IOException e) {
