@@ -24,6 +24,10 @@ public class RepositoryConnectionInterceptorAdapter implements RepositoryConnect
 		return false;
 	}
 
+	public boolean begin(RepositoryConnection conn) {
+		return false;
+	}
+	
 	public boolean clear(RepositoryConnection conn, Resource... contexts) {
 		return false;
 	}
@@ -54,6 +58,7 @@ public class RepositoryConnectionInterceptorAdapter implements RepositoryConnect
 		return false;
 	}
 
+	@Deprecated
 	public boolean setAutoCommit(RepositoryConnection conn, boolean autoCommit) {
 		return false;
 	}
@@ -67,4 +72,6 @@ public class RepositoryConnectionInterceptorAdapter implements RepositoryConnect
 	{
 		return false;
 	}
+
+
 }

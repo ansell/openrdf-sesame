@@ -21,7 +21,11 @@ public class RepositoryConnectionListenerAdapter implements RepositoryConnection
 	public void close(RepositoryConnection conn) {
 	}
 
+	@Deprecated
 	public void setAutoCommit(RepositoryConnection conn, boolean autoCommit) {
+	}
+
+	public void begin(RepositoryConnection conn) {
 	}
 
 	public void commit(RepositoryConnection conn) {

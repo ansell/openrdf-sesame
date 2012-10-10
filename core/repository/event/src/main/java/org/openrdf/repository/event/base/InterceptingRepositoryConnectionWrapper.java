@@ -121,6 +121,24 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 			getDelegate().clear(contexts);
 		}
 	}
+	
+	@Override
+	public void begin()
+		throws RepositoryException
+	{
+		boolean denied = false;
+		if (activated) {
+			for (RepositoryConnectionInterceptor interceptor : interceptors) {
+				denied = interceptor.begin(getDelegate());
+				if (denied) {
+					break;
+				}
+			}
+		}
+		if (!denied) {
+			super.begin();
+		}
+	}
 
 	@Override
 	public void close()
@@ -232,6 +250,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
+	@Deprecated
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException
 	{

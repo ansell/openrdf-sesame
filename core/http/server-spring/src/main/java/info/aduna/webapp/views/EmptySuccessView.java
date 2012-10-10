@@ -32,7 +32,7 @@ public class EmptySuccessView implements View {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public void render(Map model, HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{

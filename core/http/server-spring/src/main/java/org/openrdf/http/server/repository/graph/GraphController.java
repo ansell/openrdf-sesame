@@ -175,15 +175,16 @@ public class GraphController extends AbstractController {
 
 		InputStream in = request.getInputStream();
 		try {
-			boolean wasAutoCommit = repositoryCon.isAutoCommit();
-			repositoryCon.setAutoCommit(false);
-
+			if (repositoryCon.isAutoCommit()) {
+				repositoryCon.begin();
+			}
+			
 			if (replaceCurrent) {
 				repositoryCon.clear(graph);
 			}
 			repositoryCon.add(in, graph.toString(), rdfFormat, graph);
 
-			repositoryCon.setAutoCommit(wasAutoCommit);
+			repositoryCon.commit();
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}

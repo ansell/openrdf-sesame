@@ -163,8 +163,7 @@ public class RepositoryConfigUtil {
 	{
 		ValueFactory vf = con.getRepository().getValueFactory();
 
-		boolean wasAutoCommit = con.isAutoCommit();
-		con.setAutoCommit(false);
+		con.begin();
 
 		for (RepositoryConfig config : configs) {
 			Resource context = getContext(con, config.getID());
@@ -183,7 +182,7 @@ public class RepositoryConfigUtil {
 			con.add(graph, context);
 		}
 
-		con.setAutoCommit(wasAutoCommit);
+		con.commit();
 	}
 
 	/**
@@ -208,7 +207,7 @@ public class RepositoryConfigUtil {
 
 		RepositoryConnection con = repository.getConnection();
 		try {
-			con.setAutoCommit(false);
+			con.begin();
 
 			for (String id : repositoryIDs) {
 				Resource context = getContext(con, id);

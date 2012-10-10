@@ -6,13 +6,10 @@
 package org.openrdf.repository.http;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import org.apache.commons.httpclient.HttpMethod;
 
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
@@ -27,8 +24,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultImpl;
-import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.repository.RepositoryException;
 
 /**

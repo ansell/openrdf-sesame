@@ -23,7 +23,6 @@ import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractOperation;
 import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.SailConnection;
