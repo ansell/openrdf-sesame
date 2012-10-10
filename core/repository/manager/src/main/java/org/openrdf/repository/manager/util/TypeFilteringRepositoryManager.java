@@ -138,6 +138,7 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
+	@Deprecated
 	public boolean removeRepositoryConfig(String repositoryID)
 		throws RepositoryException, RepositoryConfigException
 	{

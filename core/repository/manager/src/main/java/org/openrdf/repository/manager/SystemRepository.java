@@ -74,7 +74,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 			if (con.isEmpty()) {
 				logger.debug("Initializing empty {} repository", ID);
 
-				con.setAutoCommit(false);
+				con.begin();
 				con.setNamespace("rdf", RDF.NAMESPACE);
 				con.setNamespace("sys", RepositoryConfigSchema.NAMESPACE);
 
