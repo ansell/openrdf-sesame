@@ -339,14 +339,13 @@ public class StatementsController extends AbstractController {
 			TransactionReader reader = new TransactionReader();
 			Iterable<? extends TransactionOperation> txn = reader.parse(in);
 
-			boolean wasAutoCommit = repositoryCon.isAutoCommit();
-			repositoryCon.setAutoCommit(false);
+			repositoryCon.begin();
 
 			for (TransactionOperation op : txn) {
 				op.execute(repositoryCon);
 			}
 
-			repositoryCon.setAutoCommit(wasAutoCommit);
+			repositoryCon.commit();
 
 			logger.debug("Transaction processed ");
 
@@ -402,15 +401,16 @@ public class StatementsController extends AbstractController {
 
 		InputStream in = request.getInputStream();
 		try {
-			boolean wasAutoCommit = repositoryCon.isAutoCommit();
-			repositoryCon.setAutoCommit(false);
+			if (repositoryCon.isAutoCommit()) {
+				repositoryCon.begin();
+			}
 
 			if (replaceCurrent) {
 				repositoryCon.clear(contexts);
 			}
 			repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
 
-			repositoryCon.setAutoCommit(wasAutoCommit);
+			repositoryCon.commit();
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}

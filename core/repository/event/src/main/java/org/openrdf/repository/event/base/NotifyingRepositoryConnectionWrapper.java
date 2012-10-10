@@ -255,6 +255,19 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
+	public void begin()
+		throws RepositoryException
+	{
+		getDelegate().begin();
+
+		if (activated) {
+			for (RepositoryConnectionListener listener : listeners) {
+				listener.begin(getDelegate());
+			}
+		}
+	}
+	
+	@Override
 	public void rollback()
 		throws RepositoryException
 	{
@@ -268,6 +281,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
+	@Deprecated
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException
 	{

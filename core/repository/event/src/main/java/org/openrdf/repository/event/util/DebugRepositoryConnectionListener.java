@@ -78,6 +78,7 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 		}
 	}
 
+	@Deprecated
 	public void setAutoCommit(RepositoryConnection conn, boolean autoCommit) {
 		if (printing) {
 			stream.println("SETAUTOCOMMIT (" + getConnectionID(conn) + ") " + autoCommit);
@@ -177,6 +178,15 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 	{
 		if (printing) {
 			stream.println("EXECUTE (" + getConnectionID(conn) + ") " + update);
+		}
+		if (dumpingStack) {
+			Thread.dumpStack();
+		}
+	}
+
+	public void begin(RepositoryConnection conn) {
+		if (printing) {
+			stream.println("BEGIN (" + getConnectionID(conn) + ")");
 		}
 		if (dumpingStack) {
 			Thread.dumpStack();

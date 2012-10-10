@@ -761,7 +761,7 @@ public class Console {
 				if (id.equals(repositoryID)) {
 					closeRepository(false);
 				}
-				boolean isRemoved = manager.removeRepositoryConfig(id);
+				boolean isRemoved = manager.removeRepository(id);
 
 				if (isRemoved) {
 					writeln("Dropped repository '" + id + "'");
