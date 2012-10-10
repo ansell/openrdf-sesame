@@ -24,7 +24,7 @@ import org.openrdf.query.QueryEvaluationException;
  * 
  * @author James Leigh
  */
-class QueueCursor<E> extends
+public class QueueCursor<E> extends
 		LookAheadIteration<E, QueryEvaluationException> {
 
 	private volatile boolean done;

@@ -24,12 +24,6 @@ public class EmptyRdbmsStatementIteration extends RdbmsStatementIteration {
 	}
 
 	@Override
-	public void close()
-		throws SailException
-	{
-	}
-
-	@Override
 	public boolean hasNext()
 		throws SailException
 	{

@@ -93,6 +93,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	 */
 	private final Throwable creatorTrace;
 
+	private volatile boolean isReadOnly;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -120,6 +122,12 @@ public abstract class SailConnectionBase implements SailConnection {
 		if (!isOpen) {
 			throw new IllegalStateException("Connection has been closed");
 		}
+	}
+
+	public void begin()
+		throws SailException
+	{
+		startTransactionInternal();
 	}
 
 	public final void close()
@@ -313,6 +321,12 @@ public abstract class SailConnectionBase implements SailConnection {
 		finally {
 			connectionLock.readLock().unlock();
 		}
+	}
+
+	public boolean isReadOnly()
+		throws SailException
+	{
+		return isReadOnly;
 	}
 
 	public final void rollback()

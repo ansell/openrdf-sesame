@@ -141,6 +141,17 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
+	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
+	 * be called to close the transaction.
+	 * 
+	 * @throws SailException
+	 *         If the connection could not start a transaction, or if it already
+	 *         has an active transaction.
+	 */
+	public void begin()
+		throws SailException;
+	
+	/**
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 
@@ -310,5 +321,16 @@ public interface SailConnection {
 	 */
 	public void clearNamespaces()
 		throws SailException;
+
+	/**
+	 * Indicates whether this connection is in read-only mode.
+	 * 
+	 * @since 2.7.0 
+	 * @return <tt>true</tt> if this Connection object is read-only;
+	 *         <tt>false</tt> otherwise.
+	 * @throws SailException
+	 *         If a repository access error occurs.
+	 */
+	public boolean isReadOnly() throws SailException;
 
 }

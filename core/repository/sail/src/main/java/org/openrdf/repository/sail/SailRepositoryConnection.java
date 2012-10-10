@@ -14,13 +14,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Operation;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
-import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
-import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
@@ -79,6 +76,17 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return sailConnection;
 	}
 
+	public void begin()
+		throws RepositoryException
+	{
+		try {
+			sailConnection.begin();
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
 	public void commit()
 		throws RepositoryException
 	{
@@ -108,6 +116,30 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			sailConnection.close();
 			super.close();
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	@Override
+	public boolean isOpen()
+		throws RepositoryException
+	{
+		try {
+			return sailConnection.isOpen();
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	@Override
+	public boolean isReadOnly()
+		throws RepositoryException
+	{
+		try {
+			return sailConnection.isReadOnly();
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);

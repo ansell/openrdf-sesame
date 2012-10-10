@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIterationBase;
 
 /**
  * Base class for Iteration of a {@link ResultSet}.
@@ -17,7 +17,7 @@ import info.aduna.iteration.CloseableIteration;
  * @author James Leigh
  * 
  */
-public abstract class RdbmIterationBase<T, X extends Exception> implements CloseableIteration<T, X> {
+public abstract class RdbmIterationBase<T, X extends Exception> extends CloseableIterationBase<T, X> {
 
 	private PreparedStatement stmt;
 
@@ -37,9 +37,11 @@ public abstract class RdbmIterationBase<T, X extends Exception> implements Close
 		}
 	}
 
-	public void close()
+	@Override
+	protected void handleClose()
 		throws X
 	{
+		super.handleClose();
 		try {
 			rs.close();
 			stmt.close();
@@ -93,5 +95,5 @@ public abstract class RdbmIterationBase<T, X extends Exception> implements Close
 		throws SQLException;
 
 	protected abstract X convertSQLException(SQLException e);
-
+	
 }

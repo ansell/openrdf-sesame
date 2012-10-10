@@ -60,11 +60,13 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements
 		this.method = connection;
 	}
 
-	public synchronized void close() throws QueryEvaluationException {
+	@Override
+	protected synchronized void handleClose() throws QueryEvaluationException {
 		closed = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
 		}
+		super.handleClose();
 	}
 
 	public List<String> getBindingNames() {

@@ -87,15 +87,6 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements TupleQ
 		this.bindings = bindings;
 	}
 
-	public synchronized void close()
-		throws QueryEvaluationException
-	{
-		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
-		}
-	}
-
 	public List<String> getBindingNames() {
 		try {
 			bindingNamesReady.await();
@@ -165,6 +156,17 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements TupleQ
 		throws TupleQueryResultHandlerException
 	{
 		// no-op
+	}
+
+	@Override
+	protected synchronized void handleClose()
+		throws QueryEvaluationException
+	{
+		closed = true;
+		if (parserThread != null) {
+			parserThread.interrupt();
+		}
+		super.handleClose();
 	}
 
 }

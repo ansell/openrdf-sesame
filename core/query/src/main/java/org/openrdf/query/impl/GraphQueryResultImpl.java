@@ -13,7 +13,9 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.IterationWrapper;
 
+import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 
@@ -58,5 +60,24 @@ public class GraphQueryResultImpl extends IterationWrapper<Statement, QueryEvalu
 
 	public Map<String, String> getNamespaces() {
 		return namespaces;
+	}
+
+	public Statement singleResult()
+		throws QueryEvaluationException
+	{
+		Statement result = null;
+		if (hasNext()) {
+			result = next();
+		}
+		close();
+		return result;
+	}
+
+	public Graph asGraph()
+		throws QueryEvaluationException
+	{
+		Graph graph = new GraphImpl();
+		graph = addTo(graph);
+		return graph;
 	}
 }
