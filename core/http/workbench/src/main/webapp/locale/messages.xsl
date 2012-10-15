@@ -76,6 +76,8 @@
 	<variable name="change-server.label">Change Server</variable>
 	<variable name="change.label">Change</variable>
 	<variable name="server.label">Sesame server</variable>
+	<variable name="server-user.label">User (optional)</variable>
+	<variable name="server-password.label">Password (optional)</variable>
 	<variable name="repository.label">Repository</variable>
 	<variable name="download.label">Download</variable>
 	<variable name="download-format.label">Download format</variable>
