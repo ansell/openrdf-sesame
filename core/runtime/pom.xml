@@ -123,6 +123,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-rio-nquads</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-n3</artifactId>
 			<scope>runtime</scope>
 		</dependency>
