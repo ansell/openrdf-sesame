@@ -37,15 +37,15 @@ public class NTriplesParser extends RDFParserBase {
 	 * Variables *
 	 *-----------*/
 
-	private Reader reader;
+	protected Reader reader;
 
-	private int lineNo;
+	protected int lineNo;
 
-	private Resource subject;
+	protected Resource subject;
 
-	private URI predicate;
+	protected URI predicate;
 
-	private Value object;
+	protected Value object;
 
 	/*--------------*
 	 * Constructors *
@@ -75,7 +75,7 @@ public class NTriplesParser extends RDFParserBase {
 	 *---------*/
 
 	// implements RDFParser.getRDFFormat()
-	public final RDFFormat getRDFFormat() {
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
 
@@ -185,7 +185,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * space or tab, and returns this last character. In case the end of the
 	 * character stream has been reached, -1 is returned.
 	 */
-	private int skipWhitespace(int c)
+	protected int skipWhitespace(int c)
 		throws IOException
 	{
 		while (c == ' ' || c == '\t') {
@@ -196,11 +196,26 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
+	 * Verifies that there is only whitespace until the end of the line.
+	 */
+	protected int assertLineTerminates(int c) throws IOException, RDFParseException {
+		c = reader.read();
+
+		c = skipWhitespace(c);
+
+		if (c != -1 && c != '\r' && c != '\n') {
+			reportFatalError("Content after '.' is not allowed");
+		}
+
+		return c;
+	}	
+	
+	/**
 	 * Reads characters from reader until the first EOL has been read. The first
 	 * character after the EOL is returned. In case the end of the character
 	 * stream has been reached, -1 is returned.
 	 */
-	private int skipLine(int c)
+	protected int skipLine(int c)
 		throws IOException
 	{
 		while (c != -1 && c != '\r' && c != '\n') {
@@ -235,29 +250,44 @@ public class NTriplesParser extends RDFParserBase {
 	private int parseTriple(int c)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		c = parseSubject(c);
+		boolean ignoredAnError = false;
+		try {
+			c = parseSubject(c);
 
-		c = skipWhitespace(c);
+			c = skipWhitespace(c);
 
-		c = parsePredicate(c);
+			c = parsePredicate(c);
 
-		c = skipWhitespace(c);
+			c = skipWhitespace(c);
 
-		c = parseObject(c);
+			c = parseObject(c);
 
-		c = skipWhitespace(c);
+			c = skipWhitespace(c);
 
-		if (c == -1) {
-			throwEOFException();
+			if (c == -1) {
+				throwEOFException();
+			}
+			else if (c != '.') {
+				reportError("Expected '.', found: " + (char)c);
+			}
+
+			c = assertLineTerminates(c);
 		}
-		else if (c != '.') {
-			reportFatalError("Expected '.', found: " + (char)c);
+		catch(RDFParseException rdfpe) {
+			if(stopAtFirstError()) {
+				throw rdfpe;
+			}
+			else {
+				ignoredAnError = true;
+			}
 		}
 
 		c = skipLine(c);
 
-		Statement st = createStatement(subject, predicate, object);
-		rdfHandler.handleStatement(st);
+		if(!ignoredAnError) {
+			Statement st = createStatement(subject, predicate, object);
+			rdfHandler.handleStatement(st);
+		}
 
 		subject = null;
 		predicate = null;
@@ -266,7 +296,7 @@ public class NTriplesParser extends RDFParserBase {
 		return c;
 	}
 
-	private int parseSubject(int c)
+	protected int parseSubject(int c)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = new StringBuilder(100);
@@ -292,7 +322,7 @@ public class NTriplesParser extends RDFParserBase {
 		return c;
 	}
 
-	private int parsePredicate(int c)
+	protected int parsePredicate(int c)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = new StringBuilder(100);
@@ -313,7 +343,7 @@ public class NTriplesParser extends RDFParserBase {
 		return c;
 	}
 
-	private int parseObject(int c)
+	protected int parseObject(int c)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = getBuffer();
@@ -347,7 +377,7 @@ public class NTriplesParser extends RDFParserBase {
 		return c;
 	}
 
-	private int parseUriRef(int c, StringBuilder uriRef)
+	protected int parseUriRef(int c, StringBuilder uriRef)
 		throws IOException, RDFParseException
 	{
 		assert c == '<' : "Supplied char should be a '<', is: " + c;
@@ -368,7 +398,7 @@ public class NTriplesParser extends RDFParserBase {
 		return c;
 	}
 
-	private int parseNodeID(int c, StringBuilder name)
+	protected int parseNodeID(int c, StringBuilder name)
 		throws IOException, RDFParseException
 	{
 		assert c == '_' : "Supplied char should be a '_', is: " + c;
@@ -546,7 +576,7 @@ public class NTriplesParser extends RDFParserBase {
 		reportFatalError(e, lineNo, -1);
 	}
 
-	private void throwEOFException()
+	protected void throwEOFException()
 		throws RDFParseException
 	{
 		throw new RDFParseException("Unexpected end of file");
