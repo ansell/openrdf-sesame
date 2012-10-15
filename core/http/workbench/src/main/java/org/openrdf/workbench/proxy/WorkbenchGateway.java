@@ -5,23 +5,15 @@
  */
 package org.openrdf.workbench.proxy;
 
-import static java.util.Collections.singletonMap;
 import static org.openrdf.workbench.proxy.WorkbenchServlet.SERVER_PARAM;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,36 +21,47 @@ import org.openrdf.workbench.base.BaseServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
 import org.openrdf.workbench.util.TupleResultBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * All requests are serviced by this Servlet, though it usually delegates to
+ * other Servlets.
+ */
 public class WorkbenchGateway extends BaseServlet {
 
-	private static final String COOKIE_AGE_PARAM = "cookie-max-age";
+	private static final String DEFAULT_SERVER = "default-server";
 
-	private static final String DEFAULT_SERVER_PARAM = "default-server";
-
-	private static final String ACCEPTED_SERVER_PARAM = "accepted-server-prefixes";
-
-	private static final String CHANGE_SERVER_PARAM = "change-server-path";
+	private static final String CHANGE_SERVER = "change-server-path";
 
 	private static final String SERVER_COOKIE = "workbench-server";
 
-	private static final String TRANSFORMATIONS_PARAM = "transformations";
+	protected static final String TRANSFORMATIONS = "transformations";
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	protected static final String SERVER_USER = "server-user";
 
+	protected static final String SERVER_PASSWORD = "server-password";
+
+	/**
+	 * Thread-safe map of server paths to their WorkbenchServlet instances.
+	 */
 	private final Map<String, WorkbenchServlet> servlets = new ConcurrentHashMap<String, WorkbenchServlet>();
 
+	private CookieHandler cookies;
+
+	private ServerValidator serverValidator;
+
 	@Override
-	public void init(ServletConfig config)
+	public void init(final ServletConfig config)
 		throws ServletException
 	{
 		super.init(config);
-		if (getDefaultServerPath() == null)
-			throw new MissingInitParameterException(DEFAULT_SERVER_PARAM);
-		if (config.getInitParameter(TRANSFORMATIONS_PARAM) == null)
-			throw new MissingInitParameterException(TRANSFORMATIONS_PARAM);
+		if (getDefaultServerPath() == null) {
+			throw new MissingInitParameterException(DEFAULT_SERVER);
+		}
+		if (config.getInitParameter(TRANSFORMATIONS) == null) {
+			throw new MissingInitParameterException(TRANSFORMATIONS);
+		}
+		this.cookies = new CookieHandler(config);
+		this.serverValidator = new ServerValidator(config);
 	}
 
 	@Override
@@ -68,42 +71,48 @@ public class WorkbenchGateway extends BaseServlet {
 		}
 	}
 
-	public String getAcceptServerPrefixes() {
-		return config.getInitParameter(ACCEPTED_SERVER_PARAM);
-	}
-
 	public String getChangeServerPath() {
-		return config.getInitParameter(CHANGE_SERVER_PARAM);
+		return config.getInitParameter(CHANGE_SERVER);
 	}
 
+	/**
+	 * Returns the value of the default-server configuration variable. Often,
+	 * this is simply a relative path on the same HTTP server.
+	 * 
+	 * @return the path to the default Sesame server instance
+	 */
 	public String getDefaultServerPath() {
-		return config.getInitParameter(DEFAULT_SERVER_PARAM);
+		return config.getInitParameter(DEFAULT_SERVER);
 	}
 
-	public String getMaxAgeOfCookie() {
-		return config.getInitParameter(COOKIE_AGE_PARAM);
-	}
-
+	/**
+	 * Whether the server path is fixed, which is when the change-server-path
+	 * configuration value is not set.
+	 * 
+	 * @return true, if the change-server-path configuration variable is not set,
+	 *         meaning that changing the server is blocked
+	 */
 	public boolean isServerFixed() {
 		return getChangeServerPath() == null;
 	}
 
 	@Override
-	public void service(HttpServletRequest req, HttpServletResponse resp)
+	public void service(final HttpServletRequest req, final HttpServletResponse resp)
 		throws ServletException, IOException
 	{
-		String change = getChangeServerPath();
+		final String change = getChangeServerPath();
 		if (change != null && change.equals(req.getPathInfo())) {
 			changeServer(req, resp);
 		}
 		else {
-			WorkbenchServlet servlet = findWorkbenchServlet(req, resp);
+			final WorkbenchServlet servlet = findWorkbenchServlet(req, resp);
 			if (servlet == null) {
-				String uri = req.getRequestURI();
+				// Redirect to change-server-path
+				final StringBuilder uri = new StringBuilder(req.getRequestURI());
 				if (req.getPathInfo() != null) {
-					uri = uri.substring(0, uri.length() - req.getPathInfo().length());
+					uri.setLength(uri.length() - req.getPathInfo().length());
 				}
-				resp.sendRedirect(uri + getChangeServerPath());
+				resp.sendRedirect(uri.append(getChangeServerPath()).toString());
 			}
 			else {
 				servlet.service(req, resp);
@@ -118,58 +127,46 @@ public class WorkbenchGateway extends BaseServlet {
 		}
 	}
 
-	private File asLocalFile(URL rdf)
-		throws UnsupportedEncodingException
-	{
-		return new File(URLDecoder.decode(rdf.getFile(), "UTF-8"));
-	}
-
-	private boolean canConnect(String server) {
-		try {
-			URL url = new URL(server + "/protocol");
-			InputStreamReader in = new InputStreamReader(url.openStream());
-			BufferedReader reader = new BufferedReader(in);
-			try {
-				Integer.parseInt(reader.readLine());
-				return true;
-			}
-			finally {
-				reader.close();
-			}
-		}
-		catch (MalformedURLException e) {
-			logger.warn(e.toString(), e);
-			return false;
-		}
-		catch (IOException e) {
-			logger.warn(e.toString(), e);
-			return false;
-		}
-	}
-
-	private void changeServer(HttpServletRequest req, HttpServletResponse resp)
+	/**
+	 * Handles requests to the "change server" page.
+	 * 
+	 * @param req
+	 *        the servlet request object
+	 * @param resp
+	 *        the servlet response object
+	 * @throws IOException
+	 *         if an issue occurs writing to the response
+	 */
+	private void changeServer(final HttpServletRequest req, final HttpServletResponse resp)
 		throws IOException
 	{
-		String server = req.getParameter(SERVER_COOKIE);
+		final String server = req.getParameter(SERVER_COOKIE);
 		if (server == null) {
+			// Server parameter was not present, so present entry form.
 			resp.setContentType("application/xml");
-			TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start();
 			builder.end();
 		}
-		else if (isValidServer(server)) {
-			Cookie cookie = new Cookie(SERVER_COOKIE, server);
-			initCookie(cookie, req);
-			resp.addCookie(cookie);
-			String uri = req.getRequestURI();
-			uri = uri.substring(0, uri.length() - req.getPathInfo().length());
+		else if (this.serverValidator.isValidServer(server)) {
+			// Valid server was submitted by form. Set cookie and redirect to
+			// repository selection page.
+			this.cookies.addNewCookie(req, resp, SERVER_COOKIE, server);
+			final String user = getOptionalParameter(req, SERVER_USER);
+			this.cookies.addNewCookie(req, resp, SERVER_USER, user);
+			final String password = getOptionalParameter(req, SERVER_PASSWORD);
+			this.cookies.addNewCookie(req, resp, SERVER_PASSWORD, password);
+			final StringBuilder uri = new StringBuilder(req.getRequestURI());
+			uri.setLength(uri.length() - req.getPathInfo().length());
 			resetCache();
-			resp.sendRedirect(uri);
+			resp.sendRedirect(uri.toString());
 		}
 		else {
+			// Invalid server was submitted by form. Present entry form again
+			// with error message.
 			resp.setContentType("application/xml");
-			TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start("error-message");
 			builder.result("Invalid Server URL");
@@ -177,80 +174,121 @@ public class WorkbenchGateway extends BaseServlet {
 		}
 	}
 
-	private boolean checkServerPrefixes(String server) {
-		String prefixes = getAcceptServerPrefixes();
-		if (prefixes == null)
-			return true;
-		for (String prefix : prefixes.split(" ")) {
-			if (server.startsWith(prefix))
-				return true;
+	/**
+	 * @param req
+	 *        the servlet request
+	 * @param name
+	 *        the name of the optional parameter
+	 * @return the value of the parameter, or an empty String if it is not
+	 *         present.
+	 */
+	private String getOptionalParameter(final HttpServletRequest req, final String name) {
+		String value = req.getParameter(name);
+		if (value == null) {
+			value = "";
 		}
-		logger.warn("server URL {} does not have a prefix {}", server, prefixes);
-		return false;
+		return value;
 	}
 
-	private String findServer(HttpServletRequest req, HttpServletResponse resp) {
-		if (isServerFixed())
-			return getDefaultServer(req);
-		String value = getServerCookie(req, resp);
-		if (value == null)
-			return getDefaultServer(req);
-		if (isValidServer(value))
-			return value;
-		return getDefaultServer(req);
-	}
-
-	private WorkbenchServlet findWorkbenchServlet(HttpServletRequest req, HttpServletResponse resp)
-		throws ServletException, IOException
-	{
-		String server = findServer(req, resp);
-		if (servlets.containsKey(server))
-			return servlets.get(server);
-		if (isServerFixed() || isValidServer(server)) {
-			Map<String, String> params = singletonMap(SERVER_PARAM, server);
-			ServletConfig cfg = new BasicServletConfig(server, config, params);
-			WorkbenchServlet servlet = new WorkbenchServlet();
-			servlet.init(cfg);
-			synchronized (servlets) {
-				if (servlets.containsKey(server))
-					return servlets.get(server);
-				servlets.put(server, servlet);
-				return servlet;
-			}
+	/**
+	 * Returns the user requested server, if valid, or the default server.
+	 * 
+	 * @param req
+	 *        the request
+	 * @param resp
+	 *        the response
+	 * @return the user's requested server, if valid, or the default server
+	 */
+	private String findServer(final HttpServletRequest req, final HttpServletResponse resp) {
+		final StringBuilder value = new StringBuilder();
+		if (isServerFixed()) {
+			value.append(getDefaultServer(req));
 		}
 		else {
-			return null;
+			value.append(cookies.getCookie(req, resp, SERVER_COOKIE));
+			if (0 == value.length()) {
+				value.append(getDefaultServer(req));
+			}
+			else if (!this.serverValidator.isValidServer(value.toString())) {
+				value.replace(0, value.length(), getDefaultServer(req));
+			}
 		}
+		return value.toString();
 	}
 
-	private String getDefaultServer(HttpServletRequest req) {
+	/**
+	 * Returns a WorkbenchServlet instance allocated for the requested server.
+	 * 
+	 * @param req
+	 *        the current request
+	 * @param resp
+	 *        the current response
+	 * @return a WorkbenchServlet instance allocated for the requested server
+	 * @throws ServletException
+	 *         if a problem occurs initializing a new servlet
+	 */
+	private WorkbenchServlet findWorkbenchServlet(final HttpServletRequest req, final HttpServletResponse resp)
+		throws ServletException
+	{
+		WorkbenchServlet servlet = null;
+		final String server = findServer(req, resp);
+		if (servlets.containsKey(server)) {
+			servlet = servlets.get(server);
+		}
+		else {
+			if (isServerFixed() || this.serverValidator.isValidServer(server)) {
+				synchronized (servlets) {
+					// Even though the map is thread-safe, we only wish one
+					// thread to be in this block at a time, to avoid abandoning
+					// a WorkbenchServlet instance to the garbage collector.
+					if (servlets.containsKey(server)) {
+						servlet = servlets.get(server);
+					}
+					else {
+						final Map<String, String> params = new HashMap<String, String>(2);
+						params.put(SERVER_PARAM, server);
+						params.put(CookieHandler.COOKIE_AGE_PARAM, this.cookies.getMaxAge());
+						params.put(TRANSFORMATIONS, this.config.getInitParameter(TRANSFORMATIONS));
+						final ServletConfig cfg = new BasicServletConfig(server, config, params);
+						servlet = new WorkbenchServlet();
+						servlet.init(cfg);
+						servlets.put(server, servlet);
+					}
+				}
+			}
+		}
+		return servlet;
+	}
+
+	/**
+	 * Returns the full URL to the default server on the same server as the given
+	 * request.
+	 * 
+	 * @param req
+	 *        the request to find the default server relative to
+	 * @return the full URL to the default server on the same server as the given
+	 *         request
+	 */
+	private String getDefaultServer(final HttpServletRequest req) {
 		String server = getDefaultServerPath();
-		if (server.startsWith("/")) {
-			StringBuffer url = req.getRequestURL();
-			StringBuilder path = getServerPath(req);
+		if ('/' == server.charAt(0)) {
+			final StringBuffer url = req.getRequestURL();
+			final StringBuilder path = getServerPath(req);
 			url.setLength(url.indexOf(path.toString()));
 			server = url.append(server).toString();
 		}
 		return server;
 	}
 
-	private String getServerCookie(HttpServletRequest req, HttpServletResponse resp) {
-		Cookie[] cookies = req.getCookies();
-		if (cookies == null)
-			return null;
-		for (Cookie cookie : cookies) {
-			if (SERVER_COOKIE.equals(cookie.getName())) {
-				resp.addHeader("Vary", "Cookie");
-				initCookie(cookie, req);
-				resp.addCookie(cookie);
-				return cookie.getValue();
-			}
-		}
-		return null;
-	}
-
-	private StringBuilder getServerPath(HttpServletRequest req) {
-		StringBuilder path = new StringBuilder();
+	/**
+	 * Returns the full path for the given request.
+	 * 
+	 * @param req
+	 *        the request for which the path is sought
+	 * @return the full path for the given request
+	 */
+	private StringBuilder getServerPath(final HttpServletRequest req) {
+		final StringBuilder path = new StringBuilder();
 		if (req.getContextPath() != null) {
 			path.append(req.getContextPath());
 		}
@@ -263,49 +301,8 @@ public class WorkbenchGateway extends BaseServlet {
 		return path;
 	}
 
-	private String getTransformationUrl(HttpServletRequest req) {
-		String contextPath = req.getContextPath();
-		return contextPath + config.getInitParameter(TRANSFORMATIONS_PARAM);
+	private String getTransformationUrl(final HttpServletRequest req) {
+		final String contextPath = req.getContextPath();
+		return contextPath + config.getInitParameter(TRANSFORMATIONS);
 	}
-
-	private void initCookie(Cookie cookie, HttpServletRequest req) {
-		if (req.getContextPath() != null) {
-			cookie.setPath(req.getContextPath());
-		}
-		else {
-			cookie.setPath("/");
-		}
-		String age = getMaxAgeOfCookie();
-		if (age != null) {
-			cookie.setMaxAge(Integer.parseInt(age));
-		}
-	}
-
-	private boolean isDirectory(String server) {
-		try {
-			URL url = new URL(server);
-			return asLocalFile(url).isDirectory();
-		}
-		catch (MalformedURLException e) {
-			logger.warn(e.toString(), e);
-			return false;
-		}
-		catch (IOException e) {
-			logger.warn(e.toString(), e);
-			return false;
-		}
-	}
-
-	private boolean isValidServer(String server) {
-		if (!checkServerPrefixes(server))
-			return false;
-		if (server.startsWith("http")) {
-			return canConnect(server);
-		}
-		else if (server.startsWith("file:")) {
-			return isDirectory(server);
-		}
-		return true;
-	}
-
 }

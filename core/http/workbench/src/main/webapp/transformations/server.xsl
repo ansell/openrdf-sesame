@@ -40,7 +40,26 @@
 						</td>
 						<td></td>
 					</tr>
-
+					<tr>
+						<th>
+							<xsl:value-of select="$server-user.label" />
+						</th>
+						<td>
+							<input id="server-user"
+								name="server-user" type="text"
+								value="{normalize-space($info//sparql:binding[@name='server-user'])}" />
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$server-password.label" />
+						</th>
+						<td>
+							<input id="server-password"
+								name="server-password" type="password"
+								value="" />
+						</td>
+					</tr>
 					<tr>
 						<td></td>
 						<td colspan="2">
