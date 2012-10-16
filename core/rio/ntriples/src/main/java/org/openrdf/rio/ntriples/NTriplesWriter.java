@@ -28,9 +28,9 @@ public class NTriplesWriter implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
-	private final Writer writer;
+	protected final Writer writer;
 
-	private boolean writingStarted;
+	protected boolean writingStarted;
 
 	/*--------------*
 	 * Constructors *
