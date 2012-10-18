@@ -21,10 +21,11 @@ import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
 /**
- * An implementation of the Transaction interface that wraps another Transaction
- * object and forwards any method calls to the wrapped transaction.
+ * An implementation of the SailConnection interface that wraps another
+ * SailConnection object and forwards any method calls to the wrapped
+ * connection.
  * 
- * @author jeen
+ * @author Jeen Broekstra
  */
 public class SailConnectionWrapper implements SailConnection {
 
@@ -180,9 +181,9 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.begin();
 	}
 
-	public boolean isReadOnly()
+	public boolean isActive()
 		throws SailException
-	{	
-		return wrappedCon.isReadOnly();
+	{
+		return wrappedCon.isActive();
 	}
 }

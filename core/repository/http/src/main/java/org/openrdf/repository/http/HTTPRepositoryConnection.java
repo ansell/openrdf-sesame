@@ -11,8 +11,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
@@ -45,6 +43,7 @@ import org.openrdf.query.Update;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
@@ -89,13 +88,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
+	private boolean active;
+	
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
 	 * debugging is enabled.
 	 */
 	private Throwable creatorTrace;
 
-	private boolean readOnly;
 
 	/*--------------*
 	 * Constructors *
@@ -150,8 +150,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		verifyIsOpen();
 		verifyNotTxnActive("Connection already has an active transaction");
 
-//		client.begin();
-//		autoCommit = false;
+		active = true;
 	}
 
 	/**
@@ -293,11 +292,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 					throw new RepositoryException(e);
 				}
 			}
+			active = false;
 		}
 	}
 
 	public void rollback() {
 		txn.clear();
+		active = false;
 	}
 
 	@Override
@@ -312,20 +313,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		super.close();
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
-	
 	@Override
 	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
 			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (isAutoCommit()) {
+		// FIXME (J1) in the new setup, isActive is always true when you get to this point. We need transactional support
+		// in the httpclient itself (and thus in the protocol).
+		if (!isActive()) { 
 			// Send bytes directly to the server
 			HTTPClient httpClient = getRepository().getHTTPClient();
 			if (inputStreamOrReader instanceof InputStream) {
@@ -364,8 +359,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clear(Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+		
 		txn.add(new ClearOperation(contexts));
-		autoCommit();
+		
+		conditionalCommit(localTransaction);
 	}
 
 	public void removeNamespace(String prefix)
@@ -374,15 +372,20 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (prefix == null) {
 			throw new NullPointerException("prefix must not be null");
 		}
+		
+		boolean localTransaction = startLocalTransaction();
+		
 		txn.add(new RemoveNamespaceOperation(prefix));
-		autoCommit();
+		
+		conditionalCommit(localTransaction);
 	}
 
 	public void clearNamespaces()
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
 		txn.add(new ClearNamespacesOperation());
-		autoCommit();
+		conditionalCommit(localTransaction);
 	}
 
 	public void setNamespace(String prefix, String name)
@@ -394,8 +397,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (name == null) {
 			throw new NullPointerException("name must not be null");
 		}
+		
+		boolean localTransaction = startLocalTransaction();
 		txn.add(new SetNamespaceOperation(prefix, name));
-		autoCommit();
+		conditionalCommit(localTransaction);
 	}
 
 	public RepositoryResult<Namespace> getNamespaces()
@@ -473,38 +478,32 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	/**
-	 * Verifies that the connection is not in read-only mode, throws a
-	 * {@link StoreException} if it is.
-	 */
-	protected void verifyNotReadOnly()
-		throws RepositoryException
-	{
-		if (isReadOnly()) {
-			throw new RepositoryException("Connection is in read-only mode");
-		}
-	}
-
-	/**
 	 * Verifies that the connection has an active transaction, throws a
 	 * {@link StoreException} if it hasn't.
 	 */
 	protected void verifyTxnActive()
 		throws RepositoryException
 	{
-		if (isAutoCommit()) {
+		if (!isActive()) {
 			throw new RepositoryException("Connection does not have an active transaction");
 		}
 	}
 
 	/**
 	 * Verifies that the connection does not have an active transaction, throws a
-	 * {@link StoreException} if the connection is it has.
+	 * {@link RepositoryException} if it has.
 	 */
 	protected void verifyNotTxnActive(String msg)
 		throws RepositoryException
 	{
-		if (!isAutoCommit()) {
+		if (isActive()) {
 			throw new RepositoryException(msg);
 		}
+	}
+
+	public boolean isActive()
+		throws UnknownTransactionStateException, RepositoryException
+	{
+		return active;
 	}
 }

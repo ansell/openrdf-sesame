@@ -55,6 +55,7 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
@@ -306,6 +307,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		// no-op
 	}
 
+	@Deprecated
 	public boolean isAutoCommit()
 		throws RepositoryException
 	{
@@ -544,5 +546,11 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 			}
 			qb.append(". \n");
 		}
+	}
+
+	public boolean isActive()
+		throws UnknownTransactionStateException, RepositoryException
+	{
+		return false;
 	}
 }

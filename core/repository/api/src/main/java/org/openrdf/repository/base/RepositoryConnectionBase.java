@@ -45,6 +45,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
@@ -52,10 +53,10 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
@@ -68,7 +69,7 @@ import org.openrdf.rio.helpers.ParseErrorLogger;
  * <tt>org.openrdf.repository.debug</tt> has been set to a non-<tt>null</tt>
  * value.
  * 
- * @author jeen
+ * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
 public abstract class RepositoryConnectionBase implements RepositoryConnection {
@@ -81,14 +82,11 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private volatile boolean isOpen;
 
-	private volatile boolean isReadOnly;
-
-	private volatile boolean autoCommit;
+	// private volatile boolean active;
 
 	protected RepositoryConnectionBase(Repository repository) {
 		this.repository = repository;
 		this.isOpen = true;
-		this.autoCommit = true;
 	}
 
 	public void setParserConfig(ParserConfig parserConfig) {
@@ -111,18 +109,6 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws RepositoryException
 	{
 		return isOpen;
-	}
-
-	public boolean isReadOnly()
-		throws RepositoryException
-	{
-		return isReadOnly;
-	}
-
-	public void setReadOnly(boolean isReadOnly)
-		throws RepositoryException
-	{
-		this.isReadOnly = isReadOnly;
 	}
 
 	public void close()
@@ -193,40 +179,32 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	/**
-	 * @deprecated use {@link #begin()} instead.
+	 * @deprecated since 2.7.0. Use {@link #begin()} instead.
 	 */
 	@Deprecated
 	public void setAutoCommit(boolean autoCommit)
 		throws RepositoryException
 	{
-		if (autoCommit == this.autoCommit) {
-			return;
+		if (isActive()) {
+			if (autoCommit) {
+				// we are switching to autocommit mode from an active transaction.
+				commit();
+			}
 		}
-
-		this.autoCommit = autoCommit;
-
-		// if we are switching from non-autocommit to autocommit mode, commit any
-		// pending updates
-		if (autoCommit) {
-			commit();
+		else if (!autoCommit) {
+			// begin a transaction
+			begin();
 		}
-	}
-
-	public boolean isAutoCommit()
-		throws RepositoryException
-	{
-		return autoCommit;
 	}
 
 	/**
-	 * Calls {@link #commit} when in auto-commit mode.
+	 * @deprecated since 2.7.0. Use {@link #isActive()} instead.
 	 */
-	protected void autoCommit()
+	@Deprecated
+	public boolean isAutoCommit()
 		throws RepositoryException
 	{
-		if (isAutoCommit()) {
-			commit();
-		}
+		return !isActive();
 	}
 
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
@@ -315,14 +293,62 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 	}
 
+	/**
+	 * Starts a new transaction if one is not already active.
+	 * 
+	 * @since 2.7.0
+	 * @return <code>true</code> if a new transaction was started,
+	 *         <code>false</code> if a transaction was already active.
+	 * @throws RepositoryException
+	 */
+	protected final boolean startLocalTransaction()
+		throws RepositoryException
+	{
+		if (!isActive()) {
+			begin();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Invokes {@link #commit()} if supplied boolean condition is
+	 * <code>true</code>.
+	 * 
+	 * @since 2.7.0
+	 * @param condition
+	 *        a boolean condition.
+	 * @throws RepositoryException
+	 */
+	protected final void conditionalCommit(boolean condition)
+		throws RepositoryException
+	{
+		if (condition) {
+			commit();
+		}
+	}
+
+	/**
+	 * Invokes {@link #rollback()} if supplied boolean condition is
+	 * <code>true</code>.
+	 * 
+	 * @since 2.7.0
+	 * @param condition
+	 *        a boolean condition.
+	 * @throws RepositoryException
+	 */
+	protected final void conditionalRollback(boolean condition)
+		throws RepositoryException
+	{
+		if (condition) {
+			rollback();
+		}
+	}
+
 	private void addZip(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		boolean autoCommit = isAutoCommit();
-
-		if (autoCommit) {
-			begin();
-		}
+		boolean localTransaction = startLocalTransaction();
 
 		try {
 			ZipInputStream zipIn = new ZipInputStream(in);
@@ -343,9 +369,10 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 							}
 						};
 						add(wrapper, baseURI, format, contexts);
+						
 					}
 					catch (RDFParseException e) {
-						if (autoCommit) {
+						if (localTransaction) {
 							rollback();
 						}
 
@@ -357,30 +384,20 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 					finally {
 						zipIn.closeEntry();
 					}
-				}
+				} // end for
+				conditionalCommit(localTransaction);
 			}
 			finally {
 				zipIn.close();
 			}
-
-			if (autoCommit) {
-				commit();
-			}
 		}
 		catch (IOException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
 		}
 		catch (RepositoryException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
-		}
-		finally {
-			setAutoCommit(autoCommit);
 		}
 	}
 
@@ -422,8 +439,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		rdfInserter.enforceContext(contexts);
 		rdfParser.setRDFHandler(rdfInserter);
 
-		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		boolean localTransaction = startLocalTransaction();
 
 		try {
 			if (inputStreamOrReader instanceof InputStream) {
@@ -437,22 +453,18 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 						"inputStreamOrReader must be an InputStream or a Reader, is a: "
 								+ inputStreamOrReader.getClass());
 			}
+
+			conditionalCommit(localTransaction);
 		}
 		catch (RDFHandlerException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
+			
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
 		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
-		}
-		finally {
-			setAutoCommit(autoCommit);
 		}
 	}
 
@@ -461,28 +473,20 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
-
+		boolean localTransaction = startLocalTransaction();
 		try {
 			for (Statement st : statements) {
 				addWithoutCommit(st, contexts);
 			}
+			conditionalCommit(localTransaction);
 		}
 		catch (RepositoryException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
 		}
 		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
-		}
-		finally {
-			setAutoCommit(autoCommit);
 		}
 	}
 
@@ -492,28 +496,22 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		try {
 			OpenRDFUtil.verifyContextNotNull(contexts);
 
-			boolean autoCommit = isAutoCommit();
-			setAutoCommit(false);
+			boolean localTransaction = startLocalTransaction();
 
 			try {
 				while (statements.hasNext()) {
 					addWithoutCommit(statements.next(), contexts);
 				}
+
+				conditionalCommit(localTransaction);
 			}
 			catch (RepositoryException e) {
-				if (autoCommit) {
-					rollback();
-				}
+				conditionalRollback(localTransaction);
 				throw e;
 			}
 			catch (RuntimeException e) {
-				if (autoCommit) {
-					rollback();
-				}
+				conditionalRollback(localTransaction);
 				throw e;
-			}
-			finally {
-				setAutoCommit(autoCommit);
 			}
 		}
 		finally {
@@ -524,17 +522,23 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(st, contexts);
-		autoCommit();
+
+		conditionalCommit(localTransaction);
 	}
 
 	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(subject, predicate, object, contexts);
-		autoCommit();
+		
+		conditionalCommit(localTransaction);
 	}
 
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
@@ -542,28 +546,22 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		boolean autoCommit = isAutoCommit();
-		setAutoCommit(false);
+		boolean localTransaction = startLocalTransaction();
 
 		try {
 			for (Statement st : statements) {
 				remove(st, contexts);
 			}
+
+			conditionalCommit(localTransaction);
 		}
 		catch (RepositoryException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
 		}
 		catch (RuntimeException e) {
-			if (autoCommit) {
-				rollback();
-			}
+			conditionalRollback(localTransaction);
 			throw e;
-		}
-		finally {
-			setAutoCommit(autoCommit);
 		}
 	}
 
@@ -572,28 +570,22 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws RepositoryException, E
 	{
 		try {
-			boolean autoCommit = isAutoCommit();
-			setAutoCommit(false);
+			boolean localTransaction = startLocalTransaction();
 
 			try {
 				while (statements.hasNext()) {
 					remove(statements.next(), contexts);
 				}
+
+				conditionalCommit(localTransaction);
 			}
 			catch (RepositoryException e) {
-				if (autoCommit) {
-					rollback();
-				}
+				conditionalRollback(localTransaction);
 				throw e;
 			}
 			catch (RuntimeException e) {
-				if (autoCommit) {
-					rollback();
-				}
+				conditionalRollback(localTransaction);
 				throw e;
-			}
-			finally {
-				setAutoCommit(autoCommit);
 			}
 		}
 		finally {
@@ -604,17 +596,23 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void remove(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+		
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(st, contexts);
-		autoCommit();
+
+		conditionalCommit(localTransaction);
 	}
 
 	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(subject, predicate, object, contexts);
-		autoCommit();
+
+		conditionalCommit(localTransaction);
 	}
 
 	public void clear(Resource... contexts)

@@ -62,6 +62,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 		throws Exception
 	{
 		// Add some data to the repository
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -70,6 +71,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 		con.commit();
 
 		// Test removal of statements
+		con.begin();
 		con.removeStatements(painting, RDF.TYPE, RDFS.CLASS);
 		con.commit();
 
@@ -80,6 +82,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 		assertEquals("Statement (Painting, type, Class) should no longer be in the repository", 0,
 				countQueryResults("select 1 from {ex:Painting} rdf:type {rdfs:Class}"));
 
+		con.begin();
 		con.removeStatements(null, null, null, context1);
 		con.commit();
 
@@ -87,6 +90,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 
 		assertEquals("Named context should be empty", 0, countContext1Elements());
 
+		con.begin();
 		con.clear();
 		con.commit();
 
