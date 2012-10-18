@@ -99,8 +99,16 @@ public class SailUpdate extends AbstractOperation implements Update {
 				Dataset activeDataset = getMergedDataset(datasetMapping.get(updateExpr));
 				
 				try {
+					boolean localTransaction = !getConnection().isActive();
+					if (localTransaction) {
+						getConnection().begin();
+					}
+					
 					conn.executeUpdate(updateExpr, activeDataset, getBindings(), true);
-					getConnection().autoCommit();
+					
+					if (localTransaction) {
+						getConnection().commit();
+					}
 				}
 				catch (SailException e) {
 					logger.warn("exception during update execution: ", e);

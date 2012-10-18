@@ -75,6 +75,26 @@ public interface SailConnection {
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException;
 
+	/**
+	 * Executes the supplied UpdateExpr on the dataset contained in this Sail.
+	 * 
+	 * @param updateExpr
+	 *        the update expression to execute.
+	 * @param dataset
+	 *        The dataset to use for update execution, <tt>null</tt> to use the
+	 *        Sail's default dataset.
+	 * @param bindings
+	 *        A set of input parameters for update execution. The keys reference
+	 *        variable names that should be bound to the value they map to.
+	 * @param includeInferred
+	 *        indicates whether inferred triples (if any exist in the Sail)
+	 *        should be considered in execution.
+	 * @throws SailException
+	 *         if executing the update failed, for example because no transaction
+	 *         is active.
+	 * @throws IllegalStateException
+	 *         if the connection has been closed.
+	 */
 	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
 			boolean includeInferred)
 		throws SailException;
@@ -144,13 +164,14 @@ public interface SailConnection {
 	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
 	 * be called to close the transaction.
 	 * 
+	 * @since 2.7.0
 	 * @throws SailException
 	 *         If the connection could not start a transaction, or if it already
 	 *         has an active transaction.
 	 */
 	public void begin()
 		throws SailException;
-	
+
 	/**
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
@@ -164,8 +185,8 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Rolls back the SailConnection, discarding any uncommitted changes that
-	 * have been made in this SailConnection.
+	 * Rolls back the transaction, discarding any uncommitted changes that have
+	 * been made in this SailConnection.
 	 * 
 	 * @throws SailException
 	 *         If the SailConnection could not be rolled back.
@@ -173,6 +194,22 @@ public interface SailConnection {
 	 *         If the connection has been closed.
 	 */
 	public void rollback()
+		throws SailException;
+
+	/**
+	 * Indicates if a transaction is currently active on the connection. A
+	 * transaction is active if {@link #begin()} has been called, and becomes
+	 * inactive after {@link #commit()} or {@link #rollback()} has been called.
+	 * 
+	 * @since 2.7.0
+	 * @return <code>true</code> iff a transaction is active, <code>false</code>
+	 *         iff no transaction is active.
+	 * @throws SailException
+	 *         if the transaction state can not be determined (this can happen
+	 *         when a {@link #commit()} operation has failed catastrophically in
+	 *         the backend).
+	 */
+	public boolean isActive()
 		throws SailException;
 
 	/**
@@ -189,7 +226,8 @@ public interface SailConnection {
 	 *        a vararg and as such is optional. If no contexts are specified, a
 	 *        context-less statement will be added.
 	 * @throws SailException
-	 *         If the statement could not be added.
+	 *         If the statement could not be added, for example because no
+	 *         transaction is active.
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
@@ -216,7 +254,8 @@ public interface SailConnection {
 	 *        specified the method operates on the entire repository. A
 	 *        <tt>null</tt> value can be used to match context-less statements.
 	 * @throws SailException
-	 *         If the statement could not be removed.
+	 *         If the statement could not be removed, for example because no
+	 *         transaction is active.
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
@@ -321,16 +360,5 @@ public interface SailConnection {
 	 */
 	public void clearNamespaces()
 		throws SailException;
-
-	/**
-	 * Indicates whether this connection is in read-only mode.
-	 * 
-	 * @since 2.7.0 
-	 * @return <tt>true</tt> if this Connection object is read-only;
-	 *         <tt>false</tt> otherwise.
-	 * @throws SailException
-	 *         If a repository access error occurs.
-	 */
-	public boolean isReadOnly() throws SailException;
 
 }

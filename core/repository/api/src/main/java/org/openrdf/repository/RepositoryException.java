@@ -8,7 +8,7 @@ package org.openrdf.repository;
 import org.openrdf.OpenRDFException;
 
 /**
- * An exception thrown classes from the Repository API to indicate an error.
+ * An exception thrown by classes from the Repository API to indicate an error.
  * Most of the time, this exception will wrap another exception that indicates
  * the actual source of the error.
  */

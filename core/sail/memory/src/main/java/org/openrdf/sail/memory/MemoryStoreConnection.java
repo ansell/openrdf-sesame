@@ -394,7 +394,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				return addStatementInternal(subj, pred, obj, false, contexts);
 			}
 			finally {
@@ -456,7 +456,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				return removeStatementsInternal(subj, pred, obj, false, contexts);
 			}
 			finally {
@@ -484,7 +484,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				removeStatementsInternal(null, null, null, false, contexts);
 			}
 			finally {

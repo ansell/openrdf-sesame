@@ -70,6 +70,7 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 	public void testGetNamespacePersistence()
 		throws Exception
 	{
+		con.begin();
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.commit();
 		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));

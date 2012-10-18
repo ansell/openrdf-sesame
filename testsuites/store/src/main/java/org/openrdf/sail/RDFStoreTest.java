@@ -247,7 +247,10 @@ public abstract class RDFStoreTest extends TestCase {
 		Literal obj = new LiteralImpl("2006-08-23+00:00", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 
+		con.begin();
 		con.removeStatements(null, null, null);
+		con.commit();
+		
 		obj = new LiteralImpl("2006-08-23", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -311,6 +314,7 @@ public abstract class RDFStoreTest extends TestCase {
 	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
 		throws Exception
 	{
+		con.begin();
 		con.addStatement(subj, pred, obj);
 		con.commit();
 
@@ -355,6 +359,7 @@ public abstract class RDFStoreTest extends TestCase {
 	{
 		URI picasso1 = vf.createURI(EXAMPLE_NS, PICASSO);
 		URI picasso2 = vf.createURI(EXAMPLE_NS + PICASSO);
+		con.begin();
 		con.addStatement(picasso1, paints, guernica);
 		con.addStatement(picasso2, paints, guernica);
 		con.commit();
@@ -367,6 +372,7 @@ public abstract class RDFStoreTest extends TestCase {
 	{
 		URI picasso1 = vf.createURI(EXAMPLE_NS + PICASSO);
 		URI picasso2 = vf.createURI(EXAMPLE_NS, PICASSO);
+		con.begin();
 		con.addStatement(picasso1, paints, guernica);
 		con.addStatement(picasso2, paints, guernica);
 		con.commit();
@@ -389,6 +395,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("Size of empty repository should be 0", 0, con.size());
 
 		// Add some data to the repository
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -412,6 +419,7 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		// Add some data to the repository
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -463,6 +471,7 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		// Add some data to the repository
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter);
@@ -476,6 +485,8 @@ public abstract class RDFStoreTest extends TestCase {
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> iter;
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
+		con.begin();
+		
 		while (iter.hasNext()) {
 			BindingSet bindings = iter.next();
 			Value c = bindings.getValue("C");
@@ -486,10 +497,9 @@ public abstract class RDFStoreTest extends TestCase {
 
 		con.commit();
 
-		// Simulate auto-commit
-
 		assertEquals(3, countElements(con.getStatements(null, RDF.TYPE, RDFS.CLASS, false)));
 
+		// simulate auto-commit
 		tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, "SELECT P FROM {} P {}", null);
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
@@ -497,6 +507,7 @@ public abstract class RDFStoreTest extends TestCase {
 			BindingSet bindings = iter.next();
 			Value p = bindings.getValue("P");
 			if (p instanceof URI) {
+				con.begin();
 				con.addStatement((URI)p, RDF.TYPE, RDF.PROPERTY);
 				con.commit();
 			}
@@ -509,6 +520,7 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		// Add some data to the repository
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -517,6 +529,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.commit();
 
 		// Test removal of statements
+		con.begin();
 		con.removeStatements(painting, RDF.TYPE, RDFS.CLASS);
 		con.commit();
 
@@ -527,6 +540,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("Statement (Painting, type, Class) should no longer be in the repository", 0,
 				countQueryResults("select 1 from {ex:Painting} rdf:type {rdfs:Class}"));
 
+		con.begin();
 		con.removeStatements(null, null, null, context1);
 		con.commit();
 
@@ -534,6 +548,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 		assertEquals("Named context should be empty", 0, countContext1Elements());
 
+		con.begin();
 		con.clear();
 		con.commit();
 
@@ -557,6 +572,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testContexts()
 		throws Exception
 	{
+		con.begin();
 		// Add schema data to the repository, no context
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
@@ -590,6 +606,7 @@ public abstract class RDFStoreTest extends TestCase {
 				countElements(con.getStatements(null, null, null, false, context1, context2)));
 
 		// remove two statements from context1.
+		con.begin();
 		con.removeStatements(picasso, null, null, context1);
 		con.commit();
 
@@ -611,6 +628,7 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		// Add some data to the repository
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -671,6 +689,7 @@ public abstract class RDFStoreTest extends TestCase {
 				assertTrue(sharedCon != null);
 
 				try {
+					sharedCon.begin();
 					sharedCon.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 					sharedCon.commit();
 
@@ -728,6 +747,7 @@ public abstract class RDFStoreTest extends TestCase {
 		newThread.start();
 
 		try {
+			con.begin();
 			con.addStatement(picasso, RDF.TYPE, painter);
 			con.commit();
 			// let this thread sleep to enable other thread to finish its business.
@@ -772,6 +792,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testGetNamespaces()
 		throws Exception
 	{
+		con.begin();
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.commit();
 
@@ -791,6 +812,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testGetNamespace()
 		throws Exception
 	{
+		con.begin();
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.commit();
 		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));
@@ -799,6 +821,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testClearNamespaces()
 		throws Exception
 	{
+		con.begin();
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.setNamespace("rdfs", RDFS.NAMESPACE);
 		con.clearNamespaces();
@@ -809,6 +832,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testRemoveNamespaces()
 		throws Exception
 	{
+		con.begin();
 		con.setNamespace("rdf", RDF.NAMESPACE);
 		con.removeNamespace("rdf");
 		con.commit();
@@ -859,6 +883,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(0, countElements(con.getContextIDs()));
 
 		// load data
+		con.begin();
 		con.addStatement(picasso, paints, guernica, context1);
 		assertEquals(1, countElements(con.getContextIDs()));
 		assertEquals(context1, first(con.getContextIDs()));
@@ -869,6 +894,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 		assertEquals(0, countElements(con.getContextIDs()));
 
+		con.begin();
 		con.addStatement(picasso, paints, guernica, context2);
 		assertEquals(1, countElements(con.getContextIDs()));
 		assertEquals(context2, first(con.getContextIDs()));
@@ -879,6 +905,7 @@ public abstract class RDFStoreTest extends TestCase {
 		throws Exception
 	{
 		assertEquals(0, countAllElements());
+		con.begin();
 		con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 		con.addStatement(picasso, RDF.TYPE, painter, context1);
@@ -886,8 +913,12 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		assertEquals(5, countAllElements());
 		con.commit();
+		
+		con.begin();
 		con.clear();
 		con.commit();
+		
+		con.begin();
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 		assertEquals(1, countAllElements());
@@ -899,12 +930,14 @@ public abstract class RDFStoreTest extends TestCase {
 		SailConnection con2 = sail.getConnection();
 		try {
 			assertEquals(0, countAllElements());
+			con.begin();
 			con.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 			con.addStatement(painting, RDF.TYPE, RDFS.CLASS);
 			con.addStatement(picasso, RDF.TYPE, painter, context1);
 			con.addStatement(guernica, RDF.TYPE, painting, context1);
 			con.commit();
 			assertEquals(4, countAllElements());
+			con2.begin();
 			con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 			String query = "SELECT S, P, O FROM {S} P {O}";
 			ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
@@ -914,6 +947,7 @@ public abstract class RDFStoreTest extends TestCase {
 
 				public void run() {
 					try {
+						con.begin();
 						con.clear();
 						con.commit();
 					}
@@ -937,6 +971,7 @@ public abstract class RDFStoreTest extends TestCase {
 	public void testBNodeReuse()
 		throws Exception
 	{
+		con.begin();
 		con.addStatement(RDF.VALUE, RDF.VALUE, RDF.VALUE);
 		assertEquals(1, con.size());
 		BNode b1 = vf.createBNode();
@@ -947,6 +982,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(b2, RDF.VALUE, b2);
 		con.addStatement(b1, RDF.VALUE, b1);
 		assertEquals(3, con.size());
+		con.commit();
 	}
 
 	private <T> T first(Iteration<T, ?> iter)

@@ -36,7 +36,7 @@ import org.openrdf.sail.SailException;
  * implementations.
  * 
  * @author Arjohn Kampman
- * @author jeen
+ * @author Jeen Broekstra
  */
 public abstract class SailConnectionBase implements SailConnection {
 
@@ -93,8 +93,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	 */
 	private final Throwable creatorTrace;
 
-	private volatile boolean isReadOnly;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -124,10 +122,51 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	/**
+	 * Verifies if a transaction is currently active. Throws a
+	 * {@link SailException} if no transaction is active.
+	 * 
+	 * @since 2.7.0
+	 * @throws SailException
+	 *         if no transaction is active.
+	 */
+	protected void verifyIsActive()
+		throws SailException
+	{
+		if (!isActive()) {
+			throw new SailException("No active transaction");
+		}
+	}
+
 	public void begin()
 		throws SailException
 	{
-		startTransactionInternal();
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				if (isActive()) {
+					throw new SailException("A transaction is already active");
+				}
+				
+				startTransactionInternal();
+				txnActive = true;
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
+	}
+
+	public boolean isActive()
+		throws SailException
+	{
+		return transactionActive();
 	}
 
 	public final void close()
@@ -235,7 +274,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				executeInternal(updateExpr, dataset, bindings, includeInferred);
 			}
 			finally {
@@ -291,13 +330,28 @@ public abstract class SailConnectionBase implements SailConnection {
 		return txnActive;
 	}
 
+	/**
+	 * <B>IMPORTANT</B> Since Sesame 2.7.0. this method no longer automatically
+	 * starts a transaction, but instead verifies if a transaction is active and
+	 * if not throws an exception. The method is left in for transitional
+	 * purposes only. Sail implementors are advised that by contract, any update
+	 * operation on the Sail should check if a transaction has been started via
+	 * {@link SailConnection#isActive} and throw a SailException if not.
+	 * Implementors can use {@link SailConnectionBase#verifyIsActive()} as a
+	 * convenience method for this check.
+	 * 
+	 * @deprecated since 2.7.0. Use {@link #verifyIsActive()} instead. We should
+	 *             not automatically start a transaction at the sail level.
+	 *             Instead, an exception should be thrown when an update is
+	 *             executed without first starting a transaction.
+	 * @throws SailException
+	 *         if no transaction is active.
+	 */
+	@Deprecated
 	protected void autoStartTransaction()
 		throws SailException
 	{
-		if (!txnActive) {
-			startTransactionInternal();
-			txnActive = true;
-		}
+		verifyIsActive();
 	}
 
 	public final void commit()
@@ -321,12 +375,6 @@ public abstract class SailConnectionBase implements SailConnection {
 		finally {
 			connectionLock.readLock().unlock();
 		}
-	}
-
-	public boolean isReadOnly()
-		throws SailException
-	{
-		return isReadOnly;
 	}
 
 	public final void rollback()
@@ -365,7 +413,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				addStatementInternal(subj, pred, obj, contexts);
 			}
 			finally {
@@ -386,7 +434,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				removeStatementsInternal(subj, pred, obj, contexts);
 			}
 			finally {
@@ -407,7 +455,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				clearInternal(contexts);
 			}
 			finally {
@@ -463,7 +511,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				setNamespaceInternal(prefix, name);
 			}
 			finally {
@@ -487,7 +535,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				removeNamespaceInternal(prefix);
 			}
 			finally {
@@ -508,7 +556,7 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				clearNamespacesInternal();
 			}
 			finally {

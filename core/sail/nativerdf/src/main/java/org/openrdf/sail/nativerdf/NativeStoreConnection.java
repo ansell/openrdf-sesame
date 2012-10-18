@@ -358,7 +358,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				return addStatement(subj, pred, obj, false, contexts);
 			}
 			finally {
@@ -443,7 +443,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				int removeCount = removeStatements(subj, pred, obj, false, contexts);
 				return removeCount > 0;
 			}
@@ -561,7 +561,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			updateLock.lock();
 			try {
-				autoStartTransaction();
+				verifyIsActive();
 				removeStatements(null, null, null, false, contexts);
 			}
 			finally {

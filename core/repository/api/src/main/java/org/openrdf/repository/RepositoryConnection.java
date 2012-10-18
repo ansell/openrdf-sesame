@@ -126,8 +126,9 @@ public interface RepositoryConnection {
 		throws RepositoryException;
 
 	/**
-	 * Closes the connection, freeing resources. If the connection is not in
-	 * autoCommit mode, all non-committed operations will be lost.
+	 * Closes the connection, freeing resources. If a {@link #begin()
+	 * transaction} is {@link #isActive() active} on the connection, all
+	 * non-committed operations will be lost.
 	 * 
 	 * @throws RepositoryException
 	 *         If the connection could not be closed.
@@ -513,20 +514,39 @@ public interface RepositoryConnection {
 	 * the transaction.
 	 * </ol>
 	 * 
+	 * @deprecated since release 2.7.0. Use {@link #isActive()} instead.
 	 * @throws RepositoryException
 	 *         If a repository access error occurs.
 	 */
+	@Deprecated
 	public boolean isAutoCommit()
 		throws RepositoryException;
 
 	/**
+	 * Indicates if a transaction is currently active on the connection. A
+	 * transaction is active if {@link #begin()} has been called, and becomes
+	 * inactive after {@link #commit()} or {@link #rollback()} has been called.
+	 * 
+	 * @since 2.7.0
+	 * @return <code>true</code> iff a transaction is active, <code>false</code>
+	 *         iff no transaction is active.
+	 * @throws UnknownTransactionStateException
+	 *         if the transaction state can not be determined (this can happen
+	 *         when a {@link #commit()} operation has failed catastrophically in
+	 *         the backend).
+	 * @throws RepositoryException
+	 */
+	public boolean isActive()
+		throws UnknownTransactionStateException, RepositoryException;
+
+	/**
 	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to close the transaction.
+	 * be called to end the transaction.
 	 * 
 	 * @throws RepositoryException
 	 *         If the connection could not start a transaction, or if it already
 	 *         has an active transaction.
-	 * @see #isAutoCommit()
+	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
 	 * @since 2.7.0
@@ -535,13 +555,13 @@ public interface RepositoryConnection {
 		throws RepositoryException;
 
 	/**
-	 * Commits the active transaction. This operation closes the active
+	 * Commits the active transaction. This operation ends the active
 	 * transaction.
 	 * 
 	 * @throws RepositoryException
 	 *         If the connection could not be committed, or if the connection
 	 *         does not have an active connection.
-	 * @see #isAutoCommit()
+	 * @see #isActive()
 	 * @see #begin()
 	 * @see #rollback()
 	 */
@@ -549,46 +569,17 @@ public interface RepositoryConnection {
 		throws RepositoryException;
 
 	/**
-	 * Rolls back all updates in the active transaction. This operation closes
-	 * the active transaction.
+	 * Rolls back all updates in the active transaction. This operation ends the
+	 * active transaction.
 	 * 
-	 * @throws StoreException
+	 * @throws RepositoryException
 	 *         If the transaction could not be rolled back, or if the connection
 	 *         does not have an active transaction.
-	 * @see #isAutoCommit()
+	 * @see #isActive()
 	 * @see #begin()
 	 * @see #commit()
 	 */
 	public void rollback()
-		throws RepositoryException;
-
-	/**
-	 * Indicates whether this connection is in read-only mode.
-	 * 
-	 * @return <tt>true</tt> if this Connection object is read-only;
-	 *         <tt>false</tt> otherwise.
-	 * @throws RepositoryException
-	 *         If a repository access error occurs.
-	 * @see #setReadOnly(boolean)
-	 * @since 2.7.0
-	 */
-	public boolean isReadOnly()
-		throws RepositoryException;
-
-	/**
-	 * Puts this connection in read-only mode as a hint to the driver to enable
-	 * repository optimizations.
-	 * <p>
-	 * <b>Note:</b> This method cannot be called during a transaction.
-	 * 
-	 * @param readOnly
-	 *        <tt>true</tt> enables read-only mode; <tt>false</tt> disables it
-	 * @throws RepositoryException
-	 *         If a repository access error occurs or this method is called
-	 *         during a transaction.
-	 * @since 2.7.0
-	 */
-	public void setReadOnly(boolean readOnly)
 		throws RepositoryException;
 
 	/**

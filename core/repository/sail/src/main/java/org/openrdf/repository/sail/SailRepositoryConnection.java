@@ -26,6 +26,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -37,7 +38,7 @@ import org.openrdf.sail.SailReadOnlyException;
  * An implementation of the {@link RepositoryConnection} interface that wraps a
  * {@link SailConnection}.
  * 
- * @author jeen
+ * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
 public class SailRepositoryConnection extends RepositoryConnectionBase {
@@ -128,18 +129,6 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	{
 		try {
 			return sailConnection.isOpen();
-		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
-		}
-	}
-
-	@Override
-	public boolean isReadOnly()
-		throws RepositoryException
-	{
-		try {
-			return sailConnection.isReadOnly();
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);
@@ -304,21 +293,15 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	protected void autoCommit()
-		throws RepositoryException
-	{
-		super.autoCommit();
-	}
-
-	@Override
 	public void clear(Resource... contexts)
 		throws RepositoryException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
+			boolean local = startLocalTransaction();
 			sailConnection.clear(contexts);
-			autoCommit();
+			conditionalCommit(local);
 		}
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
@@ -332,8 +315,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
+			boolean local = startLocalTransaction();
 			sailConnection.setNamespace(prefix, name);
-			autoCommit();
+			conditionalCommit(local);
 		}
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
@@ -347,8 +331,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
+			boolean local = startLocalTransaction();
 			sailConnection.removeNamespace(prefix);
-			autoCommit();
+			conditionalCommit(local);
 		}
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
@@ -362,8 +347,9 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
+			boolean local = startLocalTransaction();
 			sailConnection.clearNamespaces();
-			autoCommit();
+			conditionalCommit(local);
 		}
 		catch (SailReadOnlyException e) {
 			throw new RepositoryReadOnlyException(e.getMessage(), e);
@@ -403,6 +389,17 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 			CloseableIteration<? extends E, SailException> sailIter)
 	{
 		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
+	}
+
+	public boolean isActive()
+		throws UnknownTransactionStateException
+	{
+		try {
+			return sailConnection.isActive();
+		}
+		catch (SailException e) {
+			throw new UnknownTransactionStateException(e);
+		}
 	}
 
 }

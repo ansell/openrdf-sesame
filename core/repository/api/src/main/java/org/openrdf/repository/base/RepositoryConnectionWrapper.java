@@ -30,6 +30,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -124,8 +125,8 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	 * @see #remove(Iteration, Resource...)
 	 * @see #remove(Statement, Resource...)
 	 * @see #remove(Resource, URI, Value, Resource...)
-	 * @return <code>true</code> to delegate remove methods, <code>false</code> to
-	 *         call
+	 * @return <code>true</code> to delegate remove methods, <code>false</code>
+	 *         to call
 	 *         {@link #removeWithoutCommit(Resource, URI, Value, Resource...)}
 	 * @throws RepositoryException
 	 */
@@ -150,7 +151,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 
 	}
-	
+
 	@Override
 	public ParserConfig getParserConfig() {
 		try {
@@ -166,7 +167,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 		return null;
 	}
-
 
 	@Override
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
@@ -349,11 +349,21 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return super.hasStatement(st, includeInferred, contexts);
 	}
 
+	/**
+	 * @deprecated since release 2.7.0. Use {@link #isActive()} instead.
+	 */
 	@Override
+	@Deprecated
 	public boolean isAutoCommit()
 		throws RepositoryException
 	{
 		return getDelegate().isAutoCommit();
+	}
+
+	public boolean isActive()
+		throws UnknownTransactionStateException, RepositoryException
+	{
+		return getDelegate().isActive();
 	}
 
 	@Override
@@ -469,7 +479,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	{
 		getDelegate().rollback();
 	}
-	
+
 	/**
 	 * @deprecated use {@link #begin()} instead.
 	 */
@@ -545,15 +555,4 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().begin();
 	}
 
-	public boolean isReadOnly()
-		throws RepositoryException
-	{
-		return getDelegate().isReadOnly();
-	}
-
-	public void setReadOnly(boolean readOnly)
-		throws RepositoryException
-	{
-		getDelegate().setReadOnly(readOnly);
-	}
 }
