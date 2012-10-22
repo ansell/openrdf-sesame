@@ -1,0 +1,10 @@
+# Test non empty [] operator with no predicate or object following the blank node
+@prefix : <http://example.org/base#> .
+[ :P "007"^^<http://www.w3.org/2001/XMLSchema#string> ].
+[ :P 8.1 ].
+[ :P "not a number" ].
+[ :P :Q ].
+[ :P <http://example.org/base#T> ].
+[ <http://example.org/base#P> 7 ].
+[ <http://example.org/base#P> "7" ].
+[ <http://example.org/base#P> "language literal"@fr ].

@@ -67,6 +67,8 @@ public class TurtleParser extends RDFParserBase {
 
 	private Value object;
 
+	private boolean implicitBlank;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -298,11 +300,15 @@ public class TurtleParser extends RDFParserBase {
 	{
 		parseSubject();
 		skipWSC();
-		parsePredicateObjectList();
-
+		if(!implicitBlank)
+		{
+			parsePredicateObjectList();
+		}
+		
 		subject = null;
 		predicate = null;
 		object = null;
+		implicitBlank = false;
 	}
 
 	protected void parsePredicateObjectList()
@@ -506,6 +512,7 @@ public class TurtleParser extends RDFParserBase {
 			// Restore previous subject and predicate
 			subject = oldSubject;
 			predicate = oldPredicate;
+			implicitBlank = true;
 		}
 
 		return bNode;

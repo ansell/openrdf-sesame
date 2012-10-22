@@ -1,0 +1,8 @@
+_:genid1 <http://example.org/base#P> "007"^^<http://www.w3.org/2001/XMLSchema#string> .
+_:genid2 <http://example.org/base#P> "8.1"^^<http://www.w3.org/2001/XMLSchema#decimal> .
+_:genid3 <http://example.org/base#P> "not a number" .
+_:genid4 <http://example.org/base#P> <http://example.org/base#Q> .
+_:genid5 <http://example.org/base#P> <http://example.org/base#T> .
+_:genid6 <http://example.org/base#P> "7"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:genid7 <http://example.org/base#P> "7" .
+_:genid8 <http://example.org/base#P> "language literal"@fr .

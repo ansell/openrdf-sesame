@@ -211,5 +211,11 @@
         mf:result  <rdfq-results.out>
      ]
 
+     [  mf:name      "rio-80" ;
+        rdfs:comment "Test for RIO-80 to ensure interoperability with OWLAPI Turtle writer" ;
+        mf:action [ qt:data   <rio-80.ttl> ] ;
+        mf:result  <rio-80.out>
+     ]
+
     # End of tests
    ).
