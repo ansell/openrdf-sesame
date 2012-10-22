@@ -82,9 +82,15 @@
         rdfs:comment "long literal with missing end" ;
         mf:action [ qt:data   <bad-14.ttl> ] ;
      ]
-     [  mf:name      "bad-15" ;
-        rdfs:comment "literal with invalid language tag" ;
-        mf:action [ qt:data   <bad-15.ttl> ] ;
+
+     [  mf:name      "bad-17" ;
+        rdfs:comment "literal with ''s" ;
+        mf:action [ qt:data   <bad-17.ttl> ] ;
+     ]
+
+     [  mf:name      "bad-18" ;
+        rdfs:comment "long literal with '''s" ;
+        mf:action [ qt:data   <bad-18.ttl> ] ;
      ]
 
 
