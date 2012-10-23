@@ -30,6 +30,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
@@ -146,6 +147,8 @@ public abstract class TurtleParserTestCase {
 
 		private URL outputURL;
 
+		private RDFFormat outputFormat;
+		
 		private String baseURL;
 
 		/*--------------*
@@ -158,6 +161,7 @@ public abstract class TurtleParserTestCase {
 			super(testName);
 			this.inputURL = url(inputURL);
 			this.outputURL = url(outputURL);
+			this.outputFormat = Rio.getParserFormatForFileName(outputURL, RDFFormat.NTRIPLES);
 			this.baseURL = baseURL;
 		}
 
@@ -182,7 +186,7 @@ public abstract class TurtleParserTestCase {
 			in.close();
 
 			// Parse expected output data
-			NTriplesParser ntriplesParser = new NTriplesParser();
+			RDFParser ntriplesParser = Rio.createParser(outputFormat);
 			ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
