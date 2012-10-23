@@ -263,7 +263,16 @@ public class TurtleParser extends RDFParserBase {
 			else if (c == -1) {
 				throwEOFException();
 			}
-
+			
+			if(prefixID.length() == 0 && !TurtleUtil.isPrefixStartChar(c))
+			{
+				reportFatalError("Prefix started with an invalid character");
+			}
+			else if(!TurtleUtil.isPrefixChar(c))
+			{
+				reportFatalError("Prefix contained invalid character");
+			}
+			
 			prefixID.append((char)c);
 		}
 
