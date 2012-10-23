@@ -11,7 +11,7 @@ import org.openrdf.rio.RDFParser;
 
 /**
  * JUnit test for the Turtle parser that uses the tests that are available <a
- * href="http://cvs.ilrt.org/cvsweb/redland/raptor/tests/turtle/">online</a>.
+ * href="https://github.com/dajobe/raptor/commits/master/tests/turtle/">online</a>.
  */
 public class TurtleParserTest extends TurtleParserTestCase {
 
