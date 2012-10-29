@@ -1,4 +1,4 @@
-// Depends on paging.js being loaded first.
+// Prerequisite: paging.js
 
 function correctLimit() {
 	var limit = getParameter('limit');
@@ -9,7 +9,8 @@ function correctLimit() {
 	document.getElementById('limit').value = limit;
 }
 			
-window.onload = function() {
+addLoad(
+function() {
 	correctLimit();
 	correctButtons();
 	var limit = getLimit();
@@ -33,4 +34,4 @@ window.onload = function() {
 		newHTML = newHTML + ')';
 		h1.innerHTML = newHTML;
 	}
-}
+});

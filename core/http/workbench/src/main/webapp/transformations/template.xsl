@@ -36,6 +36,7 @@
 					type="image/ico" />
 				<link rel="icon" href="../../favicon.png"
 					type="image/png" />
+				<script src="../../scripts/template.js" type="text/javascript">  </script>
 			</head>
 			<body>
 				<div id="header">
@@ -115,9 +116,20 @@
 							</td>
 						</tr>
 						<tr>
-							<td colspan="3"></td>
+							<th>
+								<xsl:value-of
+									select="$server-user.label" />
+							</th>
+							<td id="selected-user"></td>
+								<td class="change">
+								<a href="../NONE/server">
+									<xsl:value-of
+										select="$change.label" />
+								</a>
+							</td>						
 						</tr>
 					</table>
+					<hr />
 				</div>
 				<div id="content">
 					<h1 id="title_heading">

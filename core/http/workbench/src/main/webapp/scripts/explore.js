@@ -1,4 +1,4 @@
-// Depends on paging.js being loaded first.
+// Prerequisite: paging.js
 
 function textContent(element) {
 	var text = element.innerText || element.textContent;
@@ -49,7 +49,8 @@ function populateParameters() {
 	}
 }
 
-window.onload = function() {
+addLoad(
+function() {
 	populateParameters();
 	correctButtons();
 	var content = document.getElementById('content');
@@ -76,4 +77,4 @@ window.onload = function() {
 
 		h1.appendChild(document.createTextNode(newHTML  + ')'));
 	}
-}
+});

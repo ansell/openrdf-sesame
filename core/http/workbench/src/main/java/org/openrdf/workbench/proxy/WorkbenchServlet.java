@@ -103,24 +103,66 @@ public class WorkbenchServlet extends BaseServlet {
 			resp.sendRedirect(req.getRequestURI() + defaultPath.substring(1));
 		}
 		else if ('/' == pathInfo.charAt(0)) {
-			int idx = pathInfo.indexOf('/', 1);
-			if (idx < 0) {
-				idx = pathInfo.length();
-			}
-			final String repoID = pathInfo.substring(1, idx);
-			try {
-				service(repoID, req, resp);
-			}
-			catch (RepositoryConfigException e) {
-				throw new ServletException(e);
-			}
-			catch (RepositoryException e) {
-				throw new ServletException(e);
-			}
+			handleRequest(req, resp, pathInfo);
 		}
 		else {
 			throw new BadRequestException("Request path must contain a repository ID");
 		}
+	}
+
+	/**
+	 * @param req the servlet request
+	 * @param resp the servlet response
+	 * @param pathInfo the path info from the request
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	private void handleRequest(final HttpServletRequest req, final HttpServletResponse resp,
+			final String pathInfo)
+		throws IOException, ServletException
+	{
+		int idx = pathInfo.indexOf('/', 1);
+		if (idx < 0) {
+			idx = pathInfo.length();
+		}
+		final String repoID = pathInfo.substring(1, idx);
+		try {
+			service(repoID, req, resp);
+		}
+		catch (RepositoryConfigException e) {
+			throw new ServletException(e);
+		}
+		catch (UnauthorizedException e) {
+			handleUnauthorizedException(req, resp);
+		}
+		catch (ServletException e) {
+			if (e.getCause() instanceof UnauthorizedException) {
+				handleUnauthorizedException(req, resp);
+			} else {
+				throw e;
+			}
+		}
+		catch (RepositoryException e) {
+			throw new ServletException(e);
+		}
+	}
+
+	/**
+	 * @param req
+	 * @param resp
+	 * @throws IOException
+	 */
+	private void handleUnauthorizedException(final HttpServletRequest req, final HttpServletResponse resp)
+		throws IOException
+	{
+		// Invalid credentials or insufficient authorization.  Present 
+		// entry form again with error message.
+		resp.setContentType("application/xml");
+		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		builder.transform(this.getTransformationUrl(req), "server.xsl");
+		builder.start("error-message");
+		builder.result("The entered credentials entered either failed to authenticate to the Sesame server, or were unauthorized for the requested operation.");
+		builder.end();
 	}
 
 	private RepositoryManager createRepositoryManager(final String param)
@@ -158,46 +200,30 @@ public class WorkbenchServlet extends BaseServlet {
 			repositories.get(repoID).service(http, resp);
 		}
 		else {
-			Repository repository = null;
-			boolean keepGoing = true;
-			try {
-				repository = manager.getRepository(repoID);
-			}
-			catch (UnauthorizedException e) {
-				// Invalid server was submitted by form. Present entry form again
-				// with error message.
-				resp.setContentType("application/xml");
-				final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
-				builder.transform(this.getTransformationUrl(req), "server.xsl");
-				builder.start("error-message");
-				builder.result("The username or password you entered fails to authenticate to the Sesame server.");
-				builder.end();
-				keepGoing = false;
-			}
-			if (keepGoing) {
-				if (repository == null) {
-					final String noId = config.getInitParameter(NO_REPOSITORY);
-					if (noId == null || !noId.equals(repoID)) {
-						throw new BadRequestException("No such repository: " + repoID);
-					}
+			final Repository repository = manager.getRepository(repoID);
+			if (repository == null) {
+				final String noId = config.getInitParameter(NO_REPOSITORY);
+				if (noId == null || !noId.equals(repoID)) {
+					throw new BadRequestException("No such repository: " + repoID);
 				}
-				final ProxyRepositoryServlet servlet = new ProxyRepositoryServlet();
-				servlet.setRepositoryManager(manager);
-				if (repository != null) {
-					servlet.setRepositoryInfo(manager.getRepositoryInfo(repoID));
-					servlet.setRepository(repository);
-				}
-				servlet.init(new BasicServletConfig(repoID, config));
-				repositories.putIfAbsent(repoID, servlet);
-				repositories.get(repoID).service(http, resp);
 			}
+			final ProxyRepositoryServlet servlet = new ProxyRepositoryServlet();
+			servlet.setRepositoryManager(manager);
+			if (repository != null) {
+				servlet.setRepositoryInfo(manager.getRepositoryInfo(repoID));
+				servlet.setRepository(repository);
+			}
+			servlet.init(new BasicServletConfig(repoID, config));
+			repositories.putIfAbsent(repoID, servlet);
+			repositories.get(repoID).service(http, resp);
 		}
 	}
-	
+
 	private String getTransformationUrl(final HttpServletRequest req) {
 		final String contextPath = req.getContextPath();
 		return contextPath + config.getInitParameter(WorkbenchGateway.TRANSFORMATIONS);
 	}
+
 	/**
 	 * Set the username and password for all requests to the repository.
 	 * 
