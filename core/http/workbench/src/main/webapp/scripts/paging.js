@@ -1,19 +1,4 @@
-// The following bit of script is a workaround for Firefox not setting the 
-// cookie object in the DOM when processing XSLT.
-// See https://bugzilla.mozilla.org/show_bug.cgi?id=230214
-
-var _htmlDom;
-
-if (typeof(document.cookie) == 'undefined') {
-	var obj = document.createElementNS('http://www.w3.org/1999/xhtml', 'object');
-	obj.width = 0;
-	obj.height = 0;
-	obj.type = 'text/html';
-	obj.data = 'data:text/html;charset=utf-8,%3Cscript%3Eparent._htmlDom%3Ddocument%3C/script%3E';
-	document.getElementsByTagName('body')[0].appendChild(obj);
-	document.__defineGetter__('cookie', function() { return _htmlDom.cookie; });
-	document.__defineSetter__('cookie', function(c) { _htmlDom.cookie = c; });
-}
+// Prerequisite: template.js
 
 /**
  * First, adds the given parameter to the URL query string. Second, adds a 
@@ -35,29 +20,6 @@ function addParam(name, value) {
 	} 
 	
 	document.location.href = simplifyParameters(url);
-}
-
-/**
- * Retrieves the value of the cookie with the given name.
- * @param {String} name The name of the cookie to retrieve.
- * @returns {String} The value of the given cookie, or an empty string if it
- * doesn't exist.
- */
-function getCookie(name) {
-	var cookies = document.cookie.split(";");
-	var rval = "";
-	var i,cookie,eq,temp;
-	for (i=0; i < cookies.length; i++) {
-	    cookie = cookies[i];
-	    eq = cookie.indexOf("=");
-		temp = cookie.substr(0, eq).replace(/^\s+|\s+$/g,"");
-		if (name == temp) {
-		    rval = unescape(cookie.substr(eq + 1));
-		    break;
-		}
-	}
-  				
-	return rval;
 }
 
 /**
@@ -138,7 +100,7 @@ function tailAfter(value, split) {
 
 /**
  * Scans the given URI for duplicate query parameter names, and removes all
- * but the last occurence for any duplicate case.
+ * but the last occurrence for any duplicate case.
  * @param {Strng} href The URI to simplify.
  * @returns {String} The URI with only the last occurrence of any given 
  * parameter name remaining.

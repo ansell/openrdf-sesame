@@ -1,3 +1,5 @@
+// Prerequisite: template.js
+
 function populateParameters() {
 	var href = document.location.href;
 	var elements = href.substring(href.indexOf('?') + 1).substring(href.indexOf(';') + 1).split(decodeURIComponent('%26'));
@@ -39,10 +41,11 @@ function loadNamespaces() {
 	}
 }
 
-window.onload = function() {
+addLoad(
+function() {
 	populateParameters();
 	loadNamespaces();
-}
+});
 
 function addParam(sb, name, id) {
 	if (!id) {

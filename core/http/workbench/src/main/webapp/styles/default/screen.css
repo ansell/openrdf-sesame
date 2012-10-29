@@ -215,8 +215,14 @@ hr {
 	font-size: 83%;
 }
 
+#contentheader hr {
+	color: #666;
+	background-color: #666;
+	height: 1px;
+}
+
 #contentheader th, #contentheader td {
-	color: #FFF;
+	color: #191970;
 	font-weight: bold;
 	font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
 	font-size: 83%;

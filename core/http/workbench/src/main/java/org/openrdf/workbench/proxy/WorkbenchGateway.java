@@ -245,7 +245,7 @@ public class WorkbenchGateway extends BaseServlet {
 						servlet = servlets.get(server);
 					}
 					else {
-						final Map<String, String> params = new HashMap<String, String>(2);
+						final Map<String, String> params = new HashMap<String, String>(3);
 						params.put(SERVER_PARAM, server);
 						params.put(CookieHandler.COOKIE_AGE_PARAM, this.cookies.getMaxAge());
 						params.put(TRANSFORMATIONS, this.config.getInitParameter(TRANSFORMATIONS));
