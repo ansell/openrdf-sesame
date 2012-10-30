@@ -1356,7 +1356,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				if (i == pathLength - 1) {
 					// last element in the path
-					pathElement.jjtGetChild(0).jjtAccept(this, data);
+					pathElement.jjtGetChild(0).jjtAccept(this, startVar);
 
 					TupleExpr te = graphPattern.buildTupleExpr();
 
@@ -1371,7 +1371,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					// to connect.
 					Var nextVar = createAnonVar(subjVar.getName() + "-nested-" + i);
 
-					pathElement.jjtGetChild(0).jjtAccept(this, data);
+					pathElement.jjtGetChild(0).jjtAccept(this, startVar);
 
 					TupleExpr te = graphPattern.buildTupleExpr();
 
