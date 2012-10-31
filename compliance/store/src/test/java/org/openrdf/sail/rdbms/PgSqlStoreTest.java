@@ -14,37 +14,38 @@ import org.openrdf.sail.rdbms.postgresql.PgSqlStore;
 /**
  * An extension of RDFStoreTest for testing the class {@link PgSqlStore}.
  */
-public class PgSqlStoreTest extends RDFStoreTest {
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public PgSqlStoreTest(String name) {
-		super(name);
-	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	@Override
-	protected Sail createSail()
-		throws SailException
-	{
-		PgSqlStore sail = new PgSqlStore("sesame_test");
-		sail.setUser("sesame");
-		sail.setPassword("opensesame");
-		sail.initialize();
-		SailConnection conn = sail.getConnection();
-		try {
-			conn.clear();
-			conn.clearNamespaces();
-			conn.commit();
-		}
-		finally {
-			conn.close();
-		}
-		return sail;
-	}
-}
+//
+//public class PgSqlStoreTest extends RDFStoreTest {
+//
+//	/*--------------*
+//	 * Constructors *
+//	 *--------------*/
+//
+//	public PgSqlStoreTest(String name) {
+//		super(name);
+//	}
+//
+//	/*---------*
+//	 * Methods *
+//	 *---------*/
+//
+//	@Override
+//	protected Sail createSail()
+//		throws SailException
+//	{
+//		PgSqlStore sail = new PgSqlStore("sesame_test");
+//		sail.setUser("sesame");
+//		sail.setPassword("opensesame");
+//		sail.initialize();
+//		SailConnection conn = sail.getConnection();
+//		try {
+//			conn.clear();
+//			conn.clearNamespaces();
+//			conn.commit();
+//		}
+//		finally {
+//			conn.close();
+//		}
+//		return sail;
+//	}
+//}
