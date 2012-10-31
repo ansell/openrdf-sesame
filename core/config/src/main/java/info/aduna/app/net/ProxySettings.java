@@ -157,9 +157,10 @@ public class ProxySettings implements Configuration {
 		if (getProxiesEnabled()) {
 			setSystemProperty(key, val);
 		}
-		else {
-			setSystemProperty(key, null);
-		}
+		// See SES-1100: Sesame should leave proxy settings alone if not enabled
+//		else {
+//			setSystemProperty(key, null);
+//		}
 	}
 
 	/**
