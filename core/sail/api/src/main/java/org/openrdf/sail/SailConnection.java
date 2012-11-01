@@ -176,6 +176,11 @@ public interface SailConnection {
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 
+	 * @throws UnknownSailTransactionStateException
+	 *         If the transaction state can not be determined (this can happen
+	 *         for instance when communication between client and server fails or
+	 *         times-out). It does not indicate a problem with the integrity of
+	 *         the store.
 	 * @throws SailException
 	 *         If the SailConnection could not be committed.
 	 * @throws IllegalStateException
@@ -188,6 +193,11 @@ public interface SailConnection {
 	 * Rolls back the transaction, discarding any uncommitted changes that have
 	 * been made in this SailConnection.
 	 * 
+	 * @throws UnknownSailTransactionStateException
+	 *         If the transaction state can not be determined (this can happen
+	 *         for instance when communication between client and server fails or
+	 *         times-out). It does not indicate a problem with the integrity of
+	 *         the store.
 	 * @throws SailException
 	 *         If the SailConnection could not be rolled back.
 	 * @throws IllegalStateException
@@ -204,13 +214,13 @@ public interface SailConnection {
 	 * @since 2.7.0
 	 * @return <code>true</code> iff a transaction is active, <code>false</code>
 	 *         iff no transaction is active.
-	 * @throws SailException
+	 * @throws UnknownSailTransactionStateException
 	 *         if the transaction state can not be determined (this can happen
-	 *         when a {@link #commit()} operation has failed catastrophically in
-	 *         the backend).
+	 *         for instance when communication between client and server fails or
+	 *         times out).
 	 */
 	public boolean isActive()
-		throws SailException;
+		throws UnknownSailTransactionStateException;
 
 	/**
 	 * Adds a statement to the store.

@@ -531,10 +531,10 @@ public interface RepositoryConnection {
 	 * @return <code>true</code> iff a transaction is active, <code>false</code>
 	 *         iff no transaction is active.
 	 * @throws UnknownTransactionStateException
-	 *         if the transaction state can not be determined (this can happen
-	 *         when a {@link #commit()} operation has failed catastrophically in
-	 *         the backend).
-	 * @throws RepositoryException
+	 *         if the transaction state can not be determined. This can happen
+	 *         for instance when communication with a repository fails or times
+	 *         out.
+	 * @throws RepositoryException 
 	 */
 	public boolean isActive()
 		throws UnknownTransactionStateException, RepositoryException;
@@ -558,6 +558,10 @@ public interface RepositoryConnection {
 	 * Commits the active transaction. This operation ends the active
 	 * transaction.
 	 * 
+	 * @throws UnknownTransactionStateException
+	 *         if the transaction state can not be determined. This can happen
+	 *         for instance when communication with a repository fails or times
+	 *         out.
 	 * @throws RepositoryException
 	 *         If the connection could not be committed, or if the connection
 	 *         does not have an active connection.
@@ -572,6 +576,10 @@ public interface RepositoryConnection {
 	 * Rolls back all updates in the active transaction. This operation ends the
 	 * active transaction.
 	 * 
+	 * @throws UnknownTransactionStateException
+	 *         if the transaction state can not be determined. This can happen
+	 *         for instance when communication with a repository fails or times
+	 *         out.
 	 * @throws RepositoryException
 	 *         If the transaction could not be rolled back, or if the connection
 	 *         does not have an active transaction.
