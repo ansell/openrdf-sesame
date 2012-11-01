@@ -30,6 +30,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.UnknownSailTransactionStateException;
 
 /**
  * Abstract Class offering base functionality for SailConnection
@@ -164,7 +165,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	public boolean isActive()
-		throws SailException
+		throws UnknownSailTransactionStateException
 	{
 		return transactionActive();
 	}

@@ -19,6 +19,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.UnknownSailTransactionStateException;
 
 /**
  * An implementation of the SailConnection interface that wraps another
@@ -182,7 +183,7 @@ public class SailConnectionWrapper implements SailConnection {
 	}
 
 	public boolean isActive()
-		throws SailException
+		throws UnknownSailTransactionStateException
 	{
 		return wrappedCon.isActive();
 	}
