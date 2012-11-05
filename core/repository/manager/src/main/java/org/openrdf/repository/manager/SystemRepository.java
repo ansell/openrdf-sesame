@@ -77,11 +77,11 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 				con.begin();
 				con.setNamespace("rdf", RDF.NAMESPACE);
 				con.setNamespace("sys", RepositoryConfigSchema.NAMESPACE);
+				con.commit();
 
 				RepositoryConfig repConfig = new RepositoryConfig(ID, TITLE, new SystemRepositoryConfig());
 				RepositoryConfigUtil.updateRepositoryConfigs(con, repConfig);
 
-				con.commit();
 			}
 		}
 		catch (RepositoryConfigException e) {
