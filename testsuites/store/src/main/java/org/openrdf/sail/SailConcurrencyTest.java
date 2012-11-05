@@ -90,6 +90,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 					SailConnection connection = store.getConnection();
 					try {
 						while (continueRunning) {
+							connection.begin();
 							for (int i = 0; i < 10; i++) {
 								insertTestStatement(connection, insertRandomizer.nextInt() % MAX_STATEMENT_IDX);
 								removeTestStatement(connection, removeRandomizer.nextInt() % MAX_STATEMENT_IDX);

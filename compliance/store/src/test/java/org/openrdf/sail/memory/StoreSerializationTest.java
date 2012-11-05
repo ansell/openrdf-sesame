@@ -66,6 +66,7 @@ public class StoreSerializationTest extends TestCase {
 		URI bar = factory.createURI("http://www.foo.example/bar");
 
 		SailConnection con = store.getConnection();
+		con.begin();
 		con.addStatement(foo, RDF.TYPE, bar);
 		con.commit();
 
@@ -104,6 +105,7 @@ public class StoreSerializationTest extends TestCase {
 		assertEquals(bindingSet.getValue("Y"), bar);
 
 		iter.close();
+		con.begin();
 		con.addStatement(bar, RDF.TYPE, foo);
 		con.commit();
 		con.close();
@@ -128,6 +130,7 @@ public class StoreSerializationTest extends TestCase {
 		Literal longLiteral = factory.createLiteral(sb.toString());
 
 		SailConnection con = store.getConnection();
+		con.begin();
 		con.addStatement(foo, RDF.TYPE, longLiteral);
 		con.commit();
 
