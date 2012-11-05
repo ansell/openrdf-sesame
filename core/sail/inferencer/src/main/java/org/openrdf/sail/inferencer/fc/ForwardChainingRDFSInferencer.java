@@ -60,6 +60,7 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 
 		ForwardChainingRDFSInferencerConnection con = getConnection();
 		try {
+			con.begin();
 			con.addAxiomStatements();
 			con.commit();
 		}
