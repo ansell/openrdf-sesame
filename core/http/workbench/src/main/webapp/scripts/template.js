@@ -58,7 +58,7 @@ function getCookie(name) {
 addLoad(
 function(){
 	var user = getCookie("server-user");
-	if (user.length == 0) {
+	if (user.length == 0 || user == '""') {
 		user = '<span class="disabled">None</span>';
 	}
 	var selectedUser = document.getElementById('selected-user');
