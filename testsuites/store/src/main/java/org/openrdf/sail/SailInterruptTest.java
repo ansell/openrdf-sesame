@@ -60,6 +60,7 @@ public abstract class SailInterruptTest extends TestCase {
 		final Random r = new Random(12345);
 		SailConnection con = store.getConnection();
 		try {
+			con.begin();
 			for (int i = 0; i < 1000; i++) {
 				insertTestStatement(con, r.nextInt());
 			}
