@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+  <name>sesame-queryrender</name>
+  <comment>Query Render and Builder tools. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+  <projects>
+    <project>sesame-query</project>
+    <project>sesame-model</project>
+    <project>sesame-util</project>
+    <project>sesame-rio-api</project>
+    <project>sesame-queryparser-api</project>
+    <project>sesame-queryalgebra-model</project>
+  </projects>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+</projectDescription>

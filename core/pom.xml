@@ -18,6 +18,7 @@
 		<module>query</module>
 		<module>queryalgebra</module>
 		<module>queryparser</module>
+		<module>queryrender</module>
 		<module>queryresultio</module>
 		<module>repository</module>
 		<module>rio</module>
