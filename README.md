@@ -1,4 +1,4 @@
-#Welcome to the Sesame code repository# 
+#Welcome to the Sesame code repository#
 
 Sesame is an extensible Java framework for storing, querying and inferencing for RDF. It can be deployed as a web server or used as a Java library. Features include several query languages (SeRQL and SPARQL), inferencing support, and RAM, disk, or RDBMS storage. Additionally, the central APIs of Sesame are storage-independent and are supported by many third-party RDF database vendors.
 
