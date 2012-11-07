@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-rio</artifactId>
-		<version>2.7-SNAPSHOT</version>
+		<version>2.7-testbuild</version>
 	</parent>
 
 	<artifactId>sesame-rio-trix</artifactId>
