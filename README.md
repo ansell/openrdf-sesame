@@ -19,7 +19,7 @@ In no particular order, these companies and organizations have contributed to th
 * [Ontotext](http://www.ontotext.com/)
 * [Fluid Operations](http://www.fluidops.com/)
 * [3 Round Stones](http://www.3roundstones.com/)
-* [Clark &amp; Parsia](http://www.clarkparsia.com/)
+* [Clark & Parsia](http://www.clarkparsia.com/)
 * [Institute for Defense Analyses (IDA)](https://www.ida.org/)
 
 ###Individual Developers###
@@ -39,7 +39,7 @@ In addition, we want to gratefully acknowledge all members of the Sesame communi
 
 ##Copyright and License##
 
-Copyright Aduna (http://www.aduna-software.com/) &copy; 2001-2012
+Copyright Aduna (http://www.aduna-software.com/) (c) 2001-2012
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
