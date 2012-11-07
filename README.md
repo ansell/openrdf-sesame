@@ -1,23 +1,16 @@
-#Welcome to the Sesame code repository# {#welcome}
+#Welcome to the Sesame code repository# 
 
 Sesame is an extensible Java framework for storing, querying and inferencing for RDF. It can be deployed as a web server or used as a Java library. Features include several query languages (SeRQL and SPARQL), inferencing support, and RAM, disk, or RDBMS storage. Additionally, the central APIs of Sesame are storage-independent and are supported by many third-party RDF database vendors.
 
 More information about Sesame can be found at [openRDF.org](http://www.openrdf.org/).
 
-Table of Contents:
-* [Acknowledgements](#ack)
-* [Organizations contributing to Sesame](#orgs)
-* [Individual developers](#devs)
-* [Third party software](#3rdparty)
-* [Copyright and license](#license)
-
-### Acknowledgements ### {#ack}
+##Acknowledgements##
 
 No Open Source project can exist without a community to support it. We
 therefore gratefully list the people and organizations at the heart of the
 OpenRDF community.
 
-###Organizations contributing to Sesame### {#orgs}
+###Organizations contributing to Sesame###
 
 In no particular order, these companies and organizations have contributed to the continued success of Sesame:
 
@@ -29,7 +22,7 @@ In no particular order, these companies and organizations have contributed to th
 * [Clark & Parsia](http://www.clarkparsia.com/)
 * [Institute for Defense Analyses (IDA)](https://www.ida.org/)
 
-###Individual Developers### {#devs}
+###Individual Developers###
 
 The following people are currently involved as developers of Sesame, or have been in the past:
 
@@ -44,7 +37,7 @@ The following people are currently involved as developers of Sesame, or have bee
 
 In addition, we want to gratefully acknowledge all members of the Sesame community who have come up with new ideas, bug reports, patches and so have helped carry this project forward. Cheers!
 
-### Third party software ### {#3rdparty}
+###Third party software###
 
 This product includes software developed by [The Apache Software Foundation](http://www.apache.org/). License: http://www.apache.org/licenses/LICENSE-2.0
 
@@ -53,7 +46,7 @@ License: http://junit.sourceforge.net/cpl-v10.html
 
 Source code for included Open Source software is available from the respective websites of the copyright holders of the included software.
 
-### Copyright and License ### {#license}
+##Copyright and License##
 
 Copyright Aduna (http://www.aduna-software.com/) (c) 2001-2012
 All rights reserved.
