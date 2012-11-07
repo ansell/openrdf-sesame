@@ -37,6 +37,15 @@ The following people are currently involved as developers of Sesame, or have bee
 
 In addition, we want to gratefully acknowledge all members of the Sesame community who have come up with new ideas, bug reports, patches and so have helped carry this project forward. Cheers!
 
+###Third party software###
+
+This product includes software developed by [The Apache Software Foundation](http://www.apache.org/). License: http://www.apache.org/licenses/LICENSE-2.0
+
+This product includes software developed by the [JUnit project](http://www.junit.org/).
+License: http://junit.sourceforge.net/cpl-v10.html
+
+Source code for included Open Source software is available from the respective websites of the copyright holders of the included software.
+
 ##Copyright and License##
 
 Copyright Aduna (http://www.aduna-software.com/) (c) 2001-2012
