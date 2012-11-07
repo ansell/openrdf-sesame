@@ -12,7 +12,7 @@ OpenRDF community.
 
 ###Organizations contributing to Sesame###
 
-In no particular order, these companies and organizations have contributed to the continued success of Sesame:
+In no particular order, these companies and organizations have all contributed to Sesame development:
 
 * [Aduna](http://www.aduna-software.com/)
 * [Stichting NLnet](http://www.nlnet.nl/)
@@ -24,25 +24,15 @@ In no particular order, these companies and organizations have contributed to th
 
 ###Individual Developers###
 
-The following people are currently involved as developers of Sesame, or have been in the past:
+The following people are currently involved as developers of Sesame, or have been in the past (listed in no particular order): Arjohn Kampman, Jeen Broekstra, James Leigh, Herko ter Horst, David Huynh, Peter Mika, Peter Ansell, Gunnar Aastrand Grimnes, Leo Saurmann, Sebastian Weber, Michael Grove, Dale Visser.
 
-* Arjohn Kampman
-* Jeen Broekstra
-* David Huynh
-* Peter Mika
-* James Leigh
-* Peter Ansell
-* Mike Grove
-* Dale Visser
-
-In addition, we want to gratefully acknowledge all members of the Sesame community who have come up with new ideas, bug reports, patches and so have helped carry this project forward. Cheers!
+In addition, we want to gratefully acknowledge all members of the Sesame community who have come up with new ideas, bug reports, and patches, and so have helped carry this project forward. Cheers!
 
 ###Third party software###
 
-This product includes software developed by [The Apache Software Foundation](http://www.apache.org/). License: http://www.apache.org/licenses/LICENSE-2.0
+This product includes software developed by [The Apache Software Foundation](http://www.apache.org/). ([License](http://www.apache.org/licenses/LICENSE-2.0))
 
-This product includes software developed by the [JUnit project](http://www.junit.org/).
-License: http://junit.sourceforge.net/cpl-v10.html
+This product includes software developed by the [JUnit project](http://www.junit.org/).  ([License](http://junit.sourceforge.net/cpl-v10.html))
 
 Source code for included Open Source software is available from the respective websites of the copyright holders of the included software.
 
