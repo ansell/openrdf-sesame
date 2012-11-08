@@ -14,7 +14,6 @@ OpenRDF community.
 
 ###Atlassian Support###
 
-<img align="right" src="http://www.atlassian.com/dms/wac/images/press/Atlassian-logos/logoAtlassianPNG.png" width=150 >
 [Atlassian](http://www.atlassian.com/) have generously contributed an Open Source license for us to use their awesome JIRA platform as our [issue tracker](https://openrdf.atlassian.net/). 
  
 ###Organizations contributing to Sesame###
