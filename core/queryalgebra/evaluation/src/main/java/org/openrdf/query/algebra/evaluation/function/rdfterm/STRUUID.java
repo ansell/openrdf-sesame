@@ -24,7 +24,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 public class STRUUID implements Function {
 
 	public String getURI() {
-		return "UUID";
+		return "STRUUID";
 	}
 
 	public Literal evaluate(ValueFactory valueFactory, Value... args)
