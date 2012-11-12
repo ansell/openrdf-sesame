@@ -1512,13 +1512,13 @@ void StrLang() :
 void UUID() :
 {}
 {
-	<UUID> <LPAREN> <RPAREN>
+	<UUID> <NIL>
 }
 
 void STRUUID() :
 {}
 {
-	<STRUUID> <LPAREN> <RPAREN>
+	<STRUUID> <NIL>
 }
 
 void Bind() :

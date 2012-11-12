@@ -6466,8 +6466,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   jjtree.openNodeScope(jjtn000);
     try {
       jj_consume_token(UUID);
-      jj_consume_token(LPAREN);
-      jj_consume_token(RPAREN);
+      jj_consume_token(NIL);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -6482,8 +6481,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   jjtree.openNodeScope(jjtn000);
     try {
       jj_consume_token(STRUUID);
-      jj_consume_token(LPAREN);
-      jj_consume_token(RPAREN);
+      jj_consume_token(NIL);
     } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
