@@ -54,15 +54,15 @@ function addClickHandler(id) {
 	}
 }
 
-function disableSaveIfEmpty() {
+function disableSaveIfNotValidName() {
 	var name = document.getElementById('query-name');
 	var save = document.getElementById('save');
-	var valid = /^\w{1,32}$/
+	var valid = /^[- \w]{1,32}$/
 	save.disabled = !valid.test(name.value);
 }
 
 function handleNameChange(){
-    setTimeout('disableSaveIfEmpty()', 200);	
+    setTimeout('disableSaveIfNotValidName()', 200);	
 }
 
 function addSaveNameHandler() {

@@ -87,8 +87,10 @@
 						</th>
 						<td>
 							<input id="exec" type="submit" value="{$execute.label}" />
-							<input id="save" type="submit" value="{$save.label}" disabled="true" />
-							<input id="query-name" name="query-name" type="text" value="" />
+							<input id="save" type="submit" value="{$save.label}"
+								disabled="true" />
+							<input id="query-name" name="query-name" type="text" size="32"
+								maxlength="32" value="" />
 						</td>
 					</tr>
 				</tbody>
