@@ -58,6 +58,11 @@ public class StrBefore implements Function {
 				if (index > -1) {
 					substringBefore = lexicalValue.substring(0, index);
 				}
+				else {
+					// no match, return empty string with no language or datatype
+					leftLanguage = null;
+					leftDt = null;
+				}
 				
 				if (leftLanguage != null) {
 					return valueFactory.createLiteral(substringBefore, leftLanguage);
