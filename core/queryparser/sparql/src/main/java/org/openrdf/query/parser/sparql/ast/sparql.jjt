@@ -310,17 +310,14 @@ TOKEN:
 	  // | ["\u10000"-"\uEFFFF"] FIXME: JavaCC/Java can't handle this?
 	>
 |	<#PN_CHARS_U: <PN_CHARS_BASE> | "_">
-|	<#PN_START_CHAR: <PN_CHARS_U> | <NUM> | <PLX>> 
-|	<#VAR_CHAR: <PN_START_CHAR> | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"]>
-|	<#PN_END_CHAR: <VAR_CHAR> | "-">
-|	<#PN_CHAR: <PN_END_CHAR> | ".">
-
-|	<#PN_PREFIX: <PN_CHARS_BASE> ( (<PN_CHAR>)* <PN_END_CHAR> )?>
-|	<#PN_LOCAL: <PN_START_CHAR> ( ( <PN_CHAR> | <PLX> )* (<PN_END_CHAR> | <PLX> ) )?>
+|	<#VAR_CHAR: <PN_CHARS_U> | <NUM> | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"]>
+|	<#PN_CHARS: <PN_CHARS_U> | "-" | <NUM> | "\u00B7" | ["\u0300"-"\u036F"] | ["\u203F"-"\u2040"]> 
+|	<#PN_PREFIX: <PN_CHARS_BASE> ( (<PN_CHARS> | ".")* <PN_CHARS>)?>
+|	<#PN_LOCAL: (<PN_CHARS_U> | ":" | <NUM> | <PLX> ) (( <PN_CHARS> | "." | ":" | <PLX>)* <PN_CHARS> | ":" | <PLX>)?>
 |	<#PLX: <PERCENT> | <PN_LOCAL_ESC>>
 |	<#PERCENT: "%" <HEX> <HEX>>
 |	<#PN_LOCAL_ESC: "\\" [ "_", "~", ".", "-", "!", "$", "&", "\"", "(", ")", "*", "+", ",", ";", "=", ":", "/", "?", "#", "@", "%" ]>
-|	<#VARNAME: <PN_START_CHAR> (<VAR_CHAR>)*>
+|	<#VARNAME: (<PN_CHARS_U> | <NUM> ) (<VAR_CHAR>)*>
 }
 
 //
