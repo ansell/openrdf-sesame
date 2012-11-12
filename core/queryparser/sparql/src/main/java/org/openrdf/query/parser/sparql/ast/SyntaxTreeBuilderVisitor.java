@@ -20,6 +20,7 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTDatasetClause node, Object data) throws VisitorException;
   public Object visit(ASTWhereClause node, Object data) throws VisitorException;
   public Object visit(ASTBindingsClause node, Object data) throws VisitorException;
+  public Object visit(ASTInlineData node, Object data) throws VisitorException;
   public Object visit(ASTBindingSet node, Object data) throws VisitorException;
   public Object visit(ASTBindingValue node, Object data) throws VisitorException;
   public Object visit(ASTGroupClause node, Object data) throws VisitorException;
@@ -143,4 +144,4 @@ public interface SyntaxTreeBuilderVisitor
   public Object visit(ASTInsertClause node, Object data) throws VisitorException;
   public Object visit(ASTModify node, Object data) throws VisitorException;
 }
-/* JavaCC - OriginalChecksum=dd084d98514ac3df70dabfbd088d00af (do not edit this line) */
+/* JavaCC - OriginalChecksum=09ac7b48b68db1736f33d8a9f122500e (do not edit this line) */

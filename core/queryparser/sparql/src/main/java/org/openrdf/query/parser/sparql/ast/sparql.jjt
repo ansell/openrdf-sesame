@@ -204,6 +204,7 @@ TOKEN [IGNORE_CASE] :
 |	<BIND: "bind">
 |	<SERVICE: "service">
 |	<BINDINGS: "bindings">
+|	<VALUES: "values">
 |	<UNDEF: "UNDEF">
 |	<STRLEN: "strlen">
 |	<SUBSTR: "substr">
@@ -498,6 +499,37 @@ void BindingsClause() :
     <BINDINGS> ( Var() )* <LBRACE> ( BindingSet())* <RBRACE> 
 }
 
+void InlineData():
+{}
+{
+    <VALUES> DataBlock()
+}
+
+void DataBlock() #void :
+{}
+{
+     InlineDataOneVar()
+   | InlineDataFull()
+}
+
+void InlineDataOneVar() #void :
+{}
+{
+    Var() <LBRACE> (SimpleBindingSet())* <RBRACE>
+}
+
+void InlineDataFull() #void :
+{}
+{
+    ( <NIL> | <LPAREN> (Var())* <RPAREN> ) <LBRACE> ( BindingSet())* <RBRACE>
+}
+
+void SimpleBindingSet() #BindingSet :
+{}
+{
+    BindingValue() 
+}
+
 void BindingSet() :
 {}
 {
@@ -639,6 +671,7 @@ void GraphPatternNotTriples() #void :
 |	GraphGraphPattern()
 |	MinusGraphPattern()
 |	ServiceGraphPattern()
+| 	InlineData()
 }
 
 void OptionalGraphPattern() :
@@ -1082,6 +1115,8 @@ void BrackettedExpression() #void :
 {
 	<LPAREN> Expression() <RPAREN>
 }
+
+
 
 void BuiltInCall() #void :
 {}
