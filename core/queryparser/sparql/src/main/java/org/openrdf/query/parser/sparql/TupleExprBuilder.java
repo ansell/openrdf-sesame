@@ -56,7 +56,6 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
-import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -81,7 +80,6 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -180,6 +178,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSHA224;
 import org.openrdf.query.parser.sparql.ast.ASTSHA256;
 import org.openrdf.query.parser.sparql.ast.ASTSHA384;
 import org.openrdf.query.parser.sparql.ast.ASTSHA512;
+import org.openrdf.query.parser.sparql.ast.ASTSTRUUID;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSample;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
@@ -200,6 +199,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSum;
 import org.openrdf.query.parser.sparql.ast.ASTTimezone;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTTz;
+import org.openrdf.query.parser.sparql.ast.ASTUUID;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
@@ -2244,6 +2244,20 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return createFunctionCall("SHA512", node, 1, 1);
 	}
 
+	@Override
+	public FunctionCall visit(ASTUUID node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("UUID", node, 0, 0);
+	}
+	
+	@Override
+	public FunctionCall visit(ASTSTRUUID node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("STRUUID", node, 0, 0);
+	}
+	
 	@Override
 	public IRIFunction visit(ASTIRIFunc node, Object data)
 		throws VisitorException

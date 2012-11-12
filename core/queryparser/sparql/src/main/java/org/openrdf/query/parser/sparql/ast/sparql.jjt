@@ -186,6 +186,8 @@ TOKEN [IGNORE_CASE] :
 |	<BNODE: "bnode">
 |	<STRDT: "strdt">
 |	<STRLANG: "strlang">
+|	<UUID: "uuid">
+|	<STRUUID: "struuid">
 |	<IRI: "IRI"|"URI">
 |	<IF: "if">
 |	<IN: "in">
@@ -1177,6 +1179,8 @@ void RDFTermFunction() #void :
 |	Str()
 |	StrDt()
 |	StrLang()
+|	UUID()
+|	STRUUID()
 }
 
 void DateTimeFunction() #void :
@@ -1503,6 +1507,18 @@ void StrLang() :
 {}
 {
 	<STRLANG> <LPAREN> Expression() <COMMA> Expression() <RPAREN>
+}
+
+void UUID() :
+{}
+{
+	<UUID> <LPAREN> <RPAREN>
+}
+
+void STRUUID() :
+{}
+{
+	<STRUUID> <LPAREN> <RPAREN>
 }
 
 void Bind() :

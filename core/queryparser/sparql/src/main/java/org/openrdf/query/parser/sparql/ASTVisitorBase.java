@@ -11,7 +11,6 @@ import org.openrdf.query.parser.sparql.ast.ASTAnd;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTAvg;
 import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
-import org.openrdf.query.parser.sparql.ast.ASTInlineData;
 import org.openrdf.query.parser.sparql.ast.ASTBaseDecl;
 import org.openrdf.query.parser.sparql.ast.ASTBasicGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTBind;
@@ -62,6 +61,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIf;
 import org.openrdf.query.parser.sparql.ast.ASTIn;
 import org.openrdf.query.parser.sparql.ast.ASTInfix;
+import org.openrdf.query.parser.sparql.ast.ASTInlineData;
 import org.openrdf.query.parser.sparql.ast.ASTInsertClause;
 import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
@@ -115,6 +115,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSHA224;
 import org.openrdf.query.parser.sparql.ast.ASTSHA256;
 import org.openrdf.query.parser.sparql.ast.ASTSHA384;
 import org.openrdf.query.parser.sparql.ast.ASTSHA512;
+import org.openrdf.query.parser.sparql.ast.ASTSTRUUID;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSample;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
@@ -137,6 +138,7 @@ import org.openrdf.query.parser.sparql.ast.ASTTriplesSameSubject;
 import org.openrdf.query.parser.sparql.ast.ASTTriplesSameSubjectPath;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTTz;
+import org.openrdf.query.parser.sparql.ast.ASTUUID;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.ASTUpdateContainer;
@@ -173,12 +175,12 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	{
 		return node.childrenAccept(this, data);
 	}
-	
+
 	public Object visit(ASTInlineData node, Object data)
-			throws VisitorException
-		{
-			return node.childrenAccept(this, data);
-		}
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
 
 	public Object visit(ASTUpdateContainer node, Object data)
 		throws VisitorException
@@ -907,6 +909,18 @@ public abstract class ASTVisitorBase implements SyntaxTreeBuilderVisitor {
 	}
 
 	public Object visit(ASTString node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTUUID node, Object data)
+		throws VisitorException
+	{
+		return node.childrenAccept(this, data);
+	}
+
+	public Object visit(ASTSTRUUID node, Object data)
 		throws VisitorException
 	{
 		return node.childrenAccept(this, data);

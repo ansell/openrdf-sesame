@@ -117,32 +117,34 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTIRIFUNC = 111;
   public int JJTSTRDT = 112;
   public int JJTSTRLANG = 113;
-  public int JJTBIND = 114;
-  public int JJTREGEXEXPRESSION = 115;
-  public int JJTEXISTSFUNC = 116;
-  public int JJTNOTEXISTSFUNC = 117;
-  public int JJTRDFLITERAL = 118;
-  public int JJTTRUE = 119;
-  public int JJTFALSE = 120;
-  public int JJTSTRING = 121;
-  public int JJTQNAME = 122;
-  public int JJTBLANKNODE = 123;
-  public int JJTGRAPHREFALL = 124;
-  public int JJTGRAPHORDEFAULT = 125;
-  public int JJTQUADSNOTTRIPLES = 126;
-  public int JJTLOAD = 127;
-  public int JJTCLEAR = 128;
-  public int JJTDROP = 129;
-  public int JJTADD = 130;
-  public int JJTMOVE = 131;
-  public int JJTCOPY = 132;
-  public int JJTCREATE = 133;
-  public int JJTINSERTDATA = 134;
-  public int JJTDELETEDATA = 135;
-  public int JJTDELETEWHERE = 136;
-  public int JJTDELETECLAUSE = 137;
-  public int JJTINSERTCLAUSE = 138;
-  public int JJTMODIFY = 139;
+  public int JJTUUID = 114;
+  public int JJTSTRUUID = 115;
+  public int JJTBIND = 116;
+  public int JJTREGEXEXPRESSION = 117;
+  public int JJTEXISTSFUNC = 118;
+  public int JJTNOTEXISTSFUNC = 119;
+  public int JJTRDFLITERAL = 120;
+  public int JJTTRUE = 121;
+  public int JJTFALSE = 122;
+  public int JJTSTRING = 123;
+  public int JJTQNAME = 124;
+  public int JJTBLANKNODE = 125;
+  public int JJTGRAPHREFALL = 126;
+  public int JJTGRAPHORDEFAULT = 127;
+  public int JJTQUADSNOTTRIPLES = 128;
+  public int JJTLOAD = 129;
+  public int JJTCLEAR = 130;
+  public int JJTDROP = 131;
+  public int JJTADD = 132;
+  public int JJTMOVE = 133;
+  public int JJTCOPY = 134;
+  public int JJTCREATE = 135;
+  public int JJTINSERTDATA = 136;
+  public int JJTDELETEDATA = 137;
+  public int JJTDELETEWHERE = 138;
+  public int JJTDELETECLAUSE = 139;
+  public int JJTINSERTCLAUSE = 140;
+  public int JJTMODIFY = 141;
 
 
   public String[] jjtNodeName = {
@@ -260,6 +262,8 @@ public interface SyntaxTreeBuilderTreeConstants
     "IRIFunc",
     "StrDt",
     "StrLang",
+    "UUID",
+    "STRUUID",
     "Bind",
     "RegexExpression",
     "ExistsFunc",
@@ -288,4 +292,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=bb43e7534c371a6b1d4a471409181e54 (do not edit this line) */
+/* JavaCC - OriginalChecksum=222ce2dde642b5d20e6378500c665d76 (do not edit this line) */
