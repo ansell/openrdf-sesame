@@ -10,27 +10,20 @@ import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.Statement;
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
@@ -40,72 +33,69 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
+import org.openrdf.workbench.util.QueryEvaluator;
+import org.openrdf.workbench.util.PagedQuery;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class QueryServlet extends TransformationServlet {
-	
-	private Logger logger = LoggerFactory.getLogger(QueryServlet.class);
-	
-    private static final int flags = Pattern.CASE_INSENSITIVE | 
-	    		Pattern.MULTILINE | Pattern.DOTALL;
-	private static final Pattern limitOrOffset = 
-			Pattern.compile("((limit)|(offset))\\s+\\d+", flags);
-	private static final Pattern offset_pattern = 
-			Pattern.compile("\\boffset\\s+\\d+\\b", flags);
-	private static final Pattern limit_pattern = 
-			Pattern.compile("\\blimit\\s+\\d+\\b", flags);
-	private static final Pattern splitter = Pattern.compile("\\s");
-	private static final Pattern serql_namespace = 
-			Pattern.compile("\\busing namespace\\b", flags);
+
+	private static final String INFO = "info";
+
+	private static final String ACCEPT = "Accept";
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
+
+	private static final QueryEvaluator EVAL = QueryEvaluator.INSTANCE;
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "queryLn", "infer", "total_result_count"};
+		return new String[] { "limit", "queryLn", "infer", "total_result_count" };
 	}
 
 	@Override
-	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
-		throws Exception, IOException
+	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
+		throws IOException, RepositoryException, RDFHandlerException, QueryEvaluationException
 	{
-		if (req.isParameterPresent("Accept")) {
-			String accept = req.getParameter("Accept");
-			RDFFormat format = RDFFormat.forMIMEType(accept);
+		if (req.isParameterPresent(ACCEPT)) {
+			final String accept = req.getParameter(ACCEPT);
+			final RDFFormat format = RDFFormat.forMIMEType(accept);
 			if (format != null) {
 				resp.setContentType(accept);
-				String ext = format.getDefaultFileExtension();
-				String attachment = "attachment; filename=query." + ext;
+				final String ext = format.getDefaultFileExtension();
+				final String attachment = "attachment; filename=query." + ext;
 				resp.setHeader("Content-disposition", attachment);
 			}
 		}
 		else {
 			resp.setContentType("application/xml");
 		}
-		PrintWriter out = resp.getWriter();
+		final PrintWriter out = resp.getWriter();
 		try {
-			PrintWriter writer = new PrintWriter(new BufferedWriter(out));
+			final PrintWriter writer = new PrintWriter(new BufferedWriter(out));
 			service(req, resp, writer, xslPath);
 			writer.flush();
 		}
 		catch (BadRequestException exc) {
-			logger.warn(exc.toString(), exc);
+			LOGGER.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			final TupleResultBuilder builder = new TupleResultBuilder(out);
 			builder.transform(xslPath, "query.xsl");
 			builder.start("error-message");
-			builder.link("info");
+			builder.link(INFO);
 			builder.link("namespaces");
 			builder.result(exc.getMessage());
 			builder.end();
 		}
 	}
 
-	private void service(WorkbenchRequest req, HttpServletResponse resp, PrintWriter out, String xslPath)
-		throws Exception
+	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final PrintWriter out,
+			final String xslPath)
+		throws BadRequestException, RepositoryException, RDFHandlerException, QueryEvaluationException
 	{
-		RepositoryConnection con = repository.getConnection();
+		final RepositoryConnection con = repository.getConnection();
 		try {
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			final TupleResultBuilder builder = new TupleResultBuilder(out);
 			for (Namespace ns : con.getNamespaces().asList()) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
@@ -118,7 +108,7 @@ public class QueryServlet extends TransformationServlet {
 				}
 				catch (HTTPQueryEvaluationException exc) {
 					if (exc.getCause() instanceof MalformedQueryException) {
-						throw new BadRequestException(exc.getCause().getMessage());
+						throw new BadRequestException(exc.getCause().getMessage(), exc);
 					}
 					throw exc;
 				}
@@ -126,7 +116,7 @@ public class QueryServlet extends TransformationServlet {
 			else {
 				builder.transform(xslPath, "query.xsl");
 				builder.start();
-				builder.link("info");
+				builder.link(INFO);
 				builder.link("namespaces");
 				builder.end();
 			}
@@ -136,359 +126,113 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void service(TupleResultBuilder builder, HttpServletResponse resp, PrintWriter out, 
-			String xslPath, RepositoryConnection con, WorkbenchRequest req)
-		throws Exception
+	private void service(final TupleResultBuilder builder, final HttpServletResponse resp,
+			final PrintWriter out, final String xslPath, final RepositoryConnection con,
+			final WorkbenchRequest req)
+		throws BadRequestException, MalformedQueryException, RepositoryException, QueryEvaluationException,
+		RDFHandlerException
 	{
-		final QueryLanguage ql = QueryLanguage.valueOf(
-				req.getParameter("queryLn"));
+		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
 		final int limit = req.getInt("limit");
 		final int offset = req.getInt("offset");
-		String q = req.getParameter("query");
-		Query query = prepareQuery(con, ql, q);
+		String queryText = req.getParameter("query");
+		Query query = prepareQuery(con, queryLn, queryText);
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
 			final int know_total = req.getInt("know_total");
 			if (know_total > 0) {
 				addTotalResultCountCookie(req, resp, know_total);
-			} else {
-				final int total_result_count = 
-					(query instanceof GraphQuery) ? 
-					countQueryResults(builder, (GraphQuery)query) :
-					countQueryResults(builder, (TupleQuery)query);
-				addTotalResultCountCookie(req, resp, total_result_count);
 			}
-			q = modifyQuery(q, ql, limit, offset);
-			query = prepareQuery(con, ql, q);
+			else {
+				final int result_count = (query instanceof GraphQuery) ? EVAL.countQueryResults((GraphQuery)query)
+						: EVAL.countQueryResults((TupleQuery)query);
+				addTotalResultCountCookie(req, resp, result_count);
+			}
+			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
+			queryText = pagedQuery.toString();
+			query = prepareQuery(con, queryLn, queryText);
 		}
 		if (req.isParameterPresent("infer")) {
-			boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
+			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
 			query.setIncludeInferred(infer);
 		}
-		RDFFormat format = null;
-		if (req.isParameterPresent("Accept")) {
-			format = RDFFormat.forMIMEType(req.getParameter("Accept"));
-		}
+		service(builder, out, xslPath, req, query);
+	}
+
+	/**
+	 * @param builder
+	 * @param out
+	 * @param xslPath
+	 * @param req
+	 * @param query
+	 * @throws QueryEvaluationException
+	 * @throws RDFHandlerException
+	 * @throws BadRequestException
+	 */
+	private void service(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
+			final WorkbenchRequest req, final Query query)
+		throws QueryEvaluationException, RDFHandlerException, BadRequestException
+	{
+		final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
+				: null;
 		if (query instanceof TupleQuery) {
 			builder.transform(xslPath, "tuple.xsl");
 			builder.start();
-			evaluateTupleQuery(builder, (TupleQuery)query);
+			EVAL.evaluateTupleQuery(builder, (TupleQuery)query);
 			builder.end();
 		}
 		else if (query instanceof GraphQuery && format == null) {
 			builder.transform(xslPath, "graph.xsl");
 			builder.start();
-			evaluateGraphQuery(builder, (GraphQuery)query);
+			EVAL.evaluateGraphQuery(builder, (GraphQuery)query);
 			builder.end();
 		}
 		else if (query instanceof GraphQuery) {
-			RDFWriterFactory factory = getInstance().get(format);
-			RDFWriter writer = factory.getWriter(out);
-			evaluateGraphQuery(writer, (GraphQuery)query);
+			final RDFWriterFactory factory = getInstance().get(format);
+			final RDFWriter writer = factory.getWriter(out);
+			EVAL.evaluateGraphQuery(writer, (GraphQuery)query);
 		}
 		else if (query instanceof BooleanQuery) {
 			builder.transform(xslPath, "boolean.xsl");
 			builder.start();
-			evaluateBooleanQuery(builder, (BooleanQuery)query);
+			EVAL.evaluateBooleanQuery(builder, (BooleanQuery)query);
 			builder.end();
 		}
 		else {
 			throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
 		}
 	}
-	
-	/***
-	 * Add or modify the limit and offset clauses of the query to be executed
-	 * so that only those results to be displayed are requested from the
-	 * query engine.
-	 * 
-	 * @param query as it was specified by the user
-	 * @param language SPARQL or SeRQL, as specified by the user
-	 * @param requestLimit maximum number of results to return, as specified 
-	 * by the URL query parameters or cookies
-	 * @param requestOffset which result to start at when populating the 
-	 * result set
-	 * @returns the user's query with appended or modified LIMIT and OFFSET 
-	 * clauses
-	 */
-	private String modifyQuery(final String query, 
-			final QueryLanguage language, 
-			final int requestLimit, int requestOffset) {
-		// gracefully handle malicious value
-		if (requestOffset < 0) requestOffset = 0; 
-		logger.info("Query Language: {}, requestLimit: " + requestLimit + 
-				", requestOffset: " + requestOffset, language);
-		logger.info("Query: {}", query);
-		String rval = query;
-		
-		// requestLimit <= 0 actually means don't limit display
-		if (requestLimit > 0) { 
-			/* the matcher on the pattern will have a group for "limit l#" as 
-		       well as a group for l#, similarly for "offset o#" and o#. If 
-		       either doesn't exist, it can be appended at the end. */  
-			int queryLimit = -1;
-			int queryOffset = -1;
-			final Matcher m = limitOrOffset.matcher(query);
-			while(m.find()){
-				final String clause = m.group();
-				final int value = Integer.parseInt(
-						splitter.split(clause)[1]);
-				if (clause.startsWith("limit")){
-					queryLimit = value;
-				} else {
-					queryOffset =  value;
-				}
-			}
-			
-			final boolean queryLimitExists = (queryLimit >= 0);
-			final boolean queryOffsetExists = (queryOffset >= 0);
-			final int maxQueryResultCount = queryLimitExists ? 
-					(queryLimit + (queryOffsetExists ? queryOffset : 0)) : 
-						Integer.MAX_VALUE;
-			final int maxRequestResultCount = requestLimit + requestOffset;
-			final int limitSubstitute = 
-					(maxRequestResultCount < maxQueryResultCount) ?
-					requestLimit : queryLimit - requestOffset;
-			/* In SPARQL, LIMIT and/or OFFSET can occur at the end, in 
-			 * either order. In SeRQL, LIMIT and/or OFFSET must be 
-			 * immediately prior to the *optional* namespace declaration 
-			 * section (which is itself last), and LIMIT must precede OFFSET.
-			 * This code makes no attempt to correct if the user places them
-			 * out of order in the query. 
-			 */
-			if (queryLimitExists) {
-				if (limitSubstitute != queryLimit) {
-					// do a clause replacement
-					final Matcher lm = limit_pattern.matcher(rval);
-					final StringBuffer sb = new StringBuffer();
-					lm.find();
-					lm.appendReplacement(sb, "limit " + limitSubstitute);
-					lm.appendTail(sb);
-					rval = sb.toString();
-				}
-			} else { 
-				final String newLimitClause = "limit " + limitSubstitute;
-				if (QueryLanguage.SPARQL == language) {
-					// add the clause at the end
-					if (!rval.endsWith("\n")) {
-						rval = rval + '\n';
-					}
 
-					rval = rval + newLimitClause;
-				} else {
-					/* SeRQL, add the clause before any offset clause or the 
-					 * namespace section
-					 */
-					final Pattern p = queryOffsetExists ? offset_pattern :
-						serql_namespace;
-					rval = insertAtMatchOnOwnLine(p, rval, newLimitClause);
-				}
-			}
-
-			if (queryOffsetExists) {
-				final int offsetSubstitute = queryOffset + requestOffset;
-				if (offsetSubstitute != requestOffset) {
-					// do a clause replacement
-					final Matcher om = offset_pattern.matcher(rval);
-					final StringBuffer sb = new StringBuffer();
-					om.find();
-					om.appendReplacement(sb, "offset " + offsetSubstitute);
-					om.appendTail(sb);
-					rval = sb.toString();
-				}
-			} else {
-				final String newOffsetClause = "offset " + requestOffset;
-				if (QueryLanguage.SPARQL == language) {
-					if (requestOffset > 0) {
-						// add offset clause
-						if (!rval.endsWith("\n")) {
-							rval = rval + '\n';
-						}
-
-					rval = rval + newOffsetClause;
-					}
-				} else {
-					/* SeRQL, add the clause before before the namespace
-					 * section
-					 */
-					rval = insertAtMatchOnOwnLine(serql_namespace, rval, newOffsetClause);
-				}
-			}
-			
-			logger.info("Modified Query: {}", rval);
-		}
-		
-		return rval;
-	}
-		
-    /**
-     * Insert a given string into another string at the point at which the 
-     * given matcher matches, making sure to place the insertion string on 
-     * its own line. If there is no match, appends to end on own line.
-     * 
-     * @param p pattern to search for insertion location
-     * @param orig string to perform insertion on
-     * @param insert string to insert on own line
-     * @returns result of inserting text
-     */
-    private String insertAtMatchOnOwnLine(final Pattern p, 
-    		final String orig, final String insert){
-    	final Matcher qm = p.matcher(orig);
-    	final boolean found = qm.find();
-    	final int location = found ? qm.start() : orig.length();
-		final StringBuilder builder = new StringBuilder(
-				orig.length() + insert.length() + 2);
-		builder.append(orig.substring(0, location));
-		if (builder.charAt(builder.length()-1) != '\n'){
-			builder.append('\n');
-		}
-		
-		builder.append(insert);
-		final String end = orig.substring(location);
-		if (!end.startsWith("\n")) {
-			builder.append('\n');
-		}
-		
-		builder.append(end);
-		return builder.toString();
-    }
-	
-	private Query prepareQuery(RepositoryConnection con, QueryLanguage ql, String q)
+	private Query prepareQuery(final RepositoryConnection con, final QueryLanguage queryLn, final String query)
 		throws RepositoryException, MalformedQueryException
 	{
 		try {
-			return con.prepareQuery(ql, q);
+			return con.prepareQuery(queryLn, query);
 		}
 		catch (UnsupportedOperationException exc) {
 			// TODO must be an http repository
 			try {
-				con.prepareTupleQuery(ql, q).evaluate().close();
-				return con.prepareTupleQuery(ql, q);
+				con.prepareTupleQuery(queryLn, query).evaluate().close();
+				return con.prepareTupleQuery(queryLn, query);
 			}
 			catch (Exception malformed) {
 				// guess its not a tuple query
 			}
 			try {
-				con.prepareGraphQuery(ql, q).evaluate().close();
-				return con.prepareGraphQuery(ql, q);
+				con.prepareGraphQuery(queryLn, query).evaluate().close();
+				return con.prepareGraphQuery(queryLn, query);
 			}
 			catch (Exception malformed) {
 				// guess its not a graph query
 			}
 			try {
-				con.prepareBooleanQuery(ql, q).evaluate();
-				return con.prepareBooleanQuery(ql, q);
+				con.prepareBooleanQuery(queryLn, query).evaluate();
+				return con.prepareBooleanQuery(queryLn, query);
 			}
 			catch (Exception malformed) {
 				// guess its not a boolean query
 			}
 			// let's assume it is an malformed tuple query
-			return con.prepareTupleQuery(ql, q);
+			return con.prepareTupleQuery(queryLn, query);
 		}
-	}
-
-	/***
-	 * Evaluate a tuple query, and create an XML results document.
-	 * 
-	 * @param builder response builder helper for generating the XML response
-	 * to the client
-	 * @param query the query to be evaluated
-	 */
-	private void evaluateTupleQuery(TupleResultBuilder builder, 
-			TupleQuery query)
-		throws QueryEvaluationException
-	{
-		TupleQueryResult result = query.evaluate();
-		try {
-			String[] names = result.getBindingNames().toArray(new String[0]);
-			builder.variables(names);
-			builder.link("info");
-     		while (result.hasNext()) {
-			    final BindingSet set = result.next();
-				Object[] values = new Object[names.length];
-				for (int i = 0; i < names.length; i++) {
-					values[i] = set.getValue(names[i]);
-				}
-				builder.result(values);
-			}
-		}
-		finally {
-			result.close();
-		}
-	}
-
-	/***
-	 * Evaluate a graph query, and create an XML results document.
-	 * 
-	 * @param builder response builder helper for generating the XML response
-	 * to the client
-	 * @param query the query to be evaluated
-	 */
-	private void evaluateGraphQuery(TupleResultBuilder builder, 
-			GraphQuery query)
-		throws QueryEvaluationException
-	{
-		GraphQueryResult result = query.evaluate();
-		try {
-			builder.variables("subject", "predicate", "object");
-			builder.link("info");
-		    while (result.hasNext()) {
-				final Statement st = result.next();
-			    builder.result(st.getSubject(), st.getPredicate(), 
-			    		st.getObject(), st.getContext());
-			}
-		}
-		finally {
-			result.close();
-		}
-	}
-	
-	private int countQueryResults(TupleResultBuilder builder, GraphQuery query)
-		throws QueryEvaluationException
-	{
-		int rval = 0;
-		GraphQueryResult result = query.evaluate();
-		try {
-		    while (result.hasNext()) {
-				result.next();
-			    rval++;
-			}
-		}
-		finally {
-			result.close();
-		}
-		
-		return rval;
-	}
-	
-	private int countQueryResults(TupleResultBuilder builder, TupleQuery query)
-			throws QueryEvaluationException
-	{
-		int rval = 0;
-		TupleQueryResult result = query.evaluate();
-		try {
-		    while (result.hasNext()) {
-				result.next();
-			    rval++;
-			}
-		}
-		finally {
-			result.close();
-		}
-		
-		return rval;
-	}
-	
-	private void evaluateGraphQuery(RDFWriter writer, GraphQuery query)
-		throws QueryEvaluationException, RDFHandlerException
-	{
-		query.evaluate(writer);
-	}
-
-	private void evaluateBooleanQuery(TupleResultBuilder builder, BooleanQuery query)
-		throws QueryEvaluationException
-	{
-		boolean result = query.evaluate();
-		builder.link("info");
-		builder.bool(result);
 	}
 }

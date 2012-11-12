@@ -2,14 +2,16 @@
 
 function populateParameters() {
 	var href = document.location.href;
-	var elements = href.substring(href.indexOf('?') + 1).substring(href.indexOf(';') + 1).split(decodeURIComponent('%26'));
-	for (var i=0;elements.length-i;i++) {
+	var elements = href.substring(href.indexOf('?') + 1).substring(
+			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
+	for ( var i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
 		var q = document.getElementById('query');
-		if (pair[0] == 'query') if (!q.value) {
-			q.value = value;
-		}
+		if (pair[0] == 'query')
+			if (!q.value) {
+				q.value = value;
+			}
 	}
 }
 
@@ -41,10 +43,40 @@ function loadNamespaces() {
 	}
 }
 
-addLoad(
-function() {
+function addClickHandlers() {
+	addClickHandler('exec');
+	addClickHandler('save');
+}
+
+function addClickHandler(id) {
+	document.getElementById(id).onclick = function() {
+		document.getElementById('action').value = id;
+	}
+}
+
+function disableSaveIfEmpty() {
+	var name = document.getElementById('query-name');
+	var save = document.getElementById('save');
+	var valid = /^\w{1,32}$/
+	save.disabled = !valid.test(name.value);
+}
+
+function handleNameChange(){
+    setTimeout('disableSaveIfEmpty()', 200);	
+}
+
+function addSaveNameHandler() {
+	var name = document.getElementById('query-name');
+	name.onkeydown = handleNameChange;
+	name.onpaste = handleNameChange;
+	name.oncut = handleNameChange;
+} 
+
+addLoad(function() {
 	populateParameters();
 	loadNamespaces();
+	addClickHandlers();
+	addSaveNameHandler();
 });
 
 function addParam(sb, name, id) {
@@ -66,9 +98,9 @@ function addParam(sb, name, id) {
 	}
 
 	sb[sb.length] = '&';
-}			
+}
 
-/* MSIE6 does not like xslt w/ this querystring, so we use url parameters. */
+/* MSIE6 does not like XSLT w/ this query string, so we use URL parameters. */
 function doSubmit() {
 	if (document.getElementById('query').value.length >= 1000) {
 		// some functionality will not work as expected on result pages
@@ -82,6 +114,11 @@ function doSubmit() {
 			url[url.length] = '?';
 		}
 
+		addParam(url, 'action');
+		if (document.getElementById('action').value == 'save') {
+			addParam(url, 'query-name');
+			addParam(url, 'save-private');
+		}
 		addParam(url, 'queryLn');
 		addParam(url, 'query');
 		addParam(url, 'limit');

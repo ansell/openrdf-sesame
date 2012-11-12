@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
 
@@ -14,29 +12,25 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/query.js" type="text/javascript">  </script>
+		<script src="../../scripts/query.js" type="text/javascript">
+		</script>
 		<form action="query" method="POST" onsubmit="return doSubmit()">
+			<input type="hidden" name="action" id="action" />
 			<table class="dataentry">
 				<tbody>
 					<tr>
 						<th>
-							<xsl:value-of
-								select="$query-language.label" />
+							<xsl:value-of select="$query-language.label" />
 						</th>
 						<td>
-							<select id="queryLn" name="queryLn"
-								onchange="loadNamespaces()">
-								<xsl:for-each
-									select="$info//sparql:binding[@name='query-format']">
-									<option
-										value="{substring-before(sparql:literal, ' ')}">
+							<select id="queryLn" name="queryLn" onchange="loadNamespaces()">
+								<xsl:for-each select="$info//sparql:binding[@name='query-format']">
+									<option value="{substring-before(sparql:literal, ' ')}">
 										<xsl:if
 											test="$info//sparql:binding[@name='default-queryLn']/sparql:literal = substring-before(sparql:literal, ' ')">
-											<xsl:attribute
-												name="selected">true</xsl:attribute>
+											<xsl:attribute name="selected">true</xsl:attribute>
 										</xsl:if>
-										<xsl:value-of
-											select="substring-after(sparql:literal, ' ')" />
+										<xsl:value-of select="substring-after(sparql:literal, ' ')" />
 									</option>
 								</xsl:for-each>
 							</select>
@@ -48,8 +42,7 @@
 							<xsl:value-of select="$query-string.label" />
 						</th>
 						<td>
-							<textarea id="query" name="query" rows="16"
-								cols="80">
+							<textarea id="query" name="query" rows="16" cols="80">
 							</textarea>
 						</td>
 						<td></td>
@@ -57,10 +50,8 @@
 					<tr>
 						<td></td>
 						<td>
-							<span id="queryString.errors"
-								class="error">
-								<xsl:value-of
-									select="//sparql:binding[@name='error-message']" />
+							<span id="queryString.errors" class="error">
+								<xsl:value-of select="//sparql:binding[@name='error-message']" />
 							</span>
 						</td>
 					</tr>
@@ -74,26 +65,30 @@
 						<td></td>
 					</tr>
 					<tr>
-						<td></td>
+						<th>
+							<xsl:value-of select="$query-options.label" />
+						</th>
 						<td>
-							<input id="infer" name="infer"
-								type="checkbox" value="true">
+							<input id="infer" name="infer" type="checkbox" value="true">
 								<xsl:if
 									test="$info//sparql:binding[@name='default-infer']/sparql:literal = 'true'">
 									<xsl:attribute name="checked">true</xsl:attribute>
 								</xsl:if>
 							</input>
-							<xsl:value-of
-								select="$include-inferred.label" />
+							<xsl:value-of select="$include-inferred.label" />
+							<input id="save-private" name="save-private" type="checkbox"
+								value="false" />
+							<xsl:value-of select="$save-private.label" />
 						</td>
-						<td></td>
 					</tr>
-
 					<tr>
-						<td></td>
-						<td colspan="2">
-							<input type="submit"
-								value="{$execute.label}" />
+						<th>
+							<xsl:value-of select="$query-actions.label" />
+						</th>
+						<td>
+							<input id="exec" type="submit" value="{$execute.label}" />
+							<input id="save" type="submit" value="{$save.label}" disabled="true" />
+							<input id="query-name" name="query-name" type="text" value="" />
 						</td>
 					</tr>
 				</tbody>
@@ -109,6 +104,7 @@
 			</xsl:for-each>
 		</pre>
 		<pre id="SeRQL-namespaces" style="display:none">
+			`
 			<xsl:text>
 USING NAMESPACE</xsl:text>
 			<xsl:for-each
@@ -128,5 +124,4 @@ USING NAMESPACE</xsl:text>
 			</xsl:for-each>
 		</pre>
 	</xsl:template>
-
 </xsl:stylesheet>

@@ -115,8 +115,12 @@
 	<variable name="include-inferred.label">
 		Include inferred statements
 	</variable>
+	<variable name="save-private.label">Save privately (do not share)</variable>
+	<variable name="save.label">Save query</variable>
 	<variable name="object.label">Object</variable>
 	<variable name="predicate.label">Predicate</variable>
+	<variable name="query-options.label">Action Options</variable>
+	<variable name="query-actions.label">Actions</variable>
 	<variable name="query-language.label">Query Language</variable>
 	<variable name="query-string.label">Query</variable>
 	<variable name="update-string.label">Update</variable>

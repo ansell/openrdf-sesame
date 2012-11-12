@@ -1,9 +1,12 @@
-#Eclipse settings
+# Eclipse settings
 .project
 **/.project
 .classpath
 **/.classpath
 
-# maven generated stuff
+# Eclipse Plug-In Settings
+**/.pmd
+
+# Maven generated stuff
 target/
 */target/
