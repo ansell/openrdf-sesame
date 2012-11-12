@@ -5,6 +5,8 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
+import javax.management.Query;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -16,8 +18,8 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * The SPARQL built-in {@link Function} STRSTARTS, as defined in <a
- * href="http://www.w3.org/TR/sparql11-query/#func-strstarts">SPARQL Query Language
- * for RDF</a>
+ * href="http://www.w3.org/TR/sparql11-query/#func-strstarts">SPARQL Query
+ * Language for RDF</a>
  * 
  * @author Jeen Broekstra
  */
@@ -31,39 +33,22 @@ public class StrStarts implements Function {
 		throws ValueExprEvaluationException
 	{
 		if (args.length != 2) {
-			throw new ValueExprEvaluationException("STRSTARTS requires 2 arguments, got "
-					+ args.length);
+			throw new ValueExprEvaluationException("STRSTARTS requires 2 arguments, got " + args.length);
 		}
-		
+
 		Value leftVal = args[0];
 		Value rightVal = args[1];
-		
+
 		if (leftVal instanceof Literal && rightVal instanceof Literal) {
 			Literal leftLit = (Literal)leftVal;
 			Literal rightLit = (Literal)rightVal;
 
-			if (leftLit.getLanguage() != null) {
-				if (rightLit.getLanguage() == null || rightLit.getLanguage().equals(leftLit.getLanguage())) {
+			if (QueryEvaluationUtil.compatibleArguments(leftLit, rightLit)) {
 
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
+				String leftLexVal = leftLit.getLabel();
+				String rightLexVal = rightLit.getLabel();
 
-					return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
-				}
-			}
-			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
-				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
-
-					return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
-				}
+				return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
 			}
 			else {
 				throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");
@@ -73,6 +58,6 @@ public class StrStarts implements Function {
 			throw new ValueExprEvaluationException("STRSTARTS function expects literal operands");
 		}
 
-		}
+	}
 
 }

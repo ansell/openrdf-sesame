@@ -43,8 +43,7 @@ public class StrBefore implements Function {
 			Literal rightLit = (Literal)rightArg;
 
 			
-			// STRBEFORE function accepts only string literals 
-			if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit))
+			if (QueryEvaluationUtil.compatibleArguments(leftLit, rightLit))
 			{
 				String leftLanguage = leftLit.getLanguage();
 				URI leftDt = leftLit.getDatatype();

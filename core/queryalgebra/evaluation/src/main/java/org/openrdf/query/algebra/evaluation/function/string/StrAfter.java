@@ -42,8 +42,7 @@ public class StrAfter implements Function {
 			Literal leftLit = (Literal)leftArg;
 			Literal rightLit = (Literal)rightArg;
 			
-			// STRAFTER function accepts only string literals.
-			if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit))
+			if (QueryEvaluationUtil.compatibleArguments(leftLit, rightLit))
 			{
 				String lexicalValue = leftLit.getLabel();
 				String substring = rightLit.getLabel();

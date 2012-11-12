@@ -41,28 +41,12 @@ public class StrEnds implements Function {
 			Literal leftLit = (Literal)leftVal;
 			Literal rightLit = (Literal)rightVal;
 
-			if (leftLit.getLanguage() != null) {
-				if (rightLit.getLanguage() == null || rightLit.getLanguage().equals(leftLit.getLanguage())) {
+			if (QueryEvaluationUtil.compatibleArguments(leftLit, rightLit)) {
 
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
+				String leftLexVal = leftLit.getLabel();
+				String rightLexVal = rightLit.getLabel();
 
-					return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
-				}
-			}
-			else if (QueryEvaluationUtil.isStringLiteral(leftLit)) {
-				if (QueryEvaluationUtil.isStringLiteral(rightLit)) {
-					String leftLexVal = leftLit.getLabel();
-					String rightLexVal = rightLit.getLabel();
-
-					return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
-				}
-				else {
-					throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
-				}
+				return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
 			}
 			else {
 				throw new ValueExprEvaluationException("incompatible operands for STRENDS function");
@@ -71,7 +55,5 @@ public class StrEnds implements Function {
 		else {
 			throw new ValueExprEvaluationException("STRENDS function expects literal operands");
 		}
-
 	}
-
 }
