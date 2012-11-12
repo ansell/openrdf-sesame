@@ -133,8 +133,6 @@ public class QueryServlet extends TransformationServlet {
 		RDFHandlerException
 	{
 		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
-		final int limit = req.getInt("limit");
-		final int offset = req.getInt("offset");
 		String queryText = req.getParameter("query");
 		Query query = prepareQuery(con, queryLn, queryText);
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
@@ -147,6 +145,8 @@ public class QueryServlet extends TransformationServlet {
 						: EVAL.countQueryResults((TupleQuery)query);
 				addTotalResultCountCookie(req, resp, result_count);
 			}
+			final int limit = req.getInt("limit");
+			final int offset = req.getInt("offset");
 			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
 			queryText = pagedQuery.toString();
 			query = prepareQuery(con, queryLn, queryText);
@@ -172,33 +172,35 @@ public class QueryServlet extends TransformationServlet {
 			final WorkbenchRequest req, final Query query)
 		throws QueryEvaluationException, RDFHandlerException, BadRequestException
 	{
-		final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
-				: null;
 		if (query instanceof TupleQuery) {
 			builder.transform(xslPath, "tuple.xsl");
 			builder.start();
 			EVAL.evaluateTupleQuery(builder, (TupleQuery)query);
 			builder.end();
 		}
-		else if (query instanceof GraphQuery && format == null) {
-			builder.transform(xslPath, "graph.xsl");
-			builder.start();
-			EVAL.evaluateGraphQuery(builder, (GraphQuery)query);
-			builder.end();
-		}
-		else if (query instanceof GraphQuery) {
-			final RDFWriterFactory factory = getInstance().get(format);
-			final RDFWriter writer = factory.getWriter(out);
-			EVAL.evaluateGraphQuery(writer, (GraphQuery)query);
-		}
-		else if (query instanceof BooleanQuery) {
-			builder.transform(xslPath, "boolean.xsl");
-			builder.start();
-			EVAL.evaluateBooleanQuery(builder, (BooleanQuery)query);
-			builder.end();
-		}
 		else {
-			throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
+			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
+					: null;
+			if (query instanceof GraphQuery && format == null) {
+				builder.transform(xslPath, "graph.xsl");
+				builder.start();
+				EVAL.evaluateGraphQuery(builder, (GraphQuery)query);
+				builder.end();
+			}
+			else if (query instanceof GraphQuery) {
+				final RDFWriterFactory factory = getInstance().get(format);
+				final RDFWriter writer = factory.getWriter(out);
+				EVAL.evaluateGraphQuery(writer, (GraphQuery)query);
+			}
+			else if (query instanceof BooleanQuery) {
+				builder.transform(xslPath, "boolean.xsl");
+				builder.start();
+				EVAL.evaluateBooleanQuery(builder, (BooleanQuery)query);
+				builder.end();
+			}
+			else {
+				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
+			}
 		}
 	}
 
