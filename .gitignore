@@ -5,7 +5,7 @@
 **/.classpath
 
 # Eclipse Plug-In Settings
-**/.pmd
+.pmd
 
 # Maven generated stuff
 target/
