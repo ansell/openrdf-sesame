@@ -61,8 +61,8 @@ function disableSaveIfNotValidName() {
 	save.disabled = !valid.test(name.value);
 }
 
-function handleNameChange(){
-    setTimeout('disableSaveIfNotValidName()', 200);	
+function handleNameChange() {
+	setTimeout('disableSaveIfNotValidName()', 200);
 }
 
 function addSaveNameHandler() {
@@ -70,7 +70,7 @@ function addSaveNameHandler() {
 	name.onkeydown = handleNameChange;
 	name.onpaste = handleNameChange;
 	name.oncut = handleNameChange;
-} 
+}
 
 addLoad(function() {
 	populateParameters();
@@ -101,33 +101,38 @@ function addParam(sb, name, id) {
 }
 
 function createXMLHttpRequest() {
-   try { 
-	   return new XMLHttpRequest(); 
-   } catch(e) {}
-   try { 
-	   return new ActiveXObject("Msxml2.XMLHTTP"); 
-   } catch (e) {}
-   alert("XMLHttpRequest not supported");
-   return null;
+	try {
+		return new XMLHttpRequest();
+	} catch (e) {
+	}
+	try {
+		return new ActiveXObject("Msxml2.XMLHTTP");
+	} catch (e) {
+	}
+	alert("XMLHttpRequest not supported");
+	return null;
 }
 
 function ajaxSave(url) {
 	var request = createXMLHttpRequest();
-	request.open("post", url, true); // Server stuck in a loop.
 	var requestTimer = setTimeout(function() {
 		request.abort();
-	    // TODO Handle timeout situation, e.g. Retry or inform user.
-	    }, 5000);
+		// TODO Handle timeout situation, e.g. Retry or inform user.
+	}, 5000);
 	request.onreadystatechange = function() {
-	     if (xhReq.readyState != 4)  { return; }
-	     clearTimeout(requestTimer);
-	     if (xhReq.status != 200)  {
-	       // TODO Handle error, e.g. Display error message on page
-	       return;
-	     }
-	     var serverResponse = xhReq.responseText;
-	     // TODO Handle successful response
-	   };
+		if (request.readyState != 4) {
+			return;
+		}
+		clearTimeout(requestTimer);
+		if (request.status != 200) {
+			// TODO Handle error, e.g. Display error message on page
+			return;
+		}
+		var serverResponse = request.responseText;
+		// TODO Handle successful response
+	};
+	request.open("post", url, true); // true => async handling
+	request.send(); // noarg => all data in URL
 }
 
 /* MSIE6 does not like XSLT w/ this query string, so we use URL parameters. */
