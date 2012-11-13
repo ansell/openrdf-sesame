@@ -16,7 +16,7 @@ import org.openrdf.query.QueryLanguage;
  * 
  * @author Dale Visser
  */
-class QueryStringBuilder {
+public class QueryStringBuilder {
 
 	private final StringBuilder builder;
 
@@ -63,6 +63,10 @@ class QueryStringBuilder {
 	 */
 	protected void replaceRepository(final URL repository) {
 		replace("$<repository>", QueryStringBuilder.uriQuote(repository));
+	}
+	
+	protected void replaceQueryName(final String queryName) {
+		replace("$<queryName>", QueryStringBuilder.quote(queryName));
 	}
 
 	/**

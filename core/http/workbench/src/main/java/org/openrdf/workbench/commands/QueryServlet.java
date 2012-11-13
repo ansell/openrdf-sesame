@@ -10,31 +10,35 @@ import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
-import org.openrdf.workbench.util.QueryEvaluator;
 import org.openrdf.workbench.util.PagedQuery;
+import org.openrdf.workbench.util.QueryEvaluator;
+import org.openrdf.workbench.util.QueryFactory;
+import org.openrdf.workbench.util.QueryStorage;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
@@ -55,21 +59,9 @@ public class QueryServlet extends TransformationServlet {
 
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException, RepositoryException, RDFHandlerException, QueryEvaluationException
+		throws IOException, OpenRDFException
 	{
-		if (req.isParameterPresent(ACCEPT)) {
-			final String accept = req.getParameter(ACCEPT);
-			final RDFFormat format = RDFFormat.forMIMEType(accept);
-			if (format != null) {
-				resp.setContentType(accept);
-				final String ext = format.getDefaultFileExtension();
-				final String attachment = "attachment; filename=query." + ext;
-				resp.setHeader("Content-disposition", attachment);
-			}
-		}
-		else {
-			resp.setContentType("application/xml");
-		}
+		setContentType(req, resp);
 		final PrintWriter out = resp.getWriter();
 		try {
 			final PrintWriter writer = new PrintWriter(new BufferedWriter(out));
@@ -89,9 +81,60 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
+	@Override
+	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
+		throws IOException, BadRequestException, MalformedURLException, OpenRDFException, JSONException
+	{
+		resp.setContentType("application/json");
+		final PrintWriter out = resp.getWriter();
+		final PrintWriter writer = new PrintWriter(new BufferedWriter(out));
+		if (!"save".equals(req.getParameter("action"))) {
+			throw new BadRequestException("Query doPost() is only for 'action=save'.");
+		}
+		final JSONObject json = new JSONObject();
+		final QueryStorage storage = new QueryStorage(this.getServletConfig().getServletContext());
+		final URL repository = this.manager.getLocation();
+		final String userName = req.getParameter(SERVER_USER);
+		final String password = req.getParameter(SERVER_PASSWORD);
+		final boolean accessible = storage.checkAccess(repository, userName, password);
+		json.put("accessible", accessible);
+		boolean exists = false;
+		if (accessible) {
+			final String queryName = req.getParameter("query-name");
+			exists = storage.askExists(repository, queryName, userName);
+			if (!exists) {
+				final boolean shared = Boolean.valueOf(req.getParameter("save-private"));
+				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
+				final String queryText = req.getParameter("query");
+				final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
+				storage.saveQuery(repository, queryName, userName, shared, queryLanguage, queryText, rowsPerPage);
+			}
+		}
+		json.put("existed", exists);
+		json.put("written", !exists);
+		writer.write(json.toString());
+		writer.flush();
+	}
+
+	private void setContentType(final WorkbenchRequest req, final HttpServletResponse resp) {
+		if (req.isParameterPresent(ACCEPT)) {
+			final String accept = req.getParameter(ACCEPT);
+			final RDFFormat format = RDFFormat.forMIMEType(accept);
+			if (format != null) {
+				resp.setContentType(accept);
+				final String ext = format.getDefaultFileExtension();
+				final String attachment = "attachment; filename=query." + ext;
+				resp.setHeader("Content-disposition", attachment);
+			}
+		}
+		else {
+			resp.setContentType("application/xml");
+		}
+	}
+
 	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final PrintWriter out,
 			final String xslPath)
-		throws BadRequestException, RepositoryException, RDFHandlerException, QueryEvaluationException
+		throws BadRequestException, OpenRDFException
 	{
 		final RepositoryConnection con = repository.getConnection();
 		try {
@@ -129,12 +172,11 @@ public class QueryServlet extends TransformationServlet {
 	private void service(final TupleResultBuilder builder, final HttpServletResponse resp,
 			final PrintWriter out, final String xslPath, final RepositoryConnection con,
 			final WorkbenchRequest req)
-		throws BadRequestException, MalformedQueryException, RepositoryException, QueryEvaluationException,
-		RDFHandlerException
+		throws BadRequestException, OpenRDFException
 	{
 		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
 		String queryText = req.getParameter("query");
-		Query query = prepareQuery(con, queryLn, queryText);
+		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
 			final int know_total = req.getInt("know_total");
 			if (know_total > 0) {
@@ -149,7 +191,7 @@ public class QueryServlet extends TransformationServlet {
 			final int offset = req.getInt("offset");
 			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
 			queryText = pagedQuery.toString();
-			query = prepareQuery(con, queryLn, queryText);
+			query = QueryFactory.prepareQuery(con, queryLn, queryText);
 		}
 		if (req.isParameterPresent("infer")) {
 			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
@@ -158,19 +200,9 @@ public class QueryServlet extends TransformationServlet {
 		service(builder, out, xslPath, req, query);
 	}
 
-	/**
-	 * @param builder
-	 * @param out
-	 * @param xslPath
-	 * @param req
-	 * @param query
-	 * @throws QueryEvaluationException
-	 * @throws RDFHandlerException
-	 * @throws BadRequestException
-	 */
 	private void service(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
 			final WorkbenchRequest req, final Query query)
-		throws QueryEvaluationException, RDFHandlerException, BadRequestException
+		throws OpenRDFException, BadRequestException
 	{
 		if (query instanceof TupleQuery) {
 			builder.transform(xslPath, "tuple.xsl");
@@ -201,40 +233,6 @@ public class QueryServlet extends TransformationServlet {
 			else {
 				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
 			}
-		}
-	}
-
-	private Query prepareQuery(final RepositoryConnection con, final QueryLanguage queryLn, final String query)
-		throws RepositoryException, MalformedQueryException
-	{
-		try {
-			return con.prepareQuery(queryLn, query);
-		}
-		catch (UnsupportedOperationException exc) {
-			// TODO must be an http repository
-			try {
-				con.prepareTupleQuery(queryLn, query).evaluate().close();
-				return con.prepareTupleQuery(queryLn, query);
-			}
-			catch (Exception malformed) {
-				// guess its not a tuple query
-			}
-			try {
-				con.prepareGraphQuery(queryLn, query).evaluate().close();
-				return con.prepareGraphQuery(queryLn, query);
-			}
-			catch (Exception malformed) {
-				// guess its not a graph query
-			}
-			try {
-				con.prepareBooleanQuery(queryLn, query).evaluate();
-				return con.prepareBooleanQuery(queryLn, query);
-			}
-			catch (Exception malformed) {
-				// guess its not a boolean query
-			}
-			// let's assume it is an malformed tuple query
-			return con.prepareTupleQuery(queryLn, query);
 		}
 	}
 }

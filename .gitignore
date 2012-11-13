@@ -10,3 +10,6 @@
 # Maven generated stuff
 target/
 */target/
+
+# GEdit generated stuff
+*.*~

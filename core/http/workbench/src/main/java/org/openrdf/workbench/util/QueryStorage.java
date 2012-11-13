@@ -44,6 +44,9 @@ public class QueryStorage {
 			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ;"
 			+ "orwb:rowsPerPage $<rowsPerPage> . }";
 
+	private static final String ASK_EXISTS = ORWB
+			+ "ASK { [] orwb:userName $<userName> ; orwb:queryName $<queryName> ; orwb:repository $<repository> . }";
+
 	private static final String FILTER = "FILTER (?user == $<userName> || ?user == “” ) }";
 
 	private static final String DELETE = ORWB + "DELETE WHERE { $<query> orwb:userName ?user ; ?p ?o . "
@@ -96,9 +99,9 @@ public class QueryStorage {
 	 * @return true, if it is possible to request the size of the repository with
 	 *         the given credentials
 	 */
-	public boolean checkAccess(final String url, final String user, final String password) {
+	public boolean checkAccess(final URL url, final String user, final String password) {
 		boolean rval = true;
-		final HTTPRepository remote = new HTTPRepository(url);
+		final HTTPRepository remote = new HTTPRepository(url.toString());
 		remote.setUsernameAndPassword(user, password);
 		try {
 			remote.getConnection().size();
@@ -146,9 +149,24 @@ public class QueryStorage {
 		}
 		final QueryStringBuilder save = new QueryStringBuilder(SAVE);
 		save.replaceRepository(repository);
-		save.replace("$<queryName>", QueryStringBuilder.quote(queryName));
+		save.replaceQueryName(queryName);
 		save.replaceUpdateFields(userName, shared, queryLanguage, queryText, rowsPerPage);
 		updateQueryRepository(save.toString());
+	}
+
+	public boolean askExists(final URL repository, final String queryName, final String userName)
+		throws QueryEvaluationException, RepositoryException, MalformedQueryException {
+		final QueryStringBuilder ask = new QueryStringBuilder(ASK_EXISTS);
+		ask.replaceRepository(repository);
+		ask.replaceQueryName(queryName);
+		ask.replaceUserName(userName);
+		final RepositoryConnection connection = this.queries.getConnection();
+		try {
+			return connection.prepareBooleanQuery(QueryLanguage.SPARQL, ask.toString()).evaluate();
+		}
+		finally {
+			connection.close();
+		}
 	}
 
 	/**

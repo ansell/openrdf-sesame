@@ -36,10 +36,6 @@ public class WorkbenchGateway extends BaseServlet {
 
 	protected static final String TRANSFORMATIONS = "transformations";
 
-	protected static final String SERVER_USER = "server-user";
-
-	protected static final String SERVER_PASSWORD = "server-password";
-
 	/**
 	 * Thread-safe map of server paths to their WorkbenchServlet instances.
 	 */

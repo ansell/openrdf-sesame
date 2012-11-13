@@ -100,6 +100,36 @@ function addParam(sb, name, id) {
 	sb[sb.length] = '&';
 }
 
+function createXMLHttpRequest() {
+   try { 
+	   return new XMLHttpRequest(); 
+   } catch(e) {}
+   try { 
+	   return new ActiveXObject("Msxml2.XMLHTTP"); 
+   } catch (e) {}
+   alert("XMLHttpRequest not supported");
+   return null;
+}
+
+function ajaxSave(url) {
+	var request = createXMLHttpRequest();
+	request.open("post", url, true); // Server stuck in a loop.
+	var requestTimer = setTimeout(function() {
+		request.abort();
+	    // TODO Handle timeout situation, e.g. Retry or inform user.
+	    }, 5000);
+	request.onreadystatechange = function() {
+	     if (xhReq.readyState != 4)  { return; }
+	     clearTimeout(requestTimer);
+	     if (xhReq.status != 200)  {
+	       // TODO Handle error, e.g. Display error message on page
+	       return;
+	     }
+	     var serverResponse = xhReq.responseText;
+	     // TODO Handle successful response
+	   };
+}
+
 /* MSIE6 does not like XSLT w/ this query string, so we use URL parameters. */
 function doSubmit() {
 	if (document.getElementById('query').value.length >= 1000) {
@@ -115,7 +145,8 @@ function doSubmit() {
 		}
 
 		addParam(url, 'action');
-		if (document.getElementById('action').value == 'save') {
+		var save = (document.getElementById('action').value == 'save');
+		if (save) {
 			addParam(url, 'query-name');
 			addParam(url, 'save-private');
 		}
@@ -123,7 +154,12 @@ function doSubmit() {
 		addParam(url, 'query');
 		addParam(url, 'limit');
 		addParam(url, 'infer');
-		document.location.href = url.join('');
+		var href = url.join('');
+		if (save) {
+			ajaxSave(href);
+		} else {
+			document.location.href = href;
+		}
 		return false;
 	}
 }
