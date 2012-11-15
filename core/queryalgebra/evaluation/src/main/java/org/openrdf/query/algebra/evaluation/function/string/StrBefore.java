@@ -43,8 +43,7 @@ public class StrBefore implements Function {
 			Literal rightLit = (Literal)rightArg;
 
 			
-			// STRBEFORE function accepts only string literals 
-			if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit))
+			if (QueryEvaluationUtil.compatibleArguments(leftLit, rightLit))
 			{
 				String leftLanguage = leftLit.getLanguage();
 				URI leftDt = leftLit.getDatatype();
@@ -57,6 +56,11 @@ public class StrBefore implements Function {
 				String substringBefore = "";
 				if (index > -1) {
 					substringBefore = lexicalValue.substring(0, index);
+				}
+				else {
+					// no match, return empty string with no language or datatype
+					leftLanguage = null;
+					leftDt = null;
 				}
 				
 				if (leftLanguage != null) {

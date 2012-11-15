@@ -2,6 +2,8 @@
 
 Sesame is an extensible Java framework for storing, querying and inferencing for RDF. It can be deployed as a web server or used as a Java library. Features include several query languages (SeRQL and SPARQL), inferencing support, and RAM, disk, or RDBMS storage. Additionally, the central APIs of Sesame are storage-independent and are supported by many third-party RDF database vendors.
 
+Report any issues in the [OpenRDF JIRA issue tracker](https://openrdf.atlassian.net/). 
+
 More information about Sesame can be found at [openRDF.org](http://www.openrdf.org/).
 
 ##Acknowledgements##
@@ -10,6 +12,10 @@ No Open Source project can exist without a community to support it. We
 therefore gratefully list the people and organizations at the heart of the
 OpenRDF community.
 
+###Atlassian Support###
+
+[Atlassian](http://www.atlassian.com/) have generously contributed an Open Source license for us to use their awesome JIRA platform as our [issue tracker](https://openrdf.atlassian.net/). 
+ 
 ###Organizations contributing to Sesame###
 
 In no particular order, these companies and organizations have all contributed to Sesame development:

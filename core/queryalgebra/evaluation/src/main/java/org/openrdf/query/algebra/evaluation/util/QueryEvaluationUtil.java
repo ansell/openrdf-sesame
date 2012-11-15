@@ -358,6 +358,28 @@ public class QueryEvaluationUtil {
 	}
 
 	/**
+	 * Checks whether the supplied two literal arguments are 'argument
+	 * compatible' according to the SPARQL definition.
+	 * 
+	 * @param arg1
+	 *        the first argument
+	 * @param arg2
+	 *        the second argument
+	 * @return true iff the two supplied arguments are argument compatible, false
+	 *         otherwise
+	 * @since 2.7.0
+	 * @see http://www.w3.org/TR/sparql11-query/#func-arg-compatibility
+	 */
+	public static boolean compatibleArguments(Literal arg1, Literal arg2) {
+		boolean compatible = ((isSimpleLiteral(arg1) || XMLSchema.STRING.equals(arg1.getDatatype())) && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())))
+				|| (isPlainLiteral(arg1) && isPlainLiteral(arg2) && arg1.getLanguage() != null && arg1.getLanguage().equals(
+						arg2.getLanguage()))
+				|| (isPlainLiteral(arg1) && arg1.getLanguage() != null && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())));
+
+		return compatible;
+	}
+
+	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
 	 * literal" is either a simple literal, a plain literal with language tag, or
 	 * a literal with datatype xsd:string.

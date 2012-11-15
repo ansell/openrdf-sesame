@@ -56,7 +56,6 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
-import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -81,7 +80,6 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -133,6 +131,7 @@ import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
 import org.openrdf.query.parser.sparql.ast.ASTIf;
 import org.openrdf.query.parser.sparql.ast.ASTIn;
 import org.openrdf.query.parser.sparql.ast.ASTInfix;
+import org.openrdf.query.parser.sparql.ast.ASTInlineData;
 import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
 import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIsLiteral;
@@ -179,6 +178,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSHA224;
 import org.openrdf.query.parser.sparql.ast.ASTSHA256;
 import org.openrdf.query.parser.sparql.ast.ASTSHA384;
 import org.openrdf.query.parser.sparql.ast.ASTSHA512;
+import org.openrdf.query.parser.sparql.ast.ASTSTRUUID;
 import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
 import org.openrdf.query.parser.sparql.ast.ASTSample;
 import org.openrdf.query.parser.sparql.ast.ASTSeconds;
@@ -199,6 +199,7 @@ import org.openrdf.query.parser.sparql.ast.ASTSum;
 import org.openrdf.query.parser.sparql.ast.ASTTimezone;
 import org.openrdf.query.parser.sparql.ast.ASTTrue;
 import org.openrdf.query.parser.sparql.ast.ASTTz;
+import org.openrdf.query.parser.sparql.ast.ASTUUID;
 import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
 import org.openrdf.query.parser.sparql.ast.ASTVar;
@@ -327,7 +328,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
-		
+
 		// Apply result ordering
 		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, group);
 
@@ -531,7 +532,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Var projVar = (Var)child.jjtAccept(this, null);
 				ProjectionElem elem = new ProjectionElem(projVar.getName());
 				projElemList.addElement(elem);
-				
+
 				VarCollector whereClauseVarCollector = new VarCollector();
 				result.visit(whereClauseVarCollector);
 
@@ -672,7 +673,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
-		
+
 		// Apply result ordering
 		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
 
@@ -1099,7 +1100,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		super.visit(node, null);
 
-		// remove filter conditions from graph pattern for inclusion as conditions in the OptionalTE
+		// remove filter conditions from graph pattern for inclusion as conditions
+		// in the OptionalTE
 		List<ValueExpr> optionalConstraints = graphPattern.removeAllConstraints();
 		TupleExpr optional = graphPattern.buildTupleExpr();
 
@@ -1684,7 +1686,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
-	 protected class VarCollector extends QueryModelVisitorBase<VisitorException> {
+	protected class VarCollector extends QueryModelVisitorBase<VisitorException> {
 
 		private final Set<Var> collectedVars = new HashSet<Var>();
 
@@ -2243,6 +2245,20 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
+	public FunctionCall visit(ASTUUID node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("UUID", node, 0, 0);
+	}
+	
+	@Override
+	public FunctionCall visit(ASTSTRUUID node, Object data)
+		throws VisitorException
+	{
+		return createFunctionCall("STRUUID", node, 0, 0);
+	}
+	
+	@Override
 	public IRIFunction visit(ASTIRIFunc node, Object data)
 		throws VisitorException
 	{
@@ -2275,6 +2291,35 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		ValueExpr leftArg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 		ValueExpr rightArg = (ValueExpr)node.jjtGetChild(1).jjtAccept(this, null);
 		return new LangMatches(leftArg, rightArg);
+	}
+
+	@Override
+	public BindingSetAssignment visit(ASTInlineData node, Object data)
+		throws VisitorException
+	{
+		
+		BindingSetAssignment bsa = new BindingSetAssignment();
+
+		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
+		List<Var> vars = new ArrayList<Var>(varNodes.size());
+
+		for (ASTVar varNode : varNodes) {
+			Var var = (Var)varNode.jjtAccept(this, data);
+			vars.add(var);
+		}
+
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+
+		for (ASTBindingSet bindingNode : bindingNodes) {
+			BindingSet bindingSet = (BindingSet)bindingNode.jjtAccept(this, vars);
+			bindingSets.add(bindingSet);
+		}
+
+		bsa.setBindingSets(bindingSets);
+
+		graphPattern.addRequiredTE(bsa);
+		return bsa;
 	}
 
 	@Override
