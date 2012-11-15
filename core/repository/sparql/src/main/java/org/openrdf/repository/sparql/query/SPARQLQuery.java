@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -68,6 +69,10 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 			throws HttpException, IOException, QueryEvaluationException
 		{
 			PostMethod post = new PostMethod(getUrl());
+			// We need to encode our data in utf-8 as that allows internationalized
+			// queries.
+			post.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "utf-8");
+			post.getParams().setParameter(HttpMethodParams.HTTP_URI_CHARSET, "utf-8");
 			post.addParameter("query", getQueryString());
 			
 			Dataset dataset = getDataset();
