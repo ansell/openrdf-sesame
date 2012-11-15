@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
@@ -29,7 +31,9 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
+import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
@@ -52,9 +56,24 @@ public class QueryServlet extends TransformationServlet {
 
 	private static final QueryEvaluator EVAL = QueryEvaluator.INSTANCE;
 
+	private QueryStorage storage;
+
 	@Override
 	public String[] getCookieNames() {
 		return new String[] { "limit", "queryLn", "infer", "total_result_count" };
+	}
+
+	@Override
+	public void init(final ServletConfig config)
+		throws ServletException
+	{
+		super.init(config);
+		try {
+			this.storage = QueryStorage.getSingletonInstance(config.getServletContext());
+		}
+		catch (RepositoryException e) {
+			throw new ServletException(e);
+		}
 	}
 
 	@Override
@@ -92,22 +111,21 @@ public class QueryServlet extends TransformationServlet {
 			throw new BadRequestException("Query doPost() is only for 'action=save'.");
 		}
 		final JSONObject json = new JSONObject();
-		final QueryStorage storage = new QueryStorage(this.getServletConfig().getServletContext());
-		final URL repository = this.manager.getLocation();
+
 		final String userName = req.getParameter(SERVER_USER);
-		final String password = req.getParameter(SERVER_PASSWORD);
-		final boolean accessible = storage.checkAccess(repository, userName, password);
+		final boolean accessible = storage.checkAccess((HTTPRepository)this.repository);
 		json.put("accessible", accessible);
 		boolean exists = false;
 		if (accessible) {
 			final String queryName = req.getParameter("query-name");
-			exists = storage.askExists(repository, queryName, userName);
+			exists = storage.askExists((HTTPRepository)repository, queryName, userName);
 			if (!exists) {
 				final boolean shared = Boolean.valueOf(req.getParameter("save-private"));
 				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
 				final String queryText = req.getParameter("query");
 				final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
-				storage.saveQuery(repository, queryName, userName, shared, queryLanguage, queryText, rowsPerPage);
+				storage.saveQuery((HTTPRepository)repository, queryName, userName, shared, queryLanguage,
+						queryText, rowsPerPage);
 			}
 		}
 		json.put("existed", exists);

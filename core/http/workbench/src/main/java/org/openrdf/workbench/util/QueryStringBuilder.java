@@ -58,11 +58,11 @@ public class QueryStringBuilder {
 	/**
 	 * Replace the repository variable with the current repository URL.
 	 * 
-	 * @param repository
+	 * @param url
 	 *        the current repository URL
 	 */
-	protected void replaceRepository(final URL repository) {
-		replace("$<repository>", QueryStringBuilder.uriQuote(repository));
+	protected void replaceRepository(final String url) {
+		replace("$<repository>", QueryStringBuilder.uriQuote(url));
 	}
 	
 	protected void replaceQueryName(final String queryName) {

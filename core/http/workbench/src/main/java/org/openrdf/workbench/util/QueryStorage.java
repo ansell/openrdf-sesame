@@ -12,6 +12,8 @@ import java.net.URL;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.query.MalformedQueryException;
@@ -31,7 +33,24 @@ import org.openrdf.sail.nativerdf.NativeStore;
  * 
  * @author Dale Visser
  */
-public class QueryStorage {
+public final class QueryStorage {
+
+	private static final Object LOCK = new Object();
+
+	private static QueryStorage instance;
+
+	public static QueryStorage getSingletonInstance(final ServletContext context)
+		throws RepositoryException
+	{
+		synchronized (LOCK) {
+			if (instance == null) {
+				instance = new QueryStorage(context);
+			}
+			return instance;
+		}
+	}
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(QueryStorage.class);
 
 	private static final String FOLDER = ".queries";
 
@@ -78,7 +97,7 @@ public class QueryStorage {
 	 * @throws RepositoryException
 	 *         if there is an issue creating the object to access the repository
 	 */
-	public QueryStorage(final ServletContext context)
+	private QueryStorage(final ServletContext context)
 		throws RepositoryException
 	{
 		final String folder = FilenameUtils.concat(context.getRealPath(""), FOLDER);
@@ -90,24 +109,28 @@ public class QueryStorage {
 	 * Checks whether the current user/password credentials can really access the
 	 * current repository.
 	 * 
-	 * @param url
-	 *        the URL of the repository for which queries are saved
-	 * @param user
-	 *        the name of the current user
-	 * @param password
-	 *        the password of the current user
+	 * @param repository
+	 *        the current repository
 	 * @return true, if it is possible to request the size of the repository with
 	 *         the given credentials
+	 * @throws RepositoryException
+	 *         if there is an issue closing the connection
 	 */
-	public boolean checkAccess(final URL url, final String user, final String password) {
+	public boolean checkAccess(final HTTPRepository repository)
+		throws RepositoryException
+	{
+		LOGGER.info("repository: {}" + repository.getRepositoryURL());
 		boolean rval = true;
-		final HTTPRepository remote = new HTTPRepository(url.toString());
-		remote.setUsernameAndPassword(user, password);
+		RepositoryConnection con = null;
 		try {
-			remote.getConnection().size();
+			con = repository.getConnection();
+			con.size();
 		}
 		catch (RepositoryException re) {
 			rval = false;
+		}
+		finally {
+			con.close();
 		}
 		return rval;
 	}
@@ -133,7 +156,7 @@ public class QueryStorage {
 	 *        rows to display per page, may be 0 (all), 10, 50, 100, or 200)
 	 * @throws OpenRDFException
 	 */
-	public void saveQuery(final URL repository, final String queryName, final String userName,
+	public void saveQuery(final HTTPRepository repository, final String queryName, final String userName,
 			final boolean shared, final QueryLanguage queryLanguage, final String queryText,
 			final int rowsPerPage)
 		throws OpenRDFException
@@ -148,16 +171,17 @@ public class QueryStorage {
 			throw new RepositoryException("Illegal value for rows per page: " + rowsPerPage);
 		}
 		final QueryStringBuilder save = new QueryStringBuilder(SAVE);
-		save.replaceRepository(repository);
+		save.replaceRepository(repository.getRepositoryURL());
 		save.replaceQueryName(queryName);
 		save.replaceUpdateFields(userName, shared, queryLanguage, queryText, rowsPerPage);
 		updateQueryRepository(save.toString());
 	}
 
-	public boolean askExists(final URL repository, final String queryName, final String userName)
-		throws QueryEvaluationException, RepositoryException, MalformedQueryException {
+	public boolean askExists(final HTTPRepository repository, final String queryName, final String userName)
+		throws QueryEvaluationException, RepositoryException, MalformedQueryException
+	{
 		final QueryStringBuilder ask = new QueryStringBuilder(ASK_EXISTS);
-		ask.replaceRepository(repository);
+		ask.replaceRepository(repository.getRepositoryURL());
 		ask.replaceQueryName(queryName);
 		ask.replaceUserName(userName);
 		final RepositoryConnection connection = this.queries.getConnection();
@@ -240,12 +264,12 @@ public class QueryStorage {
 	 * @throws QueryEvaluationException
 	 *         if there is a problem while attempting to evaluate the query
 	 */
-	public TupleQueryResult selectQueries(final URL repository, final String userName)
+	public TupleQueryResult selectQueries(final HTTPRepository repository, final String userName)
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT);
 		select.replaceUserName(userName);
-		select.replaceRepository(repository);
+		select.replaceRepository(repository.getRepositoryURL());
 		final RepositoryConnection connection = this.queries.getConnection();
 		try {
 			return connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString()).evaluate();
