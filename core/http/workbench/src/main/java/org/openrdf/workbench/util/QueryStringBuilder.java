@@ -62,7 +62,15 @@ public class QueryStringBuilder {
 	 *        the current repository URL
 	 */
 	protected void replaceRepository(final String url) {
-		replace("$<repository>", QueryStringBuilder.uriQuote(url));
+		replaceURIParameter("$<repository>", url);
+	}
+	
+	protected void replaceQueryReference(final String urn) {
+		replaceURIParameter("$<query>", urn);
+	}
+	
+	private void replaceURIParameter(final String parameter, final String uri) {
+		replace(parameter, QueryStringBuilder.uriQuote(uri));
 	}
 	
 	protected void replaceQueryName(final String queryName) {
@@ -142,7 +150,7 @@ public class QueryStringBuilder {
 	 * @param uri an object whose toString() returns a URI or URL
 	 * @return a string quoting the given URI with angle brackets
 	 */
-	protected static String uriQuote(final Object uri) {
+	private static String uriQuote(final Object uri) {
 		return quote(uri.toString(), "<", ">");
 	}
 

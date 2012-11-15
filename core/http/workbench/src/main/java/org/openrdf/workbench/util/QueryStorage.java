@@ -7,7 +7,7 @@ package org.openrdf.workbench.util;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
+import java.util.UUID;
 
 import javax.servlet.ServletContext;
 
@@ -57,8 +57,7 @@ public final class QueryStorage {
 	private static final String ORWB = "PREFIX orwb: <https://openrdf.org/workbench/>\n";
 
 	private static final String SAVE = "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>\n" + ORWB
-			+ "INSERT DATA { BIND (UUID() AS ?query)\n"
-			+ "?query orwb:userName $<userName> ; orwb:queryName $<queryName> ; "
+			+ "INSERT DATA { $<query> orwb:userName $<userName> ; orwb:queryName $<queryName> ; "
 			+ "orwb:repository $<repository> ; orwb:shared $<shared> ; "
 			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ;"
 			+ "orwb:rowsPerPage $<rowsPerPage> . }";
@@ -74,7 +73,7 @@ public final class QueryStorage {
 	private static final String MATCH = "orwb:shared ?s ; orwb:queryLanguage ?ql ; orwb:query ?q ; orwb:rowsPerPage ?rpp . }\n";
 
 	private static final String UPDATE = ORWB + "DELETE { $<query> " + MATCH
-			+ "INSERT { ?<query> orwb:shared $<shared> ; "
+			+ "INSERT { $<query> orwb:shared $<shared> ; "
 			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ; "
 			+ "orwb:rowsPerPage $<rowsPerPage> . }\n" + "WHERE { $<query> orwb:userName ?user ; " + MATCH
 			+ FILTER;
@@ -119,7 +118,7 @@ public final class QueryStorage {
 	public boolean checkAccess(final HTTPRepository repository)
 		throws RepositoryException
 	{
-		LOGGER.info("repository: {}" + repository.getRepositoryURL());
+		LOGGER.info("repository: {}", repository.getRepositoryURL());
 		boolean rval = true;
 		RepositoryConnection con = null;
 		try {
@@ -172,6 +171,7 @@ public final class QueryStorage {
 		}
 		final QueryStringBuilder save = new QueryStringBuilder(SAVE);
 		save.replaceRepository(repository.getRepositoryURL());
+		save.replaceQueryReference("urn:uuid:" + UUID.randomUUID());
 		save.replaceQueryName(queryName);
 		save.replaceUpdateFields(userName, shared, queryLanguage, queryText, rowsPerPage);
 		updateQueryRepository(save.toString());
@@ -208,7 +208,7 @@ public final class QueryStorage {
 	{
 		final QueryStringBuilder delete = new QueryStringBuilder(DELETE);
 		delete.replaceUserName(userName);
-		delete.replace("$<query>", QueryStringBuilder.uriQuote(query));
+		delete.replaceQueryReference(query.toString());
 		updateQueryRepository(delete.toString());
 	}
 
