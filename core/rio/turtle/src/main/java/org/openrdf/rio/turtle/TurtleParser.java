@@ -199,6 +199,7 @@ public class TurtleParser extends RDFParserBase {
 	{
 		int c = peek();
 
+		// TODO: Allow for BASE and PREFIX from SPARQL here, in addition to @base and @prefix
 		if (c == '@') {
 			parseDirective();
 			skipWSC();
@@ -214,6 +215,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
+		// TODO: Allow for BASE and PREFIX from SPARQL here, in addition to @base and @prefix
 		// Verify that the first characters form the string "prefix"
 		verifyCharacter(read(), "@");
 
