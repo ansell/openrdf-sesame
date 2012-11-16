@@ -171,8 +171,8 @@ public class TurtleParser extends RDFParserBase {
 		// Start counting lines at 1:
 		lineReader.setLineNumber(1);
 
-		// Allow at most 2 characters to be pushed back:
-		this.reader = new PushbackReader(lineReader, 2);
+		// Allow at most 7 characters to be pushed back:
+		this.reader = new PushbackReader(lineReader, 7);
 
 		// Store normalized base URI
 		setBaseURI(baseURI);
