@@ -172,7 +172,7 @@ public class TurtleParser extends RDFParserBase {
 		lineReader.setLineNumber(1);
 
 		// Allow at most 7 characters to be pushed back:
-		this.reader = new PushbackReader(lineReader, 7);
+		this.reader = new PushbackReader(lineReader, 8);
 
 		// Store normalized base URI
 		setBaseURI(baseURI);
@@ -197,48 +197,57 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseStatement()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		
+		StringBuilder sb = new StringBuilder(8);
 
-		// TODO: Allow for BASE and PREFIX from SPARQL here, in addition to @base and @prefix
-		if (c == '@') {
-			parseDirective();
+		int c;
+		// longest valid directive @prefix
+		do {
+			c = read();
+			if(c == -1 || TurtleUtil.isWhitespace(c)) {
+				unread(c);
+				break;
+			}
+			sb.append((char)c);
+		} while (sb.length() < 8);
+		
+		String directive = sb.toString();
+		System.out.println("directive="+directive);
+		
+		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("base")) {
+			parseDirective(directive);
 			skipWSC();
-			verifyCharacter(read(), ".");
+			// SPARQL BASE and PREFIX lines do not end in .
+			if(directive.startsWith("@")) {
+				verifyCharacter(read(), ".");
+			}
 		}
 		else {
+			unread(directive);
 			parseTriples();
 			skipWSC();
 			verifyCharacter(read(), ".");
 		}
 	}
 
-	protected void parseDirective()
+	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		// TODO: Allow for BASE and PREFIX from SPARQL here, in addition to @base and @prefix
 		// Verify that the first characters form the string "prefix"
-		verifyCharacter(read(), "@");
+		//verifyCharacter(read(), "@");
 
-		StringBuilder sb = new StringBuilder(8);
-
-		int c = read();
-		while (c != -1 && !TurtleUtil.isWhitespace(c)) {
-			sb.append((char)c);
-			c = read();
-		}
-
-		String directive = sb.toString();
-		if (directive.equalsIgnoreCase("prefix")) {
+		if (directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("@prefix")) {
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("base")) {
+		else if (directive.equalsIgnoreCase("base") || directive.equalsIgnoreCase("@base")) {
 			parseBase();
 		}
 		else if (directive.length() == 0) {
 			reportFatalError("Directive name is missing, expected @prefix or @base");
 		}
 		else {
-			reportFatalError("Unknown directive \"@" + directive + "\"");
+			reportFatalError("Unknown directive \"" + directive + "\"");
 		}
 	}
 
@@ -1061,6 +1070,14 @@ public class TurtleParser extends RDFParserBase {
 			reader.unread(c);
 		}
 	}
+
+	protected void unread(String directive)
+			throws IOException
+		{
+			for(int i = directive.length()-1; i >=0; i--) {
+				reader.unread(directive.charAt(i));
+			}
+		}
 
 	protected int peek()
 		throws IOException
