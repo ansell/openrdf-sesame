@@ -10,6 +10,9 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.IncompatibleOperationException;
@@ -42,6 +45,7 @@ import org.openrdf.query.parser.sparql.ast.TokenMgrError;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 public class SPARQLParser implements QueryParser {
+	private static final Logger logger = LoggerFactory.getLogger(SPARQLParser.class);
 
 	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
 		throws MalformedQueryException
@@ -193,7 +197,7 @@ public class SPARQLParser implements QueryParser {
 	public static void main(String[] args)
 		throws java.io.IOException
 	{
-		System.out.println("Your SPARQL query:");
+		logger.info("Your SPARQL query:");
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
@@ -210,14 +214,11 @@ public class SPARQLParser implements QueryParser {
 						ParsedOperation parsedQuery = QueryParserUtil.parseOperation(QueryLanguage.SPARQL,
 								queryStr, null);
 
-						System.out.println("Parsed query: ");
-						System.out.println(parsedQuery.toString());
-						System.out.println();
-
+						logger.info("Parsed query: ");
+						logger.info(parsedQuery.toString());
 					}
 					catch (Exception e) {
-						System.err.println(e.getMessage());
-						e.printStackTrace();
+						logger.error(e.getMessage(), e);
 					}
 				}
 				buf.setLength(0);
