@@ -857,6 +857,7 @@ public class TurtleParser extends RDFParserBase {
 
 		// Unescape any escape sequences
 		try {
+			// FIXME: The following decodes \n and similar in URIs, which should be invalid according to test <turtle-syntax-bad-uri-04.ttl>
 			uri = TurtleUtil.decodeString(uri);
 		}
 		catch (IllegalArgumentException e) {
