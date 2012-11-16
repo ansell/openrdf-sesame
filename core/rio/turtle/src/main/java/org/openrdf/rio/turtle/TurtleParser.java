@@ -226,10 +226,10 @@ public class TurtleParser extends RDFParserBase {
 		}
 
 		String directive = sb.toString();
-		if (directive.equals("prefix")) {
+		if (directive.equalsIgnoreCase("prefix")) {
 			parsePrefixID();
 		}
-		else if (directive.equals("base")) {
+		else if (directive.equalsIgnoreCase("base")) {
 			parseBase();
 		}
 		else if (directive.length() == 0) {
