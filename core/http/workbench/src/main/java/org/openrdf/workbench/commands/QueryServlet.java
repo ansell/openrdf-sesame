@@ -119,7 +119,7 @@ public class QueryServlet extends TransformationServlet {
 			final String queryName = req.getParameter("query-name");
 			exists = storage.askExists((HTTPRepository)repository, queryName, userName);
 			if (!exists) {
-				final boolean shared = Boolean.valueOf(req.getParameter("save-private"));
+				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
 				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
 				final String queryText = req.getParameter("query");
 				final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));

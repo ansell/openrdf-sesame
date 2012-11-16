@@ -59,7 +59,7 @@ public final class QueryStorage {
 	private static final String SAVE = "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>\n" + ORWB
 			+ "INSERT DATA { $<query> orwb:userName $<userName> ; orwb:queryName $<queryName> ; "
 			+ "orwb:repository $<repository> ; orwb:shared $<shared> ; "
-			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ;"
+			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ; "
 			+ "orwb:rowsPerPage $<rowsPerPage> . }";
 
 	private static final String ASK_EXISTS = ORWB
@@ -282,6 +282,7 @@ public final class QueryStorage {
 	private void updateQueryRepository(final String update)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
+		LOGGER.info("SPARQL/Update of Query Storage:\n--\n{}\n--", update);
 		final RepositoryConnection connection = this.queries.getConnection();
 		try {
 			connection.prepareUpdate(QueryLanguage.SPARQL, update).execute();
