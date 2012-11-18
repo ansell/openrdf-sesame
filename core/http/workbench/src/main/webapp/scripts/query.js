@@ -59,9 +59,13 @@ function disableSaveIfNotValidName() {
 	var save = document.getElementById('save');
 	var valid = /^[- \w]{1,32}$/
 	save.disabled = !valid.test(name.value);
+	clearFeedback();
+}
+
+function clearFeedback() {
 	var feedback = document.getElementById('save-feedback');
 	feedback.className = '';
-	feedback.innerHTML = '';
+	feedback.innerHTML = '';	
 }
 
 function handleNameChange() {
@@ -75,11 +79,19 @@ function addSaveNameHandler() {
 	name.oncut = handleNameChange;
 }
 
+function addQueryChangeHandler() {
+	var query = document.getElementById('query');
+	query.onkeydown = clearFeedback;
+	query.onpaste = clearFeedback;
+	query.oncut = clearFeedback;
+}
+
 addLoad(function() {
 	populateParameters();
 	loadNamespaces();
 	addClickHandlers();
 	addSaveNameHandler();
+	addQueryChangeHandler();
 });
 
 function addParam(sb, name, id) {
