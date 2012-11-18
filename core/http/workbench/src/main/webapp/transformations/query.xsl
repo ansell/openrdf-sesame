@@ -91,6 +91,7 @@
 								disabled="true" />
 							<input id="query-name" name="query-name" type="text" size="32"
 								maxlength="32" value="" />
+							<span id="save-feedback"></span>
 						</td>
 					</tr>
 				</tbody>

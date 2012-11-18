@@ -59,6 +59,9 @@ function disableSaveIfNotValidName() {
 	var save = document.getElementById('save');
 	var valid = /^[- \w]{1,32}$/
 	save.disabled = !valid.test(name.value);
+	var feedback = document.getElementById('save-feedback');
+	feedback.className = '';
+	feedback.innerHTML = '';
 }
 
 function handleNameChange() {
@@ -120,16 +123,23 @@ function ajaxSave(url) {
 		// TODO Handle timeout situation, e.g. Retry or inform user.
 	}, 5000);
 	request.onreadystatechange = function() {
-		if (request.readyState != 4) {
-			return;
+		if (request.readyState == 4) {
+			clearTimeout(requestTimer);
+			var feedback = document.getElementById('save-feedback');
+			if (request.status == 200) {
+				var response = JSON.parse(request.responseText);
+				if (response.existed) {
+					feedback.className = 'error';
+					feedback.innerHTML = 'Query name existed. Try again.';
+				} else {
+					feedback.className = 'success';
+					feedback.innerHTML = 'Query saved.';	
+				}
+			} else {
+				feedback.className = 'error';
+				feedback.innerHTML = 'Failure: Response Status = ' + request.status;
+			}
 		}
-		clearTimeout(requestTimer);
-		if (request.status != 200) {
-			// TODO Handle error, e.g. Display error message on page
-			return;
-		}
-		var serverResponse = request.responseText;
-		// TODO Handle successful response
 	};
 	request.open("post", url, true); // true => async handling
 	request.send(); // noarg => all data in URL
