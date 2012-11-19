@@ -141,6 +141,11 @@
 			</param-value>
 		</init-param>
 		<init-param>
+			<param-name>/saved-queries</param-name>
+			<param-value>org.openrdf.workbench.commands.SavedQueriesServlet
+			</param-value>
+		</init-param>
+		<init-param>
 			<param-name>/export</param-name>
 			<param-value>org.openrdf.workbench.commands.ExportServlet
 			</param-value>

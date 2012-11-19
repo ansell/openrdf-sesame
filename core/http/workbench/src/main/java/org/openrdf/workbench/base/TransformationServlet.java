@@ -25,6 +25,8 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class TransformationServlet extends BaseRepositoryServlet {
 
+	protected static final String INFO = "info";
+
 	private static final String COOKIE_AGE_PARAM = "cookie-max-age";
 
 	private static final String TRANSFORMATIONS_PARAM = "transformations";

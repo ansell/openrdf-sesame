@@ -47,8 +47,6 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class QueryServlet extends TransformationServlet {
 
-	private static final String INFO = "info";
-
 	private static final String ACCEPT = "Accept";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);

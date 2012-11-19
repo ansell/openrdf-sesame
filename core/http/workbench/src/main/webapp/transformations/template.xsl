@@ -220,6 +220,11 @@
 			<xsl:with-param name="disabled" select="$disabled" />
 		</xsl:call-template>
 		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$saved-queries.label" />
+			<xsl:with-param name="href" select="'saved-queries'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
 			<xsl:with-param name="label" select="$export.label" />
 			<xsl:with-param name="href" select="'export'" />
 			<xsl:with-param name="disabled" select="$disabled" />
