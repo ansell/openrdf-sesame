@@ -5,12 +5,12 @@
 
 	<xsl:include href="../locale/messages.xsl" />
 
-	<xsl:variable name="title">
-		<xsl:value-of select="$saved-queries.title" />
-	</xsl:variable>
+	<xsl:variable name="title" select="$saved-queries.title" />
 
 	<xsl:include href="template.xsl" />
 
-	<xsl:template match="sparql:sparql">
-	</xsl:template>
+	<xsl:variable name="user"
+		select="normalize-space($info//sparql:binding[@name='server-user'])" />
+
+	<xsl:template match="sparql:sparql"></xsl:template>
 </xsl:stylesheet>

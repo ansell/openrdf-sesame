@@ -19,6 +19,7 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
@@ -36,6 +37,8 @@ import org.openrdf.sail.nativerdf.NativeStore;
 public final class QueryStorage {
 
 	private static final Object LOCK = new Object();
+
+	private static final QueryEvaluator EVAL = QueryEvaluator.INSTANCE;
 
 	private static QueryStorage instance;
 
@@ -65,7 +68,7 @@ public final class QueryStorage {
 	private static final String ASK_EXISTS = ORWB
 			+ "ASK { [] orwb:userName $<userName> ; orwb:queryName $<queryName> ; orwb:repository $<repository> . }";
 
-	private static final String FILTER = "FILTER (?user == $<userName> || ?user == “” ) }";
+	private static final String FILTER = "FILTER (?user = $<userName> || ?user = “” ) }";
 
 	private static final String DELETE = ORWB + "DELETE WHERE { $<query> orwb:userName ?user ; ?p ?o . "
 			+ FILTER;
@@ -82,8 +85,8 @@ public final class QueryStorage {
 			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?rowsPerPage "
 			+ "{ ?query orwb:repository $<repository> ; orwb:userName ?user ; orwb:queryName ?queryName ; "
 			+ "orwb:shared ?shared ; orwb:queryLanguage ?queryLn ; orwb:query ?queryText ; "
-			+ "orwb:rowsPerPage ?rowsPerPage .\n" + "FILTER (?user == $<user> || ?user == “” || ?shared) }\n"
-			+ "ORDER BY ?user ?queryName";
+			+ "orwb:rowsPerPage ?rowsPerPage .\n"
+			+ "FILTER (?user = $<userName> || ?user = \"\" || ?shared) }\n" + "ORDER BY ?user ?queryName";
 
 	private final Repository queries;
 
@@ -245,16 +248,17 @@ public final class QueryStorage {
 	}
 
 	/**
-	 * Executes a query to retrieve the queries accessible to the given user in
-	 * the given repository. The query result will have the following binding
-	 * names: query, user, queryName, shared, queryLn, queryText, rowsPerPage. It
-	 * is the responsibility of the calling code to call checkAccess() with the
-	 * full credentials first.
+	 * Prepares a query to retrieve the queries accessible to the given user in
+	 * the given repository. When evaluated, the query result will have the
+	 * following binding names: query, user, queryName, shared, queryLn,
+	 * queryText, rowsPerPage. It is the responsibility of the calling code to
+	 * call checkAccess() with the full credentials first.
 	 * 
 	 * @param repository
 	 *        that the saved queries run against
 	 * @param userName
 	 *        that is requesting the saved queries
+	 * @param builder
 	 * @return a query result listing all the saved queries against the given
 	 *         repository and accessible to the given user
 	 * @throws RepositoryException
@@ -264,7 +268,8 @@ public final class QueryStorage {
 	 * @throws QueryEvaluationException
 	 *         if there is a problem while attempting to evaluate the query
 	 */
-	public TupleQueryResult selectQueries(final HTTPRepository repository, final String userName)
+	public void selectSavedQueries(final HTTPRepository repository, final String userName,
+			final TupleResultBuilder builder)
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT);
@@ -272,7 +277,8 @@ public final class QueryStorage {
 		select.replaceRepository(repository.getRepositoryURL());
 		final RepositoryConnection connection = this.queries.getConnection();
 		try {
-			return connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString()).evaluate();
+			EVAL.evaluateTupleQuery(builder,
+					connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString()));
 		}
 		finally {
 			connection.close();
