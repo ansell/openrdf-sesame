@@ -20,6 +20,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
@@ -29,24 +32,26 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 
 	private static final String COOKIE_AGE_PARAM = "cookie-max-age";
 
-	private static final String TRANSFORMATIONS_PARAM = "transformations";
+	private static final String TRANSFORMATIONS = "transformations";
 
-	private Map<String, String> defaults = new HashMap<String, String>();
+	private static final Logger LOGGER = LoggerFactory.getLogger(TransformationServlet.class);
+
+	private final Map<String, String> defaults = new HashMap<String, String>();
 
 	@Override
-	public void init(ServletConfig config)
+	public void init(final ServletConfig config)
 		throws ServletException
 	{
 		super.init(config);
-		if (config.getInitParameter(TRANSFORMATIONS_PARAM) == null)
-			throw new MissingInitParameterException(TRANSFORMATIONS_PARAM);
+		if (config.getInitParameter(TRANSFORMATIONS) == null) {
+			throw new MissingInitParameterException(TRANSFORMATIONS);
+		}
 		if (config != null) {
-			Enumeration<?> names = config.getInitParameterNames();
+			final Enumeration<?> names = config.getInitParameterNames();
 			while (names.hasMoreElements()) {
-				String name = (String)names.nextElement();
-				String value = config.getInitParameter(name);
+				final String name = (String)names.nextElement();
 				if (name.startsWith("default-")) {
-					defaults.put(name.substring("default-".length()), value);
+					defaults.put(name.substring("default-".length()), config.getInitParameter(name));
 				}
 			}
 		}
@@ -56,7 +61,7 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		return new String[0];
 	}
 
-	public final void service(HttpServletRequest req, HttpServletResponse resp)
+	public final void service(final HttpServletRequest req, final HttpServletResponse resp)
 		throws ServletException, IOException
 	{
 		if (req.getCharacterEncoding() == null) {
@@ -65,13 +70,13 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		resp.setCharacterEncoding("UTF-8");
 		resp.setDateHeader("Expires", new Date().getTime() - 10000L);
 		resp.setHeader("Cache-Control", "no-cache, no-store");
-		
-		String contextPath = req.getContextPath();
-		String path = config.getInitParameter(TRANSFORMATIONS_PARAM);
-		String xslPath = contextPath + path;
+
+		final String contextPath = req.getContextPath();
+		final String path = config.getInitParameter(TRANSFORMATIONS);
+		final String xslPath = contextPath + path;
 		try {
-			WorkbenchRequest wreq = new WorkbenchRequest(repository, req, defaults);
-			
+			final WorkbenchRequest wreq = new WorkbenchRequest(repository, req, defaults);
+
 			updateCookies(wreq, resp);
 			if ("POST".equals(req.getMethod())) {
 				doPost(wreq, resp, xslPath);
@@ -88,25 +93,27 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		}
 	}
 
-	protected void doPost(WorkbenchRequest wreq, HttpServletResponse resp, String xslPath)
+	protected void doPost(final WorkbenchRequest wreq, final HttpServletResponse resp, final String xslPath)
 		throws Exception
 	{
 		service(wreq, resp, xslPath);
 	}
 
-	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws Exception
 	{
 		resp.setContentType("application/xml");
 		service(resp.getWriter(), xslPath);
 	}
 
-	protected void service(PrintWriter writer, String xslPath)
+	protected void service(final PrintWriter writer, final String xslPath)
 		throws Exception
 	{
+		LOGGER.info("Call made to empty superclass implementation of service(PrintWriter,String) for path: {}",
+				xslPath);
 	}
 
-	private void updateCookies(WorkbenchRequest req, HttpServletResponse resp) {
+	private void updateCookies(final WorkbenchRequest req, final HttpServletResponse resp) {
 		for (String name : getCookieNames()) {
 			if (req.isParameterPresent(name)) {
 				addCookie(req, resp, name);
@@ -114,52 +121,52 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		}
 	}
 
-	private void addCookie(WorkbenchRequest req, HttpServletResponse resp, String name) {
-		Cookie cookie = new Cookie(name, req.getParameter(name));
-		if (req.getContextPath() != null) {
-			cookie.setPath(req.getContextPath());
+	private void addCookie(final WorkbenchRequest req, final HttpServletResponse resp, final String name) {
+		final Cookie cookie = new Cookie(name, req.getParameter(name));
+		if (null == req.getContextPath()) {
+			cookie.setPath("/");
 		}
 		else {
-			cookie.setPath("/");
+			cookie.setPath(req.getContextPath());
 		}
 		cookie.setMaxAge(parseInt(config.getInitParameter(COOKIE_AGE_PARAM)));
 		addCookie(req, resp, cookie);
 	}
 
-	private void addCookie(WorkbenchRequest req, HttpServletResponse resp, Cookie cookie) {
-		Cookie[] cookies = req.getCookies();
+	private void addCookie(final WorkbenchRequest req, final HttpServletResponse resp, final Cookie cookie) {
+		final Cookie[] cookies = req.getCookies();
 		if (cookies != null) {
 			for (Cookie c : cookies) {
-				if (cookie.getName().equals(c.getName())) {
-					if (cookie.getValue().equals(c.getValue())) {
-						// cookie already exists
-						// tell the browser we are using it
-						resp.addHeader("Vary", "Cookie");
-					}
+				if (cookie.getName().equals(c.getName()) && cookie.getValue().equals(c.getValue())) {
+					// cookie already exists
+					// tell the browser we are using it
+					resp.addHeader("Vary", "Cookie");
 				}
 			}
 		}
 		resp.addCookie(cookie);
 	}
-	
+
 	/**
-	 * Add a 'total_result_count' cookie. Used by both QueryServlet and 
+	 * Add a 'total_result_count' cookie. Used by both QueryServlet and
 	 * ExploreServlet.
 	 * 
-	 * @param req the request object
-	 * @param resp the response object
+	 * @param req
+	 *        the request object
+	 * @param resp
+	 *        the response object
 	 * @value the value to give the cookie
 	 */
-	protected void addTotalResultCountCookie(WorkbenchRequest req, 
-			HttpServletResponse resp, int value) {
-		final Cookie cookie = 
-				new Cookie("total_result_count", String.valueOf(value));
-		if (req.getContextPath() != null) {
-			cookie.setPath(req.getContextPath());
-		} else {
+	protected void addTotalResultCountCookie(final WorkbenchRequest req, final HttpServletResponse resp,
+			final int value)
+	{
+		final Cookie cookie = new Cookie("total_result_count", String.valueOf(value));
+		if (null == req.getContextPath()) {
 			cookie.setPath("/");
 		}
-		
+		else {
+			cookie.setPath(req.getContextPath());
+		}
 		cookie.setMaxAge(Integer.parseInt(config.getInitParameter(COOKIE_AGE_PARAM)));
 		this.addCookie(req, resp, cookie);
 	}
