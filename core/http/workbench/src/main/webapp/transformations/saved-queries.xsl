@@ -9,8 +9,50 @@
 
 	<xsl:include href="template.xsl" />
 
-	<xsl:variable name="user"
-		select="normalize-space($info//sparql:binding[@name='server-user'])" />
-
-	<xsl:template match="sparql:sparql"></xsl:template>
+	<xsl:template match="sparql:sparql/sparql:results">
+		<xsl:for-each select="sparql:result">
+			<table>
+				<tr>
+					<th>User</th>
+					<td>
+						<xsl:value-of select="sparql:binding[@name='user']" />
+					</td>
+					<td rowspan="6">
+						<pre>
+							<xsl:value-of select="sparql:binding[@name='queryText']" />
+						</pre>
+					</td>
+				</tr>
+				<tr>
+					<th>Query Name</th>
+					<td>
+						<xsl:value-of select="sparql:binding[@name='queryName']" />
+					</td>
+				</tr>
+				<tr>
+					<th>Query Language</th>
+					<td>
+						<xsl:value-of select="sparql:binding[@name='queryLn']" />
+					</td>
+				</tr>
+				<tr>
+					<th>Rows Per Page</th>
+					<td>
+						<xsl:value-of select="sparql:binding[@name='rowsPerPage']" />
+					</td>
+				</tr>
+				<tr>
+					<th>Shared</th>
+					<td>
+						<xsl:value-of select="sparql:binding[@name='shared']" />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						ExecuteButton EditButton
+					</td>
+				</tr>
+			</table>
+		</xsl:for-each>
+	</xsl:template>
 </xsl:stylesheet>

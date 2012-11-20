@@ -132,7 +132,8 @@ function ajaxSave(url) {
 	var request = createXMLHttpRequest();
 	var requestTimer = setTimeout(function() {
 		request.abort();
-		// TODO Handle timeout situation, e.g. Retry or inform user.
+		feedback.className = 'error';
+		feedback.innerHTML = 'Timed out waiting for response. Uncertain if save occured.';
 	}, 5000);
 	request.onreadystatechange = function() {
 		if (request.readyState == 4) {
