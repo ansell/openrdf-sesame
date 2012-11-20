@@ -11,7 +11,8 @@
 
 	<xsl:template match="sparql:sparql/sparql:results">
 		<xsl:for-each select="sparql:result">
-			<table>
+			<script src="../../scripts/saved-queries.js" type="text/javascript"></script>
+			<table class="data">
 				<tr>
 					<th>User</th>
 					<td>
