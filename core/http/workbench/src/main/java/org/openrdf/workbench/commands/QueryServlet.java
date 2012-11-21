@@ -102,31 +102,27 @@ public class QueryServlet extends TransformationServlet {
 		throws IOException, BadRequestException, MalformedURLException, OpenRDFException, JSONException
 	{
 		resp.setContentType("application/json");
-		final PrintWriter out = resp.getWriter();
-		final PrintWriter writer = new PrintWriter(new BufferedWriter(out));
 		if (!"save".equals(req.getParameter("action"))) {
 			throw new BadRequestException("Query doPost() is only for 'action=save'.");
 		}
 		final JSONObject json = new JSONObject();
-
-		final String userName = req.getParameter(SERVER_USER);
 		final boolean accessible = storage.checkAccess((HTTPRepository)this.repository);
 		json.put("accessible", accessible);
-		boolean exists = false;
 		if (accessible) {
+			final HTTPRepository http = (HTTPRepository)repository;
 			final String queryName = req.getParameter("query-name");
-			exists = storage.askExists((HTTPRepository)repository, queryName, userName);
-			if (!exists) {
-				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
-				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
-				final String queryText = req.getParameter("query");
-				final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
-				storage.saveQuery((HTTPRepository)repository, queryName, userName, shared, queryLanguage,
-						queryText, rowsPerPage);
+			final String userName = req.getParameter(SERVER_USER);
+			final boolean existed = storage.askExists(http, queryName, userName);
+			json.put("existed", existed);
+			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
+			if (written) {
+				storage.saveQuery(http, queryName, userName, !Boolean.valueOf(req.getParameter("save-private")),
+						QueryLanguage.valueOf(req.getParameter("queryLn")), req.getParameter("query"),
+						Integer.valueOf(req.getParameter("limit")));
 			}
+			json.put("written", written);
 		}
-		json.put("existed", exists);
-		json.put("written", !exists);
+		final PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
 		writer.write(json.toString());
 		writer.flush();
 	}

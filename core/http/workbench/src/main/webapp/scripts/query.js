@@ -65,7 +65,7 @@ function disableSaveIfNotValidName() {
 function clearFeedback() {
 	var feedback = document.getElementById('save-feedback');
 	feedback.className = '';
-	feedback.innerHTML = '';	
+	feedback.innerHTML = '';
 }
 
 function handleNameChange() {
@@ -130,27 +130,40 @@ function createXMLHttpRequest() {
 
 function ajaxSave(url) {
 	var request = createXMLHttpRequest();
-	var requestTimer = setTimeout(function() {
-		request.abort();
-		feedback.className = 'error';
-		feedback.innerHTML = 'Timed out waiting for response. Uncertain if save occured.';
-	}, 5000);
+	var requestTimer = setTimeout(
+			function() {
+				request.abort();
+				feedback.className = 'error';
+				feedback.innerHTML = 'Timed out waiting for response. Uncertain if save occured.';
+			}, 5000);
 	request.onreadystatechange = function() {
 		if (request.readyState == 4) {
 			clearTimeout(requestTimer);
 			var feedback = document.getElementById('save-feedback');
 			if (request.status == 200) {
 				var response = JSON.parse(request.responseText);
-				if (response.existed) {
-					feedback.className = 'error';
-					feedback.innerHTML = 'Query name existed. Try again.';
+				if (response.accessible) {
+					if (response.written) {
+						feedback.className = 'success';
+						feedback.innerHTML = 'Query saved.';
+					} else {
+						if (response.existed) {
+							if (confirm('Query name exists. Click OK to overwrite.')) {
+								ajaxSave(url + 'overwrite=true&');
+							} else {
+								feedback.className = 'error';
+								feedback.innerHTML = 'Cancelled overwriting existing query.';
+							}
+						}
+					}
 				} else {
-					feedback.className = 'success';
-					feedback.innerHTML = 'Query saved.';	
+					feedback.className = 'error';
+					feedback.innerHTML = 'Repository was not accessible (check your permissions).';
 				}
 			} else {
 				feedback.className = 'error';
-				feedback.innerHTML = 'Failure: Response Status = ' + request.status;
+				feedback.innerHTML = 'Failure: Response Status = '
+						+ request.status;
 			}
 		}
 	};
