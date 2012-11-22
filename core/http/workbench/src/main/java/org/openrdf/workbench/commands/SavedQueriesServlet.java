@@ -66,7 +66,10 @@ public class SavedQueriesServlet extends TransformationServlet {
 		throws OpenRDFException, BadRequestException
 	{
 		final HTTPRepository repo = (HTTPRepository)this.repository;
-		final String user = req.getParameter(SERVER_USER);
+		String user = req.getParameter(SERVER_USER);
+		if (null == user){
+			user = "";
+		}
 		if (!storage.checkAccess(repo)) {
 			throw new BadRequestException("User '" + user + "' not authorized to access repository '"
 					+ repo.getRepositoryURL() + "'");

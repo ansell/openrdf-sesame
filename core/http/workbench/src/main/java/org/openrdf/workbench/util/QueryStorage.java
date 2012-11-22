@@ -6,7 +6,6 @@
 package org.openrdf.workbench.util;
 
 import java.io.File;
-import java.net.URI;
 import java.util.UUID;
 
 import javax.servlet.ServletContext;
@@ -16,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -28,6 +28,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.nativerdf.NativeStore;
+import org.openrdf.workbench.exceptions.BadRequestException;
 
 /**
  * Provides an interface to the private repository with the saved queries.
@@ -57,38 +58,46 @@ public final class QueryStorage {
 
 	private static final String FOLDER = ".queries";
 
-	private static final String ORWB = "PREFIX orwb: <https://openrdf.org/workbench/>\n";
+	private static final String PRE = "PREFIX : <https://openrdf.org/workbench/>\n";
 
-	private static final String SAVE = "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>\n" + ORWB
-			+ "INSERT DATA { $<query> orwb:userName $<userName> ; orwb:queryName $<queryName> ; "
-			+ "orwb:repository $<repository> ; orwb:shared $<shared> ; "
-			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ; "
-			+ "orwb:rowsPerPage $<rowsPerPage> . }";
+	// SAVE needs xsd: prefix since explicit XSD data types will be substituted.
+	private static final String SAVE = "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>\n"
+			+ PRE
+			+ "INSERT DATA { $<query> :userName $<userName> ; :queryName $<queryName> ; "
+			+ ":repository $<repository> ; :shared $<shared> ; :queryLanguage $<queryLanguage> ; :query $<queryText> ; "
+			+ ":rowsPerPage $<rowsPerPage> . }";
 
-	private static final String ASK_EXISTS = ORWB
-			+ "ASK { [] orwb:userName $<userName> ; orwb:queryName $<queryName> ; orwb:repository $<repository> . }";
+	private static final String ASK_EXISTS = PRE
+			+ "ASK { [] :userName $<userName> ; :queryName $<queryName> ; :repository $<repository> . }";
 
-	private static final String FILTER = "FILTER (?user = $<userName> || ?user = “” ) }";
+	private static final String FILTER = "FILTER (?user = $<userName> || ?user = \"\" ) }";
 
-	private static final String DELETE = ORWB + "DELETE WHERE { $<query> orwb:userName ?user ; ?p ?o . "
-			+ FILTER;
+	private static final String DELETE = PRE + "DELETE WHERE { $<query> :userName ?user ; ?p ?o . " + FILTER;
 
-	private static final String MATCH = "orwb:shared ?s ; orwb:queryLanguage ?ql ; orwb:query ?q ; orwb:rowsPerPage ?rpp . }\n";
+	private static final String MATCH = ":shared ?s ; :queryLanguage ?ql ; :query ?q ; :rowsPerPage ?rpp .\n";
 
-	private static final String UPDATE = ORWB + "DELETE { $<query> " + MATCH
-			+ "INSERT { $<query> orwb:shared $<shared> ; "
-			+ "orwb:queryLanguage $<queryLanguage> ; orwb:query $<queryText> ; "
-			+ "orwb:rowsPerPage $<rowsPerPage> . }\n" + "WHERE { $<query> orwb:userName ?user ; " + MATCH
-			+ FILTER;
+	private static final String UPDATE = PRE + "DELETE { $<query> " + MATCH
+			+ "}\nINSERT { $<query> :shared $<shared> ; :queryLanguage $<queryLanguage> ; :query $<queryText> ; "
+			+ ":rowsPerPage $<rowsPerPage> . } WHERE { $<query> :userName ?user ; " + MATCH + FILTER;
 
-	private static final String SELECT = "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>\n" + ORWB
+	private static final String SELECT_URI = PRE
+			+ "SELECT ?query { ?query :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> . } ";
+
+	private static final String SELECT = PRE
 			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?rowsPerPage "
-			+ "{ ?query orwb:repository $<repository> ; orwb:userName ?user ; orwb:queryName ?queryName ; "
-			+ "orwb:shared ?shared ; orwb:queryLanguage ?queryLn ; orwb:query ?queryText ; "
-			+ "orwb:rowsPerPage ?rowsPerPage .\n"
-			+ "FILTER (?user = $<userName> || ?user = \"\" || ?shared) }\n" + "ORDER BY ?user ?queryName";
+			+ "{ ?query :repository $<repository> ; :userName ?user ; :queryName ?queryName ; :shared ?shared ; "
+			+ ":queryLanguage ?queryLn ; :query ?queryText ; :rowsPerPage ?rowsPerPage .\n"
+			+ "FILTER (?user = $<userName> || ?user = \"\" || ?shared) } ORDER BY ?user ?queryName";
 
 	private final Repository queries;
+
+	private static final String USER_NAME = "$<userName>";
+
+	private static final String REPOSITORY = "$<repository>";
+
+	private static final String QUERY = "$<query>";
+
+	private static final String QUERY_NAME = "$<queryName>";
 
 	/**
 	 * Create a new object for accessing the store of user queries.
@@ -172,11 +181,12 @@ public final class QueryStorage {
 		{
 			throw new RepositoryException("Illegal value for rows per page: " + rowsPerPage);
 		}
+		this.checkQueryText(queryText);
 		final QueryStringBuilder save = new QueryStringBuilder(SAVE);
-		save.replaceRepository(repository.getRepositoryURL());
-		save.replaceQueryReference("urn:uuid:" + UUID.randomUUID());
-		save.replaceQueryName(queryName);
-		save.replaceUpdateFields(userName, shared, queryLanguage, queryText, rowsPerPage);
+		save.replaceURI(REPOSITORY, repository.getRepositoryURL());
+		save.replaceURI(QUERY, "urn:uuid:" + UUID.randomUUID());
+		save.replaceQuote(QUERY_NAME, queryName);
+		this.replaceUpdateFields(save, userName, shared, queryLanguage, queryText, rowsPerPage);
 		updateQueryRepository(save.toString());
 	}
 
@@ -184,9 +194,10 @@ public final class QueryStorage {
 		throws QueryEvaluationException, RepositoryException, MalformedQueryException
 	{
 		final QueryStringBuilder ask = new QueryStringBuilder(ASK_EXISTS);
-		ask.replaceRepository(repository.getRepositoryURL());
-		ask.replaceQueryName(queryName);
-		ask.replaceUserName(userName);
+		ask.replaceURI(REPOSITORY, repository.getRepositoryURL());
+		ask.replaceQuote(QUERY_NAME, queryName);
+		ask.replaceQuote(USER_NAME, userName);
+		LOGGER.info("{}", ask);
 		final RepositoryConnection connection = this.queries.getConnection();
 		try {
 			return connection.prepareBooleanQuery(QueryLanguage.SPARQL, ask.toString()).evaluate();
@@ -210,8 +221,8 @@ public final class QueryStorage {
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
 		final QueryStringBuilder delete = new QueryStringBuilder(DELETE);
-		delete.replaceUserName(userName);
-		delete.replaceQueryReference(query.toString());
+		delete.replaceQuote(QueryStorage.USER_NAME, userName);
+		delete.replaceURI(QUERY, query.toString());
 		updateQueryRepository(delete.toString());
 	}
 
@@ -243,7 +254,8 @@ public final class QueryStorage {
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
 		final QueryStringBuilder update = new QueryStringBuilder(UPDATE);
-		update.replaceUpdateFields(userName, shared, queryLanguage, queryText, rowsPerPage);
+		update.replaceURI(QUERY, query);
+		this.replaceUpdateFields(update, userName, shared, queryLanguage, queryText, rowsPerPage);
 		this.updateQueryRepository(update.toString());
 	}
 
@@ -273,12 +285,35 @@ public final class QueryStorage {
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT);
-		select.replaceUserName(userName);
-		select.replaceRepository(repository.getRepositoryURL());
+		select.replaceQuote(USER_NAME, userName);
+		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
 		final RepositoryConnection connection = this.queries.getConnection();
 		try {
 			EVAL.evaluateTupleQuery(builder,
 					connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString()));
+		}
+		finally {
+			connection.close();
+		}
+	}
+
+	public URI selectSavedQuery(final HTTPRepository repository, final String userName, final String queryName)
+		throws OpenRDFException, BadRequestException
+	{
+		final QueryStringBuilder select = new QueryStringBuilder(SELECT_URI);
+		select.replaceQuote(QueryStorage.USER_NAME, userName);
+		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
+		select.replaceQuote(QUERY_NAME, queryName);
+		final RepositoryConnection connection = this.queries.getConnection();
+		final TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString());
+		try {
+			final TupleQueryResult result = query.evaluate();
+			if (result.hasNext()) {
+				return (URI)(result.next().getValue("query"));
+			}
+			else {
+				throw new BadRequestException("Could not find query entry in storage.");
+			}
 		}
 		finally {
 			connection.close();
@@ -295,6 +330,47 @@ public final class QueryStorage {
 		}
 		finally {
 			connection.close();
+		}
+	}
+
+	/**
+	 * Perform replacement on several common fields for update operations.
+	 * 
+	 * @param userName
+	 *        the name of the current user
+	 * @param shared
+	 *        whether the saved query is to be shared with other users
+	 * @param queryLanguage
+	 *        the language of the saved query
+	 * @param queryText
+	 *        the actual text of the query to save
+	 * @param rowsPerPage
+	 *        the rows per page to display for results
+	 */
+	private void replaceUpdateFields(final QueryStringBuilder builder, final String userName,
+			final boolean shared, final QueryLanguage queryLanguage, final String queryText,
+			final int rowsPerPage)
+	{
+		builder.replaceQuote(USER_NAME, userName);
+		builder.replace("$<shared>", QueryStringBuilder.xsdQuote(String.valueOf(shared), "boolean"));
+		builder.replaceQuote("$<queryLanguage>", queryLanguage.toString());
+		checkQueryText(queryText);
+		builder.replace("$<queryText>", QueryStringBuilder.quote(queryText, "'''", "'''"));
+		builder.replace("$<rowsPerPage>",
+				QueryStringBuilder.xsdQuote(String.valueOf(rowsPerPage), "unsignedByte"));
+	}
+
+	/**
+	 * Imposes the rule that the query may not contain '''-quoted string, since
+	 * that is how we'll be quoting it in our SPARQL/Update statements. Quoting
+	 * the query with ''' assuming all string literals in the query are of the
+	 * STRING_LITERAL1, STRING_LITERAL2 or STRING_LITERAL_LONG2 types.
+	 * 
+	 * @param queryText the query text
+	 */
+	private void checkQueryText(final String queryText) {
+		if (queryText.indexOf("'''") > 0) {
+			throw new IllegalArgumentException("queryText may not contain '''-quoted strings.");
 		}
 	}
 }

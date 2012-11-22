@@ -5,10 +5,7 @@
  */
 package org.openrdf.workbench.util;
 
-import java.net.URL;
 import java.util.regex.Pattern;
-
-import org.openrdf.query.QueryLanguage;
 
 /**
  * Helper class for substituting in variables to query templates for the purpose
@@ -46,79 +43,35 @@ public class QueryStringBuilder {
 	}
 
 	/**
-	 * Replace the user name variable with the current user.
-	 * 
-	 * @param userName
-	 *        the current user
-	 */
-	protected void replaceUserName(final String userName) {
-		replace("$<userName>", quote(userName));
-	}
-
-	/**
 	 * Replace the repository variable with the current repository URL.
 	 * 
-	 * @param url
-	 *        the current repository URL
+	 * @param paramText
+	 *        the $<...> formatted parameter name
+	 * @param uri
+	 *        any object who's toString() returns a valid URI
 	 */
-	protected void replaceRepository(final String url) {
-		replaceURIParameter("$<repository>", url);
-	}
-	
-	protected void replaceQueryReference(final String urn) {
-		replaceURIParameter("$<query>", urn);
-	}
-	
-	private void replaceURIParameter(final String parameter, final String uri) {
-		replace(parameter, QueryStringBuilder.uriQuote(uri));
-	}
-	
-	protected void replaceQueryName(final String queryName) {
-		replace("$<queryName>", QueryStringBuilder.quote(queryName));
+	protected void replaceURI(final String paramText, final Object uri) {
+		replace(paramText, QueryStringBuilder.uriQuote(uri.toString()));
 	}
 
 	/**
-	 * Replace first instance of the old text with a copy of the new text.
+	 * Replace instances of the old text with a copy of the new text.
 	 * 
-	 * @param oldText
-	 *        the old text
+	 * @param paramText
+	 *        parameter in the form "$<paramName>"
 	 * @param newText
 	 *        the new text
 	 */
-	protected void replace(final String oldText, final String newText) {
-		final int start = builder.indexOf(oldText);
-		builder.replace(start, start + oldText.length(), newText);
+	protected void replace(final String paramText, final String newText) {
+		int loc = builder.indexOf(paramText);
+		while (loc >= 0) {
+			builder.replace(loc, loc + paramText.length(), newText);
+			loc = builder.indexOf(paramText);
+		}
 	}
 
-	/**
-	 * Perform replacement on several common fields for update operations.
-	 * 
-	 * @param userName
-	 *        the name of the current user
-	 * @param shared
-	 *        whether the saved query is to be shared with other users
-	 * @param queryLanguage
-	 *        the language of the saved query
-	 * @param queryText
-	 *        the actual text of the query to save
-	 * @param rowsPerPage
-	 *        the rows per page to display for results
-	 */
-	protected void replaceUpdateFields(final String userName, final boolean shared,
-			final QueryLanguage queryLanguage, final String queryText, final int rowsPerPage)
-	{
-		replaceUserName(userName);
-		replace("$<shared>", xsdQuote(String.valueOf(shared), "boolean"));
-		replace("$<queryLanguage>", quote(queryLanguage.toString()));
-
-		// Quoting the query with ''' assuming all string literals in the query
-		// are of the STRING_LITERAL1, STRING_LITERAL2 or STRING_LITERAL_LONG2
-		// types
-		if (queryText.indexOf("'''") > 0) {
-			throw new IllegalArgumentException("queryText may not contain '''-quoted strings.");
-		}
-		replace("$<queryText>", quote(queryText, "'''", "'''"));
-		replace("$<rowsPerPage>", xsdQuote(String.valueOf(rowsPerPage), "unsignedByte"));
+	protected void replaceQuote(final String paramText, final String newText) {
+		this.replace(paramText, quote(newText));
 	}
 
 	/**
@@ -128,7 +81,7 @@ public class QueryStringBuilder {
 	 *        the string to add quotes to
 	 * @return a copy of the given strings quoted with double quotes
 	 */
-	protected static String quote(final String value) {
+	private static String quote(final String value) {
 		return quote(value, "\"", "\"");
 	}
 
@@ -147,14 +100,16 @@ public class QueryStringBuilder {
 
 	/**
 	 * Place angle brackets around a URI or URL.
-	 * @param uri an object whose toString() returns a URI or URL
+	 * 
+	 * @param uri
+	 *        an object whose toString() returns a URI or URL
 	 * @return a string quoting the given URI with angle brackets
 	 */
 	private static String uriQuote(final Object uri) {
 		return quote(uri.toString(), "<", ">");
 	}
 
-	private static String quote(final String value, final String left, final String right) {
+	protected static String quote(final String value, final String left, final String right) {
 		return left + value + right;
 	}
 }

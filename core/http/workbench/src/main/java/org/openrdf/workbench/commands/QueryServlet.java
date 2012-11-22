@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
+import org.openrdf.model.URI;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -111,14 +112,25 @@ public class QueryServlet extends TransformationServlet {
 		if (accessible) {
 			final HTTPRepository http = (HTTPRepository)repository;
 			final String queryName = req.getParameter("query-name");
-			final String userName = req.getParameter(SERVER_USER);
+			String userName = req.getParameter(SERVER_USER);
+			if (null == userName) {
+				userName = "";
+			}
 			final boolean existed = storage.askExists(http, queryName, userName);
 			json.put("existed", existed);
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
+			final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
+			final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
+			final String queryText = req.getParameter("query");
+			final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
 			if (written) {
-				storage.saveQuery(http, queryName, userName, !Boolean.valueOf(req.getParameter("save-private")),
-						QueryLanguage.valueOf(req.getParameter("queryLn")), req.getParameter("query"),
-						Integer.valueOf(req.getParameter("limit")));
+				if (existed) {
+					final URI query = storage.selectSavedQuery(http, userName, queryName);
+					storage.updateQuery(query, userName, shared, queryLanguage, queryText, rowsPerPage);
+				}
+				else {
+					storage.saveQuery(http, queryName, userName, shared, queryLanguage, queryText, rowsPerPage);
+				}
 			}
 			json.put("written", written);
 		}
