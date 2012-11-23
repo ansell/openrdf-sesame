@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Statement;
 import org.openrdf.query.BindingSet;
@@ -19,8 +21,10 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -42,40 +46,58 @@ public final class QueryEvaluator {
 		// do nothing
 	}
 
-	public void evaluate(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
-			final WorkbenchRequest req, final Query query)
-		throws OpenRDFException, BadRequestException
+	/**
+	 * Evaluates the query submitted with the given request.
+	 * 
+	 * @param builder
+	 *        used to build the response
+	 * @param resp
+	 *        the response object
+	 * @param out
+	 *        the output writer
+	 * @param xslPath
+	 *        style sheet path
+	 * @param con
+	 *        connection to repository
+	 * @param req
+	 *        the request object
+	 * @param cookies
+	 *        used to deal with browser cookies
+	 * @throws BadRequestException
+	 *         if there's a problem getting request parameters or issuing the
+	 *         repository query
+	 * @throws OpenRDFException
+	 *         if there's a problem preparing the query
+	 */
+	public void extractQueryAndEvaluate(final TupleResultBuilder builder, final HttpServletResponse resp,
+			final PrintWriter out, final String xslPath, final RepositoryConnection con,
+			final WorkbenchRequest req, final CookieHandler cookies)
+		throws BadRequestException, OpenRDFException
 	{
-		if (query instanceof TupleQuery) {
-			builder.transform(xslPath, "tuple.xsl");
-			builder.start();
-			this.evaluateTupleQuery(builder, (TupleQuery)query);
-			builder.end();
-		}
-		else {
-			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
-					: null;
-			if (query instanceof GraphQuery && format == null) {
-				builder.transform(xslPath, "graph.xsl");
-				builder.start();
-				this.evaluateGraphQuery(builder, (GraphQuery)query);
-				builder.end();
-			}
-			else if (query instanceof GraphQuery) {
-				final RDFWriterFactory factory = getInstance().get(format);
-				final RDFWriter writer = factory.getWriter(out);
-				this.evaluateGraphQuery(writer, (GraphQuery)query);
-			}
-			else if (query instanceof BooleanQuery) {
-				builder.transform(xslPath, "boolean.xsl");
-				builder.start();
-				this.evaluateBooleanQuery(builder, (BooleanQuery)query);
-				builder.end();
+		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
+		String queryText = req.getParameter("query");
+		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
+		if (query instanceof GraphQuery || query instanceof TupleQuery) {
+			final int know_total = req.getInt("know_total");
+			if (know_total > 0) {
+				cookies.addTotalResultCountCookie(req, resp, know_total);
 			}
 			else {
-				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
+				final int result_count = (query instanceof GraphQuery) ? this.countQueryResults((GraphQuery)query)
+						: this.countQueryResults((TupleQuery)query);
+				cookies.addTotalResultCountCookie(req, resp, result_count);
 			}
+			final int limit = req.getInt("limit");
+			final int offset = req.getInt("offset");
+			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
+			queryText = pagedQuery.toString();
+			query = QueryFactory.prepareQuery(con, queryLn, queryText);
 		}
+		if (req.isParameterPresent("infer")) {
+			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
+			query.setIncludeInferred(infer);
+		}
+		this.evaluate(builder, out, xslPath, req, query);
 	}
 
 	/***
@@ -119,7 +141,7 @@ public final class QueryEvaluator {
 	 * @param query
 	 *        the query to be evaluated
 	 */
-	public void evaluateGraphQuery(final TupleResultBuilder builder, final GraphQuery query)
+	private void evaluateGraphQuery(final TupleResultBuilder builder, final GraphQuery query)
 		throws QueryEvaluationException
 	{
 		final GraphQueryResult result = query.evaluate();
@@ -137,7 +159,7 @@ public final class QueryEvaluator {
 		}
 	}
 
-	public int countQueryResults(final GraphQuery query)
+	private int countQueryResults(final GraphQuery query)
 		throws QueryEvaluationException
 	{
 		int rval = 0;
@@ -155,7 +177,7 @@ public final class QueryEvaluator {
 		return rval;
 	}
 
-	public int countQueryResults(final TupleQuery query)
+	private int countQueryResults(final TupleQuery query)
 		throws QueryEvaluationException
 	{
 		int rval = 0;
@@ -173,18 +195,54 @@ public final class QueryEvaluator {
 		return rval;
 	}
 
-	public void evaluateGraphQuery(final RDFWriter writer, final GraphQuery query)
+	private void evaluateGraphQuery(final RDFWriter writer, final GraphQuery query)
 		throws QueryEvaluationException, RDFHandlerException
 	{
 		query.evaluate(writer);
 	}
 
-	public void evaluateBooleanQuery(final TupleResultBuilder builder, final BooleanQuery query)
+	private void evaluateBooleanQuery(final TupleResultBuilder builder, final BooleanQuery query)
 		throws QueryEvaluationException
 	{
 		final boolean result = query.evaluate();
 		builder.link(INFO);
 		builder.bool(result);
+	}
+
+	private void evaluate(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
+			final WorkbenchRequest req, final Query query)
+		throws OpenRDFException, BadRequestException
+	{
+		if (query instanceof TupleQuery) {
+			builder.transform(xslPath, "tuple.xsl");
+			builder.start();
+			this.evaluateTupleQuery(builder, (TupleQuery)query);
+			builder.end();
+		}
+		else {
+			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
+					: null;
+			if (query instanceof GraphQuery && format == null) {
+				builder.transform(xslPath, "graph.xsl");
+				builder.start();
+				this.evaluateGraphQuery(builder, (GraphQuery)query);
+				builder.end();
+			}
+			else if (query instanceof GraphQuery) {
+				final RDFWriterFactory factory = getInstance().get(format);
+				final RDFWriter writer = factory.getWriter(out);
+				this.evaluateGraphQuery(writer, (GraphQuery)query);
+			}
+			else if (query instanceof BooleanQuery) {
+				builder.transform(xslPath, "boolean.xsl");
+				builder.start();
+				this.evaluateBooleanQuery(builder, (BooleanQuery)query);
+				builder.end();
+			}
+			else {
+				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
+			}
+		}
 	}
 
 }

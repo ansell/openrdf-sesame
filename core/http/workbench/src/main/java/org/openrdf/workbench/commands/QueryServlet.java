@@ -21,11 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
-import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
@@ -33,9 +30,7 @@ import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
-import org.openrdf.workbench.util.PagedQuery;
 import org.openrdf.workbench.util.QueryEvaluator;
-import org.openrdf.workbench.util.QueryFactory;
 import org.openrdf.workbench.util.QueryStorage;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
@@ -170,7 +165,7 @@ public class QueryServlet extends TransformationServlet {
 			}
 			if (req.isParameterPresent("query")) {
 				try {
-					service(builder, resp, out, xslPath, con, req);
+					EVAL.extractQueryAndEvaluate(builder, resp, out, xslPath, con, req, this.cookies);
 				}
 				catch (MalformedQueryException exc) {
 					throw new BadRequestException(exc.getMessage(), exc);
@@ -193,36 +188,5 @@ public class QueryServlet extends TransformationServlet {
 		finally {
 			con.close();
 		}
-	}
-
-	private void service(final TupleResultBuilder builder, final HttpServletResponse resp,
-			final PrintWriter out, final String xslPath, final RepositoryConnection con,
-			final WorkbenchRequest req)
-		throws BadRequestException, OpenRDFException
-	{
-		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
-		String queryText = req.getParameter("query");
-		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
-		if (query instanceof GraphQuery || query instanceof TupleQuery) {
-			final int know_total = req.getInt("know_total");
-			if (know_total > 0) {
-				this.cookies.addTotalResultCountCookie(req, resp, know_total);
-			}
-			else {
-				final int result_count = (query instanceof GraphQuery) ? EVAL.countQueryResults((GraphQuery)query)
-						: EVAL.countQueryResults((TupleQuery)query);
-				this.cookies.addTotalResultCountCookie(req, resp, result_count);
-			}
-			final int limit = req.getInt("limit");
-			final int offset = req.getInt("offset");
-			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
-			queryText = pagedQuery.toString();
-			query = QueryFactory.prepareQuery(con, queryLn, queryText);
-		}
-		if (req.isParameterPresent("infer")) {
-			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
-			query.setIncludeInferred(infer);
-		}
-		EVAL.evaluate(builder, out, xslPath, req, query);
 	}
 }
