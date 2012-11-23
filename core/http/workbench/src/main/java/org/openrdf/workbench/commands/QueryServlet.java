@@ -5,12 +5,9 @@
  */
 package org.openrdf.workbench.commands;
 
-import static org.openrdf.rio.RDFWriterRegistry.getInstance;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -24,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
-import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
@@ -35,8 +31,6 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.PagedQuery;
@@ -56,11 +50,20 @@ public class QueryServlet extends TransformationServlet {
 
 	private QueryStorage storage;
 
+	/**
+	 * @return the names of the cookies that will be retrieved from the request,
+	 *         and returned in the response
+	 */
 	@Override
 	public String[] getCookieNames() {
 		return new String[] { "limit", "queryLn", "infer", "total_result_count" };
 	}
 
+	/**
+	 * Initialize this instance of the servlet.
+	 * 
+	 * @param config configuration passed in by the application container
+	 */
 	@Override
 	public void init(final ServletConfig config)
 		throws ServletException
@@ -100,7 +103,7 @@ public class QueryServlet extends TransformationServlet {
 
 	@Override
 	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException, BadRequestException, MalformedURLException, OpenRDFException, JSONException
+		throws IOException, BadRequestException, OpenRDFException, JSONException
 	{
 		resp.setContentType("application/json");
 		if (!"save".equals(req.getParameter("action"))) {
@@ -203,12 +206,12 @@ public class QueryServlet extends TransformationServlet {
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
 			final int know_total = req.getInt("know_total");
 			if (know_total > 0) {
-				addTotalResultCountCookie(req, resp, know_total);
+				this.cookies.addTotalResultCountCookie(req, resp, know_total);
 			}
 			else {
 				final int result_count = (query instanceof GraphQuery) ? EVAL.countQueryResults((GraphQuery)query)
 						: EVAL.countQueryResults((TupleQuery)query);
-				addTotalResultCountCookie(req, resp, result_count);
+				this.cookies.addTotalResultCountCookie(req, resp, result_count);
 			}
 			final int limit = req.getInt("limit");
 			final int offset = req.getInt("offset");
@@ -220,42 +223,6 @@ public class QueryServlet extends TransformationServlet {
 			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
 			query.setIncludeInferred(infer);
 		}
-		service(builder, out, xslPath, req, query);
-	}
-
-	private void service(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
-			final WorkbenchRequest req, final Query query)
-		throws OpenRDFException, BadRequestException
-	{
-		if (query instanceof TupleQuery) {
-			builder.transform(xslPath, "tuple.xsl");
-			builder.start();
-			EVAL.evaluateTupleQuery(builder, (TupleQuery)query);
-			builder.end();
-		}
-		else {
-			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
-					: null;
-			if (query instanceof GraphQuery && format == null) {
-				builder.transform(xslPath, "graph.xsl");
-				builder.start();
-				EVAL.evaluateGraphQuery(builder, (GraphQuery)query);
-				builder.end();
-			}
-			else if (query instanceof GraphQuery) {
-				final RDFWriterFactory factory = getInstance().get(format);
-				final RDFWriter writer = factory.getWriter(out);
-				EVAL.evaluateGraphQuery(writer, (GraphQuery)query);
-			}
-			else if (query instanceof BooleanQuery) {
-				builder.transform(xslPath, "boolean.xsl");
-				builder.start();
-				EVAL.evaluateBooleanQuery(builder, (BooleanQuery)query);
-				builder.end();
-			}
-			else {
-				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
-			}
-		}
+		EVAL.evaluate(builder, out, xslPath, req, query);
 	}
 }

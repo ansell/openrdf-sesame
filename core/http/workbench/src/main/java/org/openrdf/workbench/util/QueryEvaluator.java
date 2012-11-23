@@ -5,31 +5,77 @@
  */
 package org.openrdf.workbench.util;
 
+import static org.openrdf.rio.RDFWriterRegistry.getInstance;
+
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Statement;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.workbench.exceptions.BadRequestException;
 
 /**
- * @author dale
+ * Evaluates queries for QueryServlet.
  */
 public final class QueryEvaluator {
 
 	private static final String INFO = "info";
-	
+
 	public static final QueryEvaluator INSTANCE = new QueryEvaluator();
-	
-	private QueryEvaluator(){
+
+	private static final String ACCEPT = "Accept";
+
+	private QueryEvaluator() {
 		// do nothing
+	}
+
+	public void evaluate(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
+			final WorkbenchRequest req, final Query query)
+		throws OpenRDFException, BadRequestException
+	{
+		if (query instanceof TupleQuery) {
+			builder.transform(xslPath, "tuple.xsl");
+			builder.start();
+			this.evaluateTupleQuery(builder, (TupleQuery)query);
+			builder.end();
+		}
+		else {
+			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
+					: null;
+			if (query instanceof GraphQuery && format == null) {
+				builder.transform(xslPath, "graph.xsl");
+				builder.start();
+				this.evaluateGraphQuery(builder, (GraphQuery)query);
+				builder.end();
+			}
+			else if (query instanceof GraphQuery) {
+				final RDFWriterFactory factory = getInstance().get(format);
+				final RDFWriter writer = factory.getWriter(out);
+				this.evaluateGraphQuery(writer, (GraphQuery)query);
+			}
+			else if (query instanceof BooleanQuery) {
+				builder.transform(xslPath, "boolean.xsl");
+				builder.start();
+				this.evaluateBooleanQuery(builder, (BooleanQuery)query);
+				builder.end();
+			}
+			else {
+				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());
+			}
+		}
 	}
 
 	/***
