@@ -779,7 +779,7 @@ void TriplesSameSubjectPath() :
 void PropertyListPath() :
 {}
 {
-    (VerbPath() | VerbSimple()) ObjectList() (LOOKAHEAD(2) <SEMICOLON> [PropertyListPath()] )*
+    (VerbPath() | VerbSimple()) ObjectList() [<SEMICOLON> [PropertyListPath()] ]
 }
 
 void VerbPath() #void :
