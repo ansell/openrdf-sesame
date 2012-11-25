@@ -147,6 +147,20 @@ public class RDFFormat extends FileFormat {
 	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", "text/x-nquads",
 			Charset.forName("US-ASCII"), "nq", false, true);
 
+	/**
+	 * The <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD</a> file format,
+	 * an RDF serialization format that supports recording of named graphs.
+	 * <p>
+	 * The file extension <code>.jsonld</code> is recommended for JSON-LD documents.
+	 * The media type is <code>application/ld+json</code> and the encoding is
+	 * UTF-8.
+	 * </p>
+	 * 
+	 * @see http://json-ld.org/spec/latest/json-ld-syntax/
+	 */
+	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", "application/ld+json",
+			Charset.forName("UTF-8"), "jsonld", true, true);
+
 	/*------------------*
 	 * Static variables *
 	 *------------------*/
