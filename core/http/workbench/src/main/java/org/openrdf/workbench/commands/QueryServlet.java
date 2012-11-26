@@ -120,14 +120,15 @@ public class QueryServlet extends TransformationServlet {
 			final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
 			final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
 			final String queryText = req.getParameter("query");
+			final boolean infer = Boolean.valueOf(req.getParameter("infer"));
 			final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
 			if (written) {
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);
-					storage.updateQuery(query, userName, shared, queryLanguage, queryText, rowsPerPage);
+					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 				}
 				else {
-					storage.saveQuery(http, queryName, userName, shared, queryLanguage, queryText, rowsPerPage);
+					storage.saveQuery(http, queryName, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 				}
 			}
 			json.put("written", written);

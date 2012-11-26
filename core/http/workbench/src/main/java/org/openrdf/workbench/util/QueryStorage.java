@@ -65,7 +65,7 @@ public final class QueryStorage {
 			+ PRE
 			+ "INSERT DATA { $<query> :userName $<userName> ; :queryName $<queryName> ; "
 			+ ":repository $<repository> ; :shared $<shared> ; :queryLanguage $<queryLanguage> ; :query $<queryText> ; "
-			+ ":rowsPerPage $<rowsPerPage> . }";
+			+ ":infer $<infer> ; :rowsPerPage $<rowsPerPage> . }";
 
 	private static final String ASK_EXISTS = PRE
 			+ "ASK { [] :userName $<userName> ; :queryName $<queryName> ; :repository $<repository> . }";
@@ -76,17 +76,20 @@ public final class QueryStorage {
 
 	private static final String MATCH = ":shared ?s ; :queryLanguage ?ql ; :query ?q ; :rowsPerPage ?rpp .\n";
 
-	private static final String UPDATE = PRE + "DELETE { $<query> " + MATCH
+	private static final String UPDATE = PRE
+			+ "DELETE { $<query> "
+			+ MATCH
 			+ "}\nINSERT { $<query> :shared $<shared> ; :queryLanguage $<queryLanguage> ; :query $<queryText> ; "
-			+ ":rowsPerPage $<rowsPerPage> . } WHERE { $<query> :userName ?user ; " + MATCH + FILTER;
+			+ ": infer $<infer> ; :rowsPerPage $<rowsPerPage> . } WHERE { $<query> :userName ?user ; " + MATCH
+			+ FILTER;
 
 	private static final String SELECT_URI = PRE
 			+ "SELECT ?query { ?query :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> . } ";
 
 	private static final String SELECT = PRE
-			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?rowsPerPage "
+			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?infer ?rowsPerPage "
 			+ "{ ?query :repository $<repository> ; :userName ?user ; :queryName ?queryName ; :shared ?shared ; "
-			+ ":queryLanguage ?queryLn ; :query ?queryText ; :rowsPerPage ?rowsPerPage .\n"
+			+ ":queryLanguage ?queryLn ; :query ?queryText ; :infer ?infer ; :rowsPerPage ?rowsPerPage .\n"
 			+ "FILTER (?user = $<userName> || ?user = \"\" || ?shared) } ORDER BY ?user ?queryName";
 
 	private final Repository queries;
@@ -163,13 +166,14 @@ public final class QueryStorage {
 	 *        the language, SeRQL or SPARQL, of the query
 	 * @param queryText
 	 *        the actual query text
+	 * @param infer 
 	 * @param rowsPerPage
 	 *        rows to display per page, may be 0 (all), 10, 50, 100, or 200)
 	 * @throws OpenRDFException
 	 */
 	public void saveQuery(final HTTPRepository repository, final String queryName, final String userName,
 			final boolean shared, final QueryLanguage queryLanguage, final String queryText,
-			final int rowsPerPage)
+			final boolean infer, final int rowsPerPage)
 		throws OpenRDFException
 	{
 		if (QueryLanguage.SPARQL != queryLanguage && QueryLanguage.SERQL != queryLanguage) {
@@ -186,7 +190,7 @@ public final class QueryStorage {
 		save.replaceURI(REPOSITORY, repository.getRepositoryURL());
 		save.replaceURI(QUERY, "urn:uuid:" + UUID.randomUUID());
 		save.replaceQuote(QUERY_NAME, queryName);
-		this.replaceUpdateFields(save, userName, shared, queryLanguage, queryText, rowsPerPage);
+		this.replaceUpdateFields(save, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 		updateQueryRepository(save.toString());
 	}
 
@@ -240,6 +244,7 @@ public final class QueryStorage {
 	 *        the query language
 	 * @param queryText
 	 *        the text of the query
+	 * @param infer
 	 * @param rowsPerPage
 	 *        the rows per page to display of the query
 	 * @throws RepositoryException
@@ -250,12 +255,12 @@ public final class QueryStorage {
 	 *         if a problem occurs during the update
 	 */
 	public void updateQuery(final URI query, final String userName, final boolean shared,
-			final QueryLanguage queryLanguage, final String queryText, final int rowsPerPage)
+			final QueryLanguage queryLanguage, final String queryText, final boolean infer, final int rowsPerPage)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
 		final QueryStringBuilder update = new QueryStringBuilder(UPDATE);
 		update.replaceURI(QUERY, query);
-		this.replaceUpdateFields(update, userName, shared, queryLanguage, queryText, rowsPerPage);
+		this.replaceUpdateFields(update, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 		this.updateQueryRepository(update.toString());
 	}
 
@@ -344,18 +349,20 @@ public final class QueryStorage {
 	 *        the language of the saved query
 	 * @param queryText
 	 *        the actual text of the query to save
+	 * @param infer
 	 * @param rowsPerPage
 	 *        the rows per page to display for results
 	 */
 	private void replaceUpdateFields(final QueryStringBuilder builder, final String userName,
 			final boolean shared, final QueryLanguage queryLanguage, final String queryText,
-			final int rowsPerPage)
+			final boolean infer, final int rowsPerPage)
 	{
 		builder.replaceQuote(USER_NAME, userName);
 		builder.replace("$<shared>", QueryStringBuilder.xsdQuote(String.valueOf(shared), "boolean"));
 		builder.replaceQuote("$<queryLanguage>", queryLanguage.toString());
 		checkQueryText(queryText);
 		builder.replace("$<queryText>", QueryStringBuilder.quote(queryText, "'''", "'''"));
+		builder.replace("$<infer>", QueryStringBuilder.xsdQuote(String.valueOf(infer), "boolean"));
 		builder.replace("$<rowsPerPage>",
 				QueryStringBuilder.xsdQuote(String.valueOf(rowsPerPage), "unsignedByte"));
 	}
@@ -366,7 +373,8 @@ public final class QueryStorage {
 	 * the query with ''' assuming all string literals in the query are of the
 	 * STRING_LITERAL1, STRING_LITERAL2 or STRING_LITERAL_LONG2 types.
 	 * 
-	 * @param queryText the query text
+	 * @param queryText
+	 *        the query text
 	 */
 	private void checkQueryText(final String queryText) {
 		if (queryText.indexOf("'''") > 0) {

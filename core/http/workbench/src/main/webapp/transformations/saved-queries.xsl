@@ -51,7 +51,7 @@
 				<tr>
 					<th>Include Inferred Statements</th>
 					<td>
-						<!-- <xsl:value-of select="$infer" /> -->
+						<xsl:value-of select="sparql:binding[@name='infer']" />
 					</td>
 				</tr>
 				<tr>
