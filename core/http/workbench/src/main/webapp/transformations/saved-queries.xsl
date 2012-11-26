@@ -16,7 +16,14 @@
 		<xsl:for-each select="sparql:result">
 			<xsl:variable name="queryLn"
 				select="normalize-space(sparql:binding[@name='queryLn'])" />
-			<xsl:variable name="rowsPerPage" select="normalize-space(sparql:binding[@name='rowsPerPage'])" />
+			<xsl:variable name="query-url-encoded">
+				<xsl:call-template name="url-encode">
+					<xsl:with-param name="str"
+						select="normalize-space(sparql:binding[@name='queryText'])" />
+				</xsl:call-template>
+			</xsl:variable>
+			<xsl:variable name="rowsPerPage"
+				select="normalize-space(sparql:binding[@name='rowsPerPage'])" />
 			<table class="data">
 				<tr>
 					<th>User</th>
@@ -32,14 +39,9 @@
 				<tr>
 					<th>Query Name</th>
 					<td>
-						<a>
-							<xsl:attribute name="href">query?action=exec&amp;queryLn=<xsl:value-of
-								select="$queryLn" />&amp;query=<xsl:call-template
-								name="url-encode">
-									<xsl:with-param name="str"
-								select="normalize-space(sparql:binding[@name='queryText'])" />
-								</xsl:call-template>&amp;limit=<xsl:value-of
-								select="$rowsPerPage" /></xsl:attribute>
+
+						<a
+							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;limit={$rowsPerPage}">
 							<xsl:value-of select="sparql:binding[@name='queryName']" />
 						</a>
 					</td>
