@@ -30,7 +30,7 @@
 					<td>
 						<xsl:value-of select="sparql:binding[@name='user']" />
 					</td>
-					<td rowspan="6">
+					<td rowspan="9">
 						<pre>
 							<xsl:value-of select="sparql:binding[@name='queryText']" />
 						</pre>
@@ -39,17 +39,19 @@
 				<tr>
 					<th>Query Name</th>
 					<td>
-
-						<a
-							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;limit={$rowsPerPage}">
-							<xsl:value-of select="sparql:binding[@name='queryName']" />
-						</a>
+						<xsl:value-of select="sparql:binding[@name='queryName']" />
 					</td>
 				</tr>
 				<tr>
 					<th>Query Language</th>
 					<td>
 						<xsl:value-of select="$queryLn" />
+					</td>
+				</tr>
+				<tr>
+					<th>Include Inferred Statements</th>
+					<td>
+						<!-- <xsl:value-of select="$infer" /> -->
 					</td>
 				</tr>
 				<tr>
@@ -65,9 +67,21 @@
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2">
-						ExecuteButton EditButton
-					</td>
+					<th class="action" colspan="2">
+						<a
+							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;limit={$rowsPerPage}">Execute
+						</a>
+					</th>
+				</tr>
+				<tr>
+					<th class="action" colspan="2">
+						<a href="">Edit</a>
+					</th>
+				</tr>
+				<tr>
+					<th class="action" colspan="2">
+						<a href="">Delete</a>
+					</th>
 				</tr>
 			</table>
 		</xsl:for-each>
