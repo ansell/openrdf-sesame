@@ -164,7 +164,8 @@ public class QueryServlet extends TransformationServlet {
 			for (Namespace ns : con.getNamespaces().asList()) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
-			if (req.isParameterPresent("query")) {
+			final String action = req.getParameter("action");
+			if (req.isParameterPresent("query") && !"edit".equals(action)) {
 				try {
 					EVAL.extractQueryAndEvaluate(builder, resp, out, xslPath, con, req, this.cookies);
 				}

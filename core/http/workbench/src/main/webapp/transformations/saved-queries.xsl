@@ -22,6 +22,8 @@
 						select="normalize-space(sparql:binding[@name='queryText'])" />
 				</xsl:call-template>
 			</xsl:variable>
+			<xsl:variable name="infer"
+				select="normalize-space(sparql:binding[@name='infer'])" />
 			<xsl:variable name="rowsPerPage"
 				select="normalize-space(sparql:binding[@name='rowsPerPage'])" />
 			<table class="data">
@@ -51,7 +53,7 @@
 				<tr>
 					<th>Include Inferred Statements</th>
 					<td>
-						<xsl:value-of select="sparql:binding[@name='infer']" />
+						<xsl:value-of select="$infer" />
 					</td>
 				</tr>
 				<tr>
@@ -69,13 +71,14 @@
 				<tr>
 					<th class="action" colspan="2">
 						<a
-							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;limit={$rowsPerPage}">Execute
+							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">Execute
 						</a>
 					</th>
 				</tr>
 				<tr>
 					<th class="action" colspan="2">
-						<a href="">Edit</a>
+						<a
+							href="query?action=edit&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">Edit</a>
 					</th>
 				</tr>
 				<tr>
