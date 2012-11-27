@@ -1,0 +1,9 @@
+#Eclipse settings
+.project
+**/.project
+.classpath
+**/.classpath
+
+# maven generated stuff
+target/
+*/target/
