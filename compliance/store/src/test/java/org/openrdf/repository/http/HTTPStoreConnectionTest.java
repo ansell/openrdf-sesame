@@ -5,6 +5,12 @@
  */
 package org.openrdf.repository.http;
 
+import org.eclipse.jdt.internal.core.Assert;
+import org.junit.Test;
+
+import org.openrdf.model.URI;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
 
@@ -104,4 +110,34 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
 	}
+	
+	@Test
+	public void testUpdateExecution() throws Exception {
+
+		URI foobar = vf.createURI("foo:bar");
+		
+		String sparql = "INSERT DATA { <foo:bar> <foo:bar> <foo:bar> . } ";
+		
+		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, sparql);
+
+		update.execute();
+		
+		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
+		
+		testCon.clear();
+
+		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
+
+		testCon.setAutoCommit(false);
+		update.execute();
+
+		// NOTE this is only correct because HTTPconnection does not implement true transaction isolation.
+		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
+
+		testCon.commit();
+		
+		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
+		
+	}
+	
 }
