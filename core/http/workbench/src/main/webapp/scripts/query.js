@@ -86,9 +86,15 @@ function addQueryChangeHandler() {
 	query.oncut = clearFeedback;
 }
 
+function trimQuery() {
+	var query = document.getElementById('query');
+	query.value = query.value.trim();
+}
+
 addLoad(function() {
 	populateParameters();
 	loadNamespaces();
+	trimQuery();
 	addClickHandlers();
 	addSaveNameHandler();
 	addQueryChangeHandler();
