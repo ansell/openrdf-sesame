@@ -12,6 +12,8 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
+		<xsl:variable name="queryLn" select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
+		<xsl:variable name="query" select="sparql:results/sparql:result/sparql:binding[@name='query']" />
 		<script src="../../scripts/query.js" type="text/javascript">
 		</script>
 		<form action="query" method="POST" onsubmit="return doSubmit()">
@@ -26,10 +28,16 @@
 							<select id="queryLn" name="queryLn" onchange="loadNamespaces()">
 								<xsl:for-each select="$info//sparql:binding[@name='query-format']">
 									<option value="{substring-before(sparql:literal, ' ')}">
-										<xsl:if
-											test="$info//sparql:binding[@name='default-queryLn']/sparql:literal = substring-before(sparql:literal, ' ')">
-											<xsl:attribute name="selected">true</xsl:attribute>
-										</xsl:if>
+										<xsl:choose>
+											<xsl:when
+												test="$info//sparql:binding[@name='default-queryLn']/sparql:literal = substring-before(sparql:literal, ' ')">
+												<xsl:attribute name="selected">true</xsl:attribute>
+											</xsl:when>
+											<xsl:when
+												test="$queryLn = substring-before(sparql:literal, ' ')">
+												<xsl:attribute name="selected">true</xsl:attribute>
+											</xsl:when>
+										</xsl:choose>
 										<xsl:value-of select="substring-after(sparql:literal, ' ')" />
 									</option>
 								</xsl:for-each>
@@ -43,6 +51,7 @@
 						</th>
 						<td>
 							<textarea id="query" name="query" rows="16" cols="80">
+								<xsl:value-of select="$query" />
 							</textarea>
 						</td>
 						<td></td>

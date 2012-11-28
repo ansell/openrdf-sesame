@@ -8,6 +8,7 @@ package org.openrdf.workbench.commands;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryConnection;
@@ -38,6 +40,8 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 public class QueryServlet extends TransformationServlet {
 
 	private static final String ACCEPT = "Accept";
+
+	private static final String[] EDIT_PARAMS = new String[] { "queryLn", "query", "infer", "limit" };
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
 
@@ -57,7 +61,8 @@ public class QueryServlet extends TransformationServlet {
 	/**
 	 * Initialize this instance of the servlet.
 	 * 
-	 * @param config configuration passed in by the application container
+	 * @param config
+	 *        configuration passed in by the application container
 	 */
 	@Override
 	public void init(final ServletConfig config)
@@ -100,10 +105,34 @@ public class QueryServlet extends TransformationServlet {
 	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws IOException, BadRequestException, OpenRDFException, JSONException
 	{
-		resp.setContentType("application/json");
-		if (!"save".equals(req.getParameter("action"))) {
-			throw new BadRequestException("Query doPost() is only for 'action=save'.");
+		final String action = req.getParameter("action");
+		if ("save".equals(action)) {
+			saveQuery(req, resp);
 		}
+		else if ("edit".equals(action)) {
+			resp.setContentType("application/xml");
+			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			builder.transform(xslPath, "query.xsl");
+			builder.start(EDIT_PARAMS);
+			builder.link(INFO);
+			builder.link("namespaces");
+			final String queryLn = req.getParameter(EDIT_PARAMS[0]);
+			final String query = req.getParameter(EDIT_PARAMS[1]);
+			final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
+			final IntegerLiteralImpl limit = new IntegerLiteralImpl(new BigInteger(
+					req.getParameter(EDIT_PARAMS[3])));
+			builder.result(queryLn, query, infer, limit);
+			builder.end();
+		}
+		else {
+			throw new BadRequestException("Query doPost() is only for 'action=save' or 'action=edit'.");
+		}
+	}
+
+	private void saveQuery(final WorkbenchRequest req, final HttpServletResponse resp)
+		throws IOException, BadRequestException, OpenRDFException, JSONException
+	{
+		resp.setContentType("application/json");
 		final JSONObject json = new JSONObject();
 		final boolean accessible = storage.checkAccess((HTTPRepository)this.repository);
 		json.put("accessible", accessible);
@@ -128,7 +157,8 @@ public class QueryServlet extends TransformationServlet {
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 				}
 				else {
-					storage.saveQuery(http, queryName, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
+					storage.saveQuery(http, queryName, userName, shared, queryLanguage, queryText, infer,
+							rowsPerPage);
 				}
 			}
 			json.put("written", written);
@@ -164,8 +194,7 @@ public class QueryServlet extends TransformationServlet {
 			for (Namespace ns : con.getNamespaces().asList()) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
-			final String action = req.getParameter("action");
-			if (req.isParameterPresent("query") && !"edit".equals(action)) {
+			if (req.isParameterPresent("query")) {
 				try {
 					EVAL.extractQueryAndEvaluate(builder, resp, out, xslPath, con, req, this.cookies);
 				}
