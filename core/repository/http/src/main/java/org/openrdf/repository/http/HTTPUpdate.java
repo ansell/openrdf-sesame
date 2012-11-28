@@ -31,11 +31,11 @@ public class HTTPUpdate extends AbstractUpdate {
 
 	protected final HTTPRepositoryConnection httpCon;
 
-	protected final QueryLanguage queryLanguage;
+	private final QueryLanguage queryLanguage;
 
-	protected final String queryString;
+	private final String queryString;
 
-	protected final String baseURI;
+	private final String baseURI;
 
 	public HTTPUpdate(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
 		this.httpCon = con;
@@ -59,7 +59,7 @@ public class HTTPUpdate extends AbstractUpdate {
 
 	@Override
 	public String toString() {
-		return queryString;
+		return getQueryString();
 	}
 
 	public void execute()
@@ -70,7 +70,7 @@ public class HTTPUpdate extends AbstractUpdate {
 				// execute update immediately
 				HTTPClient client = httpCon.getRepository().getHTTPClient();
 				try {
-					client.sendUpdate(queryLanguage, queryString, baseURI, dataset, includeInferred,
+					client.sendUpdate(getQueryLanguage(), getQueryString(), getBaseURI(), dataset, includeInferred,
 							getBindingsArray());
 				}
 				catch (UnauthorizedException e) {
@@ -88,11 +88,33 @@ public class HTTPUpdate extends AbstractUpdate {
 			}
 			else {
 				// defer execution as part of transaction.
+				httpCon.scheduleUpdate(this);
 			}
 		}
 		catch (RepositoryException e) {
 			throw new HTTPUpdateExecutionException(e.getMessage(), e);
 		}
 
+	}
+
+	/**
+	 * @return Returns the baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
+	}
+
+	/**
+	 * @return Returns the queryLanguage.
+	 */
+	public QueryLanguage getQueryLanguage() {
+		return queryLanguage;
+	}
+
+	/**
+	 * @return Returns the queryString.
+	 */
+	public String getQueryString() {
+		return queryString;
 	}
 }
