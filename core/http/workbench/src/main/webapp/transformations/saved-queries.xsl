@@ -16,10 +16,10 @@
 		<xsl:for-each select="sparql:result">
 			<xsl:variable name="queryLn"
 				select="normalize-space(sparql:binding[@name='queryLn'])" />
+			<xsl:variable name="queryText" select="sparql:binding[@name='queryText']" />
 			<xsl:variable name="query-url-encoded">
 				<xsl:call-template name="url-encode">
-					<xsl:with-param name="str"
-						select="normalize-space(sparql:binding[@name='queryText'])" />
+					<xsl:with-param name="str" select="normalize-space($queryText)" />
 				</xsl:call-template>
 			</xsl:variable>
 			<xsl:variable name="infer"
@@ -77,8 +77,14 @@
 				</tr>
 				<tr>
 					<th class="action" colspan="2">
-						<a
-							href="query?action=edit&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">Edit</a>
+						<form method="post" action="query">
+							<input type="hidden" name="action" value="edit" />
+							<input type="hidden" name="queryLn" value="{$queryLn}" />
+							<input type="hidden" name="query" value="{$queryText}" />
+							<input type="hidden" name="infer" value="{$infer}" />
+							<input type="hidden" name="limit" value="{$rowsPerPage}" />
+							<input type="submit" value="Edit" />
+						</form>
 					</th>
 				</tr>
 				<tr>
