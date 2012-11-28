@@ -434,6 +434,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 				elements.iterator()));
 	}
 
+	protected void scheduleUpdate(HTTPUpdate update) {
+		
+	}
+	
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{

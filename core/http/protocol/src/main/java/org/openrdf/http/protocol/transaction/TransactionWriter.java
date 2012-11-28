@@ -7,6 +7,7 @@ package org.openrdf.http.protocol.transaction;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Set;
 
 import info.aduna.xml.XMLWriter;
 
@@ -15,6 +16,7 @@ import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
 import org.openrdf.http.protocol.transaction.operations.RemoveNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperation;
+import org.openrdf.http.protocol.transaction.operations.SPARQLUpdateOperation;
 import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.StatementOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
@@ -23,6 +25,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Dataset;
 
 /**
  * Serializes of an RDF transaction.
@@ -92,6 +95,9 @@ public class TransactionWriter {
 		else if (op instanceof ClearNamespacesOperation) {
 			serialize((ClearNamespacesOperation)op, xmlWriter);
 		}
+		else if (op instanceof SPARQLUpdateOperation) {
+			serialize((SPARQLUpdateOperation)op, xmlWriter);
+		}
 		else if (op == null) {
 			// ignore(?)
 		}
@@ -106,6 +112,54 @@ public class TransactionWriter {
 		xmlWriter.startTag(TransactionXMLConstants.ADD_STATEMENT_TAG);
 		serialize((StatementOperation)op, xmlWriter);
 		xmlWriter.endTag(TransactionXMLConstants.ADD_STATEMENT_TAG);
+	}
+
+	private void serialize(SPARQLUpdateOperation op, XMLWriter xmlWriter)
+		throws IOException
+	{
+		String baseURI = op.getBaseURI();
+		if (baseURI != null) {
+			xmlWriter.setAttribute(TransactionXMLConstants.BASE_URI_ATT, baseURI);
+		}
+		xmlWriter.setAttribute(TransactionXMLConstants.INCLUDE_INFERRED_ATT, op.isIncludeInferred());
+		xmlWriter.startTag(TransactionXMLConstants.SPARQL_UPDATE_TAG);
+
+		// serialize update string
+		String updateString = op.getUpdateString();
+		xmlWriter.textElement(TransactionXMLConstants.UPDATE_STRING_TAG, updateString);
+
+		// serialize dataset definition (if any)
+		Dataset dataset = op.getDataset();
+		if (dataset != null) {
+			xmlWriter.startTag(TransactionXMLConstants.DATASET_TAG);
+
+			xmlWriter.startTag(TransactionXMLConstants.DEFAULT_GRAPHS_TAG);
+			for (URI defaultGraph : dataset.getDefaultGraphs()) {
+				xmlWriter.textElement(TransactionXMLConstants.GRAPH_TAG, defaultGraph.stringValue());
+			}
+			xmlWriter.endTag(TransactionXMLConstants.DEFAULT_GRAPHS_TAG);
+
+			xmlWriter.startTag(TransactionXMLConstants.NAMED_GRAPHS_TAG);
+			for (URI namedGraph : dataset.getNamedGraphs()) {
+				xmlWriter.textElement(TransactionXMLConstants.GRAPH_TAG, namedGraph.stringValue());
+			}
+			xmlWriter.endTag(TransactionXMLConstants.NAMED_GRAPHS_TAG);
+
+			xmlWriter.startTag(TransactionXMLConstants.DEFAULT_REMOVE_GRAPHS_TAG);
+			for (URI defaultRemoveGraph : dataset.getDefaultRemoveGraphs()) {
+				xmlWriter.textElement(TransactionXMLConstants.GRAPH_TAG, defaultRemoveGraph.stringValue());
+			}
+			xmlWriter.endTag(TransactionXMLConstants.DEFAULT_REMOVE_GRAPHS_TAG);
+
+			if (dataset.getDefaultInsertGraph() != null) {
+				xmlWriter.textElement(TransactionXMLConstants.DEFAULT_INSERT_GRAPH,
+						dataset.getDefaultInsertGraph().stringValue());
+			}
+			xmlWriter.endTag(TransactionXMLConstants.DATASET_TAG);
+		}
+
+		xmlWriter.endTag(TransactionXMLConstants.SPARQL_UPDATE_TAG);
+
 	}
 
 	private void serialize(RemoveStatementsOperation op, XMLWriter xmlWriter)

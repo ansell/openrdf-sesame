@@ -65,24 +65,34 @@ public class HTTPUpdate extends AbstractUpdate {
 	public void execute()
 		throws UpdateExecutionException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
 		try {
-			client.sendUpdate(queryLanguage, queryString, baseURI, dataset, includeInferred, getBindingsArray());
-		}
-		catch (UnauthorizedException e) {
-			throw new HTTPUpdateExecutionException(e.getMessage(), e);
-		}
-		catch (QueryInterruptedException e) {
-			throw new HTTPUpdateExecutionException(e.getMessage(), e);
+			if (httpCon.isAutoCommit()) {
+				// execute update immediately
+				HTTPClient client = httpCon.getRepository().getHTTPClient();
+				try {
+					client.sendUpdate(queryLanguage, queryString, baseURI, dataset, includeInferred,
+							getBindingsArray());
+				}
+				catch (UnauthorizedException e) {
+					throw new HTTPUpdateExecutionException(e.getMessage(), e);
+				}
+				catch (QueryInterruptedException e) {
+					throw new HTTPUpdateExecutionException(e.getMessage(), e);
+				}
+				catch (MalformedQueryException e) {
+					throw new HTTPUpdateExecutionException(e.getMessage(), e);
+				}
+				catch (IOException e) {
+					throw new HTTPUpdateExecutionException(e.getMessage(), e);
+				}
+			}
+			else {
+				// defer execution as part of transaction.
+			}
 		}
 		catch (RepositoryException e) {
 			throw new HTTPUpdateExecutionException(e.getMessage(), e);
 		}
-		catch (MalformedQueryException e) {
-			throw new HTTPUpdateExecutionException(e.getMessage(), e);
-		}
-		catch (IOException e) {
-			throw new HTTPUpdateExecutionException(e.getMessage(), e);
-		}
+
 	}
 }
