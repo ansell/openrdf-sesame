@@ -19,6 +19,7 @@ import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
 import org.openrdf.http.protocol.transaction.operations.RemoveNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperation;
+import org.openrdf.http.protocol.transaction.operations.SPARQLUpdateOperation;
 import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Literal;
@@ -27,6 +28,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.impl.DatasetImpl;
 
 /**
  * Parses an RDF transaction document into a collection of
@@ -42,6 +44,10 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 	private List<TransactionOperation> txn;
 
 	private List<Value> parsedValues = new ArrayList<Value>();
+
+	private SPARQLUpdateOperation currentSPARQLUpdate = null;
+
+	private DatasetImpl currentDataset;
 
 	public TransactionSAXParser() {
 		this(new ValueFactoryImpl());
@@ -110,6 +116,30 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.CLEAR_NAMESPACES_TAG.equals(tagName)) {
 			txn.add(new ClearNamespacesOperation());
 		}
+		else if (TransactionXMLConstants.SPARQL_UPDATE_TAG.equals(tagName)) {
+			if (currentSPARQLUpdate != null) {
+				throw new SAXException("unexpected start of SPARQL Update operation");
+			}
+			currentSPARQLUpdate = new SPARQLUpdateOperation();
+
+			String baseURI = atts.get(TransactionXMLConstants.BASE_URI_ATT);
+			boolean includeInferred = Boolean.parseBoolean(atts.get(TransactionXMLConstants.INCLUDE_INFERRED_ATT));
+
+			currentSPARQLUpdate.setIncludeInferred(includeInferred);
+			currentSPARQLUpdate.setBaseURI(baseURI);
+		}
+		else if (TransactionXMLConstants.UPDATE_STRING_TAG.equals(tagName)) {
+			currentSPARQLUpdate.setUpdateString(text);
+		}
+		else if (TransactionXMLConstants.DATASET_TAG.equals(tagName)) {
+			currentDataset = new DatasetImpl();
+		}
+		else if (TransactionXMLConstants.DEFAULT_INSERT_GRAPH.equals(tagName)) {
+			currentDataset.setDefaultInsertGraph(valueFactory.createURI(text));
+		}
+		else if (TransactionXMLConstants.GRAPH_TAG.equals(tagName)) {
+			parsedValues.add(valueFactory.createURI(text));
+		}
 	}
 
 	@Override
@@ -124,6 +154,47 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		}
 		else if (TransactionXMLConstants.CLEAR_TAG.equals(tagName)) {
 			txn.add(createClearOperation());
+		}
+		else if (TransactionXMLConstants.SPARQL_UPDATE_TAG.equals(tagName)) {
+			txn.add(currentSPARQLUpdate);
+			currentSPARQLUpdate = null;
+		}
+		else if (TransactionXMLConstants.DEFAULT_GRAPHS_TAG.equals(tagName)) {
+			for (Value parsedValue : parsedValues) {
+				try {
+					currentDataset.addDefaultGraph((URI)parsedValue);
+				}
+				catch (ClassCastException e) {
+					throw new SAXException("unexpected value in default graph list: " + parsedValue);
+				}
+			}
+			parsedValues.clear();
+		}
+		else if (TransactionXMLConstants.NAMED_GRAPHS_TAG.equals(tagName)) {
+			for (Value parsedValue : parsedValues) {
+				try {
+					currentDataset.addNamedGraph((URI)parsedValue);
+				}
+				catch (ClassCastException e) {
+					throw new SAXException("unexpected value in named graph list: " + parsedValue);
+				}
+			}
+			parsedValues.clear();
+		}
+		else if (TransactionXMLConstants.DEFAULT_REMOVE_GRAPHS_TAG.equals(tagName)) {
+			for (Value parsedValue : parsedValues) {
+				try {
+					currentDataset.addDefaultRemoveGraph((URI)parsedValue);
+				}
+				catch (ClassCastException e) {
+					throw new SAXException("unexpected value in default remove graph list: " + parsedValue);
+				}
+			}
+			parsedValues.clear();
+		}
+		else if (TransactionXMLConstants.DATASET_TAG.equals(tagName)) {
+			currentSPARQLUpdate.setDataset(currentDataset);
+			currentDataset = null;
 		}
 	}
 

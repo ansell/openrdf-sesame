@@ -20,6 +20,7 @@ import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
 import org.openrdf.http.protocol.transaction.operations.RemoveNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperation;
+import org.openrdf.http.protocol.transaction.operations.SPARQLUpdateOperation;
 import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Literal;
@@ -459,6 +460,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 				elements.iterator()));
 	}
 
+	protected void scheduleUpdate(HTTPUpdate update) {
+		SPARQLUpdateOperation op = new SPARQLUpdateOperation();
+		op.setUpdateString(update.getQueryString());
+		op.setBaseURI(update.getBaseURI());
+		op.setBindings(update.getBindingsArray());
+		op.setIncludeInferred(update.getIncludeInferred());
+		op.setDataset(update.getDataset());
+		txn.add(op);
+	}
+	
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
