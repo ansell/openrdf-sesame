@@ -26,11 +26,17 @@
 				select="normalize-space(sparql:binding[@name='infer'])" />
 			<xsl:variable name="rowsPerPage"
 				select="normalize-space(sparql:binding[@name='rowsPerPage'])" />
+			<xsl:variable name="query"
+				select="normalize-space(sparql:binding[@name='query'])" />
+			<xsl:variable name="user"
+				select="normalize-space(sparql:binding[@name='user'])" />
+			<xsl:variable name="queryName"
+				select="normalize-space(sparql:binding[@name='queryName'])" />
 			<table class="data">
 				<tr>
 					<th>User</th>
 					<td>
-						<xsl:value-of select="sparql:binding[@name='user']" />
+						<xsl:value-of select="$user" />
 					</td>
 					<td rowspan="9">
 						<pre>
@@ -41,7 +47,7 @@
 				<tr>
 					<th>Query Name</th>
 					<td>
-						<xsl:value-of select="sparql:binding[@name='queryName']" />
+						<xsl:value-of select="$queryName" />
 					</td>
 				</tr>
 				<tr>
@@ -89,7 +95,10 @@
 				</tr>
 				<tr>
 					<th class="action" colspan="2">
-						<a href="">Delete</a>
+						<form>
+							<input type="button" value="Delete..."
+								onclick="deleteQuery('{$user}', '{$queryName}', '{$query}');" />
+						</form>
 					</th>
 				</tr>
 			</table>
