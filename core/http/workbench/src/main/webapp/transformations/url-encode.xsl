@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-  <xsl:output method="xml" indent="yes" encoding="iso-8859-1"/>
-
-
   <!-- ISO-8859-1 based URL-encoding demo
        Written by Mike J. Brown, mike@skew.org.
        Updated 2002-05-20.

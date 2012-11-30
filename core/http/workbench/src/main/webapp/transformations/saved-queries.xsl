@@ -3,7 +3,9 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
-	<xsl:include href="url-encode.xsl" />
+    <xsl:output method="html" />
+    
+    <xsl:include href="url-encode.xsl" />
 
 	<xsl:include href="../locale/messages.xsl" />
 
@@ -83,7 +85,7 @@
 				</tr>
 				<tr>
 					<th class="action" colspan="2">
-						<form method="post" action="query">
+						<form method="post" name="edit-query" action="query">
 							<input type="hidden" name="action" value="edit" />
 							<input type="hidden" name="queryLn" value="{$queryLn}" />
 							<input type="hidden" name="query" value="{$queryText}" />
@@ -95,7 +97,7 @@
 				</tr>
 				<tr>
 					<th class="action" colspan="2">
-						<form>
+						<form method="post" id="{$query}" action="saved-queries?delete={$query}">
 							<input type="button" value="Delete..."
 								onclick="deleteQuery('{$user}', '{$queryName}', '{$query}');" />
 						</form>
