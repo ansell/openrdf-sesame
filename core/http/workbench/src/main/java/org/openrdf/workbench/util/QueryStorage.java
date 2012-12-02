@@ -82,7 +82,7 @@ public final class QueryStorage {
 			+ "DELETE { $<query> "
 			+ MATCH
 			+ "}\nINSERT { $<query> :shared $<shared> ; :queryLanguage $<queryLanguage> ; :query $<queryText> ; "
-			+ ": infer $<infer> ; :rowsPerPage $<rowsPerPage> . } WHERE { $<query> :userName ?user ; " + MATCH
+			+ ":infer $<infer> ; :rowsPerPage $<rowsPerPage> . } WHERE { $<query> :userName ?user ; " + MATCH
 			+ FILTER;
 
 	private static final String SELECT_URI = PRE
