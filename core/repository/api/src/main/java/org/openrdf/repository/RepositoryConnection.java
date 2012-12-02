@@ -534,7 +534,7 @@ public interface RepositoryConnection {
 	 *         if the transaction state can not be determined. This can happen
 	 *         for instance when communication with a repository fails or times
 	 *         out.
-	 * @throws RepositoryException 
+	 * @throws RepositoryException
 	 */
 	public boolean isActive()
 		throws UnknownTransactionStateException, RepositoryException;
@@ -663,7 +663,9 @@ public interface RepositoryConnection {
 	 *        {@link java.net.URL#toExternalForm() url.toExternalForm()} if the
 	 *        value is set to <tt>null</tt>.
 	 * @param dataFormat
-	 *        The serialization format of the data.
+	 *        The serialization format of the data. If set to <tt>null</tt>, the
+	 *        format will be determined by examing the MIME-type in the HTTP
+	 *        response, and failing that, the file name extension
 	 * @param contexts
 	 *        The contexts to add the data to. If one or more contexts are
 	 *        specified the data is added to these contexts, ignoring any context
