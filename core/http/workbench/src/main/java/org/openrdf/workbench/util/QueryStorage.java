@@ -72,7 +72,9 @@ public final class QueryStorage {
 
 	private static final String FILTER = "FILTER (?user = $<userName> || ?user = \"\" ) }";
 
-	private static final String DELETE = PRE + "DELETE WHERE { $<query> :userName ?user ; ?p ?o . " + FILTER;
+	private static final String CAN_DELETE = PRE + "ASK { $<query> :userName ?user . " + FILTER;
+
+	private static final String DELETE = PRE + "DELETE WHERE { $<query> :userName ?user ; ?p ?o . }";
 
 	private static final String MATCH = ":shared ?s ; :queryLanguage ?ql ; :query ?q ; :rowsPerPage ?rpp .\n";
 
@@ -166,7 +168,7 @@ public final class QueryStorage {
 	 *        the language, SeRQL or SPARQL, of the query
 	 * @param queryText
 	 *        the actual query text
-	 * @param infer 
+	 * @param infer
 	 * @param rowsPerPage
 	 *        rows to display per page, may be 0 (all), 10, 50, 100, or 200)
 	 * @throws OpenRDFException
@@ -194,6 +196,22 @@ public final class QueryStorage {
 		updateQueryRepository(save.toString());
 	}
 
+	public boolean canDelete(final URI query, final String currentUser)
+		throws RepositoryException, QueryEvaluationException, MalformedQueryException
+	{
+		final QueryStringBuilder canDelete = new QueryStringBuilder(CAN_DELETE);
+		canDelete.replaceURI(QUERY, query.toString());
+		canDelete.replaceQuote(USER_NAME, currentUser);
+		LOGGER.info("{}", canDelete);
+		final RepositoryConnection connection = this.queries.getConnection();
+		try {
+			return connection.prepareBooleanQuery(QueryLanguage.SPARQL, canDelete.toString()).evaluate();
+		}
+		finally {
+			connection.close();
+		}
+	}
+
 	public boolean askExists(final HTTPRepository repository, final String queryName, final String userName)
 		throws QueryEvaluationException, RepositoryException, MalformedQueryException
 	{
@@ -213,7 +231,8 @@ public final class QueryStorage {
 
 	/**
 	 * Delete the given query for the given user. It is the responsibility of the
-	 * calling code to call checkAccess() with the full credentials first.
+	 * calling code to call checkAccess() and canDelete() with the full
+	 * credentials first.
 	 * 
 	 * @param query
 	 * @param userName

@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -62,12 +63,37 @@ public class SavedQueriesServlet extends TransformationServlet {
 		builder.end();
 	}
 
+	@Override
+	protected void doPost(final WorkbenchRequest wreq, final HttpServletResponse resp, final String xslPath)
+		throws BadRequestException, IOException, OpenRDFException
+	{
+		final String urn = wreq.getParameter("delete");
+		if (null == urn || urn.isEmpty()) {
+			throw new BadRequestException("Expected POST to contain a 'delete=' parameter.");
+		}
+		final boolean accessible = storage.checkAccess((HTTPRepository)this.repository);
+		if (accessible) {
+			String userName = wreq.getParameter(SERVER_USER);
+			if (null == userName) {
+				userName = "";
+			}
+			final URIImpl queryURI = new URIImpl(urn);
+			if (storage.canDelete(queryURI, userName)) {
+				storage.deleteQuery(queryURI, userName);
+			}
+			else {
+				throw new BadRequestException("User '" + userName + "' may not delete query id " + urn);
+			}
+		}
+		this.service(wreq, resp, xslPath);
+	}
+
 	private void getSavedQueries(final WorkbenchRequest req, final TupleResultBuilder builder)
 		throws OpenRDFException, BadRequestException
 	{
 		final HTTPRepository repo = (HTTPRepository)this.repository;
 		String user = req.getParameter(SERVER_USER);
-		if (null == user){
+		if (null == user) {
 			user = "";
 		}
 		if (!storage.checkAccess(repo)) {
