@@ -85,7 +85,7 @@ public class RDFFormat extends FileFormat {
 	 * accepted. Character encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/DesignIssues/Notation3.html
+	 * @see http://www.w3.org/TeamSubmission/n3/
 	 */
 	public static final RDFFormat N3 = new RDFFormat("N3", Arrays.asList("text/n3", "text/rdf+n3"),
 			Charset.forName("UTF-8"), Arrays.asList("n3"), true, false);
