@@ -24,6 +24,24 @@
 	 <url>http://www.aduna-software.com/</url>
   </organization>
 
+  <developers>
+	<developer>
+		<id>jeenbroekstra</id>
+		<name>Jeen Broekstra</name>
+		<email>jeen.broekstra@gmail.com</email>
+	</developer>
+	<developer>
+		<id>arjohn</id>
+		<name>Arjohn Kampman</name>
+		<email>arjohn.kampman@vound-software.com</email>
+	</developer>
+	<developer>
+		<id>james_leigh</id>
+		<name>James Leigh</name>
+		<email>james@3roundstones.com</email>
+	</developer>
+  </developers>
+
   <licenses>
 	 <license>
 		<name>Aduna BSD license</name>
