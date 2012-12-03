@@ -46,7 +46,8 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * constructs that extend over multiple lines, but the author's own parser
  * deviates from this too.</li>
  * <li>The localname part of a prefixed named is allowed to start with a number
- * (cf. <a href="http://www.w3.org/TR/turtle/">the W3C Turtle Working Draft</a>).</li>
+ * (cf. <a href="http://www.w3.org/TR/turtle/">the W3C Turtle Working
+ * Draft</a>).</li>
  * </ul>
  * 
  * @author Arjohn Kampman
@@ -197,27 +198,30 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseStatement()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		
+
 		StringBuilder sb = new StringBuilder(8);
 
 		int c;
 		// longest valid directive @prefix
 		do {
 			c = read();
-			if(c == -1 || TurtleUtil.isWhitespace(c)) {
+			if (c == -1 || TurtleUtil.isWhitespace(c)) {
 				unread(c);
 				break;
 			}
 			sb.append((char)c);
-		} while (sb.length() < 8);
-		
+		}
+		while (sb.length() < 8);
+
 		String directive = sb.toString();
-		
-		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("base")) {
+
+		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix")
+				|| directive.equalsIgnoreCase("base"))
+		{
 			parseDirective(directive);
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
-			if(directive.startsWith("@")) {
+			if (directive.startsWith("@")) {
 				verifyCharacter(read(), ".");
 			}
 		}
@@ -302,9 +306,30 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseTriples()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		parseSubject();
-		skipWSC();
-		parsePredicateObjectList();
+		int c = peek();
+
+		// If the first character is an open bracket we need to decide which of
+		// the two parsing methods for blank nodes to use
+		if (c == '[') {
+			c = read();
+			skipWSC();
+			c = peek();
+			if (c == ']') {
+				c = read();
+				subject = createBNode();
+				skipWSC();
+				parsePredicateObjectList();
+			}
+			else {
+				unread('[');
+				subject = parseImplicitBlank();
+			}
+		}
+		else {
+			parseSubject();
+			skipWSC();
+			parsePredicateObjectList();
+		}
 
 		subject = null;
 		predicate = null;
@@ -852,7 +877,8 @@ public class TurtleParser extends RDFParserBase {
 
 		// Unescape any escape sequences
 		try {
-			// FIXME: The following decodes \n and similar in URIs, which should be invalid according to test <turtle-syntax-bad-uri-04.ttl>
+			// FIXME: The following decodes \n and similar in URIs, which should be
+			// invalid according to test <turtle-syntax-bad-uri-04.ttl>
 			uri = TurtleUtil.decodeString(uri);
 		}
 		catch (IllegalArgumentException e) {
@@ -1068,12 +1094,12 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	protected void unread(String directive)
-			throws IOException
-		{
-			for(int i = directive.length()-1; i >=0; i--) {
-				reader.unread(directive.charAt(i));
-			}
+		throws IOException
+	{
+		for (int i = directive.length() - 1; i >= 0; i--) {
+			reader.unread(directive.charAt(i));
 		}
+	}
 
 	protected int peek()
 		throws IOException
