@@ -42,17 +42,29 @@ public class QueryEvaluationUtilTest {
 		Literal arg2int = f.createLiteral(1);
 		
 		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1simple, arg2simple));
-		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1en, arg2en));
-		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1string, arg2string));
-		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1int, arg2int));
-
-		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1en, arg2simple));
-		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1en, arg2simple));
-		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1en, arg2cy));
-		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1en, arg2int));
 		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1simple, arg2en));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1simple, arg2cy));
+		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1simple, arg2string));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1simple, arg2int));
+		
+		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1en, arg2simple));
+		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1en, arg2en));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1en, arg2cy));
+		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1en, arg2string));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1en, arg2int));
+		
+		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1string, arg2simple));
 		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1string, arg2en));
-
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1string, arg2cy));
+		assertTrue(QueryEvaluationUtil.compatibleArguments(arg1string, arg2string));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1string, arg2int));
+		
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1int, arg2simple));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1int, arg2en));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1int, arg2cy));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1int, arg2string));
+		assertFalse(QueryEvaluationUtil.compatibleArguments(arg1int, arg2int));
+		
 	}
 	
 }
