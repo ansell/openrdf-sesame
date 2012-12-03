@@ -2,6 +2,13 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- Inherit from Sonatype OSS parent pom to get distribution and release settings. -->
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
   <groupId>org.openrdf.sesame</groupId>
   <artifactId>sesame</artifactId>
   <version>2.7-SNAPSHOT</version>
@@ -636,20 +643,5 @@
 	 <developerConnection>scm:git:git@bitbucket.org:openrdf/sesame.git</developerConnection>
 	 <url>https://bitbucket.org/openrdf/sesame/src</url>
   </scm>
-
-  <distributionManagement>
-	 <repository>
-		<id>aduna-opensource.releases.deploy</id>
-		<name>Aduna Open Source - Maven releases</name>
-		<url>scpexe://repo.aduna-software.org:2222/var/local/hosts/repo.aduna-software.org/maven2/releases</url>
-		<uniqueVersion>false</uniqueVersion>
-	 </repository>
-	 <snapshotRepository>
-		<id>aduna-opensource.snapshots.deploy</id>
-		<name>Aduna Open Source - Maven snapshots</name>
-		<url>scpexe://repo.aduna-software.org:2222/var/local/hosts/repo.aduna-software.org/maven2/snapshots</url>
-		<uniqueVersion>false</uniqueVersion>
-	 </snapshotRepository>
-  </distributionManagement>
 
 </project>
