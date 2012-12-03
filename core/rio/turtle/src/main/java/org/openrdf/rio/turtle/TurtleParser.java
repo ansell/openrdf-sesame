@@ -212,7 +212,6 @@ public class TurtleParser extends RDFParserBase {
 		} while (sb.length() < 8);
 		
 		String directive = sb.toString();
-		System.out.println("directive="+directive);
 		
 		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("base")) {
 			parseDirective(directive);
@@ -233,10 +232,6 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		// TODO: Allow for BASE and PREFIX from SPARQL here, in addition to @base and @prefix
-		// Verify that the first characters form the string "prefix"
-		//verifyCharacter(read(), "@");
-
 		if (directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("@prefix")) {
 			parsePrefixID();
 		}

@@ -78,14 +78,31 @@ public class TriGParser extends TurtleParser {
 	protected void parseStatement()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		StringBuilder sb = new StringBuilder(8);
 
-		if (c == '@') {
-			parseDirective();
+		int c;
+		// longest valid directive @prefix
+		do {
+			c = read();
+			if(c == -1 || TurtleUtil.isWhitespace(c)) {
+				unread(c);
+				break;
+			}
+			sb.append((char)c);
+		} while (sb.length() < 8);
+		
+		String directive = sb.toString();
+		
+		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("base")) {
+			parseDirective(directive);
 			skipWSC();
-			verifyCharacter(read(), ".");
+			// SPARQL BASE and PREFIX lines do not end in .
+			if(directive.startsWith("@")) {
+				verifyCharacter(read(), ".");
+			}
 		}
 		else {
+			unread(directive);
 			parseGraph();
 		}
 	}
