@@ -14,7 +14,7 @@
 		<echo message="- docs:		create user and system documentation only" />
 	</target>
 
-	<target name="package" depends="issuewarnings,mvn,override-onejar-services" description="Create release artifacts"/>
+	<target name="package" depends="issuewarnings,mvn" description="Create release artifacts"/>
 
 	<target name="mvn">
 		<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" failonerror="true">
@@ -50,53 +50,4 @@
 		</exec>
 	</target>
 	
-	<target name="create-service-files">
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.query.algebra.evaluation.function.Function"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.query.parser.QueryParserFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.query.resultio.BooleanQueryResultParserFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.query.resultio.BooleanQueryResultWriterFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.query.resultio.TupleQueryResultParserFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.query.resultio.TupleQueryResultWriterFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.repository.config.RepositoryFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.rio.RDFParserFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.rio.RDFWriterFactory"/>
-		</antcall>
-		<antcall target="concat-service-file">
-			<param name="service" value="org.openrdf.sail.config.SailFactory"/>
-		</antcall>
-	</target>
-
-	<target name="override-onejar-services" depends="create-service-files">
-		<xmlproperty file="pom.xml" />
-		<zip destfile="target/openrdf-sesame-${project.parent.version}-onejar.jar" update="true">
-			<fileset dir="target/services"/>
-		</zip>
-	</target>
-
-	<target name="concat-service-file">
-		<dirname property="antfile.dir" file="${ant.file}"/>
-		<echo message="META-INF/services/${service}"/>
-
-		<concat destfile="target/services/META-INF/services/${service}" fixlastline="yes">
-			<fileset dir="${antfile.dir}" includes="**/src/main/resources/META-INF/services/${service}"/>
-		</concat>
-	</target>
-
 </project>
