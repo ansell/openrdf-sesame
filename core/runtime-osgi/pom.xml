@@ -27,23 +27,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>process-classes</phase>
-						<configuration>
-							<target>
-								<mkdir dir="target/services/META-INF/services" />
-								<ant antfile="../build.xml" target="create-service-files" dir="${basedir}" />
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>   
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -62,8 +45,7 @@
 							*
 						</Import-Package>
 						<Include-Resource>
-							{maven-resources},
-							META-INF/services=target/services/META-INF/services
+							{maven-resources}
 						</Include-Resource>
 					</instructions>
 				</configuration>
