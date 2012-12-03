@@ -8,6 +8,12 @@
 	<baseDirectory>openrdf-sesame</baseDirectory>
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<includeSiteDirectory>false</includeSiteDirectory>
+	
+	<containerDescriptorHandlers>
+		<containerDescriptorHandler>
+        		<handlerName>metaInf-services</handlerName>
+		</containerDescriptorHandler>
+	</containerDescriptorHandlers>
 
 	<moduleSets>
 		<moduleSet>
