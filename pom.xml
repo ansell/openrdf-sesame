@@ -2,6 +2,13 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
+
   <groupId>org.openrdf.sesame</groupId>
   <artifactId>sesame</artifactId>
   <version>2.7-SNAPSHOT</version>
@@ -16,6 +23,24 @@
 	 <name>Aduna</name>
 	 <url>http://www.aduna-software.com/</url>
   </organization>
+
+  <developers>
+	<developer>
+		<id>jeenbroekstra</id>
+		<name>Jeen Broekstra</name>
+		<email>jeen.broekstra@gmail.com</email>
+	</developer>
+	<developer>
+		<id>arjohn</id>
+		<name>Arjohn Kampman</name>
+		<email>arjohn.kampman@vound-software.com</email>
+	</developer>
+	<developer>
+		<id>james_leigh</id>
+		<name>James Leigh</name>
+		<email>james@3roundstones.com</email>
+	</developer>
+  </developers>
 
   <licenses>
 	 <license>
@@ -636,45 +661,5 @@
 	 <developerConnection>scm:git:git@bitbucket.org:openrdf/sesame.git</developerConnection>
 	 <url>https://bitbucket.org/openrdf/sesame/src</url>
   </scm>
-
-  <repositories>
-	 <repository>
-		<releases>
-		  <enabled>true</enabled>
-		</releases>
-		<snapshots>
-		  <enabled>false</enabled>
-		</snapshots>
-		<id>aduna-opensource.releases</id>
-		<name>Aduna Open Source - Maven releases</name>
-		<url>http://repo.aduna-software.org/maven2/releases</url>
-	 </repository>
-	 <repository>
-		<releases>
-		  <enabled>false</enabled>
-		</releases>
-		<snapshots>
-		  <enabled>true</enabled>
-		</snapshots>
-		<id>aduna-opensource.snapshots</id>
-		<name>Aduna Open Source - Maven snapshots</name>
-		<url>http://repo.aduna-software.org/maven2/snapshots</url>
-	 </repository>
-  </repositories>
-
-  <distributionManagement>
-	 <repository>
-		<id>aduna-opensource.releases.deploy</id>
-		<name>Aduna Open Source - Maven releases</name>
-		<url>scpexe://repo.aduna-software.org:2222/var/local/hosts/repo.aduna-software.org/maven2/releases</url>
-		<uniqueVersion>false</uniqueVersion>
-	 </repository>
-	 <snapshotRepository>
-		<id>aduna-opensource.snapshots.deploy</id>
-		<name>Aduna Open Source - Maven snapshots</name>
-		<url>scpexe://repo.aduna-software.org:2222/var/local/hosts/repo.aduna-software.org/maven2/snapshots</url>
-		<uniqueVersion>false</uniqueVersion>
-	 </snapshotRepository>
-  </distributionManagement>
 
 </project>
