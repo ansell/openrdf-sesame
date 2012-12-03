@@ -3,10 +3,8 @@
    <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
  ]>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:variable name="info"
 		select="document(sparql:sparql/sparql:head/sparql:link[@href='info']/@href)" />
@@ -30,20 +28,19 @@
 				<xsl:comment><![CDATA[[if IE 6]>
 				<link title="Default" rel="stylesheet" type="text/css" href="../../styles/default/msie-minheight.css" media="screen" />
 				<![endif]]]></xsl:comment>
-				<link title="Basic" rel="alternate stylesheet"
-					type="text/css" href="../../styles/basic/all.css" media="all" />
-				<link rel="shortcut icon" href="../../favicon.ico"
-					type="image/ico" />
-				<link rel="icon" href="../../favicon.png"
-					type="image/png" />
-				<script src="../../scripts/template.js" type="text/javascript">  </script>
+				<link title="Basic" rel="alternate stylesheet" type="text/css"
+					href="../../styles/basic/all.css" media="all" />
+				<link rel="shortcut icon" href="../../favicon.ico" type="image/ico" />
+				<link rel="icon" href="../../favicon.png" type="image/png" />
+				<script src="../../scripts/template.js" type="text/javascript">
+				</script>
 			</head>
 			<body>
 				<div id="header">
 					<div id="logo">
 						<img src="../../images/logo.png" alt="" />
-						<img class="productgroup"
-							src="../../images/productgroup.png" alt="" />
+						<img class="productgroup" src="../../images/productgroup.png"
+							alt="" />
 					</div>
 				</div>
 				<div id="navigation">
@@ -55,8 +52,7 @@
 					<table>
 						<tr>
 							<th colspan="3">
-								<xsl:value-of
-									select="$selections.title" />
+								<xsl:value-of select="$selections.title" />
 							</th>
 						</tr>
 						<tr>
@@ -71,28 +67,24 @@
 									</xsl:when>
 									<xsl:otherwise>
 										<span class="disabled">
-											<xsl:value-of
-												select="$none.label" />
+											<xsl:value-of select="$none.label" />
 										</span>
 									</xsl:otherwise>
 								</xsl:choose>
 							</td>
 							<td class="change">
 								<a href="../NONE/server">
-									<xsl:value-of
-										select="$change.label" />
+									<xsl:value-of select="$change.label" />
 								</a>
 							</td>
 						</tr>
 						<tr>
 							<th>
-								<xsl:value-of
-									select="$repository.label" />
+								<xsl:value-of select="$repository.label" />
 							</th>
 							<td>
 								<xsl:choose>
-									<xsl:when
-										test="$info//sparql:binding[@name='id']">
+									<xsl:when test="$info//sparql:binding[@name='id']">
 										<xsl:value-of
 											select="$info//sparql:binding[@name='description']/sparql:literal" />
 										(
@@ -102,31 +94,27 @@
 									</xsl:when>
 									<xsl:otherwise>
 										<span class="disabled">
-											<xsl:value-of
-												select="$none.label" />
+											<xsl:value-of select="$none.label" />
 										</span>
 									</xsl:otherwise>
 								</xsl:choose>
 							</td>
 							<td class="change">
 								<a href="../NONE/repositories">
-									<xsl:value-of
-										select="$change.label" />
+									<xsl:value-of select="$change.label" />
 								</a>
 							</td>
 						</tr>
 						<tr>
 							<th>
-								<xsl:value-of
-									select="$server-user.label" />
+								<xsl:value-of select="$server-user.label" />
 							</th>
 							<td id="selected-user"></td>
-								<td class="change">
+							<td class="change">
 								<a href="../NONE/server">
-									<xsl:value-of
-										select="$change.label" />
+									<xsl:value-of select="$change.label" />
 								</a>
-							</td>						
+							</td>
 						</tr>
 					</table>
 					<hr />
@@ -229,6 +217,11 @@
 		<xsl:call-template name="navigation-entry">
 			<xsl:with-param name="label" select="$query.label" />
 			<xsl:with-param name="href" select="'query'" />
+			<xsl:with-param name="disabled" select="$disabled" />
+		</xsl:call-template>
+		<xsl:call-template name="navigation-entry">
+			<xsl:with-param name="label" select="$saved-queries.label" />
+			<xsl:with-param name="href" select="'saved-queries'" />
 			<xsl:with-param name="disabled" select="$disabled" />
 		</xsl:call-template>
 		<xsl:call-template name="navigation-entry">
