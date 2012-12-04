@@ -563,7 +563,7 @@ public class TurtleParser extends RDFParserBase {
 			// node ID, e.g. _:n1
 			return parseNodeID();
 		}
-		else if (c == '"') {
+		else if (c == '"' || c == '\'') {
 			// quoted literal, e.g. "foo" or """foo"""
 			return parseQuotedLiteral();
 		}
@@ -648,23 +648,25 @@ public class TurtleParser extends RDFParserBase {
 	{
 		String result = null;
 
-		// First character should be '"'
-		verifyCharacter(read(), "\"");
+		int c1 = read();
+		
+		// First character should be '"' or "'"
+		verifyCharacter(c1, "\"\'");
 
 		// Check for long-string, which starts and ends with three double quotes
 		int c2 = read();
 		int c3 = read();
 
-		if (c2 == '"' && c3 == '"') {
+		if ((c2 == '"' && c3 == '"') || (c2 == '\'' && c3 == '\'')) {
 			// Long string
-			result = parseLongString();
+			result = parseLongString(c2);
 		}
 		else {
 			// Normal string
 			unread(c3);
 			unread(c2);
 
-			result = parseString();
+			result = parseString(c1);
 		}
 
 		// Unescape any escape sequences
@@ -679,10 +681,10 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Parses a "normal string". This method assumes that the first double quote
+	 * Parses a "normal string". This method requires that the opening character
 	 * has already been parsed.
 	 */
-	protected String parseString()
+	protected String parseString(int closingCharacter)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = new StringBuilder(32);
@@ -690,7 +692,7 @@ public class TurtleParser extends RDFParserBase {
 		while (true) {
 			int c = read();
 
-			if (c == '"') {
+			if (c == closingCharacter) {
 				break;
 			}
 			else if (c == -1) {
@@ -713,10 +715,10 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Parses a """long string""". This method assumes that the first three
-	 * double quotes have already been parsed.
+	 * Parses a """long string""". This method requires that the first three
+	 * characters have already been parsed.
 	 */
-	protected String parseLongString()
+	protected String parseLongString(int closingCharacter)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = new StringBuilder(1024);
@@ -730,7 +732,7 @@ public class TurtleParser extends RDFParserBase {
 			if (c == -1) {
 				throwEOFException();
 			}
-			else if (c == '"') {
+			else if (c == closingCharacter) {
 				doubleQuoteCount++;
 			}
 			else {
