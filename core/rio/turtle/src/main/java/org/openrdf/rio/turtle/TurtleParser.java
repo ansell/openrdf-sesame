@@ -783,22 +783,31 @@ public class TurtleParser extends RDFParserBase {
 		}
 
 		if (c == '.' || c == 'e' || c == 'E') {
-			// We're parsing a decimal or a double
-			datatype = XMLSchema.DECIMAL;
 
 			// read optional fractional digits
 			if (c == '.') {
-				value.append((char)c);
-
-				c = read();
-				while (ASCIIUtil.isNumber(c)) {
-					value.append((char)c);
-					c = read();
+				
+				if(TurtleUtil.isWhitespace(peek())) {
+					// We're parsing an integer that did not have a space before the period to end the statement
 				}
+				else
+				{
+					value.append((char)c);
 
-				if (value.length() == 1) {
-					// We've only parsed a '.'
-					reportFatalError("Object for statement missing");
+					c = read();
+					
+					while (ASCIIUtil.isNumber(c)) {
+						value.append((char)c);
+						c = read();
+					}
+	
+					if (value.length() == 1) {
+						// We've only parsed a '.'
+						reportFatalError("Object for statement missing");
+					}
+					
+					// We're parsing a decimal or a double
+					datatype = XMLSchema.DECIMAL;
 				}
 			}
 			else {
