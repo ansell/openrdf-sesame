@@ -148,7 +148,7 @@ public class StrBeforeTest {
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected.
+			assertEquals("incompatible operands for STRBEFORE: \"foobar\"^^<http://www.w3.org/2001/XMLSchema#string>, \"b\"^^<http://www.w3.org/2001/XMLSchema#date>", e.getMessage());
 		}
 	}
 	
@@ -164,7 +164,7 @@ public class StrBeforeTest {
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected.
+			assertEquals("incompatible operands for STRBEFORE: \"10\"^^<http://www.w3.org/2001/XMLSchema#int>, \"b\"", e.getMessage());
 		}
 	}
 	
@@ -181,7 +181,7 @@ public class StrBeforeTest {
 			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected.
+			assertEquals("incompatible operands for STRBEFORE: http://example.org/foobar, \"b\"", e.getMessage());
 		}
 	}
 	
@@ -193,12 +193,10 @@ public class StrBeforeTest {
 		try {
 			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
 			
-			assertEquals("foo", result.getLabel());
-			assertEquals(null, result.getDatatype());
-
+			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			fail(e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: \"foobar\"@en, \"b\"@nl", e.getMessage());
 		}
 	}
 	
@@ -211,13 +209,10 @@ public class StrBeforeTest {
 		try {
 			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
 
-			assertEquals("foo", result.getLabel());
-			assertEquals(null, result.getDatatype());
-
+			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			fail(e.getMessage());
-
+			assertEquals("incompatible operands for STRBEFORE: \"foobar\", \"b\"@nl", e.getMessage());
 		}
 	}
 	
@@ -235,7 +230,26 @@ public class StrBeforeTest {
 
 		}
 		catch (ValueExprEvaluationException e) {
-			// do nothing, expected 
+			fail(e.getMessage());
 		}
 	}
+
+	@Test
+	public void testEvaluate11() {
+		Literal leftArg = f.createLiteral("foobar", "nl");
+		Literal rightArg = f.createLiteral("b", "nl");
+		
+		try {
+			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
+			
+			assertEquals("foo", result.getLabel());
+			assertEquals(null, result.getDatatype());
+			assertEquals("nl", result.getLanguage());
+
+		}
+		catch (ValueExprEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 }
