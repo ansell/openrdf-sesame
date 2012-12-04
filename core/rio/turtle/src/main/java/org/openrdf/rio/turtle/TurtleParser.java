@@ -324,6 +324,15 @@ public class TurtleParser extends RDFParserBase {
 				unread('[');
 				subject = parseImplicitBlank();
 			}
+			skipWSC();
+			c = peek();
+			
+			// if this is not the end of the statement, recurse into the list of 
+			// predicate and objects, using the subject parsed above as the subject 
+			// of the statement.
+			if(c != '.') {
+				parsePredicateObjectList();
+			}
 		}
 		else {
 			parseSubject();
