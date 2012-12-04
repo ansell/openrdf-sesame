@@ -41,20 +41,20 @@
 					<xsl:value-of select="$user" />
 				</h3>
 			</xsl:if>
-			<table>
+			<table class="data">
 				<tr>
 					<th colspan="4">
 						<xsl:value-of select="$queryName" />
 					</th>
-					<td>
+					<td colspan="2" >
 						<input type="button" value="Show" />
 					</td>
-					<td class="action">
+					<td colspan="2" class="action">
 						<a
 							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">Execute
 						</a>
 					</td>
-					<td class="action">
+					<td colspan="2" class="action">
 						<form method="post" name="edit-query" action="query">
 							<input type="hidden" name="action" value="edit" />
 							<input type="hidden" name="queryLn" value="{$queryLn}" />
@@ -64,7 +64,7 @@
 							<input type="submit" value="Edit" />
 						</form>
 					</td>
-					<td class="action">
+					<td colspan="2" class="action">
 						<form method="post" id="{$query}" action="saved-queries?delete={$query}">
 							<input type="button" value="Delete..."
 								onclick="deleteQuery('{$user}', '{$queryName}', '{$query}');" />
@@ -72,25 +72,25 @@
 					</td>
 				</tr>
 				<tr>
-					<th>Query Language</th>
+					<th colspan="2">Query Language</th>
 					<td>
 						<xsl:value-of select="$queryLn" />
 					</td>
-					<th>Include Inferred Statements</th>
+					<th colspan="2">Include Inferred Statements</th>
 					<td>
 						<xsl:value-of select="$infer" />
 					</td>
-					<th>Rows Per Page</th>
+					<th colspan="2">Rows Per Page</th>
 					<td>
 						<xsl:value-of select="$rowsPerPage" />
 					</td>
-					<th>Shared</th>
+					<th colspan="2">Shared</th>
 					<td>
 						<xsl:value-of select="sparql:binding[@name='shared']" />
 					</td>
 				</tr>
 				<tr>
-					<td calspan="8">
+					<td colspan="12">
 						<pre>
 							<xsl:value-of select="sparql:binding[@name='queryText']" />
 						</pre>
