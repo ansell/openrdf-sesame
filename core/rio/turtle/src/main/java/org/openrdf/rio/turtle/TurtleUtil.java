@@ -81,7 +81,7 @@ public class TurtleUtil {
 	}
 	
 	public static boolean isNameStartChar(int c) {
-		return c == '_' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
+		return c == '_' || c == ':' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
 	}
 
 	public static boolean isNameChar(int c) {
@@ -95,7 +95,14 @@ public class TurtleUtil {
 	}
 
 	public static boolean isPrefixChar(int c) {
-		return isNameChar(c);
+		return
+				c == '_' || 
+				ASCIIUtil.isNumber(c) || 
+				isPrefixStartChar(c) ||
+				c == '-' ||
+				c == 0x00B7 ||
+				c >= 0x0300 && c <= 0x036F ||
+				c >= 0x203F && c <= 0x2040;
 	}
 
 	public static boolean isLanguageStartChar(int c) {
