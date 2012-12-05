@@ -16,11 +16,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-server-spring</artifactId>
 		</dependency>
 	</dependencies>

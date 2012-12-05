@@ -15,7 +15,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-util</artifactId>
 		</dependency>
 		<dependency>

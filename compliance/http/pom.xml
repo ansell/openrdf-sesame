@@ -16,45 +16,45 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-protocol</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-binary</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqljson</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-rdfxml</artifactId>
 			<scope>runtime</scope>
 		</dependency>
@@ -66,28 +66,28 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-server</artifactId>
 			<type>war</type>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-protocol</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-http</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-manager</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-config</artifactId>
 		</dependency>
 
