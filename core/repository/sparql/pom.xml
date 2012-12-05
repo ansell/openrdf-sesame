@@ -20,18 +20,22 @@ The SPARQL Repository provides a Sesame Repository interface to any SPARQL end-p
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-api</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-client</artifactId>
+            <version>${project.version}</version>
 		</dependency>
-				<dependency>
+        <dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-api</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	

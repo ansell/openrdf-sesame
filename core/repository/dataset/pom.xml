@@ -17,22 +17,27 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-sail</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-api</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-api</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-query</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-model</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

@@ -17,31 +17,38 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-runtime</artifactId>
+            <version>${project.version}</version>
 			<!--<scope>runtime</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-query</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-serql</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-sparql</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-ntriples</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-config</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-util</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 
 		<dependency>

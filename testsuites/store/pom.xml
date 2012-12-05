@@ -17,21 +17,25 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-runtime</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-sail</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-memory</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-util</artifactId>
+            <version>${project.version}</version>
 		</dependency>
 
 		<dependency>
