@@ -54,7 +54,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-nquads</artifactId>
 			<version>${project.version}</version>
-        </dependency>
+		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
