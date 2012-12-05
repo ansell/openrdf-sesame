@@ -12,6 +12,23 @@ function deleteQuery(savedBy, name, urn) {
 	}
 }
 
+function toggle(urn) {
+	var rows = document.getElementsByTagName('tr');
+	var clazz = urn + '-data';
+	for (var i = 0; i < rows.length; i++) {
+		row = rows[i];
+		if (row.getAttribute('class') == clazz) {
+			row.style.display = (row.style.display == 'none') ? '' : 'none';
+		}
+	}
+	
+	var toggle = document.getElementById(urn + '-toggle');
+	var attr = 'value';
+	var show = 'Show';
+	var text = toggle.getAttribute(attr) == show ? 'Hide' : show;
+	toggle.setAttribute(attr, text);
+}
+
 addLoad(function() {
 	var queries = document.getElementsByTagName('pre');
 	for (i = 0; i < queries.length; i++) {

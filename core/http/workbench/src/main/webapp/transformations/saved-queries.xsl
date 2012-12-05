@@ -46,8 +46,9 @@
 					<th colspan="4">
 						<xsl:value-of select="$queryName" />
 					</th>
-					<td colspan="2" >
-						<input type="button" value="Show" />
+					<td colspan="2">
+						<input type="button" id="{$query}-toggle" value="Show"
+							onclick="toggle('{$query}');" />
 					</td>
 					<td colspan="2" class="action">
 						<a
@@ -71,7 +72,7 @@
 						</form>
 					</td>
 				</tr>
-				<tr>
+				<tr class="{$query}-data" style="display: none;">
 					<th colspan="2">Query Language</th>
 					<td>
 						<xsl:value-of select="$queryLn" />
@@ -89,7 +90,7 @@
 						<xsl:value-of select="sparql:binding[@name='shared']" />
 					</td>
 				</tr>
-				<tr>
+				<tr class="{$query}-data" style="display: none;">
 					<td colspan="12">
 						<pre>
 							<xsl:value-of select="sparql:binding[@name='queryText']" />
