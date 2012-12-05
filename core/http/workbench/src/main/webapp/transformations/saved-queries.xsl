@@ -37,67 +37,65 @@
 			<xsl:variable name="queryName"
 				select="normalize-space(sparql:binding[@name='queryName'])" />
 			<xsl:if test="$user != $previousUser">
-				<h3>
+				<h2>
 					<xsl:value-of select="$user" />
-				</h3>
+				</h2>
 			</xsl:if>
-			<table class="data">
-				<tr>
-					<th colspan="4">
-						<xsl:value-of select="$queryName" />
-					</th>
-					<td colspan="2">
-						<input type="button" id="{$query}-toggle" value="Show"
-							onclick="toggle('{$query}');" />
-					</td>
-					<td colspan="2" class="action">
-						<a
-							href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">Execute
-						</a>
-					</td>
-					<td colspan="2" class="action">
-						<form method="post" name="edit-query" action="query">
-							<input type="hidden" name="action" value="edit" />
-							<input type="hidden" name="queryLn" value="{$queryLn}" />
-							<input type="hidden" name="query" value="{$queryText}" />
-							<input type="hidden" name="infer" value="{$infer}" />
-							<input type="hidden" name="limit" value="{$rowsPerPage}" />
-							<input type="submit" value="Edit" />
-						</form>
-					</td>
-					<td colspan="2" class="action">
-						<form method="post" id="{$query}" action="saved-queries?delete={$query}">
-							<input type="button" value="Delete..."
-								onclick="deleteQuery('{$user}', '{$queryName}', '{$query}');" />
-						</form>
-					</td>
-				</tr>
-				<tr class="{$query}-data" style="display: none;">
-					<th colspan="2">Query Language</th>
-					<td>
-						<xsl:value-of select="$queryLn" />
-					</td>
-					<th colspan="2">Include Inferred Statements</th>
-					<td>
-						<xsl:value-of select="$infer" />
-					</td>
-					<th colspan="2">Rows Per Page</th>
-					<td>
-						<xsl:value-of select="$rowsPerPage" />
-					</td>
-					<th colspan="2">Shared</th>
-					<td>
-						<xsl:value-of select="sparql:binding[@name='shared']" />
-					</td>
-				</tr>
-				<tr class="{$query}-data" style="display: none;">
-					<td colspan="12">
-						<pre>
-							<xsl:value-of select="sparql:binding[@name='queryText']" />
-						</pre>
-					</td>
-				</tr>
-			</table>
+			<div id="{$query}-div">
+				<table>
+					<tr>
+						<td style="vertical-align:middle;width:24em">
+							<a
+								href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">
+								<xsl:value-of select="$queryName" />
+							</a>
+						</td>
+						<td style="vertical-align:middle">
+							<input type="button" id="{$query}-toggle" value="Show"
+								onclick="toggle('{$query}');" />
+						</td>
+						<td style="vertical-align:middle">
+							<form method="post" name="edit-query" action="query">
+								<input type="hidden" name="action" value="edit" />
+								<input type="hidden" name="queryLn" value="{$queryLn}" />
+								<input type="hidden" name="query" value="{$queryText}" />
+								<input type="hidden" name="infer" value="{$infer}" />
+								<input type="hidden" name="limit" value="{$rowsPerPage}" />
+								<input type="submit" value="Edit" />
+							</form>
+						</td>
+						<td style="vertical-align:middle">
+							<form method="post" id="{$query}" action="saved-queries?delete={$query}">
+								<input type="button" value="Delete..."
+									onclick="deleteQuery('{$user}', '{$queryName}', '{$query}');" />
+							</form>
+						</td>
+					</tr>
+				</table>
+				<table class="data" id="{$query}-metadata" style="display: none;">
+					<tr>
+						<th>Query Language</th>
+						<td>
+							<xsl:value-of select="$queryLn" />
+						</td>
+						<th>Include Inferred Statements</th>
+						<td>
+							<xsl:value-of select="$infer" />
+						</td>
+						<th>Rows Per Page</th>
+						<td>
+							<xsl:value-of select="$rowsPerPage" />
+						</td>
+						<th>Shared</th>
+						<td>
+							<xsl:value-of select="sparql:binding[@name='shared']" />
+						</td>
+					</tr>
+				</table>
+				<pre id="{$query}-text" style="display: none;">
+					<xsl:value-of select="sparql:binding[@name='queryText']" />
+				</pre>
+			</div>
 		</xsl:for-each>
 	</xsl:template>
 </xsl:stylesheet>

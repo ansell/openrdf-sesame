@@ -13,15 +13,10 @@ function deleteQuery(savedBy, name, urn) {
 }
 
 function toggle(urn) {
-	var rows = document.getElementsByTagName('tr');
-	var clazz = urn + '-data';
-	for (var i = 0; i < rows.length; i++) {
-		row = rows[i];
-		if (row.getAttribute('class') == clazz) {
-			row.style.display = (row.style.display == 'none') ? '' : 'none';
-		}
-	}
-	
+	var metadata = document.getElementById(urn + '-metadata');
+	var text = document.getElementById(urn + '-text');
+	metadata.style.display = (metadata.style.display == 'none') ? '' : 'none';
+	text.style.display = (text.style.display == 'none') ? '' : 'none';
 	var toggle = document.getElementById(urn + '-toggle');
 	var attr = 'value';
 	var show = 'Show';
