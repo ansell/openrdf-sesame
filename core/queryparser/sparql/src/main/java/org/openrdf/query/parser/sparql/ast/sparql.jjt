@@ -498,8 +498,9 @@ void WhereClause() :
 void BindingsClause() :
 {}
 {
+    <VALUES> DataBlock()
     // Keeping deprecated BINDINGS keyword for backward compatibility purposes
-    ( <BINDINGS> | <VALUES> ) DataBlock()
+    | <BINDINGS> (Var())* <LBRACE> (BindingSet())* <RBRACE>
 }
 
 void InlineData():

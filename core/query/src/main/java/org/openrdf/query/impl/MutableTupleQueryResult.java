@@ -8,6 +8,7 @@ package org.openrdf.query.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -268,21 +269,23 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 	public <C extends Collection<? super BindingSet>> C addTo(C collection)
 		throws QueryEvaluationException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		while (hasNext()) {
+			collection.add(next());
+		}
+		return collection;
 	}
 
 	public List<BindingSet> asList()
 		throws QueryEvaluationException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		List<BindingSet> list = new ArrayList<BindingSet>(bindingSets);
+		return list;
 	}
 
 	public Set<BindingSet> asSet()
 		throws QueryEvaluationException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		Set<BindingSet> set = new HashSet<BindingSet>(bindingSets);
+		return set;
 	}
 }
