@@ -23,46 +23,46 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-api</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-api</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-binary</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqljson</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-api</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-rdfxml</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -75,32 +75,32 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-server</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-protocol</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-http</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-manager</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-config</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

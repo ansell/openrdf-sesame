@@ -18,17 +18,17 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-server-spring</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-config</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-util</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
