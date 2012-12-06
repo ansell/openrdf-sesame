@@ -12,6 +12,18 @@ function deleteQuery(savedBy, name, urn) {
 	}
 }
 
+function toggle(urn) {
+	var metadata = document.getElementById(urn + '-metadata');
+	var text = document.getElementById(urn + '-text');
+	metadata.style.display = (metadata.style.display == 'none') ? '' : 'none';
+	text.style.display = (text.style.display == 'none') ? '' : 'none';
+	var toggle = document.getElementById(urn + '-toggle');
+	var attr = 'value';
+	var show = 'Show';
+	var text = toggle.getAttribute(attr) == show ? 'Hide' : show;
+	toggle.setAttribute(attr, text);
+}
+
 addLoad(function() {
 	var queries = document.getElementsByTagName('pre');
 	for (i = 0; i < queries.length; i++) {
