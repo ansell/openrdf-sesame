@@ -231,8 +231,8 @@ public class SPARQLFederatedService implements FederatedService {
 			List<String> relevantBindingNames = getRelevantBindingNames(allBindings, service.getServiceVars());
 			
 			if (relevantBindingNames.size()!=0) {
-				// append the BINDINGS clause to the query
-				queryString += buildBindingsClause(allBindings, relevantBindingNames);
+				// append the VALUES clause to the query
+				queryString += buildVALUESClause(allBindings, relevantBindingNames);
 			}
 
 			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
@@ -331,7 +331,7 @@ public class SPARQLFederatedService implements FederatedService {
 	}
 	
 	/**
-	 * Computes the BINDINGS clause for the set of relevant input bindings. The BINDINGS
+	 * Computes the VALUES clause for the set of relevant input bindings. The VALUES
 	 * clause is attached to a subquery for block-nested-loop evaluation. Implementation
 	 * note: we use a special binding to mark the rowIndex of the input binding.
 	 * 
@@ -340,17 +340,17 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @return
 	 * @throws QueryEvaluationException
 	 */
-	private String buildBindingsClause(List<BindingSet> bindings, List<String> relevantBindingNames) 
+	private String buildVALUESClause(List<BindingSet> bindings, List<String> relevantBindingNames) 
 				throws QueryEvaluationException {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append(" BINDINGS ?__rowIdx");	// __rowIdx: see comment in evaluate()
+		sb.append(" VALUES (?__rowIdx");	// __rowIdx: see comment in evaluate()
 		
 		for (String bName : relevantBindingNames) {
 			sb.append(" ?").append(bName);
 		}
 		
-		sb.append(" { ");
+		sb.append(") { ");
 		
 		int rowIdx=0;
 		for (BindingSet b : bindings) {
