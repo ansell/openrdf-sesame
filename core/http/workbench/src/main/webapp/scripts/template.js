@@ -69,7 +69,12 @@ function getCookie(name) {
 	return rval;
 }
 
+/**
+ * Code to run when the document loads: eliminate the 'noscript' warning
+ * message, and display an unauthenticated user properly.
+ */
 addLoad(function() {
+	var noscript = document.getElementById('noscript-message').style.display = 'none';
 	var user = getCookie("server-user");
 	if (user.length == 0 || user == '""') {
 		user = '<span class="disabled">None</span>';
