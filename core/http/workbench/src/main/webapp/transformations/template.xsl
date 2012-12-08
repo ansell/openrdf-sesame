@@ -123,6 +123,9 @@
 					<h1 id="title_heading">
 						<xsl:value-of select="$title" />
 					</h1>
+					<p id="noscript-message" class="ERROR">Scripting is not enabled. The OpenRDF Sesame Workbench
+						application requires scripting to be enabled in order to work
+						properly.</p>
 					<xsl:apply-templates select="*" />
 				</div>
 				<div id="footer">
