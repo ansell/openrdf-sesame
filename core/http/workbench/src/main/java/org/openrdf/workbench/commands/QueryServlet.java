@@ -40,8 +40,10 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 public class QueryServlet extends TransformationServlet {
 
 	private static final String ACCEPT = "Accept";
+	
+	private static final String QUERY = "query";
 
-	private static final String[] EDIT_PARAMS = new String[] { "queryLn", "query", "infer", "limit" };
+	private static final String[] EDIT_PARAMS = new String[] { "queryLn", QUERY, "infer", "limit" };
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
 
@@ -55,7 +57,7 @@ public class QueryServlet extends TransformationServlet {
 	 */
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "queryLn", "infer", "total_result_count" };
+		return new String[] { QUERY, "limit", "queryLn", "infer", "total_result_count" };
 	}
 
 	/**
@@ -148,7 +150,7 @@ public class QueryServlet extends TransformationServlet {
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
 			final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
 			final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
-			final String queryText = req.getParameter("query");
+			final String queryText = req.getParameter(QUERY);
 			final boolean infer = Boolean.valueOf(req.getParameter("infer"));
 			final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
 			if (written) {
@@ -194,7 +196,7 @@ public class QueryServlet extends TransformationServlet {
 			for (Namespace ns : con.getNamespaces().asList()) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
-			if (req.isParameterPresent("query")) {
+			if (req.isParameterPresent(QUERY)) {
 				try {
 					EVAL.extractQueryAndEvaluate(builder, resp, out, xslPath, con, req, this.cookies);
 				}

@@ -61,7 +61,7 @@ function getCookie(name) {
 		eq = cookie.indexOf("=");
 		temp = cookie.substr(0, eq).replace(/^\s+|\s+$/g, "");
 		if (name == temp) {
-			rval = unescape(cookie.substr(eq + 1));
+			rval = decodeURIComponent(cookie.substr(eq + 1)).replace(/\+/g, ' ');
 			break;
 		}
 	}
