@@ -50,6 +50,7 @@
 				<version>2.0.0</version>
 				<extensions>true</extensions>
 				<configuration>
+				  <ignoreLock>true</ignoreLock>
 					<instructions>
 						<Bundle-SymbolicName>org.openrdf.sesame2</Bundle-SymbolicName>
 						<Export-Package>!*text-base,!*prop-base,org.openrdf.*,info.aduna.*</Export-Package>
