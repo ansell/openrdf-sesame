@@ -21,7 +21,7 @@ function populateParameters() {
 			}
 		}
 	}
-	
+
 	if (!setFromHref) {
 		var cookie = getCookie(param);
 		if (cookie) {
@@ -68,6 +68,19 @@ function loadNamespaces() {
 				currentQueryLn = queryLn;
 			}
 		}
+	}
+}
+
+/**
+ * After confirming with the user, clears the query text and loads the current
+ * repository and query language name space declarations.
+ */
+function resetNamespaces() {
+	if (confirm('Click OK to clear the current query text and replace it with the '
+			+ document.getElementById('queryLn').value
+			+ ' namespace declarations.')) {
+		document.getElementById('query').value = '';
+		loadNamespaces();
 	}
 }
 
