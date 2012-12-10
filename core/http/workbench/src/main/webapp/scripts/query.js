@@ -8,14 +8,25 @@ function populateParameters() {
 	var href = document.location.href;
 	var elements = href.substring(href.indexOf('?') + 1).substring(
 			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
+	var param = 'query';
+	var query = document.getElementById(param);
+	var setFromHref = false;
 	for ( var i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
-		var q = document.getElementById('query');
-		if (pair[0] == 'query')
-			if (!q.value) {
-				q.value = value;
+		if (pair[0] == param) {
+			if (!query.value) {
+				query.value = value;
+				setFromHref = true;
 			}
+		}
+	}
+
+	if (!setFromHref) {
+		var cookie = getCookie(param);
+		if (cookie) {
+			query.value = cookie;
+		}
 	}
 }
 
@@ -57,6 +68,19 @@ function loadNamespaces() {
 				currentQueryLn = queryLn;
 			}
 		}
+	}
+}
+
+/**
+ * After confirming with the user, clears the query text and loads the current
+ * repository and query language name space declarations.
+ */
+function resetNamespaces() {
+	if (confirm('Click OK to clear the current query text and replace it with the '
+			+ document.getElementById('queryLn').value
+			+ ' namespace declarations.')) {
+		document.getElementById('query').value = '';
+		loadNamespaces();
 	}
 }
 
