@@ -14,6 +14,7 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.Iterations;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.model.Literal;
@@ -209,12 +210,12 @@ public class SPARQLFederatedService implements FederatedService {
 		projectionVars.removeAll(allBindings.get(0).getBindingNames());
 		
 		// below we need to take care for SILENT services
+		CloseableIteration<BindingSet, QueryEvaluationException> result = null;
 		try {
 			// fallback to simple evaluation (just a single binding)
 			if (allBindings.size()==1) {
 				String queryString = service.getQueryString(projectionVars);
-				CloseableIteration<BindingSet, QueryEvaluationException> result = 
-					evaluate(queryString, allBindings.get(0), baseUri, QueryType.SELECT, service);
+				result = evaluate(queryString, allBindings.get(0), baseUri, QueryType.SELECT, service);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
@@ -236,20 +237,20 @@ public class SPARQLFederatedService implements FederatedService {
 			}
 
 			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
-			TupleQueryResult res;
+			TupleQueryResult res=null;
 			try {
+				query.setMaxQueryTime(60);		// TODO how to retrieve max query value from actual setting?
 				res = query.evaluate();
 			} catch (QueryEvaluationException q) {
 				
+				closeQuietly(res);
+				
 				// use fallback: endpoint might not support BINDINGS clause
 				String preparedQuery = service.getQueryString(projectionVars);
-				CloseableIteration<BindingSet, QueryEvaluationException> result = 
-						new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
+				result = new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
-			
-			CloseableIteration<BindingSet, QueryEvaluationException> result;
 			
 			if (relevantBindingNames.size()==0)
 				result = new ServiceCrossProductIteration(res, allBindings);	// cross product
@@ -260,6 +261,7 @@ public class SPARQLFederatedService implements FederatedService {
 			return result;
 			
 		} catch (RepositoryException e) {
+			Iterations.closeCloseable(result);
 			if (service.isSilent())
 				return new CollectionIteration<BindingSet, QueryEvaluationException>(allBindings);
 			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString() + " could not be initialized.", e);
@@ -267,10 +269,12 @@ public class SPARQLFederatedService implements FederatedService {
 			// this exception must not be silenced, bug in our code
 			throw new QueryEvaluationException(e);
 		} catch (QueryEvaluationException e) {
+			Iterations.closeCloseable(result);
 			if (service.isSilent())
 				return new CollectionIteration<BindingSet, QueryEvaluationException>(allBindings);
 			throw e;
 		} catch (RuntimeException e) {
+			Iterations.closeCloseable(result);
 			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped
 			// QueryEval) if silent
 			if (service.isSilent())
@@ -285,6 +289,12 @@ public class SPARQLFederatedService implements FederatedService {
 				
 	}
 
+	private void closeQuietly(TupleQueryResult res) {
+		try {
+			if (res!=null)
+				res.close();
+		} catch (Exception ignore) {	}
+	}
 
 
 	public void shutdown() throws RepositoryException {
