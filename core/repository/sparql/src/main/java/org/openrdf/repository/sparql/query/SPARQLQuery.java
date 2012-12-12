@@ -19,7 +19,7 @@ import org.openrdf.model.URI;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.sparql.SPARQLConnection;
+import org.openrdf.repository.sparql.SPARQLRepository;
 
 /**
  * Provides an execution thread for background result parsing and inlines
@@ -74,7 +74,7 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 			}
 			post.addRequestHeader("Accept", getAccept());
 			Map<String, String> additionalHeaders = (Map<String, String>)client.getParams().getParameter(
-					SPARQLConnection.ADDITIONAL_HEADER_NAME);
+					SPARQLRepository.ADDITIONAL_HEADER_NAME);
 			if (additionalHeaders != null) {
 				for (Entry<String, String> additionalHeader : additionalHeaders.entrySet())
 					post.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
