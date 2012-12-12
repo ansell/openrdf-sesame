@@ -15,7 +15,7 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/create-native.js" type="text/javascript">
+		<script src="../../scripts/create.js" type="text/javascript">
 		</script>
 		<form action="create" method="post">
 			<table class="dataentry">
