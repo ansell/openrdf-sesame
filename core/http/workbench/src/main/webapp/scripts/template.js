@@ -82,6 +82,49 @@ function getQueryStringElements() {
 }
 
 /**
+ * Return the text content of a given element, trimmed of any leading or
+ * trailing whitespace.
+ */
+function textContent(element) {
+	var text = element.innerText || element.textContent;
+
+	// TODO It may be possible to just use JavaScript String.trim() here.
+	return text.replace(/^\s*/, "").replace(/\s*$/, "");
+}
+
+/**
+ * Utility method for assembling the query string for a request URL.
+ * 
+ * @param sb
+ *            string buffer, actually an array of strings to be joined later
+ * @param name
+ *            name of parameter to add
+ * @param id
+ *            (optional) id of element containing value. 'name' is used for 'id'
+ *            if not provided
+ */
+function addParam(sb, name, id) {
+	if (!id) {
+		id = name;
+	}
+
+	var tag = document.getElementById(id);
+	sb[sb.length] = name;
+	sb[sb.length] = '=';
+	if (tag.type == "checkbox") {
+		if (tag.checked) {
+			sb[sb.length] = 'true';
+		} else {
+			sb[sb.length] = 'false';
+		}
+	} else {
+		sb[sb.length] = encodeURIComponent(tag.value);
+	}
+
+	sb[sb.length] = '&';
+}
+
+/**
  * Code to run when the document loads: eliminate the 'noscript' warning
  * message, and display an unauthenticated user properly.
  */

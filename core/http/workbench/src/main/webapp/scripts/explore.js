@@ -1,10 +1,5 @@
 // Prerequisite: paging.js
 
-function textContent(element) {
-	var text = element.innerText || element.textContent;
-	return text.replace(/^\s*/, "").replace(/\s*$/, "");
-}
-
 function removeDuplicates(self) {
 	var lists = document.getElementsByTagName('ul');
 	for ( var i = lists.length - 1; i + 1; i--) {
