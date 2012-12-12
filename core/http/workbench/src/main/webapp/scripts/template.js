@@ -61,12 +61,24 @@ function getCookie(name) {
 		eq = cookie.indexOf("=");
 		temp = cookie.substr(0, eq).replace(/^\s+|\s+$/g, "");
 		if (name == temp) {
-			rval = decodeURIComponent(cookie.substr(eq + 1)).replace(/\+/g, ' ');
+			rval = decodeURIComponent(cookie.substr(eq + 1))
+					.replace(/\+/g, ' ');
 			break;
 		}
 	}
 
 	return rval;
+}
+
+/**
+ * Parses workbench URL query strings into processable arrays.
+ * 
+ * @returns an array of the 'name=value' substrings of the URL query string
+ */
+function getQueryStringElements() {
+	var href = document.location.href;
+	return href.substring(href.indexOf('?') + 1).split(
+			decodeURIComponent('%26'));
 }
 
 /**
