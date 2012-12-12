@@ -5,32 +5,20 @@
  */
 package org.openrdf.repository.sparql.query;
 
-import info.aduna.net.ParsedURI;
-
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.openrdf.model.Literal;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.sparql.SPARQLConnection;
 
 /**
@@ -102,6 +90,7 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 			finally {
 				if (!completed) {
 					post.abort();
+					post.releaseConnection();
 				}
 			}
 		}

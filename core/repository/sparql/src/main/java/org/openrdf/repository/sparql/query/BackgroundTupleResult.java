@@ -101,6 +101,7 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 			bindingNamesReady.countDown();
 			if (!completed) {
 				method.abort();
+				method.releaseConnection();
 			}
 		}
 	}

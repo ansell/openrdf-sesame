@@ -139,6 +139,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 			queue.done();
 			if (!completed) {
 				method.abort();
+				method.releaseConnection();
 			}
 		}
 	}
