@@ -6,13 +6,13 @@
 package org.openrdf.workbench.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
-import javax.servlet.ServletContext;
-
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import info.aduna.app.AppConfiguration;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
@@ -43,20 +43,18 @@ public final class QueryStorage {
 
 	private static QueryStorage instance;
 
-	public static QueryStorage getSingletonInstance(final ServletContext context)
-		throws RepositoryException
+	public static QueryStorage getSingletonInstance(final AppConfiguration config)
+		throws RepositoryException, IOException
 	{
 		synchronized (LOCK) {
 			if (instance == null) {
-				instance = new QueryStorage(context);
+				instance = new QueryStorage(config);
 			}
 			return instance;
 		}
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryStorage.class);
-
-	private static final String FOLDER = ".queries";
 
 	private static final String PRE = "PREFIX : <https://openrdf.org/workbench/>\n";
 
@@ -107,17 +105,16 @@ public final class QueryStorage {
 	/**
 	 * Create a new object for accessing the store of user queries.
 	 * 
-	 * @param context
-	 *        the servlet context, used for determining the local repository
-	 *        location
+	 * @param appConfig
+	 *        the application configuration, for obtaining the data directory
 	 * @throws RepositoryException
 	 *         if there is an issue creating the object to access the repository
+	 * @throws IOException
 	 */
-	private QueryStorage(final ServletContext context)
-		throws RepositoryException
+	private QueryStorage(final AppConfiguration appConfig)
+		throws RepositoryException, IOException
 	{
-		final String folder = FilenameUtils.concat(context.getRealPath(""), FOLDER);
-		queries = new SailRepository(new NativeStore(new File(folder)));
+		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
 		queries.initialize();
 	}
 
