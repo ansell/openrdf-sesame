@@ -16,53 +16,63 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-store-testsuite</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-serql-testsuite</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sparql-testsuite</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-http</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-sail</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-sparql</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-memory</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-nativerdf</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-rdbms</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-server</artifactId>
+			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 
@@ -89,13 +99,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-protocol</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-manager</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!--<dependency>

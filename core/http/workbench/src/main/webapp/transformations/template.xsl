@@ -6,6 +6,8 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
+	<xsl:output method="html" />
+
 	<xsl:variable name="info"
 		select="document(sparql:sparql/sparql:head/sparql:link[@href='info']/@href)" />
 
@@ -123,6 +125,9 @@
 					<h1 id="title_heading">
 						<xsl:value-of select="$title" />
 					</h1>
+					<p id="noscript-message" class="ERROR">Scripting is not enabled. The OpenRDF Sesame Workbench
+						application requires scripting to be enabled in order to work
+						properly.</p>
 					<xsl:apply-templates select="*" />
 				</div>
 				<div id="footer">

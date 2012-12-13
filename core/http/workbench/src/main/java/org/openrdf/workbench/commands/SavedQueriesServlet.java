@@ -42,9 +42,12 @@ public class SavedQueriesServlet extends TransformationServlet {
 	{
 		super.init(config);
 		try {
-			this.storage = QueryStorage.getSingletonInstance(config.getServletContext());
+			this.storage = QueryStorage.getSingletonInstance(this.appConfig);
 		}
 		catch (RepositoryException e) {
+			throw new ServletException(e);
+		}
+		catch (IOException e) {
 			throw new ServletException(e);
 		}
 	}

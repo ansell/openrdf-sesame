@@ -161,6 +161,21 @@ public class RDFFormat extends FileFormat {
 	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", "application/ld+json",
 			Charset.forName("UTF-8"), "jsonld", true, true);
 
+	/**
+	 * The Talis <a href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html">RDF/JSON</a>
+	 * file format, an RDF serialization format that supports recording of named
+	 * graphs.
+	 * <p>
+	 * The file extension <code>.rj</code> is recommended for RDF/JSON
+	 * documents. The media type is <code>application/rdf+json</code> and the
+	 * encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html
+	 */
+	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", "application/rdf+json",
+			Charset.forName("UTF-8"), "rj", false, true);
+
 	/*------------------*
 	 * Static variables *
 	 *------------------*/

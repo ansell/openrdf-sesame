@@ -21,6 +21,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 import org.openrdf.rio.ParseErrorListener;
@@ -395,7 +396,7 @@ public abstract class RDFParserBase implements RDFParser {
 	{
 		if (datatype != null) {
 			if (verifyData && datatypeHandling != DatatypeHandling.IGNORE) {
-				if (!XMLDatatypeUtil.isBuiltInDatatype(datatype)) { 
+				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) { 
 					// report a warning on all unrecognized datatypes
 					if (datatype.stringValue().startsWith("xsd")) {
 						reportWarning("datatype '" + datatype

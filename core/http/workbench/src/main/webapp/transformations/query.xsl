@@ -12,8 +12,10 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<xsl:variable name="queryLn" select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
-		<xsl:variable name="query" select="sparql:results/sparql:result/sparql:binding[@name='query']" />
+		<xsl:variable name="queryLn"
+			select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
+		<xsl:variable name="query"
+			select="sparql:results/sparql:result/sparql:binding[@name='query']" />
 		<script src="../../scripts/query.js" type="text/javascript">
 		</script>
 		<form action="query" method="POST" onsubmit="return doSubmit()">
@@ -33,8 +35,7 @@
 												test="$info//sparql:binding[@name='default-queryLn']/sparql:literal = substring-before(sparql:literal, ' ')">
 												<xsl:attribute name="selected">true</xsl:attribute>
 											</xsl:when>
-											<xsl:when
-												test="$queryLn = substring-before(sparql:literal, ' ')">
+											<xsl:when test="$queryLn = substring-before(sparql:literal, ' ')">
 												<xsl:attribute name="selected">true</xsl:attribute>
 											</xsl:when>
 										</xsl:choose>
@@ -43,7 +44,6 @@
 								</xsl:for-each>
 							</select>
 						</td>
-						<td></td>
 					</tr>
 					<tr>
 						<th>
@@ -95,6 +95,7 @@
 							<xsl:value-of select="$query-actions.label" />
 						</th>
 						<td>
+							<input type="button" onclick="resetNamespaces()" value="Clear" />
 							<input id="exec" type="submit" value="{$execute.label}" />
 							<input id="save" type="submit" value="{$save.label}"
 								disabled="true" />

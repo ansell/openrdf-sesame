@@ -16,39 +16,34 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-runtime</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-client</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-http</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-nativerdf</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-console</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>

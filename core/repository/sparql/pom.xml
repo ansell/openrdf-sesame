@@ -18,20 +18,24 @@ The SPARQL Repository provides a Sesame Repository interface to any SPARQL end-p
 
 	<dependencies>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-client</artifactId>
-		</dependency>
-				<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-queryparser-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryparser-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	
