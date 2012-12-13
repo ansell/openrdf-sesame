@@ -16,13 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 
-import info.aduna.io.MavenUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.EmptyIteration;
@@ -79,18 +73,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private static final String NAMEDGRAPHS = "SELECT DISTINCT ?_ WHERE { GRAPH ?_ { ?s ?p ?o } }";
 
-	private static final String APP_NAME = "OpenRDF.org SPARQLConnection";
-
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
-			"sesame-repository-sparql", "devel");
-
-	/**
-	 * The key under which the (optional) HTTP header are stored in the
-	 * HttpClientParams
-	 */
-	public static String ADDITIONAL_HEADER_NAME = "additionalHTTPHeaders";
-
-	private HttpClient client;
+	private final HttpClient client;
 
 	private String queryEndpointUrl;
 
@@ -100,24 +83,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		super(repository);
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
-
-		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
-		// HttpClient
-		HttpConnectionManager manager = new MultiThreadedHttpConnectionManager();
-
-		// Allow 20 concurrent connections to the same host (default is 2)
-		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-		params.setDefaultMaxConnectionsPerHost(20);
-		params.setStaleCheckingEnabled(false);
-		manager.setParams(params);
-
-		HttpClientParams clientParams = new HttpClientParams();
-		clientParams.setParameter(HttpMethodParams.USER_AGENT,
-				APP_NAME + "/" + VERSION + " " + clientParams.getParameter(HttpMethodParams.USER_AGENT));
-		// set additional HTTP headers, if desired by the user
-		if (repository.getAdditionalHttpHeaders() != null)
-			clientParams.setParameter(ADDITIONAL_HEADER_NAME, repository.getAdditionalHttpHeaders());
-		client = new HttpClient(clientParams, manager);
+		client = repository.getHttpClient();
 	}
 
 	@Override

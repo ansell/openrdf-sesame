@@ -69,6 +69,7 @@ public class SPARQLGraphQuery extends SPARQLQuery implements GraphQuery {
 			} finally {
 				if (result == null) {
 					response.abort();
+					response.releaseConnection();
 				}
 			}
 		} catch (IOException e) {

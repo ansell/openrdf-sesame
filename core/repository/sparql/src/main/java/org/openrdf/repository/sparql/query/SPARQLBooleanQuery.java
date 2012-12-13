@@ -36,6 +36,7 @@ public class SPARQLBooleanQuery extends SPARQLQuery implements BooleanQuery {
 			try {
 				boolean result = parser.parse(response
 						.getResponseBodyAsStream());
+				response.releaseConnection();
 				complete = true;
 				return result;
 			} catch (HttpException e) {
@@ -45,6 +46,7 @@ public class SPARQLBooleanQuery extends SPARQLQuery implements BooleanQuery {
 			} finally {
 				if (!complete) {
 					response.abort();
+					response.releaseConnection();
 				}
 			}
 		} catch (IOException e) {
