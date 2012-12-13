@@ -24,7 +24,9 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryBase;
 
 /**
- * A proxy class to access any SPARQL endpoint.
+ * A proxy class to access any SPARQL endpoint. 
+ * 
+ * The instance must be initialized prior to using it.
  * 
  * @author James Leigh
  */
@@ -83,7 +85,7 @@ public class SPARQLRepository extends RepositoryBase {
 	{
 			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 			// HttpClient
-			HttpConnectionManager manager = new MultiThreadedHttpConnectionManager();
+			manager = new MultiThreadedHttpConnectionManager();
 
 			// Allow 20 concurrent connections to the same host (default is 2)
 			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
@@ -117,7 +119,8 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		manager.shutdown();
+		if (manager!=null)
+			manager.shutdown();
 	}
 
 	@Override

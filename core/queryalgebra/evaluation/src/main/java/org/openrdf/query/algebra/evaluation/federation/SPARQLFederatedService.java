@@ -12,6 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.Iterations;
@@ -45,6 +48,8 @@ import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
  */
 public class SPARQLFederatedService implements FederatedService {
 
+	final static Logger logger = LoggerFactory.getLogger(SPARQLFederatedService.class);
+	
 	/**
 	 * A convenience iteration for SERVICE expression which evaluates 
 	 * intermediate results in batches and manages all results. Uses
@@ -286,14 +291,16 @@ public class SPARQLFederatedService implements FederatedService {
 
 
 	public void initialize() throws RepositoryException {
-				
+		rep.initialize();	
 	}
 
 	private void closeQuietly(TupleQueryResult res) {
 		try {
 			if (res!=null)
 				res.close();
-		} catch (Exception ignore) {	}
+		} catch (Exception e) {	
+			logger.debug("Could not close connection properly: " + e.getMessage(), e);
+		}
 	}
 
 
