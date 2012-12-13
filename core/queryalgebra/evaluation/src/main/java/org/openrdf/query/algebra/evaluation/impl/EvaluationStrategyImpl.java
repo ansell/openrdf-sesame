@@ -132,6 +132,7 @@ import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
@@ -870,16 +871,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		catch (QueryEvaluationException e) {
 			// suppress exceptions if silent
-			if (service.isSilent())
+			if (service.isSilent()) {
 				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
-			throw e;
+			}
+			else {
+				throw e;
+			}
 		}
 		catch (RuntimeException e) {
 			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped
 			// QueryEval) if silent
-			if (service.isSilent())
+			if (service.isSilent()) {
 				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
-			throw e;
+			}
+			else {
+				throw e;
+			}
+		}
+		catch (RepositoryException e) {
+			// suppress exceptions if silent
+			if (service.isSilent()) {
+				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+			}
+			else {
+				throw new QueryEvaluationException(e);
+			}
 		}
 
 	}
