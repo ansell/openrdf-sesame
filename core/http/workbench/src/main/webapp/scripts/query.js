@@ -31,17 +31,6 @@ function populateParameters() {
 }
 
 /**
- * Return the text content of a given element, trimmed of any leading or
- * trailing whitespace.
- */
-function textContent(element) {
-	var text = element.innerText || element.textContent;
-
-	// TODO It may be possible to just use JavaScript String.trim() here.
-	return text.replace(/^\s*/, "").replace(/\s*$/, "");
-}
-
-/**
  * Global variable for holding the current query language.
  */
 var currentQueryLn;
@@ -191,33 +180,6 @@ addLoad(function() {
 	addQueryChangeHandler();
 	disablePrivateSaveForAnonymous();
 });
-
-/**
- * 
- * @param sb
- * @param name
- * @param id
- */
-function addParam(sb, name, id) {
-	if (!id) {
-		id = name;
-	}
-
-	var tag = document.getElementById(id);
-	sb[sb.length] = name;
-	sb[sb.length] = '=';
-	if (tag.type == "checkbox") {
-		if (tag.checked) {
-			sb[sb.length] = 'true';
-		} else {
-			sb[sb.length] = 'false';
-		}
-	} else {
-		sb[sb.length] = encodeURIComponent(tag.value);
-	}
-
-	sb[sb.length] = '&';
-}
 
 /**
  * Utility method to create an XMLHTTPRequest object.

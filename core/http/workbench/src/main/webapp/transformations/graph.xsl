@@ -21,7 +21,7 @@
 	<xsl:template match="sparql:sparql">
 		<script type="text/javascript">
 			<![CDATA[
-			function addParam(name) {
+			function addGraphParam(name) {
 				var value = document.getElementById(name).value;
 				var url = document.location.href;
 				if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
@@ -59,7 +59,7 @@
 						</td>
 						<td>
 							<input type="submit"
-								onclick="addParam('Accept');return false"
+								onclick="addGraphParam('Accept');return false"
 								value="{$download.label}" />
 						</td>
 					</tr>
@@ -76,7 +76,7 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">
-									addParam('limit');
+									addGraphParam('limit');
 								</xsl:with-param>
 							</xsl:call-template>
 						</td>

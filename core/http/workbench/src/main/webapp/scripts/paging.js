@@ -8,7 +8,7 @@
  * @param {String} name The name of the query parameter.
  * @param {number or string} value The value of the query parameter.
  */
-function addParam(name, value) {
+function addPagingParam(name, value) {
 	var url = document.location.href;
 	var hasParams = (url.indexOf('?') + 1 || url.indexOf(';') + 1);
 	var amp = decodeURIComponent('%26');
@@ -26,7 +26,7 @@ function addParam(name, value) {
  * Changes the limit query parameter, and navigates to the new URL.
  */
 function addLimit() {
-	addParam('limit', document.getElementById('limit').value);
+	addPagingParam('limit', document.getElementById('limit').value);
 }
 			
 /**
@@ -34,7 +34,7 @@ function addLimit() {
  */
 function nextOffset() {
     var offset = getOffset() + getLimit();
-    addParam('offset', offset);
+    addPagingParam('offset', offset);
 }
 
 /**
@@ -42,7 +42,7 @@ function nextOffset() {
  */
 function previousOffset() {
     var offset = Math.max(0, getOffset() - getLimit());
-    addParam('offset', offset);
+    addPagingParam('offset', offset);
 }
 
 /**
