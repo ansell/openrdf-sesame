@@ -5,15 +5,15 @@
  */
 package info.aduna.app;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import info.aduna.app.config.Configuration;
 import info.aduna.app.logging.LogConfiguration;
 import info.aduna.app.net.ProxySettings;
 import info.aduna.app.util.ConfigurationUtil;
 import info.aduna.platform.PlatformFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * @author Herko ter Horst
@@ -25,8 +25,10 @@ public class AppConfiguration implements Configuration {
 	 *-----------*/
 
 	private static final String APP_CONFIG_FILE = "application.properties";
-	private static final String DEFAULT_LONGNAME_PREFIX = "Aduna";
-	private static final String DEFAULT_LOGGING_IMPL = "info.aduna.app.logging.logback.LogbackConfiguration";
+
+	private static final String DEFAULT_PREFIX = "Aduna";
+
+	private static final String DEFAULT_LOGGING = "info.aduna.app.logging.logback.LogbackConfiguration";
 
 	/*-----------*
 	 * Variables *
@@ -49,7 +51,7 @@ public class AppConfiguration implements Configuration {
 	private LogConfiguration loggingConfiguration;
 
 	private ProxySettings proxySettings;
-	
+
 	private Properties properties;
 
 	/*--------------*
@@ -60,6 +62,7 @@ public class AppConfiguration implements Configuration {
 	 * Create a new, uninitialized application configuration.
 	 */
 	public AppConfiguration() {
+		super();
 	}
 
 	/**
@@ -68,7 +71,7 @@ public class AppConfiguration implements Configuration {
 	 * @param applicationId
 	 *        the ID of the application
 	 */
-	public AppConfiguration(String applicationId) {
+	public AppConfiguration(final String applicationId) {
 		this();
 		setApplicationId(applicationId);
 	}
@@ -81,7 +84,7 @@ public class AppConfiguration implements Configuration {
 	 * @param version
 	 *        the application's version
 	 */
-	public AppConfiguration(String applicationId, AppVersion version) {
+	public AppConfiguration(final String applicationId, final AppVersion version) {
 		this(applicationId);
 		setVersion(version);
 	}
@@ -96,7 +99,7 @@ public class AppConfiguration implements Configuration {
 	 * @param version
 	 *        the application's version
 	 */
-	public AppConfiguration(String applicationId, String longName, AppVersion version) {
+	public AppConfiguration(final String applicationId, final String longName, final AppVersion version) {
 		this(applicationId, version);
 		setLongName(longName);
 	}
@@ -107,51 +110,53 @@ public class AppConfiguration implements Configuration {
 
 	public void load()
 		throws IOException
-	{	
+	{
 		properties = ConfigurationUtil.loadConfigurationProperties(APP_CONFIG_FILE, null);
 	}
 
 	public void save()
 		throws IOException
 	{
-		loggingConfiguration.save();
+		if (null != loggingConfiguration) {
+			loggingConfiguration.save();
+		}
 		proxySettings.save();
 	}
 
 	public void init()
 		throws IOException
 	{
+		this.init(true);
+	}
+
+	public void init(final boolean loadLogConfig)
+		throws IOException
+	{
 		if (longName == null) {
-			setLongName(DEFAULT_LONGNAME_PREFIX + " " + applicationId);
+			setLongName(DEFAULT_PREFIX + " " + applicationId);
 		}
 		setFullName();
-
 		configureDataDir();
-
 		load();
-
-		try {
-			loggingConfiguration = loadLogConfiguration();
-			loggingConfiguration.setBaseDir(getDataDir());
-			loggingConfiguration.setAppConfiguration(this);
-			loggingConfiguration.init();
+		if (loadLogConfig) {
+			try {
+				loggingConfiguration = loadLogConfiguration();
+				loggingConfiguration.setBaseDir(getDataDir());
+				loggingConfiguration.setAppConfiguration(this);
+				loggingConfiguration.init();
+			}
+			catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			catch (InstantiationException e) {
+				e.printStackTrace();
+			}
+			catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
 		}
-		catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}			
-
 		proxySettings = new ProxySettings(getDataDir());
 		proxySettings.init();
-
 		save();
 	}
 
@@ -171,11 +176,11 @@ public class AppConfiguration implements Configuration {
 		return applicationId;
 	}
 
-	public void setApplicationId(String applicationId) {
+	public final void setApplicationId(final String applicationId) {
 		this.applicationId = applicationId;
 	}
 
-	public void setDataDirName(String dataDirName) {
+	public void setDataDirName(final String dataDirName) {
 		this.dataDirName = dataDirName;
 	}
 
@@ -195,7 +200,7 @@ public class AppConfiguration implements Configuration {
 	 * @param longName
 	 *        the new name
 	 */
-	public void setLongName(String longName) {
+	public final void setLongName(final String longName) {
 		this.longName = longName;
 	}
 
@@ -232,7 +237,7 @@ public class AppConfiguration implements Configuration {
 	 * @param version
 	 *        the new version
 	 */
-	public void setVersion(AppVersion version) {
+	public final void setVersion(final AppVersion version) {
 		this.version = version;
 		this.fullName = longName + " " + version.toString();
 	}
@@ -243,7 +248,7 @@ public class AppConfiguration implements Configuration {
 	 * @return A String array, as (typically) specified to the main method.
 	 */
 	public String[] getCommandLineArgs() {
-		return commandLineArgs;
+		return (String[])commandLineArgs.clone();
 	}
 
 	/**
@@ -253,8 +258,8 @@ public class AppConfiguration implements Configuration {
 	 *        A String array containing the arguments as specified to the main
 	 *        method.
 	 */
-	public void setCommandLineArgs(String[] args) {
-		this.commandLineArgs = args;
+	public void setCommandLineArgs(final String[] args) {
+		this.commandLineArgs = (String[])args.clone();
 	}
 
 	public File getDataDir() {
@@ -269,7 +274,7 @@ public class AppConfiguration implements Configuration {
 		return proxySettings;
 	}
 
-	public void setProxySettings(ProxySettings proxySettings) {
+	public void setProxySettings(final ProxySettings proxySettings) {
 		this.proxySettings = proxySettings;
 	}
 
@@ -283,48 +288,46 @@ public class AppConfiguration implements Configuration {
 	private void configureDataDir() {
 		if (dataDirName != null) {
 			dataDirName = dataDirName.trim();
-
-			if (!(dataDirName.equals(""))) {
-				File dataDirCandidate = new File(dataDirName);
+			if (!("".equals(dataDirName))) {
+				final File dataDirCandidate = new File(dataDirName);
 				dataDirCandidate.mkdirs();
-
-				// set this datadir if the previous code was succesful
-				if (dataDirCandidate.canRead() && dataDirCandidate.canWrite()) {
-					dataDir = dataDirCandidate;
-				}
+				// change data directory if the previous code was successful
+				dataDir = (dataDirCandidate.canRead() && dataDirCandidate.canWrite()) ? dataDirCandidate
+						: dataDir;
 			}
 		}
 		if (dataDir == null) {
 			dataDir = PlatformFactory.getPlatform().getApplicationDataDir(applicationId);
 		}
 	}
-	
+
 	/**
 	 * Load and instantiate the LoggingConfiguration
+	 * 
 	 * @return
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
-	private LogConfiguration loadLogConfiguration() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+	private LogConfiguration loadLogConfiguration()
+		throws ClassNotFoundException, InstantiationException, IllegalAccessException
+	{
 		String classname = this.properties.getProperty("feature.logging.impl");
 		if (classname == null) {
-			classname = DEFAULT_LOGGING_IMPL;
+			classname = DEFAULT_LOGGING;
 		}
-		Class<?> logImplClass = Class.forName(classname);		
-		Object logImpl = logImplClass.newInstance();					
+		final Class<?> logImplClass = Class.forName(classname);
+		final Object logImpl = logImplClass.newInstance();
 		if (logImpl instanceof LogConfiguration) {
 			return (LogConfiguration)logImpl;
 		}
 		throw new InstantiationException(classname + " is not valid LogConfiguration instance!");
 	}
 
-	
 	/**
 	 * @return Returns the properties.
 	 */
 	public Properties getProperties() {
 		return properties;
-	}	
-	
+	}
 }
