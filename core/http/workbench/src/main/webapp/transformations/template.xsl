@@ -125,9 +125,12 @@
 					<h1 id="title_heading">
 						<xsl:value-of select="$title" />
 					</h1>
-					<p id="noscript-message" class="ERROR">Scripting is not enabled. The OpenRDF Sesame Workbench
-						application requires scripting to be enabled in order to work
-						properly.</p>
+					<p id="noscript-message" class="ERROR">Scripting is not enabled. The
+						OpenRDF Sesame Workbench
+						application requires scripting to be
+						enabled in order to work
+						properly.
+					</p>
 					<xsl:apply-templates select="*" />
 				</div>
 				<div id="footer">
@@ -192,8 +195,10 @@
 	</xsl:template>
 
 	<xsl:template name="navigation-explore">
-		<xsl:variable name="disabled"
-			select="$info//sparql:binding[@name='readable']/sparql:literal/text() = 'false'" />
+		<!-- Sometimes $info is not present. -->
+		<xsl:variable name="enabled"
+			select="$info//sparql:binding[@name='readable']/sparql:literal/text() = 'true'" />
+		<xsl:variable name="disabled" select="not($enabled)" />
 		<xsl:call-template name="navigation-entry">
 			<xsl:with-param name="label" select="$summary.label" />
 			<xsl:with-param name="href" select="'summary'" />
@@ -237,8 +242,10 @@
 	</xsl:template>
 
 	<xsl:template name="navigation-modify">
-		<xsl:variable name="disabled"
-			select="$info//sparql:binding[@name='writeable']/sparql:literal/text() = 'false'" />
+		<!-- Sometimes $info is not present. -->
+		<xsl:variable name="enabled"
+			select="$info//sparql:binding[@name='writeable']/sparql:literal/text() = 'true'" />
+		<xsl:variable name="disabled" select="not($enabled)" />
 		<xsl:call-template name="navigation-entry">
 			<xsl:with-param name="label" select="$sparqlupdate.label" />
 			<xsl:with-param name="href" select="'update'" />
