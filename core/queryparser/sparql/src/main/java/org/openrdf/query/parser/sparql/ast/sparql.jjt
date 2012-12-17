@@ -774,7 +774,7 @@ void TriplesSameSubjectPath() :
 {
     VarOrTerm() PropertyListPath()
     |
-    TriplesNode() [PropertyListPath()]
+    TriplesNodePath() [PropertyListPath()]
 }
 
 void PropertyListPath() :
@@ -895,10 +895,24 @@ void TriplesNode() #void :
 	BlankNodePropertyList()
 }
 
+void TriplesNodePath() #void :
+{}
+{
+	Collection()
+|
+	BlankNodePropertyListPath()
+}
+
 void BlankNodePropertyList() :
 {}
 {
 	<LBRACK> PropertyList() <RBRACK>
+}
+
+void BlankNodePropertyListPath() #BlankNodePropertyList :
+{}
+{
+	<LBRACK> PropertyListPath() <RBRACK>
 }
 
 void Collection() :
