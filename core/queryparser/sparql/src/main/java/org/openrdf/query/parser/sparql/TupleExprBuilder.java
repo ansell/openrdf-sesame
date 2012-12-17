@@ -2644,11 +2644,22 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		Node aliasNode = node.jjtGetChild(1);
 		String alias = ((ASTVar)aliasNode).getName();
 
+		
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
 
 		TupleExpr result = null;
 		TupleExpr arg = graphPattern.buildTupleExpr();
+		
+		// check if alias is not previously used.
+		VarCollector collector = new VarCollector();
+		arg.visit(collector);
+		for (Var var: collector.getCollectedVars()) {
+			if (var.getName().equals(alias)) {
+				throw new VisitorException(String.format("BIND clause alias '{}' was previously used", alias));
+			}
+		}
+		
 		if (arg instanceof Filter) {
 			result = arg;
 			// we need to push down the extension so that filters can operate on
