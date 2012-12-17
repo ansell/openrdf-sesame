@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +46,11 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
+/**
+ * A SPARQL 1.1 Update test, created by reading in a W3C working-group style manifest.  
+ *
+ * @author Jeen Broekstra
+ */
 public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 	/*-----------*

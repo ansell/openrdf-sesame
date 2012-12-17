@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,15 +38,18 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
-public abstract class SPARQLSyntaxTest extends TestCase {
+/**
+ * A SPARQL 1.1 syntax test, created by reading in a W3C working-group style manifest.  
+ *
+ * @author Jeen Broekstra
+ */
+public abstract class SPARQL11SyntaxTest extends TestCase {
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
-	private static final Logger logger = LoggerFactory.getLogger(SPARQLSyntaxTest.class);
-
-	private static final boolean REMOTE = false;
+	private static final Logger logger = LoggerFactory.getLogger(SPARQL11SyntaxTest.class);
 
 	private static final String SUBMANIFEST_QUERY, TESTCASE_QUERY;
 
@@ -64,11 +67,13 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 		sb.append("SELECT TestURI, Name, Action, Type ");
 		sb.append("FROM {TestURI} rdf:type {Type};");
 		sb.append("               mf:name {Name};");
-		sb.append("               mf:action {Action} ");
-		sb.append("WHERE Type = mf:PositiveSyntaxTest or Type = mf:NegativeSyntaxTest ");
+		sb.append("               mf:action {Action};");
+		sb.append("               dawgt:approval {dawgt:Approved} ");
+		sb.append("WHERE Type = mf:PositiveSyntaxTest11 or Type = mf:NegativeSyntaxTest11 or Type = mf:PositiveUpdateSyntaxTest11 or Type = mf:NegativeUpdateSyntaxTest11 ");
 		sb.append("USING NAMESPACE");
 		sb.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>,");
-		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>");
+		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>,");
+		sb.append("  dawgt = <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>");
 		TESTCASE_QUERY = sb.toString();
 	}
 
@@ -86,7 +91,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
-	public SPARQLSyntaxTest(String testURI, String name, String queryFileURL, boolean positiveTest) {
+	public SPARQL11SyntaxTest(String testURI, String name, String queryFileURL, boolean positiveTest) {
 		super(name);
 		this.testURI = testURI;
 		this.queryFileURL = queryFileURL;
@@ -106,7 +111,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 		stream.close();
 
 		try {
-			parseQuery(query, queryFileURL);
+			parseOperation(query, queryFileURL);
 
 			if (!positiveTest) {
 				fail("Negative test case should have failed to parse");
@@ -120,7 +125,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 		}
 	}
 
-	protected abstract void parseQuery(String query, String queryFileURL)
+	protected abstract void parseOperation(String operation, String fileURL)
 		throws MalformedQueryException;
 
 	public static Test suite()
@@ -131,22 +136,22 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 
 	public interface Factory {
 
-		SPARQLSyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction,
+		SPARQL11SyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction,
 				boolean positiveTest);
 	}
 
-	public static Test suite(Factory factory)
+	public static Test suite(Factory factory, boolean useRemote)
 		throws Exception
 	{
 		// manifest of W3C Data Access Working Group SPARQL syntax tests
 		final File tmpDir;
 		String host;
-		if (REMOTE) {
-			host = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/";
+		if (useRemote) {
+			host = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/";
 			tmpDir = null;
 		}
 		else {
-			URL url = SPARQLSyntaxTest.class.getResource("/testcases-dawg/data-r2/");
+			URL url = SPARQL11SyntaxTest.class.getResource("/sparql11-test-suite/");
 			if ("jar".equals(url.getProtocol())) {
 				try {
 					tmpDir = FileUtil.createTempDir("sparql-syntax");
@@ -181,7 +186,7 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 			}
 		}
 
-		String manifestFile = host + "manifest-syntax.ttl";
+		String manifestFile = host + "manifest-all.ttl";
 
 		TestSuite suite = new TestSuite() {
 
@@ -196,7 +201,8 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 							FileUtil.deleteDir(tmpDir);
 						}
 						catch (IOException e) {
-							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': " + e.getMessage());
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': "
+									+ e.getMessage());
 						}
 					}
 				}
@@ -242,8 +248,10 @@ public abstract class SPARQLSyntaxTest extends TestCase {
 				String testURI = bindingSet.getValue("TestURI").toString();
 				String testName = bindingSet.getValue("Name").toString();
 				String testAction = bindingSet.getValue("Action").toString();
-				boolean positiveTest = bindingSet.getValue("Type").toString().equals(
-						"http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveSyntaxTest");
+
+				String type = bindingSet.getValue("Type").toString();
+				boolean positiveTest = type.equals("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveSyntaxTest11")
+						|| type.equals("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#PositiveUpdateSyntaxTest11");
 
 				subSuite.addTest(factory.createSPARQLSyntaxTest(testURI, testName, testAction, positiveTest));
 			}

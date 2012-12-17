@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +23,12 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.parser.sparql.DC;
+import org.openrdf.query.parser.sparql.DOAP;
+import org.openrdf.query.parser.sparql.EARL;
+import org.openrdf.query.parser.sparql.manifest.SPARQL11SyntaxTest;
+import org.openrdf.query.parser.sparql.manifest.SPARQLQueryTest;
+import org.openrdf.query.parser.sparql.manifest.SPARQLUpdateConformanceTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -84,13 +90,13 @@ public class EarlReport {
 		testResult.addListener(listener);
 
 		logger.info("running query evaluation tests..");
-		MemorySPARQL11QueryTest.suite().run(testResult);
+		W3CApprovedSPARQL11QueryTest.suite().run(testResult);
 		
 		logger.info("running syntax tests...");
-		CoreSPARQL11SyntaxTest.suite().run(testResult);
+		W3CApprovedSPARQL11SyntaxTest.suite().run(testResult);
 		
 		logger.info("running update tests...");
-		MemorySPARQLUpdateConformanceTest.suite().run(testResult);
+		W3CApprovedSPARQL11UpdateTest.suite().run(testResult);
 		logger.info("tests complete, generating EARL report...");
 		
 		con.setAutoCommit(true);

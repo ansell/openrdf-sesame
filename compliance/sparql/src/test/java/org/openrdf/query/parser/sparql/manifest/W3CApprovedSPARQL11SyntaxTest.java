@@ -3,15 +3,16 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import junit.framework.Test;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.sparql.manifest.SPARQL11SyntaxTest;
 
-public class CoreSPARQL11SyntaxTest extends SPARQL11SyntaxTest {
+public class W3CApprovedSPARQL11SyntaxTest extends SPARQL11SyntaxTest {
 
 	public static Test suite()
 		throws Exception
@@ -21,12 +22,12 @@ public class CoreSPARQL11SyntaxTest extends SPARQL11SyntaxTest {
 			public SPARQL11SyntaxTest createSPARQLSyntaxTest(String testURI, String testName, String testAction,
 					boolean positiveTest)
 			{
-				return new CoreSPARQL11SyntaxTest(testURI, testName, testAction, positiveTest);
+				return new W3CApprovedSPARQL11SyntaxTest(testURI, testName, testAction, positiveTest);
 			}
-		});
+		}, false);
 	}
 
-	public CoreSPARQL11SyntaxTest(String testURI, String name, String queryFileURL, boolean positiveTest) {
+	public W3CApprovedSPARQL11SyntaxTest(String testURI, String name, String queryFileURL, boolean positiveTest) {
 		super(testURI, name, queryFileURL, positiveTest);
 	}
 

@@ -3,13 +3,14 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import junit.framework.Test;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.sparql.manifest.SPARQLSyntaxTest;
 
 public class CoreSPARQLSyntaxTest extends SPARQLSyntaxTest {
 

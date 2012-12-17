@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,34 +38,48 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.turtle.TurtleParser;
 import org.openrdf.sail.memory.MemoryStore;
 
+/**
+ * Functionality for creating a JUnit test suite out of a W3C Working
+ * Group-style manifest for SPARQL query and update tests.
+ * 
+ * @author Jeen Broekstra
+ */
 public class SPARQL11ManifestTest {
 
 	static final Logger logger = LoggerFactory.getLogger(SPARQL11ManifestTest.class);
 
-	/** use DAWG SPARQL 1.1 tests located on www.3.org instead of local resources */
-	private static final boolean REMOTE = false;
-
-	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
-	private static final boolean LOCAL_DAWG_TESTS = true;
-
-	private static final boolean APPROVED_TESTS_ONLY = false;
-	
-	/**
-	 * use only a subset of all available tests, where the subset is defined by
-	 * an array of subdirectory names.
-	 */
-	private static final boolean USE_SUBSET = false;
-
-	private static final String[] subDirs = { "basic-update" };
-
 	private static File tmpDir;
 
-	public static TestSuite suite(SPARQLQueryTest.Factory factory)
+	/**
+	 * Creates a new {@link TestSuite} for executiong of {@link SPARQLQueryTest}
+	 * s.
+	 * 
+	 * @param factory
+	 *        a factory class that creates each individual test case.
+	 * @param officialWorkingGroupTests
+	 *        indicates whether to use the official W3C working group tests, or
+	 *        Sesame's own set of tests.
+	 * @param approvedTestsOnly
+	 *        if <code>true</code>, use working group-approved tests only. Has no
+	 *        influence when officialWorkingGroup tests is set to
+	 *        <code>false</code>.
+	 * @param useRemoteTests
+	 *        if set to <code>true</code>, use manifests and tests located at
+	 *        <code>http://www.w3.org/2009/sparql/docs/tests/data-sparql11/</code>
+	 *        , instead of local copies.
+	 * @param excludedSubdirs
+	 *        an (optionally empty) list of subdirectories to exclude from
+	 *        testing. If specified, test cases in one of the supplied subdirs
+	 *        will not be executed. If left empty, all tests will be executed.
+	 * @return a TestSuite.
+	 * @throws Exception
+	 */
+	public static TestSuite suite(SPARQLQueryTest.Factory factory, boolean officialWorkingGroupTests,
+			boolean approvedTestsOnly, boolean useRemoteTests, String... excludedSubdirs)
 		throws Exception
 	{
+		final String manifestFile = getManifestFile(officialWorkingGroupTests, useRemoteTests);
 
-		final String manifestFile = getManifestFile();
-		
 		TestSuite suite = new TestSuite(factory.getClass().getName()) {
 
 			@Override
@@ -103,8 +117,8 @@ public class SPARQL11ManifestTest {
 			BindingSet bindingSet = manifestResults.next();
 			String subManifestFile = bindingSet.getValue("manifestFile").toString();
 
-			if (includeSubManifest(subManifestFile)) {
-				suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, APPROVED_TESTS_ONLY));
+			if (includeSubManifest(subManifestFile, excludedSubdirs)) {
+				suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, approvedTestsOnly));
 			}
 		}
 
@@ -116,11 +130,12 @@ public class SPARQL11ManifestTest {
 		return suite;
 	}
 
-
-	public static TestSuite suite(SPARQLUpdateConformanceTest.Factory factory)
+	public static TestSuite suite(SPARQLUpdateConformanceTest.Factory factory,
+			boolean officialWorkingGroupTests, boolean approvedTestsOnly, boolean useRemote,
+			String... excludedSubdirs)
 		throws Exception
 	{
-		final String manifestFile = getManifestFile();
+		final String manifestFile = getManifestFile(officialWorkingGroupTests, useRemote);
 
 		TestSuite suite = new TestSuite(factory.getClass().getName()) {
 
@@ -159,8 +174,8 @@ public class SPARQL11ManifestTest {
 			BindingSet bindingSet = manifestResults.next();
 			String subManifestFile = bindingSet.getValue("manifestFile").toString();
 
-			if (includeSubManifest(subManifestFile)) {
-				suite.addTest(SPARQLUpdateConformanceTest.suite(subManifestFile, factory, APPROVED_TESTS_ONLY));
+			if (includeSubManifest(subManifestFile, excludedSubdirs)) {
+				suite.addTest(SPARQLUpdateConformanceTest.suite(subManifestFile, factory, approvedTestsOnly));
 			}
 		}
 
@@ -172,14 +187,14 @@ public class SPARQL11ManifestTest {
 		return suite;
 	}
 
-	private static String getManifestFile() {
-      String manifestFile = null;
-		if (REMOTE) {
+	private static String getManifestFile(boolean officialWorkingGroupTests, boolean useRemote) {
+		String manifestFile = null;
+		if (useRemote) {
 			manifestFile = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/manifest-all.ttl";
 		}
 		else {
 			URL url = null;
-			if (LOCAL_DAWG_TESTS) {
+			if (officialWorkingGroupTests) {
 				url = SPARQL11ManifestTest.class.getResource("/sparql11-test-suite/manifest-all.ttl");
 			}
 			else {
@@ -209,18 +224,30 @@ public class SPARQL11ManifestTest {
 		}
 		return manifestFile;
 	}
-	
-	private static boolean includeSubManifest(String subManifestFile) {
+
+	/**
+	 * Verifies if the selected subManifest occurs in the supplied list of
+	 * excluded subdirs.
+	 * 
+	 * @param subManifestFile
+	 *        the url of a sub-manifest
+	 * @param excludedSubdirs
+	 *        an array of directory names. May be null.
+	 * @return <code>false</code> if the supplied list of excluded subdirs is not
+	 *         empty and contains a match for the supplied sub-manifest,
+	 *         <code>true</code> otherwise.
+	 */
+	private static boolean includeSubManifest(String subManifestFile, String[] excludedSubdirs) {
 		boolean result = true;
 
-		if (USE_SUBSET && subDirs != null && subDirs.length > 0) {
-			result = false;
-			for (String subdir : subDirs) {
-				int index = subManifestFile.lastIndexOf("/");
-				String path = subManifestFile.substring(0, index);
-				String sd = path.substring(path.lastIndexOf("/") + 1);
+		if (excludedSubdirs != null && excludedSubdirs.length > 0) {
+			int index = subManifestFile.lastIndexOf("/");
+			String path = subManifestFile.substring(0, index);
+			String sd = path.substring(path.lastIndexOf("/") + 1);
+
+			for (String subdir : excludedSubdirs) {
 				if (sd.equals(subdir)) {
-					result = true;
+					result = false;
 					break;
 				}
 			}
@@ -251,27 +278,18 @@ public class SPARQL11ManifestTest {
 			rdfInserter.enforceContext(contexts);
 			rdfParser.setRDFHandler(rdfInserter);
 
-			boolean autoCommit = con.isAutoCommit();
-			con.setAutoCommit(false);
-
+			con.begin();
 			try {
 				rdfParser.parse(in, baseURI);
+				con.commit();
 			}
 			catch (RDFHandlerException e) {
-				if (autoCommit) {
-					con.rollback();
-				}
+				con.rollback();
 				// RDFInserter only throws wrapped RepositoryExceptions
 				throw (RepositoryException)e.getCause();
 			}
 			catch (RuntimeException e) {
-				if (autoCommit) {
-					con.rollback();
-				}
-				throw e;
-			}
-			finally {
-				con.setAutoCommit(autoCommit);
+				con.rollback();
 			}
 		}
 		finally {

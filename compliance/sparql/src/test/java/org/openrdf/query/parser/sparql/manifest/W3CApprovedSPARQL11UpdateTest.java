@@ -3,13 +3,15 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import java.util.Map;
 
 import junit.framework.Test;
 
 import org.openrdf.model.URI;
+import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
+import org.openrdf.query.parser.sparql.manifest.SPARQLUpdateConformanceTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
@@ -17,11 +19,11 @@ import org.openrdf.sail.memory.MemoryStore;
 
 
 /**
- * @author jeen
+ * @author Jeen Broekstra
  */
-public class MemorySPARQLUpdateConformanceTest extends SPARQLUpdateConformanceTest {
+public class W3CApprovedSPARQL11UpdateTest extends SPARQLUpdateConformanceTest {
 
-	public MemorySPARQLUpdateConformanceTest(String testURI, String name, String requestFile,
+	public W3CApprovedSPARQL11UpdateTest(String testURI, String name, String requestFile,
 			URI defaultGraphURI, Map<String, URI> inputNamedGraphs, URI resultDefaultGraphURI,
 			Map<String, URI> resultNamedGraphs)
 	{
@@ -34,15 +36,15 @@ public class MemorySPARQLUpdateConformanceTest extends SPARQLUpdateConformanceTe
 	{
 		return SPARQL11ManifestTest.suite(new Factory() {
 
-			public MemorySPARQLUpdateConformanceTest createSPARQLUpdateConformanceTest(String testURI,
+			public W3CApprovedSPARQL11UpdateTest createSPARQLUpdateConformanceTest(String testURI,
 					String name, String requestFile, URI defaultGraphURI, Map<String, URI> inputNamedGraphs,
 					URI resultDefaultGraphURI, Map<String, URI> resultNamedGraphs)
 			{
-				return new MemorySPARQLUpdateConformanceTest(testURI, name, requestFile, defaultGraphURI,
+				return new W3CApprovedSPARQL11UpdateTest(testURI, name, requestFile, defaultGraphURI,
 						inputNamedGraphs, resultDefaultGraphURI, resultNamedGraphs);
 			}
 
-		});
+		}, true, true, false);
 	}
 
 	@Override

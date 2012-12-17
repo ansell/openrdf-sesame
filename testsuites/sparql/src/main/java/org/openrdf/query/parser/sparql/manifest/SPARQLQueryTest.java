@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.query.parser.sparql.manifest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +63,11 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
+/**
+ * A SPARQL query test suite, created by reading in a W3C working-group style manifest.  
+ *
+ * @author Jeen Broekstra
+ */
 public abstract class SPARQLQueryTest extends TestCase {
 
 	/*-----------*
