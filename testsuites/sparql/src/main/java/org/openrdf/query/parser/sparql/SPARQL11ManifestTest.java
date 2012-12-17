@@ -46,7 +46,7 @@ public class SPARQL11ManifestTest {
 	private static final boolean REMOTE = false;
 
 	/** use local copy of DAWG SPARQL 1.1 tests instead of own test suite */
-	private static final boolean LOCAL_DAWG_TESTS = false;
+	private static final boolean LOCAL_DAWG_TESTS = true;
 
 	private static final boolean APPROVED_TESTS_ONLY = false;
 	
@@ -180,7 +180,7 @@ public class SPARQL11ManifestTest {
 		else {
 			URL url = null;
 			if (LOCAL_DAWG_TESTS) {
-				url = SPARQL11ManifestTest.class.getResource("/testcases-dawg-sparql-1.1/manifest-all.ttl");
+				url = SPARQL11ManifestTest.class.getResource("/sparql11-test-suite/manifest-all.ttl");
 			}
 			else {
 				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");
@@ -189,7 +189,7 @@ public class SPARQL11ManifestTest {
 			if ("jar".equals(url.getProtocol())) {
 				// Extract manifest files to a temporary directory
 				try {
-					tmpDir = FileUtil.createTempDir("sparql-1.1-evaluation");
+					tmpDir = FileUtil.createTempDir("sparql11-test-evaluation");
 
 					JarURLConnection con = (JarURLConnection)url.openConnection();
 					JarFile jar = con.getJarFile();
