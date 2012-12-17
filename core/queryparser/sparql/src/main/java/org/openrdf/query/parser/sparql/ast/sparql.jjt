@@ -780,7 +780,13 @@ void TriplesSameSubjectPath() :
 void PropertyListPath() :
 {}
 {
-    (VerbPath() | VerbSimple()) ObjectList() [<SEMICOLON> [PropertyListPath()] ]
+    (VerbPath() | VerbSimple()) ObjectListPath() [<SEMICOLON> [PropertyListPath()] ]
+}
+
+void ObjectListPath() #ObjectList:
+{}
+{
+	ObjectPath() ( <COMMA> ObjectPath() )*
 }
 
 void VerbPath() #void :
@@ -879,6 +885,12 @@ void Object() #void :
 	GraphNode()
 }
 
+void ObjectPath() #void :
+{}
+{
+	GraphNodePath()
+}
+
 void Verb() #void :
 {}
 {
@@ -898,7 +910,7 @@ void TriplesNode() #void :
 void TriplesNodePath() #void :
 {}
 {
-	Collection()
+	CollectionPath()
 |
 	BlankNodePropertyListPath()
 }
@@ -921,12 +933,26 @@ void Collection() :
 	<LPAREN> ( GraphNode() )+ <RPAREN>
 }
 
+void CollectionPath() #Collection:
+{}
+{
+	<LPAREN> ( GraphNodePath() )+ <RPAREN>
+}
+
 void GraphNode() #void :
 {}
 {
 	VarOrTerm()
 |
 	TriplesNode()
+}
+
+void GraphNodePath() #void :
+{}
+{
+	VarOrTerm()
+|
+	TriplesNodePath()
 }
 
 void VarOrTerm() #void :

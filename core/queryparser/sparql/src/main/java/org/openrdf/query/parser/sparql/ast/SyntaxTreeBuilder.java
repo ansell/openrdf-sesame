@@ -2769,7 +2769,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(-1);
         throw new ParseException();
       }
-      ObjectList();
+      ObjectListPath();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SEMICOLON:
         jj_consume_token(SEMICOLON);
@@ -2815,6 +2815,47 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     }
   }
 
+  final public void ObjectListPath() throws ParseException {
+ /*@bgen(jjtree) ObjectList */
+  ASTObjectList jjtn000 = new ASTObjectList(JJTOBJECTLIST);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      ObjectPath();
+      label_22:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case COMMA:
+          ;
+          break;
+        default:
+          jj_la1[82] = jj_gen;
+          break label_22;
+        }
+        jj_consume_token(COMMA);
+        ObjectPath();
+      }
+    } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            {if (true) throw (RuntimeException)jjte000;}
+          }
+          if (jjte000 instanceof ParseException) {
+            {if (true) throw (ParseException)jjte000;}
+          }
+          {if (true) throw (Error)jjte000;}
+    } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+    }
+  }
+
   final public void VerbPath() throws ParseException {
     Path();
   }
@@ -2830,15 +2871,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   jjtree.openNodeScope(jjtn000);
     try {
       PathSequence();
-      label_22:
+      label_23:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case PIPE:
           ;
           break;
         default:
-          jj_la1[82] = jj_gen;
-          break label_22;
+          jj_la1[83] = jj_gen;
+          break label_23;
         }
         jj_consume_token(PIPE);
         PathSequence();
@@ -2871,15 +2912,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   jjtree.openNodeScope(jjtn000);
     try {
       PathElt();
-      label_23:
+      label_24:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case SLASH:
           ;
           break;
         default:
-          jj_la1[83] = jj_gen;
-          break label_23;
+          jj_la1[84] = jj_gen;
+          break label_24;
         }
         jj_consume_token(SLASH);
         PathElt();
@@ -2917,7 +2958,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                jjtn000.setInverse(true);
         break;
       default:
-        jj_la1[84] = jj_gen;
+        jj_la1[85] = jj_gen;
         ;
       }
       PathPrimary();
@@ -2929,7 +2970,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         PathMod();
         break;
       default:
-        jj_la1[85] = jj_gen;
+        jj_la1[86] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
@@ -2985,7 +3026,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       jj_consume_token(RPAREN);
       break;
     default:
-      jj_la1[86] = jj_gen;
+      jj_la1[87] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3009,28 +3050,28 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       case PNAME_NS:
       case PNAME_LN:
         PathOneInPropertySet();
-        label_24:
+        label_25:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case PIPE:
             ;
             break;
           default:
-            jj_la1[87] = jj_gen;
-            break label_24;
+            jj_la1[88] = jj_gen;
+            break label_25;
           }
           jj_consume_token(PIPE);
           PathOneInPropertySet();
         }
         break;
       default:
-        jj_la1[88] = jj_gen;
+        jj_la1[89] = jj_gen;
         ;
       }
       jj_consume_token(RPAREN);
       break;
     default:
-      jj_la1[89] = jj_gen;
+      jj_la1[90] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3088,13 +3129,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           }
           break;
         default:
-          jj_la1[90] = jj_gen;
+          jj_la1[91] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
       default:
-        jj_la1[91] = jj_gen;
+        jj_la1[92] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3170,7 +3211,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
               jj_consume_token(RBRACE);
               break;
             default:
-              jj_la1[92] = jj_gen;
+              jj_la1[93] = jj_gen;
               jj_consume_token(-1);
               throw new ParseException();
             }
@@ -3179,7 +3220,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
             jj_consume_token(RBRACE);
             break;
           default:
-            jj_la1[93] = jj_gen;
+            jj_la1[94] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -3191,13 +3232,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_consume_token(RBRACE);
           break;
         default:
-          jj_la1[94] = jj_gen;
+          jj_la1[95] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
       default:
-        jj_la1[95] = jj_gen;
+        jj_la1[96] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3214,6 +3255,10 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   final public void Object() throws ParseException {
     GraphNode();
+  }
+
+  final public void ObjectPath() throws ParseException {
+    GraphNodePath();
   }
 
   final public void Verb() throws ParseException {
@@ -3241,7 +3286,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     default:
-      jj_la1[96] = jj_gen;
+      jj_la1[97] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3256,7 +3301,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       BlankNodePropertyList();
       break;
     default:
-      jj_la1[97] = jj_gen;
+      jj_la1[98] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3265,13 +3310,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   final public void TriplesNodePath() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LPAREN:
-      Collection();
+      CollectionPath();
       break;
     case LBRACK:
       BlankNodePropertyListPath();
       break;
     default:
-      jj_la1[98] = jj_gen;
+      jj_la1[99] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3344,7 +3389,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   jjtree.openNodeScope(jjtn000);
     try {
       jj_consume_token(LPAREN);
-      label_25:
+      label_26:
       while (true) {
         GraphNode();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -3376,8 +3421,73 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           ;
           break;
         default:
-          jj_la1[99] = jj_gen;
-          break label_25;
+          jj_la1[100] = jj_gen;
+          break label_26;
+        }
+      }
+      jj_consume_token(RPAREN);
+    } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            {if (true) throw (RuntimeException)jjte000;}
+          }
+          if (jjte000 instanceof ParseException) {
+            {if (true) throw (ParseException)jjte000;}
+          }
+          {if (true) throw (Error)jjte000;}
+    } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+    }
+  }
+
+  final public void CollectionPath() throws ParseException {
+ /*@bgen(jjtree) Collection */
+  ASTCollection jjtn000 = new ASTCollection(JJTCOLLECTION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      jj_consume_token(LPAREN);
+      label_27:
+      while (true) {
+        GraphNodePath();
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LPAREN:
+        case LBRACK:
+        case NIL:
+        case ANON:
+        case TRUE:
+        case FALSE:
+        case Q_IRI_REF:
+        case PNAME_NS:
+        case PNAME_LN:
+        case BLANK_NODE_LABEL:
+        case VAR1:
+        case VAR2:
+        case INTEGER:
+        case INTEGER_POSITIVE:
+        case INTEGER_NEGATIVE:
+        case DECIMAL:
+        case DECIMAL_POSITIVE:
+        case DECIMAL_NEGATIVE:
+        case DOUBLE:
+        case DOUBLE_POSITIVE:
+        case DOUBLE_NEGATIVE:
+        case STRING_LITERAL1:
+        case STRING_LITERAL2:
+        case STRING_LITERAL_LONG1:
+        case STRING_LITERAL_LONG2:
+          ;
+          break;
+        default:
+          jj_la1[101] = jj_gen;
+          break label_27;
         }
       }
       jj_consume_token(RPAREN);
@@ -3434,7 +3544,45 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       TriplesNode();
       break;
     default:
-      jj_la1[100] = jj_gen;
+      jj_la1[102] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void GraphNodePath() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case NIL:
+    case ANON:
+    case TRUE:
+    case FALSE:
+    case Q_IRI_REF:
+    case PNAME_NS:
+    case PNAME_LN:
+    case BLANK_NODE_LABEL:
+    case VAR1:
+    case VAR2:
+    case INTEGER:
+    case INTEGER_POSITIVE:
+    case INTEGER_NEGATIVE:
+    case DECIMAL:
+    case DECIMAL_POSITIVE:
+    case DECIMAL_NEGATIVE:
+    case DOUBLE:
+    case DOUBLE_POSITIVE:
+    case DOUBLE_NEGATIVE:
+    case STRING_LITERAL1:
+    case STRING_LITERAL2:
+    case STRING_LITERAL_LONG1:
+    case STRING_LITERAL_LONG2:
+      VarOrTerm();
+      break;
+    case LPAREN:
+    case LBRACK:
+      TriplesNodePath();
+      break;
+    default:
+      jj_la1[103] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3470,7 +3618,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       GraphTerm();
       break;
     default:
-      jj_la1[101] = jj_gen;
+      jj_la1[104] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3488,7 +3636,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       IRIref();
       break;
     default:
-      jj_la1[102] = jj_gen;
+      jj_la1[105] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3508,7 +3656,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         t = jj_consume_token(VAR2);
         break;
       default:
-        jj_la1[103] = jj_gen;
+        jj_la1[106] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3571,7 +3719,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     default:
-      jj_la1[104] = jj_gen;
+      jj_la1[107] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -3612,7 +3760,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     default:
-      jj_la1[105] = jj_gen;
+      jj_la1[108] = jj_gen;
       ;
     }
   }
@@ -3648,7 +3796,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     default:
-      jj_la1[106] = jj_gen;
+      jj_la1[109] = jj_gen;
       ;
     }
   }
@@ -3818,13 +3966,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         }
         break;
       default:
-        jj_la1[107] = jj_gen;
+        jj_la1[110] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[108] = jj_gen;
+      jj_la1[111] = jj_gen;
       ;
     }
   }
@@ -3835,7 +3983,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   final public void AdditiveExpression() throws ParseException {
     MultiplicativeExpression();
-    label_26:
+    label_28:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PLUS:
@@ -3849,8 +3997,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         ;
         break;
       default:
-        jj_la1[109] = jj_gen;
-        break label_26;
+        jj_la1[112] = jj_gen;
+        break label_28;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PLUS:
@@ -3920,7 +4068,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         }
         break;
       default:
-        jj_la1[110] = jj_gen;
+        jj_la1[113] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -3929,7 +4077,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   final public void MultiplicativeExpression() throws ParseException {
     UnaryExpression();
-    label_27:
+    label_29:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STAR:
@@ -3937,8 +4085,8 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         ;
         break;
       default:
-        jj_la1[111] = jj_gen;
-        break label_27;
+        jj_la1[114] = jj_gen;
+        break label_29;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case STAR:
@@ -3974,7 +4122,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         }
         break;
       default:
-        jj_la1[112] = jj_gen;
+        jj_la1[115] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -4097,7 +4245,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(PLUS);
         break;
       default:
-        jj_la1[113] = jj_gen;
+        jj_la1[116] = jj_gen;
         ;
       }
       PrimaryExpression();
@@ -4119,7 +4267,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     default:
-      jj_la1[114] = jj_gen;
+      jj_la1[117] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4204,7 +4352,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       BuiltInCall();
       break;
     default:
-      jj_la1[115] = jj_gen;
+      jj_la1[118] = jj_gen;
       if (jj_2_4(2)) {
         FunctionCall();
       } else {
@@ -4249,7 +4397,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           Aggregate();
           break;
         default:
-          jj_la1[116] = jj_gen;
+          jj_la1[119] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -4281,7 +4429,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       GroupConcat();
       break;
     default:
-      jj_la1[117] = jj_gen;
+      jj_la1[120] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4301,7 +4449,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                    jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[118] = jj_gen;
+        jj_la1[121] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -4396,7 +4544,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         Expression();
         break;
       default:
-        jj_la1[119] = jj_gen;
+        jj_la1[122] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -4436,7 +4584,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                  jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[120] = jj_gen;
+        jj_la1[123] = jj_gen;
         ;
       }
       Expression();
@@ -4476,7 +4624,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                  jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[121] = jj_gen;
+        jj_la1[124] = jj_gen;
         ;
       }
       Expression();
@@ -4516,7 +4664,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                  jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[122] = jj_gen;
+        jj_la1[125] = jj_gen;
         ;
       }
       Expression();
@@ -4556,7 +4704,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                  jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[123] = jj_gen;
+        jj_la1[126] = jj_gen;
         ;
       }
       Expression();
@@ -4596,7 +4744,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                     jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[124] = jj_gen;
+        jj_la1[127] = jj_gen;
         ;
       }
       Expression();
@@ -4636,7 +4784,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                           jjtn000.setDistinct(true);
         break;
       default:
-        jj_la1[125] = jj_gen;
+        jj_la1[128] = jj_gen;
         ;
       }
       Expression();
@@ -4648,7 +4796,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         Expression();
         break;
       default:
-        jj_la1[126] = jj_gen;
+        jj_la1[129] = jj_gen;
         ;
       }
       jj_consume_token(RPAREN);
@@ -4757,7 +4905,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       HashFunction();
       break;
     default:
-      jj_la1[127] = jj_gen;
+      jj_la1[130] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4808,7 +4956,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       RegexExpression();
       break;
     default:
-      jj_la1[128] = jj_gen;
+      jj_la1[131] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4832,7 +4980,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       Round();
       break;
     default:
-      jj_la1[129] = jj_gen;
+      jj_la1[132] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4880,7 +5028,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       STRUUID();
       break;
     default:
-      jj_la1[130] = jj_gen;
+      jj_la1[133] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4916,7 +5064,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       Tz();
       break;
     default:
-      jj_la1[131] = jj_gen;
+      jj_la1[134] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -4943,7 +5091,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       SHA512();
       break;
     default:
-      jj_la1[132] = jj_gen;
+      jj_la1[135] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -5554,7 +5702,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         Expression();
         break;
       default:
-        jj_la1[133] = jj_gen;
+        jj_la1[136] = jj_gen;
         ;
       }
       jj_consume_token(RPAREN);
@@ -5823,7 +5971,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         Expression();
         break;
       default:
-        jj_la1[134] = jj_gen;
+        jj_la1[137] = jj_gen;
         ;
       }
       jj_consume_token(RPAREN);
@@ -6043,15 +6191,15 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       jj_consume_token(COALESCE);
       jj_consume_token(LPAREN);
       Expression();
-      label_28:
+      label_30:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
           ;
           break;
         default:
-          jj_la1[135] = jj_gen;
-          break label_28;
+          jj_la1[138] = jj_gen;
+          break label_30;
         }
         jj_consume_token(COMMA);
         Expression();
@@ -6409,7 +6557,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(RPAREN);
         break;
       default:
-        jj_la1[136] = jj_gen;
+        jj_la1[139] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -6611,7 +6759,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         Expression();
         break;
       default:
-        jj_la1[137] = jj_gen;
+        jj_la1[140] = jj_gen;
         ;
       }
       jj_consume_token(RPAREN);
@@ -6714,13 +6862,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           IRIref();
           break;
         default:
-          jj_la1[138] = jj_gen;
+          jj_la1[141] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
       default:
-        jj_la1[139] = jj_gen;
+        jj_la1[142] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
@@ -6762,7 +6910,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       NumericLiteralNegative();
       break;
     default:
-      jj_la1[140] = jj_gen;
+      jj_la1[143] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -6788,7 +6936,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                datatype = XMLSchema.DOUBLE;
         break;
       default:
-        jj_la1[141] = jj_gen;
+        jj_la1[144] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -6823,7 +6971,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                         datatype = XMLSchema.DOUBLE;
         break;
       default:
-        jj_la1[142] = jj_gen;
+        jj_la1[145] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -6858,7 +7006,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                                         datatype = XMLSchema.DOUBLE;
         break;
       default:
-        jj_la1[143] = jj_gen;
+        jj_la1[146] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -6900,7 +7048,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       }
       break;
     default:
-      jj_la1[144] = jj_gen;
+      jj_la1[147] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -6923,7 +7071,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           t = jj_consume_token(STRING_LITERAL2);
           break;
         default:
-          jj_la1[145] = jj_gen;
+          jj_la1[148] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -6941,7 +7089,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           t = jj_consume_token(STRING_LITERAL_LONG2);
           break;
         default:
-          jj_la1[146] = jj_gen;
+          jj_la1[149] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -6950,7 +7098,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
          jjtn000.setValue(_trimString(t.image, 3));
         break;
       default:
-        jj_la1[147] = jj_gen;
+        jj_la1[150] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -6971,7 +7119,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       PrefixedName();
       break;
     default:
-      jj_la1[148] = jj_gen;
+      jj_la1[151] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -6991,7 +7139,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         t = jj_consume_token(PNAME_NS);
         break;
       default:
-        jj_la1[149] = jj_gen;
+        jj_la1[152] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -7022,7 +7170,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(ANON);
         break;
       default:
-        jj_la1[150] = jj_gen;
+        jj_la1[153] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -7077,7 +7225,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(ALL);
         break;
       default:
-        jj_la1[151] = jj_gen;
+        jj_la1[154] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -7121,13 +7269,13 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           jj_consume_token(GRAPH);
           break;
         default:
-          jj_la1[152] = jj_gen;
+          jj_la1[155] = jj_gen;
           ;
         }
         IRIref();
         break;
       default:
-        jj_la1[153] = jj_gen;
+        jj_la1[156] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -7193,18 +7341,18 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       TriplesTemplate();
       break;
     default:
-      jj_la1[154] = jj_gen;
+      jj_la1[157] = jj_gen;
       ;
     }
-    label_29:
+    label_31:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case GRAPH:
         ;
         break;
       default:
-        jj_la1[155] = jj_gen;
-        break label_29;
+        jj_la1[158] = jj_gen;
+        break label_31;
       }
       QuadsNotTriples();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -7212,7 +7360,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         jj_consume_token(DOT);
         break;
       default:
-        jj_la1[156] = jj_gen;
+        jj_la1[159] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -7244,7 +7392,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         TriplesTemplate();
         break;
       default:
-        jj_la1[157] = jj_gen;
+        jj_la1[160] = jj_gen;
         ;
       }
     }
@@ -7288,7 +7436,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         TriplesTemplate();
         break;
       default:
-        jj_la1[158] = jj_gen;
+        jj_la1[161] = jj_gen;
         ;
       }
       jj_consume_token(RBRACE);
@@ -7337,7 +7485,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       Create();
       break;
     default:
-      jj_la1[159] = jj_gen;
+      jj_la1[162] = jj_gen;
       if (jj_2_5(2)) {
         InsertData();
       } else if (jj_2_6(2)) {
@@ -7352,7 +7500,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           Modify();
           break;
         default:
-          jj_la1[160] = jj_gen;
+          jj_la1[163] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -7373,7 +7521,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                       jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[161] = jj_gen;
+        jj_la1[164] = jj_gen;
         ;
       }
       IRIref();
@@ -7383,7 +7531,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         GraphRef();
         break;
       default:
-        jj_la1[162] = jj_gen;
+        jj_la1[165] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
@@ -7420,7 +7568,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                            jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[163] = jj_gen;
+        jj_la1[166] = jj_gen;
         ;
       }
       GraphRefAll();
@@ -7458,7 +7606,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                           jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[164] = jj_gen;
+        jj_la1[167] = jj_gen;
         ;
       }
       GraphRefAll();
@@ -7496,7 +7644,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                          jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[165] = jj_gen;
+        jj_la1[168] = jj_gen;
         ;
       }
       GraphOrDefault();
@@ -7536,7 +7684,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                           jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[166] = jj_gen;
+        jj_la1[169] = jj_gen;
         ;
       }
       GraphOrDefault();
@@ -7576,7 +7724,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                           jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[167] = jj_gen;
+        jj_la1[170] = jj_gen;
         ;
       }
       GraphOrDefault();
@@ -7616,7 +7764,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                             jjtn000.setSilent(true);
         break;
       default:
-        jj_la1[168] = jj_gen;
+        jj_la1[171] = jj_gen;
         ;
       }
       GraphRef();
@@ -7802,7 +7950,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
                       jjtn000.setNamed(true);
         break;
       default:
-        jj_la1[169] = jj_gen;
+        jj_la1[172] = jj_gen;
         ;
       }
       IRIref();
@@ -7839,7 +7987,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         IRIref();
         break;
       default:
-        jj_la1[170] = jj_gen;
+        jj_la1[173] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -7850,7 +7998,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
           InsertClause();
           break;
         default:
-          jj_la1[171] = jj_gen;
+          jj_la1[174] = jj_gen;
           ;
         }
         break;
@@ -7858,19 +8006,19 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         InsertClause();
         break;
       default:
-        jj_la1[172] = jj_gen;
+        jj_la1[175] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-      label_30:
+      label_32:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case USING:
           ;
           break;
         default:
-          jj_la1[173] = jj_gen;
-          break label_30;
+          jj_la1[176] = jj_gen;
+          break label_32;
         }
         UsingClause();
       }
@@ -7946,108 +8094,68 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     finally { jj_save(6, xla); }
   }
 
-  private boolean jj_3R_51() {
+  private boolean jj_3R_53() {
     if (jj_scan_token(LPAREN)) return true;
     return false;
   }
 
-  private boolean jj_3R_44() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(30)) {
-    jj_scanpos = xsp;
-    if (jj_3R_51()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_53() {
-    if (jj_3R_61()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_52() {
-    if (jj_3R_60()) return true;
+  private boolean jj_3R_64() {
+    if (jj_scan_token(LPAREN)) return true;
     return false;
   }
 
   private boolean jj_3R_46() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_52()) {
+    if (jj_scan_token(30)) {
     jj_scanpos = xsp;
     if (jj_3R_53()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_34() {
-    if (jj_3R_43()) return true;
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_62() {
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_63() {
-    if (jj_scan_token(LBRACK)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_64() {
-    if (jj_scan_token(LBRACK)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_58() {
+  private boolean jj_3R_60() {
     if (jj_scan_token(Q_IRI_REF)) return true;
     return false;
   }
 
-  private boolean jj_3R_55() {
-    if (jj_3R_63()) return true;
+  private boolean jj_3R_66() {
+    if (jj_scan_token(LPAREN)) return true;
     return false;
   }
 
-  private boolean jj_3R_54() {
-    if (jj_3R_62()) return true;
+  private boolean jj_3R_36() {
+    if (jj_3R_45()) return true;
+    if (jj_3R_46()) return true;
     return false;
   }
 
-  private boolean jj_3R_47() {
+  private boolean jj_3R_65() {
+    if (jj_scan_token(LBRACK)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_77() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_54()) {
-    jj_scanpos = xsp;
-    if (jj_3R_55()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_74() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_81()) {
+    if (jj_3R_84()) {
     jj_scanpos = xsp;
     if (jj_scan_token(31)) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_81() {
+  private boolean jj_3R_84() {
     if (jj_scan_token(BLANK_NODE_LABEL)) return true;
     return false;
   }
 
-  private boolean jj_3R_57() {
-    if (jj_3R_64()) return true;
+  private boolean jj_3R_67() {
+    if (jj_scan_token(LBRACK)) return true;
     return false;
   }
 
-  private boolean jj_3R_59() {
+  private boolean jj_3R_61() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(147)) {
@@ -8057,12 +8165,22 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_56() {
-    if (jj_3R_62()) return true;
+  private boolean jj_3R_57() {
+    if (jj_3R_65()) return true;
     return false;
   }
 
-  private boolean jj_3R_48() {
+  private boolean jj_3R_52() {
+    if (jj_3R_61()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_56() {
+    if (jj_3R_64()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_49() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_56()) {
@@ -8072,33 +8190,42 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_50() {
-    if (jj_3R_59()) return true;
+  private boolean jj_3R_51() {
+    if (jj_3R_60()) return true;
     return false;
   }
 
-  private boolean jj_3R_49() {
-    if (jj_3R_58()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_43() {
+  private boolean jj_3R_45() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_49()) {
+    if (jj_3R_51()) {
     jj_scanpos = xsp;
-    if (jj_3R_50()) return true;
+    if (jj_3R_52()) return true;
     }
     return false;
   }
 
-  private boolean jj_3_3() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_33()) return true;
+  private boolean jj_3R_59() {
+    if (jj_3R_67()) return true;
     return false;
   }
 
-  private boolean jj_3R_83() {
+  private boolean jj_3R_58() {
+    if (jj_3R_66()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_50() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_58()) {
+    jj_scanpos = xsp;
+    if (jj_3R_59()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_86() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(169)) {
@@ -8108,23 +8235,17 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3_2() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_75() {
+  private boolean jj_3R_78() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_82()) {
+    if (jj_3R_85()) {
     jj_scanpos = xsp;
-    if (jj_3R_83()) return true;
+    if (jj_3R_86()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_82() {
+  private boolean jj_3R_85() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(167)) {
@@ -8135,46 +8256,86 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   }
 
   private boolean jj_3_4() {
-    if (jj_3R_34()) return true;
+    if (jj_3R_36()) return true;
     return false;
   }
 
-  private boolean jj_3R_80() {
+  private boolean jj_3R_83() {
     if (jj_scan_token(FALSE)) return true;
     return false;
   }
 
-  private boolean jj_3R_73() {
+  private boolean jj_3R_76() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_79()) {
+    if (jj_3R_82()) {
     jj_scanpos = xsp;
-    if (jj_3R_80()) return true;
+    if (jj_3R_83()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_79() {
+  private boolean jj_3R_82() {
     if (jj_scan_token(TRUE)) return true;
     return false;
   }
 
-  private boolean jj_3R_95() {
+  private boolean jj_3R_98() {
     if (jj_scan_token(DOUBLE_NEGATIVE)) return true;
     return false;
   }
 
-  private boolean jj_3R_94() {
+  private boolean jj_3R_97() {
     if (jj_scan_token(DECIMAL_NEGATIVE)) return true;
     return false;
   }
 
-  private boolean jj_3R_93() {
+  private boolean jj_3R_96() {
     if (jj_scan_token(INTEGER_NEGATIVE)) return true;
     return false;
   }
 
-  private boolean jj_3R_86() {
+  private boolean jj_3_3() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_35()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_89() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_96()) {
+    jj_scanpos = xsp;
+    if (jj_3R_97()) {
+    jj_scanpos = xsp;
+    if (jj_3R_98()) return true;
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_95() {
+    if (jj_scan_token(DOUBLE_POSITIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_94() {
+    if (jj_scan_token(DECIMAL_POSITIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_93() {
+    if (jj_scan_token(INTEGER_POSITIVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_88() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_93()) {
@@ -8187,27 +8348,49 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_45() {
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
   private boolean jj_3R_92() {
-    if (jj_scan_token(DOUBLE_POSITIVE)) return true;
+    if (jj_scan_token(DOUBLE)) return true;
     return false;
   }
 
   private boolean jj_3R_91() {
-    if (jj_scan_token(DECIMAL_POSITIVE)) return true;
+    if (jj_scan_token(DECIMAL)) return true;
     return false;
   }
 
   private boolean jj_3R_90() {
-    if (jj_scan_token(INTEGER_POSITIVE)) return true;
+    if (jj_scan_token(INTEGER)) return true;
     return false;
   }
 
-  private boolean jj_3R_85() {
+  private boolean jj_3R_39() {
+    if (jj_scan_token(DELETE)) return true;
+    if (jj_scan_token(WHERE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_scan_token(DELETE)) return true;
+    if (jj_scan_token(DATA)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_47() {
+    if (jj_3R_34()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_81() {
+    if (jj_3R_89()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_80() {
+    if (jj_3R_88()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_87() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_90()) {
@@ -8220,126 +8403,27 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_38() {
-    if (jj_3R_45()) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_3R_31()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_89() {
-    if (jj_scan_token(DOUBLE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_88() {
-    if (jj_scan_token(DECIMAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_87() {
-    if (jj_scan_token(INTEGER)) return true;
+  private boolean jj_3R_79() {
+    if (jj_3R_87()) return true;
     return false;
   }
 
   private boolean jj_3R_37() {
-    if (jj_scan_token(DELETE)) return true;
-    if (jj_scan_token(WHERE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_36() {
-    if (jj_scan_token(DELETE)) return true;
-    if (jj_scan_token(DATA)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_31() {
-    if (jj_scan_token(LBRACE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_38()) jj_scanpos = xsp;
-    if (jj_scan_token(RBRACE)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_78() {
-    if (jj_3R_86()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_77() {
-    if (jj_3R_85()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_84() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_87()) {
-    jj_scanpos = xsp;
-    if (jj_3R_88()) {
-    jj_scanpos = xsp;
-    if (jj_3R_89()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_76() {
-    if (jj_3R_84()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
     if (jj_scan_token(INSERT)) return true;
     if (jj_scan_token(DATA)) return true;
     return false;
   }
 
-  private boolean jj_3R_72() {
+  private boolean jj_3R_75() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_76()) {
+    if (jj_3R_79()) {
     jj_scanpos = xsp;
-    if (jj_3R_77()) {
+    if (jj_3R_80()) {
     jj_scanpos = xsp;
-    if (jj_3R_78()) return true;
+    if (jj_3R_81()) return true;
     }
     }
-    return false;
-  }
-
-  private boolean jj_3R_71() {
-    if (jj_3R_75()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_70() {
-    if (jj_scan_token(NIL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_69() {
-    if (jj_3R_74()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_68() {
-    if (jj_3R_73()) return true;
-    return false;
-  }
-
-  private boolean jj_3_7() {
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_36()) return true;
     return false;
   }
 
@@ -8348,50 +8432,79 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_67() {
-    if (jj_3R_72()) return true;
+  private boolean jj_3_1() {
+    if (jj_3R_33()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_74() {
+    if (jj_3R_78()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_33() {
+    if (jj_scan_token(LBRACE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_40()) jj_scanpos = xsp;
+    if (jj_scan_token(RBRACE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_73() {
+    if (jj_scan_token(NIL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_72() {
+    if (jj_3R_77()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_71() {
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_38()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_70() {
+    if (jj_3R_75()) return true;
     return false;
   }
 
   private boolean jj_3_5() {
-    if (jj_3R_35()) return true;
+    if (jj_3R_37()) return true;
     return false;
   }
 
-  private boolean jj_3R_32() {
+  private boolean jj_3R_69() {
+    if (jj_3R_74()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_63() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_39()) {
-    jj_scanpos = xsp;
-    if (jj_3R_40()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_39() {
-    if (jj_3R_46()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_66() {
-    if (jj_3R_71()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_61() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_65()) {
-    jj_scanpos = xsp;
-    if (jj_3R_66()) {
-    jj_scanpos = xsp;
-    if (jj_3R_67()) {
-    jj_scanpos = xsp;
     if (jj_3R_68()) {
     jj_scanpos = xsp;
     if (jj_3R_69()) {
     jj_scanpos = xsp;
-    if (jj_3R_70()) return true;
+    if (jj_3R_70()) {
+    jj_scanpos = xsp;
+    if (jj_3R_71()) {
+    jj_scanpos = xsp;
+    if (jj_3R_72()) {
+    jj_scanpos = xsp;
+    if (jj_3R_73()) return true;
     }
     }
     }
@@ -8400,12 +8513,12 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3R_65() {
-    if (jj_3R_43()) return true;
+  private boolean jj_3R_68() {
+    if (jj_3R_45()) return true;
     return false;
   }
 
-  private boolean jj_3R_60() {
+  private boolean jj_3R_62() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(149)) {
@@ -8416,21 +8529,61 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   }
 
   private boolean jj_3R_42() {
-    if (jj_3R_48()) return true;
+    if (jj_3R_49()) return true;
     return false;
   }
 
-  private boolean jj_3R_41() {
-    if (jj_3R_46()) return true;
+  private boolean jj_3R_55() {
+    if (jj_3R_63()) return true;
     return false;
   }
 
-  private boolean jj_3R_33() {
+  private boolean jj_3R_34() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_41()) {
     jj_scanpos = xsp;
     if (jj_3R_42()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_41() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_54() {
+    if (jj_3R_62()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_48() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_54()) {
+    jj_scanpos = xsp;
+    if (jj_3R_55()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_44() {
+    if (jj_3R_50()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_43() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_43()) {
+    jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
     }
     return false;
   }
@@ -8446,7 +8599,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[174];
+  final private int[] jj_la1 = new int[177];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -8462,22 +8615,22 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       jj_la1_init_5();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10,0x1000010,0x10,0x0,0x0,0xc0000110,0x0,0x40,0x0,0x0,0x1000000,0x0,0x0,0x0,0x0,0x0,0x0,0x40000010,0x0,0x40000010,0x0,0x0,0x40000010,0x40000010,0x0,0x40000010,0x0,0x0,0x0,0x0,0x0,0x10,0x10,0x0,0x10,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0xc0000110,0x1000,0x40,0x0,0x1000,0xc0000110,0x1000,0xc0000110,0x0,0xc0000110,0x0,0x1000,0x1000,0x40,0x0,0x0,0x0,0x10,0x800,0x40000010,0x0,0xc0000110,0x0,0x400,0x800,0x10080010,0xc0000110,0x10080010,0x10080010,0x400,0x8000000,0x4000000,0x10000000,0x3400040,0x80010,0x8000000,0x10000000,0x10000010,0x0,0x10000000,0x80,0x880,0x800,0x3400040,0x0,0x110,0x110,0xc0000110,0xc0000110,0xc0000000,0x0,0x0,0xc0000000,0x100000,0x200000,0x7e000,0x7e000,0xc00000,0xc00000,0x5000000,0x5000000,0x400000,0xc80010,0x10,0x0,0x0,0x0,0x1c80010,0x0,0x0,0x0,0x0,0x0,0x0,0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x800,0x40000010,0x800,0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80000000,0x0,0x0,0x0,0xc0000110,0x0,0x1000,0xc0000110,0xc0000110,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10,0x1000010,0x10,0x0,0x0,0xc0000110,0x0,0x40,0x0,0x0,0x1000000,0x0,0x0,0x0,0x0,0x0,0x0,0x40000010,0x0,0x40000010,0x0,0x0,0x40000010,0x40000010,0x0,0x40000010,0x0,0x0,0x0,0x0,0x0,0x10,0x10,0x0,0x10,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0xc0000110,0x1000,0x40,0x0,0x1000,0xc0000110,0x1000,0xc0000110,0x0,0xc0000110,0x0,0x1000,0x1000,0x40,0x0,0x0,0x0,0x10,0x800,0x40000010,0x0,0xc0000110,0x0,0x400,0x800,0x10080010,0xc0000110,0x10080010,0x10080010,0x400,0x800,0x8000000,0x4000000,0x10000000,0x3400040,0x80010,0x8000000,0x10000000,0x10000010,0x0,0x10000000,0x80,0x880,0x800,0x3400040,0x0,0x110,0x110,0xc0000110,0xc0000110,0xc0000110,0xc0000110,0xc0000000,0x0,0x0,0xc0000000,0x100000,0x200000,0x7e000,0x7e000,0xc00000,0xc00000,0x5000000,0x5000000,0x400000,0xc80010,0x10,0x0,0x0,0x0,0x1c80010,0x0,0x0,0x0,0x0,0x0,0x0,0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x800,0x40000010,0x800,0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80000000,0x0,0x0,0x0,0xc0000110,0x0,0x1000,0xc0000110,0xc0000110,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x6,0x6,0x78,0x400,0x0,0x0,0x180,0x180,0x0,0x0,0x0,0x400,0x0,0x0,0x400,0x1000,0x0,0x0,0x0,0x400,0x0,0x800,0x800,0x1000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x2000000,0x2000,0xc0000,0xfc000000,0xfc030000,0x200,0xfc000000,0x30000,0x30000,0xfc030000,0x80000,0x40000,0xc0000,0x8,0x1000000,0x0,0xb00000,0x1000000,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x1000000,0x0,0x0,0xb00000,0x8,0x400000,0x0,0xfc000000,0x0,0x0,0x1,0x0,0x1,0x0,0x0,0x1,0x0,0x1,0x1,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x1,0x1,0x1,0x1,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xfc000000,0xfc000000,0x0,0x0,0x80,0xfc000000,0x80,0x80,0x80,0x80,0x80,0x80,0x0,0xfc000000,0x40000000,0x0,0xb0000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200800,0x200000,0x200000,0x0,0x200000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x6,0x6,0x78,0x400,0x0,0x0,0x180,0x180,0x0,0x0,0x0,0x400,0x0,0x0,0x400,0x1000,0x0,0x0,0x0,0x400,0x0,0x800,0x800,0x1000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x2000000,0x2000,0xc0000,0xfc000000,0xfc030000,0x200,0xfc000000,0x30000,0x30000,0xfc030000,0x80000,0x40000,0xc0000,0x8,0x1000000,0x0,0xb00000,0x1000000,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x1000000,0x0,0x0,0xb00000,0x8,0x400000,0x0,0xfc000000,0x0,0x0,0x1,0x0,0x1,0x0,0x0,0x1,0x0,0x1,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x1,0x1,0x1,0x1,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xfc000000,0xfc000000,0x0,0x0,0x80,0xfc000000,0x80,0x80,0x80,0x80,0x80,0x80,0x0,0xfc000000,0x40000000,0x0,0xb0000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200800,0x200000,0x200000,0x0,0x200000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x60000000,0x60000000,0x0,0x0,0x0,0x0,0x0,0x0,0x60000000,0x6000000,0x0,0x0,0x60000000,0x0,0x0,0x0,0x60000000,0x0,0x0,0x0,0x0,0x0,0x60000000,0x0,0x86000000,0x0,0x0,0x0,0x86000000,0x0,0x86000000,0x0,0x0,0x0,0x0,0x1003fff,0x1003fff,0x0,0x1003fff,0x0,0x0,0x1003fff,0x0,0x0,0x0,0x0,0xe000000,0x0,0x50000000,0x8000000,0x0,0x6000000,0x0,0x6000000,0x8000000,0xe000000,0x8000000,0x0,0x0,0x50000000,0x0,0x0,0x0,0x1003fff,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x6000000,0x6000000,0x6000000,0x0,0x0,0x6000000,0x0,0x0,0xc000,0xc000,0x0,0x0,0x0,0x0,0x0,0x77f3fff,0x1003fff,0x67f0000,0x7f0000,0x0,0x77f3fff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1003fff,0x1000000,0x0,0x1fbc,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x6000000,0x0,0x0,0x6000000,0x6000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x60000000,0x60000000,0x0,0x0,0x0,0x0,0x0,0x0,0x60000000,0x6000000,0x0,0x0,0x60000000,0x0,0x0,0x0,0x60000000,0x0,0x0,0x0,0x0,0x0,0x60000000,0x0,0x86000000,0x0,0x0,0x0,0x86000000,0x0,0x86000000,0x0,0x0,0x0,0x0,0x1003fff,0x1003fff,0x0,0x1003fff,0x0,0x0,0x1003fff,0x0,0x0,0x0,0x0,0xe000000,0x0,0x50000000,0x8000000,0x0,0x6000000,0x0,0x6000000,0x8000000,0xe000000,0x8000000,0x0,0x0,0x50000000,0x0,0x0,0x0,0x1003fff,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x6000000,0x6000000,0x6000000,0x6000000,0x6000000,0x0,0x0,0x6000000,0x0,0x0,0xc000,0xc000,0x0,0x0,0x0,0x0,0x0,0x77f3fff,0x1003fff,0x67f0000,0x7f0000,0x0,0x77f3fff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1003fff,0x1000000,0x0,0x1fbc,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x6000000,0x0,0x0,0x6000000,0x6000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_3() {
-      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0xffffffff,0x0,0xffffffff,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0xffffffff,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0xfff,0x1f000,0x0,0x3fe0000,0xfc000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0xffffffff,0x0,0xffffffff,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0xffffffff,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0xfff,0x1f000,0x0,0x3fe0000,0xfc000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_4() {
-      jj_la1_4 = new int[] {0x0,0x6ff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x600000,0x600000,0x600000,0x0,0x0,0xcf7e0000,0x0,0x0,0x0,0x6e0000,0x6e0000,0x0,0x0,0x0,0xe1000,0x0,0x600000,0x0,0x0,0x600000,0xcf0e0000,0x600000,0x0,0x0,0xcf0e0000,0x0,0xcf0e0000,0x0,0x0,0x0,0x0,0x6e0000,0x6e0000,0x0,0x6e0000,0x0,0x0,0x6e0000,0x0,0x0,0x0,0x0,0xcf7e0000,0x0,0x0,0x0,0x0,0xcf7e0000,0x0,0xcf7e0000,0x0,0xcf7e0000,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0xe0000,0x0,0x0,0x6e0000,0xcf7e0000,0x6e0000,0x0,0x0,0x6e0000,0xcf7e0000,0x6e0000,0x6e0000,0x0,0x0,0x0,0x0,0x0,0xe0000,0x0,0xe0000,0xe0000,0xe0000,0xe0000,0x1000000,0x0,0x1000000,0x0,0x6e0000,0x0,0x0,0xcf7e0000,0xcf7e0000,0xcf7e0000,0x6e0000,0x600000,0xcf1e0000,0x0,0x0,0x0,0x0,0xc6000000,0xc6000000,0x0,0x0,0x0,0xcf6e0000,0x0,0xcf6e0000,0x0,0x0,0xcf6e0000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800000,0x800000,0xcf000000,0x9000000,0x42000000,0x84000000,0x0,0x0,0x0,0x0,0xe0000,0xc0000,0x100000,0x3000,0x0,0xe1000,0xcf7e0000,0x0,0x0,0xcf7e0000,0xcf7e0000,0x7f,0x680,0x800,0x4000,0x800,0x800,0x800,0x800,0x800,0x800,0x0,0x400,0x80,0x280,0x10000,};
+      jj_la1_4 = new int[] {0x0,0x6ff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x600000,0x600000,0x600000,0x0,0x0,0xcf7e0000,0x0,0x0,0x0,0x6e0000,0x6e0000,0x0,0x0,0x0,0xe1000,0x0,0x600000,0x0,0x0,0x600000,0xcf0e0000,0x600000,0x0,0x0,0xcf0e0000,0x0,0xcf0e0000,0x0,0x0,0x0,0x0,0x6e0000,0x6e0000,0x0,0x6e0000,0x0,0x0,0x6e0000,0x0,0x0,0x0,0x0,0xcf7e0000,0x0,0x0,0x0,0x0,0xcf7e0000,0x0,0xcf7e0000,0x0,0xcf7e0000,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0xe0000,0x0,0x0,0x6e0000,0xcf7e0000,0x6e0000,0x0,0x0,0x6e0000,0xcf7e0000,0x6e0000,0x6e0000,0x0,0x0,0x0,0x0,0x0,0x0,0xe0000,0x0,0xe0000,0xe0000,0xe0000,0xe0000,0x1000000,0x0,0x1000000,0x0,0x6e0000,0x0,0x0,0xcf7e0000,0xcf7e0000,0xcf7e0000,0xcf7e0000,0xcf7e0000,0x6e0000,0x600000,0xcf1e0000,0x0,0x0,0x0,0x0,0xc6000000,0xc6000000,0x0,0x0,0x0,0xcf6e0000,0x0,0xcf6e0000,0x0,0x0,0xcf6e0000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800000,0x800000,0xcf000000,0x9000000,0x42000000,0x84000000,0x0,0x0,0x0,0x0,0xe0000,0xc0000,0x100000,0x3000,0x0,0xe1000,0xcf7e0000,0x0,0x0,0xcf7e0000,0xcf7e0000,0x7f,0x680,0x800,0x4000,0x800,0x800,0x800,0x800,0x800,0x800,0x0,0x400,0x80,0x280,0x10000,};
    }
    private static void jj_la1_init_5() {
-      jj_la1_5 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x7e1,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x7e1,0x0,0x7e1,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x7e1,0x7e1,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x60,0x60,0x0,0x0,0x0,0x7e1,0x0,0x7e1,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x61,0x1,0x20,0x40,0x0,0x180,0x600,0x780,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x7e1,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_5 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x7e1,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x7e1,0x0,0x7e1,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x7e1,0x7e1,0x7e1,0x7e1,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x60,0x60,0x0,0x0,0x0,0x7e1,0x0,0x7e1,0x0,0x0,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x61,0x1,0x20,0x40,0x0,0x180,0x600,0x780,0x0,0x0,0x0,0x0,0x0,0x0,0x7e1,0x0,0x0,0x7e1,0x7e1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[7];
   private boolean jj_rescan = false;
@@ -8494,7 +8647,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 174; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 177; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -8510,7 +8663,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 174; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 177; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -8521,7 +8674,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 174; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 177; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -8533,7 +8686,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 174; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 177; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -8543,7 +8696,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 174; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 177; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -8554,7 +8707,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 174; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 177; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -8671,7 +8824,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 174; i++) {
+    for (int i = 0; i < 177; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
