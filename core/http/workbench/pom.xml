@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-console</artifactId>
+			<artifactId>sesame-config</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
@@ -55,11 +55,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 		</dependency>
+
 		<!-- Required for CommonsMultipartResolver from the Spring Framework -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
