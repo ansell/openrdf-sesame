@@ -65,10 +65,10 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 
 		sb.setLength(0);
 		sb.append("SELECT TestURI, Name, Action, Type ");
-		sb.append("FROM {TestURI} rdf:type {Type};");
-		sb.append("               mf:name {Name};");
-		sb.append("               mf:action {Action};");
-		sb.append("               dawgt:approval {dawgt:Approved} ");
+		sb.append("FROM {} rdf:first {TestURI} rdf:type {Type};");
+		sb.append("                            mf:name {Name};");
+		sb.append("                            mf:action {Action};");
+		sb.append("                            dawgt:approval {dawgt:Approved} ");
 		sb.append("WHERE Type = mf:PositiveSyntaxTest11 or Type = mf:NegativeSyntaxTest11 or Type = mf:PositiveUpdateSyntaxTest11 or Type = mf:NegativeUpdateSyntaxTest11 ");
 		sb.append("USING NAMESPACE");
 		sb.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>,");
