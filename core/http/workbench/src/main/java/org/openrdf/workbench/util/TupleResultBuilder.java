@@ -72,7 +72,7 @@ public class TupleResultBuilder {
 	}
 
 	public void bool(boolean result) {
-		closeHead();
+		closeHeadBoolean();
 		out.print("  <boolean>");
 		out.print(result);
 		out.println("</boolean>");
@@ -183,11 +183,24 @@ public class TupleResultBuilder {
 		return this;
 	}
 
+	public TupleResultBuilder endBoolean() {
+		closeHead();
+		out.println("</sparql>");
+		return this;
+	}
+
 	private void closeHead() {
 		if (!headClosed) {
 			headClosed = true;
 			out.println("  </head>");
 			out.println("  <results ordered='false' distinct='false'>");
+		}
+	}
+
+	private void closeHeadBoolean() {
+		if (!headClosed) {
+			headClosed = true;
+			out.println("  </head>");
 		}
 	}
 
