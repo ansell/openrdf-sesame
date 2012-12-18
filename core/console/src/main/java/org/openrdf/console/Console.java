@@ -70,7 +70,6 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
-import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
@@ -118,6 +117,12 @@ public class Console {
 	 * Static constants *
 	 *------------------*/
 
+	private static final String PLEASE_OPEN_FIRST = "please open a repository first";
+
+	private static final String OUTPUT_SEPARATOR = "+----------";
+
+	private static final String USAGE = "Usage:";
+
 	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
@@ -130,7 +135,7 @@ public class Console {
 
 	private final AppConfiguration appConfig = new AppConfiguration(APP_NAME, APP_NAME, VERSION);
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static final Logger LOGGER = LoggerFactory.getLogger(Console.class);
 
 	/*-----------*
 	 * Variables *
@@ -144,9 +149,9 @@ public class Console {
 
 	private String repositoryID;
 
-	private BufferedReader in;
+	private final BufferedReader in;
 
-	private PrintStream out;
+	private final PrintStream out;
 
 	private int consoleWidth = 80;
 
@@ -158,45 +163,37 @@ public class Console {
 	 * Static metods *
 	 *---------------*/
 
-	public static void main(String[] args)
+	public static void main(final String[] args)
 		throws Exception
 	{
-		Console console = new Console();
+		final Console console = new Console();
 
 		// Parse command line options
-		Options options = new Options();
-
-		Option helpOption = new Option("h", "help", false, "print this help");
-		Option versionOption = new Option("v", "version", false, "print version information");
-		Option serverURLOption = new Option("s", "serverURL", true,
+		final Options options = new Options();
+		final Option helpOption = new Option("h", "help", false, "print this help");
+		final Option versionOption = new Option("v", "version", false, "print version information");
+		final Option serverURLOption = new Option("s", "serverURL", true,
 				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
-		Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
-
+		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		options.addOption(helpOption);
-
-		OptionGroup connectGroup = new OptionGroup();
+		final OptionGroup connectGroup = new OptionGroup();
 		connectGroup.addOption(serverURLOption);
 		connectGroup.addOption(dirOption);
 		options.addOptionGroup(connectGroup);
-
-		CommandLineParser argsParser = new PosixParser();
-
+		final CommandLineParser argsParser = new PosixParser();
 		try {
-			CommandLine commandLine = argsParser.parse(options, args);
-
+			final CommandLine commandLine = argsParser.parse(options, args);
 			if (commandLine.hasOption(helpOption.getOpt())) {
 				printUsage(options);
 				System.exit(0);
 			}
-
 			if (commandLine.hasOption(versionOption.getOpt())) {
 				System.out.println(console.appConfig.getFullName());
 				System.exit(0);
 			}
-
-			String dir = commandLine.getOptionValue(dirOption.getOpt());
-			String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
-			String[] otherArgs = commandLine.getArgs();
+			final String dir = commandLine.getOptionValue(dirOption.getOpt());
+			final String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
+			final String[] otherArgs = commandLine.getArgs();
 
 			if (otherArgs.length > 1) {
 				printUsage(options);
@@ -207,11 +204,11 @@ public class Console {
 			if (dir != null) {
 				connected = console.connectLocal(dir);
 			}
-			else if (serverURL != null) {
-				connected = console.connectRemote(serverURL);
+			else if (serverURL == null) {
+				connected = console.connectDefault();
 			}
 			else {
-				connected = console.connectDefault();
+				connected = console.connectRemote(serverURL);
 			}
 
 			if (!connected) {
@@ -230,17 +227,11 @@ public class Console {
 		console.start();
 	}
 
-	private static void printUsage(Options options) {
+	private static void printUsage(final Options options) {
 		System.out.println("Sesame Console, an interactive shell based utility to communicate with Sesame repositories.");
-		HelpFormatter formatter = new HelpFormatter();
+		final HelpFormatter formatter = new HelpFormatter();
 		formatter.setWidth(80);
 		formatter.printHelp("start-console [OPTION] [repositoryID]", options);
-		// writeln("Usage: start-console [OPTION] [repositoryID]");
-		// writeln();
-		// writeln(" -h, --help print this help");
-		// writeln(" -s, --serverURL=URL URL of Sesame server to connect to, e.g.
-		// http://localhost/openrdf-sesame/");
-		// writeln(" -d, --dataDir=DIR Sesame data dir to 'connect' to");
 		System.out.println();
 		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
 	}
@@ -249,7 +240,6 @@ public class Console {
 		throws IOException
 	{
 		appConfig.init();
-
 		in = new BufferedReader(new InputStreamReader(System.in));
 		out = System.out;
 	}
@@ -264,120 +254,114 @@ public class Console {
 		try {
 			boolean exitFlag = false;
 			while (!exitFlag) {
-				String command = readMultiLineInput();
-
+				final String command = readMultiLineInput();
 				if (command == null) {
 					// EOF
 					break;
 				}
-
 				exitFlag = executeCommand(command);
 			}
 		}
 		finally {
 			disconnect(false);
 		}
-
 		writeln("Bye");
 	}
 
-	private boolean executeCommand(String command)
+	private boolean executeCommand(final String command)
 		throws IOException
 	{
 		boolean exit = false;
-		String[] tokens = parse(command);
-		String operation = tokens[0].toLowerCase(Locale.ENGLISH);
-
-		if ("quit".equals(operation) || "exit".equals(operation)) {
-			exit = true;
-		}
-		else if ("help".equals(operation)) {
-			printHelp(tokens);
-		}
-		else if ("info".equals(operation)) {
-			printInfo();
-		}
-		else if ("connect".equals(operation)) {
-			connect(tokens);
-		}
-		else if ("disconnect".equals(operation)) {
-			disconnect(true);
-		}
-		else if ("create".equals(operation)) {
-			createRepository(tokens);
-		}
-		else if ("drop".equals(operation)) {
-			dropRepository(tokens);
-		}
-		else if ("open".equals(operation)) {
-			open(tokens);
-		}
-		else if ("close".equals(operation)) {
-			close(tokens);
-		}
-		else if ("show".equals(operation)) {
-			show(tokens);
-		}
-		else if ("load".equals(operation)) {
-			load(tokens);
-		}
-		else if ("verify".equals(operation)) {
-			verify(tokens);
-		}
-		else if ("clear".equals(operation)) {
-			clear(tokens);
-		}
-		else if ("select".equals(operation)) {
-			// TODO: should this be removed now that the 'serql' command is
-			// supported?
-			evaluateQuery(QueryLanguage.SERQL, command);
-		}
-		else if ("construct".equals(operation)) {
-			// TODO: should this be removed now that the 'serql' command is
-			// supported?
-			evaluateQuery(QueryLanguage.SERQL, command);
-		}
-		else if ("serql".equals(operation)) {
-			evaluateQuery(QueryLanguage.SERQL, command.substring("serql".length()));
-		}
-		else if ("sparql".equals(operation)) {
-			evaluateQuery(QueryLanguage.SPARQL, command.substring("sparql".length()));
-		}
-		else if ("set".equals(operation)) {
-			setParameter(tokens);
-		}
-		else if (command.length() == 0) {
-			// empty line, ignore
-		}
-		else {
-			writeError("Unknown command");
+		if (0 < command.length()) {
+			final String[] tokens = parse(command);
+			final String operation = tokens[0].toLowerCase(Locale.ENGLISH);
+			if ("quit".equals(operation) || "exit".equals(operation)) {
+				exit = true;
+			}
+			else if ("help".equals(operation)) {
+				printHelp(tokens);
+			}
+			else if ("info".equals(operation)) {
+				printInfo();
+			}
+			else if ("connect".equals(operation)) {
+				connect(tokens);
+			}
+			else if ("disconnect".equals(operation)) {
+				disconnect(true);
+			}
+			else if ("create".equals(operation)) {
+				createRepository(tokens);
+			}
+			else if ("drop".equals(operation)) {
+				dropRepository(tokens);
+			}
+			else if ("open".equals(operation)) {
+				open(tokens);
+			}
+			else if ("close".equals(operation)) {
+				close(tokens);
+			}
+			else if ("show".equals(operation)) {
+				show(tokens);
+			}
+			else if ("load".equals(operation)) {
+				load(tokens);
+			}
+			else if ("verify".equals(operation)) {
+				verify(tokens);
+			}
+			else if ("clear".equals(operation)) {
+				clear(tokens);
+			}
+			else if ("select".equals(operation)) {
+				// TODO: should this be removed now that the 'serql' command is
+				// supported?
+				evaluateQuery(QueryLanguage.SERQL, command);
+			}
+			else if ("construct".equals(operation)) {
+				// TODO: should this be removed now that the 'serql' command is
+				// supported?
+				evaluateQuery(QueryLanguage.SERQL, command);
+			}
+			else if ("serql".equals(operation)) {
+				evaluateQuery(QueryLanguage.SERQL, command.substring("serql".length()));
+			}
+			else if ("sparql".equals(operation)) {
+				evaluateQuery(QueryLanguage.SPARQL, command.substring("sparql".length()));
+			}
+			else if ("set".equals(operation)) {
+				setParameter(tokens);
+			}
+			else {
+				writeError("Unknown command");
+			}
 		}
 
 		return exit;
 	}
 
-	private String[] parse(String command) {
-		Pattern pattern = Pattern.compile("\"([^\"]*)\"|(\\S+)");
-		Matcher matcher = pattern.matcher(command);
-		List<String> tokens = new ArrayList<String>();
+	private String[] parse(final String command) {
+		final Pattern pattern = Pattern.compile("\"([^\"]*)\"|(\\S+)");
+		final Matcher matcher = pattern.matcher(command);
+		final List<String> tokens = new ArrayList<String>();
 		while (matcher.find()) {
-			if (matcher.group(1) != null) {
-				tokens.add(matcher.group(1));
+			if (matcher.group(1) == null) {
+				tokens.add(matcher.group());
 			}
 			else {
-				tokens.add(matcher.group());
+				tokens.add(matcher.group(1));
 			}
 		}
 		return tokens.toArray(new String[tokens.size()]);
 	}
 
-	private void printHelp(String[] tokens) {
+	private void printHelp(final String[] tokens) {
 		if (tokens.length < 2) {
 			printCommandOverview();
 		}
 		else {
-			String target = tokens[1].toLowerCase(Locale.ENGLISH);
-
+			final String target = tokens[1].toLowerCase(Locale.ENGLISH);
 			if ("connect".equals(target)) {
 				printHelpConnect();
 			}
@@ -445,20 +429,18 @@ public class Console {
 	}
 
 	private void printHelpConnect() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("connect default                         Opens the default repository set for this console");
 		writeln("connect <dataDirectory>                 Opens the repository set in the specified data dir");
 		writeln("connect <serverURL> [user [password]]   Connects to a Sesame server with optional credentials");
 	}
 
-	private void connect(String[] tokens) {
+	private void connect(final String[] tokens) {
 		if (tokens.length < 2) {
 			printHelpConnect();
 			return;
 		}
-
-		String target = tokens[1];
-
+		final String target = tokens[1];
 		if ("default".equalsIgnoreCase(target)) {
 			connectDefault();
 		}
@@ -466,8 +448,8 @@ public class Console {
 			try {
 				new URL(target);
 				// target is a valid URL
-				String username = (tokens.length > 2) ? tokens[2] : null;
-				String password = (tokens.length > 3) ? tokens[3] : null;
+				final String username = (tokens.length > 2) ? tokens[2] : null;
+				final String password = (tokens.length > 3) ? tokens[3] : null;
 				connectRemote(target, username, password);
 			}
 			catch (MalformedURLException e) {
@@ -481,28 +463,28 @@ public class Console {
 		return installNewManager(new LocalRepositoryManager(appConfig.getDataDir()), "default data directory");
 	}
 
-	private boolean connectLocal(String path) {
-		File dir = new File(path);
-		if (!dir.exists() || !dir.isDirectory()) {
-			writeError("Specified path is not an (existing) directory: " + path);
-			return false;
+	private boolean connectLocal(final String path) {
+		final File dir = new File(path);
+		boolean result = false;
+		if (dir.exists() && dir.isDirectory()) {
+			result = installNewManager(new LocalRepositoryManager(dir), dir.toString());
 		}
-
-		return installNewManager(new LocalRepositoryManager(dir), dir.toString());
+		else {
+			writeError("Specified path is not an (existing) directory: " + path);
+		}
+		return result;
 	}
 
-	private boolean connectRemote(String url) {
+	private boolean connectRemote(final String url) {
 		return connectRemote(url, null, null);
 	}
 
-	private boolean connectRemote(final String url, final String user, String pass) {
-		if (pass == null) {
-			pass = "";
-		}
-
+	private boolean connectRemote(final String url, final String user, final String passwd) {
+		final String pass = (passwd == null) ? "" : passwd;
+		boolean result = false;
 		try {
 			// Ping server
-			HTTPClient httpClient = new HTTPClient();
+			final HTTPClient httpClient = new HTTPClient();
 			try {
 				httpClient.setServerURL(url);
 
@@ -516,91 +498,91 @@ public class Console {
 			finally {
 				httpClient.shutDown();
 			}
-
-			RemoteRepositoryManager manager = new RemoteRepositoryManager(url);
+			final RemoteRepositoryManager manager = new RemoteRepositoryManager(url);
 			manager.setUsernameAndPassword(user, pass);
-			return installNewManager(manager, url);
+			result = installNewManager(manager, url);
 		}
 		catch (UnauthorizedException e) {
 			if (user != null && pass.length() > 0) {
 				writeError("Authentication for user '" + user + "' failed");
-				logger.warn("Authentication for user '" + user + "' failed", e);
+				LOGGER.warn("Authentication for user '" + user + "' failed", e);
 			}
 			else {
 				// Ask user for credentials
 				try {
 					writeln("Authentication required");
-					String username = readln("Username:");
-					String password = readPassword("Password:");
+					final String username = readln("Username:");
+					final String password = readPassword("Password:");
 					connectRemote(url, username, password);
 				}
 				catch (IOException ioe) {
 					writeError("Failed to read user credentials");
-					logger.warn("Failed to read user credentials", ioe);
+					LOGGER.warn("Failed to read user credentials", ioe);
 				}
 			}
 		}
 		catch (IOException e) {
 			writeError("Failed to access the server: " + e.getMessage());
-			logger.warn("Failed to access the server", e);
+			LOGGER.warn("Failed to access the server", e);
 		}
 		catch (RepositoryException e) {
 			writeError("Failed to access the server: " + e.getMessage());
-			logger.warn("Failed to access the server", e);
+			LOGGER.warn("Failed to access the server", e);
 		}
 
-		return false;
+		return result;
 	}
 
-	private boolean installNewManager(RepositoryManager newManager, String newManagerID) {
+	private boolean installNewManager(final RepositoryManager newManager, final String newManagerID) {
+		boolean installed = false;
 		if (newManagerID.equals(managerID)) {
 			writeln("Already connected to " + managerID);
-			return true;
+			installed = true;
 		}
-
-		try {
-			newManager.initialize();
-
-			disconnect(false);
-			manager = newManager;
-			managerID = newManagerID;
-
-			writeln("Connected to " + managerID);
-			return true;
+		else {
+			try {
+				newManager.initialize();
+				disconnect(false);
+				manager = newManager;
+				managerID = newManagerID;
+				writeln("Connected to " + managerID);
+				installed = true;
+			}
+			catch (RepositoryException e) {
+				writeError(e.getMessage());
+				LOGGER.error("Failed to install new manager", e);
+			}
 		}
-		catch (RepositoryException e) {
-			writeError(e.getMessage());
-			logger.error("Failed to install new manager", e);
-			return false;
-		}
+		return installed;
 	}
 
 	private void printHelpDisconnect() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("disconnect   Disconnects from the current set of repositories or server");
 	}
 
-	private void disconnect(boolean verbose) {
-		if (manager != null) {
+	private void disconnect(final boolean verbose) {
+		if (manager == null) {
+			if (verbose) {
+				writeln("Already disconnected");
+			}
+		}
+		else {
 			closeRepository(false);
-
 			writeln("Disconnecting from " + managerID);
 			manager.shutDown();
 			manager = null;
 			managerID = null;
 		}
-		else if (verbose) {
-			writeln("Already disconnected");
-		}
 	}
 
 	private void printHelpCreate() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("create <template-name>");
 		writeln("  <template-name>   The name of a repository configuration template");
 	}
 
-	private void createRepository(String[] tokens)
+	private void createRepository(final String[] tokens)
 		throws IOException
 	{
 		if (tokens.length < 2) {
@@ -611,38 +593,31 @@ public class Console {
 		}
 	}
 
-	private void createRepository(String templateName)
+	private void createRepository(final String templateName)
 		throws IOException
 	{
-		Repository systemRepo = manager.getSystemRepository();
-
+		final Repository systemRepo = manager.getSystemRepository();
 		try {
 			// FIXME: remove assumption of .ttl extension
-			String templateFileName = templateName + ".ttl";
-
-			File templatesDir = new File(appConfig.getDataDir(), TEMPLATES_DIR);
-
-			File templateFile = new File(templatesDir, templateFileName);
+			final String templateFileName = templateName + ".ttl";
+			final File templatesDir = new File(appConfig.getDataDir(), TEMPLATES_DIR);
+			final File templateFile = new File(templatesDir, templateFileName);
 			InputStream templateStream;
-
 			if (templateFile.exists()) {
 				if (!templateFile.canRead()) {
 					writeError("Not allowed to read template file: " + templateFile);
 					return;
 				}
-
 				templateStream = new FileInputStream(templateFile);
 			}
 			else {
-				// Try classpath for built-ins
-				templateStream = Console.class.getResourceAsStream(templateFileName);
-
+				// Try class path for built-ins
+				templateStream = RepositoryConfig.class.getResourceAsStream(templateFileName);
 				if (templateStream == null) {
 					writeError("No template called " + templateName + " found in " + templatesDir);
 					return;
 				}
 			}
-
 			String template;
 			try {
 				template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
@@ -650,20 +625,15 @@ public class Console {
 			finally {
 				templateStream.close();
 			}
-
-			ConfigTemplate configTemplate = new ConfigTemplate(template);
-
-			Map<String, String> valueMap = new HashMap<String, String>();
-			Map<String, List<String>> variableMap = configTemplate.getVariableMap();
-
+			final ConfigTemplate configTemplate = new ConfigTemplate(template);
+			final Map<String, String> valueMap = new HashMap<String, String>();
+			final Map<String, List<String>> variableMap = configTemplate.getVariableMap();
 			if (!variableMap.isEmpty()) {
 				writeln("Please specify values for the following variables:");
 			}
-
 			for (Map.Entry<String, List<String>> entry : variableMap.entrySet()) {
-				String var = entry.getKey();
-				List<String> values = entry.getValue();
-
+				final String var = entry.getKey();
+				final List<String> values = entry.getValue();
 				write(var);
 				if (values.size() > 1) {
 					write(" (");
@@ -679,95 +649,82 @@ public class Console {
 					write(" [" + values.get(0) + "]");
 				}
 				write(": ");
-
 				String value = in.readLine();
 				if (value == null) {
 					// EOF
 					return;
 				}
-
 				value = value.trim();
 				if (value.length() == 0) {
 					value = null;
 				}
 				valueMap.put(var, value);
 			}
-
-			String configString = configTemplate.render(valueMap);
-			// writeln(configString);
-
-			ValueFactory vf = systemRepo.getValueFactory();
-
-			Graph graph = new GraphImpl(vf);
-
-			RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, vf);
+			final String configString = configTemplate.render(valueMap);
+			final ValueFactory factory = systemRepo.getValueFactory();
+			final Graph graph = new GraphImpl(factory);
+			final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, factory);
 			rdfParser.setRDFHandler(new StatementCollector(graph));
 			rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
-
-			Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
+			final Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
 					RepositoryConfigSchema.REPOSITORY);
-			RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
+			final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
 			repConfig.validate();
-
 			if (RepositoryConfigUtil.hasRepositoryConfig(systemRepo, repConfig.getID())) {
-				boolean proceed = askProceed(
+				final boolean proceed = askProceed(
 						"WARNING: you are about to overwrite the configuration of an existing repository!", false);
-
 				if (!proceed) {
 					writeln("Create aborted");
 					return;
 				}
 			}
-
 			try {
 				RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 				writeln("Repository created");
 			}
 			catch (RepositoryReadOnlyException e) {
-				if (tryToRemoveLock(e, systemRepo)) {
+				if (tryToRemoveLock(systemRepo)) {
 					RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 					writeln("Repository created");
 				}
 				else {
 					writeError("Failed to create repository");
-					logger.error("Failed to create repository", e);
+					LOGGER.error("Failed to create repository", e);
 				}
 			}
 		}
 		catch (Exception e) {
 			writeError(e.getMessage());
-			logger.error("Failed to create repository", e);
+			LOGGER.error("Failed to create repository", e);
 		}
 	}
 
 	private void printHelpDrop() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("drop <repositoryID>   Drops the repository with the specified id");
 	}
 
-	private void dropRepository(String[] tokens)
+	private void dropRepository(final String[] tokens)
 		throws IOException
 	{
 		if (tokens.length < 2) {
 			printHelpDrop();
 			return;
 		}
-
-		String id = tokens[1];
-
+		final String repoID = tokens[1];
 		try {
-			boolean proceed = askProceed("WARNING: you are about to drop repository '" + id + "'.", true);
+			final boolean proceed = askProceed("WARNING: you are about to drop repository '" + repoID + "'.",
+					true);
 			if (proceed) {
-				if (id.equals(repositoryID)) {
+				if (repoID.equals(repositoryID)) {
 					closeRepository(false);
 				}
-				boolean isRemoved = manager.removeRepository(id);
-
+				final boolean isRemoved = manager.removeRepository(repoID);
 				if (isRemoved) {
-					writeln("Dropped repository '" + id + "'");
+					writeln("Dropped repository '" + repoID + "'");
 				}
 				else {
-					writeln("Unknown repository '" + id + "'");
+					writeln("Unknown repository '" + repoID + "'");
 				}
 			}
 			else {
@@ -775,68 +732,69 @@ public class Console {
 			}
 		}
 		catch (RepositoryConfigException e) {
-			writeError("Unable to drop repository '" + id + "': " + e.getMessage());
-			logger.warn("Unable to drop repository '" + id + "'", e);
+			writeError("Unable to drop repository '" + repoID + "': " + e.getMessage());
+			LOGGER.warn("Unable to drop repository '" + repoID + "'", e);
 		}
 		catch (RepositoryReadOnlyException e) {
 			try {
-				if (tryToRemoveLock(e, manager.getSystemRepository())) {
+				if (tryToRemoveLock(manager.getSystemRepository())) {
 					dropRepository(tokens);
 				}
 				else {
 					writeError("Failed to drop repository");
-					logger.error("Failed to drop repository", e);
+					LOGGER.error("Failed to drop repository", e);
 				}
 			}
 			catch (RepositoryException e2) {
 				writeError("Failed to restart system: " + e2.getMessage());
-				logger.error("Failed to restart system", e2);
+				LOGGER.error("Failed to restart system", e2);
 			}
 		}
 		catch (RepositoryException e) {
 			writeError("Failed to update configuration in system repository: " + e.getMessage());
-			logger.warn("Failed to update configuration in system repository", e);
+			LOGGER.warn("Failed to update configuration in system repository", e);
 		}
 	}
 
 	private void printHelpOpen() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("open <repositoryID>   Opens the repository with the specified ID");
 	}
 
-	private void open(String[] tokens) {
-		if (tokens.length != 2) {
-			printHelpOpen();
+	private void open(final String[] tokens) {
+		if (tokens.length == 2) {
+			openRepository(tokens[1]);
 		}
 		else {
-			openRepository(tokens[1]);
+			printHelpOpen();
 		}
 	}
 
-	private void openRepository(String id) {
+	private static final String OPEN_FAILURE = "Failed to open repository";
+
+	private void openRepository(final String repoID) {
 		try {
-			Repository newRepository = manager.getRepository(id);
+			final Repository newRepository = manager.getRepository(repoID);
 
-			if (newRepository != null) {
-				// Close current repository, if any
-				closeRepository(false);
-
-				repository = newRepository;
-				repositoryID = id;
-				writeln("Opened repository '" + id + "'");
+			if (newRepository == null) {
+				writeError("Unknown repository: '" + repoID + "'");
 			}
 			else {
-				writeError("Unknown repository: '" + id + "'");
+				// Close current repository, if any
+				closeRepository(false);
+				repository = newRepository;
+				repositoryID = repoID;
+				writeln("Opened repository '" + repoID + "'");
 			}
 		}
 		catch (RepositoryLockedException e) {
 			try {
 				if (tryToRemoveLock(e)) {
-					openRepository(id);
+					openRepository(repoID);
 				}
 				else {
-					writeError("Failed to open repository");
-					logger.error("Failed to open repository", e);
+					writeError(OPEN_FAILURE);
+					LOGGER.error(OPEN_FAILURE, e);
 				}
 			}
 			catch (IOException e1) {
@@ -845,53 +803,51 @@ public class Console {
 		}
 		catch (RepositoryConfigException e) {
 			writeError(e.getMessage());
-			logger.error("Failed to open repository", e);
+			LOGGER.error(OPEN_FAILURE, e);
 		}
 		catch (RepositoryException e) {
 			writeError(e.getMessage());
-			logger.error("Failed to open repository", e);
+			LOGGER.error(OPEN_FAILURE, e);
 		}
 	}
 
 	private void printHelpClose() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("close   Closes the current repository");
 	}
 
-	private void close(String[] tokens) {
-		if (tokens.length != 1) {
-			printHelpClose();
+	private void close(final String[] tokens) {
+		if (tokens.length == 1) {
+			closeRepository(true);
 		}
 		else {
-			closeRepository(true);
+			printHelpClose();
 		}
 	}
 
-	private void closeRepository(boolean verbose) {
-		if (repository != null) {
+	private void closeRepository(final boolean verbose) {
+		if (repository == null) {
+			if (verbose) {
+				writeln("There are no open repositories that can be closed");
+			}
+		}
+		else {
 			writeln("Closing repository '" + repositoryID + "'...");
 			repository = null;
 			repositoryID = null;
 		}
-		else if (verbose) {
-			writeln("There are no open repositories that can be closed");
-		}
 	}
 
 	private void printHelpShow() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("show {r, repositories}   Shows all available repositories");
 		writeln("show {n, namespaces}     Shows all namespaces");
 		writeln("show {c, contexts}       Shows all context identifiers");
 	}
 
-	private void show(String[] tokens) {
-		if (tokens.length != 2) {
-			printHelpShow();
-		}
-		else {
-			String target = tokens[1].toLowerCase(Locale.ENGLISH);
-
+	private void show(final String[] tokens) {
+		if (tokens.length == 2) {
+			final String target = tokens[1].toLowerCase(Locale.ENGLISH);
 			if ("repositories".equals(target) || "r".equals(target)) {
 				showRepositories();
 			}
@@ -905,22 +861,24 @@ public class Console {
 				writeError("Unknown target '" + tokens[1] + "'");
 			}
 		}
+		else {
+			printHelpShow();
+		}
 	}
 
 	private void showRepositories() {
 		try {
-			Set<String> repIDs = manager.getRepositoryIDs();
-
+			final Set<String> repIDs = manager.getRepositoryIDs();
 			if (repIDs.isEmpty()) {
 				writeln("--no repositories found--");
 			}
 			else {
-				writeln("+----------");
+				writeln(OUTPUT_SEPARATOR);
 				for (String repID : repIDs) {
 					write("|" + repID);
 
 					try {
-						RepositoryInfo repInfo = manager.getRepositoryInfo(repID);
+						final RepositoryInfo repInfo = manager.getRepositoryInfo(repID);
 						if (repInfo.getDescription() != null) {
 							write(" (\"" + repInfo.getDescription() + "\")");
 						}
@@ -930,36 +888,34 @@ public class Console {
 					}
 					writeln();
 				}
-				writeln("+----------");
+				writeln(OUTPUT_SEPARATOR);
 			}
 		}
 		catch (RepositoryException e) {
 			writeError("Failed to get repository list: " + e.getMessage());
-			logger.error("Failed to get repository list", e);
+			LOGGER.error("Failed to get repository list", e);
 		}
 	}
 
 	private void showNamespaces() {
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
 
 		RepositoryConnection con;
 		try {
 			con = repository.getConnection();
-
 			try {
-				CloseableIteration<? extends Namespace, RepositoryException> namespaces = con.getNamespaces();
-
+				final CloseableIteration<? extends Namespace, RepositoryException> namespaces = con.getNamespaces();
 				try {
 					if (namespaces.hasNext()) {
-						writeln("+----------");
+						writeln(OUTPUT_SEPARATOR);
 						while (namespaces.hasNext()) {
-							Namespace ns = namespaces.next();
-							writeln("|" + ns.getPrefix() + "  " + ns.getName());
+							final Namespace namespace = namespaces.next();
+							writeln("|" + namespace.getPrefix() + "  " + namespace.getName());
 						}
-						writeln("+----------");
+						writeln(OUTPUT_SEPARATOR);
 					}
 					else {
 						writeln("--no namespaces found--");
@@ -975,31 +931,28 @@ public class Console {
 		}
 		catch (RepositoryException e) {
 			writeError(e.getMessage());
-			logger.error("Failed to show namespaces", e);
+			LOGGER.error("Failed to show namespaces", e);
 		}
 	}
 
 	private void showContexts() {
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
 
 		RepositoryConnection con;
 		try {
 			con = repository.getConnection();
-
 			try {
-				CloseableIteration<? extends Resource, RepositoryException> contexts = con.getContextIDs();
-
+				final CloseableIteration<? extends Resource, RepositoryException> contexts = con.getContextIDs();
 				try {
 					if (contexts.hasNext()) {
-						writeln("+----------");
+						writeln(OUTPUT_SEPARATOR);
 						while (contexts.hasNext()) {
-							Resource context = contexts.next();
-							writeln("|" + context.toString());
+							writeln("|" + contexts.next().toString());
 						}
-						writeln("+----------");
+						writeln(OUTPUT_SEPARATOR);
 					}
 					else {
 						writeln("--no contexts found--");
@@ -1015,12 +968,12 @@ public class Console {
 		}
 		catch (RepositoryException e) {
 			writeError(e.getMessage());
-			logger.error("Failed to show contexts", e);
+			LOGGER.error("Failed to show contexts", e);
 		}
 	}
 
 	private void printHelpLoad() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("load <file-or-url> [from <base-uri>] [into <context-id>]");
 		writeln("  <file-or-url>   The path or URL identifying the data file");
 		writeln("  <base-uri>      The base URI to use for resolving relative references, defaults to <file-or-url>");
@@ -1028,40 +981,33 @@ public class Console {
 		writeln("Loads the specified data file into the current repository");
 	}
 
-	private void load(String[] tokens) {
+	private void load(final String[] tokens) {
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
-
 		if (tokens.length < 2) {
 			printHelpLoad();
 			return;
 		}
-
-		String dataPath = tokens[1];
+		final String dataPath = tokens[1];
 		URL dataURL = null;
 		File dataFile = null;
 		String baseURI = null;
 		String context = null;
-
-		int i = 2;
-
-		if (tokens.length >= i + 2 && tokens[i].equalsIgnoreCase("from")) {
-			baseURI = tokens[i + 1];
-			i += 2;
+		int index = 2;
+		if (tokens.length >= index + 2 && tokens[index].equalsIgnoreCase("from")) {
+			baseURI = tokens[index + 1];
+			index += 2;
 		}
-
-		if (tokens.length >= i + 2 && tokens[i].equalsIgnoreCase("into")) {
+		if (tokens.length >= index + 2 && tokens[index].equalsIgnoreCase("into")) {
 			context = tokens[tokens.length - 1];
-			i += 2;
+			index += 2;
 		}
-
-		if (i < tokens.length) {
+		if (index < tokens.length) {
 			printHelpLoad();
 			return;
 		}
-
 		try {
 			dataURL = new URL(dataPath);
 			// dataPath is a URI
@@ -1070,10 +1016,8 @@ public class Console {
 			// dataPath is a file
 			dataFile = new File(dataPath);
 		}
-
 		try {
 			Resource[] contexts = new Resource[0];
-
 			if (context != null) {
 				Resource contextURI;
 				if (context.startsWith("_:")) {
@@ -1082,42 +1026,38 @@ public class Console {
 				else {
 					contextURI = repository.getValueFactory().createURI(context);
 				}
-
 				contexts = new Resource[] { contextURI };
 			}
-
 			writeln("Loading data...");
-			long startTime = System.nanoTime();
-
-			RepositoryConnection con = repository.getConnection();
+			final long startTime = System.nanoTime();
+			final RepositoryConnection con = repository.getConnection();
 			try {
-				if (dataURL != null) {
-					con.add(dataURL, baseURI, null, contexts);
+				if (dataURL == null) {
+					con.add(dataFile, baseURI, null, contexts);
 				}
 				else {
-					con.add(dataFile, baseURI, null, contexts);
+					con.add(dataURL, baseURI, null, contexts);
 				}
 			}
 			finally {
 				con.close();
 			}
-
-			long endTime = System.nanoTime();
+			final long endTime = System.nanoTime();
 			writeln("Data has been added to the repository (" + (endTime - startTime) / 1000000 + " ms)");
 		}
 		catch (RepositoryReadOnlyException e) {
 			try {
-				if (tryToRemoveLock(e, repository)) {
+				if (tryToRemoveLock(repository)) {
 					load(tokens);
 				}
 				else {
 					writeError("Failed to load data");
-					logger.error("Failed to load data", e);
+					LOGGER.error("Failed to load data", e);
 				}
 			}
 			catch (RepositoryException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
-				logger.error("Unable to restart repository", e1);
+				LOGGER.error("Unable to restart repository", e1);
 			}
 			catch (IOException e1) {
 				writeError("Unable to remove lock: " + e1.getMessage());
@@ -1141,25 +1081,23 @@ public class Console {
 		}
 		catch (RepositoryException e) {
 			writeError("Unable to add data to repository: " + e.getMessage());
-			logger.error("Failed to add data to repository", e);
+			LOGGER.error("Failed to add data to repository", e);
 		}
 	}
 
 	private void printHelpVerify() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("verify <file-or-url>");
 		writeln("  <file-or-url>   The path or URL identifying the data file");
 		writeln("Verifies the validity of the specified data file");
 	}
 
-	private void verify(String[] tokens) {
+	private void verify(final String[] tokens) {
 		if (tokens.length != 2) {
 			printHelpVerify();
 			return;
 		}
-
 		String dataPath = tokens[1];
-
 		try {
 			new URL(dataPath);
 			// dataPath is a URI
@@ -1168,42 +1106,34 @@ public class Console {
 			// File path specified, convert to URL
 			dataPath = "file:" + dataPath;
 		}
-
 		try {
-			URL dataURL = new URL(dataPath);
-			RDFFormat format = Rio.getParserFormatForFileName(dataPath, RDFFormat.RDFXML);
-
+			final URL dataURL = new URL(dataPath);
+			final RDFFormat format = Rio.getParserFormatForFileName(dataPath, RDFFormat.RDFXML);
 			writeln("RDF Format is " + format.getName());
-
-			RDFParser parser = Rio.createParser(format);
-			VerificationListener listener = new VerificationListener();
+			final RDFParser parser = Rio.createParser(format);
+			final VerificationListener listener = new VerificationListener();
 			parser.setDatatypeHandling(RDFParser.DatatypeHandling.VERIFY);
 			parser.setVerifyData(true);
 			parser.setParseErrorListener(listener);
 			parser.setRDFHandler(listener);
-
 			writeln("Verifying data...");
-			InputStream in = dataURL.openStream();
+			final InputStream dataStream = dataURL.openStream();
 			try {
-				parser.parse(in, "urn://openrdf.org/RioVerifier/");
+				parser.parse(dataStream, "urn://openrdf.org/RioVerifier/");
 			}
 			finally {
-				in.close();
+				dataStream.close();
 			}
-
-			int warnings = listener.getWarnings();
-			int errors = listener.getErrors();
-			int statements = listener.getStatements();
-
+			final int warnings = listener.getWarnings();
+			final int errors = listener.getErrors();
 			if (warnings + errors > 0) {
 				writeln("Found " + warnings + " warnings and " + errors + " errors");
 			}
 			else {
 				writeln("Data verified, no errors were found");
 			}
-
 			if (errors == 0) {
-				writeln("File contains " + statements + " statements");
+				writeln("File contains " + listener.getStatements() + " statements");
 			}
 		}
 		catch (MalformedURLException e) {
@@ -1221,29 +1151,25 @@ public class Console {
 		}
 		catch (RDFHandlerException e) {
 			writeError("Unable to verify : " + e.getMessage());
-			logger.error("Unable to verify data file", e);
+			LOGGER.error("Unable to verify data file", e);
 		}
 	}
 
 	private void printHelpClear() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("clear                   Clears the entire repository");
 		writeln("clear (<uri>|null)...   Clears the specified context(s)");
 	}
 
-	private void clear(String[] tokens) {
+	private void clear(final String[] tokens) {
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
-
-		ValueFactory valueFactory = repository.getValueFactory();
-
+		final ValueFactory valueFactory = repository.getValueFactory();
 		Resource[] contexts = new Resource[tokens.length - 1];
-
 		for (int i = 1; i < tokens.length; i++) {
-			String contextID = tokens[i];
-
+			final String contextID = tokens[i];
 			if (contextID.equalsIgnoreCase("null")) {
 				contexts[i - 1] = null;
 			}
@@ -1261,16 +1187,14 @@ public class Console {
 				}
 			}
 		}
-
 		if (contexts.length == 0) {
 			writeln("Clearing repository...");
 		}
 		else {
 			writeln("Removing specified contexts...");
 		}
-
 		try {
-			RepositoryConnection con = repository.getConnection();
+			final RepositoryConnection con = repository.getConnection();
 			try {
 				con.clear(contexts);
 				if (contexts.length == 0) {
@@ -1283,17 +1207,17 @@ public class Console {
 		}
 		catch (RepositoryReadOnlyException e) {
 			try {
-				if (tryToRemoveLock(e, repository)) {
+				if (tryToRemoveLock(repository)) {
 					clear(tokens);
 				}
 				else {
 					writeError("Failed to clear repository");
-					logger.error("Failed to clear repository", e);
+					LOGGER.error("Failed to clear repository", e);
 				}
 			}
 			catch (RepositoryException e1) {
 				writeError("Unable to restart repository: " + e1.getMessage());
-				logger.error("Unable to restart repository", e1);
+				LOGGER.error("Unable to restart repository", e1);
 			}
 			catch (IOException e1) {
 				writeError("Unable to remove lock: " + e1.getMessage());
@@ -1301,141 +1225,126 @@ public class Console {
 		}
 		catch (RepositoryException e) {
 			writeError("Failed to clear repository: " + e.getMessage());
-			logger.error("Failed to clear repository", e);
+			LOGGER.error("Failed to clear repository", e);
 		}
 	}
 
-	private void evaluateQuery(QueryLanguage ql, String queryString) {
+	private void evaluateQuery(final QueryLanguage queryLn, final String queryText) {
 		try {
-			queryString = addQueryPrefixes(ql, queryString);
-
-			ParsedOperation query = QueryParserUtil.parseOperation(ql, queryString, null);
-
+			final String queryString = addQueryPrefixes(queryLn, queryText);
+			final ParsedOperation query = QueryParserUtil.parseOperation(queryLn, queryString, null);
 			if (query instanceof ParsedTupleQuery) {
-				evaluateTupleQuery(ql, queryString);
+				evaluateTupleQuery(queryLn, queryString);
 			}
 			else if (query instanceof ParsedGraphQuery) {
-				evaluateGraphQuery(ql, queryString);
+				evaluateGraphQuery(queryLn, queryString);
 			}
 			else if (query instanceof ParsedBooleanQuery) {
-				evaluateBooleanQuery(ql, queryString);
+				evaluateBooleanQuery(queryLn, queryString);
 			}
 			else if (query instanceof ParsedUpdate) {
-				executeUpdate(ql, queryString);
+				executeUpdate(queryLn, queryString);
 			}
 			else {
 				writeError("Unexpected query type");
 			}
 		}
 		catch (UnsupportedQueryLanguageException e) {
-			writeError("Unsupported query lanaguge: " + ql.getName());
+			writeError("Unsupported query lanaguge: " + queryLn.getName());
 		}
 		catch (MalformedQueryException e) {
 			writeError("Malformed query: " + e.getMessage());
 		}
 		catch (QueryInterruptedException e) {
 			writeError("Query interrupted: " + e.getMessage());
-			logger.error("Query interrupted", e);
+			LOGGER.error("Query interrupted", e);
 		}
 		catch (QueryEvaluationException e) {
 			writeError("Query evaluation error: " + e.getMessage());
-			logger.error("Query evaluation error", e);
+			LOGGER.error("Query evaluation error", e);
 		}
 		catch (RepositoryException e) {
 			writeError("Failed to evaluate query: " + e.getMessage());
-			logger.error("Failed to evaluate query", e);
+			LOGGER.error("Failed to evaluate query", e);
 		}
 		catch (UpdateExecutionException e) {
 			writeError("Failed to execute update: " + e.getMessage());
-			logger.error("Failed to execute update", e);
+			LOGGER.error("Failed to execute update", e);
 		}
 	}
 
-	private String addQueryPrefixes(QueryLanguage ql, String queryString) {
-		String result = queryString;
-
-		if (repository != null && queryPrefix) {
+	private String addQueryPrefixes(final QueryLanguage queryLn, final String queryString) {
+		final StringBuffer result = new StringBuffer(queryString.length() + 512);
+		result.append(queryString);
+		final String lowerCaseQuery = queryString.toLowerCase(Locale.ENGLISH);
+		if (repository != null
+				&& queryPrefix
+				&& ((SERQL.equals(queryLn) && lowerCaseQuery.indexOf("using namespace ") == -1) || SPARQL.equals(queryLn)
+						&& !lowerCaseQuery.startsWith("prefix")))
+		{
 			// FIXME this is a bit of a sloppy hack, a better way would be to
-			// explicitly provide the query parser with namespace mappings in
+			// explicitly provide the query parser with name space mappings in
 			// advance.
-			if ((SERQL.equals(ql) && queryString.toLowerCase().indexOf("using namespace ") == -1)
-					|| SPARQL.equals(ql) && !queryString.toLowerCase().startsWith("prefix"))
-			{
+			try {
+				final RepositoryConnection con = repository.getConnection();
 				try {
-					RepositoryConnection con = repository.getConnection();
-					try {
-						Collection<Namespace> namespaces = con.getNamespaces().asList();
-
-						if (!namespaces.isEmpty()) {
-							StringBuilder namespaceClause = new StringBuilder(512);
-
-							if (SERQL.equals(ql)) {
-								namespaceClause.append(" USING NAMESPACE ");
-
-								for (Namespace namespace : namespaces) {
-									namespaceClause.append(namespace.getPrefix());
-									namespaceClause.append(" = ");
-									namespaceClause.append("<");
-									namespaceClause.append(SeRQLUtil.encodeString(namespace.getName()));
-									namespaceClause.append(">, ");
-								}
-
-								// Remove trailing ", "
-								namespaceClause.setLength(namespaceClause.length() - 2);
-
-								result += namespaceClause.toString();
+					final Collection<Namespace> namespaces = con.getNamespaces().asList();
+					if (!namespaces.isEmpty()) {
+						final StringBuilder namespaceClause = new StringBuilder(512);
+						if (SERQL.equals(queryLn)) {
+							namespaceClause.append(" USING NAMESPACE ");
+							for (Namespace namespace : namespaces) {
+								namespaceClause.append(namespace.getPrefix());
+								namespaceClause.append(" = ");
+								namespaceClause.append("<");
+								namespaceClause.append(SeRQLUtil.encodeString(namespace.getName()));
+								namespaceClause.append(">, ");
 							}
-							else if (SPARQL.equals(ql)) {
-								for (Namespace namespace : namespaces) {
-									namespaceClause.append("PREFIX ");
-									namespaceClause.append(namespace.getPrefix());
-									namespaceClause.append(": ");
-									namespaceClause.append("<");
-									namespaceClause.append(SPARQLUtil.encodeString(namespace.getName()));
-									namespaceClause.append("> ");
-								}
-
-								result = namespaceClause.toString() + result;
+							// Remove trailing ", "
+							namespaceClause.setLength(namespaceClause.length() - 2);
+							result.append(namespaceClause.toString());
+						}
+						else if (SPARQL.equals(queryLn)) {
+							for (Namespace namespace : namespaces) {
+								namespaceClause.append("PREFIX ");
+								namespaceClause.append(namespace.getPrefix());
+								namespaceClause.append(": ");
+								namespaceClause.append("<");
+								namespaceClause.append(SPARQLUtil.encodeString(namespace.getName()));
+								namespaceClause.append("> ");
 							}
+							result.insert(0, namespaceClause);
 						}
 					}
-					finally {
-						con.close();
-					}
 				}
-				catch (RepositoryException e) {
-					writeError("Error connecting to repository: " + e.getMessage());
-					logger.error("Error connecting to repository", e);
+				finally {
+					con.close();
 				}
 			}
+			catch (RepositoryException e) {
+				writeError("Error connecting to repository: " + e.getMessage());
+				LOGGER.error("Error connecting to repository", e);
+			}
 		}
-
-		return result;
+		return result.toString();
 	}
 
-	private void evaluateTupleQuery(QueryLanguage ql, String queryString)
+	private void evaluateTupleQuery(final QueryLanguage queryLn, final String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
 		RepositoryException
 	{
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
-
-		RepositoryConnection con = repository.getConnection();
-
+		final RepositoryConnection con = repository.getConnection();
 		try {
 			writeln("Evaluating query...");
-			long startTime = System.nanoTime();
-
-			Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
-
-			TupleQueryResult tupleQueryResult = con.prepareTupleQuery(ql, queryString).evaluate();
-
+			final long startTime = System.nanoTime();
+			final TupleQueryResult tupleQueryResult = con.prepareTupleQuery(queryLn, queryString).evaluate();
 			try {
 				int resultCount = 0;
-				List<String> bindingNames = tupleQueryResult.getBindingNames();
-
+				final List<String> bindingNames = tupleQueryResult.getBindingNames();
 				if (bindingNames.isEmpty()) {
 					while (tupleQueryResult.hasNext()) {
 						tupleQueryResult.next();
@@ -1443,25 +1352,25 @@ public class Console {
 					}
 				}
 				else {
-					int columnWidth = (consoleWidth - 1) / bindingNames.size() - 3;
+					final int columnWidth = (consoleWidth - 1) / bindingNames.size() - 3;
 
 					// Build table header
-					StringBuilder sb = new StringBuilder(consoleWidth);
+					final StringBuilder builder = new StringBuilder(consoleWidth);
 					for (String bindingName : bindingNames) {
-						sb.append("| ").append(bindingName);
-						StringUtil.appendN(' ', columnWidth - bindingName.length(), sb);
+						builder.append("| ").append(bindingName);
+						StringUtil.appendN(' ', columnWidth - bindingName.length(), builder);
 					}
-					sb.append("|");
-					String header = sb.toString();
+					builder.append("|");
+					final String header = builder.toString();
 
 					// Build separator line
-					sb.setLength(0);
+					builder.setLength(0);
 					for (int i = bindingNames.size(); i > 0; i--) {
-						sb.append('+');
-						StringUtil.appendN('-', columnWidth + 1, sb);
+						builder.append('+');
+						StringUtil.appendN('-', columnWidth + 1, builder);
 					}
-					sb.append('+');
-					String separatorLine = sb.toString();
+					builder.append('+');
+					final String separatorLine = builder.toString();
 
 					// Write table header
 					writeln(separatorLine);
@@ -1469,27 +1378,23 @@ public class Console {
 					writeln(separatorLine);
 
 					// Write table rows
-
+					final Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
 					while (tupleQueryResult.hasNext()) {
-						BindingSet bindingSet = tupleQueryResult.next();
+						final BindingSet bindingSet = tupleQueryResult.next();
 						resultCount++;
-
-						sb.setLength(0);
+						builder.setLength(0);
 						for (String bindingName : bindingNames) {
-							Value value = bindingSet.getValue(bindingName);
-							String valueStr = getStringRepForValue(value, namespaces);
-
-							sb.append("| ").append(valueStr);
-							StringUtil.appendN(' ', columnWidth - valueStr.length(), sb);
+							final Value value = bindingSet.getValue(bindingName);
+							final String valueStr = getStringRepForValue(value, namespaces);
+							builder.append("| ").append(valueStr);
+							StringUtil.appendN(' ', columnWidth - valueStr.length(), builder);
 						}
-						sb.append("|");
-						writeln(sb.toString());
+						builder.append("|");
+						writeln(builder.toString());
 					}
-
 					writeln(separatorLine);
 				}
-
-				long endTime = System.nanoTime();
+				final long endTime = System.nanoTime();
 				writeln(resultCount + " result(s) (" + (endTime - startTime) / 1000000 + " ms)");
 			}
 			finally {
@@ -1501,41 +1406,33 @@ public class Console {
 		}
 	}
 
-	private void evaluateGraphQuery(QueryLanguage ql, String queryString)
+	private void evaluateGraphQuery(final QueryLanguage queryLn, final String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
 		RepositoryException
 	{
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
-
-		RepositoryConnection con = repository.getConnection();
-
+		final RepositoryConnection con = repository.getConnection();
 		try {
 			writeln("Evaluating query...");
-			long startTime = System.nanoTime();
-
-			Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
-
-			GraphQueryResult queryResult = con.prepareGraphQuery(ql, queryString).evaluate();
-
+			final long startTime = System.nanoTime();
+			final Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
+			final GraphQueryResult queryResult = con.prepareGraphQuery(queryLn, queryString).evaluate();
 			try {
 				int resultCount = 0;
-
 				while (queryResult.hasNext()) {
-					Statement st = queryResult.next();
+					final Statement statement = queryResult.next();
 					resultCount++;
-
-					write(getStringRepForValue(st.getSubject(), namespaces));
+					write(getStringRepForValue(statement.getSubject(), namespaces));
 					write("   ");
-					write(getStringRepForValue(st.getPredicate(), namespaces));
+					write(getStringRepForValue(statement.getPredicate(), namespaces));
 					write("   ");
-					write(getStringRepForValue(st.getObject(), namespaces));
+					write(getStringRepForValue(statement.getObject(), namespaces));
 					writeln();
 				}
-
-				long endTime = System.nanoTime();
+				final long endTime = System.nanoTime();
 				writeln(resultCount + " results (" + (endTime - startTime) / 1000000 + " ms)");
 			}
 			finally {
@@ -1547,26 +1444,21 @@ public class Console {
 		}
 	}
 
-	private void evaluateBooleanQuery(QueryLanguage ql, String queryString)
+	private void evaluateBooleanQuery(final QueryLanguage queryLn, final String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
 		RepositoryException
 	{
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
-
-		RepositoryConnection con = repository.getConnection();
-
+		final RepositoryConnection con = repository.getConnection();
 		try {
 			writeln("Evaluating query...");
-			long startTime = System.nanoTime();
-
-			boolean booleanQueryResult = con.prepareBooleanQuery(ql, queryString).evaluate();
-
-			writeln("Answer: " + booleanQueryResult);
-
-			long endTime = System.nanoTime();
+			final long startTime = System.nanoTime();
+			final boolean result = con.prepareBooleanQuery(queryLn, queryString).evaluate();
+			writeln("Answer: " + result);
+			final long endTime = System.nanoTime();
 			writeln("Query evaluated in " + (endTime - startTime) / 1000000 + " ms");
 		}
 		finally {
@@ -1574,23 +1466,19 @@ public class Console {
 		}
 	}
 
-	private void executeUpdate(QueryLanguage ql, String queryString)
+	private void executeUpdate(final QueryLanguage queryLn, final String queryString)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
 		if (repository == null) {
-			writeError("please open a repository first");
+			writeError(PLEASE_OPEN_FIRST);
 			return;
 		}
-
-		RepositoryConnection con = repository.getConnection();
-
+		final RepositoryConnection con = repository.getConnection();
 		try {
 			writeln("Executing update...");
-			long startTime = System.nanoTime();
-
-			con.prepareUpdate(ql, queryString).execute();
-
-			long endTime = System.nanoTime();
+			final long startTime = System.nanoTime();
+			con.prepareUpdate(queryLn, queryString).execute();
+			final long endTime = System.nanoTime();
 			writeln("Update executed in " + (endTime - startTime) / 1000000 + " ms");
 		}
 		finally {
@@ -1598,12 +1486,7 @@ public class Console {
 		}
 	}
 
-	/**
-	 * @param namespace
-	 * @param namespaces
-	 * @return
-	 */
-	private String getPrefixForNamespace(String namespace, Collection<Namespace> namespaces) {
+	private String getPrefixForNamespace(final String namespace, final Collection<Namespace> namespaces) {
 		for (Namespace ns : namespaces) {
 			if (namespace.equals(ns.getName())) {
 				return ns.getPrefix();
@@ -1612,20 +1495,18 @@ public class Console {
 		return null;
 	}
 
-	private String getStringRepForValue(Value value, Collection<Namespace> namespaces) {
+	private String getStringRepForValue(final Value value, final Collection<Namespace> namespaces) {
 		if (value == null) {
 			return "";
 		}
 		else if (showPrefix && value instanceof URI) {
-			URI uri = (URI)value;
-
-			String prefix = getPrefixForNamespace(uri.getNamespace(), namespaces);
-
-			if (prefix != null) {
-				return prefix + ":" + uri.getLocalName();
+			final URI uri = (URI)value;
+			final String prefix = getPrefixForNamespace(uri.getNamespace(), namespaces);
+			if (prefix == null) {
+				return NTriplesUtil.toNTriplesString(value);
 			}
 			else {
-				return NTriplesUtil.toNTriplesString(value);
+				return prefix + ":" + uri.getLocalName();
 			}
 		}
 		else {
@@ -1634,7 +1515,7 @@ public class Console {
 	}
 
 	private void printHelpSet() {
-		writeln("Usage:");
+		writeln(USAGE);
 		writeln("set                            Shows all parameter values");
 		writeln("set width=<number>             Set the width for query result tables");
 		writeln("set log=<level>                Set the logging level (none, error, warning, info or debug)");
@@ -1642,16 +1523,14 @@ public class Console {
 		writeln("set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries (warning: buggy!)");
 	}
 
-	private void setParameter(String[] tokens) {
+	private void setParameter(final String[] tokens) {
 		if (tokens.length == 1) {
 			showParameters();
 		}
 		else if (tokens.length == 2) {
-			String param = tokens[1];
-
+			final String param = tokens[1];
 			String key, value;
-
-			int eqIdx = param.indexOf('=');
+			final int eqIdx = param.indexOf('=');
 			if (eqIdx == -1) {
 				key = param;
 				value = null;
@@ -1660,7 +1539,6 @@ public class Console {
 				key = param.substring(0, eqIdx);
 				value = param.substring(eqIdx + 1);
 			}
-
 			setParameter(key, value);
 		}
 		else {
@@ -1674,16 +1552,14 @@ public class Console {
 		setQueryPrefix(null);
 	}
 
-	private void setParameter(String key, String value) {
-		key = key.toLowerCase(Locale.ENGLISH);
-
-		if ("width".equals(key)) {
+	private void setParameter(final String key, final String value) {
+		if ("width".equalsIgnoreCase(key)) {
 			setWidth(value);
 		}
-		else if ("showprefix".equals(key)) {
+		else if ("showprefix".equalsIgnoreCase(key)) {
 			setShowPrefix(value);
 		}
-		else if ("queryprefix".equals(key)) {
+		else if ("queryprefix".equalsIgnoreCase(key)) {
 			setQueryPrefix(value);
 		}
 		else {
@@ -1691,13 +1567,13 @@ public class Console {
 		}
 	}
 
-	private void setWidth(String value) {
+	private void setWidth(final String value) {
 		if (value == null) {
 			writeln("width: " + consoleWidth);
 		}
 		else {
 			try {
-				int width = Integer.parseInt(value);
+				final int width = Integer.parseInt(value);
 				if (width > 0) {
 					consoleWidth = width;
 				}
@@ -1711,7 +1587,7 @@ public class Console {
 		}
 	}
 
-	private void setShowPrefix(String value) {
+	private void setShowPrefix(final String value) {
 		if (value == null) {
 			writeln("showPrefix: " + showPrefix);
 		}
@@ -1720,7 +1596,7 @@ public class Console {
 		}
 	}
 
-	private void setQueryPrefix(String value) {
+	private void setQueryPrefix(final String value) {
 		if (value == null) {
 			writeln("queryPrefix: " + queryPrefix);
 		}
@@ -1729,57 +1605,48 @@ public class Console {
 		}
 	}
 
-	private boolean tryToRemoveLock(RepositoryReadOnlyException e, Repository repo)
+	private boolean tryToRemoveLock(final Repository repo)
 		throws IOException, RepositoryException
 	{
 		boolean lockRemoved = false;
-
-		LockManager lockManager = new DirectoryLockManager(repo.getDataDir());
-
-		if (lockManager.isLocked()) {
-			if (askProceed("WARNING: The lock from another process on this repository needs to be removed", true))
-			{
-				repo.shutDown();
-				lockRemoved = lockManager.revokeLock();
-				repo.initialize();
-			}
+		final LockManager lockManager = new DirectoryLockManager(repo.getDataDir());
+		if (lockManager.isLocked()
+				&& askProceed("WARNING: The lock from another process on this repository needs to be removed",
+						true))
+		{
+			repo.shutDown();
+			lockRemoved = lockManager.revokeLock();
+			repo.initialize();
 		}
-
 		return lockRemoved;
 	}
 
-	private boolean tryToRemoveLock(RepositoryLockedException e)
+	private boolean tryToRemoveLock(final RepositoryLockedException rle)
 		throws IOException
 	{
 		boolean lockRemoved = false;
-
-		if (e.getCause() instanceof SailLockedException) {
-			SailLockedException sle = (SailLockedException)e.getCause();
-
-			LockManager lockManager = sle.getLockManager();
-
-			if (lockManager != null && lockManager.isLocked()) {
-				if (askProceed("WARNING: The lock from process '" + sle.getLockedBy()
-						+ "' on this repository needs to be removed", true))
-				{
-					lockRemoved = lockManager.revokeLock();
-				}
+		if (rle.getCause() instanceof SailLockedException) {
+			final SailLockedException sle = (SailLockedException)rle.getCause();
+			final LockManager lockManager = sle.getLockManager();
+			if (lockManager != null
+					&& lockManager.isLocked()
+					&& askProceed("WARNING: The lock from process '" + sle.getLockedBy()
+							+ "' on this repository needs to be removed", true))
+			{
+				lockRemoved = lockManager.revokeLock();
 			}
 		}
-
 		return lockRemoved;
 	}
 
-	private boolean askProceed(String msg, boolean defaultValue)
+	private boolean askProceed(final String msg, final boolean defaultValue)
 		throws IOException
 	{
-		String defaultString = defaultValue ? "yes" : "no";
-
+		final String defaultString = defaultValue ? "yes" : "no";
 		while (true) {
 			writeln(msg);
 			write("Proceed? (yes|no) [" + defaultString + "]: ");
-			String reply = in.readLine();
-
+			final String reply = in.readLine();
 			if ("no".equalsIgnoreCase(reply) || "no.".equalsIgnoreCase(reply)) {
 				return false;
 			}
@@ -1803,16 +1670,13 @@ public class Console {
 			write(repositoryID);
 		}
 		write("> ");
-
 		String line = in.readLine();
 		if (line == null) {
 			// EOF
 			return null;
 		}
-
-		StringBuilder buf = new StringBuilder(256);
+		final StringBuilder buf = new StringBuilder(256);
 		buf.append(line);
-
 		while (line != null && !line.endsWith(".")) {
 			line = in.readLine();
 			buf.append('\n');
@@ -1821,11 +1685,10 @@ public class Console {
 
 		// Remove closing dot
 		buf.setLength(buf.length() - 1);
-
 		return buf.toString().trim();
 	}
 
-	private String readln(String message)
+	private String readln(final String message)
 		throws IOException
 	{
 		if (message != null) {
@@ -1834,42 +1697,39 @@ public class Console {
 		return in.readLine();
 	}
 
-	private String readPassword(String message)
+	private String readPassword(final String message)
 		throws IOException
 	{
 		// TODO: Proper password reader
 		return readln(message);
 	}
 
-	private void write(String s) {
-		out.print(s);
+	private void write(final String string) {
+		out.print(string);
 	}
 
 	private void writeln() {
 		out.println();
 	}
 
-	private void writeln(String s) {
-		out.println(s);
+	private void writeln(final String string) {
+		out.println(string);
 	}
 
-	private void writeError(String errMsg) {
+	private void writeError(final String errMsg) {
 		writeln("ERROR: " + errMsg);
 	}
 
-	private void writeParseError(String prefix, int lineNo, int colNo, String msg) {
-		StringBuilder sb = new StringBuilder(256);
-
-		sb.append(prefix);
-		sb.append(": ");
-		sb.append(msg);
-
-		String locationString = RDFParseException.getLocationString(lineNo, colNo);
+	private void writeParseError(final String prefix, final int lineNo, final int colNo, final String msg) {
+		final StringBuilder builder = new StringBuilder(256);
+		builder.append(prefix);
+		builder.append(": ");
+		builder.append(msg);
+		final String locationString = RDFParseException.getLocationString(lineNo, colNo);
 		if (locationString.length() > 0) {
-			sb.append(" ").append(locationString);
+			builder.append(" ").append(locationString);
 		}
-
-		writeln(sb.toString());
+		writeln(builder.toString());
 	}
 
 	class VerificationListener extends RDFHandlerBase implements ParseErrorListener {
@@ -1892,23 +1752,23 @@ public class Console {
 			return statements;
 		}
 
-		public void handleStatement(Statement st)
+		public void handleStatement(final Statement statement)
 			throws RDFHandlerException
 		{
 			statements++;
 		}
 
-		public void warning(String msg, int lineNo, int colNo) {
+		public void warning(final String msg, final int lineNo, final int colNo) {
 			warnings++;
 			writeParseError("WARNING", lineNo, colNo, msg);
 		}
 
-		public void error(String msg, int lineNo, int colNo) {
+		public void error(final String msg, final int lineNo, final int colNo) {
 			errors++;
 			writeParseError("ERROR", lineNo, colNo, msg);
 		}
 
-		public void fatalError(String msg, int lineNo, int colNo) {
+		public void fatalError(final String msg, final int lineNo, final int colNo) {
 			errors++;
 			writeParseError("FATAL ERROR", lineNo, colNo, msg);
 		}

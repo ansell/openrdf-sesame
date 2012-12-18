@@ -44,7 +44,8 @@ public abstract class BaseServlet implements Servlet {
 		this.appConfig = new AppConfiguration("openrdf-workbench", "OpenRDF Sesame Workbench",
 				AppVersion.parse(MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-workbench", "dev")));
 		try {
-			this.appConfig.init();
+			// Suppress loading of log configuration.
+			this.appConfig.init(false);
 		}
 		catch (IOException e) {
 			throw new ServletException(e);
