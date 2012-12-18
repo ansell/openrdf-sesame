@@ -184,7 +184,7 @@ public class TupleResultBuilder {
 	}
 
 	public TupleResultBuilder endBoolean() {
-		closeHead();
+		closeHeadBoolean();
 		out.println("</sparql>");
 		return this;
 	}
