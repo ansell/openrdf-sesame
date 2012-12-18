@@ -471,10 +471,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			String alias = projElemNode.getAlias();
 			if (alias != null) {
 				// aliased projection element
-
 				if (aliasesInProjection.contains(alias)) {
 					throw new VisitorException("duplicate use of alias '" + alias + "' in projection.");
 				}
+
+				// check if alias is not previously used.
+				if (result.getBindingNames().contains(alias)) {
+					throw new VisitorException("projection alias '" + alias + "' was previously used");
+				}
+
 				aliasesInProjection.add(alias);
 
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
@@ -2250,14 +2255,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		return createFunctionCall("UUID", node, 0, 0);
 	}
-	
+
 	@Override
 	public FunctionCall visit(ASTSTRUUID node, Object data)
 		throws VisitorException
 	{
 		return createFunctionCall("STRUUID", node, 0, 0);
 	}
-	
+
 	@Override
 	public IRIFunction visit(ASTIRIFunc node, Object data)
 		throws VisitorException
@@ -2297,7 +2302,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public BindingSetAssignment visit(ASTInlineData node, Object data)
 		throws VisitorException
 	{
-		
+
 		BindingSetAssignment bsa = new BindingSetAssignment();
 
 		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
@@ -2644,22 +2649,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		Node aliasNode = node.jjtGetChild(1);
 		String alias = ((ASTVar)aliasNode).getName();
 
-		
 		Extension extension = new Extension();
 		extension.addElement(new ExtensionElem(ve, alias));
 
 		TupleExpr result = null;
 		TupleExpr arg = graphPattern.buildTupleExpr();
-		
+
 		// check if alias is not previously used.
-		VarCollector collector = new VarCollector();
-		arg.visit(collector);
-		for (Var var: collector.getCollectedVars()) {
-			if (var.getName().equals(alias)) {
+		if (arg.getBindingNames().contains(alias)) {
 				throw new VisitorException(String.format("BIND clause alias '{}' was previously used", alias));
-			}
 		}
-		
+
 		if (arg instanceof Filter) {
 			result = arg;
 			// we need to push down the extension so that filters can operate on
