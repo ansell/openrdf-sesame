@@ -8094,6 +8094,21 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     finally { jj_save(6, xla); }
   }
 
+  private boolean jj_3R_43() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_43()) {
+    jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
+    }
+    return false;
+  }
+
   private boolean jj_3R_53() {
     if (jj_scan_token(LPAREN)) return true;
     return false;
@@ -8570,21 +8585,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
 
   private boolean jj_3R_44() {
     if (jj_3R_50()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_43() {
-    if (jj_3R_48()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_35() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_43()) {
-    jj_scanpos = xsp;
-    if (jj_3R_44()) return true;
-    }
     return false;
   }
 
