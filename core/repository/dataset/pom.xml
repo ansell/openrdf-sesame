@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-repository</artifactId>
-		<version>2.7-SNAPSHOT</version>
+		<version>2.7.0-beta1</version>
 	</parent>
 
 	<artifactId>sesame-repository-dataset</artifactId>
