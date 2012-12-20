@@ -21,6 +21,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="major" value="2" />
 		<property name="minor" value="7" />
 		<property name="micro" value="0" />
+		<property name="modifier" value="beta1"/>
 	</bean>
 
 	<bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration"
