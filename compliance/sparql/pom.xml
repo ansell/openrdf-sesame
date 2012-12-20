@@ -213,7 +213,6 @@
 									the test suite right (some tests fail because they are incorrect tests) -->
 								<exclude>**/W3CApprovedSPARQL11QueryTest.java</exclude>
 								<exclude>**/W3CApprovedSPARQL11UpdateTest.java</exclude>
-								<exclude>**/W3CApprovedSPARQL11SyntaxTest.java</exclude>
 							</excludes>
 							<skipTests>false</skipTests>
 							<forkMode>always</forkMode>
