@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
@@ -8,146 +8,143 @@
 		<version>2.7.0-beta2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-core</artifactId>
-	<packaging>pom</packaging>
+  <artifactId>sesame-core</artifactId>
+  <packaging>pom</packaging>
 
-	<modules>
-		<module>console</module>
-		<module>http</module>
-		<module>model</module>
-		<module>query</module>
-		<module>queryalgebra</module>
-		<module>queryparser</module>
-		<module>queryrender</module>
-		<module>queryresultio</module>
-		<module>repository</module>
-		<module>rio</module>
-		<module>runtime</module>
-		<module>runtime-osgi</module>
-		<module>sail</module>
-		<module>config</module>
-		<module>util</module>
-	</modules>
+  <modules>
+	 <module>console</module>
+	 <module>http</module>
+	 <module>model</module>
+	 <module>query</module>
+	 <module>queryalgebra</module>
+	 <module>queryparser</module>
+	 <module>queryrender</module>
+	 <module>queryresultio</module>
+	 <module>repository</module>
+	 <module>rio</module>
+	 <module>runtime</module>
+	 <module>runtime-osgi</module>
+	 <module>sail</module>
+	 <module>config</module>
+	 <module>util</module>
+  </modules>
 
-	<name>OpenRDF Sesame Core</name>
-	<description>Core modules for OpenRDF Sesame</description>
+  <name>OpenRDF Sesame Core</name>
+  <description>Core modules for OpenRDF Sesame</description>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<inherited>false</inherited>
+  <build>
+	 <plugins>
+		<plugin>
+		  <artifactId>maven-assembly-plugin</artifactId>
+		  <inherited>false</inherited>
+		  <configuration>
+			 <finalName>openrdf-sesame-${project.version}</finalName>
+			 <descriptors>
+				<descriptor>src/main/assembly/onejar.xml</descriptor>
+				<descriptor>src/main/assembly/sdk.xml</descriptor>
+			 </descriptors>
+		  </configuration>
+		</plugin>
+		<plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-antrun-plugin</artifactId>
+		  <inherited>false</inherited>
+		  <executions>
+			 <execution>
+				<phase>site</phase>
 				<configuration>
-					<finalName>openrdf-sesame-${project.version}</finalName>
-					<descriptors>
-						<descriptor>src/main/assembly/onejar.xml</descriptor>
-						<descriptor>src/main/assembly/sdk.xml</descriptor>
-					</descriptors>
+				  <target>
+					 <ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
+						<target name="userdoc" />
+					 </ant>
+					 <!-- disabled because we are getting rid of outdate system docs <ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true"> <target name="systemdoc" /> </ant> -->
+				  </target>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<inherited>false</inherited>
-				<executions>
-					<execution>
-						<phase>site</phase>
-						<configuration>
-							<target>
-								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
-									<target name="userdoc" />
-								 </ant>
-								 <!-- disabled because we are getting rid of outdate system docs 
-								<ant antfile="${basedir}/src/main/doc/build.xml" inheritRefs="true">
-									<target name="systemdoc" />
-								</ant>
-									-->
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>saxon</groupId>
-						<artifactId>saxon</artifactId>
-						<version>6.5.3</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-		</plugins>
-	</build>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<encoding>utf8</encoding>
-					<source>1.5</source>
-					<quiet>true</quiet>
-					<groups>
+				<goals>
+				  <goal>run</goal>
+				</goals>
+			 </execution>
+		  </executions>
+		  <dependencies>
+			 <dependency>
+				<groupId>saxon</groupId>
+				<artifactId>saxon</artifactId>
+				<version>6.5.3</version>
+			 </dependency>
+		  </dependencies>
+		</plugin>
+		<plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-site-plugin</artifactId>
+		  <configuration>
+			 <reportPlugins>
+				<plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-javadoc-plugin</artifactId>
+				  <configuration>
+					 <encoding>utf8</encoding>
+					 <source>1.5</source>
+					 <quiet>true</quiet>
+					 <groups>
 						<group>
-							<title>Repository API</title>
-							<packages>org.openrdf.repository*</packages>
+						  <title>Repository API</title>
+						  <packages>org.openrdf.repository*</packages>
 						</group>
 						<group>
-							<title>RDF Model API</title>
-							<packages>org.openrdf.model*</packages>
+						  <title>RDF Model API</title>
+						  <packages>org.openrdf.model*</packages>
 						</group>
 						<group>
-							<title>Storage And Inference Layer (SAIL) API</title>
-							<packages>org.openrdf.sail*</packages>
+						  <title>Storage And Inference Layer (SAIL) API</title>
+						  <packages>org.openrdf.sail*</packages>
 						</group>
 						<group>
-							<title>RDF Parsers and Writers (Rio) </title>
-							<packages>org.openrdf.rio*</packages>
+						  <title>RDF Parsers and Writers (Rio) </title>
+						  <packages>org.openrdf.rio*</packages>
 						</group>
 						<group>
-							<title>Query API and query engines</title>
-							<packages>org.openrdf.query:org.openrdf.query.impl:org.openrdf.query.algebra*:org.openrdf.query.parser*</packages>
+						  <title>Query API and query engines</title>
+						  <packages>org.openrdf.query:org.openrdf.query.impl:org.openrdf.query.algebra*:org.openrdf.query.parser*</packages>
 						</group>
 						<group>
-							<title>Query Result Parsers and Writers</title>
-							<packages>org.openrdf.query.resultio*</packages>
+						  <title>Query Result Parsers and Writers</title>
+						  <packages>org.openrdf.query.resultio*</packages>
 						</group>
 						<group>
-							<title>OpenRDF Web Client</title>
-							<packages>org.openrdf.http.webclient*</packages>
+						  <title>OpenRDF Web Client</title>
+						  <packages>org.openrdf.http.webclient*</packages>
 						</group>
 						<group>
-							<title>HTTP Protocol for Client/Server Communication</title>
-							<packages>org.openrdf.http*</packages>
+						  <title>HTTP Protocol for Client/Server Communication</title>
+						  <packages>org.openrdf.http*</packages>
 						</group>
-					</groups>
-					<links>
+					 </groups>
+					 <links>
 						<link>http://download.oracle.com/javase/1.5.0/docs/api</link>
 						<link>http://repository.aduna-software.org/docs/info.aduna/api/</link>
-					</links>
-				</configuration>
-				<reportSets>
-					<reportSet>
+					 </links>
+				  </configuration>
+				  <reportSets>
+					 <reportSet>
 						<reports>
-							<report>aggregate</report>
+						  <report>aggregate</report>
 						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<reportSets>
-					<reportSet>
+					 </reportSet>
+				  </reportSets>
+				</plugin>
+				<plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-project-info-reports-plugin</artifactId>
+				  <reportSets>
+					 <reportSet>
 						<reports>
 						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-			
-		</plugins>
-	</reporting>
-
+					 </reportSet>
+				  </reportSets>
+				</plugin>
+			 </reportPlugins>
+		  </configuration> 
+		</plugin>
+	 </plugins>
+  </build>
 </project>
