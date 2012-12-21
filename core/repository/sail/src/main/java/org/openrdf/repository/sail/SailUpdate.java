@@ -63,7 +63,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 
 		List<UpdateExpr> updateExprs = parsedUpdate.getUpdateExprs();
 		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMapping();
-		
+
 		for (UpdateExpr updateExpr : updateExprs) {
 			// LOAD is handled at the Repository API level because it requires
 			// access to the Rio parser.
@@ -97,15 +97,15 @@ public class SailUpdate extends AbstractOperation implements Update {
 				SailConnection conn = getConnection().getSailConnection();
 
 				Dataset activeDataset = getMergedDataset(datasetMapping.get(updateExpr));
-				
+
 				try {
 					boolean localTransaction = !getConnection().isActive();
 					if (localTransaction) {
 						getConnection().begin();
 					}
-					
+
 					conn.executeUpdate(updateExpr, activeDataset, getBindings(), true);
-					
+
 					if (localTransaction) {
 						getConnection().commit();
 					}
@@ -125,7 +125,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 			}
 		}
 	}
-	
+
 	protected Dataset getMergedDataset(Dataset sparqlDefinedDataset) {
 		if (sparqlDefinedDataset == null) {
 			return dataset;
@@ -134,34 +134,43 @@ public class SailUpdate extends AbstractOperation implements Update {
 			return sparqlDefinedDataset;
 		}
 		else {
-			Set<URI> dgs = sparqlDefinedDataset.getDefaultGraphs() ;
+			DatasetImpl mergedDataset = new DatasetImpl();
+
+			boolean merge = false;
+
+			Set<URI> dgs = sparqlDefinedDataset.getDefaultGraphs();
 			if (dgs != null && dgs.size() > 0) {
+				merge = true;
 				// one or more USING-clauses in the update itself, we need to define
-				// the default graphs by means of the update itself, the rest can
-				// be copied from the externally supplied dataset.
-				DatasetImpl mergedDataset = new DatasetImpl();
-				
-				for (URI graphURI: dgs) {
-					// TODO add the null context?
+				// the default graphs by means of the update itself
+				for (URI graphURI : dgs) {
 					mergedDataset.addDefaultGraph(graphURI);
 				}
-				
-				mergedDataset.setDefaultInsertGraph(dataset.getDefaultInsertGraph());
-				
-				for (URI graphURI: dataset.getDefaultRemoveGraphs()) {
-					mergedDataset.addDefaultRemoveGraph(graphURI);
-				}
-				
-				for (URI graphURI: dataset.getNamedGraphs()) {
+			}
+
+			Set<URI> ngs = sparqlDefinedDataset.getNamedGraphs();
+			if (ngs != null && ngs.size() > 0) {
+				merge = true;
+				// one or more USING NAMED-claused in the update, we need to define
+				// the named graphs by means of the update itself.
+				for (URI graphURI : ngs) {
 					mergedDataset.addNamedGraph(graphURI);
 				}
-				
+			}
+
+			if (merge) {
+				mergedDataset.setDefaultInsertGraph(dataset.getDefaultInsertGraph());
+
+				for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
+					mergedDataset.addDefaultRemoveGraph(graphURI);
+				}
+
 				return mergedDataset;
 			}
 			else {
 				return sparqlDefinedDataset;
 			}
-			
+
 		}
 	}
 }
