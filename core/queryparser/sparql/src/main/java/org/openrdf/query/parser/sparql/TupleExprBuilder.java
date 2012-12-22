@@ -1408,6 +1408,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 						if (invertSequence) {
 							endVar = subjVar;
+							if (startVar.equals(subjVar)) {
+								// inverted path sequence of length 1.
+								startVar = objVar;
+							}
 						}
 
 						if (pathElement.isInverse()) {
@@ -2657,7 +2661,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		// check if alias is not previously used.
 		if (arg.getBindingNames().contains(alias)) {
-				throw new VisitorException(String.format("BIND clause alias '{}' was previously used", alias));
+			throw new VisitorException(String.format("BIND clause alias '{}' was previously used", alias));
 		}
 
 		if (arg instanceof Filter) {
