@@ -8,8 +8,8 @@ package org.openrdf.sail.federation;
 import junit.framework.Test;
 
 import org.openrdf.query.Dataset;
-import org.openrdf.query.parser.sparql.ManifestTest;
-import org.openrdf.query.parser.sparql.SPARQLQueryTest;
+import org.openrdf.query.parser.sparql.manifest.ManifestTest;
+import org.openrdf.query.parser.sparql.manifest.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;
@@ -28,6 +28,13 @@ public class FederationSparqlTest extends SPARQLQueryTest {
 				return new FederationSparqlTest(testURI, name, queryFileURL, resultFileURL, dataSet,
 						laxCardinality);
 			}
+
+			public SPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
+					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			{
+				return new FederationSparqlTest(testURI, name, queryFileURL, resultFileURL, dataSet,
+						laxCardinality, checkOrder);
+			}
 		});
 	}
 
@@ -35,6 +42,12 @@ public class FederationSparqlTest extends SPARQLQueryTest {
 			Dataset dataSet, boolean laxCardinality)
 	{
 		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality);
+	}
+
+	public FederationSparqlTest(String testURI, String name, String queryFileURL, String resultFileURL,
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+	{
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
 	}
 
 	@Override
