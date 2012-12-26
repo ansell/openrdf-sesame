@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Arjohn Kampman
  */
 public class Federation implements Sail, Executor {
-	private Logger logger = LoggerFactory.getLogger(Federation.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Federation.class);
 	private final List<Repository> members = new ArrayList<Repository>();
 	private final ExecutorService executor = Executors.newCachedThreadPool();
 	private PrefixHashSet localPropertySpace;
@@ -153,7 +153,7 @@ public class Federation implements Sail, Executor {
 				con.close();
 			}
 			catch (RepositoryException e) {
-				logger.error(e.getMessage(), e);
+				LOGGER.error(e.getMessage(), e);
 			}
 		}
 	}

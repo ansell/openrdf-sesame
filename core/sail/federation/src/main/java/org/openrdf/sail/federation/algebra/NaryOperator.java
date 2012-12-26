@@ -17,7 +17,8 @@ import org.openrdf.query.algebra.QueryModelVisitor;
 /**
  * An abstract superclass for operators which have (zero or more) arguments.
  */
-public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryModelNodeBase {
+public abstract class NaryOperator<Expr extends QueryModelNode> extends
+		QueryModelNodeBase {
 
 	private static final long serialVersionUID = 2645544440976923085L;
 
@@ -35,19 +36,21 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	 *--------------*/
 
 	public NaryOperator() {
+		super();
 	}
 
 	/**
 	 * Creates a new n-ary operator.
 	 */
-	public NaryOperator(Expr... args) {
-		setArgs(Arrays.asList(args));
+	public NaryOperator(final Expr... args) {
+		this(Arrays.asList(args));
 	}
 
 	/**
 	 * Creates a new n-ary operator.
 	 */
-	public NaryOperator(List<? extends Expr> args) {
+	public NaryOperator(final List<? extends Expr> args) {
+		this();
 		setArgs(args);
 	}
 
@@ -78,17 +81,14 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	 * 
 	 * @return The operator's arguments.
 	 */
-	public Expr getArg(int idx) {
-		if (idx >= args.size()) {
-			return null;
-		}
-		return args.get(idx);
+	public Expr getArg(final int idx) {
+		return (idx < args.size()) ? args.get(idx) : null;
 	}
 
 	/**
 	 * Sets the arguments of this n-ary tuple operator.
 	 */
-	public void addArgs(List<? extends Expr> args) {
+	private final void addArgs(final List<? extends Expr> args) {
 		assert args != null;
 		for (Expr arg : args) {
 			addArg(arg);
@@ -98,14 +98,14 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Sets the arguments of this n-ary operator.
 	 */
-	public void addArg(Expr arg) {
+	public final void addArg(final Expr arg) {
 		setArg(this.args.size(), arg);
 	}
 
 	/**
 	 * Sets the arguments of this n-ary operator.
 	 */
-	public void setArgs(List<? extends Expr> args) {
+	private final void setArgs(final List<? extends Expr> args) {
 		this.args.clear();
 		addArgs(args);
 	}
@@ -113,7 +113,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	/**
 	 * Sets the <tt>idx</tt>-th argument of this n-ary tuple operator.
 	 */
-	protected void setArg(int idx, Expr arg) {
+	protected void setArg(final int idx, final Expr arg) {
 		if (arg != null) {
 			// arg can be null (i.e. Regex)
 			arg.setParentNode(this);
@@ -126,14 +126,13 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 		this.args.set(idx, arg);
 	}
 
-	public boolean removeArg(Expr arg) {
+	public boolean removeArg(final Expr arg) {
 		return args.remove(arg);
 	}
 
 	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
+	public <X extends Exception> void visitChildren(
+			final QueryModelVisitor<X> visitor) throws X {
 		for (Expr arg : args) {
 			if (arg != null) {
 				arg.visit(visitor);
@@ -143,13 +142,12 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		int index = args.indexOf(current);
-
+	public void replaceChildNode(final QueryModelNode current,
+			final QueryModelNode replacement) {
+		final int index = args.indexOf(current);
 		if (index >= 0) {
-			setArg(index, (Expr)replacement);
-		}
-		else {
+			setArg(index, (Expr) replacement);
+		} else {
 			super.replaceChildNode(current, replacement);
 		}
 	}
@@ -157,14 +155,12 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends QueryMod
 	@Override
 	@SuppressWarnings("unchecked")
 	public NaryOperator<Expr> clone() {
-		NaryOperator<Expr> clone = (NaryOperator<Expr>)super.clone();
-
+		final NaryOperator<Expr> clone = (NaryOperator<Expr>) super.clone();
 		clone.args = new ArrayList<Expr>(args.size());
 		for (Expr arg : args) {
-			Expr argClone = (arg == null) ? null : (Expr)arg.clone();
+			final Expr argClone = (arg == null) ? null : (Expr) arg.clone();
 			clone.addArg(argClone);
 		}
-
 		return clone;
 	}
 }

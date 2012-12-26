@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  */
 abstract class FederationConnection extends SailConnectionBase {
 
-	private final Logger logger = LoggerFactory
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(FederationConnection.class);
 
 	private final Federation federation;
@@ -294,7 +294,7 @@ abstract class FederationConnection extends SailConnectionBase {
 	private TupleExpr optimize(TupleExpr parsed, Dataset dataset,
 			BindingSet bindings, EvaluationStrategyImpl strategy)
 			throws SailException {
-		logger.trace("Incoming query model:\n{}", parsed.toString());
+		LOGGER.trace("Incoming query model:\n{}", parsed.toString());
 
 		// Clone the tuple expression to allow for more aggressive optimisations
 		TupleExpr query = new QueryRoot(parsed.clone());
@@ -321,7 +321,7 @@ abstract class FederationConnection extends SailConnectionBase {
 
 		new PrepareOwnedTupleExpr().optimize(query, dataset, bindings);
 
-		logger.trace("Optimized query model:\n{}", query.toString());
+		LOGGER.trace("Optimized query model:\n{}", query.toString());
 		return query;
 	}
 
@@ -338,13 +338,13 @@ abstract class FederationConnection extends SailConnectionBase {
 			try {
 				operation.run(member);
 			} catch (RepositoryException e) {
-				logger.error(
+				LOGGER.error(
 						"Failed to execute procedure on federation members", e);
 				if (storeExc == null) {
 					storeExc = e;
 				}
 			} catch (RuntimeException e) {
-				logger.error(
+				LOGGER.error(
 						"Failed to execute procedure on federation members", e);
 				if (runtimeExc == null) {
 					runtimeExc = e;
@@ -411,7 +411,7 @@ abstract class FederationConnection extends SailConnectionBase {
 			try {
 				cursor.close();
 			} catch (RepositoryException e) {
-				logger.error("Failed to close cursor", e);
+				LOGGER.error("Failed to close cursor", e);
 			}
 		}
 	}

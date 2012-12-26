@@ -13,7 +13,7 @@ import org.openrdf.model.impl.URIImpl;
  * 
  * @author James Leigh
  */
-public class FederationSchema {
+public final class FederationSchema {
 
 	/** http://www.openrdf.org/config/sail/federation# */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/federation#";
