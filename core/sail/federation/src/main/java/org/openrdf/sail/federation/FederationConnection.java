@@ -152,7 +152,7 @@ abstract class FederationConnection extends SailConnectionBase {
 				if (namespace == null) {
 					namespace = candidate;
 				} else if (candidate != null && !candidate.equals(namespace)) {
-					namespace = null; //NOPMD
+					namespace = null; // NOPMD
 					break;
 				}
 			}
@@ -170,7 +170,8 @@ abstract class FederationConnection extends SailConnectionBase {
 
 		try {
 			for (RepositoryConnection member : members) {
-				RepositoryResult<Namespace> memberNamespaces = member.getNamespaces();
+				RepositoryResult<Namespace> memberNamespaces = member
+						.getNamespaces();
 				try {
 					while (memberNamespaces.hasNext()) {
 						Namespace next = memberNamespaces.next();
@@ -203,7 +204,7 @@ abstract class FederationConnection extends SailConnectionBase {
 				for (RepositoryConnection member : members) {
 					size += member.size(contexts);
 				}
-				return size; //NOPMD
+				return size; // NOPMD
 			} else {
 				CloseableIteration<? extends Statement, SailException> cursor = getStatements(
 						null, null, null, true, contexts);
@@ -354,14 +355,15 @@ abstract class FederationConnection extends SailConnectionBase {
 
 		if (storeExc != null) {
 			throw new SailException(storeExc);
-		} else if (runtimeExc != null) {
+		}
+
+		if (runtimeExc != null) {
 			throw runtimeExc;
 		}
 	}
 
 	private interface Function<E> {
-
-		public CloseableIteration<? extends E, RepositoryException> call(
+		CloseableIteration<? extends E, RepositoryException> call(
 				RepositoryConnection member) throws RepositoryException;
 	}
 
