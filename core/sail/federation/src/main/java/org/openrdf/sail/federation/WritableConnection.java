@@ -23,7 +23,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-class WritableConnection extends EchoWriteConnection {
+class WritableConnection extends AbstractEchoWriteConnection {
 	private int addIndex;
 
 	public WritableConnection(Federation federation,

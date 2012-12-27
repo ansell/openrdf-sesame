@@ -19,9 +19,9 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-abstract class EchoWriteConnection extends FederationConnection {
+abstract class AbstractEchoWriteConnection extends FederationConnection {
 
-	public EchoWriteConnection(Federation federation, List<RepositoryConnection> members) {
+	public AbstractEchoWriteConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
 	}
 
@@ -32,7 +32,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws RepositoryException
 			{
-				con.setAutoCommit(false);
+				con.begin();
 			}
 		});
 	}
@@ -47,7 +47,6 @@ abstract class EchoWriteConnection extends FederationConnection {
 				throws RepositoryException
 			{
 				con.rollback();
-				con.setAutoCommit(true);
 			}
 		});
 	}
@@ -61,7 +60,7 @@ abstract class EchoWriteConnection extends FederationConnection {
 			public void run(RepositoryConnection con)
 				throws RepositoryException
 			{
-				con.setAutoCommit(true);
+				con.commit();
 			}
 		});
 	}
