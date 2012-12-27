@@ -70,9 +70,9 @@ abstract class FederationConnection extends SailConnectionBase {
 
 	private final Federation federation;
 
-	private final ValueFactory vf;
+	private final ValueFactory valueFactory;
 
-	final List<RepositoryConnection> members;
+	protected final List<RepositoryConnection> members;
 
 	public FederationConnection(Federation federation,
 			List<RepositoryConnection> members) {
@@ -88,6 +88,7 @@ abstract class FederationConnection extends SailConnectionBase {
 
 			@Override
 			protected void shutDownInternal() throws SailException {
+				// ignore
 			}
 
 			@Override
@@ -103,7 +104,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		});
 		this.federation = federation;
 
-		vf = ValueFactoryImpl.getInstance();
+		valueFactory = ValueFactoryImpl.getInstance();
 
 		this.members = new ArrayList<RepositoryConnection>(members.size());
 		for (RepositoryConnection member : members) {
@@ -112,7 +113,7 @@ abstract class FederationConnection extends SailConnectionBase {
 	}
 
 	public ValueFactory getValueFactory() {
-		return vf;
+		return valueFactory;
 	}
 
 	@Override
@@ -147,12 +148,12 @@ abstract class FederationConnection extends SailConnectionBase {
 		try {
 			String namespace = null;
 			for (RepositoryConnection member : members) {
-				String ns = member.getNamespace(prefix);
-
+				String candidate = member.getNamespace(prefix);
 				if (namespace == null) {
-					namespace = ns;
-				} else if (ns != null && !ns.equals(namespace)) {
-					return null;
+					namespace = candidate;
+				} else if (candidate != null && !candidate.equals(namespace)) {
+					namespace = null; //NOPMD
+					break;
 				}
 			}
 			return namespace;
@@ -169,10 +170,10 @@ abstract class FederationConnection extends SailConnectionBase {
 
 		try {
 			for (RepositoryConnection member : members) {
-				RepositoryResult<Namespace> ns = member.getNamespaces();
+				RepositoryResult<Namespace> memberNamespaces = member.getNamespaces();
 				try {
-					while (ns.hasNext()) {
-						Namespace next = ns.next();
+					while (memberNamespaces.hasNext()) {
+						Namespace next = memberNamespaces.next();
 						String prefix = next.getPrefix();
 
 						if (prefixes.add(prefix)) {
@@ -183,7 +184,7 @@ abstract class FederationConnection extends SailConnectionBase {
 						}
 					}
 				} finally {
-					ns.close();
+					memberNamespaces.close();
 				}
 			}
 		} catch (RepositoryException e) {
@@ -202,7 +203,7 @@ abstract class FederationConnection extends SailConnectionBase {
 				for (RepositoryConnection member : members) {
 					size += member.size(contexts);
 				}
-				return size;
+				return size; //NOPMD
 			} else {
 				CloseableIteration<? extends Statement, SailException> cursor = getStatements(
 						null, null, null, true, contexts);
@@ -287,7 +288,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		}
 
 		public ValueFactory getValueFactory() {
-			return vf;
+			return valueFactory;
 		}
 	}
 
@@ -326,8 +327,7 @@ abstract class FederationConnection extends SailConnectionBase {
 	}
 
 	interface Procedure {
-
-		public void run(RepositoryConnection member) throws RepositoryException;
+		void run(RepositoryConnection member) throws RepositoryException;
 	}
 
 	void excute(Procedure operation) throws SailException {
