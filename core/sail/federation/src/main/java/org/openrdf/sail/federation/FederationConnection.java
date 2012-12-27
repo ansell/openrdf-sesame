@@ -331,7 +331,7 @@ abstract class FederationConnection extends SailConnectionBase {
 		void run(RepositoryConnection member) throws RepositoryException;
 	}
 
-	void excute(Procedure operation) throws SailException {
+	void excute(Procedure operation) throws SailException { // NOPMD
 		RepositoryException storeExc = null;
 		RuntimeException runtimeExc = null;
 
@@ -396,12 +396,12 @@ abstract class FederationConnection extends SailConnectionBase {
 
 	private boolean isLocal(URI pred) {
 		if (pred == null) {
-			return false;
+			return false; // NOPMD
 		}
 
 		PrefixHashSet hash = federation.getLocalPropertySpace();
 		if (hash == null) {
-			return false;
+			return false; // NOPMD
 		}
 
 		return hash.match(pred.stringValue());
