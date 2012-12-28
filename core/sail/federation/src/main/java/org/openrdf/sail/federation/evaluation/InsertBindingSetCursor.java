@@ -18,30 +18,33 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
  * 
  * @author James Leigh
  */
-public class InsertBindingSetCursor extends IterationWrapper<BindingSet, QueryEvaluationException> {
+public class InsertBindingSetCursor extends
+		IterationWrapper<BindingSet, QueryEvaluationException> {
 
-	private BindingSet bindings;
+	private final BindingSet bindings;
 
-	public InsertBindingSetCursor(CloseableIteration<BindingSet, QueryEvaluationException> delegate, BindingSet bindings) {
+	public InsertBindingSetCursor(
+			CloseableIteration<BindingSet, QueryEvaluationException> delegate,
+			BindingSet bindings) {
 		super(delegate);
 		this.bindings = bindings;
 	}
 
 	@Override
-	public BindingSet next()
-		throws QueryEvaluationException
-	{
+	public BindingSet next() throws QueryEvaluationException {
 		BindingSet next = super.next();
+		QueryBindingSet result;
 		if (next == null) {
-			return null;
+			result = null; // NOPMD
+		} else {
+			int size = bindings.size() + next.size();
+			result = new QueryBindingSet(size);
+			result.addAll(bindings);
+			for (Binding binding : next) {
+				result.setBinding(binding);
+			}
 		}
-		int size = bindings.size() + next.size();
-		QueryBindingSet set = new QueryBindingSet(size);
-		set.addAll(bindings);
-		for (Binding binding : next) {
-			set.setBinding(binding);
-		}
-		return set;
+		return result;
 	}
 
 }

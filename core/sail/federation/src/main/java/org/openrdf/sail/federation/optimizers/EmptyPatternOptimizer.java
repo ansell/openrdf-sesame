@@ -27,16 +27,18 @@ import org.openrdf.repository.RepositoryException;
  * 
  * @author James Leigh
  */
-public class EmptyPatternOptimizer extends QueryModelVisitorBase<RepositoryException> implements QueryOptimizer {
+public class EmptyPatternOptimizer extends
+		QueryModelVisitorBase<RepositoryException> implements QueryOptimizer {
 
-	private Collection<? extends RepositoryConnection> members;
+	private final Collection<? extends RepositoryConnection> members;
 
-	public EmptyPatternOptimizer(Collection<? extends RepositoryConnection> members) {
+	public EmptyPatternOptimizer(
+			Collection<? extends RepositoryConnection> members) {
+		super();
 		this.members = members;
 	}
 
-	public void optimize(TupleExpr query, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr query, Dataset dataset, BindingSet bindings) {
 		try {
 			query.visit(this);
 		} catch (RepositoryException e) {
@@ -45,11 +47,9 @@ public class EmptyPatternOptimizer extends QueryModelVisitorBase<RepositoryExcep
 	}
 
 	@Override
-	public void meet(StatementPattern node)
-		throws RepositoryException
-	{
-		Resource subj = (Resource)node.getSubjectVar().getValue();
-		URI pred = (URI)node.getPredicateVar().getValue();
+	public void meet(StatementPattern node) throws RepositoryException {
+		Resource subj = (Resource) node.getSubjectVar().getValue();
+		URI pred = (URI) node.getPredicateVar().getValue();
 		Value obj = node.getObjectVar().getValue();
 		Resource[] ctx = getContexts(node.getContextVar());
 		for (RepositoryConnection member : members) {
@@ -61,10 +61,8 @@ public class EmptyPatternOptimizer extends QueryModelVisitorBase<RepositoryExcep
 	}
 
 	private Resource[] getContexts(Var var) {
-		if (var == null || !var.hasValue()) {
-			return new Resource[0];
-		}
-		return new Resource[] { (Resource)var.getValue() };
+		return (var == null || !var.hasValue()) ? new Resource[0]
+				: new Resource[] { (Resource) var.getValue() };
 	}
 
 }

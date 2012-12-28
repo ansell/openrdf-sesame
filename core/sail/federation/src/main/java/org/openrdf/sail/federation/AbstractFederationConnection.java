@@ -63,10 +63,10 @@ import org.slf4j.LoggerFactory;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-abstract class FederationConnection extends SailConnectionBase {
+abstract class AbstractFederationConnection extends SailConnectionBase {
 
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(FederationConnection.class);
+			.getLogger(AbstractFederationConnection.class);
 
 	private final Federation federation;
 
@@ -74,7 +74,7 @@ abstract class FederationConnection extends SailConnectionBase {
 
 	protected final List<RepositoryConnection> members;
 
-	public FederationConnection(Federation federation,
+	public AbstractFederationConnection(Federation federation,
 			List<RepositoryConnection> members) {
 		super(new SailBase() {
 
@@ -273,7 +273,7 @@ abstract class FederationConnection extends SailConnectionBase {
 				Resource subj, URI pred, Value obj, Resource... contexts)
 				throws QueryEvaluationException {
 			try {
-				CloseableIteration<? extends Statement, SailException> result = FederationConnection.this
+				CloseableIteration<? extends Statement, SailException> result = AbstractFederationConnection.this
 						.getStatements(subj, pred, obj, inf, contexts);
 				return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(
 						result) {

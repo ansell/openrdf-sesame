@@ -31,7 +31,7 @@ import org.openrdf.sail.federation.evaluation.InsertBindingSetCursor;
  */
 public class OwnedTupleExpr extends UnaryTupleOperator {
 
-	private RepositoryConnection owner;
+	private final RepositoryConnection owner;
 
 	private TupleQuery query;
 
@@ -46,37 +46,38 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 		return owner;
 	}
 
-	public void prepare(QueryLanguage ql, String qry, Map<String, String> bindings)
-			throws RepositoryException, MalformedQueryException {
+	public void prepare(QueryLanguage queryLn, String qry,
+			Map<String, String> bindings) throws RepositoryException,
+			MalformedQueryException {
 		assert this.query == null;
-		this.query = owner.prepareTupleQuery(ql, qry);
+		this.query = owner.prepareTupleQuery(queryLn, qry);
 		this.variables = bindings;
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
 			Dataset dataset, BindingSet bindings)
 			throws QueryEvaluationException {
-		if (query == null) {
-			return null;
-		}
-		try {
-			synchronized (query) {
-				for (String name : variables.keySet()) {
-					if (bindings.hasBinding(name)) {
-						Value value = bindings.getValue(name);
-						query.setBinding(variables.get(name), value);
-					} else {
-						query.removeBinding(variables.get(name));
+		CloseableIteration<BindingSet, QueryEvaluationException> rval = null;
+		if (query != null) {
+			try {
+				synchronized (query) {
+					for (String name : variables.keySet()) {
+						if (bindings.hasBinding(name)) {
+							Value value = bindings.getValue(name);
+							query.setBinding(variables.get(name), value);
+						} else {
+							query.removeBinding(variables.get(name));
+						}
 					}
+					query.setDataset(dataset);
+					TupleQueryResult result = query.evaluate();
+					rval = new InsertBindingSetCursor(result, bindings);
 				}
-				query.setDataset(dataset);
-				TupleQueryResult result = query.evaluate();
-				return new InsertBindingSetCursor(result, bindings);
+			} catch (IllegalArgumentException e) { // NOPMD
+				// query does not support BNode bindings
 			}
-		} catch (IllegalArgumentException e) {
-			// query does not support BNode bindings
-			return null;
 		}
+		return rval;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)

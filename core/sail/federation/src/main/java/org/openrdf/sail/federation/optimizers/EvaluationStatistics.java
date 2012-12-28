@@ -28,16 +28,18 @@ import org.openrdf.sail.federation.algebra.NaryJoin;
  */
 public class EvaluationStatistics {
 
-	protected CardinalityCalculator cc;
+	protected CardinalityCalculator calculator;
 
-	public synchronized double getCardinality(TupleExpr expr)
-	{
-		if (cc == null) {
-			cc = createCardinalityCalculator();
+	private final Object lock = new Object();
+
+	public double getCardinality(TupleExpr expr) {
+		synchronized (lock) {
+			if (calculator == null) {
+				calculator = createCardinalityCalculator();
+			}
+			expr.visit(calculator);
+			return calculator.getCardinality();
 		}
-
-		expr.visit(cc);
-		return cc.getCardinality();
 	}
 
 	protected CardinalityCalculator createCardinalityCalculator() {
@@ -48,7 +50,8 @@ public class EvaluationStatistics {
 	 * Inner class CardinalityCalculator *
 	 *-----------------------------------*/
 
-	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CardinalityCalculator extends
+			QueryModelVisitorBase<RuntimeException> {
 
 		protected double cardinality;
 
@@ -67,16 +70,15 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(StatementPattern sp)
-		{
-			cardinality = getCardinality(sp);
+		public void meet(StatementPattern pattern) {
+			cardinality = getCardinality(pattern);
 		}
 
-		protected double getCardinality(StatementPattern sp)
-		{
-			List<Var> vars = sp.getVarList();
+		protected double getCardinality(StatementPattern pattern) {
+			List<Var> vars = pattern.getVarList();
 			int constantVarCount = countConstantVars(vars);
-			double unboundVarFactor = (double)(vars.size() - constantVarCount) / vars.size();
+			double unboundVarFactor = (double) (vars.size() - constantVarCount)
+					/ vars.size();
 			return Math.pow(1000.0, unboundVarFactor);
 		}
 
@@ -93,8 +95,7 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meetOther(QueryModelNode node)
-		{
+		public void meetOther(QueryModelNode node) {
 			if (node instanceof NaryJoin) {
 				meetMultiJoin((NaryJoin) node);
 			} else {
@@ -102,8 +103,7 @@ public class EvaluationStatistics {
 			}
 		}
 
-		public void meetMultiJoin(NaryJoin node)
-		{
+		public void meetMultiJoin(NaryJoin node) {
 			double cost = 1;
 			for (TupleExpr arg : node.getArgs()) {
 				arg.visit(this);
@@ -113,10 +113,9 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(Join node)
-		{
+		public void meet(Join node) {
 			double cost = 1;
-			for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(),
+			for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(), // NOPMD
 					node.getRightArg() }) {
 				arg.visit(this);
 				cost *= this.cardinality;
@@ -125,8 +124,7 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		public void meet(LeftJoin node)
-		{
+		public void meet(LeftJoin node) {
 			node.getLeftArg().visit(this);
 			double leftArgCost = this.cardinality;
 
@@ -135,10 +133,9 @@ public class EvaluationStatistics {
 		}
 
 		@Override
-		protected void meetBinaryTupleOperator(BinaryTupleOperator node)
-		{
+		protected void meetBinaryTupleOperator(BinaryTupleOperator node) {
 			double cost = 0;
-			for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(),
+			for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(), // NOPMD
 					node.getRightArg() }) {
 				arg.visit(this);
 				cost += cardinality;

@@ -13,7 +13,7 @@ import org.openrdf.query.algebra.TupleExpr;
 /**
  * A natural join between two tuple expressions.
  */
-public class NaryJoin extends NaryTupleOperator {
+public class NaryJoin extends AbstractNaryTupleOperator {
 
 	private static final long serialVersionUID = -1501013589230065874L;
 
@@ -22,6 +22,7 @@ public class NaryJoin extends NaryTupleOperator {
 	 *--------------*/
 
 	public NaryJoin() {
+		super();
 	}
 
 	/**
@@ -43,13 +44,12 @@ public class NaryJoin extends NaryTupleOperator {
 	 *---------*/
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
-		throws X
-	{
+			throws X {
 		visitor.meetOther(this);
 	}
 
 	@Override
-	public NaryJoin clone() {
-		return (NaryJoin)super.clone();
+	public NaryJoin clone() { // NOPMD
+		return (NaryJoin) super.clone();
 	}
 }

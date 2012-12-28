@@ -58,7 +58,7 @@ public class QueryMultiJoinOptimizer implements QueryOptimizer {
 
 	protected class JoinVisitor extends QueryModelVisitorBase<RuntimeException> {
 
-		Set<String> boundVars = new HashSet<String>();
+		private Set<String> boundVars = new HashSet<String>();
 
 		@Override
 		public void meet(LeftJoin leftJoin)
@@ -216,16 +216,16 @@ public class QueryMultiJoinOptimizer implements QueryOptimizer {
 			// Compensate for variables that are bound earlier in the evaluation
 			List<Var> unboundVars = getUnboundVars(vars);
 			List<Var> constantVars = getConstantVars(vars);
-			int nonConstantVarCount = vars.size() - constantVars.size();
-			if (nonConstantVarCount > 0) {
-				double exp = (double)unboundVars.size() / nonConstantVarCount;
+			int nonConstantCount = vars.size() - constantVars.size();
+			if (nonConstantCount > 0) {
+				double exp = (double)unboundVars.size() / nonConstantCount;
 				cardinality = Math.pow(cardinality, exp);
 			}
 
 			if (unboundVars.isEmpty()) {
 				// Prefer patterns with more bound vars
-				if (nonConstantVarCount > 0) {
-					cardinality /= nonConstantVarCount;
+				if (nonConstantCount > 0) {
+					cardinality /= nonConstantCount;
 				}
 			}
 			else {

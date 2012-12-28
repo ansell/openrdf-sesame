@@ -15,7 +15,7 @@ import org.openrdf.query.algebra.TupleExpr;
  * An abstract superclass for n-ary tuple operators which have one or more
  * arguments.
  */
-public abstract class NaryTupleOperator extends NaryOperator<TupleExpr> implements TupleExpr {
+public abstract class AbstractNaryTupleOperator extends AbstractNaryOperator<TupleExpr> implements TupleExpr {
 
 	private static final long serialVersionUID = 4703129201150946366L;
 
@@ -23,20 +23,21 @@ public abstract class NaryTupleOperator extends NaryOperator<TupleExpr> implemen
 	 * Constructors *
 	 *--------------*/
 
-	public NaryTupleOperator() {
+	public AbstractNaryTupleOperator() {
+		super();
 	}
 
 	/**
 	 * Creates a new n-ary tuple operator.
 	 */
-	public NaryTupleOperator(TupleExpr... args) {
+	public AbstractNaryTupleOperator(TupleExpr... args) {
 		super(args);
 	}
 
 	/**
 	 * Creates a new n-ary tuple operator.
 	 */
-	public NaryTupleOperator(List<? extends TupleExpr> args) {
+	public AbstractNaryTupleOperator(List<? extends TupleExpr> args) {
 		super(args);
 	}
 
@@ -65,7 +66,7 @@ public abstract class NaryTupleOperator extends NaryOperator<TupleExpr> implemen
 	}
 
 	@Override
-	public NaryTupleOperator clone() {
-		return (NaryTupleOperator)super.clone();
+	public AbstractNaryTupleOperator clone() { // NOPMD
+		return (AbstractNaryTupleOperator)super.clone();
 	}
 }

@@ -26,7 +26,7 @@ import org.openrdf.repository.RepositoryResult;
  */
 public class RepositoryTripleSource implements TripleSource {
 
-	private RepositoryConnection repo;
+	private final RepositoryConnection repo;
 
 	public RepositoryTripleSource(RepositoryConnection repo) {
 		this.repo = repo;
@@ -44,8 +44,8 @@ public class RepositoryTripleSource implements TripleSource {
 		return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(result){
 
 			@Override
-			protected QueryEvaluationException convert(Exception e) {
-				return new QueryEvaluationException(e);
+			protected QueryEvaluationException convert(Exception exception) {
+				return new QueryEvaluationException(exception);
 			}};
 	}
 

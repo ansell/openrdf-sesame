@@ -15,9 +15,9 @@ import java.util.Map;
  */
 public class PrefixHashSet {
 
-	private int length = Integer.MAX_VALUE;
+	private int length = Integer.MAX_VALUE; // NOPMD
 
-	private Map<String, List<String>> index = new HashMap<String, List<String>>();
+	private final Map<String, List<String>> index = new HashMap<String, List<String>>();
 
 	public PrefixHashSet(Iterable<String> values) {
 		for (String value : values) {
@@ -29,28 +29,34 @@ public class PrefixHashSet {
 			String key = value.substring(0, length);
 			List<String> entry = index.get(key);
 			if (entry == null) {
-				index.put(key, entry = new ArrayList<String>());
+				index.put(key, entry = new ArrayList<String>()); // NOPMD
 			}
 			entry.add(value.substring(length));
 		}
 	}
 
 	public boolean match(String value) {
-		if (value.length() < length) {
-			return false;
+		boolean result = false;
+		if (value.length() >= length) {
+			String key = value.substring(0, length);
+			List<String> entry = index.get(key);
+			if (entry != null) {
+				result = matchValueToEntry(value, entry);
+			}
 		}
-		String key = value.substring(0, length);
-		List<String> entry = index.get(key);
-		if (entry == null) {
-			return false;
-		}
+		return result;
+	}
+
+	private boolean matchValueToEntry(String value, List<String> entry) {
+		boolean result = false;
 		String tail = value.substring(length);
 		for (String prefix : entry) {
 			if (tail.startsWith(prefix)) {
-				return true;
+				result = true;
+				break;
 			}
 		}
-		return false;
+		return result;
 	}
 
 	@Override

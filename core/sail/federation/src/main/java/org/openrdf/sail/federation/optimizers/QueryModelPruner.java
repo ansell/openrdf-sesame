@@ -32,9 +32,6 @@ import org.openrdf.sail.federation.algebra.NaryJoin;
  */
 public class QueryModelPruner implements QueryOptimizer {
 
-	public QueryModelPruner() {
-	}
-
 	/**
 	 * Applies generally applicable optimizations: path expressions are sorted
 	 * from more to less specific.
@@ -64,7 +61,7 @@ public class QueryModelPruner implements QueryOptimizer {
 					join.removeArg(arg);
 				}
 				else if (arg instanceof EmptySet) {
-					join.replaceWith(new EmptySet());
+					join.replaceWith(new EmptySet()); // NOPMD
 					return;
 				}
 			}
@@ -94,11 +91,9 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(LeftJoin leftJoin) {
 			super.meet(leftJoin);
-
 			TupleExpr leftArg = leftJoin.getLeftArg();
 			TupleExpr rightArg = leftJoin.getRightArg();
 			ValueExpr condition = leftJoin.getCondition();
-
 			if (leftArg instanceof EmptySet) {
 				leftJoin.replaceWith(leftArg);
 			}
@@ -116,13 +111,12 @@ public class QueryModelPruner implements QueryOptimizer {
 				catch (ValueExprEvaluationException e) {
 					conditionValue = false;
 				}
-
-				if (conditionValue == false) {
-					// Constraint is always false
-					leftJoin.replaceWith(leftArg);
+				if (conditionValue) {
+					leftJoin.setCondition(null);
 				}
 				else {
-					leftJoin.setCondition(null);
+					// Constraint is always false
+					leftJoin.replaceWith(leftArg);
 				}
 			}
 		}
@@ -130,10 +124,8 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Union union) {
 			super.meet(union);
-
 			TupleExpr leftArg = union.getLeftArg();
 			TupleExpr rightArg = union.getRightArg();
-
 			if (leftArg instanceof EmptySet) {
 				union.replaceWith(rightArg);
 			}
@@ -148,10 +140,8 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Difference difference) {
 			super.meet(difference);
-
 			TupleExpr leftArg = difference.getLeftArg();
 			TupleExpr rightArg = difference.getRightArg();
-
 			if (leftArg instanceof EmptySet) {
 				difference.replaceWith(leftArg);
 			}
@@ -166,10 +156,8 @@ public class QueryModelPruner implements QueryOptimizer {
 		@Override
 		public void meet(Intersection intersection) {
 			super.meet(intersection);
-
 			TupleExpr leftArg = intersection.getLeftArg();
 			TupleExpr rightArg = intersection.getRightArg();
-
 			if (leftArg instanceof EmptySet || rightArg instanceof EmptySet) {
 				intersection.replaceWith(leftArg);
 			}

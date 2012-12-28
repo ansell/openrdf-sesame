@@ -19,7 +19,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-abstract class AbstractEchoWriteConnection extends FederationConnection {
+abstract class AbstractEchoWriteConnection extends AbstractFederationConnection {
 
 	public AbstractEchoWriteConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);

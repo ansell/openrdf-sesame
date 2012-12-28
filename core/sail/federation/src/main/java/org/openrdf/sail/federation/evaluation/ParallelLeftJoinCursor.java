@@ -23,13 +23,17 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
  * 
  * @author James Leigh
  */
-public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, QueryEvaluationException> implements Runnable {
+public class ParallelLeftJoinCursor extends
+		LookAheadIteration<BindingSet, QueryEvaluationException> implements
+		Runnable {
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
-	private EvaluationStrategy strategy;
+	private static final String LF_TAB = "\n\t";
+
+	private final EvaluationStrategy strategy;
 
 	private final LeftJoin join;
 
@@ -46,26 +50,26 @@ public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, Query
 
 	private volatile Thread evaluationThread;
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
+	private final CloseableIteration<BindingSet, QueryEvaluationException> leftIter;
 
 	private CloseableIteration<BindingSet, QueryEvaluationException> rightIter;
 
 	private volatile boolean closed;
 
-	private QueueCursor<CloseableIteration<BindingSet, QueryEvaluationException>> rightQueue = new QueueCursor<CloseableIteration<BindingSet, QueryEvaluationException>>(1024);
+	private final QueueCursor<CloseableIteration<BindingSet, QueryEvaluationException>> rightQueue = new QueueCursor<CloseableIteration<BindingSet, QueryEvaluationException>>(
+			1024);
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public ParallelLeftJoinCursor(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
-		throws QueryEvaluationException
-	{
+	public ParallelLeftJoinCursor(EvaluationStrategy strategy, LeftJoin join,
+			BindingSet bindings) throws QueryEvaluationException {
+		super();
 		this.strategy = strategy;
 		this.join = join;
 		this.scopeBindingNames = join.getBindingNames();
-
-		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
+		this.leftIter = strategy.evaluate(join.getLeftArg(), bindings);
 	}
 
 	/*---------*
@@ -78,60 +82,61 @@ public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, Query
 			ValueExpr condition = join.getCondition();
 			while (!closed && leftIter.hasNext()) {
 				BindingSet leftBindings = leftIter.next();
-				CloseableIteration<BindingSet, QueryEvaluationException> result = strategy.evaluate(join.getRightArg(), leftBindings );
-				if (condition != null) {
-					result = new FilterCursor(result, condition, scopeBindingNames, strategy);
-				}
-				CloseableIteration<BindingSet, QueryEvaluationException> alt = new SingletonIteration<BindingSet, QueryEvaluationException>(leftBindings);
-				rightQueue.put(new AlternativeCursor<BindingSet>(result, alt));
+				addToRightQueue(condition, leftBindings);
 			}
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			rightQueue.toss(e);
-		}
-		catch (QueryEvaluationException e) {
+		} catch (QueryEvaluationException e) {
 			rightQueue.toss(e);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			// stop
-		}
-		finally {
-			evaluationThread = null;
+		} finally {
+			evaluationThread = null; // NOPMD
 			rightQueue.done();
 		}
 	}
 
+	private void addToRightQueue(ValueExpr condition, BindingSet leftBindings)
+			throws QueryEvaluationException, InterruptedException {
+		CloseableIteration<BindingSet, QueryEvaluationException> result = strategy
+				.evaluate(join.getRightArg(), leftBindings);
+		if (condition != null) {
+			result = new FilterCursor(result, condition, scopeBindingNames,
+					strategy);
+		}
+		CloseableIteration<BindingSet, QueryEvaluationException> alt = new SingletonIteration<BindingSet, QueryEvaluationException>(
+				leftBindings);
+		rightQueue.put(new AlternativeCursor<BindingSet>(result, alt));
+	}
+
 	@Override
-	public BindingSet getNextElement()
-		throws QueryEvaluationException
-	{
+	public BindingSet getNextElement() throws QueryEvaluationException {
+		BindingSet result = null;
 		while (rightIter != null || rightQueue.hasNext()) {
 			if (rightIter == null) {
 				rightIter = rightQueue.next();
 			}
 			if (rightIter.hasNext()) {
-				return rightIter.next();
-			}
-			else {
+				result = rightIter.next();
+				break;
+			} else {
 				rightIter.close();
-				rightIter = null;
+				rightIter = null; // NOPMD
 			}
 		}
 
-		return null;
+		return result;
 	}
 
 	@Override
-	public void handleClose()
-		throws QueryEvaluationException
-	{
+	public void handleClose() throws QueryEvaluationException {
 		closed = true;
 		if (evaluationThread != null) {
 			evaluationThread.interrupt();
 		}
 		if (rightIter != null) {
 			rightIter.close();
-			rightIter = null;
+			rightIter = null; // NOPMD
 		}
 
 		leftIter.close();
@@ -139,16 +144,13 @@ public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, Query
 
 	@Override
 	public String toString() {
-		String left = leftIter.toString().replace("\n", "\n\t");
-		String right = join.getRightArg().toString();
-		if (rightIter != null) {
-			right = rightIter.toString();
-		}
+		String left = leftIter.toString().replace("\n", LF_TAB);
+		String right = (null == rightIter) ? join.getRightArg().toString()
+				: rightIter.toString();
 		ValueExpr condition = join.getCondition();
-		String filter = "";
-		if (condition != null) {
-			filter = condition.toString().trim().replace("\n", "\n\t");
-		}
-		return "ParallelLeftJoin " + filter + "\n\t" + left + "\n\t" + right.replace("\n", "\n\t");
+		String filter = (null == condition) ? "" : condition.toString().trim()
+				.replace("\n", LF_TAB);
+		return "ParallelLeftJoin " + filter + LF_TAB + left + LF_TAB
+				+ right.replace("\n", LF_TAB);
 	}
 }

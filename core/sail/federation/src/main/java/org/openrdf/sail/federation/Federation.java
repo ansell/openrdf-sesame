@@ -31,10 +31,11 @@ import org.slf4j.LoggerFactory;
  * @author Arjohn Kampman
  */
 public class Federation implements Sail, Executor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(Federation.class);
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(Federation.class);
 	private final List<Repository> members = new ArrayList<Repository>();
 	private final ExecutorService executor = Executors.newCachedThreadPool();
-	private PrefixHashSet localPropertySpace;
+	private PrefixHashSet localPropertySpace; // NOPMD
 	private boolean distinct;
 	private boolean readOnly;
 	private File dataDir;
@@ -66,11 +67,10 @@ public class Federation implements Sail, Executor {
 		return localPropertySpace;
 	}
 
-	public void setLocalPropertySpace(Collection<String> localPropertySpace) {
+	public void setLocalPropertySpace(Collection<String> localPropertySpace) { // NOPMD
 		if (localPropertySpace.isEmpty()) {
-			this.localPropertySpace = null;
-		}
-		else {
+			this.localPropertySpace = null; // NOPMD
+		} else {
 			this.localPropertySpace = new PrefixHashSet(localPropertySpace);
 		}
 	}
@@ -91,9 +91,7 @@ public class Federation implements Sail, Executor {
 		this.readOnly = readOnly;
 	}
 
-	public void initialize()
-		throws SailException
-	{
+	public void initialize() throws SailException {
 		for (Repository member : members) {
 			try {
 				member.initialize();
@@ -103,9 +101,7 @@ public class Federation implements Sail, Executor {
 		}
 	}
 
-	public void shutDown()
-		throws SailException
-	{
+	public void shutDown() throws SailException {
 		for (Repository member : members) {
 			try {
 				member.shutDown();
@@ -116,32 +112,26 @@ public class Federation implements Sail, Executor {
 		executor.shutdown();
 	}
 
+	/**
+	 * Required by {@link java.util.concurrent.Executor Executor} interface.
+	 */
 	public void execute(Runnable command) {
 		executor.execute(command);
 	}
 
-	public SailConnection getConnection()
-		throws SailException
-	{
-		List<RepositoryConnection> connections = new ArrayList<RepositoryConnection>(members.size());
+	public SailConnection getConnection() throws SailException {
+		List<RepositoryConnection> connections = new ArrayList<RepositoryConnection>(
+				members.size());
 		try {
 			for (Repository member : members) {
 				connections.add(member.getConnection());
 			}
-
-			if (readOnly) {
-				return new ReadOnlyConnection(this, connections);
-			}
-			else {
-				return new WritableConnection(this, connections);
-
-			}
-		}
-		catch (RepositoryException e) {
+			return readOnly ? new ReadOnlyConnection(this, connections)
+					: new WritableConnection(this, connections);
+		} catch (RepositoryException e) {
 			closeAll(connections);
 			throw new SailException(e);
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			closeAll(connections);
 			throw e;
 		}
@@ -151,8 +141,7 @@ public class Federation implements Sail, Executor {
 		for (RepositoryConnection con : connections) {
 			try {
 				con.close();
-			}
-			catch (RepositoryException e) {
+			} catch (RepositoryException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
 		}

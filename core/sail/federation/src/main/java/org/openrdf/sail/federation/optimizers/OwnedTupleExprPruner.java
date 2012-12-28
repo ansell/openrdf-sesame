@@ -14,7 +14,7 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 
 /**
- * Remove redundent {@link OwnedTupleExpr}.
+ * Remove redundant {@link OwnedTupleExpr}.
  * 
  * @author James Leigh
  */
@@ -24,7 +24,7 @@ public class OwnedTupleExprPruner extends
 	private OwnedTupleExpr owned;
 
 	public void optimize(TupleExpr query, Dataset dataset, BindingSet bindings) {
-		owned = null;
+		owned = null; // NOPMD
 		query.visit(this);
 	}
 
@@ -41,7 +41,7 @@ public class OwnedTupleExprPruner extends
 		if (owned == null) {
 			owned = node;
 			super.meetOther(node);
-			owned = null;
+			owned = null; // NOPMD
 		} else {
 			// no nested OwnedTupleExpr
 			TupleExpr replacement = node.getArg().clone();

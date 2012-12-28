@@ -15,46 +15,39 @@ import org.openrdf.query.QueryEvaluationException;
  * 
  * @author James Leigh
  */
-public class AlternativeCursor<E> extends LookAheadIteration<E, QueryEvaluationException> {
+public class AlternativeCursor<E> extends
+		LookAheadIteration<E, QueryEvaluationException> {
 
 	private CloseableIteration<? extends E, QueryEvaluationException> delegate;
 
-	private CloseableIteration<? extends E, QueryEvaluationException> primary;
+	private final CloseableIteration<? extends E, QueryEvaluationException> primary;
 
-	private CloseableIteration<? extends E, QueryEvaluationException> alternative;
+	private final CloseableIteration<? extends E, QueryEvaluationException> alternative;
 
-	public AlternativeCursor(CloseableIteration<? extends E, QueryEvaluationException> primary, CloseableIteration<? extends E, QueryEvaluationException> alternative) {
+	public AlternativeCursor(
+			CloseableIteration<? extends E, QueryEvaluationException> primary,
+			CloseableIteration<? extends E, QueryEvaluationException> alternative) {
+		super();
 		this.alternative = alternative;
 		this.primary = primary;
 	}
 
-	public void handleClose()
-		throws QueryEvaluationException
-	{
+	public void handleClose() throws QueryEvaluationException {
 		primary.close();
 		alternative.close();
 	}
 
-	public E getNextElement()
-		throws QueryEvaluationException
-	{
+	public E getNextElement() throws QueryEvaluationException {
 		if (delegate == null) {
-			if (!primary.hasNext()) {
-				delegate = alternative;
-			}
-			else {
-				delegate = primary;
-				return primary.next();
-			}
+			delegate = primary.hasNext() ? primary : alternative;
 		}
-		if (!delegate.hasNext())
-			return null;
-		return delegate.next();
+		return delegate.hasNext() ? delegate.next() : null; // NOPMD
 	}
 
 	@Override
 	public String toString() {
 		String name = getClass().getName().replaceAll("^.*\\.|Cursor$", "");
-		return name + "\n\t" + primary.toString() + "\n\t" + alternative.toString();
+		return name + "\n\t" + primary.toString() + "\n\t"
+				+ alternative.toString();
 	}
 }

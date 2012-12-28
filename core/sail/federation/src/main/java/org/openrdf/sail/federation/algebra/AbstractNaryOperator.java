@@ -17,7 +17,7 @@ import org.openrdf.query.algebra.QueryModelVisitor;
 /**
  * An abstract superclass for operators which have (zero or more) arguments.
  */
-public abstract class NaryOperator<Expr extends QueryModelNode> extends
+public abstract class AbstractNaryOperator<Expr extends QueryModelNode> extends
 		QueryModelNodeBase {
 
 	private static final long serialVersionUID = 2645544440976923085L;
@@ -35,21 +35,21 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends
 	 * Constructors *
 	 *--------------*/
 
-	public NaryOperator() {
+	public AbstractNaryOperator() {
 		super();
 	}
 
 	/**
 	 * Creates a new n-ary operator.
 	 */
-	public NaryOperator(final Expr... args) {
+	public AbstractNaryOperator(final Expr... args) {
 		this(Arrays.asList(args));
 	}
 
 	/**
 	 * Creates a new n-ary operator.
 	 */
-	public NaryOperator(final List<? extends Expr> args) {
+	public AbstractNaryOperator(final List<? extends Expr> args) {
 		this();
 		setArgs(args);
 	}
@@ -82,7 +82,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends
 	 * @return The operator's arguments.
 	 */
 	public Expr getArg(final int idx) {
-		return (idx < args.size()) ? args.get(idx) : null;
+		return (idx < args.size()) ? args.get(idx) : null; // NOPMD
 	}
 
 	/**
@@ -113,7 +113,7 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends
 	/**
 	 * Sets the <tt>idx</tt>-th argument of this n-ary tuple operator.
 	 */
-	protected void setArg(final int idx, final Expr arg) {
+	protected final void setArg(final int idx, final Expr arg) {
 		if (arg != null) {
 			// arg can be null (i.e. Regex)
 			arg.setParentNode(this);
@@ -154,11 +154,11 @@ public abstract class NaryOperator<Expr extends QueryModelNode> extends
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public NaryOperator<Expr> clone() {
-		final NaryOperator<Expr> clone = (NaryOperator<Expr>) super.clone();
+	public AbstractNaryOperator<Expr> clone() { // NOPMD
+		final AbstractNaryOperator<Expr> clone = (AbstractNaryOperator<Expr>) super.clone();
 		clone.args = new ArrayList<Expr>(args.size());
 		for (Expr arg : args) {
-			final Expr argClone = (arg == null) ? null : (Expr) arg.clone();
+			final Expr argClone = (arg == null) ? null : (Expr) arg.clone(); // NOPMD
 			clone.addArg(argClone);
 		}
 		return clone;

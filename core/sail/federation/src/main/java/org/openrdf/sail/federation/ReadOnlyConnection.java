@@ -15,12 +15,12 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 
 /**
- * Finishes the {@link FederationConnection} by throwing
+ * Finishes the {@link AbstractFederationConnection} by throwing
  * {@link SailReadOnlyException}s for all write operations.
  * 
  * @author James Leigh
  */
-class ReadOnlyConnection extends FederationConnection {
+class ReadOnlyConnection extends AbstractFederationConnection {
 
 	public ReadOnlyConnection(Federation federation, List<RepositoryConnection> members) {
 		super(federation, members);
