@@ -35,6 +35,21 @@ import org.openrdf.model.util.ModelUtil;
 
 /**
  * {@link Model} implementation using {@link LinkedHashSet}.
+ * <p>
+ * <b>Note that this implementation is not synchronized.</b> If multiple threads
+ * access a model concurrently, and at least one of the threads modifies the
+ * model, it must be synchronized externally. This is typically accomplished by
+ * synchronizing on some object that naturally encapsulates the model. If no
+ * such object exists, the set should be "wrapped" using the
+ * Collections.synchronizedSet method. This is best done at creation time, to
+ * prevent accidental unsynchronized access to the LinkedHashModel instance
+ * (though the synchronization guarantee is only when accessing via the Set
+ * interface methods):
+ * </p>
+ * 
+ * <pre>
+ * Set<Statement> s = Collections.synchronizedSet(new LinkedHashModel(...));
+ * </pre>
  * 
  * @author James Leigh
  */
@@ -47,26 +62,26 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 	Map<String, String> namespaces = new LinkedHashMap<String, String>();
 
-	transient Map<Value, ModelNode> values;
+	transient Map<Value, ModelNode<?>> values;
 
 	transient Set<ModelStatement> statements;
 
 	public LinkedHashModel() {
 		super();
-		values = new HashMap<Value, ModelNode>();
+		values = new HashMap<Value, ModelNode<?>>();
 		statements = new LinkedHashSet<ModelStatement>();
 	}
 
 	public LinkedHashModel(Collection<? extends Statement> c) {
 		super();
-		values = new HashMap<Value, ModelNode>(c.size() * 2);
+		values = new HashMap<Value, ModelNode<?>>(c.size() * 2);
 		statements = new LinkedHashSet<ModelStatement>(c.size());
 		addAll(c);
 	}
 
 	public LinkedHashModel(int size) {
 		super();
-		values = new HashMap<Value, ModelNode>(size * 2);
+		values = new HashMap<Value, ModelNode<?>>(size * 2);
 		statements = new LinkedHashSet<ModelStatement>(size);
 	}
 
@@ -137,7 +152,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 	@Override
 	public boolean remove(Object o) {
 		if (o instanceof Statement) {
-			Iterator iter = find((Statement)o);
+			Iterator<ModelStatement> iter = find((Statement)o);
 			if (iter.hasNext()) {
 				iter.next();
 				iter.remove();
@@ -155,6 +170,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		return false;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Iterator iterator() {
 		return match(null, null, null);
@@ -165,7 +181,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 	}
 
 	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
-		Iterator iter = match(subj, pred, obj, contexts);
+		Iterator<ModelStatement> iter = match(subj, pred, obj, contexts);
 		if (!iter.hasNext()) {
 			return false;
 		}
@@ -521,7 +537,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 		Iterator<ModelStatement> it = set.iterator();
 		Iterator<ModelStatement> iter;
-		iter = new PatternIterator(it, subj, pred, obj, contexts);
+		iter = new PatternIterator<ModelStatement>(it, subj, pred, obj, contexts);
 		return new ModelIterator(iter, set);
 	}
 
@@ -581,7 +597,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		return new ModelIterator(set.iterator(), set);
 	}
 
-	class EmptyModel extends AbstractSet<Statement> implements Model {
+	private class EmptyModel extends AbstractSet<Statement> implements Model {
 
 		private static final long serialVersionUID = 3123007631452759092L;
 
@@ -695,7 +711,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 
 	}
 
-	class FilteredModel extends AbstractSet<Statement> implements Model {
+	private class FilteredModel extends AbstractSet<Statement> implements Model {
 
 		private static final long serialVersionUID = -2353344619836326934L;
 
@@ -1018,7 +1034,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	abstract class ValueSet<V extends Value> extends AbstractSet<V> {
+	private abstract class ValueSet<V extends Value> extends AbstractSet<V> {
 
 		@Override
 		public Iterator<V> iterator() {
@@ -1097,7 +1113,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		@Override
 		public boolean remove(Object o) {
 			if (values.containsKey(o)) {
-				return removeAll(set(values.get(o)), null);
+				return removeAll(set((ModelNode<V>)values.get(o)), null);
 			}
 			return false;
 		}
@@ -1162,7 +1178,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	class ModelIterator implements Iterator<ModelStatement> {
+	private class ModelIterator implements Iterator<ModelStatement> {
 
 		private Iterator<ModelStatement> iter;
 
@@ -1206,7 +1222,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	class ModelNode<V extends Value> implements Serializable {
+	private class ModelNode<V extends Value> implements Serializable {
 
 		private static final long serialVersionUID = -1205676084606998540L;
 
@@ -1227,13 +1243,9 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		public V getValue() {
 			return value;
 		}
-
-		public boolean isNull() {
-			return value == null;
-		}
 	}
 
-	class ModelStatement extends ContextStatementImpl {
+	private class ModelStatement extends ContextStatementImpl {
 
 		private static final long serialVersionUID = 2200404772364346279L;
 
@@ -1287,7 +1299,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	class PatternIterator<S extends Statement> extends FilterIterator<S> {
+	private class PatternIterator<S extends Statement> extends FilterIterator<S> {
 
 		private Resource subj;
 
@@ -1342,7 +1354,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		s.defaultReadObject();
 		// Read in size
 		int size = s.readInt();
-		values = new HashMap<Value, ModelNode>(size * 2);
+		values = new HashMap<Value, ModelNode<?>>(size * 2);
 		statements = new LinkedHashSet<ModelStatement>(size);
 		// Read in all elements
 		for (int i = 0; i < size; i++) {
@@ -1351,7 +1363,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 		}
 	}
 
-	private Iterator find(Statement st) {
+	private Iterator<ModelStatement> find(Statement st) {
 		Resource subj = st.getSubject();
 		URI pred = st.getPredicate();
 		Value obj = st.getObject();
@@ -1387,7 +1399,7 @@ public class LinkedHashModel extends AbstractSet<Statement> implements Model {
 	}
 
 	private <V extends Value> ModelNode<V> asNode(V value) {
-		ModelNode node = values.get(value);
+		ModelNode<V> node = (ModelNode<V>)values.get(value);
 		if (node != null)
 			return node;
 		node = new ModelNode<V>(value);

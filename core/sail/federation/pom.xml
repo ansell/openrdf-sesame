@@ -12,7 +12,7 @@
 
 	<artifactId>sesame-sail-federation</artifactId>
 
-	<name>Federation SAIL</name>
+	<name>OpenRDF Sesame: Federation SAIL</name>
 	<description>
 The Federation SAIL allows multiple datasets to be virtually combined into a single dataset. The Federation SAIL combines multiple RDF stores that may exist on a remote server or are embedded in the same JVM. The Federation uses query optimizations to distribute sections of the query to different members based on the data contained in each of the members. These results are then joined together within the federation to provide the same result as if all the data was co-located within a single repository.
 	</description>
@@ -35,20 +35,34 @@ The Federation SAIL allows multiple datasets to be virtually combined into a sin
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-store-testsuite</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-sparql-testsuite</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-repository-sail</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-queryparser-sparql</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>
