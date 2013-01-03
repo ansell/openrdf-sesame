@@ -73,11 +73,4 @@ public class GraphQueryResultImpl extends IterationWrapper<Statement, QueryEvalu
 		return result;
 	}
 
-	public Graph asGraph()
-		throws QueryEvaluationException
-	{
-		Graph graph = new GraphImpl();
-		graph = addTo(graph);
-		return graph;
-	}
 }

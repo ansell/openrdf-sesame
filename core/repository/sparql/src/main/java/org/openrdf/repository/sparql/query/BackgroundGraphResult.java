@@ -203,12 +203,4 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		return result;
 	}
 
-	public Graph asGraph()
-		throws QueryEvaluationException
-	{
-		Graph graph = new GraphImpl();
-		addTo(graph);
-		return graph;
-	}
-
 }
