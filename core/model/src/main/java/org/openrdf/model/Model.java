@@ -12,8 +12,10 @@ import java.util.Set;
 import org.openrdf.model.util.ModelException;
 
 /**
- * An RDF model, represented as a set of {@link Statement}s with predictable
+ * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s with predictable
  * iteration order.
+ * 
+ * @since 2.7.0
  * 
  * @author James Leigh
  */
