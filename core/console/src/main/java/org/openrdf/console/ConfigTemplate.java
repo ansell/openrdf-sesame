@@ -30,7 +30,7 @@ class ConfigTemplate {
 
 	private String template;
 
-	private Map<String, List<String>> variableMap = new LinkedHashMap<String, List<String>>();
+	private final Map<String, List<String>> variableMap = new LinkedHashMap<String, List<String>>();
 
 	/*--------------*
 	 * Constructors *
@@ -48,7 +48,7 @@ class ConfigTemplate {
 		return template;
 	}
 
-	public void setTemplate(String template) {
+	public final void setTemplate(String template) {
 		if (template == null) {
 			throw new IllegalArgumentException("template must not be null");
 		}
@@ -64,16 +64,12 @@ class ConfigTemplate {
 			String group = matcher.group();
 			String[] tokensArray = group.substring(2, group.length() - 2).split("\\|");
 			List<String> tokens = Arrays.asList(tokensArray);
-
 			String var = tokens.get(0).trim();
-			List<String> values = tokens.subList(1, tokens.size());
-
 			if (var.length() == 0) {
 				throw new IllegalArgumentException("Illegal template token: " + matcher.group());
 			}
-
 			if (!variableMap.containsKey(var)) {
-				variableMap.put(var, values);
+				variableMap.put(var, tokens.subList(1, tokens.size()));
 			}
 		}
 	}
@@ -84,34 +80,19 @@ class ConfigTemplate {
 
 	public String render(Map<String, String> valueMap) {
 		StringBuffer result = new StringBuffer(template.length());
-
 		Matcher matcher = TOKEN_PATTERN.matcher(template);
 		while (matcher.find()) {
 			String group = matcher.group();
 			String[] tokensArray = group.substring(2, group.length() - 2).split("\\|");
-
 			String var = tokensArray[0].trim();
-
 			String value = valueMap.get(var);
 			if (value == null) {
 				List<String> values = variableMap.get(var);
-				if (!values.isEmpty()) {
-					value = values.get(0);
-				}
-				else {
-					value = "";
-				}
+				value = values.isEmpty() ? "" : values.get(0);
 			}
-
-//			if (value == null) {
-//				throw new IllegalArgumentException("No value specified for variable " + var);
-//			}
-
 			matcher.appendReplacement(result, value);
 		}
-
 		matcher.appendTail(result);
-
 		return result.toString();
 	}
 }
