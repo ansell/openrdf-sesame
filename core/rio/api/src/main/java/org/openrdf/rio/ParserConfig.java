@@ -8,20 +8,20 @@ package org.openrdf.rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
- * A read-only container object for easy passing of {@link RDFParser}
+ * A container object for easy setting and passing of {@link RDFParser}
  * configuration options.
  * 
  * @author Jeen Broekstra
  */
 public class ParserConfig {
 
-	private final boolean verifyData;
+	protected boolean verifyData;
 
-	private final boolean stopAtFirstError;
+	protected boolean stopAtFirstError;
 
-	private final boolean preserveBNodeIDs;
+	protected boolean preserveBNodeIDs;
 
-	private final DatatypeHandling datatypeHandling;
+	protected DatatypeHandling datatypeHandling;
 
 	/**
 	 * Creates a ParserConfig object with default configuration: verifyData is
