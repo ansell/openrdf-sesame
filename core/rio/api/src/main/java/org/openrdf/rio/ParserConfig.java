@@ -120,7 +120,7 @@ public class ParserConfig {
 			if (putIfAbsent != null) {
 				settings.put((ParserSetting<Object>)setting, value);
 
-				this.log.trace("Overriding previous setting for {}", setting.getDefaultValue());
+				this.log.trace("Overriding previous setting for {}", setting.getName());
 			}
 		}
 	}
