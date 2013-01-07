@@ -395,10 +395,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 						ValuePair vp = new ValuePair(v1, v2);
 						if (reportedValues.contains(vp)) {
-							// new arbitrary-length path semantics: filter out duplicates
+							// new arbitrary-length path semantics: filter out
+							// duplicates
 							continue;
 						}
-						
+
 						if (startVarFixed && endVarFixed) {
 							Value endValue = getVarValue(endVar, endVarFixed, nextElement);
 							if (endValue.equals(v2)) {
@@ -689,7 +690,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		final Var subjectVar = zlp.getSubjectVar();
 		final Var objVar = zlp.getObjectVar();
-
+		final Var contextVar = zlp.getContextVar();
+		
 		Value subj = null;
 		try {
 			subj = evaluate(subjectVar, bindings);
@@ -710,7 +712,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 		}
 
-		return new ZeroLengthPathIteration(subjectVar, objVar, subj, obj, bindings);
+		return new ZeroLengthPathIteration(subjectVar, objVar, subj, obj, contextVar, bindings);
 	}
 
 	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
@@ -733,10 +735,13 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private List<Value> reportedValues = new ArrayList<Value>();
 
-		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, BindingSet bindings) {
+		private Var contextVar;
+
+		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, Var contextVar, BindingSet bindings) {
 			result = new QueryBindingSet(bindings);
 			this.subjectVar = subjectVar;
 			this.objVar = objVar;
+			this.contextVar = contextVar;
 			this.subj = subj;
 			this.obj = obj;
 			this.bindings = bindings;
@@ -807,6 +812,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			StatementPattern subjects = new StatementPattern(subjectVar, predicate, endVar);
 
+			if (contextVar != null) {
+				subjects.setScope(Scope.NAMED_CONTEXTS);
+				subjects.setContextVar(contextVar);
+			}
 			CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(subjects, bindings);
 
 			return iter;
@@ -819,7 +828,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Var predicate = createAnonVar("zero-length-internal-pred");
 
 			StatementPattern subjects = new StatementPattern(startVar, predicate, objVar);
-
+			if (contextVar != null) {
+				subjects.setScope(Scope.NAMED_CONTEXTS);
+				subjects.setContextVar(contextVar);
+			}
 			CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(subjects, bindings);
 
 			return iter;
