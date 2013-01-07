@@ -394,6 +394,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 					if (!isCyclicPath(v1, v2)) {
 
 						ValuePair vp = new ValuePair(v1, v2);
+						if (reportedValues.contains(vp)) {
+							// new arbitrary-length path semantics: filter out duplicates
+							continue;
+						}
+						
 						if (startVarFixed && endVarFixed) {
 							Value endValue = getVarValue(endVar, endVarFixed, nextElement);
 							if (endValue.equals(v2)) {
