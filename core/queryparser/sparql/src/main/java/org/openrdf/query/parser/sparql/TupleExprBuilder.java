@@ -1338,8 +1338,19 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					nps.addPropertySetElem((PropertySetElem)child.jjtAccept(this, data));
 				}
 
+				Var[] objVarReplacement = null;
 				if (i == pathLength - 1) {
-					nps.setObjectList(objectList);
+					if (objectList.contains(subjVar)) { // See SES-1685
+						Var objVar = valueExpr2Var(objectList.get(objectList.indexOf(subjVar)));
+						objVarReplacement = new Var[] {
+								objVar,
+								createAnonVar(objVar.getName() + "-" + UUID.randomUUID().toString()) };
+						objectList.remove(objVar);
+						objectList.add(objVarReplacement[1]);
+					}
+					else {
+						nps.setObjectList(objectList);
+					}
 				}
 				else {
 					// not last element in path.
@@ -1353,7 +1364,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 
 				// convert the NegatedPropertySet to a proper TupleExpr
-				pathSequencePattern.addRequiredTE(createTupleExprForNegatedPropertySet(nps, i));
+				TupleExpr te = createTupleExprForNegatedPropertySet(nps, i);
+				if (objVarReplacement != null) {
+					SameTerm condition = new SameTerm(objVarReplacement[0], objVarReplacement[1]);
+					pathSequencePattern.addConstraint(condition);
+				}
+				pathSequencePattern.addRequiredTE(te);
 
 			}
 			else if (pathElement.isNestedPath()) {
@@ -1369,7 +1385,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 					for (ValueExpr object : objectList) {
 						Var objVar = valueExpr2Var(object);
-						te = handlePathModifiers(scope, startVar, te, objVar, contextVar, lowerBound, upperBound);
+						if (objVar.equals(subjVar)) { // see SES-1685
+							Var objVarReplacement = createAnonVar(objVar.getName() + "-"
+									+ UUID.randomUUID().toString());
+							te = handlePathModifiers(scope, startVar, te, objVarReplacement, contextVar, lowerBound,
+									upperBound);
+							SameTerm condition = new SameTerm(objVar, objVarReplacement);
+							pathSequencePattern.addConstraint(condition);
+						}
+						else {
+							te = handlePathModifiers(scope, startVar, te, objVar, contextVar, lowerBound, upperBound);
+						}
 						pathSequencePattern.addRequiredTE(te);
 					}
 				}
@@ -1404,6 +1430,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					// last element in the path, connect to list of defined objects
 					for (ValueExpr object : objectList) {
 						Var objVar = valueExpr2Var(object);
+						boolean replaced = false;
+
+						if (objVar.equals(subjVar)) {
+							objVar = createAnonVar(objVar.getName() + "-" + UUID.randomUUID().toString());
+							replaced = true;
+						}
 						Var endVar = objVar;
 
 						if (invertSequence) {
@@ -1421,10 +1453,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						else {
 							te = new StatementPattern(scope, startVar, predVar, endVar, contextVar);
 							te = handlePathModifiers(scope, startVar, te, endVar, contextVar, lowerBound, upperBound);
-
 						}
 
+						if (replaced) {
+							SameTerm condition = new SameTerm(objVar, valueExpr2Var(object));
+							pathSequencePattern.addConstraint(condition);
+						}
 						pathSequencePattern.addRequiredTE(te);
+
 					}
 				}
 				else {
@@ -1475,6 +1511,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		// add the created path sequence to the graph pattern.
 		for (TupleExpr te : pathSequencePattern.getRequiredTEs()) {
 			graphPattern.addRequiredTE(te);
+		}
+		if (pathSequencePattern.getConstraints() != null) {
+			for (ValueExpr constraint : pathSequencePattern.getConstraints()) {
+				graphPattern.addConstraint(constraint);
+			}
 		}
 
 		return null;
@@ -1613,11 +1654,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					}
 
 					ProjectionElemList pelist = new ProjectionElemList();
-					for (String name: union.getAssuredBindingNames()) {
+					for (String name : union.getAssuredBindingNames()) {
 						ProjectionElem pe = new ProjectionElem(name);
 						pelist.addElement(pe);
 					}
-					
+
 					result = new Distinct(new Projection(union, pelist));
 				}
 				else {
