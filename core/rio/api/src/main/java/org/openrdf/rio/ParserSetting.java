@@ -9,6 +9,7 @@ package org.openrdf.rio;
  * Identifies a parser setting along with its default value.
  * 
  * @author Peter Ansell p_ansell@yahoo.com
+ * @since 2.7.0
  */
 public interface ParserSetting<T extends Object> {
 

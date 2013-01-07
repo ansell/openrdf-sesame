@@ -9,7 +9,11 @@ import org.openrdf.rio.ParserSetting;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
+ * A class encapsulating the basic parser settings that most parsers may
+ * support.
+ * 
  * @author Peter Ansell p_ansell@yahoo.com
+ * @since 2.7.0
  */
 public class BasicParserSettings {
 
@@ -39,7 +43,8 @@ public class BasicParserSettings {
 			"Preserve blank node identifiers", Boolean.FALSE);
 
 	/**
-	 * Determines which mode of {@link DatatypeHandling} will be used by the parser.<br>
+	 * Determines which mode of {@link DatatypeHandling} will be used by the
+	 * parser.<br>
 	 * Defaults to {@link DatatypeHandling#VERIFY}.
 	 */
 	public static final ParserSetting<DatatypeHandling> DATATYPE_HANDLING = new ParserSettingImpl<DatatypeHandling>(

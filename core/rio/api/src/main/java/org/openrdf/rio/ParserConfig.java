@@ -84,6 +84,7 @@ public class ParserConfig {
 	 *        The {@link ParserSetting} to fetch a value for.
 	 * @return The value for the parser setting, or the default value if it is
 	 *         not set.
+	 * @since 2.7.0
 	 */
 	@SuppressWarnings("unchecked")
 	public final <T extends Object> T get(ParserSetting<T> setting) {
@@ -105,6 +106,7 @@ public class ParserConfig {
 	 * @param value
 	 *        The value for the parser setting, or null to reset the parser
 	 *        setting to use the default value.
+	 * @since 2.7.0
 	 */
 	@SuppressWarnings("unchecked")
 	public final <T extends Object> void set(ParserSetting<T> setting, T value) {
@@ -131,6 +133,7 @@ public class ParserConfig {
 	 *        The setting to check for.
 	 * @return True if the parser setting has been explicitly set, or false
 	 *         otherwise.
+	 * @since 2.7.0
 	 */
 	public final <T extends Object> boolean isSet(ParserSetting<T> setting) {
 		return settings.containsKey(setting);
