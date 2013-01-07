@@ -1587,9 +1587,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		TupleExpr result = te;
 
 		if (lowerBound >= 0L) {
-
 			if (lowerBound < upperBound) {
-
 				if (upperBound < Long.MAX_VALUE) {
 					// upperbound is fixed-length
 
@@ -1614,7 +1612,13 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						}
 					}
 
-					result = union;
+					ProjectionElemList pelist = new ProjectionElemList();
+					for (String name: union.getAssuredBindingNames()) {
+						ProjectionElem pe = new ProjectionElem(name);
+						pelist.addElement(pe);
+					}
+					
+					result = new Distinct(new Projection(union, pelist));
 				}
 				else {
 					// upperbound is abitrary-length
