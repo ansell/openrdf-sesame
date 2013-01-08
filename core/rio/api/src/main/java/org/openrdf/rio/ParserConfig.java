@@ -23,14 +23,15 @@ import org.openrdf.rio.helpers.BasicParserSettings;
  */
 public class ParserConfig {
 
+	/**
+	 * A map containing mappings from settings to their values.
+	 */
 	private final ConcurrentMap<ParserSetting<Object>, Object> settings = new ConcurrentHashMap<ParserSetting<Object>, Object>();
 
 	protected final Logger log = LoggerFactory.getLogger(ParserConfig.class);
 
 	/**
-	 * Creates a ParserConfig object with default configuration: verifyData is
-	 * <tt>true</tt>, stopAtFirstError is <tt>true</tt>, preserveBNodeIDS is
-	 * <tt>false</tt>, and dataTypeHandling is set to VERIFY.
+	 * Creates a ParserConfig object starting with default settings.
 	 */
 	public ParserConfig() {
 	}
@@ -119,6 +120,8 @@ public class ParserConfig {
 			Object putIfAbsent = settings.putIfAbsent((ParserSetting<Object>)setting, value);
 
 			if (putIfAbsent != null) {
+				// override the previous setting anyway, putIfAbsent just gives us
+				// information about whether it was previously set or not
 				settings.put((ParserSetting<Object>)setting, value);
 
 				this.log.trace("Overriding previous setting for {}", setting.getKey());
