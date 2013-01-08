@@ -5,6 +5,9 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +30,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.ParserSetting;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -177,6 +181,20 @@ public abstract class RDFParserBase implements RDFParser {
 
 	public ParserConfig getParserConfig() {
 		return this.parserConfig;
+	}
+
+	/*
+	 * Default implementation, specific parsers are encouraged to override this method as necessary.
+	 */
+	public Collection<ParserSetting<?>> getSupportedSettings() {
+		Collection<ParserSetting<?>> result = new ArrayList<ParserSetting<?>>(4);
+
+		result.add(BasicParserSettings.DATATYPE_HANDLING);
+		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
+		result.add(BasicParserSettings.STOP_AT_FIRST_ERROR);
+		result.add(BasicParserSettings.VERIFY_DATA);
+
+		return result;
 	}
 
 	public void setVerifyData(boolean verifyData) {
@@ -376,7 +394,7 @@ public abstract class RDFParserBase implements RDFParser {
 	{
 		if (datatype != null) {
 			if (verifyData() && datatypeHandling() != DatatypeHandling.IGNORE) {
-				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) { 
+				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) {
 					// report a warning on all unrecognized datatypes
 					if (datatype.stringValue().startsWith("xsd")) {
 						reportWarning("datatype '" + datatype
