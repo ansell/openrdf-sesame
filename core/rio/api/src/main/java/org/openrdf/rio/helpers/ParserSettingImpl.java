@@ -16,6 +16,11 @@ import org.openrdf.rio.ParserSetting;
 public final class ParserSettingImpl<T> implements ParserSetting<T> {
 
 	/**
+	 * @since 2.7.0
+	 */
+	private static final long serialVersionUID = 270L;
+
+	/**
 	 * A unique key for this parser setting.
 	 */
 	private final String key;

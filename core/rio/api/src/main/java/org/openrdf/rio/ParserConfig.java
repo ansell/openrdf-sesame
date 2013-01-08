@@ -5,6 +5,7 @@
  */
 package org.openrdf.rio;
 
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -21,7 +22,12 @@ import org.openrdf.rio.helpers.BasicParserSettings;
  * @author Jeen Broekstra
  * @author Peter Ansell p_ansell@yahoo.com
  */
-public class ParserConfig {
+public class ParserConfig implements Serializable {
+
+	/**
+	 * @since 2.7.0
+	 */
+	private static final long serialVersionUID = 270L;
 
 	/**
 	 * A map containing mappings from settings to their values.
