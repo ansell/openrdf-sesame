@@ -19,6 +19,7 @@ import org.openrdf.rio.helpers.BasicParserSettings;
  * configuration options.
  * 
  * @author Jeen Broekstra
+ * @author Peter Ansell p_ansell@yahoo.com
  */
 public class ParserConfig {
 
