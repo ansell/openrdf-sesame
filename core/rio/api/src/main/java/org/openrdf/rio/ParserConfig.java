@@ -26,7 +26,7 @@ public class ParserConfig {
 	/**
 	 * A map containing mappings from settings to their values.
 	 */
-	private final ConcurrentMap<ParserSetting<Object>, Object> settings = new ConcurrentHashMap<ParserSetting<Object>, Object>();
+	protected final ConcurrentMap<ParserSetting<Object>, Object> settings = new ConcurrentHashMap<ParserSetting<Object>, Object>();
 
 	protected final Logger log = LoggerFactory.getLogger(ParserConfig.class);
 
