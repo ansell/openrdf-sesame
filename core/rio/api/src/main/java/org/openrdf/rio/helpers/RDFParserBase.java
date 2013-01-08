@@ -91,28 +91,6 @@ public abstract class RDFParserBase implements RDFParser {
 	private ValueFactory valueFactory;
 
 	/**
-	 * Flag indicating whether the parser should verify the data it parses.
-	 */
-	private boolean verifyData;
-
-	/**
-	 * Flag indicating whether the parser should preserve bnode identifiers from
-	 * the parsed data in the created BNode objects.
-	 */
-	private boolean preserveBNodeIDs;
-
-	/**
-	 * Flag indicating whether the parser should immediately stop parsing when it
-	 * finds an error in the data.
-	 */
-	private boolean stopAtFirstError;
-
-	/**
-	 * Indicates how datatyped literals should be handled.
-	 */
-	private DatatypeHandling datatypeHandling;
-
-	/**
 	 * The base URI for resolving relative URIs.
 	 */
 	private ParsedURI baseURI;
@@ -128,6 +106,11 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Mapping from namespace prefixes to namespace names.
 	 */
 	private Map<String, String> namespaceTable;
+
+	/**
+	 * A collection of configuration options for this parser.
+	 */
+	private ParserConfig parserConfig;
 
 	/*--------------*
 	 * Constructors *
@@ -189,46 +172,43 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	public void setParserConfig(ParserConfig config) {
-		setVerifyData(config.verifyData());
-		setStopAtFirstError(config.stopAtFirstError());
-		setDatatypeHandling(config.datatypeHandling());
-		setPreserveBNodeIDs(config.isPreserveBNodeIDs());
+		this.parserConfig = config;
 	}
 
 	public ParserConfig getParserConfig() {
-		return new ParserConfig(verifyData(), stopAtFirstError(), preserveBNodeIDs(), datatypeHandling());
+		return this.parserConfig;
 	}
 
 	public void setVerifyData(boolean verifyData) {
-		this.verifyData = verifyData;
+		this.parserConfig.set(BasicParserSettings.VERIFY_DATA, verifyData);
 	}
 
 	public boolean verifyData() {
-		return verifyData;
+		return this.parserConfig.get(BasicParserSettings.VERIFY_DATA);
 	}
 
 	public void setPreserveBNodeIDs(boolean preserveBNodeIDs) {
-		this.preserveBNodeIDs = preserveBNodeIDs;
+		this.parserConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, preserveBNodeIDs);
 	}
 
 	public boolean preserveBNodeIDs() {
-		return preserveBNodeIDs;
+		return this.parserConfig.get(BasicParserSettings.PRESERVE_BNODE_IDS);
 	}
 
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		this.stopAtFirstError = stopAtFirstError;
+		this.parserConfig.set(BasicParserSettings.STOP_AT_FIRST_ERROR, stopAtFirstError);
 	}
 
 	public boolean stopAtFirstError() {
-		return stopAtFirstError;
+		return this.parserConfig.get(BasicParserSettings.STOP_AT_FIRST_ERROR);
 	}
 
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
-		this.datatypeHandling = datatypeHandling;
+		this.parserConfig.set(BasicParserSettings.DATATYPE_HANDLING, datatypeHandling);
 	}
 
 	public DatatypeHandling datatypeHandling() {
-		return datatypeHandling;
+		return this.parserConfig.get(BasicParserSettings.DATATYPE_HANDLING);
 	}
 
 	/**
@@ -315,7 +295,7 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (verifyData) {
+			if (verifyData()) {
 				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
 					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
 							+ baseURI + "'");
@@ -370,7 +350,7 @@ public abstract class RDFParserBase implements RDFParser {
 		if (result == null) {
 			// This is a new node ID, create a new BNode object for it
 			try {
-				if (preserveBNodeIDs) {
+				if (preserveBNodeIDs()) {
 					result = valueFactory.createBNode(nodeID);
 				}
 				else {
@@ -395,7 +375,7 @@ public abstract class RDFParserBase implements RDFParser {
 		throws RDFParseException
 	{
 		if (datatype != null) {
-			if (verifyData && datatypeHandling != DatatypeHandling.IGNORE) {
+			if (verifyData() && datatypeHandling() != DatatypeHandling.IGNORE) {
 				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) { 
 					// report a warning on all unrecognized datatypes
 					if (datatype.stringValue().startsWith("xsd")) {
@@ -408,12 +388,12 @@ public abstract class RDFParserBase implements RDFParser {
 				}
 			}
 
-			if (datatypeHandling == DatatypeHandling.VERIFY) {
+			if (datatypeHandling() == DatatypeHandling.VERIFY) {
 				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
 					reportError("'" + label + "' is not a valid value for datatype " + datatype);
 				}
 			}
-			else if (datatypeHandling == DatatypeHandling.NORMALIZE) {
+			else if (datatypeHandling() == DatatypeHandling.NORMALIZE) {
 				try {
 					label = XMLDatatypeUtil.normalize(label, datatype);
 				}
@@ -550,7 +530,7 @@ public abstract class RDFParserBase implements RDFParser {
 			errListener.error(msg, lineNo, columnNo);
 		}
 
-		if (stopAtFirstError) {
+		if (stopAtFirstError()) {
 			throw new RDFParseException(msg, lineNo, columnNo);
 		}
 	}
