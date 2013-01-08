@@ -21,8 +21,8 @@ public class BasicParserSettings {
 	 * Boolean setting for parser to determine whether data values are verified. <br>
 	 * Defaults to true.
 	 */
-	public static final ParserSetting<Boolean> VERIFY_DATA = new ParserSettingImpl<Boolean>("Verify data",
-			Boolean.TRUE);
+	public static final ParserSetting<Boolean> VERIFY_DATA = new ParserSettingImpl<Boolean>(
+			"org.openrdf.rio.verifydata", "Verify data", Boolean.TRUE);
 
 	/**
 	 * Boolean setting for parser to determine whether parser should stop at
@@ -31,7 +31,7 @@ public class BasicParserSettings {
 	 * Defaults to true.
 	 */
 	public static final ParserSetting<Boolean> STOP_AT_FIRST_ERROR = new ParserSettingImpl<Boolean>(
-			"Stop at first error", Boolean.TRUE);
+			"org.openrdf.rio.stopatfirsterror", "Stop at first error", Boolean.TRUE);
 
 	/**
 	 * Boolean setting for parser to determine whether parser should attempt to
@@ -40,7 +40,7 @@ public class BasicParserSettings {
 	 * Defaults to false.
 	 */
 	public static final ParserSetting<Boolean> PRESERVE_BNODE_IDS = new ParserSettingImpl<Boolean>(
-			"Preserve blank node identifiers", Boolean.FALSE);
+			"org.openrdf.rio.preservebnodeids", "Preserve blank node identifiers", Boolean.FALSE);
 
 	/**
 	 * Determines which mode of {@link DatatypeHandling} will be used by the
@@ -48,7 +48,7 @@ public class BasicParserSettings {
 	 * Defaults to {@link DatatypeHandling#VERIFY}.
 	 */
 	public static final ParserSetting<DatatypeHandling> DATATYPE_HANDLING = new ParserSettingImpl<DatatypeHandling>(
-			"Datatype handling", DatatypeHandling.VERIFY);
+			"org.openrdf.rio.datatypehandling", "Datatype handling", DatatypeHandling.VERIFY);
 
 	/**
 	 * Private default constructor.

@@ -13,19 +13,45 @@ import org.openrdf.rio.ParserSetting;
  * @author Peter Ansell p_ansell@yahoo.com
  * @since 2.7.0
  */
-public class ParserSettingImpl<T> implements ParserSetting<T> {
+public final class ParserSettingImpl<T> implements ParserSetting<T> {
 
-	private final String name;
+	/**
+	 * A unique key for this parser setting.
+	 */
+	private final String key;
 
+	/**
+	 * A human-readable description for this parser setting
+	 */
+	private final String description;
+
+	/**
+	 * The default value for this parser setting. <br>
+	 * NOTE: This value must be immutable.
+	 */
 	private final T defaultValue;
 
-	public ParserSettingImpl(String name, T defaultValue) {
-		this.name = name;
+	public ParserSettingImpl(String key, String description, T defaultValue) {
+
+		if (key == null) {
+			throw new NullPointerException("Parser Setting key cannot be null");
+		}
+
+		if (description == null) {
+			throw new NullPointerException("Parser Setting description cannot be null");
+		}
+
+		this.key = key;
+		this.description = description;
 		this.defaultValue = defaultValue;
 	}
 
-	public String getName() {
-		return name;
+	public String getKey() {
+		return key;
+	}
+
+	public String getDescription() {
+		return description;
 	}
 
 	public T getDefaultValue() {

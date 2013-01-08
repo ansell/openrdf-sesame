@@ -14,12 +14,19 @@ package org.openrdf.rio;
 public interface ParserSetting<T extends Object> {
 
 	/**
+	 * A unique key for this parser setting.
+	 * 
+	 * @return A unique key identifying this parser setting.
+	 */
+	String getKey();
+
+	/**
 	 * The human readable name for this parser setting
 	 * 
 	 * @return The name for this parser setting.
 	 */
-	String getName();
-
+	String getDescription();
+	
 	/**
 	 * Returns the default value for this parser setting if it is not set by a
 	 * user.
