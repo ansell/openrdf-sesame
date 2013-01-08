@@ -89,7 +89,7 @@ public class ParserConfig {
 	 * @since 2.7.0
 	 */
 	@SuppressWarnings("unchecked")
-	public final <T extends Object> T get(ParserSetting<T> setting) {
+	public <T extends Object> T get(ParserSetting<T> setting) {
 		Object result = settings.get(setting);
 
 		if (result == null) {
@@ -111,7 +111,7 @@ public class ParserConfig {
 	 * @since 2.7.0
 	 */
 	@SuppressWarnings("unchecked")
-	public final <T extends Object> void set(ParserSetting<T> setting, T value) {
+	public <T extends Object> void set(ParserSetting<T> setting, T value) {
 
 		if (value == null) {
 			settings.remove(setting);
@@ -139,7 +139,7 @@ public class ParserConfig {
 	 *         otherwise.
 	 * @since 2.7.0
 	 */
-	public final <T extends Object> boolean isSet(ParserSetting<T> setting) {
+	public <T extends Object> boolean isSet(ParserSetting<T> setting) {
 		return settings.containsKey(setting);
 	}
 }
