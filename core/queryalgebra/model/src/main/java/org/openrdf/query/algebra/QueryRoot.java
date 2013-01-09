@@ -15,6 +15,8 @@ package org.openrdf.query.algebra;
  */
 public class QueryRoot extends UnaryTupleOperator {
 
+	private QueryModelNode parent;
+
 	public QueryRoot() {
 		super();
 	}
@@ -25,7 +27,17 @@ public class QueryRoot extends UnaryTupleOperator {
 
 	@Override
 	public void setParentNode(QueryModelNode parent) {
-		throw new UnsupportedOperationException("Not allowed to set a parent on a QueryRoot object");
+		if (parent instanceof QueryRoot) {
+			this.parent = parent;
+		}
+		else {
+			throw new UnsupportedOperationException("Not allowed to set a parent on a QueryRoot object");
+		}
+	}
+
+	@Override
+	public QueryModelNode getParentNode() {
+		return this.parent;
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)

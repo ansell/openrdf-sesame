@@ -21,7 +21,6 @@ public class TupleResultBuilder {
 	private PrintWriter out;
 	private List<String> variables = new ArrayList<String>();
 	private boolean started;
-	private boolean hasResults;
 	private boolean headClosed;
 	private Map<String, String> prefixes = new HashMap<String, String>();
 
@@ -73,7 +72,7 @@ public class TupleResultBuilder {
 	}
 
 	public void bool(boolean result) {
-		closeHead();
+		closeHeadBoolean();
 		out.print("  <boolean>");
 		out.print(result);
 		out.println("</boolean>");
@@ -81,10 +80,6 @@ public class TupleResultBuilder {
 
 	public TupleResultBuilder binding(String name, Object result) {
 		closeHead();
-		if (!hasResults) {
-			hasResults = true;
-			out.println("  <results ordered='false' distinct='false'>");
-		}
 		out.println("    <result>");
 		_result(name, result);
 		out.println("    </result>");
@@ -93,10 +88,6 @@ public class TupleResultBuilder {
 
 	public TupleResultBuilder result(Object... result) {
 		closeHead();
-		if (!hasResults) {
-			hasResults = true;
-			out.println("  <results ordered='false' distinct='false'>");
-		}
 		out.println("    <result>");
 		for (int i = 0; i < result.length; i++) {
 			if (result[i] == null)
@@ -187,14 +178,26 @@ public class TupleResultBuilder {
 
 	public TupleResultBuilder end() {
 		closeHead();
-		if (hasResults) {
-			out.println("  </results>");
-		}
+		out.println("  </results>");
+		out.println("</sparql>");
+		return this;
+	}
+
+	public TupleResultBuilder endBoolean() {
+		closeHeadBoolean();
 		out.println("</sparql>");
 		return this;
 	}
 
 	private void closeHead() {
+		if (!headClosed) {
+			headClosed = true;
+			out.println("  </head>");
+			out.println("  <results ordered='false' distinct='false'>");
+		}
+	}
+
+	private void closeHeadBoolean() {
 		if (!headClosed) {
 			headClosed = true;
 			out.println("  </head>");

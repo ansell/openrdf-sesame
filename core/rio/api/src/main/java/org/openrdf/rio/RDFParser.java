@@ -8,6 +8,7 @@ package org.openrdf.rio;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Collection;
 
 import org.openrdf.model.ValueFactory;
 
@@ -89,6 +90,12 @@ public interface RDFParser {
 	 *         configuration of the parser.
 	 */
 	public ParserConfig getParserConfig();
+
+	/**
+	 * @return A collection of {@link ParserSetting}s that are supported by this
+	 *         RDFParser.
+	 */
+	public Collection<ParserSetting<?>> getSupportedSettings();
 
 	/**
 	 * Sets whether the parser should verify the data it parses (default value is
