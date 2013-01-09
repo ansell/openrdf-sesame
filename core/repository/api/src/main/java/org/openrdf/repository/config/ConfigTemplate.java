@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.console;
+package org.openrdf.repository.config;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * @author Arjohn Kampman
  */
-class ConfigTemplate {
+public class ConfigTemplate {
 
 	/*-----------*
 	 * Constants *
