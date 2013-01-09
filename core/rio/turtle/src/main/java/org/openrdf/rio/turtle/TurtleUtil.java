@@ -120,6 +120,8 @@ public class TurtleUtil {
 		if (!isPrefixStartChar(prefix.charAt(0))) {
 			return false;
 		}
+		
+		// FIXME: Last character cannot be a period '.' character
 		for (int i = 1; i < prefix.length(); i++) {
 			if (!isPrefixChar( prefix.charAt(i) )) {
 				return false;
