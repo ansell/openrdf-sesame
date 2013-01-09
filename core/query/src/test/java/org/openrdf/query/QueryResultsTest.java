@@ -141,13 +141,6 @@ public class QueryResultsTest extends TestCase {
 			return null;
 		}
 
-		public Statement singleResult()
-			throws QueryEvaluationException
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
 	}
 
 	public void testEmptyQueryResult()

@@ -192,15 +192,4 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		namespacesReady.countDown();
 	}
 
-	public Statement singleResult()
-		throws QueryEvaluationException
-	{
-		Statement result = null;
-		if (hasNext()) {
-			result = next();
-		}
-		close();
-		return result;
-	}
-
 }

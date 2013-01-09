@@ -16,6 +16,4 @@ import info.aduna.iteration.CloseableIteration;
  */
 public interface QueryResult<T> extends CloseableIteration<T, QueryEvaluationException> {
 
-
-
 }

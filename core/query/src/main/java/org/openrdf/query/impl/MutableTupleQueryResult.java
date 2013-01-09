@@ -259,15 +259,4 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 		return clone;
 	}
 
-	public BindingSet singleResult()
-		throws QueryEvaluationException
-	{
-		BindingSet result = null;
-		if (hasNext()) {
-			result = next();
-		}
-		close();
-		return result;
-
-	}
 }
