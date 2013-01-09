@@ -573,7 +573,7 @@ public class TurtleParser extends RDFParserBase {
 			return parseNodeID();
 		}
 		else if (c == '"' || c == '\'') {
-			// quoted literal, e.g. "foo" or """foo"""
+			// quoted literal, e.g. "foo" or """foo""" or 'foo' or '''foo'''
 			return parseQuotedLiteral();
 		}
 		else if (ASCIIUtil.isNumber(c) || c == '.' || c == '+' || c == '-') {
