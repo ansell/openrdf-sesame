@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.xml.transform.sax.SAXResult;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -257,10 +259,10 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
 			xmlReader.setContentHandler(saxFilter);
 			xmlReader.setErrorHandler(this);
-			
-			rdfHandler.startRDF();
+
+			// rdfHandler.startRDF();
 			xmlReader.parse(inputSource);
-			rdfHandler.endRDF();
+			// rdfHandler.endRDF();
 		}
 		catch (SAXParseException e) {
 			Exception wrappedExc = e.getException();
@@ -296,6 +298,28 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			usedIDs.clear();
 			clear();
 		}
+	}
+
+	public SAXResult getSAXResult(String baseURI) {
+		if (baseURI == null) {
+			throw new IllegalArgumentException("Base URI cannot be 'null'");
+		}
+		documentURI = baseURI;
+		saxFilter.setDocumentURI(baseURI);
+
+		return new SAXResult(saxFilter);
+	}
+
+	void startDocument()
+		throws RDFParseException, RDFHandlerException
+	{
+		rdfHandler.startRDF();
+	}
+
+	void endDocument()
+		throws RDFParseException, RDFHandlerException
+	{
+		rdfHandler.endRDF();
 	}
 
 	/*-----------------------------*
@@ -1178,7 +1202,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * Implementation of SAX ErrorHandler.warning
 	 */
 	public void warning(SAXParseException exception)
-		throws SAXException 
+		throws SAXException
 	{
 		this.reportWarning(exception.getMessage());
 	}
@@ -1192,7 +1216,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		try {
 			this.reportError(exception.getMessage());
 		}
-		catch(RDFParseException rdfpe) {
+		catch (RDFParseException rdfpe) {
 			throw new SAXException(rdfpe);
 		}
 	}
@@ -1206,7 +1230,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		try {
 			this.reportFatalError(exception.getMessage());
 		}
-		catch(RDFParseException rdfpe) {
+		catch (RDFParseException rdfpe) {
 			throw new SAXException(rdfpe);
 		}
 	}
