@@ -121,7 +121,7 @@ public class TurtleUtil {
 			return false;
 		}
 		
-		// FIXME: Last character cannot be a period '.' character
+		// FIXME: Last character cannot be an unescaped period '.' character
 		for (int i = 1; i < prefix.length(); i++) {
 			if (!isPrefixChar( prefix.charAt(i) )) {
 				return false;
@@ -138,7 +138,7 @@ public class TurtleUtil {
 			return false;
 		}
 		
-		// FIXME: Last character cannot be a period '.' character
+		// FIXME: Last character cannot be an unescaped period '.' character
 		for (int i = 1; i < name.length(); i++) {
 			if (!isNameChar( name.charAt(i) )) {
 				return false;
