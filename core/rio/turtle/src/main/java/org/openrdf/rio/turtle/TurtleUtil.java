@@ -17,7 +17,7 @@ import info.aduna.text.StringUtil;
 public class TurtleUtil {
 
 	/**
-	 * Tries to find an index where the suppied URI can be split into a namespace
+	 * Tries to find an index where the supplied URI can be split into a namespace
 	 * and a local name that comply with the serialization constraints of the
 	 * Turtle format.
 	 * 
