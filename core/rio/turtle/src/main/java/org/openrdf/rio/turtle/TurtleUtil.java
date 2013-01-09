@@ -135,11 +135,14 @@ public class TurtleUtil {
 		if (!isNameStartChar(name.charAt(0))) {
 			return false;
 		}
+		
+		// FIXME: Last character cannot be a period '.' character
 		for (int i = 1; i < name.length(); i++) {
 			if (!isNameChar( name.charAt(i) )) {
 				return false;
 			}
 		}
+		
 		return true;
 	}
 
