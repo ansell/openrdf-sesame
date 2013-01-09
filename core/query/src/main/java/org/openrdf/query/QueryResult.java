@@ -16,15 +16,6 @@ import info.aduna.iteration.CloseableIteration;
  */
 public interface QueryResult<T> extends CloseableIteration<T, QueryEvaluationException> {
 
-	/**
-	 * Returns a single element from the query result. The QueryResult is
-	 * automatically closed by this method.
-	 * 
-	 * @since 2.7.0
-	 * @return a single query result element.
-	 * @throws QueryEvaluationException
-	 */
-	T singleResult()
-		throws QueryEvaluationException;
+
 
 }
