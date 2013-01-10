@@ -67,12 +67,4 @@ public interface QueryResultWriter {
 	public void endHeader()
 		throws TupleQueryResultHandlerException;
 
-	/**
-	 * Indicates the end of the document.
-	 * 
-	 * @throws TupleQueryResultHandlerException
-	 */
-	public void endDocument()
-		throws TupleQueryResultHandlerException;
-
 }

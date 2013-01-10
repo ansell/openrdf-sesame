@@ -95,10 +95,4 @@ public class BooleanTextWriter implements BooleanQueryResultWriter {
 	{
 		// Ignored by BooleanTextWriter
 	}
-
-	public void endDocument()
-		throws TupleQueryResultHandlerException
-	{
-		// Ignored by BooleanTextWriter
-	}
 }

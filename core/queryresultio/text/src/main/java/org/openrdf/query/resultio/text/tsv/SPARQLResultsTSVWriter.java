@@ -218,10 +218,4 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 	{
 		// Ignored in SPARQLResultsTSVWriter
 	}
-
-	public void endDocument()
-		throws TupleQueryResultHandlerException
-	{
-		// Ignored in SPARQLResultsTSVWriter
-	}
 }

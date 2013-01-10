@@ -406,6 +406,8 @@ public class QueryResultIO {
 	{
 		TupleQueryResultWriter writer = createWriter(format, out);
 		try {
+			writer.startDocument();
+			writer.startHeader();
 			QueryResults.report(tqr, writer);
 		}
 		catch (TupleQueryResultHandlerException e) {
@@ -438,7 +440,19 @@ public class QueryResultIO {
 		throws IOException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultWriter writer = createWriter(format, out);
-		writer.write(value);
+		try {
+			writer.startDocument();
+			writer.startHeader();
+			writer.write(value);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			if (e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
 	}
 
 	/**

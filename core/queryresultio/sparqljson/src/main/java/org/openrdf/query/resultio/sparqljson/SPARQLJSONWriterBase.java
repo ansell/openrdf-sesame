@@ -34,6 +34,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 
 	protected IndentingWriter writer;
 
+	protected boolean documentOpen = false;
+	protected boolean headerComplete = false;
+	
 	public SPARQLJSONWriterBase(OutputStream out) {
 		Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
 		w = new BufferedWriter(w, 1024);
@@ -43,6 +46,8 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void startDocument()
 		throws TupleQueryResultHandlerException
 	{
+		documentOpen = true;
+		headerComplete = false;
 		try {
 			openBraces();
 		}
@@ -81,16 +86,13 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		}
 	}
 
-	public void endDocument()
-		throws TupleQueryResultHandlerException
+	protected void endDocument()
+		throws IOException
 	{
-		try {
-			closeBraces(); // root braces
-			writer.flush();
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
+		closeBraces(); // root braces
+		writer.flush();
+		documentOpen = false;
+		headerComplete = false;
 	}
 
 	protected void writeKeyValue(String key, String value)

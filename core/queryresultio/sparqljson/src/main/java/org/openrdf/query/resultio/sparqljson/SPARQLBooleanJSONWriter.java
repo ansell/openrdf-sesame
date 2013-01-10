@@ -54,6 +54,7 @@ public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements Boo
 			closeBraces();
 
 			writeComma();
+			headerComplete = true;
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -63,6 +64,25 @@ public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements Boo
 	public void write(boolean value)
 		throws IOException
 	{
+		try {
+			if (!documentOpen) {
+				startDocument();
+				startHeader();
+			}
+
+			if (!headerComplete) {
+				endHeader();
+			}
+		}
+		catch (TupleQueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
+
 		if (value) {
 			writeKeyValue("boolean", "true");
 		}
@@ -70,6 +90,7 @@ public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements Boo
 			writeKeyValue("boolean", "false");
 		}
 
+		endDocument();
 	}
 
 }

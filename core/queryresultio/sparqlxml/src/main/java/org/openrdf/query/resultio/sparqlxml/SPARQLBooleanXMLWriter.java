@@ -62,6 +62,7 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 	{
 		try {
 			xmlWriter.endTag(HEAD_TAG);
+			headerComplete = true;
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -71,11 +72,27 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 	public void write(boolean value)
 		throws IOException
 	{
+		try {
+			if (!documentOpen) {
+				startDocument();
+				startHeader();
+			}
+
+			if (!headerComplete) {
+				endHeader();
+			}
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw new IOException(e);
+		}
+
 		if (value) {
 			xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
 		}
 		else {
 			xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_FALSE);
 		}
+
+		endDocument();
 	}
 }

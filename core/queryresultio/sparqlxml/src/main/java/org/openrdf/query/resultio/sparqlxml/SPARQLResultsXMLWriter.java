@@ -81,6 +81,8 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 			// Write start of results, which must always exist, even if there are
 			// no result bindings
 			xmlWriter.startTag(RESULT_SET_TAG);
+
+			headerComplete = true;
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -90,6 +92,10 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
+		}
 		try {
 			// Write binding names
 			for (String name : bindingNames) {
@@ -105,8 +111,12 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
+		if (!headerComplete) {
+			endHeader();
+		}
 		try {
 			xmlWriter.endTag(RESULT_SET_TAG);
+			endDocument();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -116,6 +126,9 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if (!headerComplete) {
+			endHeader();
+		}
 		try {
 			xmlWriter.startTag(RESULT_TAG);
 

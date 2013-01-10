@@ -149,7 +149,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	{
 		try {
 			out.writeByte(TABLE_END_RECORD_MARKER);
-			out.flush();
+			endDocument();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -344,9 +344,9 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		// Ignored by Binary Query Results format
 	}
 
-	public void endDocument()
-		throws TupleQueryResultHandlerException
+	private void endDocument()
+		throws IOException
 	{
-		// Ignored by Binary Query Results format
+		out.flush();
 	}
 }

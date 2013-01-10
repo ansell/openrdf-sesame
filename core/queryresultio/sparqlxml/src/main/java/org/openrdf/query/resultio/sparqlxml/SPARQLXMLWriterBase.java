@@ -37,6 +37,10 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	 */
 	protected XMLWriter xmlWriter;
 
+	protected boolean documentOpen = false;
+
+	protected boolean headerComplete = false;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -68,6 +72,9 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	public void startDocument()
 		throws TupleQueryResultHandlerException
 	{
+		documentOpen = true;
+		headerComplete = false;
+
 		try {
 			xmlWriter.startDocument();
 
@@ -117,17 +124,15 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 		}
 	}
 
-	public void endDocument()
-		throws TupleQueryResultHandlerException
+	protected void endDocument()
+		throws IOException
 	{
-		try {
-			xmlWriter.endTag(ROOT_TAG);
+		xmlWriter.endTag(ROOT_TAG);
 
-			xmlWriter.endDocument();
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
+		xmlWriter.endDocument();
+
+		headerComplete = false;
+		documentOpen = false;
 	}
 
 }

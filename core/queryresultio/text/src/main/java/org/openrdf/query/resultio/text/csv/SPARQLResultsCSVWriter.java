@@ -227,9 +227,4 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 		// Ignored by SPARQLResultsCSVWriter
 	}
 
-	public void endDocument()
-		throws TupleQueryResultHandlerException
-	{
-		// Ignored by SPARQLResultsCSVWriter
-	}
 }

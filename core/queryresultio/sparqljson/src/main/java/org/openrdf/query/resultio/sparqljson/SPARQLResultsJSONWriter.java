@@ -63,6 +63,11 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 	public void startQueryResult(List<String> columnHeaders)
 		throws TupleQueryResultHandlerException
 	{
+		if(!documentOpen)
+		{
+			startDocument();
+			startHeader();
+		}
 		try {
 			writeKeyValue("vars", columnHeaders);
 		}
@@ -85,6 +90,7 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 
 			writeKey("bindings");
 			openArray();
+			headerComplete = true;
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -94,6 +100,10 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if(!headerComplete)
+		{
+			endHeader();
+		}
 		try {
 			if (firstTupleWritten) {
 				writeComma();
@@ -130,6 +140,7 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 		try {
 			closeArray(); // bindings array
 			closeBraces(); // results braces
+			endDocument();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
