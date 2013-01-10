@@ -102,6 +102,18 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		return TupleQueryResultFormat.BINARY;
 	}
 
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			out.write(MAGIC_NUMBER);
+			out.writeInt(FORMAT_VERSION);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -110,9 +122,6 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
 
 		try {
-			out.write(MAGIC_NUMBER);
-			out.writeInt(FORMAT_VERSION);
-
 			out.writeInt(this.bindingNames.size());
 
 			for (String bindingName : this.bindingNames) {
@@ -302,5 +311,35 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		ByteBuffer byteBuf = charsetEncoder.encode(CharBuffer.wrap(s));
 		out.writeInt(byteBuf.remaining());
 		out.write(byteBuf.array(), 0, byteBuf.remaining());
+	}
+
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	public void endDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
 	}
 }
