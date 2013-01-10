@@ -86,6 +86,8 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 
 	private List<String> bindingNames;
 
+	private boolean documentStarted = false;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -105,6 +107,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	public void startDocument()
 		throws TupleQueryResultHandlerException
 	{
+		documentStarted = true;
 		try {
 			out.write(MAGIC_NUMBER);
 			out.writeInt(FORMAT_VERSION);
@@ -117,6 +120,10 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
+		if (!documentStarted) {
+			startDocument();
+		}
+
 		// Copy supplied column headers list and make it unmodifiable
 		bindingNames = new ArrayList<String>(bindingNames);
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
