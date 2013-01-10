@@ -17,12 +17,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-protocol</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
