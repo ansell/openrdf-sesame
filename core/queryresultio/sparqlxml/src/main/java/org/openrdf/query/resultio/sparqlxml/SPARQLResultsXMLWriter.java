@@ -23,10 +23,8 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEA
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_DATATYPE_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_SET_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.URI_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR_NAME_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR_TAG;
@@ -52,28 +50,18 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * XMLWriter to write XML to.
-	 */
-	private XMLWriter xmlWriter;
+public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements TupleQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public SPARQLResultsXMLWriter(OutputStream out) {
-		this(new XMLWriter(out));
+		super(out);
 	}
 
 	public SPARQLResultsXMLWriter(XMLWriter xmlWriter) {
-		this.xmlWriter = xmlWriter;
-		this.xmlWriter.setPrettyPrint(true);
+		super(xmlWriter);
 	}
 
 	/*---------*
@@ -84,36 +72,30 @@ public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
 		return TupleQueryResultFormat.SPARQL;
 	}
 
-	/**
-	 * Enables/disables addition of indentation characters and newlines in the
-	 * XML document. By default, pretty-printing is set to <tt>true</tt>. If
-	 * set to <tt>false</tt>, no indentation and newlines are added to the XML
-	 * document. This method has to be used before writing starts (that is,
-	 * before {@link #startQueryResult(List)} is called).
-	 */
-	public void setPrettyPrint(boolean prettyPrint) {
-		xmlWriter.setPrettyPrint(prettyPrint);
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			xmlWriter.endTag(HEAD_TAG);
+
+			// Write start of results, which must always exist, even if there are
+			// no result bindings
+			xmlWriter.startTag(RESULT_SET_TAG);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
 	}
 
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
 		try {
-			xmlWriter.startDocument();
-
-			xmlWriter.setAttribute("xmlns", NAMESPACE);
-			xmlWriter.startTag(ROOT_TAG);
-
-			// Write header
-			xmlWriter.startTag(HEAD_TAG);
+			// Write binding names
 			for (String name : bindingNames) {
 				xmlWriter.setAttribute(VAR_NAME_ATT, name);
 				xmlWriter.emptyElement(VAR_TAG);
 			}
-			xmlWriter.endTag(HEAD_TAG);
-
-			// Write start of results
-			xmlWriter.startTag(RESULT_SET_TAG);
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -125,9 +107,6 @@ public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
 	{
 		try {
 			xmlWriter.endTag(RESULT_SET_TAG);
-			xmlWriter.endTag(ROOT_TAG);
-
-			xmlWriter.endDocument();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -195,4 +174,5 @@ public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
 
 		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
 	}
+
 }

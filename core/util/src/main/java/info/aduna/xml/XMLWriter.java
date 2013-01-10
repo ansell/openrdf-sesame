@@ -313,6 +313,22 @@ public class XMLWriter {
 	 * @param text The text.
 	 * @see #setAttribute(java.lang.String,java.lang.String)
 	 */
+	public void writeStylesheet(String url)
+		throws IOException
+	{
+		_write("<?xml-stylesheet type='text/xsl' href='");
+		text(url);
+		_writeLn("'?>");
+	}
+
+	/**
+	 * Writes a start and end tag with the supplied text between them. The start
+	 * tag will contain any previously set attributes.
+	 *
+	 * @param elName The element name.
+	 * @param text The text.
+	 * @see #setAttribute(java.lang.String,java.lang.String)
+	 */
 	public void textElement(String elName, String text)
 		throws IOException
 	{
