@@ -24,7 +24,7 @@ import java.io.IOException;
  * 
  * @author Arjohn Kampman
  */
-public interface BooleanQueryResultWriter {
+public interface BooleanQueryResultWriter extends QueryResultWriter {
 
 	/**
 	 * Gets the query result format that this writer uses.
