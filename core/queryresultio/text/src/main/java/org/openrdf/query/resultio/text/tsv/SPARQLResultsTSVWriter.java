@@ -162,7 +162,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 
 		writer.write(encodeString(label));
-		
+
 		if (quoted) {
 			writer.write("\"");
 		}
@@ -187,5 +187,41 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		s = StringUtil.gsub("\r", "\\r", s);
 		s = StringUtil.gsub("\"", "\\\"", s);
 		return s;
+	}
+
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	public void endDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
 	}
 }

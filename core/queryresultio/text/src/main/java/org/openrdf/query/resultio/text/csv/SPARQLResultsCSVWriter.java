@@ -180,7 +180,7 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 
 			// add quotes around the string (escaped with a second quote for the
 			// CSV parser)
-//			label = "\"\"" + label + "\"\"";
+			// label = "\"\"" + label + "\"\"";
 		}
 
 		if (quoted) {
@@ -195,5 +195,41 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 			writer.write("\"");
 		}
 
+	}
+
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	public void endDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
 	}
 }

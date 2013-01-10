@@ -21,7 +21,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.List;
 
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -62,5 +64,41 @@ public class BooleanTextWriter implements BooleanQueryResultWriter {
 	{
 		writer.write(Boolean.toString(value));
 		writer.flush();
+	}
+
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	public void endDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
 	}
 }
