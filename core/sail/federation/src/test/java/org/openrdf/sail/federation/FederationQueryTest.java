@@ -24,7 +24,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.openrdf.OpenRDFException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.MutableTupleQueryResult;
 import org.openrdf.repository.Repository;
@@ -163,7 +163,7 @@ public class FederationQueryTest extends TestCase {
 				queryResult);
 		MutableTupleQueryResult expectedTable = new MutableTupleQueryResult(
 				expectedResult);
-		if (!QueryResultUtil.equals(expectedTable, queryResultTable)) {
+		if (!QueryResults.equals(expectedTable, queryResultTable)) {
 			queryResultTable.beforeFirst();
 			expectedTable.beforeFirst();
 			List<BindingSet> queryBindings = Iterations

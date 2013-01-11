@@ -33,7 +33,7 @@ import org.openrdf.rio.RDFHandlerException;
  * @author James Leigh
  * @author Jeen Broekstra
  */
-public class HTTPGraphQueryResult extends GraphQueryResultImpl implements GraphQueryResult, Runnable,
+public class HTTPGraphQueryResult extends GraphQueryResultImpl implements Runnable,
 		RDFHandler
 {
 

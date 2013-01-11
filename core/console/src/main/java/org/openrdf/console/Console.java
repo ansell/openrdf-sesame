@@ -43,6 +43,7 @@ import info.aduna.app.AppConfiguration;
 import info.aduna.app.AppVersion;
 import info.aduna.io.IOUtil;
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.Sesame;
@@ -1288,7 +1289,7 @@ public class Console {
 			try {
 				final RepositoryConnection con = repository.getConnection();
 				try {
-					final Collection<Namespace> namespaces = con.getNamespaces().asList();
+					final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 					if (!namespaces.isEmpty()) {
 						final StringBuilder namespaceClause = new StringBuilder(512);
 						if (SERQL.equals(queryLn)) {
@@ -1378,7 +1379,7 @@ public class Console {
 					writeln(separatorLine);
 
 					// Write table rows
-					final Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
+					final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 					while (tupleQueryResult.hasNext()) {
 						final BindingSet bindingSet = tupleQueryResult.next();
 						resultCount++;
@@ -1418,7 +1419,7 @@ public class Console {
 		try {
 			writeln("Evaluating query...");
 			final long startTime = System.nanoTime();
-			final Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
+			final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 			final GraphQueryResult queryResult = con.prepareGraphQuery(queryLn, queryString).evaluate();
 			try {
 				int resultCount = 0;
