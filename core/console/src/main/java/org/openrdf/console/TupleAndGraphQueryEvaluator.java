@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Namespace;
@@ -95,7 +96,7 @@ public class TupleAndGraphQueryEvaluator {
 					consoleIO.writeln(separatorLine);
 
 					// consoleIO.write table rows
-					final Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
+					final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 					while (tupleQueryResult.hasNext()) {
 						final BindingSet bindingSet = tupleQueryResult.next();
 						resultCount++;
@@ -136,7 +137,7 @@ public class TupleAndGraphQueryEvaluator {
 		try {
 			consoleIO.writeln("Evaluating query...");
 			final long startTime = System.nanoTime();
-			final Collection<Namespace> namespaces = con.getNamespaces().addTo(new ArrayList<Namespace>());
+			final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 			final GraphQueryResult queryResult = con.prepareGraphQuery(queryLn, queryString).evaluate();
 			try {
 				int resultCount = 0;

@@ -14,6 +14,8 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.iteration.Iterations;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -45,7 +47,7 @@ public class QueryEvaluator {
 	private final ConsoleState state;
 
 	private final ConsoleParameters parameters;
-	
+
 	private final TupleAndGraphQueryEvaluator tg_eval;
 
 	QueryEvaluator(ConsoleIO consoleIO, ConsoleState state, ConsoleParameters parameters) {
@@ -144,7 +146,7 @@ public class QueryEvaluator {
 			try {
 				final RepositoryConnection con = repository.getConnection();
 				try {
-					final Collection<Namespace> namespaces = con.getNamespaces().asList();
+					final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 					if (!namespaces.isEmpty()) {
 						addQueryPrefixes(queryLn, result, namespaces);
 					}
@@ -190,7 +192,6 @@ public class QueryEvaluator {
 			result.insert(0, namespaceClause);
 		}
 	}
-
 
 	private void evaluateBooleanQuery(final QueryLanguage queryLn, final String queryString)
 		throws UnsupportedQueryLanguageException, MalformedQueryException, QueryEvaluationException,
