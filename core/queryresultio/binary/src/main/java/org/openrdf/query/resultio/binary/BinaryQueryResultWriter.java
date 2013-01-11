@@ -348,5 +348,6 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		throws IOException
 	{
 		out.flush();
+		documentStarted = false;
 	}
 }
