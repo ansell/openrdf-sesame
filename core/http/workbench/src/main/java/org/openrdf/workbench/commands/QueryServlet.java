@@ -19,6 +19,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.iteration.Iterations;
+
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
@@ -196,7 +198,7 @@ public class QueryServlet extends TransformationServlet {
 		final RepositoryConnection con = repository.getConnection();
 		try {
 			final TupleResultBuilder builder = new TupleResultBuilder(out);
-			for (Namespace ns : con.getNamespaces().asList()) {
+			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
 			if (req.isParameterPresent(QUERY)) {

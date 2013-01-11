@@ -39,7 +39,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
@@ -230,10 +230,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		boolean resultsEqual;
 		if (laxCardinality) {
-			resultsEqual = QueryResultUtil.isSubset(queryResultTable, expectedResultTable);
+			resultsEqual = QueryResults.isSubset(queryResultTable, expectedResultTable);
 		}
 		else {
-			resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
+			resultsEqual = QueryResults.equals(queryResultTable, expectedResultTable);
 
 			if (checkOrder) {
 				// also check the order in which solutions occur.

@@ -13,7 +13,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 
 /**
  * An Iteration that returns the results of an Iteration (the left argument)
@@ -109,7 +109,7 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 			// definition of SPARQL MINUS indicates that such disjoint sets should be filtered out.
 			// See http://www.w3.org/TR/sparql11-query/#sparqlAlgebra
 			if (!sharedBindingNames.isEmpty()) {
-				if (QueryResultUtil.bindingSetsCompatible(excluded, object)) {
+				if (QueryResults.bindingSetsCompatible(excluded, object)) {
 					// at least one compatible bindingset has been found in the
 					// exclude set, therefore the object is compatible, therefore it should not be accepted.
 					compatible = true;

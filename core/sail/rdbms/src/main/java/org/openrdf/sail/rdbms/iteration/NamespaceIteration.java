@@ -5,10 +5,7 @@
  */
 package org.openrdf.sail.rdbms.iteration;
 
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
@@ -36,26 +33,4 @@ public class NamespaceIteration extends IteratorIteration<Namespace, SailExcepti
 	{
 		// do nothing
 	}
-
-	public <C extends Collection<? super Namespace>> C addTo(C collection)
-		throws SailException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List<Namespace> asList()
-		throws SailException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Set<Namespace> asSet()
-		throws SailException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
