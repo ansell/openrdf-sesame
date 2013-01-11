@@ -13,6 +13,7 @@ import org.openrdf.query.TupleQueryResultHandlerException;
  * The base class for writers of query results sets and boolean results.
  * 
  * @author Peter Ansell p_ansell@yahoo.com
+ * @since 2.7.0
  */
 public interface QueryResultWriter {
 
@@ -20,6 +21,7 @@ public interface QueryResultWriter {
 	 * Indicates the start of the document.
 	 * 
 	 * @throws TupleQueryResultHandlerException
+	 * @since 2.7.0
 	 */
 	void startDocument()
 		throws TupleQueryResultHandlerException;
@@ -32,6 +34,7 @@ public interface QueryResultWriter {
 	 * 
 	 * @param stylesheetUrl
 	 *        The URL of the stylesheet to be used to style the results.
+	 * @since 2.7.0
 	 */
 	void handleStylesheet(String stylesheetUrl)
 		throws TupleQueryResultHandlerException;
@@ -41,6 +44,7 @@ public interface QueryResultWriter {
 	 * 
 	 * @see http://www.w3.org/TR/2012/PER-rdf-sparql-XMLres-20121108/#head
 	 * @throws TupleQueryResultHandlerException
+	 * @since 2.7.0
 	 */
 	void startHeader()
 		throws TupleQueryResultHandlerException;
@@ -54,6 +58,7 @@ public interface QueryResultWriter {
 	 * @param linkUrls
 	 *        The URLs of the links to insert into the header.
 	 * @throws TupleQueryResultHandlerException
+	 * @since 2.7.0
 	 */
 	void handleLinks(List<String> linkUrls)
 		throws TupleQueryResultHandlerException;
@@ -63,6 +68,7 @@ public interface QueryResultWriter {
 	 * {@link #startHeader} and before any calls to {@link #handleSolution}.
 	 * 
 	 * @throws TupleQueryResultHandlerException
+	 * @since 2.7.0
 	 */
 	void endHeader()
 		throws TupleQueryResultHandlerException;
