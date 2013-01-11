@@ -22,6 +22,18 @@ import org.openrdf.model.util.ModelException;
 public interface Model extends Set<Statement>, Serializable {
 
 	/**
+	 * Returns an unmodifiable view of this model. This method provides
+	 * "read-only" access to this model. Query operations on the returned model
+	 * "read through" to this model, and attempts to modify the returned model,
+	 * whether direct or via its iterator, result in an
+	 * <tt>UnsupportedOperationException</tt>.
+	 * <p>
+	 * 
+	 * @return an unmodifiable view of the specified set.
+	 */
+	public Model unmodifiable();
+
+	/**
 	 * Gets the map that contains the assigned namespaces.
 	 * 
 	 * @return Map of prefix to namespace
@@ -55,8 +67,9 @@ public interface Model extends Set<Statement>, Serializable {
 	 * @param prefix
 	 *        The namespace prefix of which the assocation with a namespace name
 	 *        is to be removed.
+	 * @return the previous namespace bound to the prefix or null
 	 */
-	public void removeNamespace(String prefix);
+	public String removeNamespace(String prefix);
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object and
@@ -95,7 +108,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return <code>true</code> if statements match the specified pattern.
 	 */
-	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean contains(Value subj, Value pred, Value obj, Value... contexts);
 
 	/**
 	 * Adds one or more statements to the model. This method creates a statement
@@ -128,7 +141,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        The context of the statements to remove.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean clear(Resource... context);
+	public boolean clear(Value... context);
 
 	/**
 	 * Removes statements with the specified subject, predicate, object and
@@ -166,7 +179,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        matching one of these will be removed.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean remove(Value subj, Value pred, Value obj, Value... contexts);
 
 	// Views
 
@@ -217,7 +230,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
 	 */
-	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
+	public Model filter(Value subj, Value pred, Value obj, Value... contexts);
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The
