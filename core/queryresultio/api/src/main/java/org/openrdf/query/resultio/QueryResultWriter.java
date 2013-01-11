@@ -21,7 +21,7 @@ public interface QueryResultWriter {
 	 * 
 	 * @throws TupleQueryResultHandlerException
 	 */
-	public void startDocument()
+	void startDocument()
 		throws TupleQueryResultHandlerException;
 
 	/**
@@ -33,7 +33,7 @@ public interface QueryResultWriter {
 	 * @param stylesheetUrl
 	 *        The URL of the stylesheet to be used to style the results.
 	 */
-	public void handleStylesheet(String stylesheetUrl)
+	void handleStylesheet(String stylesheetUrl)
 		throws TupleQueryResultHandlerException;
 
 	/**
@@ -42,7 +42,7 @@ public interface QueryResultWriter {
 	 * @see http://www.w3.org/TR/2012/PER-rdf-sparql-XMLres-20121108/#head
 	 * @throws TupleQueryResultHandlerException
 	 */
-	public void startHeader()
+	void startHeader()
 		throws TupleQueryResultHandlerException;
 
 	/**
@@ -55,7 +55,7 @@ public interface QueryResultWriter {
 	 *        The URLs of the links to insert into the header.
 	 * @throws TupleQueryResultHandlerException
 	 */
-	public void handleLinks(List<String> linkUrls)
+	void handleLinks(List<String> linkUrls)
 		throws TupleQueryResultHandlerException;
 
 	/**
@@ -64,7 +64,7 @@ public interface QueryResultWriter {
 	 * 
 	 * @throws TupleQueryResultHandlerException
 	 */
-	public void endHeader()
+	void endHeader()
 		throws TupleQueryResultHandlerException;
 
 }

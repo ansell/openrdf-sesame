@@ -29,11 +29,11 @@ public interface BooleanQueryResultWriter extends QueryResultWriter {
 	/**
 	 * Gets the query result format that this writer uses.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat();
+	BooleanQueryResultFormat getBooleanQueryResultFormat();
 
 	/**
 	 * Writes the specified boolean value.
 	 */
-	public void write(boolean value)
+	void write(boolean value)
 		throws IOException;
 }

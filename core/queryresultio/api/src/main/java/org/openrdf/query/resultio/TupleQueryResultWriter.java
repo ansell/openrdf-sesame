@@ -27,5 +27,5 @@ public interface TupleQueryResultWriter extends TupleQueryResultHandler, QueryRe
 	/**
 	 * Gets the query result format that this writer uses.
 	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat();
+	TupleQueryResultFormat getTupleQueryResultFormat();
 }

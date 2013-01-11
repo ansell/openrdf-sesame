@@ -29,7 +29,7 @@ public interface TupleQueryResultWriterFactory {
 	/**
 	 * Returns the tuple query result format for this factory.
 	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat();
+	TupleQueryResultFormat getTupleQueryResultFormat();
 
 	/**
 	 * Returns a TupleQueryResultWriter instance that will write to the supplied
@@ -38,5 +38,5 @@ public interface TupleQueryResultWriterFactory {
 	 * @param out
 	 *        The OutputStream to write the result to.
 	 */
-	public TupleQueryResultWriter getWriter(OutputStream out);
+	TupleQueryResultWriter getWriter(OutputStream out);
 }
