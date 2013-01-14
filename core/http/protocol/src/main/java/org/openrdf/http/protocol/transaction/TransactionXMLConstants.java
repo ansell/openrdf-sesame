@@ -32,6 +32,8 @@ interface TransactionXMLConstants {
 
 	public static final String LITERAL_TAG = "literal";
 
+	public static final String ENCODING_ATT = "encoding";
+	
 	public static final String LANG_ATT = "xml:lang";
 
 	public static final String DATATYPE_ATT = "datatype";

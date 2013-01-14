@@ -21,8 +21,10 @@ import org.junit.Test;
 
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 
 
@@ -35,6 +37,10 @@ public class TransactionReaderTest {
 	private static final URI bob = new URIImpl("http://example.org/bob");
 	private static final URI alice = new URIImpl("http://example.org/alice");
 	private static final URI knows = new URIImpl("http://example.org/knows");
+	
+	private static final char ux0005 = 0x0005;
+	
+	private static final Literal controlCharText = new LiteralImpl("foobar." + ux0005 + " foo.");
 	
 	private static final URI context1 = new URIImpl("http://example.org/context1");
 	private static final URI context2 = new URIImpl("http://example.org/context2");
@@ -87,6 +93,35 @@ public class TransactionReaderTest {
 			assertTrue(contexts[0].equals(context2) || contexts[1].equals(context2));
 		}
 		
+	}
+	
+	@Test
+	public void testControlCharHandling() throws Exception {
+		AddStatementOperation operation = new AddStatementOperation(bob, knows, controlCharText);
+		
+		System.out.println(controlCharText.stringValue());
+		
+		List<TransactionOperation> txn = new ArrayList<TransactionOperation>();
+		txn.add(operation);
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TransactionWriter w = new TransactionWriter();
+		w.serialize(txn, out);
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TransactionReader r = new TransactionReader();
+		Collection<TransactionOperation> parsedTxn = r.parse(in);
+		
+		assertNotNull(parsedTxn);
+		
+		for (TransactionOperation op : parsedTxn) {
+			assertTrue(op instanceof AddStatementOperation);
+			AddStatementOperation addOp = (AddStatementOperation)op;
+
+			System.out.println(addOp.getObject().stringValue());
+			assertTrue(addOp.getObject().equals(controlCharText));
+		}
+
 	}
 
 }
