@@ -83,6 +83,18 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
+	public void prepare()
+		throws SailException
+	{
+		flushUpdates();
+		super.prepare();
+	}
+
+	/**
+	 * Calls {@link #flushUpdates()} before forwarding the call to the wrapped
+	 * connection.
+	 */
+	@Override
 	public void commit()
 		throws SailException
 	{

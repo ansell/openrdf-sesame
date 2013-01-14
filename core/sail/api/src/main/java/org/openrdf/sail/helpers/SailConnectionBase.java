@@ -355,6 +355,19 @@ public abstract class SailConnectionBase implements SailConnection {
 		verifyIsActive();
 	}
 
+	public void prepare()
+		throws SailException
+	{
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+			// assume all transactions will reasonably commit
+		}
+		finally {
+			connectionLock.readLock().unlock();
+		}
+	}
+
 	public final void commit()
 		throws SailException
 	{
