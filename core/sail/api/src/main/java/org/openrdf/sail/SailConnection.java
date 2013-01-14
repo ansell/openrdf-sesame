@@ -299,6 +299,85 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
+	 * Signals the start of an update operation. The given <code>op</code> maybe
+	 * passed to subsequent
+	 * {@link #addStatement(UpdateContext, Resource, URI, Value, Resource...)} or
+	 * {@link #removeStatement(UpdateContext, Resource, URI, Value, Resource...)}
+	 * calls before {@link #end(UpdateContext)} is called.
+	 * 
+	 * @throws SailException
+	 */
+	public void start(UpdateContext op)
+		throws SailException;
+
+	/**
+	 * Adds a statement to the store. Called when adding statements through a
+	 * {@link UpdateExpr} operation.
+	 * 
+	 * @param op
+	 *        operation properties of the {@link UpdateExpr} operation producing
+	 *        these statements.
+	 * @param subj
+	 *        The subject of the statement to add.
+	 * @param pred
+	 *        The predicate of the statement to add.
+	 * @param obj
+	 *        The object of the statement to add.
+	 * @param contexts
+	 *        The context(s) to add the statement to. Note that this parameter is
+	 *        a vararg and as such is optional. If no contexts are specified, a
+	 *        context-less statement will be added.
+	 * @throws SailException
+	 *         If the statement could not be added, for example because no
+	 *         transaction is active.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
+	 */
+	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException;
+
+	/**
+	 * Removes all statements matching the specified subject, predicate and
+	 * object from the repository. All three parameters may be null to indicate
+	 * wildcards. Called when removing statements through a {@link UpdateExpr}
+	 * operation.
+	 * 
+	 * @param op
+	 *        operation properties of the {@link UpdateExpr} operation removing these
+	 *        statements.
+	 * @param subj
+	 *        The subject of the statement that should be removed.
+	 * @param pred
+	 *        The predicate of the statement that should be removed.
+	 * @param obj
+	 *        The object of the statement that should be removed.
+	 * @param contexts
+	 *        The context(s) from which to remove the statement. Note that this
+	 *        parameter is a vararg and as such is optional. If no contexts are
+	 *        specified the method operates on the entire repository. A
+	 *        <tt>null</tt> value can be used to match context-less statements.
+	 * @throws SailException
+	 *         If the statement could not be removed, for example because no
+	 *         transaction is active.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
+	 */
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj,
+			Resource... contexts)
+		throws SailException;
+
+	/**
+	 * Indicates that the given <code>op</code> will not be used in any call
+	 * again. Implementations should use this to flush of any temporary operation
+	 * states that may have occurred.
+	 * 
+	 * @param op
+	 * @throws SailException
+	 */
+	public void end(UpdateContext op)
+		throws SailException;
+
+	/**
 	 * Removes all statements from the specified/all contexts. If no contexts are
 	 * specified the method operates on the entire repository.
 	 * 

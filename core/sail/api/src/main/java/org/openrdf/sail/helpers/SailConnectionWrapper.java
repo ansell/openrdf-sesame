@@ -17,6 +17,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
+import org.openrdf.sail.UpdateContext;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -131,6 +132,31 @@ public class SailConnectionWrapper implements SailConnection {
 		throws SailException
 	{
 		wrappedCon.removeStatements(subj, pred, obj, contexts);
+	}
+
+	public void start(UpdateContext modify)
+		throws SailException
+	{
+		wrappedCon.start(modify);
+	}
+
+	public void addStatement(UpdateContext modify, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		wrappedCon.addStatement(modify, subj, pred, obj, contexts);
+	}
+
+	public void removeStatement(UpdateContext modify, Resource subj, URI pred, Value obj,
+			Resource... contexts)
+		throws SailException
+	{
+		wrappedCon.removeStatement(modify, subj, pred, obj, contexts);
+	}
+
+	public void end(UpdateContext modify)
+		throws SailException
+	{
+		wrappedCon.end(modify);
 	}
 
 	public void clear(Resource... contexts)

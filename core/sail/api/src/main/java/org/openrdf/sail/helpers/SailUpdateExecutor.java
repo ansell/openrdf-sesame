@@ -5,8 +5,6 @@
  */
 package org.openrdf.sail.helpers;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +48,7 @@ import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.UpdateContext;
 
 /**
  * Implementation of
@@ -69,11 +68,9 @@ public class SailUpdateExecutor {
 
 	private final ValueFactory vf;
 
-	private final boolean readSnapshot;
-
 	@Deprecated
 	public SailUpdateExecutor(Sail sail, SailConnection con) {
-		this(con, sail.getValueFactory(), false);
+		this(con, sail.getValueFactory());
 	}
 
 	/**
@@ -86,53 +83,54 @@ public class SailUpdateExecutor {
 	 *        Used to read data from and write data to.
 	 * @param vf
 	 *        Used to create {@link BNode}s
-	 * @param readSnapshot
-	 *        <code>true</code> if read operations do not observe concurrent
-	 *        writes, <code>false</code> if read results may changes as data is
-	 *        written
 	 */
-	public SailUpdateExecutor(SailConnection con, ValueFactory vf, boolean readSnapshot) {
+	public SailUpdateExecutor(SailConnection con, ValueFactory vf) {
 		this.con = con;
 		this.vf = vf;
-		this.readSnapshot = readSnapshot;
 	}
 
 	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
 			boolean includeInferred)
 		throws SailException
 	{
-		logger.trace("Incoming update expression:\n{}", updateExpr);
+		UpdateContext uc = new UpdateContext(updateExpr, dataset, bindings, includeInferred);
+		logger.trace("Incoming update expression:\n{}", uc);
 
-		if (updateExpr instanceof Modify) {
-			executeModify((Modify)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof InsertData) {
-			executeInsertData((InsertData)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof DeleteData) {
-			executeDeleteData((DeleteData)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof Clear) {
-			executeClear((Clear)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof Create) {
-			executeCreate((Create)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof Copy) {
-			executeCopy((Copy)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof Add) {
-			executeAdd((Add)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof Move) {
-			executeMove((Move)updateExpr, dataset, bindings, includeInferred);
-		}
-		else if (updateExpr instanceof Load) {
-			throw new SailException("load operations can not be handled directly by the SAIL");
+		con.start(uc);
+		try {
+			if (updateExpr instanceof Modify) {
+				executeModify((Modify)updateExpr, uc);
+			}
+			else if (updateExpr instanceof InsertData) {
+				executeInsertData((InsertData)updateExpr, uc);
+			}
+			else if (updateExpr instanceof DeleteData) {
+				executeDeleteData((DeleteData)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Clear) {
+				executeClear((Clear)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Create) {
+				executeCreate((Create)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Copy) {
+				executeCopy((Copy)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Add) {
+				executeAdd((Add)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Move) {
+				executeMove((Move)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Load) {
+				throw new SailException("load operations can not be handled directly by the SAIL");
+			}
+		} finally {
+			con.end(uc);
 		}
 	}
 
-	protected void executeCreate(Create create, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	protected void executeCreate(Create create, UpdateContext uc)
 		throws SailException
 	{
 		// check if named graph exists, if so, we have to return an error.
@@ -160,12 +158,10 @@ public class SailUpdateExecutor {
 
 	/**
 	 * @param updateExpr
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeCopy(Copy copy, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	protected void executeCopy(Copy copy, UpdateContext uc)
 		throws SailException
 	{
 		ValueConstant sourceGraph = copy.getSourceGraph();
@@ -184,11 +180,11 @@ public class SailUpdateExecutor {
 
 		// get all statements from source and add them to destination
 		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
-				includeInferred, (Resource)source);
+				uc.isIncludeInferred(), (Resource)source);
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-				con.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
+				con.addStatement(uc, st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
 			}
 		}
 		finally {
@@ -198,12 +194,10 @@ public class SailUpdateExecutor {
 
 	/**
 	 * @param updateExpr
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeAdd(Add add, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	protected void executeAdd(Add add, UpdateContext uc)
 		throws SailException
 	{
 		ValueConstant sourceGraph = add.getSourceGraph();
@@ -219,11 +213,11 @@ public class SailUpdateExecutor {
 
 		// get all statements from source and add them to destination
 		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
-				includeInferred, (Resource)source);
+				uc.isIncludeInferred(), (Resource)source);
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-				con.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
+				con.addStatement(uc, st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
 			}
 		}
 		finally {
@@ -233,12 +227,10 @@ public class SailUpdateExecutor {
 
 	/**
 	 * @param updateExpr
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeMove(Move move, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	protected void executeMove(Move move, UpdateContext uc)
 		throws SailException
 	{
 		ValueConstant sourceGraph = move.getSourceGraph();
@@ -257,12 +249,12 @@ public class SailUpdateExecutor {
 
 		// remove all statements from source and add them to destination
 		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
-				includeInferred, (Resource)source);
+				uc.isIncludeInferred(), (Resource)source);
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-				con.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
-				con.removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), (Resource)source);
+				con.addStatement(uc, st.getSubject(), st.getPredicate(), st.getObject(), (Resource)destination);
+				con.removeStatement(uc, st.getSubject(), st.getPredicate(), st.getObject(), (Resource)source);
 			}
 		}
 		finally {
@@ -272,12 +264,10 @@ public class SailUpdateExecutor {
 
 	/**
 	 * @param updateExpr
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeClear(Clear clearExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
+	protected void executeClear(Clear clearExpr, UpdateContext uc)
 		throws SailException
 	{
 		try {
@@ -317,23 +307,20 @@ public class SailUpdateExecutor {
 
 	/**
 	 * @param updateExpr
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeInsertData(InsertData insertDataExpr, Dataset ds, BindingSet bindings,
-			boolean includeInferred)
+	protected void executeInsertData(InsertData insertDataExpr, UpdateContext uc)
 		throws SailException
 	{
 		TupleExpr insertExpr = insertDataExpr.getInsertExpr();
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = con.evaluate(
-				insertExpr, ds, bindings, includeInferred);
+				insertExpr, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
 
 		try {
 			try {
-				URI insert = ds == null ? null : ds.getDefaultInsertGraph();
+				URI insert = uc.getDataset().getDefaultInsertGraph();
 				while (toBeInserted.hasNext()) {
 					BindingSet bs = toBeInserted.next();
 	
@@ -343,13 +330,13 @@ public class SailUpdateExecutor {
 					Resource context = (Resource)bs.getValue("context");
 	
 					if (context == null && insert == null) {
-						con.addStatement(subject, predicate, object);
+						con.addStatement(uc, subject, predicate, object);
 					}
 					else if (context == null) {
-						con.addStatement(subject, predicate, object, insert);
+						con.addStatement(uc, subject, predicate, object, insert);
 					}
 					else {
-						con.addStatement(subject, predicate, object, context);
+						con.addStatement(uc, subject, predicate, object, context);
 					}
 				}
 			}
@@ -369,18 +356,17 @@ public class SailUpdateExecutor {
 	 * @param includeInferred
 	 * @throws SailException
 	 */
-	protected void executeDeleteData(DeleteData deleteDataExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred)
+	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc)
 		throws SailException
 	{
 		TupleExpr deleteExpr = deleteDataExpr.getDeleteExpr();
 
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeDeleted = con.evaluate(
-				deleteExpr, dataset, bindings, includeInferred);
+				deleteExpr, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
 
 		try {
 			try {
-				URI[] remove = getDefaultRemoveGraphs(dataset);
+				URI[] remove = getDefaultRemoveGraphs(uc.getDataset());
 				while (toBeDeleted.hasNext()) {
 					BindingSet bs = toBeDeleted.next();
 	
@@ -390,10 +376,10 @@ public class SailUpdateExecutor {
 					Resource context = (Resource)bs.getValue("context");
 	
 					if (context != null) {
-						con.removeStatements(subject, predicate, object, context);
+						con.removeStatement(uc, subject, predicate, object, context);
 					}
 					else if (remove != null) {
-						con.removeStatements(subject, predicate, object, remove);
+						con.removeStatement(uc, subject, predicate, object, remove);
 					}
 				}
 			}
@@ -406,7 +392,7 @@ public class SailUpdateExecutor {
 		}
 	}
 
-	protected void executeModify(Modify modify, Dataset ds, BindingSet bindings, boolean includeInferred)
+	protected void executeModify(Modify modify, UpdateContext uc)
 		throws SailException
 	{
 		try {
@@ -417,35 +403,13 @@ public class SailUpdateExecutor {
 			}
 			
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
-			sourceBindings = evaluateWhereClause(whereClause, ds, bindings, includeInferred);
+			sourceBindings = evaluateWhereClause(whereClause, uc);
 			try {
-				URI insert = ds == null ? null : ds.getDefaultInsertGraph();
-				URI[] remove = getDefaultRemoveGraphs(ds);
-				if (readSnapshot) {
-					while (sourceBindings.hasNext()) {
-						BindingSet sourceBinding = sourceBindings.next();
-						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), remove);
+				while (sourceBindings.hasNext()) {
+					BindingSet sourceBinding = sourceBindings.next();
+					deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), uc);
 
-						insertBoundTriples(sourceBinding, modify.getInsertExpr(), insert);
-					}
-				}
-				else {
-					// We fully materialize the result of evaluation of the
-					// WHERE-clause. This is necessary to avoid having triples
-					// produced or removed by the current INSERT/DELETE clause
-					// contaminating the result, while at the same time guaranteeing
-					// that results produced by previous updates in the same
-					// transaction _are_ taken into account (see SES-930)
-					Collection<BindingSet> cachedSourceBindings = new ArrayList<BindingSet>();
-					while (sourceBindings.hasNext()) {
-						cachedSourceBindings.add(sourceBindings.next());
-					}
-
-					for (BindingSet sourceBinding : cachedSourceBindings) {
-						deleteBoundTriples(sourceBinding, modify.getDeleteExpr(), remove);
-
-						insertBoundTriples(sourceBinding, modify.getInsertExpr(), insert);
-					}
+					insertBoundTriples(sourceBinding, modify.getInsertExpr(), uc);
 				}
 			}
 			finally {
@@ -468,19 +432,17 @@ public class SailUpdateExecutor {
 
 	/**
 	 * @param whereClause
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param uc
 	 * @return
 	 * @throws SailException
 	 * @throws QueryEvaluationException
 	 */
-	private CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateWhereClause(final TupleExpr whereClause, Dataset dataset,
-			final BindingSet bindings, boolean includeInferred)
+	private CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateWhereClause(
+			final TupleExpr whereClause, final UpdateContext uc)
 		throws SailException, QueryEvaluationException
 	{
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
-		sourceBindings = con.evaluate(whereClause, dataset, bindings, includeInferred);
+		sourceBindings = con.evaluate(whereClause, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
 
 		return new ConvertingIteration<BindingSet, BindingSet, QueryEvaluationException>(sourceBindings) {
 
@@ -488,16 +450,16 @@ public class SailUpdateExecutor {
 				throws QueryEvaluationException
 			{
 				if (whereClause instanceof SingletonSet && sourceBinding instanceof EmptyBindingSet
-						&& bindings != null)
+						&& uc.getBindingSet() != null)
 				{
 					// in the case of an empty WHERE clause, we use the supplied
 					// bindings to produce triples to DELETE/INSERT
-					return bindings;
+					return uc.getBindingSet();
 				}
 				else {
 					// check if any supplied bindings do not occur in the bindingset
 					// produced by the WHERE clause. If so, merge.
-					Set<String> uniqueBindings = new HashSet<String>(bindings.getBindingNames());
+					Set<String> uniqueBindings = new HashSet<String>(uc.getBindingSet().getBindingNames());
 					uniqueBindings.removeAll(sourceBinding.getBindingNames());
 					if (uniqueBindings.size() > 0) {
 						MapBindingSet mergedSet = new MapBindingSet();
@@ -505,7 +467,7 @@ public class SailUpdateExecutor {
 							mergedSet.addBinding(sourceBinding.getBinding(bindingName));
 						}
 						for (String bindingName : uniqueBindings) {
-							mergedSet.addBinding(bindings.getBinding(bindingName));
+							mergedSet.addBinding(uc.getBindingSet().getBinding(bindingName));
 						}
 						return mergedSet;
 					}
@@ -520,7 +482,7 @@ public class SailUpdateExecutor {
 	 * @param deleteClause
 	 * @throws SailException
 	 */
-	private void deleteBoundTriples(BindingSet whereBinding, TupleExpr deleteClause, URI... remove)
+	private void deleteBoundTriples(BindingSet whereBinding, TupleExpr deleteClause, UpdateContext uc)
 		throws SailException
 	{
 		if (deleteClause != null) {
@@ -544,10 +506,11 @@ public class SailUpdateExecutor {
 				}
 
 				if (context != null) {
-					con.removeStatements(subject, predicate, object, context);
+					con.removeStatement(uc, subject, predicate, object, context);
 				}
-				else if (remove != null) {
-					con.removeStatements(subject, predicate, object, remove);
+				else {
+					URI[] remove = getDefaultRemoveGraphs(uc.getDataset());
+					con.removeStatement(uc, subject, predicate, object, remove);
 				}
 			}
 		}
@@ -558,7 +521,7 @@ public class SailUpdateExecutor {
 	 * @param insertClause
 	 * @throws SailException
 	 */
-	private void insertBoundTriples(BindingSet whereBinding, TupleExpr insertClause, URI with)
+	private void insertBoundTriples(BindingSet whereBinding, TupleExpr insertClause, UpdateContext uc)
 		throws SailException
 	{
 		if (insertClause != null) {
@@ -572,16 +535,17 @@ public class SailUpdateExecutor {
 						bnodeMapping);
 
 				if (toBeInserted != null) {
+					URI with = uc.getDataset().getDefaultInsertGraph();
 					if (with == null && toBeInserted.getContext() == null) {
-						con.addStatement(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+						con.addStatement(uc, toBeInserted.getSubject(), toBeInserted.getPredicate(),
 								toBeInserted.getObject());
 					}
 					else if (toBeInserted.getContext() == null) {
-						con.addStatement(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+						con.addStatement(uc, toBeInserted.getSubject(), toBeInserted.getPredicate(),
 								toBeInserted.getObject(), with);
 					}
 					else {
-						con.addStatement(toBeInserted.getSubject(), toBeInserted.getPredicate(),
+						con.addStatement(uc, toBeInserted.getSubject(), toBeInserted.getPredicate(),
 								toBeInserted.getObject(), toBeInserted.getContext());
 					}
 				}

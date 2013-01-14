@@ -6,8 +6,10 @@
 package org.openrdf.sail.helpers;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -17,12 +19,16 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.model.BNode;
+import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -31,6 +37,7 @@ import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
+import org.openrdf.sail.UpdateContext;
 
 /**
  * Abstract Class offering base functionality for SailConnection
@@ -93,6 +100,21 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * debugging is enabled.
 	 */
 	private final Throwable creatorTrace;
+
+	/**
+	 * Statements that are currently being removed, but not yet realized, by an active operation.
+	 */
+	private final Map<UpdateContext, Model> removed = new HashMap<UpdateContext, Model>();
+
+	/**
+	 * Statements that are currently being added, but not yet realized, by an active operation.
+	 */
+	private final Map<UpdateContext, Model> added = new HashMap<UpdateContext, Model>();
+
+	/**
+	 * Used to indicate a removed statement from all contexts.
+	 */
+	private final BNode wildContext = ValueFactoryImpl.getInstance().createBNode();
 
 	/*--------------*
 	 * Constructors *
@@ -460,6 +482,72 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	public void start(UpdateContext op)
+		throws SailException
+	{
+		synchronized (removed) {
+			assert !removed.containsKey(op);
+			removed.put(op, new LinkedHashModel());
+		}
+		synchronized (added) {
+			assert !added.containsKey(op);
+			added.put(op, new LinkedHashModel());
+		}
+	}
+
+	/**
+	 * The default implementation buffers added statements until the update
+	 * operation is complete.
+	 */
+	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		synchronized (added) {
+			added.get(op).add(subj, pred, obj, contexts);
+		}
+	}
+
+	/**
+	 * The default implementation buffers removed statements until the update
+	 * operation is complete.
+	 */
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj,
+			Resource... contexts)
+		throws SailException
+	{
+		if (contexts != null && contexts.length == 0) {
+			contexts = new Resource[]{ wildContext };
+		}
+		synchronized (removed) {
+			removed.get(op).add(subj, pred, obj, contexts);
+		}
+	}
+
+	public void end(UpdateContext op)
+		throws SailException
+	{
+		Model model;
+		// realize DELETE
+		synchronized (removed) {
+			model = removed.remove(op);
+		}
+		for (Statement st : model) {
+			Resource ctx = st.getContext();
+			if (wildContext.equals(ctx)) {
+				removeStatements(st.getSubject(), st.getPredicate(), st.getObject());
+			} else {
+				removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
+			}
+		}
+		// realize INSERT
+		synchronized (added) {
+			model = added.remove(op);
+		}
+		for (Statement st : model) {
+			addStatement(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+		}
+	}
+
 	public final void clear(Resource... contexts)
 		throws SailException
 	{
@@ -645,7 +733,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		 * now.
 		 */
 		ValueFactory vf = sailBase.getValueFactory();
-		SailUpdateExecutor executor = new SailUpdateExecutor(this, vf, false);
+		SailUpdateExecutor executor = new SailUpdateExecutor(this, vf);
 		executor.executeUpdate(updateExpr, dataset, bindings, includeInferred);
 	}
 
