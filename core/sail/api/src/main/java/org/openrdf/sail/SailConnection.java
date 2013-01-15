@@ -173,15 +173,17 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Checks for an error state in the active transaction. A call to this method
-	 * should be followed by (in the same thread) with a call to
-	 * {@link #prepare()}, {@link #commit()}, {@link #rollback()}, or
-	 * {@link #close()}. If this method returns normally, the caller can
-	 * reasonably expect that a subsequent call to {@link #commit()} will also
-	 * return normally. The caller can expect subsequent calls to this method in
-	 * the same transaction to have the same outcome. If this method returns with
-	 * an exception the caller should treat the exception as if it came from a
-	 * call to {@link #commit()}.
+	 * Checks for an error state in the active transaction that would force the
+	 * transaction to be rolled back. This is an optional call; calling or not
+	 * calling this method should have no effect on the outcome of
+	 * {@link #commit()} or {@link #rollback()}. A call to this method must be
+	 * followed by (in the same thread) with a call to {@link #prepare()} ,
+	 * {@link #commit()}, {@link #rollback()}, or {@link #close()}. This method
+	 * may be called multiple times within the same transaction by the same
+	 * thread. If this method returns normally, the caller can reasonably expect
+	 * that a subsequent call to {@link #commit()} will also return normally. If
+	 * this method returns with an exception the caller should treat the
+	 * exception as if it came from a call to {@link #commit()}.
 	 * 
 	 * @since 2.7.0
 	 * @throws UnknownSailTransactionStateException
