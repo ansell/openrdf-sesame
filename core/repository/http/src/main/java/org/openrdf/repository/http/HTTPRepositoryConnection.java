@@ -5,12 +5,17 @@
  */
 package org.openrdf.repository.http;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
@@ -52,6 +57,8 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -314,9 +321,75 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		super.close();
 	}
 
-	@Override
-	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
-			Resource... contexts)
+	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		if (baseURI == null) {
+			// default baseURI to file
+			baseURI = file.toURI().toString();
+		}
+		if (dataFormat == null) {
+			dataFormat = Rio.getParserFormatForFileName(file.getName());
+		}
+
+		InputStream in = new FileInputStream(file);
+		try {
+			add(in, baseURI, dataFormat, contexts);
+		}
+		finally {
+			in.close();
+		}
+	}
+
+	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		if (baseURI == null) {
+			baseURI = url.toExternalForm();
+		}
+
+		URLConnection con = url.openConnection();
+
+		// Set appropriate Accept headers
+		if (dataFormat != null) {
+			for (String mimeType : dataFormat.getMIMETypes()) {
+				con.addRequestProperty("Accept", mimeType);
+			}
+		}
+		else {
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, true, null);
+			for (String acceptParam : acceptParams) {
+				con.addRequestProperty("Accept", acceptParam);
+			}
+		}
+
+		InputStream in = con.getInputStream();
+
+		if (dataFormat == null) {
+			// Try to determine the data's MIME type
+			String mimeType = con.getContentType();
+			int semiColonIdx = mimeType.indexOf(';');
+			if (semiColonIdx >= 0) {
+				mimeType = mimeType.substring(0, semiColonIdx);
+			}
+			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
+
+			// Fall back to using file name extensions
+			if (dataFormat == null) {
+				dataFormat = Rio.getParserFormatForFileName(url.getPath());
+			}
+		}
+
+		try {
+			add(in, baseURI, dataFormat, contexts);
+		}
+		finally {
+			in.close();
+		}
+	}
+
+	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
 		// FIXME (J1) in the new setup, isActive is always true when you get to this point. We need transactional support
@@ -324,21 +397,27 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (!isActive()) { 
 			// Send bytes directly to the server
 			HTTPClient httpClient = getRepository().getHTTPClient();
-			if (inputStreamOrReader instanceof InputStream) {
-				httpClient.upload(((InputStream)inputStreamOrReader), baseURI, dataFormat, false, contexts);
-			}
-			else if (inputStreamOrReader instanceof Reader) {
-				httpClient.upload(((Reader)inputStreamOrReader), baseURI, dataFormat, false, contexts);
-			}
-			else {
-				throw new IllegalArgumentException(
-						"inputStreamOrReader must be an InputStream or a Reader, is a: "
-								+ inputStreamOrReader.getClass());
-			}
+			httpClient.upload(in, baseURI, dataFormat, false, contexts);
 		}
 		else {
 			// Parse files locally
-			super.addInputStreamOrReader(inputStreamOrReader, baseURI, dataFormat, contexts);
+			super.add(in, baseURI, dataFormat, contexts);
+		}
+	}
+
+	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		// FIXME (J1) in the new setup, isActive is always true when you get to this point. We need transactional support
+		// in the httpclient itself (and thus in the protocol).
+		if (!isActive()) { 
+			// Send bytes directly to the server
+			HTTPClient httpClient = getRepository().getHTTPClient();
+			httpClient.upload(reader, baseURI, dataFormat, false, contexts);
+		}
+		else {
+			// Parse files locally
+			super.add(reader, baseURI, dataFormat, contexts);
 		}
 	}
 

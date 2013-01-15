@@ -5,26 +5,15 @@
  */
 package org.openrdf.repository.base;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.io.GZipUtil;
-import info.aduna.io.ZipUtil;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
@@ -45,19 +34,14 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.util.RDFInserter;
+import org.openrdf.repository.util.RDFLoader;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
-import org.openrdf.rio.RDFParserRegistry;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
  * Abstract class implementing most 'convenience' methods in the
@@ -210,86 +194,108 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (baseURI == null) {
-			// default baseURI to file
-			baseURI = file.toURI().toString();
-		}
-		if (dataFormat == null) {
-			dataFormat = Rio.getParserFormatForFileName(file.getName());
-		}
+		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		InputStream in = new FileInputStream(file);
+		RDFInserter rdfInserter = new RDFInserter(this);
+		rdfInserter.enforceContext(contexts);
+
+		boolean localTransaction = startLocalTransaction();
+
 		try {
-			add(in, baseURI, dataFormat, contexts);
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(file, baseURI, dataFormat, rdfInserter);
+
+			conditionalCommit(localTransaction);
 		}
-		finally {
-			in.close();
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+			
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
 		}
 	}
 
 	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (baseURI == null) {
-			baseURI = url.toExternalForm();
-		}
+		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		URLConnection con = url.openConnection();
+		RDFInserter rdfInserter = new RDFInserter(this);
+		rdfInserter.enforceContext(contexts);
 
-		// Set appropriate Accept headers
-		if (dataFormat != null) {
-			for (String mimeType : dataFormat.getMIMETypes()) {
-				con.addRequestProperty("Accept", mimeType);
-			}
-		}
-		else {
-			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, true, null);
-			for (String acceptParam : acceptParams) {
-				con.addRequestProperty("Accept", acceptParam);
-			}
-		}
-
-		InputStream in = con.getInputStream();
-
-		if (dataFormat == null) {
-			// Try to determine the data's MIME type
-			String mimeType = con.getContentType();
-			int semiColonIdx = mimeType.indexOf(';');
-			if (semiColonIdx >= 0) {
-				mimeType = mimeType.substring(0, semiColonIdx);
-			}
-			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
-
-			// Fall back to using file name extensions
-			if (dataFormat == null) {
-				dataFormat = Rio.getParserFormatForFileName(url.getPath());
-			}
-		}
+		boolean localTransaction = startLocalTransaction();
 
 		try {
-			add(in, baseURI, dataFormat, contexts);
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(url, baseURI, dataFormat, rdfInserter);
+
+			conditionalCommit(localTransaction);
 		}
-		finally {
-			in.close();
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+			
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
 		}
 	}
 
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (!in.markSupported()) {
-			in = new BufferedInputStream(in, 1024);
-		}
+		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		if (ZipUtil.isZipStream(in)) {
-			addZip(in, baseURI, dataFormat, contexts);
+		RDFInserter rdfInserter = new RDFInserter(this);
+		rdfInserter.enforceContext(contexts);
+
+		boolean localTransaction = startLocalTransaction();
+
+		try {
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(in, baseURI, dataFormat, rdfInserter);
+
+			conditionalCommit(localTransaction);
 		}
-		else if (GZipUtil.isGZipStream(in)) {
-			add(new GZIPInputStream(in), baseURI, dataFormat, contexts);
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+			
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
 		}
-		else {
-			addInputStreamOrReader(in, baseURI, dataFormat, contexts);
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
 		}
 	}
 
@@ -345,114 +351,19 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 	}
 
-	private void addZip(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
-	{
-		boolean localTransaction = startLocalTransaction();
-
-		try {
-			ZipInputStream zipIn = new ZipInputStream(in);
-
-			try {
-				for (ZipEntry entry = zipIn.getNextEntry(); entry != null; entry = zipIn.getNextEntry()) {
-					if (entry.isDirectory()) {
-						continue;
-					}
-
-					RDFFormat format = Rio.getParserFormatForFileName(entry.getName(), dataFormat);
-
-					try {
-						// Prevent parser (Xerces) from closing the input stream
-						FilterInputStream wrapper = new FilterInputStream(zipIn) {
-
-							public void close() {
-							}
-						};
-						add(wrapper, baseURI, format, contexts);
-						
-					}
-					catch (RDFParseException e) {
-						if (localTransaction) {
-							rollback();
-						}
-
-						String msg = e.getMessage() + " in " + entry.getName();
-						RDFParseException pe = new RDFParseException(msg, e.getLineNumber(), e.getColumnNumber());
-						pe.initCause(e);
-						throw pe;
-					}
-					finally {
-						zipIn.closeEntry();
-					}
-				} // end for
-				conditionalCommit(localTransaction);
-			}
-			finally {
-				zipIn.close();
-			}
-		}
-		catch (IOException e) {
-			conditionalRollback(localTransaction);
-			throw e;
-		}
-		catch (RepositoryException e) {
-			conditionalRollback(localTransaction);
-			throw e;
-		}
-	}
-
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
-	{
-		addInputStreamOrReader(reader, baseURI, dataFormat, contexts);
-	}
-
-	/**
-	 * Adds the data that can be read from the supplied InputStream or Reader to
-	 * this repository.
-	 * 
-	 * @param inputStreamOrReader
-	 *        An {@link InputStream} or {@link Reader} containing RDF data that
-	 *        must be added to the repository.
-	 * @param baseURI
-	 *        The base URI for the data.
-	 * @param dataFormat
-	 *        The file format of the data.
-	 * @param contexts
-	 *        The context(s) to which the data should be added.
-	 * @throws IOException
-	 * @throws UnsupportedRDFormatException
-	 * @throws RDFParseException
-	 * @throws RepositoryException
-	 */
-	protected void addInputStreamOrReader(Object inputStreamOrReader, String baseURI, RDFFormat dataFormat,
-			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
-		RDFParser rdfParser = Rio.createParser(dataFormat, getRepository().getValueFactory());
-		rdfParser.setParserConfig(getParserConfig());
-		rdfParser.setParseErrorListener(new ParseErrorLogger());
-
 		RDFInserter rdfInserter = new RDFInserter(this);
 		rdfInserter.enforceContext(contexts);
-		rdfParser.setRDFHandler(rdfInserter);
 
 		boolean localTransaction = startLocalTransaction();
 
 		try {
-			if (inputStreamOrReader instanceof InputStream) {
-				rdfParser.parse((InputStream)inputStreamOrReader, baseURI);
-			}
-			else if (inputStreamOrReader instanceof Reader) {
-				rdfParser.parse((Reader)inputStreamOrReader, baseURI);
-			}
-			else {
-				throw new IllegalArgumentException(
-						"inputStreamOrReader must be an InputStream or a Reader, is a: "
-								+ inputStreamOrReader.getClass());
-			}
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(reader, baseURI, dataFormat, rdfInserter);
 
 			conditionalCommit(localTransaction);
 		}
@@ -461,6 +372,14 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 			
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
 		}
 		catch (RuntimeException e) {
 			conditionalRollback(localTransaction);
