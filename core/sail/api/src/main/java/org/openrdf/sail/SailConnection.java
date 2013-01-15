@@ -76,30 +76,6 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Executes the supplied UpdateExpr on the dataset contained in this Sail.
-	 * 
-	 * @param updateExpr
-	 *        the update expression to execute.
-	 * @param dataset
-	 *        The dataset to use for update execution, <tt>null</tt> to use the
-	 *        Sail's default dataset.
-	 * @param bindings
-	 *        A set of input parameters for update execution. The keys reference
-	 *        variable names that should be bound to the value they map to.
-	 * @param includeInferred
-	 *        indicates whether inferred triples (if any exist in the Sail)
-	 *        should be considered in execution.
-	 * @throws SailException
-	 *         if executing the update failed, for example because no transaction
-	 *         is active.
-	 * @throws IllegalStateException
-	 *         if the connection has been closed.
-	 */
-	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred)
-		throws SailException;
-
-	/**
 	 * Returns the set of all unique context identifiers that are used to store
 	 * statements.
 	 * 
@@ -303,11 +279,11 @@ public interface SailConnection {
 	 * passed to subsequent
 	 * {@link #addStatement(UpdateContext, Resource, URI, Value, Resource...)} or
 	 * {@link #removeStatement(UpdateContext, Resource, URI, Value, Resource...)}
-	 * calls before {@link #end(UpdateContext)} is called.
+	 * calls before {@link #endUpdate(UpdateContext)} is called.
 	 * 
 	 * @throws SailException
 	 */
-	public void start(UpdateContext op)
+	public void startUpdate(UpdateContext op)
 		throws SailException;
 
 	/**
@@ -374,7 +350,7 @@ public interface SailConnection {
 	 * @param op
 	 * @throws SailException
 	 */
-	public void end(UpdateContext op)
+	public void endUpdate(UpdateContext op)
 		throws SailException;
 
 	/**

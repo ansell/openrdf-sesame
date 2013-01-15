@@ -26,14 +26,13 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -287,28 +286,6 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
-	public final void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred)
-		throws SailException
-	{
-		connectionLock.readLock().lock();
-		try {
-			verifyIsOpen();
-
-			updateLock.lock();
-			try {
-				verifyIsActive();
-				executeInternal(updateExpr, dataset, bindings, includeInferred);
-			}
-			finally {
-				updateLock.unlock();
-			}
-		}
-		finally {
-			connectionLock.readLock().unlock();
-		}
-	}
-
 	public final CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
@@ -482,16 +459,18 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
-	public void start(UpdateContext op)
+	public void startUpdate(UpdateContext op)
 		throws SailException
 	{
-		synchronized (removed) {
-			assert !removed.containsKey(op);
-			removed.put(op, new LinkedHashModel());
-		}
-		synchronized (added) {
-			assert !added.containsKey(op);
-			added.put(op, new LinkedHashModel());
+		if (op.getUpdateExpr() instanceof Modify) {
+			synchronized (removed) {
+				assert !removed.containsKey(op);
+				removed.put(op, new LinkedHashModel());
+			}
+			synchronized (added) {
+				assert !added.containsKey(op);
+				added.put(op, new LinkedHashModel());
+			}
 		}
 	}
 
@@ -503,7 +482,11 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws SailException
 	{
 		synchronized (added) {
-			added.get(op).add(subj, pred, obj, contexts);
+			if (added.containsKey(op)) {
+				added.get(op).add(subj, pred, obj, contexts);
+			} else {
+				addStatement(subj, pred, obj, contexts);
+			}
 		}
 	}
 
@@ -515,15 +498,19 @@ public abstract class SailConnectionBase implements SailConnection {
 			Resource... contexts)
 		throws SailException
 	{
-		if (contexts != null && contexts.length == 0) {
-			contexts = new Resource[]{ wildContext };
-		}
 		synchronized (removed) {
-			removed.get(op).add(subj, pred, obj, contexts);
+			if (removed.containsKey(op)) {
+				if (contexts != null && contexts.length == 0) {
+					contexts = new Resource[]{ wildContext };
+				}
+				removed.get(op).add(subj, pred, obj, contexts);
+			} else {
+				removeStatements(subj, pred, obj, contexts);
+			}
 		}
 	}
 
-	public void end(UpdateContext op)
+	public void endUpdate(UpdateContext op)
 		throws SailException
 	{
 		Model model;
@@ -531,20 +518,24 @@ public abstract class SailConnectionBase implements SailConnection {
 		synchronized (removed) {
 			model = removed.remove(op);
 		}
-		for (Statement st : model) {
-			Resource ctx = st.getContext();
-			if (wildContext.equals(ctx)) {
-				removeStatements(st.getSubject(), st.getPredicate(), st.getObject());
-			} else {
-				removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
+		if (model != null) {
+			for (Statement st : model) {
+				Resource ctx = st.getContext();
+				if (wildContext.equals(ctx)) {
+					removeStatements(st.getSubject(), st.getPredicate(), st.getObject());
+				} else {
+					removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
+				}
 			}
 		}
 		// realize INSERT
 		synchronized (added) {
 			model = added.remove(op);
 		}
-		for (Statement st : model) {
-			addStatement(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+		if (model != null) {
+			for (Statement st : model) {
+				addStatement(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+			}
 		}
 	}
 
@@ -723,19 +714,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException;
-
-	protected void executeInternal(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred)
-		throws SailException
-	{
-		/* TODO this method should really be defined abstract, but for backward-compatibility 
-		 * purposes with third-party SAIL implementations we provide a default implementation for 
-		 * now.
-		 */
-		ValueFactory vf = sailBase.getValueFactory();
-		SailUpdateExecutor executor = new SailUpdateExecutor(this, vf);
-		executor.executeUpdate(updateExpr, dataset, bindings, includeInferred);
-	}
 
 	protected abstract CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
 		throws SailException;

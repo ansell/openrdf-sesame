@@ -3,8 +3,10 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.sail.helpers;
+package org.openrdf.repository.sail.helpers;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,20 +47,23 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.sail.Sail;
+import org.openrdf.repository.sail.SailUpdate;
+import org.openrdf.repository.util.RDFLoader;
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UpdateContext;
 
 /**
- * Implementation of
- * {@link SailConnection#executeUpdate(UpdateExpr, Dataset, BindingSet, boolean)}
- * using
+ * Implementation of {@link SailUpdate#execute()} using
  * {@link SailConnection#evaluate(TupleExpr, Dataset, BindingSet, boolean)} and
- * other {@link SailConnection} methods.
+ * other {@link SailConnection} methods. LOAD is handled at the Repository API
+ * level because it requires access to the Rio parser.
  * 
  * @author jeen
- * @author james
+ * @author James Leigh
  */
 public class SailUpdateExecutor {
 
@@ -68,37 +73,39 @@ public class SailUpdateExecutor {
 
 	private final ValueFactory vf;
 
-	@Deprecated
-	public SailUpdateExecutor(Sail sail, SailConnection con) {
-		this(con, sail.getValueFactory());
-	}
+	private final RDFLoader loader;
 
 	/**
 	 * An implementation of the
-	 * {@link SailConnection#executeUpdate(UpdateExpr, Dataset, BindingSet, boolean)}
-	 * using other methods like
+	 * {@link org.openrdf.repository.sail.SailUpdate#execute()} using methods
+	 * like
 	 * {@link SailConnection#evaluate(TupleExpr, Dataset, BindingSet, boolean)}.
 	 * 
 	 * @param con
 	 *        Used to read data from and write data to.
 	 * @param vf
 	 *        Used to create {@link BNode}s
+	 * @param loadConfig
 	 */
-	public SailUpdateExecutor(SailConnection con, ValueFactory vf) {
+	public SailUpdateExecutor(SailConnection con, ValueFactory vf, ParserConfig loadConfig) {
 		this.con = con;
 		this.vf = vf;
+		this.loader = new RDFLoader(loadConfig, vf);
 	}
 
 	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
 			boolean includeInferred)
-		throws SailException
+		throws SailException, RDFParseException, IOException
 	{
 		UpdateContext uc = new UpdateContext(updateExpr, dataset, bindings, includeInferred);
 		logger.trace("Incoming update expression:\n{}", uc);
 
-		con.start(uc);
+		con.startUpdate(uc);
 		try {
-			if (updateExpr instanceof Modify) {
+			if (updateExpr instanceof Load) {
+				executeLoad((Load)updateExpr, uc);
+			}
+			else if (updateExpr instanceof Modify) {
 				executeModify((Modify)updateExpr, uc);
 			}
 			else if (updateExpr instanceof InsertData) {
@@ -125,8 +132,30 @@ public class SailUpdateExecutor {
 			else if (updateExpr instanceof Load) {
 				throw new SailException("load operations can not be handled directly by the SAIL");
 			}
-		} finally {
-			con.end(uc);
+		}
+		finally {
+			con.endUpdate(uc);
+		}
+	}
+
+	protected void executeLoad(Load load, UpdateContext uc)
+		throws IOException, RDFParseException, SailException
+	{
+		Value source = load.getSource().getValue();
+		Value graph = load.getGraph() != null ? load.getGraph().getValue() : null;
+
+		URL sourceURL = new URL(source.stringValue());
+
+		RDFSailInserter rdfInserter = new RDFSailInserter(con, vf, uc);
+		if (graph != null) {
+			rdfInserter.enforceContext((Resource)graph);
+		}
+		try {
+			loader.load(sourceURL, source.stringValue(), null, rdfInserter);
+		}
+		catch (RDFHandlerException e) {
+			// RDFSailInserter only throws wrapped SailExceptions
+			throw (SailException)e.getCause();
 		}
 	}
 
@@ -323,12 +352,12 @@ public class SailUpdateExecutor {
 				URI insert = uc.getDataset().getDefaultInsertGraph();
 				while (toBeInserted.hasNext()) {
 					BindingSet bs = toBeInserted.next();
-	
+
 					Resource subject = (Resource)bs.getValue("subject");
 					URI predicate = (URI)bs.getValue("predicate");
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
-	
+
 					if (context == null && insert == null) {
 						con.addStatement(uc, subject, predicate, object);
 					}
@@ -369,12 +398,12 @@ public class SailUpdateExecutor {
 				URI[] remove = getDefaultRemoveGraphs(uc.getDataset());
 				while (toBeDeleted.hasNext()) {
 					BindingSet bs = toBeDeleted.next();
-	
+
 					Resource subject = (Resource)bs.getValue("subject");
 					URI predicate = (URI)bs.getValue("predicate");
 					Value object = bs.getValue("object");
 					Resource context = (Resource)bs.getValue("context");
-	
+
 					if (context != null) {
 						con.removeStatement(uc, subject, predicate, object, context);
 					}
@@ -401,7 +430,7 @@ public class SailUpdateExecutor {
 			if (!(whereClause instanceof QueryRoot)) {
 				whereClause = new QueryRoot(whereClause);
 			}
-			
+
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
 			sourceBindings = evaluateWhereClause(whereClause, uc);
 			try {
@@ -498,9 +527,10 @@ public class SailUpdateExecutor {
 				if (deletePattern.getContextVar() != null) {
 					context = (Resource)getValueForVar(deletePattern.getContextVar(), whereBinding);
 				}
-				
+
 				if (subject == null || predicate == null || object == null) {
-					// skip removal of triple if any variable is unbound (may happen with optional patterns)
+					// skip removal of triple if any variable is unbound (may happen
+					// with optional patterns)
 					// See SES-1047.
 					continue;
 				}
@@ -531,8 +561,7 @@ public class SailUpdateExecutor {
 			// individual source binding.
 			MapBindingSet bnodeMapping = new MapBindingSet();
 			for (StatementPattern insertPattern : insertPatterns) {
-				Statement toBeInserted = createStatementFromPattern(insertPattern, whereBinding,
-						bnodeMapping);
+				Statement toBeInserted = createStatementFromPattern(insertPattern, whereBinding, bnodeMapping);
 
 				if (toBeInserted != null) {
 					URI with = uc.getDataset().getDefaultInsertGraph();
