@@ -64,6 +64,16 @@ import org.openrdf.sail.UpdateContext;
  * 
  * @author jeen
  * @author James Leigh
+ * @see SailConnection#startUpdate(UpdateContext)
+ * @see SailConnection#endUpdate(UpdateContext)
+ * @see SailConnection#addStatement(UpdateContext, Resource, URI, Value,
+ *      Resource...)
+ * @see SailConnection#removeStatement(UpdateContext, Resource, URI, Value,
+ *      Resource...)
+ * @see SailConnection#clear(Resource...)
+ * @see SailConnection#getContextIDs()
+ * @see SailConnection#getStatements(Resource, URI, Value, boolean, Resource...)
+ * @see SailConnection#evaluate(TupleExpr, Dataset, BindingSet, boolean)
  */
 public class SailUpdateExecutor {
 
@@ -76,10 +86,9 @@ public class SailUpdateExecutor {
 	private final RDFLoader loader;
 
 	/**
-	 * An implementation of the
-	 * {@link org.openrdf.repository.sail.SailUpdate#execute()} using methods
-	 * like
-	 * {@link SailConnection#evaluate(TupleExpr, Dataset, BindingSet, boolean)}.
+	 * Implementation of {@link SailUpdate#execute()} using
+	 * {@link SailConnection#evaluate(TupleExpr, Dataset, BindingSet, boolean)}
+	 * and other {@link SailConnection} methods.
 	 * 
 	 * @param con
 	 *        Used to read data from and write data to.
