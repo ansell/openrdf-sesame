@@ -12,6 +12,7 @@ import java.io.LineNumberReader;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import info.aduna.text.ASCIIUtil;
 
@@ -46,7 +47,8 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * constructs that extend over multiple lines, but the author's own parser
  * deviates from this too.</li>
  * <li>The localname part of a prefixed named is allowed to start with a number
- * (cf. <a href="http://www.w3.org/TR/turtle/">the W3C Turtle Working Draft</a>).</li>
+ * (cf. <a href="http://www.w3.org/TR/turtle/">the W3C Turtle Working
+ * Draft</a>).</li>
  * </ul>
  * 
  * @author Arjohn Kampman
@@ -171,8 +173,8 @@ public class TurtleParser extends RDFParserBase {
 		// Start counting lines at 1:
 		lineReader.setLineNumber(1);
 
-		// Allow at most 2 characters to be pushed back:
-		this.reader = new PushbackReader(lineReader, 2);
+		// Allow at most 8 characters to be pushed back:
+		this.reader = new PushbackReader(lineReader, 8);
 
 		// Store normalized base URI
 		setBaseURI(baseURI);
@@ -197,46 +199,55 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseStatement()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
 
-		if (c == '@') {
-			parseDirective();
+		StringBuilder sb = new StringBuilder(8);
+
+		int c;
+		// longest valid directive @prefix
+		do {
+			c = read();
+			if (c == -1 || TurtleUtil.isWhitespace(c)) {
+				unread(c);
+				break;
+			}
+			sb.append((char)c);
+		}
+		while (sb.length() < 8);
+
+		String directive = sb.toString();
+
+		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix")
+				|| directive.equalsIgnoreCase("base"))
+		{
+			parseDirective(directive);
 			skipWSC();
-			verifyCharacter(read(), ".");
+			// SPARQL BASE and PREFIX lines do not end in .
+			if (directive.startsWith("@")) {
+				verifyCharacter(read(), ".");
+			}
 		}
 		else {
+			unread(directive);
 			parseTriples();
 			skipWSC();
 			verifyCharacter(read(), ".");
 		}
 	}
 
-	protected void parseDirective()
+	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		// Verify that the first characters form the string "prefix"
-		verifyCharacter(read(), "@");
-
-		StringBuilder sb = new StringBuilder(8);
-
-		int c = read();
-		while (c != -1 && !TurtleUtil.isWhitespace(c)) {
-			sb.append((char)c);
-			c = read();
-		}
-
-		String directive = sb.toString();
-		if (directive.equals("prefix")) {
+		if (directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("@prefix")) {
 			parsePrefixID();
 		}
-		else if (directive.equals("base")) {
+		else if (directive.equalsIgnoreCase("base") || directive.equalsIgnoreCase("@base")) {
 			parseBase();
 		}
 		else if (directive.length() == 0) {
 			reportFatalError("Directive name is missing, expected @prefix or @base");
 		}
 		else {
-			reportFatalError("Unknown directive \"@" + directive + "\"");
+			reportFatalError("Unknown directive \"" + directive + "\"");
 		}
 	}
 
@@ -296,9 +307,39 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseTriples()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		parseSubject();
-		skipWSC();
-		parsePredicateObjectList();
+		int c = peek();
+
+		// If the first character is an open bracket we need to decide which of
+		// the two parsing methods for blank nodes to use
+		if (c == '[') {
+			c = read();
+			skipWSC();
+			c = peek();
+			if (c == ']') {
+				c = read();
+				subject = createBNode();
+				skipWSC();
+				parsePredicateObjectList();
+			}
+			else {
+				unread('[');
+				subject = parseImplicitBlank();
+			}
+			skipWSC();
+			c = peek();
+
+			// if this is not the end of the statement, recurse into the list of
+			// predicate and objects, using the subject parsed above as the subject
+			// of the statement.
+			if (c != '.') {
+				parsePredicateObjectList();
+			}
+		}
+		else {
+			parseSubject();
+			skipWSC();
+			parsePredicateObjectList();
+		}
 
 		subject = null;
 		predicate = null;
@@ -324,7 +365,11 @@ public class TurtleParser extends RDFParserBase {
 			{
 				break;
 			}
-
+			else if (c == ';') {
+				// empty predicateObjectList, skip to next
+				continue;
+			}
+			
 			predicate = parsePredicate();
 
 			skipWSC();
@@ -532,8 +577,8 @@ public class TurtleParser extends RDFParserBase {
 			// node ID, e.g. _:n1
 			return parseNodeID();
 		}
-		else if (c == '"') {
-			// quoted literal, e.g. "foo" or """foo"""
+		else if (c == '"' || c == '\'') {
+			// quoted literal, e.g. "foo" or """foo""" or 'foo' or '''foo'''
 			return parseQuotedLiteral();
 		}
 		else if (ASCIIUtil.isNumber(c) || c == '.' || c == '+' || c == '-') {
@@ -617,23 +662,25 @@ public class TurtleParser extends RDFParserBase {
 	{
 		String result = null;
 
-		// First character should be '"'
-		verifyCharacter(read(), "\"");
+		int c1 = read();
+
+		// First character should be '"' or "'"
+		verifyCharacter(c1, "\"\'");
 
 		// Check for long-string, which starts and ends with three double quotes
 		int c2 = read();
 		int c3 = read();
 
-		if (c2 == '"' && c3 == '"') {
+		if ((c2 == '"' && c3 == '"') || (c2 == '\'' && c3 == '\'')) {
 			// Long string
-			result = parseLongString();
+			result = parseLongString(c2);
 		}
 		else {
 			// Normal string
 			unread(c3);
 			unread(c2);
 
-			result = parseString();
+			result = parseString(c1);
 		}
 
 		// Unescape any escape sequences
@@ -648,10 +695,10 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Parses a "normal string". This method assumes that the first double quote
+	 * Parses a "normal string". This method requires that the opening character
 	 * has already been parsed.
 	 */
-	protected String parseString()
+	protected String parseString(int closingCharacter)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = new StringBuilder(32);
@@ -659,7 +706,7 @@ public class TurtleParser extends RDFParserBase {
 		while (true) {
 			int c = read();
 
-			if (c == '"') {
+			if (c == closingCharacter) {
 				break;
 			}
 			else if (c == -1) {
@@ -682,10 +729,10 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Parses a """long string""". This method assumes that the first three
-	 * double quotes have already been parsed.
+	 * Parses a """long string""". This method requires that the first three
+	 * characters have already been parsed.
 	 */
-	protected String parseLongString()
+	protected String parseLongString(int closingCharacter)
 		throws IOException, RDFParseException
 	{
 		StringBuilder sb = new StringBuilder(1024);
@@ -699,7 +746,7 @@ public class TurtleParser extends RDFParserBase {
 			if (c == -1) {
 				throwEOFException();
 			}
-			else if (c == '"') {
+			else if (c == closingCharacter) {
 				doubleQuoteCount++;
 			}
 			else {
@@ -741,22 +788,31 @@ public class TurtleParser extends RDFParserBase {
 		}
 
 		if (c == '.' || c == 'e' || c == 'E') {
-			// We're parsing a decimal or a double
-			datatype = XMLSchema.DECIMAL;
 
 			// read optional fractional digits
 			if (c == '.') {
-				value.append((char)c);
 
-				c = read();
-				while (ASCIIUtil.isNumber(c)) {
-					value.append((char)c);
-					c = read();
+				if (TurtleUtil.isWhitespace(peek())) {
+					// We're parsing an integer that did not have a space before the
+					// period to end the statement
 				}
+				else {
+					value.append((char)c);
 
-				if (value.length() == 1) {
-					// We've only parsed a '.'
-					reportFatalError("Object for statement missing");
+					c = read();
+
+					while (ASCIIUtil.isNumber(c)) {
+						value.append((char)c);
+						c = read();
+					}
+
+					if (value.length() == 1) {
+						// We've only parsed a '.'
+						reportFatalError("Object for statement missing");
+					}
+
+					// We're parsing a decimal or a double
+					datatype = XMLSchema.DECIMAL;
 				}
 			}
 			else {
@@ -846,6 +902,8 @@ public class TurtleParser extends RDFParserBase {
 
 		// Unescape any escape sequences
 		try {
+			// FIXME: The following decodes \n and similar in URIs, which should be
+			// invalid according to test <turtle-syntax-bad-uri-04.ttl>
 			uri = TurtleUtil.decodeString(uri);
 		}
 		catch (IllegalArgumentException e) {
@@ -906,11 +964,21 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder localName = new StringBuilder(16);
 		c = read();
 		if (TurtleUtil.isNameStartChar(c)) {
-			localName.append((char)c);
+			if (c == '\\') {
+				localName.append(readLocalEscapedChar());
+			}
+			else {
+				localName.append((char)c);
+			}
 
 			c = read();
 			while (TurtleUtil.isNameChar(c)) {
-				localName.append((char)c);
+				if (c == '\\') {
+					localName.append(readLocalEscapedChar());
+				}
+				else {
+					localName.append((char)c);
+				}
 				c = read();
 			}
 		}
@@ -920,6 +988,20 @@ public class TurtleParser extends RDFParserBase {
 
 		// Note: namespace has already been resolved
 		return createURI(namespace + localName.toString());
+	}
+
+	private char readLocalEscapedChar()
+		throws RDFParseException, IOException
+	{
+		int c = read();
+
+		if (TurtleUtil.isLocalEscapedChar(c)) {
+			return (char)c;
+		}
+		else {
+			throw new RDFParseException("found '" + (char)c + "', expected one of: "
+					+ Arrays.toString(TurtleUtil.LOCAL_ESCAPED_CHARS));
+		}
 	}
 
 	/**
@@ -1057,6 +1139,14 @@ public class TurtleParser extends RDFParserBase {
 	{
 		if (c != -1) {
 			reader.unread(c);
+		}
+	}
+
+	protected void unread(String directive)
+		throws IOException
+	{
+		for (int i = directive.length() - 1; i >= 0; i--) {
+			reader.unread(directive.charAt(i));
 		}
 	}
 
