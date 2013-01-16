@@ -27,8 +27,7 @@ import org.openrdf.query.resultio.TupleQueryResultParser;
  * 
  * @author James Leigh
  */
-public class BackgroundTupleResult extends TupleQueryResultImpl implements
-		TupleQueryResult, Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult extends TupleQueryResultImpl implements Runnable, TupleQueryResultHandler {
 
 	private volatile boolean closed;
 
@@ -102,6 +101,7 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements
 			bindingNamesReady.countDown();
 			if (!completed) {
 				method.abort();
+				method.releaseConnection();
 			}
 		}
 	}

@@ -19,6 +19,7 @@
 	<variable name="contexts.title">Contexts In Repository</variable>
 	<variable name="types.title">Types In Repository</variable>
 	<variable name="query.title">Query Repository</variable>
+	<variable name="saved-queries.title">Saved Queries</variable>
 	<variable name="query-result.title">Query Result</variable>
 	<variable name="export.title">Export Repository</variable>
 	<variable name="update.title">Execute SPARQL Update on Repository</variable>
@@ -59,6 +60,7 @@
 	<variable name="contexts.label">Contexts</variable>
 	<variable name="types.label">Types</variable>
 	<variable name="query.label">Query</variable>
+	<variable name="saved-queries.label">Saved Queries</variable>
 	<variable name="export.label">Export</variable>
 	<variable name="modify.label">Modify</variable>
 	<variable name="update.label">Update</variable>
@@ -115,8 +117,12 @@
 	<variable name="include-inferred.label">
 		Include inferred statements
 	</variable>
+	<variable name="save-private.label">Save privately (do not share)</variable>
+	<variable name="save.label">Save query</variable>
 	<variable name="object.label">Object</variable>
 	<variable name="predicate.label">Predicate</variable>
+	<variable name="query-options.label">Action Options</variable>
+	<variable name="query-actions.label">Actions</variable>
 	<variable name="query-language.label">Query Language</variable>
 	<variable name="query-string.label">Query</variable>
 	<variable name="update-string.label">Update</variable>

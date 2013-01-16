@@ -23,7 +23,7 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 		throws Exception
 	{
 		server = new HTTPMemServer();
-		
+
 		try {
 			server.start();
 			super.setUp();
@@ -52,9 +52,18 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 	@Ignore
 	@Test
 	@Override
-	public void testAutoCommitHandling() 
-	{
-		// transaction isolation is not supported for HTTP connections. disabling test.
-		System.err.println("temporarily disabled testAutoCommitHandling() for HTTPRepository");
+	public void testAutoCommitHandling() {
+		// transaction isolation is not supported for HTTP connections. disabling
+		// test.
+		System.err.println("temporarily disabled testAutoCommitHandling() for HTTPRepository. See SES-1652");
+	}
+
+	@Ignore
+	@Test
+	@Override
+	public void testConsecutiveUpdatesInSameTransaction() {
+		// transaction isolation is not supported for HTTP connections. disabling
+		// test.
+		System.err.println("temporarily disabled testConsecutiveUpdatesInSameTransaction() for HTTPRepository. See SES-1652");
 	}
 }

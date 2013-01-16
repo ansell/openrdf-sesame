@@ -107,11 +107,13 @@ public class FederatedServiceManager {
 	 * 
 	 * @param serviceUrl
 	 * @return
+	 * @throws RepositoryException 
 	 */
-	public FederatedService getService(String serviceUrl) {
+	public FederatedService getService(String serviceUrl) throws RepositoryException {
 		FederatedService service = endpointToService.get(serviceUrl);
 		if (service == null) {
 			service = new SPARQLFederatedService(serviceUrl);
+			service.initialize();
 			endpointToService.put(serviceUrl, service);
 		}
 		return service;

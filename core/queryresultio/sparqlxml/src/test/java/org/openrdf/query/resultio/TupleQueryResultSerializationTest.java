@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -19,7 +20,7 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
@@ -31,16 +32,20 @@ public class TupleQueryResultSerializationTest extends TestCase {
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
-		testQueryResultFormat(TupleQueryResultFormat.SPARQL);
+		testQueryResultFormat(TupleQueryResultFormat.SPARQL, createQueryResult(), createQueryResult());
 	}
 
-	private void testQueryResultFormat(TupleQueryResultFormat format)
+	public void testSPARQLResultFormatNoResults()
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
-		TupleQueryResult input = createQueryResult();
-		TupleQueryResult expected = createQueryResult();
+		testQueryResultFormat(TupleQueryResultFormat.SPARQL, createNoResultsQueryResult(), createNoResultsQueryResult());
+	}
 
+	private void testQueryResultFormat(TupleQueryResultFormat format, TupleQueryResult input, TupleQueryResult expected)
+		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
+		UnsupportedQueryResultFormatException, QueryEvaluationException
+	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);
 		input.close();
@@ -48,7 +53,7 @@ public class TupleQueryResultSerializationTest extends TestCase {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResultUtil.equals(expected, output));
+		assertTrue(QueryResults.equals(expected, output));
 	}
 
 	private TupleQueryResult createQueryResult() {
@@ -64,6 +69,16 @@ public class TupleQueryResultSerializationTest extends TestCase {
 		solution2.addBinding("c", new LiteralImpl("Hello World!", "en"));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
+
+		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
+
+		return result;
+	}
+
+	private TupleQueryResult createNoResultsQueryResult() {
+		List<String> bindingNames = Arrays.asList("a", "b", "c");
+
+		List<? extends BindingSet> bindingSetList = Collections.emptyList();
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 

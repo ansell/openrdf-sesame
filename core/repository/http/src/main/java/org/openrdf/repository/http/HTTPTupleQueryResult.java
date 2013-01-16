@@ -32,7 +32,7 @@ import org.openrdf.repository.RepositoryException;
  * @author James Leigh
  * @author Jeen Broekstra
  */
-public class HTTPTupleQueryResult extends TupleQueryResultImpl implements TupleQueryResult, Runnable,
+public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnable,
 		TupleQueryResultHandler
 {
 

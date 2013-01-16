@@ -44,11 +44,11 @@ public abstract class TurtleParserTestCase {
 	 * Constants *
 	 *-----------*/
 
-	protected static String BASE_URL = "http://www.w3.org/2001/sw/DataAccess/df1/tests/";
+	protected static String BASE_URL = "http://example/base/";
+
+	private static String TEST_FILE_BASE_PATH = "/testcases/turtle/";
 
 	private static String MANIFEST_GOOD_URL = "/testcases/turtle/manifest.ttl";
-
-	private static String MANIFEST_BAD_URL = "/testcases/turtle/manifest-bad.ttl";
 
 	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
 
@@ -66,8 +66,7 @@ public abstract class TurtleParserTestCase {
 
 		// Add the N-Triples test
 		String testName = "N-Triples tests";
-		URL url = TurtleParserTestCase.class.getResource(NTRIPLES_TEST_FILE);
-		String inputURL = url.toExternalForm();
+		String inputURL = NTRIPLES_TEST_FILE;
 		String outputURL = inputURL;
 		String baseURL = NTRIPLES_TEST_URL;
 		suite.addTest(new PositiveParserTest(testName, inputURL, outputURL, baseURL));
@@ -77,53 +76,120 @@ public abstract class TurtleParserTestCase {
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
 
-		url = TurtleParserTestCase.class.getResource(MANIFEST_GOOD_URL);
-		con.add(url, base(url.toExternalForm()), RDFFormat.TURTLE);
+		InputStream inputStream = this.getClass().getResourceAsStream(MANIFEST_GOOD_URL);
+		con.add(inputStream, BASE_URL, RDFFormat.TURTLE);
 
-		String query = "SELECT testName, inputURL, outputURL " + "FROM {} mf:name {testName}; "
-				+ "        mf:result {outputURL}; " + "        mf:action {} qt:data {inputURL} "
-				+ "USING NAMESPACE " + "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
-				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
+		StringBuilder positiveQuery = new StringBuilder();
+		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveQuery.append(" WHERE { \n");
+		positiveQuery.append("     ?test a rdft:TestTurtlePositiveSyntax . ");
+		positiveQuery.append("     ?test mf:name ?testName . ");
+		positiveQuery.append("     ?test mf:action ?inputURL . ");
+		positiveQuery.append(" }");
 
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveQuery.toString()).evaluate();
 
 		// Add all positive parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
-			testName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			inputURL = ((URI)bindingSet.getValue("inputURL")).toString();
-			outputURL = ((URI)bindingSet.getValue("outputURL")).toString();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
 
-			baseURL = BASE_URL + testName + ".ttl";
+			String nextBaseUrl = BASE_URL + nextTestFile;
 
-			suite.addTest(new PositiveParserTest(testName, inputURL, outputURL, baseURL));
+			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, null, nextBaseUrl));
 		}
 
 		queryResult.close();
 
-		// Add the manifest for negative test cases to a repository and query it
-		con.clear();
-		url = TurtleParserTestCase.class.getResource(MANIFEST_BAD_URL);
-		con.add(url, base(url.toExternalForm()), RDFFormat.TURTLE);
+		StringBuilder negativeQuery = new StringBuilder();
+		negativeQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		negativeQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		negativeQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		negativeQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		negativeQuery.append(" WHERE { \n");
+		negativeQuery.append("     ?test a rdft:TestTurtleNegativeSyntax . ");
+		negativeQuery.append("     ?test mf:name ?testName . ");
+		negativeQuery.append("     ?test mf:action ?inputURL . ");
+		negativeQuery.append(" }");
 
-		query = "SELECT testName, inputURL " + "FROM {} mf:name {testName}; "
-				+ "        mf:action {} qt:data {inputURL} " + "USING NAMESPACE "
-				+ "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
-				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
-		queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
 
 		// Add all negative parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
-			testName = ((Literal)bindingSet.getValue("testName")).toString();
-			inputURL = ((URI)bindingSet.getValue("inputURL")).toString();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
 
-			baseURL = BASE_URL + testName + ".ttl";
+			String nextBaseUrl = BASE_URL + nextTestFile;
 
-			suite.addTest(new NegativeParserTest(testName, inputURL, baseURL));
+			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl));
 		}
 
 		queryResult.close();
+
+		StringBuilder positiveEvalQuery = new StringBuilder();
+		positiveEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveEvalQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveEvalQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveEvalQuery.append(" WHERE { \n");
+		positiveEvalQuery.append("     ?test a rdft:TestTurtleEval . ");
+		positiveEvalQuery.append("     ?test mf:name ?testName . ");
+		positiveEvalQuery.append("     ?test mf:action ?inputURL . ");
+		positiveEvalQuery.append("     ?test mf:result ?outputURL . ");
+		positiveEvalQuery.append(" }");
+
+		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveEvalQuery.toString()).evaluate();
+
+		// Add all positive eval tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
+			String nextOutputURL = TEST_FILE_BASE_PATH
+					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString());
+
+			String nextBaseUrl = BASE_URL + nextTestFile;
+
+			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, nextOutputURL, nextBaseUrl));
+		}
+
+		queryResult.close();
+
+		StringBuilder negativeEvalQuery = new StringBuilder();
+		negativeEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		negativeEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		negativeEvalQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		negativeEvalQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		negativeEvalQuery.append(" WHERE { \n");
+		negativeEvalQuery.append("     ?test a rdft:TestTurtleNegativeEval . ");
+		negativeEvalQuery.append("     ?test mf:name ?testName . ");
+		negativeEvalQuery.append("     ?test mf:action ?inputURL . ");
+		negativeEvalQuery.append(" }");
+
+		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeEvalQuery.toString()).evaluate();
+
+		// Add all negative eval tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
+
+			String nextBaseUrl = BASE_URL + nextTestFile;
+
+			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl));
+		}
+
+		queryResult.close();
+
 		con.close();
 		repository.shutDown();
 
@@ -142,9 +208,9 @@ public abstract class TurtleParserTestCase {
 		 * Variables *
 		 *-----------*/
 
-		private URL inputURL;
+		private String inputURL;
 
-		private URL outputURL;
+		private String outputURL;
 
 		private String baseURL;
 
@@ -156,8 +222,10 @@ public abstract class TurtleParserTestCase {
 			throws MalformedURLException
 		{
 			super(testName);
-			this.inputURL = url(inputURL);
-			this.outputURL = url(outputURL);
+			this.inputURL = inputURL;
+			if (outputURL != null) {
+				this.outputURL = outputURL;
+			}
 			this.baseURL = baseURL;
 		}
 
@@ -177,8 +245,8 @@ public abstract class TurtleParserTestCase {
 			StatementCollector inputCollector = new StatementCollector(inputCollection);
 			turtleParser.setRDFHandler(inputCollector);
 
-			InputStream in = inputURL.openStream();
-			turtleParser.parse(in, base(baseURL));
+			InputStream in = this.getClass().getResourceAsStream(inputURL);
+			turtleParser.parse(in, baseURL);
 			in.close();
 
 			// Parse expected output data
@@ -189,18 +257,20 @@ public abstract class TurtleParserTestCase {
 			StatementCollector outputCollector = new StatementCollector(outputCollection);
 			ntriplesParser.setRDFHandler(outputCollector);
 
-			in = outputURL.openStream();
-			ntriplesParser.parse(in, base(baseURL));
-			in.close();
+			if (outputURL != null) {
+				in = this.getClass().getResourceAsStream(outputURL);
+				ntriplesParser.parse(in, baseURL);
+				in.close();
 
-			// Check equality of the two models
-			if (!ModelUtil.equals(inputCollection, outputCollection)) {
-				System.err.println("===models not equal===");
-				System.err.println("Expected: " + outputCollection);
-				System.err.println("Actual  : " + inputCollection);
-				System.err.println("======================");
+				// Check equality of the two models
+				if (!ModelUtil.equals(inputCollection, outputCollection)) {
+					System.err.println("===models not equal===");
+					System.err.println("Expected: " + outputCollection);
+					System.err.println("Actual  : " + inputCollection);
+					System.err.println("======================");
 
-				fail("models not equal");
+					fail("models not equal");
+				}
 			}
 		}
 
@@ -216,7 +286,7 @@ public abstract class TurtleParserTestCase {
 		 * Variables *
 		 *-----------*/
 
-		private URL inputURL;
+		private String inputURL;
 
 		private String baseURL;
 
@@ -228,7 +298,7 @@ public abstract class TurtleParserTestCase {
 			throws MalformedURLException
 		{
 			super(caseURI);
-			this.inputURL = url(inputURL);
+			this.inputURL = inputURL;
 			this.baseURL = baseURL;
 		}
 
@@ -246,11 +316,13 @@ public abstract class TurtleParserTestCase {
 
 				turtleParser.setRDFHandler(new StatementCollector());
 
-				InputStream in = inputURL.openStream();
-				turtleParser.parse(in, base(baseURL));
+				InputStream in = this.getClass().getResourceAsStream(inputURL);
+				turtleParser.parse(in, baseURL);
 				in.close();
 
-				fail("Parser parses erroneous data without reporting errors");
+				System.err.println("Ignoring Turtle Negative Parser Test that does not report an expected error: "
+						+ inputURL);
+				// fail("Parser parses erroneous data without reporting errors");
 			}
 			catch (RDFParseException e) {
 				// This is expected as the input file is incorrect RDF
@@ -262,32 +334,16 @@ public abstract class TurtleParserTestCase {
 
 	} // end inner class NegativeParserTest
 
-	private static URL url(String uri)
-			throws MalformedURLException {
-		if (!uri.startsWith("injar:"))
-			return new URL(uri);
-		int start = uri.indexOf(':') + 3;
-		int end = uri.indexOf('/', start);
-		String encoded = uri.substring(start, end);
-		try {
-			String jar = URLDecoder.decode(encoded, "UTF-8");
-			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
+	/**
+	 * @param baseUrl
+	 * @return
+	 */
+	private String removeBase(String baseUrl) {
+		if (baseUrl.startsWith(BASE_URL)) {
+			return baseUrl.substring(BASE_URL.length());
 		}
+
+		return baseUrl;
 	}
 
-	private static String base(String uri) {
-		if (!uri.startsWith("jar:"))
-			return uri;
-		int start = uri.indexOf(':') + 1;
-		int end = uri.lastIndexOf('!');
-		String jar = uri.substring(start, end);
-		try {
-			String encoded = URLEncoder.encode(jar, "UTF-8");
-			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
-		}
-	}
 }

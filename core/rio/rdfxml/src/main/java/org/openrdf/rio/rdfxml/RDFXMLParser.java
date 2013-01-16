@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -78,7 +79,7 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * @see org.openrdf.rio.ParseLocationListener
  * @author Arjohn Kampman
  */
-public class RDFXMLParser extends RDFParserBase {
+public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 
 	/*-----------*
 	 * Variables *
@@ -255,7 +256,8 @@ public class RDFXMLParser extends RDFParserBase {
 
 			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
 			xmlReader.setContentHandler(saxFilter);
-
+			xmlReader.setErrorHandler(this);
+			
 			rdfHandler.startRDF();
 			xmlReader.parse(inputSource);
 			rdfHandler.endRDF();
@@ -1169,6 +1171,43 @@ public class RDFXMLParser extends RDFParserBase {
 
 		public void setLastListResource(Resource resource) {
 			lastListResource = resource;
+		}
+	}
+
+	/**
+	 * Implementation of SAX ErrorHandler.warning
+	 */
+	public void warning(SAXParseException exception)
+		throws SAXException 
+	{
+		this.reportWarning(exception.getMessage());
+	}
+
+	/**
+	 * Implementation of SAX ErrorHandler.error
+	 */
+	public void error(SAXParseException exception)
+		throws SAXException
+	{
+		try {
+			this.reportError(exception.getMessage());
+		}
+		catch(RDFParseException rdfpe) {
+			throw new SAXException(rdfpe);
+		}
+	}
+
+	/**
+	 * Implementation of SAX ErrorHandler.fatalError
+	 */
+	public void fatalError(SAXParseException exception)
+		throws SAXException
+	{
+		try {
+			this.reportFatalError(exception.getMessage());
+		}
+		catch(RDFParseException rdfpe) {
+			throw new SAXException(rdfpe);
 		}
 	}
 }

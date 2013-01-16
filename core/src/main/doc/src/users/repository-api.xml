@@ -1048,11 +1048,8 @@ RepositoryResult<Statement> result =
 			<title>Transactions</title>
 			<para>
 				So far, we have shown individual operations on repositories:
-				adding statements, removing them, etc. By default, a
-				<classname>RepositoryConnection</classname>
-				runs in <emphasis>autoCommit</emphasis> mode, meaning that each
-				operation on a <classname>RepositoryConnection</classname> is immediately sent
-				to the store and committed.
+				adding statements, removing them, etc. By default, each
+				operation on a <classname>RepositoryConnection</classname> is immediately sent to the store and committed.
 			</para>
 			<para>
 				The <classname>RepositoryConnection</classname> interface supports a full
@@ -1067,9 +1064,9 @@ RepositoryResult<Statement> result =
 				performance compared to multiple smaller transactions.
 			</para>
 			<para>
-				We can achieve this behaviour by switching off the
-				<classname>RepositoryConnection</classname>'s autoCommit mode. In
-				the following example, we use a non-autocommit connection to
+			    We can indicate that we want to begin a transaction by using the <classname>RepositoryConnection.begin()</classname> method.
+				In
+				the following example, we use a connection to
 				bundle two file addition operations in a single transaction:
 			</para>
 			<programlisting><![CDATA[
@@ -1081,7 +1078,7 @@ String baseURI2 = "http://example.org/example2/";
 
 RepositoryConnection con = myRepository.getConnection();
 try {
-   con.setAutoCommit(false);
+   con.begin();
 
    // Add the first file
    con.add(inputFile1, baseURI1, RDFFormat.RDFXML);
@@ -1106,6 +1103,9 @@ finally {
 				repository change. If one of the files can not be added (for example
 				because it can not be read), then the entire transaction is
 				cancelled and none of the files is added to the repository.
+			</para>
+			<para>
+			    It's important to note that a <classname>RepositoryConnection</classname> only supports one active transaction at a time. You can check at any time whether a transaction is active on your connection by using the <classname>isActive()</classname> method. If you find you need to cater for concurrent transactions, you will need to use separate <classname>RepositoryConnection</classname>s.  
 			</para>
 		</section> <!-- transaction -->
   </section> <!-- Repository API -->

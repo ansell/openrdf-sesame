@@ -61,23 +61,4 @@ public class GraphQueryResultImpl extends IterationWrapper<Statement, QueryEvalu
 	public Map<String, String> getNamespaces() {
 		return namespaces;
 	}
-
-	public Statement singleResult()
-		throws QueryEvaluationException
-	{
-		Statement result = null;
-		if (hasNext()) {
-			result = next();
-		}
-		close();
-		return result;
-	}
-
-	public Graph asGraph()
-		throws QueryEvaluationException
-	{
-		Graph graph = new GraphImpl();
-		graph = addTo(graph);
-		return graph;
-	}
 }

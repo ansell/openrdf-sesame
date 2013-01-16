@@ -203,11 +203,19 @@ public class SPARQLParser implements QueryParser {
 
 		StringBuilder buf = new StringBuilder();
 		String line = null;
+		
+		int emptyLineCount = 0;
 		while ((line = in.readLine()) != null) {
 			if (line.length() > 0) {
+				emptyLineCount = 0;
 				buf.append(' ').append(line).append('\n');
 			}
 			else {
+				emptyLineCount++;
+			}
+			
+			if (emptyLineCount == 2) {
+				emptyLineCount = 0;
 				String queryStr = buf.toString().trim();
 				if (queryStr.length() > 0) {
 					try {

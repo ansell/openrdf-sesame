@@ -534,7 +534,7 @@ public interface RepositoryConnection {
 	 *         if the transaction state can not be determined. This can happen
 	 *         for instance when communication with a repository fails or times
 	 *         out.
-	 * @throws RepositoryException 
+	 * @throws RepositoryException
 	 */
 	public boolean isActive()
 		throws UnknownTransactionStateException, RepositoryException;
@@ -663,7 +663,10 @@ public interface RepositoryConnection {
 	 *        {@link java.net.URL#toExternalForm() url.toExternalForm()} if the
 	 *        value is set to <tt>null</tt>.
 	 * @param dataFormat
-	 *        The serialization format of the data.
+	 *        The serialization format of the data. If set to <tt>null</tt>, the
+	 *        format will be automatically determined by examining the content
+	 *        type in the HTTP response header, and failing that, the file name
+	 *        extension of the supplied URL.
 	 * @param contexts
 	 *        The contexts to add the data to. If one or more contexts are
 	 *        specified the data is added to these contexts, ignoring any context
@@ -671,7 +674,8 @@ public interface RepositoryConnection {
 	 * @throws IOException
 	 *         If an I/O error occurred while reading from the URL.
 	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
+	 *         If no parser is available for the specified RDF format, or the RDF
+	 *         format could not be automatically determined.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
 	 * @throws RepositoryException

@@ -8,8 +8,8 @@ package org.openrdf.repository.sail.memory;
 import junit.framework.Test;
 
 import org.openrdf.query.Dataset;
-import org.openrdf.query.parser.sparql.ManifestTest;
-import org.openrdf.query.parser.sparql.SPARQLQueryTest;
+import org.openrdf.query.parser.sparql.manifest.ManifestTest;
+import org.openrdf.query.parser.sparql.manifest.SPARQLQueryTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.dataset.DatasetRepository;
 import org.openrdf.repository.sail.SailRepository;

@@ -55,6 +55,7 @@ public class SPARQLTupleQuery extends SPARQLQuery implements TupleQuery {
 			} finally {
 				if (result == null) {
 					response.abort();
+					response.releaseConnection();
 				}
 			}
 		} catch (IOException e) {

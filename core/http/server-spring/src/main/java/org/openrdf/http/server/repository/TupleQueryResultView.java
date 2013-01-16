@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -67,7 +67,7 @@ public class TupleQueryResultView extends QueryResultView {
 		try {
 			TupleQueryResultWriter qrWriter = qrWriterFactory.getWriter(out);
 			TupleQueryResult tupleQueryResult = (TupleQueryResult)model.get(QUERY_RESULT_KEY);
-			QueryResultUtil.report(tupleQueryResult, qrWriter);
+			QueryResults.report(tupleQueryResult, qrWriter);
 		}
 		catch (QueryInterruptedException e) {
 			logger.error("Query interrupted", e);

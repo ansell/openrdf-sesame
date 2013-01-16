@@ -77,18 +77,18 @@ public class RDFFormat extends FileFormat {
 			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"), true, false);
 
 	/**
-	 * The <a
-	 * href="http://www.w3.org/DesignIssues/Notation3.html">N3/Notation3</a> file
+	 * The <a href="http://www.w3.org/TeamSubmission/n3/">N3/Notation3</a> file
 	 * format.
 	 * <p>
 	 * The file extension <code>.n3</code> is recommended for N3 documents. The
-	 * media type is <code>text/rdf+n3</code> and the encoding is UTF-8.
+	 * media type is <code>text/n3</code>, but <code>text/rdf+n3</code> is also
+	 * accepted. Character encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/DesignIssues/Notation3.html
+	 * @see http://www.w3.org/TeamSubmission/n3/
 	 */
-	public static final RDFFormat N3 = new RDFFormat("N3", "text/rdf+n3", Charset.forName("UTF-8"), "n3",
-			true, false);
+	public static final RDFFormat N3 = new RDFFormat("N3", Arrays.asList("text/n3", "text/rdf+n3"),
+			Charset.forName("UTF-8"), Arrays.asList("n3"), true, false);
 
 	/**
 	 * The <a href="http://swdev.nokia.com/trix/">TriX</a> file format, an
@@ -111,9 +111,8 @@ public class RDFFormat extends FileFormat {
 	 * format, a Turtle-based RDF serialization format that supports recording of
 	 * named graphs.
 	 * <p>
-	 * The file extension <code>.trig</code> is recommend for TriG documents.
-	 * The media type is <code>application/x-trig</code> and the encoding is
-	 * UTF-8.
+	 * The file extension <code>.trig</code> is recommend for TriG documents. The
+	 * media type is <code>application/x-trig</code> and the encoding is UTF-8.
 	 * </p>
 	 * 
 	 * @see http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/
@@ -147,6 +146,36 @@ public class RDFFormat extends FileFormat {
 	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", "text/x-nquads",
 			Charset.forName("US-ASCII"), "nq", false, true);
 
+	/**
+	 * The <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD</a>
+	 * file format, an RDF serialization format that supports recording of named
+	 * graphs.
+	 * <p>
+	 * The file extension <code>.jsonld</code> is recommended for JSON-LD
+	 * documents. The media type is <code>application/ld+json</code> and the
+	 * encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://json-ld.org/spec/latest/json-ld-syntax/
+	 */
+	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", "application/ld+json",
+			Charset.forName("UTF-8"), "jsonld", true, true);
+
+	/**
+	 * The Talis <a href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html">RDF/JSON</a>
+	 * file format, an RDF serialization format that supports recording of named
+	 * graphs.
+	 * <p>
+	 * The file extension <code>.rj</code> is recommended for RDF/JSON
+	 * documents. The media type is <code>application/rdf+json</code> and the
+	 * encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html
+	 */
+	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", "application/rdf+json",
+			Charset.forName("UTF-8"), "rj", false, true);
+
 	/*------------------*
 	 * Static variables *
 	 *------------------*/
@@ -171,6 +200,8 @@ public class RDFFormat extends FileFormat {
 		register(TRIG);
 		register(BINARY);
 		register(NQUADS);
+		register(JSONLD);
+		register(RDFJSON);
 	}
 
 	/*----------------*

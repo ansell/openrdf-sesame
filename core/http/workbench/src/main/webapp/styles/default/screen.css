@@ -462,6 +462,10 @@ td.input {
 	padding-top: 0;
 }
 
+.action {
+	text-align: center;
+}
+
 table.data,.data th,.data td {
 	border: 1px solid #999;
 }
@@ -495,6 +499,13 @@ fieldset, .fieldset {
 .error {
 	color: #F70008;
 	font-weight: bold;
+	font-style: normal;
+}
+
+.success {
+	color: green;
+	font-weight: normal;
+	font-style: italic;
 }
 
 .product_overview {

@@ -5,7 +5,11 @@
  */
 package org.openrdf.model;
 
+import java.util.Date;
+
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * A factory for creating URIs, blank nodes, literals and statements.
@@ -27,10 +31,10 @@ public interface ValueFactory {
 
 	/**
 	 * Creates a new URI from the supplied namespace and local name. Calling this
-	 * method is funtionally equivalent to calling
-	 * {@link #createURI(String) createURI(namespace+localName)}, but allows the
-	 * ValueFactory to reuse supplied namespace and local name strings whenever
-	 * possible. Note that the values returned by {@link URI#getNamespace()} and
+	 * method is funtionally equivalent to calling {@link #createURI(String)
+	 * createURI(namespace+localName)}, but allows the ValueFactory to reuse
+	 * supplied namespace and local name strings whenever possible. Note that the
+	 * values returned by {@link URI#getNamespace()} and
 	 * {@link URI#getLocalName()} are not necessarily the same as the values that
 	 * are supplied to this method.
 	 * 
@@ -101,8 +105,8 @@ public interface ValueFactory {
 	public Literal createLiteral(boolean value);
 
 	/**
-	 * Creates a new <tt>xsd:byte</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:byte</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -111,8 +115,8 @@ public interface ValueFactory {
 	public Literal createLiteral(byte value);
 
 	/**
-	 * Creates a new <tt>xsd:short</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:short</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -131,8 +135,8 @@ public interface ValueFactory {
 	public Literal createLiteral(int value);
 
 	/**
-	 * Creates a new <tt>xsd:long</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:long</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -141,8 +145,8 @@ public interface ValueFactory {
 	public Literal createLiteral(long value);
 
 	/**
-	 * Creates a new <tt>xsd:float</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:float</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -151,8 +155,8 @@ public interface ValueFactory {
 	public Literal createLiteral(float value);
 
 	/**
-	 * Creates a new <tt>xsd:double</tt>-typed literal representing the
-	 * specified value.
+	 * Creates a new <tt>xsd:double</tt>-typed literal representing the specified
+	 * value.
 	 * 
 	 * @param value
 	 *        The value for the literal.
@@ -169,6 +173,31 @@ public interface ValueFactory {
 	 * @return An typed literal for the specified calendar.
 	 */
 	public Literal createLiteral(XMLGregorianCalendar calendar);
+
+	/**
+	 * Creates a new literal representing the specified date that is typed using
+	 * the appropriate XML Schema date/time datatype.
+	 * 
+	 * @since 2.7.0
+	 */
+	public Literal createLiteral(Date date);
+
+	/**
+	 * Creates a typed {@link Literal} out of the supplied object, mapping the
+	 * runtime type of the object to the appropriate XML Schema type. If no
+	 * mapping is available, the method returns a literal with the string
+	 * representation of the supplied object as the value, and
+	 * {@link XMLSchema#STRING} as the datatype. Recognized types are
+	 * {@link Boolean}, {@link Byte}, {@link Double}, {@link Float},
+	 * {@link Integer}, {@link Long}, {@link Short}, {@link XMLGregorianCalendar }
+	 * , and {@link Date}.
+	 * 
+	 * @since 2.7.0
+	 * @param object
+	 *        an object to be converted to a typed literal.
+	 * @return a typed literal representation of the supplied object.
+	 */
+	public Literal createLiteral(Object object);
 
 	/**
 	 * Creates a new statement with the supplied subject, predicate and object.

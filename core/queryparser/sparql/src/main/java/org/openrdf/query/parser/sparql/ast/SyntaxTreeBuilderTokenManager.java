@@ -2122,7 +2122,7 @@ private int jjMoveNfa_0(int startState, int curPos)
    catch(java.io.IOException e) { throw new Error("Internal Error"); }
    curPos = 0;
    int startsAt = 0;
-   jjnewStateCnt = 181;
+   jjnewStateCnt = 162;
    int i = 1;
    jjstateSet[0] = startState;
    int kind = 0x7fffffff;
@@ -2150,7 +2150,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                         kind = 2;
                   }
                   else if (curChar == 46)
-                     jjCheckNAddTwoStates(176, 177);
+                     jjCheckNAddTwoStates(157, 158);
                   else if (curChar == 45)
                      jjCheckNAddStates(7, 11);
                   else if (curChar == 43)
@@ -2162,11 +2162,11 @@ private int jjMoveNfa_0(int startState, int curPos)
                      jjCheckNAddStates(17, 19);
                   }
                   else if (curChar == 34)
-                     jjstateSet[jjnewStateCnt++] = 76;
+                     jjstateSet[jjnewStateCnt++] = 60;
                   else if (curChar == 39)
-                     jjstateSet[jjnewStateCnt++] = 65;
+                     jjstateSet[jjnewStateCnt++] = 49;
                   else if (curChar == 36)
-                     jjstateSet[jjnewStateCnt++] = 40;
+                     jjstateSet[jjnewStateCnt++] = 24;
                   else if (curChar == 60)
                      jjCheckNAddTwoStates(13, 14);
                   else if (curChar == 40)
@@ -2178,7 +2178,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                      jjCheckNAdd(2);
                   }
                   else if (curChar == 63)
-                     jjstateSet[jjnewStateCnt++] = 37;
+                     jjstateSet[jjnewStateCnt++] = 21;
                   if (curChar == 34)
                      jjCheckNAddStates(20, 22);
                   else if (curChar == 39)
@@ -2228,380 +2228,400 @@ private int jjMoveNfa_0(int startState, int curPos)
                   break;
                case 15:
                   if (curChar == 58)
-                     jjAddStates(28, 30);
+                     jjstateSet[jjnewStateCnt++] = 16;
                   break;
                case 16:
-                  if ((0x7ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 148)
-                     kind = 148;
-                  jjCheckNAddStates(31, 35);
-                  break;
-               case 17:
-                  if ((0x7ff600000000000L & l) != 0L)
-                     jjCheckNAddStates(36, 39);
-                  break;
-               case 19:
-                  if ((0xac00ff7e00000000L & l) != 0L)
-                     jjCheckNAddStates(36, 39);
-                  break;
-               case 20:
-                  if (curChar == 37)
-                     jjCheckNAdd(21);
-                  break;
-               case 21:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 22;
-                  break;
-               case 22:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddStates(36, 39);
-                  break;
-               case 23:
-                  if ((0x3ff200000000000L & l) != 0L && kind > 148)
-                     kind = 148;
-                  break;
-               case 24:
-                  if (curChar == 58 && kind > 148)
-                     kind = 148;
-                  break;
-               case 26:
-                  if ((0xac00ff7e00000000L & l) != 0L && kind > 148)
-                     kind = 148;
-                  break;
-               case 27:
-                  if (curChar == 37)
-                     jjCheckNAddTwoStates(21, 28);
-                  break;
-               case 28:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 29;
-                  break;
-               case 29:
-                  if ((0x3ff000000000000L & l) != 0L && kind > 148)
-                     kind = 148;
-                  break;
-               case 31:
-                  if ((0xac00ff7e00000000L & l) == 0L)
-                     break;
-                  if (kind > 148)
-                     kind = 148;
-                  jjCheckNAddStates(31, 35);
-                  break;
-               case 32:
-                  if (curChar == 37)
-                     jjstateSet[jjnewStateCnt++] = 33;
-                  break;
-               case 33:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 34;
-                  break;
-               case 34:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 148)
                      kind = 148;
-                  jjCheckNAddStates(31, 35);
+                  jjCheckNAddTwoStates(17, 18);
                   break;
-               case 36:
+               case 17:
+                  if ((0x3ff600000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(17, 18);
+                  break;
+               case 18:
+                  if ((0x3ff200000000000L & l) != 0L && kind > 148)
+                     kind = 148;
+                  break;
+               case 20:
                   if (curChar == 63)
-                     jjstateSet[jjnewStateCnt++] = 37;
+                     jjstateSet[jjnewStateCnt++] = 21;
                   break;
-               case 37:
-               case 38:
+               case 21:
+               case 22:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 149)
                      kind = 149;
-                  jjCheckNAdd(38);
+                  jjCheckNAdd(22);
                   break;
-               case 39:
+               case 23:
                   if (curChar == 36)
-                     jjstateSet[jjnewStateCnt++] = 40;
+                     jjstateSet[jjnewStateCnt++] = 24;
                   break;
-               case 40:
-               case 41:
+               case 24:
+               case 25:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 150)
                      kind = 150;
-                  jjCheckNAdd(41);
+                  jjCheckNAdd(25);
                   break;
-               case 44:
+               case 28:
                   if (curChar == 45)
-                     jjCheckNAdd(45);
+                     jjCheckNAdd(29);
                   break;
-               case 45:
+               case 29:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 151)
                      kind = 151;
-                  jjCheckNAddTwoStates(44, 45);
+                  jjCheckNAddTwoStates(28, 29);
                   break;
-               case 46:
+               case 30:
                   if (curChar == 39)
                      jjCheckNAddStates(23, 25);
                   break;
-               case 47:
+               case 31:
                   if ((0xffffff7fffffdbffL & l) != 0L)
                      jjCheckNAddStates(23, 25);
                   break;
-               case 49:
+               case 33:
                   if ((0x8400000000L & l) != 0L)
                      jjCheckNAddStates(23, 25);
                   break;
-               case 50:
+               case 34:
                   if (curChar == 39 && kind > 167)
                      kind = 167;
                   break;
-               case 51:
+               case 35:
                   if (curChar == 34)
                      jjCheckNAddStates(20, 22);
                   break;
-               case 52:
+               case 36:
                   if ((0xfffffffbffffdbffL & l) != 0L)
                      jjCheckNAddStates(20, 22);
                   break;
-               case 54:
+               case 38:
                   if ((0x8400000000L & l) != 0L)
                      jjCheckNAddStates(20, 22);
                   break;
-               case 55:
+               case 39:
                   if (curChar == 34 && kind > 168)
                      kind = 168;
                   break;
-               case 56:
+               case 40:
                   if (curChar == 39)
-                     jjCheckNAddStates(40, 43);
+                     jjCheckNAddStates(28, 31);
                   break;
-               case 57:
-               case 62:
+               case 41:
+               case 46:
                   if (curChar == 39)
-                     jjCheckNAddTwoStates(58, 59);
+                     jjCheckNAddTwoStates(42, 43);
                   break;
-               case 58:
+               case 42:
                   if ((0xffffff7fffffffffL & l) != 0L)
-                     jjCheckNAddStates(40, 43);
+                     jjCheckNAddStates(28, 31);
                   break;
-               case 60:
+               case 44:
                   if ((0x8400000000L & l) != 0L)
-                     jjCheckNAddStates(40, 43);
+                     jjCheckNAddStates(28, 31);
                   break;
-               case 61:
+               case 45:
                   if (curChar == 39)
-                     jjAddStates(44, 45);
+                     jjAddStates(32, 33);
                   break;
-               case 63:
+               case 47:
                   if (curChar == 39 && kind > 169)
                      kind = 169;
                   break;
-               case 64:
+               case 48:
                   if (curChar == 39)
-                     jjstateSet[jjnewStateCnt++] = 63;
+                     jjstateSet[jjnewStateCnt++] = 47;
                   break;
-               case 65:
+               case 49:
                   if (curChar == 39)
-                     jjstateSet[jjnewStateCnt++] = 56;
+                     jjstateSet[jjnewStateCnt++] = 40;
                   break;
-               case 66:
+               case 50:
                   if (curChar == 39)
-                     jjstateSet[jjnewStateCnt++] = 65;
+                     jjstateSet[jjnewStateCnt++] = 49;
                   break;
-               case 67:
+               case 51:
                   if (curChar == 34)
-                     jjCheckNAddStates(46, 49);
+                     jjCheckNAddStates(34, 37);
                   break;
-               case 68:
-               case 73:
+               case 52:
+               case 57:
                   if (curChar == 34)
-                     jjCheckNAddTwoStates(69, 70);
+                     jjCheckNAddTwoStates(53, 54);
                   break;
-               case 69:
+               case 53:
                   if ((0xfffffffbffffffffL & l) != 0L)
-                     jjCheckNAddStates(46, 49);
+                     jjCheckNAddStates(34, 37);
                   break;
-               case 71:
+               case 55:
                   if ((0x8400000000L & l) != 0L)
-                     jjCheckNAddStates(46, 49);
+                     jjCheckNAddStates(34, 37);
                   break;
-               case 72:
+               case 56:
                   if (curChar == 34)
-                     jjAddStates(50, 51);
+                     jjAddStates(38, 39);
                   break;
-               case 74:
+               case 58:
                   if (curChar == 34 && kind > 170)
                      kind = 170;
                   break;
-               case 75:
+               case 59:
                   if (curChar == 34)
+                     jjstateSet[jjnewStateCnt++] = 58;
+                  break;
+               case 60:
+                  if (curChar == 34)
+                     jjstateSet[jjnewStateCnt++] = 51;
+                  break;
+               case 61:
+                  if (curChar == 34)
+                     jjstateSet[jjnewStateCnt++] = 60;
+                  break;
+               case 72:
+                  if ((0x3ff600000000000L & l) != 0L)
+                     jjAddStates(40, 41);
+                  break;
+               case 73:
+                  if ((0x3ff200000000000L & l) != 0L)
                      jjstateSet[jjnewStateCnt++] = 74;
                   break;
-               case 76:
-                  if (curChar == 34)
-                     jjstateSet[jjnewStateCnt++] = 67;
-                  break;
-               case 77:
-                  if (curChar == 34)
-                     jjstateSet[jjnewStateCnt++] = 76;
-                  break;
-               case 88:
-                  if ((0x3ff600000000000L & l) != 0L)
-                     jjAddStates(52, 53);
-                  break;
-               case 89:
-                  if ((0x3ff200000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 90;
-                  break;
-               case 90:
+               case 74:
                   if (curChar == 58 && kind > 146)
                      kind = 146;
                   break;
-               case 91:
+               case 75:
                   if ((0x3ff600000000000L & l) != 0L)
-                     jjAddStates(54, 55);
+                     jjAddStates(42, 43);
                   break;
-               case 92:
+               case 76:
                   if ((0x3ff200000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 93;
+                     jjstateSet[jjnewStateCnt++] = 77;
                   break;
-               case 93:
+               case 77:
                   if (curChar == 58)
                      jjCheckNAddStates(17, 19);
                   break;
-               case 94:
+               case 78:
                   if ((0x7ff000000000000L & l) == 0L)
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 95:
+               case 79:
                   if ((0x7ff600000000000L & l) != 0L)
-                     jjCheckNAddStates(61, 64);
+                     jjCheckNAddStates(44, 47);
                   break;
-               case 97:
-                  if ((0xac00ff7e00000000L & l) != 0L)
-                     jjCheckNAddStates(61, 64);
+               case 80:
+                  if ((0x7ff200000000000L & l) != 0L && kind > 147)
+                     kind = 147;
                   break;
-               case 98:
+               case 82:
+                  if ((0xa800ff7e00000000L & l) != 0L)
+                     jjCheckNAddStates(44, 47);
+                  break;
+               case 83:
                   if (curChar == 37)
-                     jjCheckNAdd(99);
+                     jjAddStates(48, 49);
                   break;
-               case 99:
+               case 84:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 100;
+                     jjstateSet[jjnewStateCnt++] = 85;
                   break;
-               case 100:
+               case 85:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddStates(61, 64);
+                     jjCheckNAddStates(44, 47);
                   break;
-               case 101:
-                  if ((0x3ff200000000000L & l) != 0L && kind > 147)
-                     kind = 147;
-                  break;
-               case 102:
-                  if (curChar == 58 && kind > 147)
-                     kind = 147;
-                  break;
-               case 104:
-                  if ((0xac00ff7e00000000L & l) != 0L && kind > 147)
-                     kind = 147;
-                  break;
-               case 105:
-                  if (curChar == 37)
-                     jjCheckNAddTwoStates(99, 106);
-                  break;
-               case 106:
+               case 86:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 107;
+                     jjstateSet[jjnewStateCnt++] = 87;
                   break;
-               case 107:
+               case 87:
                   if ((0x3ff000000000000L & l) != 0L && kind > 147)
                      kind = 147;
                   break;
-               case 109:
-                  if ((0xac00ff7e00000000L & l) == 0L)
+               case 88:
+                  if ((0xa800ff7e00000000L & l) != 0L && kind > 147)
+                     kind = 147;
+                  break;
+               case 90:
+                  if ((0xa800ff7e00000000L & l) == 0L)
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 110:
+               case 91:
                   if (curChar == 37)
-                     jjstateSet[jjnewStateCnt++] = 111;
+                     jjstateSet[jjnewStateCnt++] = 92;
                   break;
-               case 111:
+               case 92:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 112;
+                     jjstateSet[jjnewStateCnt++] = 93;
                   break;
-               case 112:
+               case 93:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 113:
+               case 94:
                   if (curChar != 58)
                      break;
                   if (kind > 146)
                      kind = 146;
                   jjCheckNAddStates(17, 19);
                   break;
-               case 114:
+               case 95:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 152)
                      kind = 152;
                   jjCheckNAddStates(0, 6);
                   break;
-               case 115:
+               case 96:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 152)
                      kind = 152;
-                  jjCheckNAdd(115);
+                  jjCheckNAdd(96);
                   break;
-               case 116:
+               case 97:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(116, 117);
+                     jjCheckNAddTwoStates(97, 98);
                   break;
-               case 117:
+               case 98:
                   if (curChar != 46)
                      break;
                   if (kind > 155)
                      kind = 155;
-                  jjCheckNAdd(118);
+                  jjCheckNAdd(99);
                   break;
-               case 118:
+               case 99:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 155)
                      kind = 155;
-                  jjCheckNAdd(118);
+                  jjCheckNAdd(99);
                   break;
-               case 119:
+               case 100:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(119, 120);
+                     jjCheckNAddTwoStates(100, 101);
                   break;
-               case 120:
+               case 101:
                   if (curChar == 46)
-                     jjCheckNAddTwoStates(121, 122);
+                     jjCheckNAddTwoStates(102, 103);
                   break;
-               case 121:
+               case 102:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(121, 122);
+                     jjCheckNAddTwoStates(102, 103);
                   break;
-               case 123:
+               case 104:
                   if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(124);
+                     jjCheckNAdd(105);
                   break;
-               case 124:
+               case 105:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 160)
                      kind = 160;
-                  jjCheckNAdd(124);
+                  jjCheckNAdd(105);
+                  break;
+               case 106:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(106, 107);
+                  break;
+               case 108:
+                  if ((0x280000000000L & l) != 0L)
+                     jjCheckNAdd(109);
+                  break;
+               case 109:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 160)
+                     kind = 160;
+                  jjCheckNAdd(109);
+                  break;
+               case 110:
+                  if (curChar == 43)
+                     jjCheckNAddStates(12, 16);
+                  break;
+               case 111:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 153)
+                     kind = 153;
+                  jjCheckNAdd(111);
+                  break;
+               case 112:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(112, 113);
+                  break;
+               case 113:
+                  if (curChar != 46)
+                     break;
+                  if (kind > 158)
+                     kind = 158;
+                  jjCheckNAdd(114);
+                  break;
+               case 114:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 158)
+                     kind = 158;
+                  jjCheckNAdd(114);
+                  break;
+               case 115:
+                  if (curChar == 46)
+                     jjCheckNAdd(116);
+                  break;
+               case 116:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 158)
+                     kind = 158;
+                  jjCheckNAdd(116);
+                  break;
+               case 117:
+                  if (curChar == 46)
+                     jjCheckNAdd(118);
+                  break;
+               case 118:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(118, 119);
+                  break;
+               case 120:
+                  if ((0x280000000000L & l) != 0L)
+                     jjCheckNAdd(121);
+                  break;
+               case 121:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 165)
+                     kind = 165;
+                  jjCheckNAdd(121);
+                  break;
+               case 122:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddStates(50, 53);
+                  break;
+               case 123:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(123, 124);
+                  break;
+               case 124:
+                  if (curChar == 46)
+                     jjCheckNAddTwoStates(125, 126);
                   break;
                case 125:
                   if ((0x3ff000000000000L & l) != 0L)
@@ -2614,95 +2634,95 @@ private int jjMoveNfa_0(int startState, int curPos)
                case 128:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
-                  if (kind > 160)
-                     kind = 160;
+                  if (kind > 165)
+                     kind = 165;
                   jjCheckNAdd(128);
                   break;
                case 129:
-                  if (curChar == 43)
-                     jjCheckNAddStates(12, 16);
-                  break;
-               case 130:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 153)
-                     kind = 153;
-                  jjCheckNAdd(130);
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(129, 130);
                   break;
                case 131:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(131, 132);
+                  if ((0x280000000000L & l) != 0L)
+                     jjCheckNAdd(132);
                   break;
                case 132:
-                  if (curChar != 46)
-                     break;
-                  if (kind > 158)
-                     kind = 158;
-                  jjCheckNAdd(133);
-                  break;
-               case 133:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 158)
-                     kind = 158;
-                  jjCheckNAdd(133);
-                  break;
-               case 134:
-                  if (curChar == 46)
-                     jjCheckNAdd(135);
-                  break;
-               case 135:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 158)
-                     kind = 158;
-                  jjCheckNAdd(135);
-                  break;
-               case 136:
-                  if (curChar == 46)
-                     jjCheckNAdd(137);
-                  break;
-               case 137:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(137, 138);
-                  break;
-               case 139:
-                  if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(140);
-                  break;
-               case 140:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 165)
                      kind = 165;
-                  jjCheckNAdd(140);
+                  jjCheckNAdd(132);
+                  break;
+               case 133:
+                  if (curChar == 45)
+                     jjCheckNAddStates(7, 11);
+                  break;
+               case 134:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 154)
+                     kind = 154;
+                  jjCheckNAdd(134);
+                  break;
+               case 135:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(135, 136);
+                  break;
+               case 136:
+                  if (curChar != 46)
+                     break;
+                  if (kind > 159)
+                     kind = 159;
+                  jjCheckNAdd(137);
+                  break;
+               case 137:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 159)
+                     kind = 159;
+                  jjCheckNAdd(137);
+                  break;
+               case 138:
+                  if (curChar == 46)
+                     jjCheckNAdd(139);
+                  break;
+               case 139:
+                  if ((0x3ff000000000000L & l) == 0L)
+                     break;
+                  if (kind > 159)
+                     kind = 159;
+                  jjCheckNAdd(139);
+                  break;
+               case 140:
+                  if (curChar == 46)
+                     jjCheckNAdd(141);
                   break;
                case 141:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddStates(65, 68);
-                  break;
-               case 142:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(142, 143);
+                     jjCheckNAddTwoStates(141, 142);
                   break;
                case 143:
-                  if (curChar == 46)
-                     jjCheckNAddTwoStates(144, 145);
+                  if ((0x280000000000L & l) != 0L)
+                     jjCheckNAdd(144);
                   break;
                case 144:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(144, 145);
-                  break;
-               case 146:
-                  if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(147);
-                  break;
-               case 147:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
-                  if (kind > 165)
-                     kind = 165;
-                  jjCheckNAdd(147);
+                  if (kind > 166)
+                     kind = 166;
+                  jjCheckNAdd(144);
+                  break;
+               case 145:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddStates(54, 57);
+                  break;
+               case 146:
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(146, 147);
+                  break;
+               case 147:
+                  if (curChar == 46)
+                     jjCheckNAddTwoStates(148, 149);
                   break;
                case 148:
                   if ((0x3ff000000000000L & l) != 0L)
@@ -2715,136 +2735,50 @@ private int jjMoveNfa_0(int startState, int curPos)
                case 151:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
-                  if (kind > 165)
-                     kind = 165;
+                  if (kind > 166)
+                     kind = 166;
                   jjCheckNAdd(151);
                   break;
                case 152:
-                  if (curChar == 45)
-                     jjCheckNAddStates(7, 11);
-                  break;
-               case 153:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 154)
-                     kind = 154;
-                  jjCheckNAdd(153);
+                  if ((0x3ff000000000000L & l) != 0L)
+                     jjCheckNAddTwoStates(152, 153);
                   break;
                case 154:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(154, 155);
+                  if ((0x280000000000L & l) != 0L)
+                     jjCheckNAdd(155);
                   break;
                case 155:
-                  if (curChar != 46)
+                  if ((0x3ff000000000000L & l) == 0L)
                      break;
-                  if (kind > 159)
-                     kind = 159;
-                  jjCheckNAdd(156);
+                  if (kind > 166)
+                     kind = 166;
+                  jjCheckNAdd(155);
                   break;
                case 156:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 159)
-                     kind = 159;
-                  jjCheckNAdd(156);
+                  if (curChar == 46)
+                     jjCheckNAddTwoStates(157, 158);
                   break;
                case 157:
-                  if (curChar == 46)
-                     jjCheckNAdd(158);
-                  break;
-               case 158:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 159)
-                     kind = 159;
-                  jjCheckNAdd(158);
-                  break;
-               case 159:
-                  if (curChar == 46)
-                     jjCheckNAdd(160);
-                  break;
-               case 160:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(160, 161);
-                  break;
-               case 162:
-                  if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(163);
-                  break;
-               case 163:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 166)
-                     kind = 166;
-                  jjCheckNAdd(163);
-                  break;
-               case 164:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddStates(69, 72);
-                  break;
-               case 165:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(165, 166);
-                  break;
-               case 166:
-                  if (curChar == 46)
-                     jjCheckNAddTwoStates(167, 168);
-                  break;
-               case 167:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(167, 168);
-                  break;
-               case 169:
-                  if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(170);
-                  break;
-               case 170:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 166)
-                     kind = 166;
-                  jjCheckNAdd(170);
-                  break;
-               case 171:
-                  if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(171, 172);
-                  break;
-               case 173:
-                  if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(174);
-                  break;
-               case 174:
-                  if ((0x3ff000000000000L & l) == 0L)
-                     break;
-                  if (kind > 166)
-                     kind = 166;
-                  jjCheckNAdd(174);
-                  break;
-               case 175:
-                  if (curChar == 46)
-                     jjCheckNAddTwoStates(176, 177);
-                  break;
-               case 176:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 155)
                      kind = 155;
-                  jjCheckNAdd(176);
+                  jjCheckNAdd(157);
                   break;
-               case 177:
+               case 158:
                   if ((0x3ff000000000000L & l) != 0L)
-                     jjCheckNAddTwoStates(177, 178);
+                     jjCheckNAddTwoStates(158, 159);
                   break;
-               case 179:
+               case 160:
                   if ((0x280000000000L & l) != 0L)
-                     jjCheckNAdd(180);
+                     jjCheckNAdd(161);
                   break;
-               case 180:
+               case 161:
                   if ((0x3ff000000000000L & l) == 0L)
                      break;
                   if (kind > 160)
                      kind = 160;
-                  jjCheckNAdd(180);
+                  jjCheckNAdd(161);
                   break;
                default : break;
             }
@@ -2859,15 +2793,15 @@ private int jjMoveNfa_0(int startState, int curPos)
             {
                case 0:
                   if ((0x7fffffe07fffffeL & l) != 0L)
-                     jjCheckNAddStates(73, 78);
+                     jjCheckNAddStates(58, 63);
                   else if (curChar == 64)
-                     jjCheckNAdd(43);
+                     jjCheckNAdd(27);
                   else if (curChar == 95)
                      jjstateSet[jjnewStateCnt++] = 15;
                   else if (curChar == 91)
                      jjAddStates(26, 27);
                   if ((0x20000000200L & l) != 0L)
-                     jjAddStates(79, 81);
+                     jjAddStates(64, 66);
                   else if ((0x20000000200000L & l) != 0L)
                      jjstateSet[jjnewStateCnt++] = 10;
                   break;
@@ -2889,7 +2823,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                      kind = 76;
                   break;
                case 10:
-               case 86:
+               case 70:
                   if ((0x4000000040000L & l) != 0L)
                      jjCheckNAdd(9);
                   break;
@@ -2899,316 +2833,258 @@ private int jjMoveNfa_0(int startState, int curPos)
                   break;
                case 13:
                   if ((0xc7fffffeafffffffL & l) != 0L)
-                     jjAddStates(82, 83);
+                     jjAddStates(67, 68);
                   break;
                case 16:
                   if ((0x7fffffe87fffffeL & l) == 0L)
                      break;
                   if (kind > 148)
                      kind = 148;
-                  jjCheckNAddStates(31, 35);
+                  jjCheckNAddTwoStates(17, 18);
                   break;
                case 17:
                   if ((0x7fffffe87fffffeL & l) != 0L)
-                     jjCheckNAddStates(36, 39);
+                     jjCheckNAddTwoStates(17, 18);
                   break;
                case 18:
-                  if (curChar == 92)
-                     jjCheckNAdd(19);
-                  break;
-               case 19:
-                  if ((0x4000000080000001L & l) != 0L)
-                     jjCheckNAddStates(36, 39);
-                  break;
-               case 21:
-                  if ((0x7e0000007eL & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 22;
-                  break;
-               case 22:
-                  if ((0x7e0000007eL & l) != 0L)
-                     jjCheckNAddStates(36, 39);
-                  break;
-               case 23:
                   if ((0x7fffffe87fffffeL & l) != 0L && kind > 148)
                      kind = 148;
                   break;
-               case 25:
-                  if (curChar == 92)
-                     jjCheckNAddTwoStates(19, 26);
-                  break;
-               case 26:
-                  if ((0x4000000080000001L & l) != 0L && kind > 148)
-                     kind = 148;
-                  break;
-               case 28:
-                  if ((0x7e0000007eL & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 29;
-                  break;
-               case 29:
-                  if ((0x7e0000007eL & l) != 0L && kind > 148)
-                     kind = 148;
-                  break;
-               case 30:
-                  if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 31;
-                  break;
-               case 31:
-                  if ((0x4000000080000001L & l) == 0L)
-                     break;
-                  if (kind > 148)
-                     kind = 148;
-                  jjCheckNAddStates(31, 35);
-                  break;
-               case 33:
-                  if ((0x7e0000007eL & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 34;
-                  break;
-               case 34:
-                  if ((0x7e0000007eL & l) == 0L)
-                     break;
-                  if (kind > 148)
-                     kind = 148;
-                  jjCheckNAddStates(31, 35);
-                  break;
-               case 35:
+               case 19:
                   if (curChar == 95)
                      jjstateSet[jjnewStateCnt++] = 15;
                   break;
-               case 37:
-               case 38:
+               case 21:
+               case 22:
                   if ((0x7fffffe87fffffeL & l) == 0L)
                      break;
                   if (kind > 149)
                      kind = 149;
-                  jjCheckNAdd(38);
+                  jjCheckNAdd(22);
                   break;
-               case 40:
-               case 41:
+               case 24:
+               case 25:
                   if ((0x7fffffe87fffffeL & l) == 0L)
                      break;
                   if (kind > 150)
                      kind = 150;
-                  jjCheckNAdd(41);
+                  jjCheckNAdd(25);
+                  break;
+               case 26:
+                  if (curChar == 64)
+                     jjCheckNAdd(27);
+                  break;
+               case 27:
+                  if ((0x7fffffe07fffffeL & l) == 0L)
+                     break;
+                  if (kind > 151)
+                     kind = 151;
+                  jjCheckNAddTwoStates(27, 28);
+                  break;
+               case 29:
+                  if ((0x7fffffe07fffffeL & l) == 0L)
+                     break;
+                  if (kind > 151)
+                     kind = 151;
+                  jjCheckNAddTwoStates(28, 29);
+                  break;
+               case 31:
+                  if ((0xffffffffefffffffL & l) != 0L)
+                     jjCheckNAddStates(23, 25);
+                  break;
+               case 32:
+                  if (curChar == 92)
+                     jjstateSet[jjnewStateCnt++] = 33;
+                  break;
+               case 33:
+                  if ((0x14404410000000L & l) != 0L)
+                     jjCheckNAddStates(23, 25);
+                  break;
+               case 36:
+                  if ((0xffffffffefffffffL & l) != 0L)
+                     jjCheckNAddStates(20, 22);
+                  break;
+               case 37:
+                  if (curChar == 92)
+                     jjstateSet[jjnewStateCnt++] = 38;
+                  break;
+               case 38:
+                  if ((0x14404410000000L & l) != 0L)
+                     jjCheckNAddStates(20, 22);
                   break;
                case 42:
-                  if (curChar == 64)
-                     jjCheckNAdd(43);
+                  if ((0xffffffffefffffffL & l) != 0L)
+                     jjCheckNAddStates(28, 31);
                   break;
                case 43:
-                  if ((0x7fffffe07fffffeL & l) == 0L)
-                     break;
-                  if (kind > 151)
-                     kind = 151;
-                  jjCheckNAddTwoStates(43, 44);
-                  break;
-               case 45:
-                  if ((0x7fffffe07fffffeL & l) == 0L)
-                     break;
-                  if (kind > 151)
-                     kind = 151;
-                  jjCheckNAddTwoStates(44, 45);
-                  break;
-               case 47:
-                  if ((0xffffffffefffffffL & l) != 0L)
-                     jjCheckNAddStates(23, 25);
-                  break;
-               case 48:
                   if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 49;
+                     jjstateSet[jjnewStateCnt++] = 44;
                   break;
-               case 49:
+               case 44:
                   if ((0x14404410000000L & l) != 0L)
-                     jjCheckNAddStates(23, 25);
-                  break;
-               case 52:
-                  if ((0xffffffffefffffffL & l) != 0L)
-                     jjCheckNAddStates(20, 22);
+                     jjCheckNAddStates(28, 31);
                   break;
                case 53:
-                  if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 54;
+                  if ((0xffffffffefffffffL & l) != 0L)
+                     jjCheckNAddStates(34, 37);
                   break;
                case 54:
-                  if ((0x14404410000000L & l) != 0L)
-                     jjCheckNAddStates(20, 22);
-                  break;
-               case 58:
-                  if ((0xffffffffefffffffL & l) != 0L)
-                     jjCheckNAddStates(40, 43);
-                  break;
-               case 59:
                   if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 60;
+                     jjstateSet[jjnewStateCnt++] = 55;
                   break;
-               case 60:
+               case 55:
                   if ((0x14404410000000L & l) != 0L)
-                     jjCheckNAddStates(40, 43);
+                     jjCheckNAddStates(34, 37);
                   break;
-               case 69:
-                  if ((0xffffffffefffffffL & l) != 0L)
-                     jjCheckNAddStates(46, 49);
-                  break;
-               case 70:
-                  if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 71;
-                  break;
-               case 71:
-                  if ((0x14404410000000L & l) != 0L)
-                     jjCheckNAddStates(46, 49);
-                  break;
-               case 78:
+               case 62:
                   if ((0x20000000200L & l) != 0L)
-                     jjAddStates(79, 81);
+                     jjAddStates(64, 66);
                   break;
-               case 79:
+               case 63:
                   if ((0x20000000200L & l) != 0L && kind > 66)
                      kind = 66;
                   break;
-               case 80:
-               case 83:
+               case 64:
+               case 67:
                   if ((0x4000000040000L & l) != 0L)
-                     jjCheckNAdd(79);
+                     jjCheckNAdd(63);
                   break;
-               case 81:
+               case 65:
                   if ((0x20000000200L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 80;
+                     jjstateSet[jjnewStateCnt++] = 64;
                   break;
-               case 82:
+               case 66:
                   if ((0x8000000080000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 81;
+                     jjstateSet[jjnewStateCnt++] = 65;
                   break;
-               case 84:
+               case 68:
                   if ((0x20000000200000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 83;
+                     jjstateSet[jjnewStateCnt++] = 67;
                   break;
-               case 85:
+               case 69:
                   if ((0x8000000080000L & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 84;
+                     jjstateSet[jjnewStateCnt++] = 68;
                   break;
-               case 87:
+               case 71:
                   if ((0x7fffffe07fffffeL & l) != 0L)
-                     jjCheckNAddStates(73, 78);
+                     jjCheckNAddStates(58, 63);
                   break;
-               case 88:
+               case 72:
                   if ((0x7fffffe87fffffeL & l) != 0L)
-                     jjCheckNAddTwoStates(88, 89);
+                     jjCheckNAddTwoStates(72, 73);
                   break;
-               case 89:
+               case 73:
                   if ((0x7fffffe87fffffeL & l) != 0L)
-                     jjCheckNAdd(90);
+                     jjCheckNAdd(74);
                   break;
-               case 91:
+               case 75:
                   if ((0x7fffffe87fffffeL & l) != 0L)
-                     jjCheckNAddTwoStates(91, 92);
+                     jjCheckNAddTwoStates(75, 76);
                   break;
-               case 92:
+               case 76:
                   if ((0x7fffffe87fffffeL & l) != 0L)
-                     jjCheckNAdd(93);
+                     jjCheckNAdd(77);
                   break;
-               case 94:
+               case 78:
                   if ((0x7fffffe87fffffeL & l) == 0L)
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 95:
+               case 79:
                   if ((0x7fffffe87fffffeL & l) != 0L)
-                     jjCheckNAddStates(61, 64);
+                     jjCheckNAddStates(44, 47);
                   break;
-               case 96:
-                  if (curChar == 92)
-                     jjCheckNAdd(97);
-                  break;
-               case 97:
-                  if ((0x4000000080000001L & l) != 0L)
-                     jjCheckNAddStates(61, 64);
-                  break;
-               case 99:
-                  if ((0x7e0000007eL & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 100;
-                  break;
-               case 100:
-                  if ((0x7e0000007eL & l) != 0L)
-                     jjCheckNAddStates(61, 64);
-                  break;
-               case 101:
+               case 80:
                   if ((0x7fffffe87fffffeL & l) != 0L && kind > 147)
                      kind = 147;
                   break;
-               case 103:
+               case 81:
                   if (curChar == 92)
-                     jjCheckNAddTwoStates(97, 104);
+                     jjAddStates(69, 70);
                   break;
-               case 104:
-                  if ((0x4000000080000001L & l) != 0L && kind > 147)
-                     kind = 147;
+               case 82:
+                  if ((0x4000000080000001L & l) != 0L)
+                     jjCheckNAddStates(44, 47);
                   break;
-               case 106:
+               case 84:
                   if ((0x7e0000007eL & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 107;
+                     jjstateSet[jjnewStateCnt++] = 85;
                   break;
-               case 107:
+               case 85:
+                  if ((0x7e0000007eL & l) != 0L)
+                     jjCheckNAddStates(44, 47);
+                  break;
+               case 86:
+                  if ((0x7e0000007eL & l) != 0L)
+                     jjstateSet[jjnewStateCnt++] = 87;
+                  break;
+               case 87:
                   if ((0x7e0000007eL & l) != 0L && kind > 147)
                      kind = 147;
                   break;
-               case 108:
-                  if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 109;
+               case 88:
+                  if ((0x4000000080000001L & l) != 0L && kind > 147)
+                     kind = 147;
                   break;
-               case 109:
+               case 89:
+                  if (curChar == 92)
+                     jjstateSet[jjnewStateCnt++] = 90;
+                  break;
+               case 90:
                   if ((0x4000000080000001L & l) == 0L)
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 111:
+               case 92:
                   if ((0x7e0000007eL & l) != 0L)
-                     jjstateSet[jjnewStateCnt++] = 112;
+                     jjstateSet[jjnewStateCnt++] = 93;
                   break;
-               case 112:
+               case 93:
                   if ((0x7e0000007eL & l) == 0L)
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 122:
+               case 103:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(84, 85);
+                     jjAddStates(71, 72);
+                  break;
+               case 107:
+                  if ((0x2000000020L & l) != 0L)
+                     jjAddStates(73, 74);
+                  break;
+               case 119:
+                  if ((0x2000000020L & l) != 0L)
+                     jjAddStates(75, 76);
                   break;
                case 126:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(86, 87);
+                     jjAddStates(77, 78);
                   break;
-               case 138:
+               case 130:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(88, 89);
+                     jjAddStates(79, 80);
                   break;
-               case 145:
+               case 142:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(90, 91);
+                     jjAddStates(81, 82);
                   break;
                case 149:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(92, 93);
+                     jjAddStates(83, 84);
                   break;
-               case 161:
+               case 153:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(94, 95);
+                     jjAddStates(85, 86);
                   break;
-               case 168:
+               case 159:
                   if ((0x2000000020L & l) != 0L)
-                     jjAddStates(96, 97);
-                  break;
-               case 172:
-                  if ((0x2000000020L & l) != 0L)
-                     jjAddStates(98, 99);
-                  break;
-               case 178:
-                  if ((0x2000000020L & l) != 0L)
-                     jjAddStates(100, 101);
+                     jjAddStates(87, 88);
                   break;
                default : break;
             }
@@ -3227,7 +3103,7 @@ private int jjMoveNfa_0(int startState, int curPos)
             {
                case 0:
                   if (jjCanMove_1(hiByte, i1, i2, l1, l2))
-                     jjCheckNAddStates(73, 78);
+                     jjCheckNAddStates(58, 63);
                   break;
                case 2:
                   if (!jjCanMove_0(hiByte, i1, i2, l1, l2))
@@ -3238,95 +3114,95 @@ private int jjMoveNfa_0(int startState, int curPos)
                   break;
                case 13:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     jjAddStates(82, 83);
+                     jjAddStates(67, 68);
                   break;
                case 16:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 148)
                      kind = 148;
-                  jjCheckNAddStates(31, 35);
+                  jjCheckNAddTwoStates(17, 18);
                   break;
                case 17:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-                     jjCheckNAddStates(36, 39);
+                     jjCheckNAddTwoStates(17, 18);
                   break;
-               case 23:
+               case 18:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2) && kind > 148)
                      kind = 148;
                   break;
-               case 37:
+               case 21:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 149)
                      kind = 149;
-                  jjCheckNAdd(38);
+                  jjCheckNAdd(22);
                   break;
-               case 38:
+               case 22:
                   if (!jjCanMove_2(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 149)
                      kind = 149;
-                  jjCheckNAdd(38);
+                  jjCheckNAdd(22);
                   break;
-               case 40:
+               case 24:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 150)
                      kind = 150;
-                  jjCheckNAdd(41);
+                  jjCheckNAdd(25);
                   break;
-               case 41:
+               case 25:
                   if (!jjCanMove_2(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 150)
                      kind = 150;
-                  jjCheckNAdd(41);
+                  jjCheckNAdd(25);
                   break;
-               case 47:
+               case 31:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
                      jjAddStates(23, 25);
                   break;
-               case 52:
+               case 36:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
                      jjAddStates(20, 22);
                   break;
-               case 58:
+               case 42:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     jjAddStates(40, 43);
+                     jjAddStates(28, 31);
                   break;
-               case 69:
+               case 53:
                   if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     jjAddStates(46, 49);
+                     jjAddStates(34, 37);
                   break;
-               case 88:
+               case 72:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-                     jjCheckNAddTwoStates(88, 89);
+                     jjCheckNAddTwoStates(72, 73);
                   break;
-               case 89:
+               case 73:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-                     jjCheckNAdd(90);
+                     jjCheckNAdd(74);
                   break;
-               case 91:
+               case 75:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-                     jjCheckNAddTwoStates(91, 92);
+                     jjCheckNAddTwoStates(75, 76);
                   break;
-               case 92:
+               case 76:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-                     jjCheckNAdd(93);
+                     jjCheckNAdd(77);
                   break;
-               case 94:
+               case 78:
                   if (!jjCanMove_1(hiByte, i1, i2, l1, l2))
                      break;
                   if (kind > 147)
                      kind = 147;
-                  jjCheckNAddStates(56, 60);
+                  jjCheckNAddStates(44, 47);
                   break;
-               case 95:
+               case 79:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2))
-                     jjCheckNAddStates(61, 64);
+                     jjCheckNAddStates(44, 47);
                   break;
-               case 101:
+               case 80:
                   if (jjCanMove_2(hiByte, i1, i2, l1, l2) && kind > 147)
                      kind = 147;
                   break;
@@ -3341,7 +3217,7 @@ private int jjMoveNfa_0(int startState, int curPos)
          kind = 0x7fffffff;
       }
       ++curPos;
-      if ((i = jjnewStateCnt) == (startsAt = 181 - (jjnewStateCnt = startsAt)))
+      if ((i = jjnewStateCnt) == (startsAt = 162 - (jjnewStateCnt = startsAt)))
          break;
       try { curChar = input_stream.readChar(); }
       catch(java.io.IOException e) { break; }
@@ -3367,13 +3243,12 @@ private int jjMoveNfa_0(int startState, int curPos)
    return toRet;
 }
 static final int[] jjnextStates = {
-   115, 116, 117, 119, 120, 125, 126, 153, 154, 157, 159, 164, 130, 131, 134, 136, 
-   141, 94, 108, 110, 52, 53, 55, 47, 48, 50, 7, 8, 16, 30, 32, 17, 
-   23, 24, 25, 27, 17, 18, 20, 23, 57, 58, 59, 61, 62, 64, 68, 69, 
-   70, 72, 73, 75, 88, 89, 91, 92, 95, 101, 102, 103, 105, 95, 96, 98, 
-   101, 142, 143, 148, 149, 165, 166, 171, 172, 88, 89, 90, 91, 92, 93, 82, 
-   85, 86, 13, 14, 123, 124, 127, 128, 139, 140, 146, 147, 150, 151, 162, 163, 
-   169, 170, 173, 174, 179, 180, 
+   96, 97, 98, 100, 101, 106, 107, 134, 135, 138, 140, 145, 111, 112, 115, 117, 
+   122, 78, 89, 91, 36, 37, 39, 31, 32, 34, 7, 8, 41, 42, 43, 45, 
+   46, 48, 52, 53, 54, 56, 57, 59, 72, 73, 75, 76, 79, 80, 81, 83, 
+   84, 86, 123, 124, 129, 130, 146, 147, 152, 153, 72, 73, 74, 75, 76, 77, 
+   66, 69, 70, 13, 14, 82, 88, 104, 105, 108, 109, 120, 121, 127, 128, 131, 
+   132, 143, 144, 150, 151, 154, 155, 160, 161, 
 };
 private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, long l2)
 {
@@ -3472,8 +3347,8 @@ static final long[] jjtoSpecial = {
    0x8L, 0x0L, 0x0L, 
 };
 protected JavaCharStream input_stream;
-private final int[] jjrounds = new int[181];
-private final int[] jjstateSet = new int[362];
+private final int[] jjrounds = new int[162];
+private final int[] jjstateSet = new int[324];
 protected char curChar;
 /** Constructor. */
 public SyntaxTreeBuilderTokenManager(JavaCharStream stream){
@@ -3500,7 +3375,7 @@ private void ReInitRounds()
 {
    int i;
    jjround = 0x80000001;
-   for (i = 181; i-- > 0;)
+   for (i = 162; i-- > 0;)
       jjrounds[i] = 0x80000000;
 }
 

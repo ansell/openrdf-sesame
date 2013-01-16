@@ -15,13 +15,11 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
-import org.openrdf.repository.sparql.SPARQLConnection;
+import org.openrdf.repository.sparql.SPARQLRepository;
 
 
 /**
@@ -69,7 +67,7 @@ public class SPARQLUpdate extends SPARQLOperation implements Update {
 			// TODO check correct mime type and header name
 			post.addRequestHeader("Content-type", "application/x-sparql-update");
 			Map<String, String> additionalHeaders = (Map<String, String>)client.getParams().getParameter(
-					SPARQLConnection.ADDITIONAL_HEADER_NAME);
+					SPARQLRepository.ADDITIONAL_HEADER_NAME);
 			if (additionalHeaders != null) {
 				for (Entry<String, String> additionalHeader : additionalHeaders.entrySet())
 					post.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());

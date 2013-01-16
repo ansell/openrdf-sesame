@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app>
 
+	<display-name>OpenRDF Workbench</display-name>
+	<description>OpenRDF Workbench</description>
+
 	<filter>
 		<filter-name>redirect</filter-name>
 		<filter-class>
@@ -138,6 +141,11 @@
 		<init-param>
 			<param-name>/query</param-name>
 			<param-value>org.openrdf.workbench.commands.QueryServlet
+			</param-value>
+		</init-param>
+		<init-param>
+			<param-name>/saved-queries</param-name>
+			<param-value>org.openrdf.workbench.commands.SavedQueriesServlet
 			</param-value>
 		</init-param>
 		<init-param>

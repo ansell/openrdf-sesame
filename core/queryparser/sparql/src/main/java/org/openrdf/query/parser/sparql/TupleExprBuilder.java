@@ -471,10 +471,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			String alias = projElemNode.getAlias();
 			if (alias != null) {
 				// aliased projection element
-
 				if (aliasesInProjection.contains(alias)) {
 					throw new VisitorException("duplicate use of alias '" + alias + "' in projection.");
 				}
+
+				// check if alias is not previously used.
+				if (result.getBindingNames().contains(alias)) {
+					throw new VisitorException("projection alias '" + alias + "' was previously used");
+				}
+
 				aliasesInProjection.add(alias);
 
 				ValueExpr valueExpr = (ValueExpr)child.jjtAccept(this, null);
@@ -1358,7 +1363,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				if (i == pathLength - 1) {
 					// last element in the path
-					pathElement.jjtGetChild(0).jjtAccept(this, data);
+					pathElement.jjtGetChild(0).jjtAccept(this, startVar);
 
 					TupleExpr te = graphPattern.buildTupleExpr();
 
@@ -1373,7 +1378,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					// to connect.
 					Var nextVar = createAnonVar(subjVar.getName() + "-nested-" + i);
 
-					pathElement.jjtGetChild(0).jjtAccept(this, data);
+					pathElement.jjtGetChild(0).jjtAccept(this, startVar);
 
 					TupleExpr te = graphPattern.buildTupleExpr();
 
@@ -1403,6 +1408,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 						if (invertSequence) {
 							endVar = subjVar;
+							if (startVar.equals(subjVar)) {
+								// inverted path sequence of length 1.
+								startVar = objVar;
+							}
 						}
 
 						if (pathElement.isInverse()) {
@@ -2250,14 +2259,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		return createFunctionCall("UUID", node, 0, 0);
 	}
-	
+
 	@Override
 	public FunctionCall visit(ASTSTRUUID node, Object data)
 		throws VisitorException
 	{
 		return createFunctionCall("STRUUID", node, 0, 0);
 	}
-	
+
 	@Override
 	public IRIFunction visit(ASTIRIFunc node, Object data)
 		throws VisitorException
@@ -2297,7 +2306,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public BindingSetAssignment visit(ASTInlineData node, Object data)
 		throws VisitorException
 	{
-		
+
 		BindingSetAssignment bsa = new BindingSetAssignment();
 
 		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
@@ -2649,6 +2658,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		TupleExpr result = null;
 		TupleExpr arg = graphPattern.buildTupleExpr();
+
+		// check if alias is not previously used.
+		if (arg.getBindingNames().contains(alias)) {
+			throw new VisitorException(String.format("BIND clause alias '{}' was previously used", alias));
+		}
+
 		if (arg instanceof Filter) {
 			result = arg;
 			// we need to push down the extension so that filters can operate on

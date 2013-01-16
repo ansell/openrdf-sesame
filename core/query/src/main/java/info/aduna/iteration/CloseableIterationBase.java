@@ -55,31 +55,6 @@ public abstract class CloseableIterationBase<E, X extends Exception> implements 
 		}
 	}
 
-	public <C extends Collection<? super E>> C addTo(C collection)
-		throws X
-	{
-		while (hasNext()) {
-			collection.add(next());
-		}
-		return collection;
-	}
-
-	public List<E> asList()
-		throws X
-	{
-		List<E> list = new ArrayList<E>();
-		list = addTo(list);
-		return list;
-	}
-
-	public Set<E> asSet()
-		throws X
-	{
-		Set<E> set = new HashSet<E>();
-		set = addTo(set);
-		return set;
-	}
-
 	/**
 	 * Called by {@link #close} when it is called for the first time. This method
 	 * is only called once on each iteration. By default, this method does

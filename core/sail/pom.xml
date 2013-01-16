@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.7-SNAPSHOT</version>
+		<version>2.7.0-beta2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sail</artifactId>
@@ -17,6 +17,7 @@
 	<modules>
 		<module>api</module>
 		<module>inferencer</module>
+		<module>federation</module>
 		<module>memory</module>
 		<module>nativerdf</module>
 		<module>rdbms</module>

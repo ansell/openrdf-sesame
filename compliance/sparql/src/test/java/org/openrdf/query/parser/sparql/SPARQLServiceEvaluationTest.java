@@ -42,7 +42,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
@@ -413,6 +413,13 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		execute("/testcases-service/service17.rq", "/testcases-service/service17.srx", false);	
 	}
 	
+	@Test
+	public void testNonAsciiCharHandling() throws Exception {
+		/* SES-1056 */
+		prepareTest(null, Arrays.asList("/testcases-service/data18endpoint1.rdf"));
+		execute("/testcases-service/service18.rq", "/testcases-service/service18.srx", false);
+	}
+	
 	/**
 	 * Execute a testcase, both queryFile and expectedResultFile must be files 
 	 * located on the class path.
@@ -560,7 +567,7 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	
 		boolean resultsEqual;
 		
-		resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
+		resultsEqual = QueryResults.equals(queryResultTable, expectedResultTable);
 		
 		if (checkOrder) {
 			// also check the order in which solutions occur.

@@ -5,6 +5,11 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
@@ -177,5 +182,70 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 */
 	public Literal createLiteral(XMLGregorianCalendar calendar) {
 		return createLiteral(calendar.toXMLFormat(), XMLDatatypeUtil.qnameToURI(calendar.getXMLSchemaType()));
+	}
+
+	/**
+	 * Converts the supplied {@link Date} to a {@link XMLGregorianCalendar}, then
+	 * calls {@link ValueFactory#createLiteral(XMLGregorianCalendar)}.
+	 * 
+	 * @since 2.7.0
+	 */
+	public Literal createLiteral(Date date) {
+		GregorianCalendar c = new GregorianCalendar();
+		c.setTime(date);
+		try {
+			XMLGregorianCalendar xmlGregCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+			return createLiteral(xmlGregCalendar);
+		}
+		catch (DatatypeConfigurationException e) {
+			throw new RuntimeException("Could not instantiate javax.xml.datatype.DatatypeFactory", e);
+		}
+	}
+
+	/**
+	 * Creates a typed {@link Literal} out of the supplied object, mapping the runtime
+	 * type of the object to the appropriate XML Schema type. If no mapping
+	 * is available, the method returns a literal with the string representation
+	 * of the supplied object as the value, and {@link XMLSchema#STRING} as the
+	 * datatype. Recognized types are {@link Boolean}, {@link Byte},
+	 * {@link Double}, {@link Float}, {@link Integer}, {@link Long},
+	 * {@link Short}, {@link XMLGregorianCalendar }, and {@link Date}.
+	 * 
+	 * @since 2.7.0
+	 * @param object
+	 *        an object to be converted to a typed literal.
+	 * @return a typed literal representation of the supplied object.
+	 */
+	public Literal createLiteral(Object object) {
+		if (object instanceof Boolean) {
+			return createLiteral(((Boolean)object).booleanValue());
+		}
+		else if (object instanceof Byte) {
+			return createLiteral(((Byte)object).byteValue());
+		}
+		else if (object instanceof Double) {
+			return createLiteral(((Double)object).doubleValue());
+		}
+		else if (object instanceof Float) {
+			return createLiteral(((Float)object).floatValue());
+		}
+		else if (object instanceof Integer) {
+			return createLiteral(((Integer)object).intValue());
+		}
+		else if (object instanceof Long) {
+			return createLiteral(((Long)object).longValue());
+		}
+		else if (object instanceof Short) {
+			return createLiteral(((Short)object).shortValue());
+		}
+		else if (object instanceof XMLGregorianCalendar) {
+			return createLiteral((XMLGregorianCalendar)object);
+		}
+		else if (object instanceof Date) {
+			return createLiteral((Date)object);
+		}
+		else {
+			return createLiteral(object.toString(), XMLSchema.STRING);
+		}
 	}
 }

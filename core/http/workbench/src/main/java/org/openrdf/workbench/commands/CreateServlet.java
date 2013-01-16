@@ -9,60 +9,56 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.console.Console;
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
-import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.workbench.base.TransformationServlet;
-import org.openrdf.workbench.util.ConfigTemplate;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class CreateServlet extends TransformationServlet {
 
 	@Override
-	protected void doPost(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception {
+	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
+		throws Exception
+	{
 		try {
-			String id = createRepositoryConfig(req);
-			resp.sendRedirect("../" + id + "/summary");
-		} catch (Exception e) {
+			resp.sendRedirect("../" + createRepositoryConfig(req) + "/summary");
+		}
+		catch (Exception e) {
 			throw new ServletException(e);
 		}
 	}
 
 	@Override
-	protected void service(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception {
+	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
+		throws IOException
+	{
 		resp.setContentType("application/xml");
-		TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 		if (req.isParameterPresent("type")) {
-			String type = req.getTypeParameter();
+			final String type = req.getTypeParameter();
 			builder.transform(xslPath, "create-" + type + ".xsl");
-		} else {
+		}
+		else {
 			builder.transform(xslPath, "create.xsl");
 		}
 		builder.start();
@@ -70,49 +66,41 @@ public class CreateServlet extends TransformationServlet {
 		builder.end();
 	}
 
-	private String createRepositoryConfig(WorkbenchRequest req)
-			throws Exception {
-		String type = req.getTypeParameter();
-		ConfigTemplate template = getConfigTemplate(type);
-		String configString = template.render(req.getSingleParameterMap());
-		RepositoryConfig repConfig = updateRepositoryConfig(configString);
+	private String createRepositoryConfig(final WorkbenchRequest req)
+		throws IOException, OpenRDFException
+	{
+		final String type = req.getTypeParameter();
+		final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
+		final RepositoryConfig repConfig = updateRepositoryConfig(configString);
 		return repConfig.getID();
 	}
 
-	private RepositoryConfig updateRepositoryConfig(String configString)
-			throws IOException, RDFParseException, RDFHandlerException,
-			GraphUtilException, RepositoryConfigException, RepositoryException {
-		Repository systemRepo = manager.getSystemRepository();
-
-		ValueFactory vf = systemRepo.getValueFactory();
-
-		Graph graph = new GraphImpl(vf);
-
-		RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, vf);
+	private RepositoryConfig updateRepositoryConfig(final String configString)
+		throws IOException, OpenRDFException
+	{
+		final Repository systemRepo = manager.getSystemRepository();
+		final ValueFactory factory = systemRepo.getValueFactory();
+		final Graph graph = new GraphImpl(factory);
+		final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, factory);
 		rdfParser.setRDFHandler(new StatementCollector(graph));
-		rdfParser.parse(new StringReader(configString),
-				RepositoryConfigSchema.NAMESPACE);
-
-		Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
-				RepositoryConfigSchema.REPOSITORY);
-		RepositoryConfig repConfig = RepositoryConfig.create(graph,
-				repositoryNode);
+		rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
+		final RepositoryConfig repConfig = RepositoryConfig.create(graph,
+				GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
 		repConfig.validate();
-
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 		return repConfig;
 	}
 
-	private ConfigTemplate getConfigTemplate(String type) throws IOException,
-			UnsupportedEncodingException {
-		InputStream in = Console.class.getResourceAsStream(type + ".ttl");
+	private ConfigTemplate getConfigTemplate(final String type)
+		throws IOException
+	{
+		final InputStream ttlInput = RepositoryConfig.class.getResourceAsStream(type + ".ttl");
 		try {
-			String template = IOUtil.readString(new InputStreamReader(in,
-					"UTF-8"));
+			final String template = IOUtil.readString(new InputStreamReader(ttlInput, "UTF-8"));
 			return new ConfigTemplate(template);
-		} finally {
-			in.close();
+		}
+		finally {
+			ttlInput.close();
 		}
 	}
-
 }

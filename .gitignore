@@ -1,9 +1,17 @@
-#Eclipse settings
+# Eclipse settings
 .project
 **/.project
 .classpath
 **/.classpath
+.settings
+**/.settings
 
-# maven generated stuff
+# Eclipse Plug-In Settings
+.pmd
+
+# Maven generated stuff
 target/
 */target/
+
+# GEdit generated stuff
+*.*~

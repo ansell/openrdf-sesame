@@ -12,8 +12,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.Iterations;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.model.Literal;
@@ -44,6 +48,8 @@ import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
  */
 public class SPARQLFederatedService implements FederatedService {
 
+	final static Logger logger = LoggerFactory.getLogger(SPARQLFederatedService.class);
+	
 	/**
 	 * A convenience iteration for SERVICE expression which evaluates 
 	 * intermediate results in batches and manages all results. Uses
@@ -209,12 +215,12 @@ public class SPARQLFederatedService implements FederatedService {
 		projectionVars.removeAll(allBindings.get(0).getBindingNames());
 		
 		// below we need to take care for SILENT services
+		CloseableIteration<BindingSet, QueryEvaluationException> result = null;
 		try {
 			// fallback to simple evaluation (just a single binding)
 			if (allBindings.size()==1) {
 				String queryString = service.getQueryString(projectionVars);
-				CloseableIteration<BindingSet, QueryEvaluationException> result = 
-					evaluate(queryString, allBindings.get(0), baseUri, QueryType.SELECT, service);
+				result = evaluate(queryString, allBindings.get(0), baseUri, QueryType.SELECT, service);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
@@ -231,25 +237,25 @@ public class SPARQLFederatedService implements FederatedService {
 			List<String> relevantBindingNames = getRelevantBindingNames(allBindings, service.getServiceVars());
 			
 			if (relevantBindingNames.size()!=0) {
-				// append the BINDINGS clause to the query
-				queryString += buildBindingsClause(allBindings, relevantBindingNames);
+				// append the VALUES clause to the query
+				queryString += buildVALUESClause(allBindings, relevantBindingNames);
 			}
 
 			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
-			TupleQueryResult res;
+			TupleQueryResult res=null;
 			try {
+				query.setMaxQueryTime(60);		// TODO how to retrieve max query value from actual setting?
 				res = query.evaluate();
 			} catch (QueryEvaluationException q) {
 				
+				closeQuietly(res);
+				
 				// use fallback: endpoint might not support BINDINGS clause
 				String preparedQuery = service.getQueryString(projectionVars);
-				CloseableIteration<BindingSet, QueryEvaluationException> result = 
-						new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
+				result = new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
-			
-			CloseableIteration<BindingSet, QueryEvaluationException> result;
 			
 			if (relevantBindingNames.size()==0)
 				result = new ServiceCrossProductIteration(res, allBindings);	// cross product
@@ -260,6 +266,7 @@ public class SPARQLFederatedService implements FederatedService {
 			return result;
 			
 		} catch (RepositoryException e) {
+			Iterations.closeCloseable(result);
 			if (service.isSilent())
 				return new CollectionIteration<BindingSet, QueryEvaluationException>(allBindings);
 			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString() + " could not be initialized.", e);
@@ -267,10 +274,12 @@ public class SPARQLFederatedService implements FederatedService {
 			// this exception must not be silenced, bug in our code
 			throw new QueryEvaluationException(e);
 		} catch (QueryEvaluationException e) {
+			Iterations.closeCloseable(result);
 			if (service.isSilent())
 				return new CollectionIteration<BindingSet, QueryEvaluationException>(allBindings);
 			throw e;
 		} catch (RuntimeException e) {
+			Iterations.closeCloseable(result);
 			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped
 			// QueryEval) if silent
 			if (service.isSilent())
@@ -282,9 +291,17 @@ public class SPARQLFederatedService implements FederatedService {
 
 
 	public void initialize() throws RepositoryException {
-				
+		rep.initialize();	
 	}
 
+	private void closeQuietly(TupleQueryResult res) {
+		try {
+			if (res!=null)
+				res.close();
+		} catch (Exception e) {	
+			logger.debug("Could not close connection properly: " + e.getMessage(), e);
+		}
+	}
 
 
 	public void shutdown() throws RepositoryException {
@@ -331,7 +348,7 @@ public class SPARQLFederatedService implements FederatedService {
 	}
 	
 	/**
-	 * Computes the BINDINGS clause for the set of relevant input bindings. The BINDINGS
+	 * Computes the VALUES clause for the set of relevant input bindings. The VALUES
 	 * clause is attached to a subquery for block-nested-loop evaluation. Implementation
 	 * note: we use a special binding to mark the rowIndex of the input binding.
 	 * 
@@ -340,17 +357,17 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @return
 	 * @throws QueryEvaluationException
 	 */
-	private String buildBindingsClause(List<BindingSet> bindings, List<String> relevantBindingNames) 
+	private String buildVALUESClause(List<BindingSet> bindings, List<String> relevantBindingNames) 
 				throws QueryEvaluationException {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append(" BINDINGS ?__rowIdx");	// __rowIdx: see comment in evaluate()
+		sb.append(" VALUES (?__rowIdx");	// __rowIdx: see comment in evaluate()
 		
 		for (String bName : relevantBindingNames) {
 			sb.append(" ?").append(bName);
 		}
 		
-		sb.append(" { ");
+		sb.append(") { ");
 		
 		int rowIdx=0;
 		for (BindingSet b : bindings) {

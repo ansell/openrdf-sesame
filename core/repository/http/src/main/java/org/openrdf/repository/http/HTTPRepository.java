@@ -51,17 +51,18 @@ public class HTTPRepository extends RepositoryBase {
 	 *--------------*/
 
 	private HTTPRepository() {
+		super();
 		httpClient = new HTTPClient();
 		httpClient.setValueFactory(new ValueFactoryImpl());
 	}
 
-	public HTTPRepository(String serverURL, String repositoryID) {
+	public HTTPRepository(final String serverURL, final String repositoryID) {
 		this();
 		httpClient.setServerURL(serverURL);
 		httpClient.setRepositoryID(repositoryID);
 	}
 
-	public HTTPRepository(String repositoryURL) {
+	public HTTPRepository(final String repositoryURL) {
 		this();
 		httpClient.setRepositoryURL(repositoryURL);
 	}
@@ -70,7 +71,7 @@ public class HTTPRepository extends RepositoryBase {
 	 * public methods *
 	 * ---------------*/
 
-	public void setDataDir(File dataDir) {
+	public void setDataDir(final File dataDir) {
 		this.dataDir = dataDir;
 	}
 
@@ -96,14 +97,14 @@ public class HTTPRepository extends RepositoryBase {
 		}
 
 		boolean isWritable = false;
-		String repositoryURL = httpClient.getRepositoryURL();
+		final String repositoryURL = httpClient.getRepositoryURL();
 
 		try {
-			TupleQueryResult repositoryList = httpClient.getRepositoryList();
+			final TupleQueryResult repositoryList = httpClient.getRepositoryList();
 			try {
 				while (repositoryList.hasNext()) {
-					BindingSet bindingSet = repositoryList.next();
-					Value uri = bindingSet.getValue("uri");
+					final BindingSet bindingSet = repositoryList.next();
+					final Value uri = bindingSet.getValue("uri");
 
 					if (uri != null && uri.stringValue().equals(repositoryURL)) {
 						isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
@@ -136,7 +137,7 @@ public class HTTPRepository extends RepositoryBase {
 	 *        the preferred {@link TupleQueryResultFormat}. If set to 'null' no
 	 *        explicit preference will be stated.
 	 */
-	public void setPreferredTupleQueryResultFormat(TupleQueryResultFormat format) {
+	public void setPreferredTupleQueryResultFormat(final TupleQueryResultFormat format) {
 		httpClient.setPreferredTupleQueryResultFormat(format);
 	}
 
@@ -164,7 +165,7 @@ public class HTTPRepository extends RepositoryBase {
 	 *        the preferred {@link RDFFormat}. If set to 'null' no explicit
 	 *        preference will be stated.
 	 */
-	public void setPreferredRDFFormat(RDFFormat format) {
+	public void setPreferredRDFFormat(final RDFFormat format) {
 		httpClient.setPreferredRDFFormat(format);
 	}
 
@@ -187,10 +188,13 @@ public class HTTPRepository extends RepositoryBase {
 	 * @param password
 	 *        the password. Setting this to null will disable authentication.
 	 */
-	public void setUsernameAndPassword(String username, String password) {
+	public void setUsernameAndPassword(final String username, final String password) {
 		httpClient.setUsernameAndPassword(username, password);
 	}
-	
+
+	public String getRepositoryURL() {
+		return this.httpClient.getRepositoryURL();
+	}
 
 	/* -------------------*
 	 * non-public methods *
@@ -200,6 +204,7 @@ public class HTTPRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
+		// empty implementation of abstract superclass method
 	}
 
 	protected void shutDownInternal()
@@ -209,7 +214,7 @@ public class HTTPRepository extends RepositoryBase {
 		// shutdown followed by re-initialization. See SES-1059.
 		// httpClient.shutDown();
 	}
-	
+
 	@Override
 	protected void finalize()
 		throws Throwable
@@ -217,8 +222,7 @@ public class HTTPRepository extends RepositoryBase {
 		httpClient.shutDown();
 		super.finalize();
 	}
-	
-	
+
 	// httpClient is shared with HTTPConnection
 	HTTPClient getHTTPClient() {
 		return httpClient;
