@@ -365,7 +365,11 @@ public class TurtleParser extends RDFParserBase {
 			{
 				break;
 			}
-
+			else if (c == ';') {
+				// empty predicateObjectList, skip to next
+				continue;
+			}
+			
 			predicate = parsePredicate();
 
 			skipWSC();
