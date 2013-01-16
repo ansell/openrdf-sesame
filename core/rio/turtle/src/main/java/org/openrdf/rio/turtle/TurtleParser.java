@@ -12,6 +12,7 @@ import java.io.LineNumberReader;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import info.aduna.text.ASCIIUtil;
 
@@ -326,11 +327,11 @@ public class TurtleParser extends RDFParserBase {
 			}
 			skipWSC();
 			c = peek();
-			
-			// if this is not the end of the statement, recurse into the list of 
-			// predicate and objects, using the subject parsed above as the subject 
+
+			// if this is not the end of the statement, recurse into the list of
+			// predicate and objects, using the subject parsed above as the subject
 			// of the statement.
-			if(c != '.') {
+			if (c != '.') {
 				parsePredicateObjectList();
 			}
 		}
@@ -658,7 +659,7 @@ public class TurtleParser extends RDFParserBase {
 		String result = null;
 
 		int c1 = read();
-		
+
 		// First character should be '"' or "'"
 		verifyCharacter(c1, "\"\'");
 
@@ -786,26 +787,26 @@ public class TurtleParser extends RDFParserBase {
 
 			// read optional fractional digits
 			if (c == '.') {
-				
-				if(TurtleUtil.isWhitespace(peek())) {
-					// We're parsing an integer that did not have a space before the period to end the statement
+
+				if (TurtleUtil.isWhitespace(peek())) {
+					// We're parsing an integer that did not have a space before the
+					// period to end the statement
 				}
-				else
-				{
+				else {
 					value.append((char)c);
 
 					c = read();
-					
+
 					while (ASCIIUtil.isNumber(c)) {
 						value.append((char)c);
 						c = read();
 					}
-	
+
 					if (value.length() == 1) {
 						// We've only parsed a '.'
 						reportFatalError("Object for statement missing");
 					}
-					
+
 					// We're parsing a decimal or a double
 					datatype = XMLSchema.DECIMAL;
 				}
@@ -959,11 +960,21 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder localName = new StringBuilder(16);
 		c = read();
 		if (TurtleUtil.isNameStartChar(c)) {
-			localName.append((char)c);
+			if (c == '\\') {
+				localName.append(readLocalEscapedChar());
+			}
+			else {
+				localName.append((char)c);
+			}
 
 			c = read();
 			while (TurtleUtil.isNameChar(c)) {
-				localName.append((char)c);
+				if (c == '\\') {
+					localName.append(readLocalEscapedChar());
+				}
+				else {
+					localName.append((char)c);
+				}
 				c = read();
 			}
 		}
@@ -973,6 +984,20 @@ public class TurtleParser extends RDFParserBase {
 
 		// Note: namespace has already been resolved
 		return createURI(namespace + localName.toString());
+	}
+
+	private char readLocalEscapedChar()
+		throws RDFParseException, IOException
+	{
+		int c = read();
+
+		if (TurtleUtil.isLocalEscapedChar(c)) {
+			return (char)c;
+		}
+		else {
+			throw new RDFParseException("found '" + (char)c + "', expected one of: "
+					+ Arrays.toString(TurtleUtil.LOCAL_ESCAPED_CHARS));
+		}
 	}
 
 	/**

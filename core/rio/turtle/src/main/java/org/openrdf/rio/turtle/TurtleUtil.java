@@ -5,21 +5,49 @@
  */
 package org.openrdf.rio.turtle;
 
+import java.util.Arrays;
+
 import info.aduna.text.ASCIIUtil;
 import info.aduna.text.StringUtil;
-
 
 /**
  * Utility methods for Turtle encoding/decoding.
  * 
- * @see http://www.w3.org/TR/turtle/ 
+ * @see http://www.w3.org/TR/turtle/
  */
 public class TurtleUtil {
 
+	public static final char[] LOCAL_ESCAPED_CHARS = new char[] {
+			'_',
+			'~',
+			'.',
+			'-',
+			'!',
+			'$',
+			'&',
+			'\'',
+			'(',
+			')',
+			'*',
+			'+',
+			',',
+			';',
+			'=',
+			'/',
+			'?',
+			'#',
+			'@',
+			'%' };
+	
+	static {
+		// sorting array to allow simple binary search for char lookup.
+		Arrays.sort(LOCAL_ESCAPED_CHARS);
+	}
+
 	/**
-	 * Tries to find an index where the supplied URI can be split into a namespace
-	 * and a local name that comply with the serialization constraints of the
-	 * Turtle format.
+	 * Tries to find an index where the supplied URI can be split into a
+	 * namespace and a local name that comply with the serialization constraints
+	 * of the Turtle format.
 	 * 
 	 * @param uri
 	 *        The URI to split.
@@ -64,45 +92,29 @@ public class TurtleUtil {
 	}
 
 	public static boolean isPrefixStartChar(int c) {
-		return
-			ASCIIUtil.isLetter(c) ||
-			c >= 0x00C0 && c <= 0x00D6 ||
-			c >= 0x00D8 && c <= 0x00F6 ||
-			c >= 0x00F8 && c <= 0x02FF ||
-			c >= 0x0370 && c <= 0x037D ||
-			c >= 0x037F && c <= 0x1FFF ||
-			c >= 0x200C && c <= 0x200D ||
-			c >= 0x2070 && c <= 0x218F ||
-			c >= 0x2C00 && c <= 0x2FEF ||
-			c >= 0x3001 && c <= 0xD7FF ||
-			c >= 0xF900 && c <= 0xFDCF ||
-			c >= 0xFDF0 && c <= 0xFFFD ||
-			c >= 0x10000 && c <= 0xEFFFF;
+		return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >= 0x00D8 && c <= 0x00F6 || c >= 0x00F8
+				&& c <= 0x02FF || c >= 0x0370 && c <= 0x037D || c >= 0x037F && c <= 0x1FFF || c >= 0x200C
+				&& c <= 0x200D || c >= 0x2070 && c <= 0x218F || c >= 0x2C00 && c <= 0x2FEF || c >= 0x3001
+				&& c <= 0xD7FF || c >= 0xF900 && c <= 0xFDCF || c >= 0xFDF0 && c <= 0xFFFD || c >= 0x10000
+				&& c <= 0xEFFFF;
 	}
-	
+
 	public static boolean isNameStartChar(int c) {
-		return c == '_' || c == ':' || c == '%' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
+		return c == '\\' || c == '_' || c == ':' || c == '%' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
 	}
 
 	public static boolean isNameChar(int c) {
-		return
-			isNameStartChar(c) ||
-			ASCIIUtil.isNumber(c) ||
-			c == '-' ||
-			c == 0x00B7 ||
-			c >= 0x0300 && c <= 0x036F ||
-			c >= 0x203F && c <= 0x2040;
+		return isNameStartChar(c) || ASCIIUtil.isNumber(c) || c == '-' || c == 0x00B7 || c >= 0x0300
+				&& c <= 0x036F || c >= 0x203F && c <= 0x2040;
+	}
+
+	public static boolean isLocalEscapedChar(int c) {
+		return Arrays.binarySearch(LOCAL_ESCAPED_CHARS, (char)c) > -1;
 	}
 
 	public static boolean isPrefixChar(int c) {
-		return
-				c == '_' || 
-				ASCIIUtil.isNumber(c) || 
-				isPrefixStartChar(c) ||
-				c == '-' ||
-				c == 0x00B7 ||
-				c >= 0x0300 && c <= 0x036F ||
-				c >= 0x203F && c <= 0x2040;
+		return c == '_' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c) || c == '-' || c == 0x00B7
+				|| c >= 0x0300 && c <= 0x036F || c >= 0x203F && c <= 0x2040;
 	}
 
 	public static boolean isLanguageStartChar(int c) {
@@ -120,10 +132,10 @@ public class TurtleUtil {
 		if (!isPrefixStartChar(prefix.charAt(0))) {
 			return false;
 		}
-		
+
 		// FIXME: Last character cannot be an unescaped period '.' character
 		for (int i = 1; i < prefix.length(); i++) {
-			if (!isPrefixChar( prefix.charAt(i) )) {
+			if (!isPrefixChar(prefix.charAt(i))) {
 				return false;
 			}
 		}
@@ -137,20 +149,20 @@ public class TurtleUtil {
 		if (!isNameStartChar(name.charAt(0))) {
 			return false;
 		}
-		
+
 		// FIXME: Last character cannot be an unescaped period '.' character
 		for (int i = 1; i < name.length(); i++) {
-			if (!isNameChar( name.charAt(i) )) {
+			if (!isNameChar(name.charAt(i))) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
 	/**
-	 * Encodes the supplied string for inclusion as a 'normal' string in a
-	 * Turtle document.
+	 * Encodes the supplied string for inclusion as a 'normal' string in a Turtle
+	 * document.
 	 */
 	public static String encodeString(String s) {
 		s = StringUtil.gsub("\\", "\\\\", s);
@@ -187,11 +199,13 @@ public class TurtleUtil {
 	/**
 	 * Decodes an encoded Turtle string. Any \-escape sequences are substituted
 	 * with their decoded value.
-	 *
-	 * @param s An encoded Turtle string.
+	 * 
+	 * @param s
+	 *        An encoded Turtle string.
 	 * @return The unencoded string.
-	 * @exception IllegalArgumentException If the supplied string is not a
-	 * correctly encoded Turtle string.
+	 * @exception IllegalArgumentException
+	 *            If the supplied string is not a correctly encoded Turtle
+	 *            string.
 	 **/
 	public static String decodeString(String s) {
 		int backSlashIdx = s.indexOf('\\');
@@ -241,39 +255,35 @@ public class TurtleUtil {
 			else if (c == 'u') {
 				// \\uxxxx
 				if (backSlashIdx + 5 >= sLength) {
-					throw new IllegalArgumentException(
-							"Incomplete Unicode escape sequence in: " + s);
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
 				}
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 6);
 
 				try {
 					c = (char)Integer.parseInt(xx, 16);
-					sb.append( c );
+					sb.append(c);
 
 					startIdx = backSlashIdx + 6;
 				}
 				catch (NumberFormatException e) {
-					throw new IllegalArgumentException(
-							"Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
 				}
 			}
 			else if (c == 'U') {
 				// \\Uxxxxxxxx
 				if (backSlashIdx + 9 >= sLength) {
-					throw new IllegalArgumentException(
-							"Incomplete Unicode escape sequence in: " + s);
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
 				}
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
 
 				try {
 					c = (char)Integer.parseInt(xx, 16);
-					sb.append( c );
+					sb.append(c);
 
 					startIdx = backSlashIdx + 10;
 				}
 				catch (NumberFormatException e) {
-					throw new IllegalArgumentException(
-							"Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
 				}
 			}
 			else {
@@ -283,7 +293,7 @@ public class TurtleUtil {
 			backSlashIdx = s.indexOf('\\', startIdx);
 		}
 
-		sb.append( s.substring(startIdx) );
+		sb.append(s.substring(startIdx));
 
 		return sb.toString();
 	}
