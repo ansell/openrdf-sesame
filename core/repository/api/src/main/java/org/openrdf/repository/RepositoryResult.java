@@ -108,7 +108,9 @@ public class RepositoryResult<T> extends CloseableIterationBase<T, RepositoryExc
 	 * @throws RepositoryException
 	 *         if a problem occurred during retrieval of the results.
 	 * @see #addTo(Collection)
+	 * @deprecated Use {@link Iterations#asList(Iteration)} instead.
 	 */
+	@Deprecated
 	public List<T> asList()
 		throws RepositoryException
 	{
@@ -123,7 +125,9 @@ public class RepositoryResult<T> extends CloseableIterationBase<T, RepositoryExc
 	 * @return A reference to the collection that was supplied.
 	 * @throws RepositoryException
 	 *         if a problem occurred during retrieval of the results.
+	 * @deprecated Use {@link Iterations#addAll(Iteration, Collection)} instead.
 	 */
+	@Deprecated
 	public <C extends Collection<T>> C addTo(C collection)
 		throws RepositoryException
 	{
