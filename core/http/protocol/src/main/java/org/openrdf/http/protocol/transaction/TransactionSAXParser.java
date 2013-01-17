@@ -10,8 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
 import org.xml.sax.SAXException;
 
 import info.aduna.xml.SimpleSAXAdapter;
@@ -91,7 +89,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 			String encoding = atts.get(TransactionXMLConstants.ENCODING_ATT);
 
 			if (encoding != null && "base64".equalsIgnoreCase(encoding)) {
-				text = new String(Base64.decode(text));
+				text = new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(text));
 			}
 			Literal lit;
 			if (lang != null) {

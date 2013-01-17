@@ -7,9 +7,6 @@ package org.openrdf.http.protocol.transaction;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Set;
-
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 import info.aduna.xml.XMLUtil;
 import info.aduna.xml.XMLWriter;
@@ -292,7 +289,7 @@ public class TransactionWriter {
 			if (literal.getDatatype() != null) {
 				xmlWriter.setAttribute(TransactionXMLConstants.DATATYPE_ATT, literal.getDatatype().toString());
 			}
-			
+
 			String label = literal.getLabel();
 
 			boolean valid = true;
@@ -301,12 +298,12 @@ public class TransactionWriter {
 				char c = label.charAt(i++);
 				valid = XMLUtil.isValidCharacterDataChar(c);
 			}
-			
+
 			if (!valid) {
 				xmlWriter.setAttribute(TransactionXMLConstants.ENCODING_ATT, "base64");
-				label = Base64.encode(label.getBytes("UTF-8"));
+				label = javax.xml.bind.DatatypeConverter.printBase64Binary(label.getBytes("UTF-8"));
 			}
-			
+
 			xmlWriter.textElement(TransactionXMLConstants.LITERAL_TAG, label);
 		}
 		else {
