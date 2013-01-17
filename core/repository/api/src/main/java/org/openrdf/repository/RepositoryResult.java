@@ -5,6 +5,10 @@
  */
 package org.openrdf.repository;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIterationBase;
 import info.aduna.iteration.DistinctIteration;
@@ -20,7 +24,7 @@ import info.aduna.iteration.Iterations;
  * add them to a collection.
  * <p>
  * By default, a RepositoryResult is not necessarily a (mathematical) set: it
- * may contain duplicate objects. Duplicate filtering can be 
+ * may contain duplicate objects. Duplicate filtering can be
  * {@link #enableDuplicateFilter() switched on}, but this should not be used
  * lightly as the filtering mechanism is potentially memory-intensive.
  * <p>
@@ -90,5 +94,48 @@ public class RepositoryResult<T> extends CloseableIterationBase<T, RepositoryExc
 		}
 
 		wrappedIter = new DistinctIteration<T, RepositoryException>(wrappedIter);
+	}
+
+	/**
+	 * Returns a {@link List} containing all objects of this RepositoryResult in
+	 * order of iteration. The RepositoryResult is fully consumed and
+	 * automatically closed by this operation.
+	 * <P>
+	 * Note: use this method with caution! It pulls the entire RepositoryResult
+	 * in memory and as such is potentially very memory-intensive.
+	 * 
+	 * @return a List containing all objects of this RepositoryResult.
+	 * @throws RepositoryException
+	 *         if a problem occurred during retrieval of the results.
+	 * @see #addTo(Collection)
+	 */
+	public List<T> asList()
+		throws RepositoryException
+	{
+		return addTo(new ArrayList<T>());
+	}
+
+	/**
+	 * Adds all objects of this RepositoryResult to the supplied collection. The
+	 * RepositoryResult is fully consumed and automatically closed by this
+	 * operation.
+	 * 
+	 * @return A reference to the collection that was supplied.
+	 * @throws RepositoryException
+	 *         if a problem occurred during retrieval of the results.
+	 */
+	public <C extends Collection<T>> C addTo(C collection)
+		throws RepositoryException
+	{
+		try {
+			while (hasNext()) {
+				collection.add(next());
+			}
+
+			return collection;
+		}
+		finally {
+			close();
+		}
 	}
 }
