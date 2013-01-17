@@ -200,6 +200,8 @@ public class RDFFormat extends FileFormat {
 		register(TRIG);
 		register(BINARY);
 		register(NQUADS);
+		register(JSONLD);
+		register(RDFJSON);
 	}
 
 	/*----------------*

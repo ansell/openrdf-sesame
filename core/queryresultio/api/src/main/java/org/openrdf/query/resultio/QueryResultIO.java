@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -395,7 +395,7 @@ public class QueryResultIO {
 	{
 		TupleQueryResultWriter writer = createWriter(format, out);
 		try {
-			QueryResultUtil.report(tqr, writer);
+			QueryResults.report(tqr, writer);
 		}
 		catch (TupleQueryResultHandlerException e) {
 			if (e.getCause() instanceof IOException) {
@@ -454,7 +454,7 @@ public class QueryResultIO {
 	{
 		RDFWriter writer = Rio.createWriter(format, out);
 		try {
-			QueryResultUtil.report(gqr, writer);
+			QueryResults.report(gqr, writer);
 		}
 		catch (RDFHandlerException e) {
 			if (e.getCause() instanceof IOException) {

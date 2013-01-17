@@ -22,6 +22,7 @@ import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
@@ -30,7 +31,6 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.workbench.base.TransformationServlet;
-import org.openrdf.workbench.util.ConfigTemplate;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 

@@ -127,6 +127,12 @@
 			<artifactId>sesame-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-sail-federation</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>

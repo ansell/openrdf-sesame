@@ -19,7 +19,7 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -55,7 +55,7 @@ public abstract class TupleQueryResultSerializationTest extends TestCase {
 //			System.out.println(bs);
 //		}
 		
-		assertTrue(QueryResultUtil.equals(expected, output));
+		assertTrue(QueryResults.equals(expected, output));
 		
 	}
 

@@ -17,7 +17,7 @@ import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.MapBindingSet;
@@ -57,7 +57,7 @@ public class TupleQueryResultSerializationTest extends TestCase {
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
 		input.beforeFirst();
-		assertTrue(QueryResultUtil.equals(input, output));
+		assertTrue(QueryResults.equals(input, output));
 	}
 
 	private MutableTupleQueryResult createQueryResult() {

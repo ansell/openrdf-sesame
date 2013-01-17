@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
+import info.aduna.iteration.Iterations;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -36,7 +38,7 @@ public abstract class TupleServlet extends TransformationServlet {
 		}
 		RepositoryConnection con = repository.getConnection();
 		try {
-			for (Namespace ns : con.getNamespaces().asList()) {
+			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
 			builder.start(variables);

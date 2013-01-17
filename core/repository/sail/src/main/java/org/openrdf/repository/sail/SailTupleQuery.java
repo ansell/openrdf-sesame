@@ -11,7 +11,7 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -60,6 +60,6 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		throws QueryEvaluationException, TupleQueryResultHandlerException
 	{
 		TupleQueryResult queryResult = evaluate();
-		QueryResultUtil.report(queryResult, handler);
+		QueryResults.report(queryResult, handler);
 	}
 }

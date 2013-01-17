@@ -1,5 +1,5 @@
 /*
- * Copyright 3 Round Stones Inc. (c) 2012.
+ * Copyright 3 Round Stones Inc. (c) 2012-2013.
  *
  * Licensed under the Aduna BSD-style license.
  */
@@ -121,14 +121,20 @@ public class LockManager {
 		throws InterruptedException
 	{
 		while (true) {
+			boolean nochange;
+			Set<WeakLockReference> before;
 			synchronized (activeLocks) {
 				if (activeLocks.isEmpty())
 					return;
+				before = new HashSet<WeakLockReference>(activeLocks);
 				activeLocks.wait(waitToCollect);
 				if (activeLocks.isEmpty())
 					return;
+				nochange = before.equals(activeLocks);
 			}
-			releaseAbandoned();
+			if (nochange) {
+				releaseAbandoned();
+			}
 		}
 	}
 

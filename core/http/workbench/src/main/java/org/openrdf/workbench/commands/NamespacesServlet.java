@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
+import info.aduna.iteration.Iterations;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -45,7 +47,7 @@ public class NamespacesServlet extends TransformationServlet {
 		try {
 			builder.start("prefix", "namespace");
 			builder.link("info");
-			for (Namespace ns : con.getNamespaces().asList()) {
+			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.result(ns.getPrefix(), ns.getName());
 			}
 			builder.end();

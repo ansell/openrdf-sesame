@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 import info.aduna.io.FileUtil;
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
@@ -60,18 +61,18 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 			testCon.add(vf.createURI("http://my.subject" + j), predicate, object, context1);
 			testCon.add(vf.createURI("http://my.subject" + j), predicate, object, context2);
 		}
-		assertEquals(1000, testCon.getStatements(null, null, null, false, context1).asList().size());
-		assertEquals(1000, testCon.getStatements(null, null, null, false, context2).asList().size());
+		assertEquals(1000, Iterations.asList(testCon.getStatements(null, null, null, false, context1)).size());
+		assertEquals(1000, Iterations.asList(testCon.getStatements(null, null, null, false, context2)).size());
 
 		// remove all triples from context 1
 		testCon.clear(context1);
-		assertEquals(0, testCon.getStatements(null, null, null, false, context1).asList().size());
-		assertEquals(1000, testCon.getStatements(null, null, null, false, context2).asList().size());
+		assertEquals(0, Iterations.asList(testCon.getStatements(null, null, null, false, context1)).size());
+		assertEquals(1000, Iterations.asList(testCon.getStatements(null, null, null, false, context2)).size());
 		testCon.commit();
 
 		// check context content using fresh connection
-		assertEquals(0, testCon2.getStatements(null, null, null, false, context1).asList().size());
-		assertEquals(1000, testCon2.getStatements(null, null, null, false, context2).asList().size());
+		assertEquals(0, Iterations.asList(testCon2.getStatements(null, null, null, false, context1)).size());
+		assertEquals(1000, Iterations.asList(testCon2.getStatements(null, null, null, false, context2)).size());
 
 		testCon2.close();
 	}

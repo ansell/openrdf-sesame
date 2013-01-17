@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -51,7 +51,7 @@ public class BadlyDesignedLeftJoinIterator extends LeftJoinIterator {
 		BindingSet result = super.getNextElement();
 
 		// Ignore all results that are not compatible with the input bindings
-		while (result != null && !QueryResultUtil.bindingSetsCompatible(inputBindings, result)) {
+		while (result != null && !QueryResults.bindingSetsCompatible(inputBindings, result)) {
 			result = super.getNextElement();
 		}
 

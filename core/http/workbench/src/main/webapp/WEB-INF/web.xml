@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app>
 
+	<display-name>OpenRDF Workbench</display-name>
+	<description>OpenRDF Workbench</description>
+
 	<filter>
 		<filter-name>redirect</filter-name>
 		<filter-class>

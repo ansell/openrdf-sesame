@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -67,7 +67,7 @@ public class GraphQueryResultView extends QueryResultView {
 		try {
 			RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 			GraphQueryResult graphQueryResult = (GraphQueryResult)model.get(QUERY_RESULT_KEY);
-			QueryResultUtil.report(graphQueryResult, rdfWriter);
+			QueryResults.report(graphQueryResult, rdfWriter);
 		}
 		catch (QueryInterruptedException e) {
 			logger.error("Query interrupted", e);

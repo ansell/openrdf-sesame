@@ -10,7 +10,7 @@ import info.aduna.iteration.FilterIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 
 /**
  * @author Arjohn Kampman
@@ -34,6 +34,6 @@ public class CompatibleBindingSetFilter extends FilterIteration<BindingSet, Quer
 	protected boolean accept(BindingSet outputBindings)
 		throws QueryEvaluationException
 	{
-		return QueryResultUtil.bindingSetsCompatible(inputBindings, outputBindings);
+		return QueryResults.bindingSetsCompatible(inputBindings, outputBindings);
 	}
 }

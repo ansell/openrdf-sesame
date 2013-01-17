@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
+import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Literal;
@@ -216,14 +217,14 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 			// check default graph
 			logger.info("checking default graph");
-			compareGraphs(con.getStatements(null, null, null, true, (Resource)null).asList(),
-					erCon.getStatements(null, null, null, true, (Resource)null).asList());
+			compareGraphs(Iterations.asList(con.getStatements(null, null, null, true, (Resource)null)),
+					Iterations.asList(erCon.getStatements(null, null, null, true, (Resource)null)));
 
 			for (String namedGraph : inputNamedGraphs.keySet()) {
 				logger.info("checking named graph {}", namedGraph);
 				URI contextURI = con.getValueFactory().createURI(namedGraph.replaceAll("\"", ""));
-				compareGraphs(con.getStatements(null, null, null, true, contextURI).asList(),
-						erCon.getStatements(null, null, null, true, contextURI).asList());
+				compareGraphs(Iterations.asList(con.getStatements(null, null, null, true, contextURI)),
+						Iterations.asList(erCon.getStatements(null, null, null, true, contextURI)));
 			}
 		}
 		finally {

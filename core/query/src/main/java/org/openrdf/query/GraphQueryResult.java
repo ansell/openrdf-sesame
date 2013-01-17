@@ -30,17 +30,4 @@ public interface GraphQueryResult extends QueryResult<Statement> {
 	public Map<String, String> getNamespaces()
 		throws QueryEvaluationException;
 
-	/**
-	 * Adds all elements in the query result to a new
-	 * {@link org.openrdf.model.Graph}. The QueryResult is fully consumed and
-	 * closed by this method.
-	 * 
-	 * @since 2.7.0
-	 * @return a {@link org.openrdf.model.Graph} containing all statements in the
-	 *         query result.
-	 * @throws QueryEvaluationException
-	 */
-	public Graph asGraph()
-		throws QueryEvaluationException;
-
 }

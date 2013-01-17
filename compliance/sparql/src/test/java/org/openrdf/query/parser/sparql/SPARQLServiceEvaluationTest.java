@@ -42,7 +42,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
@@ -567,7 +567,7 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	
 		boolean resultsEqual;
 		
-		resultsEqual = QueryResultUtil.equals(queryResultTable, expectedResultTable);
+		resultsEqual = QueryResults.equals(queryResultTable, expectedResultTable);
 		
 		if (checkOrder) {
 			// also check the order in which solutions occur.

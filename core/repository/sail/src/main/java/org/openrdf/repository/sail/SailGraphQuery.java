@@ -18,7 +18,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultUtil;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.parser.ParsedGraphQuery;
@@ -100,6 +100,6 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		throws QueryEvaluationException, RDFHandlerException
 	{
 		GraphQueryResult queryResult = evaluate();
-		QueryResultUtil.report(queryResult, handler);
+		QueryResults.report(queryResult, handler);
 	}
 }

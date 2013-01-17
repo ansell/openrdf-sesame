@@ -78,15 +78,4 @@ public class TupleQueryResultImpl extends IterationWrapper<BindingSet, QueryEval
 	{
 		return bindingNames;
 	}
-
-	public BindingSet singleResult()
-		throws QueryEvaluationException
-	{
-		BindingSet result = null;
-		if (hasNext()) {
-			result = next();
-		}
-		close();
-		return result;
-	}
 }

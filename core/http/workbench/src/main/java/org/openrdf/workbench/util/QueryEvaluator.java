@@ -237,7 +237,7 @@ public final class QueryEvaluator {
 				builder.transform(xslPath, "boolean.xsl");
 				builder.start();
 				this.evaluateBooleanQuery(builder, (BooleanQuery)query);
-				builder.end();
+				builder.endBoolean();
 			}
 			else {
 				throw new BadRequestException("Unknown query type: " + query.getClass().getSimpleName());

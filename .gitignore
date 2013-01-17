@@ -3,6 +3,10 @@
 **/.project
 .classpath
 **/.classpath
+.settings
+**/.settings
+bin
+**/bin
 
 # Eclipse Plug-In Settings
 .pmd

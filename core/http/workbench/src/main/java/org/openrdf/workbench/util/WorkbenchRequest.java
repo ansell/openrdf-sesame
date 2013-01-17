@@ -28,6 +28,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.iteration.Iterations;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -274,7 +276,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 			String ns = con.getNamespace(prefix);
 			if (ns != null)
 				return ns;
-			for (Namespace n : con.getNamespaces().asList()) {
+			for (Namespace n : Iterations.asList(con.getNamespaces())) {
 				if (prefix.equals(n.getPrefix()))
 					ns = n.getName();
 			}

@@ -5,10 +5,10 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.ArrayList;
+
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -316,11 +316,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private final boolean endVarFixed;
 
-		private Queue<ValuePair> valueQueue = new LinkedList<ValuePair>();
+		private Queue<ValuePair> valueQueue = new ArrayDeque<ValuePair>();
 
-		private List<ValuePair> reportedValues = new ArrayList<ValuePair>();
+		private Set<ValuePair> reportedValues = new HashSet<ValuePair>(64,0.9f);
 
-		private List<ValuePair> unreportedValues = new ArrayList<ValuePair>();
+		private Set<ValuePair> unreportedValues = new HashSet<ValuePair>(64,0.9f);
 
 		private TupleExpr pathExpression;
 
@@ -416,8 +416,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 								return nextElement;
 							}
 							else {
-								if (!unreportedValues.contains(vp)) {
-									unreportedValues.add(vp);
+								if (unreportedValues.add(vp)) {
 									if (!v1.equals(v2)) {
 										valueQueue.add(vp);
 									}
@@ -733,7 +732,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private CloseableIteration<BindingSet, QueryEvaluationException> objectIter;
 
-		private List<Value> reportedValues = new ArrayList<Value>();
+		private Set<Value> reportedValues = new HashSet<Value>();
 
 		private Var contextVar;
 
@@ -770,9 +769,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					Value v = next.getValue(subjectVar.getName());
 
-					if (!reportedValues.contains(v)) {
+					if (reportedValues.add(v)) {
 						next.addBinding(objVar.getName(), v);
-						reportedValues.add(v);
 						return next;
 					}
 				}
@@ -785,9 +783,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 					Value v = next.getValue(objVar.getName());
 
-					if (!reportedValues.contains(v)) {
+					if (reportedValues.add(v)) {
 						next.addBinding(subjectVar.getName(), v);
-						reportedValues.add(v);
 						return next;
 					}
 				}

@@ -12,6 +12,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import info.aduna.iteration.Iterations;
+
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -101,7 +103,7 @@ public class RepositoryConfigUtil {
 			}
 
 			Graph contextGraph = new GraphImpl();
-			con.getStatements(null, null, null, true, context).addTo(contextGraph);
+			Iterations.addAll(con.getStatements(null, null, null, true, context), contextGraph);
 
 			return RepositoryConfig.create(contextGraph, repositoryNode);
 		}
@@ -244,7 +246,7 @@ public class RepositoryConfigUtil {
 		throws RepositoryException, RepositoryConfigException
 	{
 		Literal idLiteral = con.getRepository().getValueFactory().createLiteral(repositoryID);
-		List<Statement> idStatementList = con.getStatements(null, REPOSITORYID, idLiteral, true).asList();
+		List<Statement> idStatementList = Iterations.asList(con.getStatements(null, REPOSITORYID, idLiteral, true));
 
 		if (idStatementList.size() == 1) {
 			return idStatementList.get(0);

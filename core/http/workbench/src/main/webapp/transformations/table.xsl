@@ -4,10 +4,8 @@
    <!ENTITY rdf  "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
  ]>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns:q="http://www.openrdf.org/schema/qname#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns:q="http://www.openrdf.org/schema/qname#"
 	xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="url-encode.xsl" />
@@ -52,8 +50,7 @@
 			<xsl:for-each select="../../sparql:head/sparql:variable">
 				<xsl:variable name="name" select="@name" />
 				<td>
-					<xsl:apply-templates
-						select="$result/sparql:binding[@name=$name]" />
+					<xsl:apply-templates select="$result/sparql:binding[@name=$name]" />
 				</td>
 			</xsl:for-each>
 		</tr>
@@ -61,6 +58,7 @@
 
 	<xsl:template name="explore">
 		<xsl:param name="resource" />
+		<xsl:param name="url" select="string('')" />
 		<a>
 			<xsl:attribute name="href">
 				<xsl:text>explore?resource=</xsl:text>
@@ -70,6 +68,13 @@
 			</xsl:attribute>
 			<xsl:value-of select="$resource" />
 		</a>
+		<xsl:if test="$url != string('')">
+			[
+			<a href="{$url}" target="_blank">
+				<img src="../../images/external.png" alt="web" />
+			</a>
+			]
+		</xsl:if>
 	</xsl:template>
 
 	<xsl:template name="explore-literal">
@@ -81,13 +86,13 @@
 					<xsl:when test="$literal/@q:qname">
 						<xsl:call-template name="url-encode">
 							<xsl:with-param name="str"
-								select="concat('&quot;', $literal/text(), '&quot;^^', $literal/@q:qname)" />
+				select="concat('&quot;', $literal/text(), '&quot;^^', $literal/@q:qname)" />
 						</xsl:call-template>
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:call-template name="url-encode">
 							<xsl:with-param name="str"
-								select="concat('&quot;', $literal/text(), '&quot;^^&lt;', $literal/@datatype, '&gt;')" />
+				select="concat('&quot;', $literal/text(), '&quot;^^&lt;', $literal/@datatype, '&gt;')" />
 						</xsl:call-template>
 					</xsl:otherwise>
 				</xsl:choose>
@@ -161,11 +166,11 @@
 	<xsl:template match="sparql:uri[@q:qname]">
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource" select="@q:qname" />
+			<xsl:with-param name="url" select="text()" />
 		</xsl:call-template>
 	</xsl:template>
 
-	<xsl:template
-		match="sparql:literal[@datatype = '&rdf;XMLLiteral']">
+	<xsl:template match="sparql:literal[@datatype = '&rdf;XMLLiteral']">
 		<pre>
 			<xsl:value-of select="text()" />
 		</pre>
@@ -196,15 +201,13 @@
 
 	<xsl:template match="sparql:bnode">
 		<xsl:call-template name="explore">
-			<xsl:with-param name="resource"
-				select="concat('_:', text())" />
+			<xsl:with-param name="resource" select="concat('_:', text())" />
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sparql:uri">
 		<xsl:call-template name="explore">
-			<xsl:with-param name="resource"
-				select="concat('&lt;', text(), '&gt;')" />
+			<xsl:with-param name="resource" select="concat('&lt;', text(), '&gt;')" />
 		</xsl:call-template>
 	</xsl:template>
 
