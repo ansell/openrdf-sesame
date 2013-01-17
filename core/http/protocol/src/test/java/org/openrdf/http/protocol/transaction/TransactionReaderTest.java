@@ -99,8 +99,6 @@ public class TransactionReaderTest {
 	public void testControlCharHandling() throws Exception {
 		AddStatementOperation operation = new AddStatementOperation(bob, knows, controlCharText);
 		
-		System.out.println(controlCharText.stringValue());
-		
 		List<TransactionOperation> txn = new ArrayList<TransactionOperation>();
 		txn.add(operation);
 		
@@ -117,8 +115,6 @@ public class TransactionReaderTest {
 		for (TransactionOperation op : parsedTxn) {
 			assertTrue(op instanceof AddStatementOperation);
 			AddStatementOperation addOp = (AddStatementOperation)op;
-
-			System.out.println(addOp.getObject().stringValue());
 			assertTrue(addOp.getObject().equals(controlCharText));
 		}
 
