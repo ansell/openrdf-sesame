@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -31,11 +32,9 @@ public abstract class ServiceRegistry<K, S> {
 	protected Map<K, S> services = new HashMap<K, S>();
 
 	protected ServiceRegistry(Class<S> serviceClass) {
-		// Note: Using javax.imageio.spi.ServiceRegistry as it publicly exposes
-		// the sun.misc.Service functionality. Starting from Java 6, this
-		// functionality is also available java.util.ServiceLoader
-		Iterator<S> services = javax.imageio.spi.ServiceRegistry.lookupProviders(serviceClass, serviceClass.getClassLoader());
+		ServiceLoader<S> loader = java.util.ServiceLoader.load(serviceClass, serviceClass.getClassLoader());
 
+		Iterator<S> services = loader.iterator();
 		while (true) {
 			try {
 				if (services.hasNext()) {
