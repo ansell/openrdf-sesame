@@ -16,10 +16,10 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
+import org.openrdf.sail.UpdateContext;
 
 /**
  * An implementation of the SailConnection interface that wraps another
@@ -133,6 +133,31 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.removeStatements(subj, pred, obj, contexts);
 	}
 
+	public void startUpdate(UpdateContext modify)
+		throws SailException
+	{
+		wrappedCon.startUpdate(modify);
+	}
+
+	public void addStatement(UpdateContext modify, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		wrappedCon.addStatement(modify, subj, pred, obj, contexts);
+	}
+
+	public void removeStatement(UpdateContext modify, Resource subj, URI pred, Value obj,
+			Resource... contexts)
+		throws SailException
+	{
+		wrappedCon.removeStatement(modify, subj, pred, obj, contexts);
+	}
+
+	public void endUpdate(UpdateContext modify)
+		throws SailException
+	{
+		wrappedCon.endUpdate(modify);
+	}
+
 	public void clear(Resource... contexts)
 		throws SailException
 	{
@@ -167,13 +192,6 @@ public class SailConnectionWrapper implements SailConnection {
 		throws SailException
 	{
 		wrappedCon.clearNamespaces();
-	}
-
-	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred)
-		throws SailException
-	{
-		wrappedCon.executeUpdate(updateExpr, dataset, bindings, includeInferred);
 	}
 
 	public void begin()
