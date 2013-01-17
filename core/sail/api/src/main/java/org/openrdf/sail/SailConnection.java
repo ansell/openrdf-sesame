@@ -173,6 +173,34 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
+	 * Checks for an error state in the active transaction that would force the
+	 * transaction to be rolled back. This is an optional call; calling or not
+	 * calling this method should have no effect on the outcome of
+	 * {@link #commit()} or {@link #rollback()}. A call to this method must be
+	 * followed by (in the same thread) with a call to {@link #prepare()} ,
+	 * {@link #commit()}, {@link #rollback()}, or {@link #close()}. This method
+	 * may be called multiple times within the same transaction by the same
+	 * thread. If this method returns normally, the caller can reasonably expect
+	 * that a subsequent call to {@link #commit()} will also return normally. If
+	 * this method returns with an exception the caller should treat the
+	 * exception as if it came from a call to {@link #commit()}.
+	 * 
+	 * @since 2.7.0
+	 * @throws UnknownSailTransactionStateException
+	 *         If the transaction state can not be determined (this can happen
+	 *         for instance when communication between client and server fails or
+	 *         times-out). It does not indicate a problem with the integrity of
+	 *         the store.
+	 * @throws SailException
+	 *         If there is an active transaction and it cannot be committed.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed or prepare was already called by
+	 *         another thread.
+	 */
+	public void prepare()
+		throws SailException;
+
+	/**
 	 * Commits any updates that have been performed since the last time
 	 * {@link #commit()} or {@link #rollback()} was called.
 	 * 

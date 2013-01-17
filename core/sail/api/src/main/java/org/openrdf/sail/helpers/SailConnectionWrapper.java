@@ -182,6 +182,12 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.begin();
 	}
 
+	public void prepare()
+		throws SailException
+	{
+		wrappedCon.prepare();
+	}
+
 	public boolean isActive()
 		throws UnknownSailTransactionStateException
 	{
