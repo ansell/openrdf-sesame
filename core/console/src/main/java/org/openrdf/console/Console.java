@@ -103,11 +103,11 @@ public class Console implements ConsoleState, ConsoleParameters {
 		try {
 			final CommandLine commandLine = argsParser.parse(options, args);
 			if (commandLine.hasOption(helpOption.getOpt())) {
-				printUsage(options);
+				printUsage(console.consoleIO, options);
 				System.exit(0);
 			}
 			if (commandLine.hasOption(versionOption.getOpt())) {
-				System.out.println(console.appConfig.getFullName());
+				console.consoleIO.writeln(console.appConfig.getFullName());
 				System.exit(0);
 			}
 			final String dir = commandLine.getOptionValue(dirOption.getOpt());
@@ -115,7 +115,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 			final String[] otherArgs = commandLine.getArgs();
 
 			if (otherArgs.length > 1) {
-				printUsage(options);
+				printUsage(console.consoleIO, options);
 				System.exit(1);
 			}
 
@@ -137,20 +137,20 @@ public class Console implements ConsoleState, ConsoleParameters {
 			}
 		}
 		catch (ParseException e) {
-			System.err.println(e.getMessage());
+			console.consoleIO.writeError(e.getMessage());
 			System.exit(1);
 		}
 
 		console.start();
 	}
 
-	private static void printUsage(final Options options) {
-		System.out.println("Sesame Console, an interactive shell based utility to communicate with Sesame repositories.");
+	private static void printUsage(ConsoleIO cio, Options options) {
+		cio.writeln("Sesame Console, an interactive shell based utility to communicate with Sesame repositories.");
 		final HelpFormatter formatter = new HelpFormatter();
 		formatter.setWidth(80);
 		formatter.printHelp("start-console [OPTION] [repositoryID]", options);
-		System.out.println();
-		System.out.println("For bug reports and suggestions, see http://www.openrdf.org/");
+		cio.writeln();
+		cio.writeln("For bug reports and suggestions, see http://www.openrdf.org/");
 	}
 
 	private final Map<String, Command> commandMap = new HashMap<String, Command>();
@@ -168,6 +168,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 	{
 		appConfig.init();
 		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, this);
+		commandMap.put("federate", new Federate(consoleIO, this));
 		this.queryEvaluator = new QueryEvaluator(consoleIO, this, this);
 		LockRemover lockRemover = new LockRemover(consoleIO);
 		Close close = new Close(consoleIO, this);

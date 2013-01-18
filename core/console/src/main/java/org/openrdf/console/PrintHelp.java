@@ -14,8 +14,7 @@ import java.util.Map;
  * 
  * @author Dale Visser
  */
-class PrintHelp implements Command {
-	;
+public class PrintHelp implements Command {
 
 	private static final String USAGE = "Usage:\n";
 
@@ -67,6 +66,20 @@ class PrintHelp implements Command {
 			+ "set showPrefix=<true|false>    Toggles use of prefixed names in query results\n"
 			+ "set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries (warning: buggy!)\n";
 
+	protected static final String FEDERATE = USAGE
+			+ "federate [distinct=<true|false>] [readonly=<true|false>] [type=<http|sparql>] <fedID> <repoID_1> <repoID_2> [<repoID_n>]*\n"
+			+ "  [distinct=<true|false>]  If true, uses a DISTINCT filter that suppresses duplicate results for identical quads\n"
+			+ "                           from different federation members. Default is false.\n"
+			+ "  [readonly=<true|false>]  If true, sets the fedearated repository as read-only. Federations of SPARQL endpoints\n"
+			+ "                           may only be read-only, and have stricter checking of standard data types. Default is\n"
+			+ "                           true. \n"
+			+ "  [type=http|sparql]       If http, then the federation will access its members as HTTP Sesame repositories. If\n"
+			+ "                           sparql, the members will be accessed as SPARQL endpoints. Default is http.\n"
+			+ "  <fedId>                  The id to assign the federated repository.\n"
+			+ "  <repoID1> <repoID2>      The id's of at least 2 repositories to federate.\n"
+			+ "  [<repoID_n>]*            The id's of 0 or mare additional repositories to federate.\n\n"
+			+ "You will be prompted to enter a description for the federated repository as well.";
+
 	PrintHelp(ConsoleIO consoleIO) {
 		super();
 		this.consoleIO = consoleIO;
@@ -81,6 +94,7 @@ class PrintHelp implements Command {
 		topics.put("verify", VERIFY);
 		topics.put("clear", CLEAR);
 		topics.put("set", SET);
+		topics.put("federate", FEDERATE);
 	}
 
 	public void execute(String... parameters) {
@@ -106,6 +120,7 @@ class PrintHelp implements Command {
 		consoleIO.writeln("connect     Connects to a (local or remote) set of repositories");
 		consoleIO.writeln("disconnect  Disconnects from the current set of repositories");
 		consoleIO.writeln("create      Creates a new repository");
+		consoleIO.writeln("federate    Federate existing repositories.");
 		consoleIO.writeln("drop        Drops a repository");
 		consoleIO.writeln("open        Opens a repository to work on, takes a repository ID as argument");
 		consoleIO.writeln("close       Closes the current repository");
