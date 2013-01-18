@@ -148,7 +148,7 @@ public class Connect implements Command {
 				disconnect.execute(false);
 				this.appInfo.setManager(newManager);
 				this.appInfo.setManagerID(newManagerID);
-				consoleIO.writeln("Connected to " + managerID);
+				consoleIO.writeln("Connected to " + newManagerID);
 				installed = true;
 			}
 			catch (RepositoryException e) {
