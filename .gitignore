@@ -3,8 +3,9 @@
 **/.project
 .classpath
 **/.classpath
-.settings
-**/.settings
+org.eclipse.core.resources.prefs
+#.settings
+#**/.settings
 bin
 **/bin
 
