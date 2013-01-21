@@ -43,6 +43,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.model.util.ModelUtil;
 
@@ -52,6 +53,8 @@ import org.openrdf.model.util.ModelUtil;
 public abstract class AbstractModel extends AbstractSet<Statement> implements
 		Model {
 	private static final long serialVersionUID = 4254119331281455614L;
+	
+	private ValueFactory valueFactory;
 
 	public Model unmodifiable() {
 		return new UnmodifiableModel(this);
@@ -652,4 +655,17 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		}
 	}
 
+	/* Graph methods */
+	
+	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return this.filter(subj, pred, obj, contexts).iterator();
+	}
+	
+	public ValueFactory getValueFactory() {
+		if (this.valueFactory == null) {
+			valueFactory = ValueFactoryImpl.getInstance();
+		}
+		return valueFactory;
+	}
+	
 }

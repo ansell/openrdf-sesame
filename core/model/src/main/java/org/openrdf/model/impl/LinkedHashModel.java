@@ -169,12 +169,12 @@ public class LinkedHashModel extends AbstractModel {
 
 	public boolean contains(Value subj, Value pred, Value obj,
 			Value... contexts) {
-		return match(subj, pred, obj, contexts).hasNext();
+		return matchPattern(subj, pred, obj, contexts).hasNext();
 	}
 
 	public boolean remove(Value subj, Value pred, Value obj,
 			Value... contexts) {
-		Iterator iter = match(subj, pred, obj, contexts);
+		Iterator iter = matchPattern(subj, pred, obj, contexts);
 		if (!iter.hasNext()) {
 			return false;
 		}
@@ -191,7 +191,7 @@ public class LinkedHashModel extends AbstractModel {
 			private static final long serialVersionUID = 396293781006255959L;
 
 			public Iterator iterator() {
-				return match(subj, pred, obj, contexts);
+				return matchPattern(subj, pred, obj, contexts);
 			}
 
 			protected void removeFilteredTermIteration(Iterator<Statement> iter,
@@ -401,7 +401,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private ModelIterator match(Value subj, Value pred, Value obj,
+	private ModelIterator matchPattern(Value subj, Value pred, Value obj,
 			Value... contexts) {
 		Set<ModelStatement> set = choose(subj, pred, obj, contexts);
 		Iterator<ModelStatement> it = set.iterator();
