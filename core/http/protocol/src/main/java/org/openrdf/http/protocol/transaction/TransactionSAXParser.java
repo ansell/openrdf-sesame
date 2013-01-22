@@ -86,7 +86,11 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.LITERAL_TAG.equals(tagName)) {
 			String lang = atts.get(TransactionXMLConstants.LANG_ATT);
 			String datatype = atts.get(TransactionXMLConstants.DATATYPE_ATT);
+			String encoding = atts.get(TransactionXMLConstants.ENCODING_ATT);
 
+			if (encoding != null && "base64".equalsIgnoreCase(encoding)) {
+				text = new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(text));
+			}
 			Literal lit;
 			if (lang != null) {
 				lit = valueFactory.createLiteral(text, lang);
