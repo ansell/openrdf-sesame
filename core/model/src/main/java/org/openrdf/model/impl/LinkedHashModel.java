@@ -171,7 +171,7 @@ public class LinkedHashModel extends AbstractModel {
 
 	@Override
 	public Iterator iterator() {
-		return match(null, null, null);
+		return matchPattern(null, null, null);
 	}
 
 	public boolean contains(Value subj, Value pred, Value obj,
@@ -460,7 +460,7 @@ public class LinkedHashModel extends AbstractModel {
 		URI pred = st.getPredicate();
 		Value obj = st.getObject();
 		Resource ctx = st.getContext();
-		return match(subj, pred, obj, ctx);
+		return matchPattern(subj, pred, obj, ctx);
 	}
 
 	private boolean addModelStatement(ModelStatement st) {
