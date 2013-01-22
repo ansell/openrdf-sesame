@@ -27,7 +27,14 @@ import org.openrdf.model.Value;
 import org.openrdf.model.util.PatternIterator;
 
 /**
- * {@link Model} implementation using {@link LinkedHashSet}.
+ * Hash table based implementation of the <tt>{@link Model}</tt> interface.
+ * <p>
+ * This implementation provides constant-time performance for filters using a
+ * single term, assuming the hash function disperses the elements properly among
+ * the buckets. Each term is indexed using a {@link HashMap}. When multiple
+ * terms are provided in a filter the index, of the term that reduces the
+ * possible {@link Statement}s the most, is used and a sequential scan is used to
+ * filter additional terms.
  * <p>
  * <b>Note that this implementation is not synchronized.</b> If multiple threads
  * access a model concurrently, and at least one of the threads modifies the

@@ -48,11 +48,16 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.util.PatternIterator;
 import org.openrdf.model.util.LexicalValueComparator;
+import org.openrdf.model.util.PatternIterator;
 
 /**
- * {@link Model} implementation using {@link TreeSet}.
+ * A Red-Black tree based {@link Model} implementation. The model is sorted
+ * according to the lexical ordering of terms.
+ * <p>
+ * This implementation provides guaranteed log(n) time cost for filtered access
+ * by any number of terms. If an index is not yet available for a set of
+ * positions, it is created at runtime using a {@link TreeSet}.
  * <p>
  * <b>Note that this implementation is not synchronized.</b> If multiple threads
  * access a model concurrently, and at least one of the threads modifies the
