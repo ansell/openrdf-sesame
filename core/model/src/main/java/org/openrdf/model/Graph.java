@@ -23,6 +23,7 @@ public interface Graph extends Collection<Statement>, Serializable {
 	/**
 	 * Gets the value factory for this graph.
 	 */
+	@Deprecated
 	public ValueFactory getValueFactory();
 	
 	/**
@@ -82,5 +83,6 @@ public interface Graph extends Collection<Statement>, Serializable {
 	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
 	 *         info.
 	 */
+	@Deprecated
 	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts);
 }
