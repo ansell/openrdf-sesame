@@ -310,7 +310,7 @@ public abstract class AbstractTestObject extends BulkTest {
     }
 
     protected boolean skipSerializedCanonicalTests() {
-        return Boolean.getBoolean("org.apache.commons.collections:with-clover");
+        return true;
     }
 
     // private implementation

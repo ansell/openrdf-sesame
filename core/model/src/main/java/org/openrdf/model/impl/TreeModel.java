@@ -28,6 +28,7 @@
  */
 package org.openrdf.model.impl;
 
+import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import com.sun.org.apache.xml.internal.utils.SerializableLocatorImpl;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -542,7 +545,8 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	class StatementTree {
+	class StatementTree implements Serializable {
+		private static final long serialVersionUID = -7580746419791799953L;
 
 		private final char[] index;
 
@@ -644,35 +648,40 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	class SubjectComparator implements Comparator<Statement> {
+	class SubjectComparator  implements Serializable, Comparator<Statement> {
+		private static final long serialVersionUID = 5275239384134217143L;
 
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getSubject(), s2.getSubject());
 		}
 	}
 
-	class PredicateComparator implements Comparator<Statement> {
+	class PredicateComparator implements Serializable,Comparator<Statement> {
+		private static final long serialVersionUID = -883414941022127103L;
 
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getPredicate(), s2.getPredicate());
 		}
 	}
 
-	class ObjectComparator implements Comparator<Statement> {
+	class ObjectComparator implements Serializable,Comparator<Statement> {
+		private static final long serialVersionUID = 1768294714884456242L;
 
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getObject(), s2.getObject());
 		}
 	}
 
-	class GraphComparator implements Comparator<Statement> {
+	class GraphComparator implements Serializable,Comparator<Statement> {
+		private static final long serialVersionUID = 7027824614533897706L;
 
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getContext(), s2.getContext());
 		}
 	}
 
-	static class StatementComparator implements Comparator<Statement> {
+	static class StatementComparator implements Serializable,Comparator<Statement> {
+		private static final long serialVersionUID = -5602364720279633641L;
 
 		private final Comparator<Statement>[] comparators;
 
@@ -690,7 +699,8 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	static class SubSet extends AbstractSet<Statement> implements SortedSet<Statement> {
+	static class SubSet extends AbstractSet<Statement> implements Serializable, SortedSet<Statement> {
+		private static final long serialVersionUID = 6362727792092563793L;
 
 		private final TreeModel model;
 
