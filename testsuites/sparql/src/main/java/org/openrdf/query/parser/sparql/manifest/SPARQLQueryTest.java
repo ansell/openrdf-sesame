@@ -107,7 +107,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 	{
-		super(name);
+		super(name.replaceAll("\\(", " ").replaceAll("\\)", " "));
 
 		this.testURI = testURI;
 		this.queryFileURL = queryFileURL;
@@ -187,6 +187,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 			String name = this.getName();
 
+			if (name.contains("pp34")) {
+				System.out.println(name);
+			}
+			
 			if (query instanceof TupleQuery) {
 				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
 
@@ -315,6 +319,24 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 			if (checkOrder && missingBindings.isEmpty() && unexpectedBindings.isEmpty()) {
 				message.append("Results are not in expected order.\n");
+				message.append(" =======================\n");
+				message.append("query result: \n");
+				for (BindingSet bs : queryBindings) {
+					message.append(bs);
+					message.append("\n");
+				}
+				message.append(" =======================\n");
+				message.append("expected result: \n");
+				for (BindingSet bs : expectedBindings) {
+					message.append(bs);
+					message.append("\n");
+				}
+				message.append(" =======================\n");
+
+				System.out.print(message.toString());
+			}
+			else if (missingBindings.isEmpty() && unexpectedBindings.isEmpty()) {
+				message.append("unexpected duplicate in result.\n");
 				message.append(" =======================\n");
 				message.append("query result: \n");
 				for (BindingSet bs : queryBindings) {
