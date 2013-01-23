@@ -23,8 +23,7 @@ This software includes code developed by Clark & Parsia
 This software includes code developed by the Institute for Defense Analyses
 (IDA) (http://www.ida.org/).
 
-
-
+This software includes code developed by Peter Ansell.
 
 This product includes software developed by The Apache Software Foundation
 (http://www.apache.org/). License: http://www.apache.org/licenses/LICENSE-2.0
