@@ -50,7 +50,8 @@
 							<xsl:value-of select="$query-string.label" />
 						</th>
 						<td>
-							<textarea id="query" name="query" rows="16" cols="80">
+							<textarea id="query" name="query" rows="16" cols="80"
+								wrap="hard">
 								<xsl:value-of select="$query" />
 							</textarea>
 						</td>

@@ -1,10 +1,13 @@
 // Prerequisite: template.js
 
 /**
- * Populate the query text area with the value of the URL query parameter, if
- * and only if it is present.
+ * Populate the query text area with the value of the URL query parameter, only
+ * if it is present. If it is not present in the URL query, then looks for the
+ * 'query' cookie, and sets it from that. (The cookie enables re-populating the
+ * text field with the previous query when the user returns via the browser back
+ * button.)
  */
-function populateParameters() {
+function setQueryTextIfPresent() {
 	var href = document.location.href;
 	var elements = href.substring(href.indexOf('?') + 1).substring(
 			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
@@ -172,7 +175,7 @@ function disablePrivateSaveForAnonymous() {
  * Add code to be called when the document is loaded.
  */
 addLoad(function() {
-	populateParameters();
+	setQueryTextIfPresent();
 	loadNamespaces();
 	trimQuery();
 	addClickHandlers();
