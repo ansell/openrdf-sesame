@@ -126,7 +126,7 @@ public class RDFInserter extends RDFHandlerBase {
 	 * are reported to it (in case <tt>enforcesContext()</tt> returns
 	 * <tt>true</tt>).
 	 * 
-	 * @return A Resource[] identifying the contexts, or <tt>null</tt> if no
+	 * @return A Resource[] identifying the contexts, or an empty array if no
 	 *         contexts is enforced.
 	 */
 	public Resource[] getContexts() {
