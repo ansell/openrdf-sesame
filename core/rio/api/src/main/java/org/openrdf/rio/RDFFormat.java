@@ -14,6 +14,8 @@ import java.util.List;
 
 import info.aduna.lang.FileFormat;
 
+import org.openrdf.model.Statement;
+
 /**
  * Represents the concept of an RDF data serialization format. RDF formats are
  * identified by a {@link #getName() name} and can have one or more associated
@@ -31,6 +33,39 @@ public class RDFFormat extends FileFormat {
 	 *-----------*/
 
 	/**
+	 * Indicates that calls to {@link RDFHandler#handleNamespace(String, String)}
+	 * may be serialised when serializing to this format.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final boolean SUPPORTS_NAMESPACES = true;
+
+	/**
+	 * Indicates that all calls to
+	 * {@link RDFHandler#handleNamespace(String, String)} will be ignored when
+	 * serializing to this format.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final boolean NO_NAMESPACES = false;
+
+	/**
+	 * Indicates that the {@link Statement#getContext()} URI may be serialized
+	 * for this format.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final boolean SUPPORTS_CONTEXTS = true;
+
+	/**
+	 * Indicates that the {@link Statement#getContext()} URI will NOT be
+	 * serialized for this format.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final boolean NO_CONTEXTS = false;
+
+	/**
 	 * The <a href="http://www.w3.org/TR/rdf-syntax-grammar/">RDF/XML</a> file
 	 * format.
 	 * <p>
@@ -44,8 +79,8 @@ public class RDFFormat extends FileFormat {
 	 * @see http://www.w3.org/TR/rdf-syntax-grammar/
 	 */
 	public static final RDFFormat RDFXML = new RDFFormat("RDF/XML", Arrays.asList("application/rdf+xml",
-			"application/xml"), Charset.forName("UTF-8"), Arrays.asList("rdf", "rdfs", "owl", "xml"), true,
-			false);
+			"application/xml"), Charset.forName("UTF-8"), Arrays.asList("rdf", "rdfs", "owl", "xml"),
+			SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/**
 	 * The <a href="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</a>
@@ -59,7 +94,7 @@ public class RDFFormat extends FileFormat {
 	 * @see http://www.w3.org/TR/rdf-testcases/#ntriples
 	 */
 	public static final RDFFormat NTRIPLES = new RDFFormat("N-Triples", "text/plain",
-			Charset.forName("US-ASCII"), "nt", false, false);
+			Charset.forName("US-ASCII"), "nt", NO_NAMESPACES, NO_CONTEXTS);
 
 	/**
 	 * The <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle</a> file
@@ -74,7 +109,8 @@ public class RDFFormat extends FileFormat {
 	 * @see http://www.w3.org/TeamSubmission/turtle/
 	 */
 	public static final RDFFormat TURTLE = new RDFFormat("Turtle", Arrays.asList("text/turtle",
-			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"), true, false);
+			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"), SUPPORTS_NAMESPACES,
+			NO_CONTEXTS);
 
 	/**
 	 * The <a href="http://www.w3.org/TeamSubmission/n3/">N3/Notation3</a> file
@@ -88,7 +124,7 @@ public class RDFFormat extends FileFormat {
 	 * @see http://www.w3.org/TeamSubmission/n3/
 	 */
 	public static final RDFFormat N3 = new RDFFormat("N3", Arrays.asList("text/n3", "text/rdf+n3"),
-			Charset.forName("UTF-8"), Arrays.asList("n3"), true, false);
+			Charset.forName("UTF-8"), Arrays.asList("n3"), SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/**
 	 * The <a href="http://swdev.nokia.com/trix/">TriX</a> file format, an
@@ -103,7 +139,7 @@ public class RDFFormat extends FileFormat {
 	 * @see http://swdev.nokia.com/trix/
 	 */
 	public static final RDFFormat TRIX = new RDFFormat("TriX", "application/trix", Charset.forName("UTF-8"),
-			Arrays.asList("xml", "trix"), false, true);
+			Arrays.asList("xml", "trix"), SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
 	 * The <a
@@ -118,7 +154,7 @@ public class RDFFormat extends FileFormat {
 	 * @see http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
-			"trig", true, true);
+			"trig", SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
 	 * A binary RDF format.
@@ -130,7 +166,7 @@ public class RDFFormat extends FileFormat {
 	 * @see http://rivuli-development.com/2011/11/binary-rdf-in-sesame/
 	 */
 	public static final RDFFormat BINARY = new RDFFormat("BinaryRDF", "application/x-binary-rdf", null, "brf",
-			true, true);
+			SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
 	 * The <a href="http://sw.deri.org/2008/07/n-quads/">N-Quads</a> file format,
@@ -142,9 +178,10 @@ public class RDFFormat extends FileFormat {
 	 * </p>
 	 * 
 	 * @see http://sw.deri.org/2008/07/n-quads/
+	 * @since 2.6.6
 	 */
 	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", "text/x-nquads",
-			Charset.forName("US-ASCII"), "nq", false, true);
+			Charset.forName("US-ASCII"), "nq", NO_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
 	 * The <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD</a>
@@ -157,9 +194,10 @@ public class RDFFormat extends FileFormat {
 	 * </p>
 	 * 
 	 * @see http://json-ld.org/spec/latest/json-ld-syntax/
+	 * @since 2.7.0
 	 */
 	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", "application/ld+json",
-			Charset.forName("UTF-8"), "jsonld", true, true);
+			Charset.forName("UTF-8"), "jsonld", SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
 	 * The Talis <a href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html">RDF/JSON</a>
@@ -172,9 +210,10 @@ public class RDFFormat extends FileFormat {
 	 * </p>
 	 * 
 	 * @see http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html
+	 * @since 2.7.0
 	 */
 	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", "application/rdf+json",
-			Charset.forName("UTF-8"), "rj", false, true);
+			Charset.forName("UTF-8"), "rj", NO_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/*------------------*
 	 * Static variables *
