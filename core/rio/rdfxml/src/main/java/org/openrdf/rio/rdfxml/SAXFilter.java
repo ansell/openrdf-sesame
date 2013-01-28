@@ -174,12 +174,32 @@ class SAXFilter implements ContentHandler {
 		}
 	}
 
-	public void startDocument() {
-		// ignore
+	public void startDocument()
+		throws SAXException
+	{
+		try {
+			rdfParser.startDocument();
+		}
+		catch (RDFParseException e) {
+			throw new SAXException(e);
+		}
+		catch (RDFHandlerException e) {
+			throw new SAXException(e);
+		}
 	}
 
-	public void endDocument() {
-		// ignore
+	public void endDocument()
+		throws SAXException
+	{
+		try {
+			rdfParser.endDocument();
+		}
+		catch (RDFParseException e) {
+			throw new SAXException(e);
+		}
+		catch (RDFHandlerException e) {
+			throw new SAXException(e);
+		}
 	}
 
 	public void startPrefixMapping(String prefix, String uri)
