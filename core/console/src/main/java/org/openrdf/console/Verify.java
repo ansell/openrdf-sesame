@@ -87,10 +87,6 @@ public class Verify implements Command {
 		}
 	}
 
-	/**
-	 * @param tokens
-	 * @return
-	 */
 	private String parseDataPath(String... tokens) {
 		StringBuilder dataPath = new StringBuilder(tokens[1]);
 		try {
