@@ -144,14 +144,17 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
+	@Override
 	public Comparator<? super Statement> comparator() {
 		return trees.get(0).tree.comparator();
 	}
 
+	@Override
 	public Statement first() {
 		return trees.get(0).tree.first();
 	}
 
+	@Override
 	public Statement last() {
 		return trees.get(0).tree.last();
 	}
@@ -194,18 +197,22 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
+	@Override
 	public SortedSet<Statement> subSet(Statement fromElement, Statement toElement) {
 		return subSet(fromElement, true, toElement, false);
 	}
 
+	@Override
 	public SortedSet<Statement> headSet(Statement toElement) {
 		return subSet(before(null, null, null, null), true, toElement, false);
 	}
 
+	@Override
 	public SortedSet<Statement> tailSet(Statement fromElement) {
 		return subSet(fromElement, true, after(null, null, null, null), true);
 	}
 
+	@Override
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
 		if (subj == null || pred == null || obj == null)
 			throw new UnsupportedOperationException("Incomplete statement");
@@ -221,7 +228,8 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		return changed;
 	}
 
-	public boolean contains(Value subj, Value pred, Value obj, Value... contexts) {
+	@Override
+	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
 		if (contexts == null || contexts.length == 1 && contexts[0] == null) {
 			Iterator<Statement> iter = matchPattern(subj, pred, obj, null);
 			while (iter.hasNext()) {
@@ -247,7 +255,8 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	public boolean remove(Value subj, Value pred, Value obj, Value... contexts) {
+	@Override
+	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
 		boolean changed = false;
 		if (contexts == null || contexts.length == 1 && contexts[0] == null) {
 			Iterator<Statement> iter = matchPattern(subj, pred, obj, null);
@@ -289,7 +298,8 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		return matchPattern(null, null, null, null);
 	}
 
-	public Model filter(final Value subj, final Value pred, final Value obj, final Value... contexts) {
+	@Override
+	public Model filter(final Resource subj, final URI pred, final Value obj, final Resource... contexts) {
 		if (contexts != null && contexts.length == 0) {
 			return new FilteredModel(this, subj, pred, obj, contexts) {
 
@@ -300,6 +310,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 					return matchPattern(subj, pred, obj, null);
 				}
 
+				@Override
 				protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
 						Value obj, Resource... contexts)
 				{
@@ -317,6 +328,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 					return matchPattern(subj, pred, obj, contexts[0]);
 				}
 
+				@Override
 				protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
 						Value obj, Resource... contexts)
 				{
@@ -335,6 +347,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 							contexts);
 				}
 
+				@Override
 				protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
 						Value obj, Resource... contexts)
 				{
@@ -507,14 +520,17 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return owner;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return iter.hasNext();
 		}
 
+		@Override
 		public Statement next() {
 			return last = iter.next();
 		}
 
+		@Override
 		public void remove() {
 			if (last == null) {
 				throw new IllegalStateException();
@@ -546,6 +562,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	}
 
 	class StatementTree implements Serializable {
+
 		private static final long serialVersionUID = -7580746419791799953L;
 
 		private final char[] index;
@@ -648,39 +665,48 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	class SubjectComparator  implements Serializable, Comparator<Statement> {
+	class SubjectComparator implements Serializable, Comparator<Statement> {
+
 		private static final long serialVersionUID = 5275239384134217143L;
 
+		@Override
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getSubject(), s2.getSubject());
 		}
 	}
 
-	class PredicateComparator implements Serializable,Comparator<Statement> {
+	class PredicateComparator implements Serializable, Comparator<Statement> {
+
 		private static final long serialVersionUID = -883414941022127103L;
 
+		@Override
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getPredicate(), s2.getPredicate());
 		}
 	}
 
-	class ObjectComparator implements Serializable,Comparator<Statement> {
+	class ObjectComparator implements Serializable, Comparator<Statement> {
+
 		private static final long serialVersionUID = 1768294714884456242L;
 
+		@Override
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getObject(), s2.getObject());
 		}
 	}
 
-	class GraphComparator implements Serializable,Comparator<Statement> {
+	class GraphComparator implements Serializable, Comparator<Statement> {
+
 		private static final long serialVersionUID = 7027824614533897706L;
 
+		@Override
 		public int compare(Statement s1, Statement s2) {
 			return compareValue(s1.getContext(), s2.getContext());
 		}
 	}
 
-	static class StatementComparator implements Serializable,Comparator<Statement> {
+	static class StatementComparator implements Serializable, Comparator<Statement> {
+
 		private static final long serialVersionUID = -5602364720279633641L;
 
 		private final Comparator<Statement>[] comparators;
@@ -689,6 +715,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			this.comparators = comparators;
 		}
 
+		@Override
 		public int compare(Statement s1, Statement s2) {
 			for (Comparator<Statement> c : comparators) {
 				int r1 = c.compare(s1, s2);
@@ -700,6 +727,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	}
 
 	static class SubSet extends AbstractSet<Statement> implements Serializable, SortedSet<Statement> {
+
 		private static final long serialVersionUID = 6362727792092563793L;
 
 		private final TreeModel model;
@@ -734,10 +762,12 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return model.removeNamespace(prefix);
 		}
 
+		@Override
 		public int size() {
 			return subSet().size();
 		}
 
+		@Override
 		public void clear() {
 			StatementTree tree = model.trees.get(0);
 			Iterator<Statement> it = tree.subIterator(lo, loInclusive, hi, hiInclusive);
@@ -747,14 +777,17 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			}
 		}
 
+		@Override
 		public Comparator<? super Statement> comparator() {
 			return model.comparator();
 		}
 
+		@Override
 		public Statement first() {
 			return subSet().first();
 		}
 
+		@Override
 		public Statement last() {
 			return subSet().last();
 		}
@@ -801,6 +834,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			}
 		}
 
+		@Override
 		public SortedSet<Statement> subSet(Statement fromElement, Statement toElement) {
 			boolean fromInclusive = true;
 			boolean toInclusive = false;
@@ -815,6 +849,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return model.subSet(fromElement, fromInclusive, toElement, toInclusive);
 		}
 
+		@Override
 		public SortedSet<Statement> headSet(Statement toElement) {
 			boolean toInclusive = false;
 			if (comparator().compare(hi, toElement) < 0) {
@@ -824,6 +859,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return model.subSet(lo, loInclusive, toElement, toInclusive);
 		}
 
+		@Override
 		public SortedSet<Statement> tailSet(Statement fromElement) {
 			boolean fromInclusive = true;
 			if (comparator().compare(fromElement, lo) < 0) {
@@ -833,6 +869,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return model.subSet(fromElement, fromInclusive, hi, hiInclusive);
 		}
 
+		@Override
 		public Iterator<Statement> iterator() {
 			StatementTree tree = model.trees.get(0);
 			Iterator<Statement> it = tree.subIterator(lo, loInclusive, hi, hiInclusive);

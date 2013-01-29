@@ -176,7 +176,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		remove(null, null, null);
 	}
 
-	public boolean clear(Value... contexts) {
+	@Override
+	public boolean clear(Resource... contexts) {
 		return remove(null, null, null, contexts);
 	}
 
@@ -200,6 +201,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		return false;
 	}
 
+	@Override
 	public Value objectValue() throws ModelException {
 		Iterator<Value> iter = objects().iterator();
 		try {
@@ -216,6 +218,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		}
 	}
 
+	@Override
 	public Literal objectLiteral() throws ModelException {
 		Value obj = objectValue();
 		if (obj == null) {
@@ -227,6 +230,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		throw new ModelException(obj);
 	}
 
+	@Override
 	public Resource objectResource() throws ModelException {
 		Value obj = objectValue();
 		if (obj == null) {
@@ -238,6 +242,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		throw new ModelException(obj);
 	}
 
+	@Override
 	public URI objectURI() throws ModelException {
 		Value obj = objectValue();
 		if (obj == null) {
@@ -249,6 +254,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		throw new ModelException(obj);
 	}
 
+	@Override
 	public String objectString() throws ModelException {
 		Value obj = objectValue();
 		if (obj == null) {
@@ -274,6 +280,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		return false;
 	}
 
+	@Override
 	public Set<Resource> subjects() {
 		return new ValueSet<Resource>() {
 
@@ -312,6 +319,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		};
 	}
 
+	@Override
 	public Set<URI> predicates() {
 		return new ValueSet<URI>() {
 
@@ -348,6 +356,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		};
 	}
 
+	@Override
 	public Set<Value> objects() {
 		return new ValueSet<Value>() {
 
@@ -384,6 +393,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		};
 	}
 
+	@Override
 	public Set<Resource> contexts() {
 		return new ValueSet<Resource>() {
 
@@ -436,6 +446,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				this.iter = iter;
 			}
 
+			@Override
 			public boolean hasNext() {
 				if (next == null) {
 					next = findNext();
@@ -443,6 +454,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				return next != null;
 			}
 
+			@Override
 			public V next() {
 				if (next == null) {
 					next = findNext();
@@ -457,6 +469,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				return value;
 			}
 
+			@Override
 			public void remove() {
 				if (current == null) {
 					throw new IllegalStateException();
@@ -656,11 +669,13 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	/* Graph methods */
 
 	@Deprecated
+	@Override
 	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return this.filter(subj, pred, obj, contexts).iterator();
 	}
 
 	@Deprecated
+	@Override
 	public ValueFactory getValueFactory() {
 		return ValueFactoryImpl.getInstance();
 	}

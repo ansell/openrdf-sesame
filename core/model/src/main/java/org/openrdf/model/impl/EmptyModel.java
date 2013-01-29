@@ -44,9 +44,9 @@ import org.openrdf.model.Value;
  * model's namespaces.
  * 
  * @author James Leigh
- * 
  */
 public class EmptyModel extends AbstractModel {
+
 	private final Model model;
 
 	public EmptyModel(Model model) {
@@ -57,18 +57,22 @@ public class EmptyModel extends AbstractModel {
 
 	private Set<Statement> emptySet = Collections.emptySet();
 
+	@Override
 	public String getNamespace(String prefix) {
 		return this.model.getNamespace(prefix);
 	}
 
+	@Override
 	public Map<String, String> getNamespaces() {
 		return this.model.getNamespaces();
 	}
 
+	@Override
 	public String setNamespace(String prefix, String name) {
 		return this.model.setNamespace(prefix, name);
 	}
 
+	@Override
 	public String removeNamespace(String prefix) {
 		return this.model.removeNamespace(prefix);
 	}
@@ -83,28 +87,30 @@ public class EmptyModel extends AbstractModel {
 		return 0;
 	}
 
+	@Override
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
-		throw new UnsupportedOperationException(
-				"All statements are filtered out of view");
+		throw new UnsupportedOperationException("All statements are filtered out of view");
 	}
 
-	public boolean contains(Value subj, Value pred, Value obj,
-			Value... contexts) {
+	@Override
+	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return false;
 	}
 
-	public Model filter(Value subj, Value pred, Value obj,
-			Value... contexts) {
+	@Override
+	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return this;
 	}
 
-	public boolean remove(Value subj, Value pred, Value obj,
-			Value... contexts) {
+	@Override
+	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return false;
 	}
 
-	public void removeTermIteration(Iterator<Statement> iter, Resource subj,
-			URI pred, Value obj, Resource... contexts) {
+	@Override
+	public void removeTermIteration(Iterator<Statement> iter, Resource subj, URI pred, Value obj,
+			Resource... contexts)
+	{
 		// remove nothing
 	}
 

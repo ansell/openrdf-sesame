@@ -42,7 +42,9 @@ import org.openrdf.model.Value;
  * A Model wrapper that prevents modification to the underlying model.
  */
 class UnmodifiableModel extends AbstractModel {
+
 	private static final long serialVersionUID = 6335569454318096059L;
+
 	private final Model model;
 
 	public UnmodifiableModel(Model delegate) {
@@ -65,8 +67,7 @@ class UnmodifiableModel extends AbstractModel {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean contains(Value subj, Value pred, Value obj,
-			Value... contexts) {
+	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return model.contains(subj, pred, obj, contexts);
 	}
 
@@ -74,13 +75,11 @@ class UnmodifiableModel extends AbstractModel {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean remove(Value subj, Value pred, Value obj,
-			Value... contexts) {
+	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Model filter(Value subj, Value pred, Value obj,
-			Value... contexts) {
+	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return model.filter(subj, pred, obj, contexts).unmodifiable();
 	}
 
@@ -95,8 +94,9 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public void removeTermIteration(Iterator<Statement> iter, Resource subj,
-			URI pred, Value obj, Resource... contexts) {
+	public void removeTermIteration(Iterator<Statement> iter, Resource subj, URI pred, Value obj,
+			Resource... contexts)
+	{
 		throw new UnsupportedOperationException();
 	}
 

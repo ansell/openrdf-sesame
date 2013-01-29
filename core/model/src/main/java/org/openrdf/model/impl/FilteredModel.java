@@ -31,6 +31,7 @@ package org.openrdf.model.impl;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -41,39 +42,45 @@ import org.openrdf.model.Value;
  * Applies a basic graph pattern filter to what triples can be see.
  */
 public abstract class FilteredModel extends AbstractModel {
+
 	private final Model model;
 
 	private static final long serialVersionUID = -2353344619836326934L;
 
-	private Value subj;
+	private Resource subj;
 
-	private Value pred;
+	private URI pred;
 
 	private Value obj;
 
-	private Value[] contexts;
+	private Resource[] contexts;
 
-	public FilteredModel(AbstractModel model, Value subj, Value pred, Value obj,
-			Value... contexts) {
+	public FilteredModel(AbstractModel model, Resource subj, URI pred, Value obj, Resource... contexts) {
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
 		this.model = model;
 		this.subj = subj;
 		this.pred = pred;
 		this.obj = obj;
-		this.contexts = notNull(contexts);
+		this.contexts = contexts;
 	}
 
+	@Override
 	public String getNamespace(String prefix) {
 		return model.getNamespace(prefix);
 	}
 
+	@Override
 	public Map<String, String> getNamespaces() {
 		return model.getNamespaces();
 	}
 
+	@Override
 	public String setNamespace(String prefix, String name) {
 		return model.setNamespace(prefix, name);
 	}
 
+	@Override
 	public String removeNamespace(String prefix) {
 		return model.removeNamespace(prefix);
 	}
@@ -88,32 +95,34 @@ public abstract class FilteredModel extends AbstractModel {
 				iter.next();
 			}
 			return size;
-		} finally {
+		}
+		finally {
 			closeIterator(iter);
 		}
 	}
 
+	@Override
 	public boolean add(Resource s, URI p, Value o, Resource... c) {
 		if (s == null) {
-			s = (Resource) subj;
+			s = (Resource)subj;
 		}
 		if (p == null) {
-			p = (URI) pred;
+			p = (URI)pred;
 		}
 		if (o == null) {
 			o = obj;
 		}
 		if (c != null && c.length == 0) {
-			c = cast(contexts);
+			c = contexts;
 		}
 		if (!accept(s, p, o, c)) {
-			throw new IllegalArgumentException(
-					"Statement is filtered out of view");
+			throw new IllegalArgumentException("Statement is filtered out of view");
 		}
 		return model.add(s, p, o, c);
 	}
 
-	public boolean remove(Value s, Value p, Value o, Value... c) {
+	@Override
+	public boolean remove(Resource s, URI p, Value o, Resource... c) {
 		if (s == null) {
 			s = subj;
 		}
@@ -132,7 +141,8 @@ public abstract class FilteredModel extends AbstractModel {
 		return model.remove(s, p, o, c);
 	}
 
-	public boolean contains(Value s, Value p, Value o, Value... c) {
+	@Override
+	public boolean contains(Resource s, URI p, Value o, Resource... c) {
 		if (s == null) {
 			s = subj;
 		}
@@ -151,7 +161,8 @@ public abstract class FilteredModel extends AbstractModel {
 		return model.contains(s, p, o, c);
 	}
 
-	public Model filter(Value s, Value p, Value o, Value... c) {
+	@Override
+	public Model filter(Resource s, URI p, Value o, Resource... c) {
 		if (s == null) {
 			s = subj;
 		}
@@ -171,19 +182,19 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public final void removeTermIteration(Iterator<Statement> iter, Resource s, URI p,
-			Value o, Resource... c) {
+	public final void removeTermIteration(Iterator<Statement> iter, Resource s, URI p, Value o, Resource... c)
+	{
 		if (s == null) {
-			s = (Resource) subj;
+			s = (Resource)subj;
 		}
 		if (p == null) {
-			p = (URI) pred;
+			p = (URI)pred;
 		}
 		if (o == null) {
 			o = obj;
 		}
 		if (c != null && c.length == 0) {
-			c = cast(contexts);
+			c = contexts;
 		}
 		if (!accept(s, p, o, c)) {
 			throw new IllegalStateException();
@@ -196,20 +207,20 @@ public abstract class FilteredModel extends AbstractModel {
 	 * iterator. At least one of the last four terms will be non-empty.
 	 * 
 	 * @param iter
-	 *            The iterator used to navigate the live set (never null)
+	 *        The iterator used to navigate the live set (never null)
 	 * @param subj
-	 *            the subject term to be removed or null
+	 *        the subject term to be removed or null
 	 * @param pred
-	 *            the predicate term to be removed or null
+	 *        the predicate term to be removed or null
 	 * @param obj
-	 *            the object term to be removed or null
+	 *        the object term to be removed or null
 	 * @param contexts
-	 *            an array of one context term to be removed or an empty array
+	 *        an array of one context term to be removed or an empty array
 	 */
-	protected abstract void removeFilteredTermIteration(Iterator<Statement> iter,
-			Resource subj, URI pred, Value obj, Resource... contexts);
+	protected abstract void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
+			Value obj, Resource... contexts);
 
-	private boolean accept(Value s, Value p, Value o, Value... c) {
+	private boolean accept(Resource s, URI p, Value o, Resource... c) {
 		if (subj != null && !subj.equals(s)) {
 			return false;
 		}
@@ -219,15 +230,16 @@ public abstract class FilteredModel extends AbstractModel {
 		if (obj != null && !obj.equals(o)) {
 			return false;
 		}
-		if (!matches(notNull(c), contexts)) {
+		if (!matches(c, contexts)) {
 			return false;
 		}
 		return (s == null || s instanceof Resource) && (p == null || p instanceof URI);
 	}
 
-	private boolean matches(Value[] stContext, Value... contexts) {
+	private boolean matches(Resource[] stContext, Resource... contexts) {
+		OpenRDFUtil.verifyContextNotNull(stContext);
 		if (stContext != null && stContext.length > 0) {
-			for (Value c : stContext) {
+			for (Resource c : stContext) {
 				if (!matches(c, contexts)) {
 					return false;
 				}
@@ -236,13 +248,15 @@ public abstract class FilteredModel extends AbstractModel {
 		return true;
 	}
 
-	private boolean matches(Value stContext, Value... contexts) {
+	private boolean matches(Resource stContext, Resource... contexts) {
 		if (contexts != null && contexts.length == 0) {
 			// Any context matches
 			return stContext == null || stContext instanceof Resource;
-		} else {
+		}
+		else {
+			OpenRDFUtil.verifyContextNotNull(contexts);
 			// Accept if one of the contexts from the pattern matches
-			for (Value context : notNull(contexts)) {
+			for (Resource context : contexts) {
 				if (context == null && stContext == null) {
 					return true;
 				}
@@ -253,25 +267,5 @@ public abstract class FilteredModel extends AbstractModel {
 
 			return false;
 		}
-	}
-
-	private Resource[] cast(Value[] contexts) {
-		if (contexts instanceof Resource[])
-			return (Resource[]) contexts;
-		if (contexts == null)
-			return new Resource[] { null };
-		if (contexts.length == 0)
-			return new Resource[0];
-		Resource[] result = new Resource[contexts.length];
-		System.arraycopy(contexts, 0, result, 0, contexts.length);
-		return result;
-	}
-
-	private Value[] notNull(Value[] contexts) {
-		if (contexts == null)
-			return new Resource[] { null };
-		if (contexts.length == 0)
-			return new Resource[0];
-		return contexts;
 	}
 }

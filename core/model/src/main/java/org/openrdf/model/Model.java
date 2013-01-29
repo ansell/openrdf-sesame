@@ -108,7 +108,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return <code>true</code> if statements match the specified pattern.
 	 */
-	public boolean contains(Value subj, Value pred, Value obj, Value... contexts);
+	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Adds one or more statements to the model. This method creates a statement
@@ -141,7 +141,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        The context of the statements to remove.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean clear(Value... context);
+	public boolean clear(Resource... context);
 
 	/**
 	 * Removes statements with the specified subject, predicate, object and
@@ -179,7 +179,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        matching one of these will be removed.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean remove(Value subj, Value pred, Value obj, Value... contexts);
+	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	// Views
 
@@ -230,7 +230,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
 	 */
-	public Model filter(Value subj, Value pred, Value obj, Value... contexts);
+	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The
