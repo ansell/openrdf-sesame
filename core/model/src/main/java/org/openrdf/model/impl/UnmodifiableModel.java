@@ -51,34 +51,42 @@ class UnmodifiableModel extends AbstractModel {
 		this.model = delegate;
 	}
 
+	@Override
 	public Map<String, String> getNamespaces() {
 		return Collections.unmodifiableMap(model.getNamespaces());
 	}
 
+	@Override
 	public String getNamespace(String prefix) {
 		return model.getNamespace(prefix);
 	}
 
+	@Override
 	public String setNamespace(String prefix, String name) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public String removeNamespace(String prefix) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return model.contains(subj, pred, obj, contexts);
 	}
 
+	@Override
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return model.filter(subj, pred, obj, contexts).unmodifiable();
 	}
