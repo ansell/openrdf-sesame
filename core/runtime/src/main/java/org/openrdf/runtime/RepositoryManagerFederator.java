@@ -3,7 +3,7 @@
  *
  * Licensed under the Aduna BSD-style license.
  */
-package org.openrdf.console;
+package org.openrdf.runtime;
 
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -59,7 +59,7 @@ public class RepositoryManagerFederator {
 	 *        must manage the repositories to be added to new federations, and
 	 *        becomes the manager of any created federations
 	 */
-	protected RepositoryManagerFederator(RepositoryManager manager) {
+	public RepositoryManagerFederator(RepositoryManager manager) {
 		this.manager = manager;
 		this.valueFactory = manager.getSystemRepository().getValueFactory();
 	}
@@ -90,7 +90,7 @@ public class RepositoryManagerFederator {
 	 * @throws OpenRDFException
 	 *         if an problem otherwise occurs while creating the federation
 	 */
-	protected void addFed(String memberType, String fedID, String description, Collection<String> members)
+	public void addFed(String memberType, String fedID, String description, Collection<String> members)
 		throws MalformedURLException, OpenRDFException
 	{
 		Graph graph = new GraphImpl(valueFactory);
