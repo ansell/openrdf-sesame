@@ -116,18 +116,22 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		this.namespaces.putAll(namespaces);
 	}
 
+	@Override
 	public String getNamespace(String prefix) {
 		return namespaces.get(prefix);
 	}
 
+	@Override
 	public Map<String, String> getNamespaces() {
 		return namespaces;
 	}
 
+	@Override
 	public String setNamespace(String prefix, String name) {
 		return namespaces.put(prefix, name);
 	}
 
+	@Override
 	public String removeNamespace(String prefix) {
 		return namespaces.remove(prefix);
 	}
@@ -242,7 +246,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return matchPattern(subj, pred, obj, null).hasNext();
 		}
 		else {
-			for (Value ctx : contexts) {
+			for (Resource ctx : contexts) {
 				if (ctx == null) {
 					if (contains(subj, pred, obj, (Resource[])null))
 						return true;
@@ -276,7 +280,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			}
 		}
 		else {
-			for (Value ctx : contexts) {
+			for (Resource ctx : contexts) {
 				if (ctx == null) {
 					changed |= remove(subj, pred, obj, (Resource[])null);
 				}
@@ -390,7 +394,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	Iterator<Statement> matchPattern(Value subj, Value pred, Value obj, Value ctx) {
+	Iterator<Statement> matchPattern(Resource subj, URI pred, Value obj, Resource ctx) {
 		if (!isResourceURIResource(subj, pred, ctx)) {
 			Set<Statement> emptySet = Collections.emptySet();
 			return emptySet.iterator();
