@@ -101,18 +101,22 @@ public class LinkedHashModel extends AbstractModel {
 		this.namespaces.putAll(namespaces);
 	}
 
+	@Override
 	public String getNamespace(String prefix) {
 		return namespaces.get(prefix);
 	}
 
+	@Override
 	public Map<String, String> getNamespaces() {
 		return namespaces;
 	}
 
+	@Override
 	public String setNamespace(String prefix, String name) {
 		return namespaces.put(prefix, name);
 	}
 
+	@Override
 	public String removeNamespace(String prefix) {
 		return namespaces.remove(prefix);
 	}
@@ -122,6 +126,7 @@ public class LinkedHashModel extends AbstractModel {
 		return statements.size();
 	}
 
+	@Override
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
 		if (subj == null || pred == null || obj == null)
 			throw new UnsupportedOperationException("Incomplete statement");
@@ -191,15 +196,18 @@ public class LinkedHashModel extends AbstractModel {
 		return true;
 	}
 
+	@Override
 	public Model filter(final Resource subj, final URI pred, final Value obj, final Resource... contexts) {
 		return new FilteredModel(this, subj, pred, obj, contexts) {
 
 			private static final long serialVersionUID = 396293781006255959L;
 
+			@Override
 			public Iterator iterator() {
 				return matchPattern(subj, pred, obj, contexts);
 			}
 
+			@Override
 			protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
 					Value obj, Resource... contexts)
 			{
@@ -276,14 +284,17 @@ public class LinkedHashModel extends AbstractModel {
 			return owner;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return iter.hasNext();
 		}
 
+		@Override
 		public ModelStatement next() {
 			return last = iter.next();
 		}
 
+		@Override
 		public void remove() {
 			if (last == null) {
 				throw new IllegalStateException();
@@ -352,18 +363,22 @@ public class LinkedHashModel extends AbstractModel {
 			this.ctx = ctx;
 		}
 
+		@Override
 		public Resource getSubject() {
 			return subj.getValue();
 		}
 
+		@Override
 		public URI getPredicate() {
 			return pred.getValue();
 		}
 
+		@Override
 		public Value getObject() {
 			return obj.getValue();
 		}
 
+		@Override
 		public Resource getContext() {
 			return ctx.getValue();
 		}
@@ -413,7 +428,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private ModelIterator matchPattern(Value subj, Value pred, Value obj, Value... contexts) {
+	private ModelIterator matchPattern(Resource subj, URI pred, Value obj, Resource... contexts) {
 		Set<ModelStatement> set = choose(subj, pred, obj, contexts);
 		Iterator<ModelStatement> it = set.iterator();
 		Iterator<ModelStatement> iter;
@@ -421,7 +436,7 @@ public class LinkedHashModel extends AbstractModel {
 		return new ModelIterator(iter, set);
 	}
 
-	private Set<ModelStatement> choose(Value subj, Value pred, Value obj, Value... contexts) {
+	private Set<ModelStatement> choose(Resource subj, URI pred, Value obj, Resource... contexts) {
 		contexts = notNull(contexts);
 		Set<ModelStatement> s = null;
 		Set<ModelStatement> p = null;
@@ -452,7 +467,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private Value[] notNull(Value[] contexts) {
+	private Resource[] notNull(Resource[] contexts) {
 		if (contexts == null) {
 			return new Resource[] { null };
 		}
