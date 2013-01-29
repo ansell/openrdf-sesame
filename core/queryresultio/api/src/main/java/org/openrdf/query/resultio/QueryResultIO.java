@@ -182,6 +182,154 @@ public class QueryResultIO {
 	}
 
 	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be parsed.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @return An RDFFormat object if a match was found, or <tt>null</tt>
+	 *         otherwise.
+	 * @see #getBooleanParserFormatForMIMEType(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForMIMEType(String mimeType) {
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType, null);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be parsed. This method calls
+	 * {@link BooleanQueryResultFormat#matchMIMEType(String, Iterable)} with the
+	 * specified MIME type, the keys of
+	 * {@link BooleanQueryResultParserRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForMIMEType(String mimeType,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType, fallback);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be parsed.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @return An BooleanQueryResultFormat object if a match was found, or
+	 *         <tt>null</tt> otherwise.
+	 * @see #getBooleanParserFormatForFileName(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForFileName(String fileName) {
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(fileName);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be parsed. This method calls
+	 * {@link BooleanQueryResultFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
+	 * with the specified MIME type, the keys of
+	 * {@link BooleanQueryResultParserRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForFileName(String fileName,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(fileName, fallback);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be written.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @return An BooleanQueryResultFormat object if a match was found, or
+	 *         <tt>null</tt> otherwise.
+	 * @see #getBooleanWriterFormatForMIMEType(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForMIMEType(String mimeType) {
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForMIMEType(mimeType);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be written. This method calls
+	 * {@link BooleanQueryResultFormat#matchMIMEType(String, Iterable, info.aduna.lang.FileFormat)}
+	 * with the specified MIME type, the keys of
+	 * {@link BooleanQueryResultWriterRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForMIMEType(String mimeType,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForMIMEType(mimeType, fallback);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be written.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @return An BooleanQueryResultFormat object if a match was found, or
+	 *         <tt>null</tt> otherwise.
+	 * @see #getBooleanWriterFormatForFileName(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForFileName(String fileName) {
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForFileName(fileName);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be written. This method calls
+	 * {@link BooleanQueryResultFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
+	 * with the specified MIME type, the keys of
+	 * {@link BooleanQueryResultWriterRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForFileName(String fileName,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForFileName(fileName, fallback);
+	}
+
+	/**
 	 * Convenience methods for creating TupleQueryResultParser objects. This
 	 * method uses the registry returned by
 	 * {@link TupleQueryResultParserRegistry#getInstance()} to get a factory for
