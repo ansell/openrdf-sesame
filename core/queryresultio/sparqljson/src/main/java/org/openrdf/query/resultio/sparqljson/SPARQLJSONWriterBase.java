@@ -23,12 +23,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Iterator;
-import java.util.List;
 
 import info.aduna.io.IndentingWriter;
 import info.aduna.text.StringUtil;
 
-import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultWriter;
 
@@ -38,7 +37,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell p_ansell@yahoo.com
  */
-abstract class SPARQLJSONWriterBase<T extends QueryResultFormat> implements QueryResultWriter<T> {
+abstract class SPARQLJSONWriterBase<T extends QueryResultFormat, E extends QueryResultHandlerException> implements QueryResultWriter<T, E> {
 
 	/*-----------*
 	 * Variables *

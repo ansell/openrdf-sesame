@@ -18,7 +18,8 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-json-res/">SPARQL Query Results JSON
  * Format</a>.
  */
-public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase<BooleanQueryResultFormat> implements
+public class SPARQLBooleanJSONWriter extends
+		SPARQLJSONWriterBase<BooleanQueryResultFormat, BooleanQueryResultHandlerException> implements
 		BooleanQueryResultWriter
 {
 

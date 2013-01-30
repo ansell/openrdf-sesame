@@ -54,7 +54,8 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase<TupleQueryResultFormat> implements
+public class SPARQLResultsXMLWriter extends
+		SPARQLXMLWriterBase<TupleQueryResultFormat, TupleQueryResultHandlerException> implements
 		TupleQueryResultWriter
 {
 
