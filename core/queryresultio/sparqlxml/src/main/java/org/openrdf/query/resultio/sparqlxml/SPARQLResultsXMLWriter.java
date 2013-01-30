@@ -20,11 +20,15 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BIN
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BINDING_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BNODE_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_DATATYPE_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_SET_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.URI_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR_NAME_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR_TAG;
@@ -68,10 +72,71 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.SPARQL;
 	}
 
+	@Override
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		documentOpen = true;
+		headerComplete = false;
+
+		try {
+			xmlWriter.startDocument();
+
+			xmlWriter.setAttribute("xmlns", NAMESPACE);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleStylesheet(String url)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			xmlWriter.writeStylesheet(url);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			xmlWriter.startTag(ROOT_TAG);
+
+			xmlWriter.startTag(HEAD_TAG);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			// Write link URLs
+			for (String name : linkUrls) {
+				xmlWriter.setAttribute(HREF_ATT, name);
+				xmlWriter.emptyElement(LINK_TAG);
+			}
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
 	public void endHeader()
 		throws TupleQueryResultHandlerException
 	{
@@ -89,6 +154,7 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 		}
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -108,6 +174,7 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -123,6 +190,7 @@ public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements Tuple
 		}
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{

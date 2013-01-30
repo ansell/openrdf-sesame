@@ -55,10 +55,12 @@ public class BooleanTextWriter implements BooleanQueryResultWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.TEXT;
 	}
 
+	@Override
 	public void write(boolean value)
 		throws IOException
 	{
@@ -66,32 +68,37 @@ public class BooleanTextWriter implements BooleanQueryResultWriter {
 		writer.flush();
 	}
 
+	@Override
 	public void startDocument()
-		throws TupleQueryResultHandlerException
+		throws IOException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
+	@Override
 	public void handleStylesheet(String stylesheetUrl)
-		throws TupleQueryResultHandlerException
+		throws IOException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
+	@Override
 	public void startHeader()
-		throws TupleQueryResultHandlerException
+		throws IOException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
+	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws TupleQueryResultHandlerException
+		throws IOException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
+	@Override
 	public void endHeader()
-		throws TupleQueryResultHandlerException
+		throws IOException
 	{
 		// Ignored by BooleanTextWriter
 	}

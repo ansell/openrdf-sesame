@@ -1,7 +1,18 @@
-/*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2013.
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
  *
- * Licensed under the Aduna BSD-style license.
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.openrdf.query.resultio.sparqljson;
 
@@ -41,49 +52,6 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
 		w = new BufferedWriter(w, 1024);
 		writer = new IndentingWriter(w);
-	}
-
-	public void startDocument()
-		throws TupleQueryResultHandlerException
-	{
-		documentOpen = true;
-		headerComplete = false;
-		try {
-			openBraces();
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	public void handleStylesheet(String stylesheetUrl)
-		throws TupleQueryResultHandlerException
-	{
-		// Ignore, as JSON does not support stylesheets
-	}
-
-	public void startHeader()
-		throws TupleQueryResultHandlerException
-	{
-		try {
-			// Write header
-			writeKey("head");
-			openBraces();
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	public void handleLinks(List<String> linkUrls)
-		throws TupleQueryResultHandlerException
-	{
-		try {
-			writeKeyValue("link", linkUrls);
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
 	}
 
 	protected void endDocument()

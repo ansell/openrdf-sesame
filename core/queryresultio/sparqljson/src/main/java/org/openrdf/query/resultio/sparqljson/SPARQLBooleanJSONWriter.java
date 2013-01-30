@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -36,51 +35,59 @@ public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements Boo
 		return BooleanQueryResultFormat.JSON;
 	}
 
-	public void startQueryResult(List<String> columnHeaders)
-		throws TupleQueryResultHandlerException
+	@Override
+	public void startDocument()
+		throws IOException
 	{
-		try {
-			writeKeyValue("vars", columnHeaders);
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
+		documentOpen = true;
+		headerComplete = false;
+		openBraces();
 	}
 
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws IOException
+	{
+		// Ignore, as JSON does not support stylesheets
+	}
+
+	@Override
+	public void startHeader()
+		throws IOException
+	{
+		// Write header
+		writeKey("head");
+		openBraces();
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws IOException
+	{
+		writeKeyValue("link", linkUrls);
+	}
+
+	@Override
 	public void endHeader()
-		throws TupleQueryResultHandlerException
+		throws IOException
 	{
-		try {
-			closeBraces();
+		closeBraces();
 
-			writeComma();
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
+		writeComma();
+		headerComplete = true;
 	}
 
+	@Override
 	public void write(boolean value)
 		throws IOException
 	{
-		try {
-			if (!documentOpen) {
-				startDocument();
-				startHeader();
-			}
-
-			if (!headerComplete) {
-				endHeader();
-			}
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
 		}
-		catch (TupleQueryResultHandlerException e) {
-			if (e.getCause() != null && e.getCause() instanceof IOException) {
-				throw (IOException)e.getCause();
-			}
-			else {
-				throw new IOException(e);
-			}
+
+		if (!headerComplete) {
+			endHeader();
 		}
 
 		if (value) {

@@ -56,15 +56,16 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.JSON;
 	}
 
+	@Override
 	public void startQueryResult(List<String> columnHeaders)
 		throws TupleQueryResultHandlerException
 	{
-		if(!documentOpen)
-		{
+		if (!documentOpen) {
 			startDocument();
 			startHeader();
 		}
@@ -76,6 +77,7 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 		}
 	}
 
+	@Override
 	public void endHeader()
 		throws TupleQueryResultHandlerException
 	{
@@ -97,11 +99,11 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 		}
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
-		if(!headerComplete)
-		{
+		if (!headerComplete) {
 			endHeader();
 		}
 		try {
@@ -134,6 +136,7 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -141,6 +144,53 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 			closeArray(); // bindings array
 			closeBraces(); // results braces
 			endDocument();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		documentOpen = true;
+		headerComplete = false;
+		try {
+			openBraces();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignore, as JSON does not support stylesheets
+	}
+
+	@Override
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			// Write header
+			writeKey("head");
+			openBraces();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			writeKeyValue("link", linkUrls);
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);

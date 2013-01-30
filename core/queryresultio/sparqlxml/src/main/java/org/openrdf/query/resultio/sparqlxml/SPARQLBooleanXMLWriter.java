@@ -20,13 +20,17 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOO
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TRUE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -53,37 +57,69 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.SPARQL;
 	}
 
-	public void endHeader()
-		throws TupleQueryResultHandlerException
+	@Override
+	public void startDocument()
+		throws IOException
 	{
-		try {
-			xmlWriter.endTag(HEAD_TAG);
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
+		documentOpen = true;
+		headerComplete = false;
+
+		xmlWriter.startDocument();
+
+		xmlWriter.setAttribute("xmlns", NAMESPACE);
+	}
+
+	@Override
+	public void handleStylesheet(String url)
+		throws IOException
+	{
+		xmlWriter.writeStylesheet(url);
+	}
+
+	@Override
+	public void startHeader()
+		throws IOException
+	{
+		xmlWriter.startTag(ROOT_TAG);
+
+		xmlWriter.startTag(HEAD_TAG);
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws IOException
+	{
+		// Write link URLs
+		for (String name : linkUrls) {
+			xmlWriter.setAttribute(HREF_ATT, name);
+			xmlWriter.emptyElement(LINK_TAG);
 		}
 	}
 
+	@Override
+	public void endHeader()
+		throws IOException
+	{
+		xmlWriter.endTag(HEAD_TAG);
+		headerComplete = true;
+	}
+
+	@Override
 	public void write(boolean value)
 		throws IOException
 	{
-		try {
-			if (!documentOpen) {
-				startDocument();
-				startHeader();
-			}
-
-			if (!headerComplete) {
-				endHeader();
-			}
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
 		}
-		catch (TupleQueryResultHandlerException e) {
-			throw new IOException(e);
+
+		if (!headerComplete) {
+			endHeader();
 		}
 
 		if (value) {

@@ -588,19 +588,9 @@ public class QueryResultIO {
 		throws IOException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultWriter writer = createWriter(format, out);
-		try {
-			writer.startDocument();
-			writer.startHeader();
-			writer.write(value);
-		}
-		catch (TupleQueryResultHandlerException e) {
-			if (e.getCause() instanceof IOException) {
-				throw (IOException)e.getCause();
-			}
-			else {
-				throw new IOException(e);
-			}
-		}
+		writer.startDocument();
+		writer.startHeader();
+		writer.write(value);
 	}
 
 	/**

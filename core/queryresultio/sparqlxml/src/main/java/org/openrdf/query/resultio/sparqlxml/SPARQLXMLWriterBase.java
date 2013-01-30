@@ -1,23 +1,28 @@
-/*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2013.
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
  *
- * Licensed under the Aduna BSD-style license.
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.openrdf.query.resultio.sparqlxml;
 
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultWriter;
 
 /**
@@ -67,61 +72,6 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	 */
 	public void setPrettyPrint(boolean prettyPrint) {
 		xmlWriter.setPrettyPrint(prettyPrint);
-	}
-
-	public void startDocument()
-		throws TupleQueryResultHandlerException
-	{
-		documentOpen = true;
-		headerComplete = false;
-
-		try {
-			xmlWriter.startDocument();
-
-			xmlWriter.setAttribute("xmlns", NAMESPACE);
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	public void handleStylesheet(String url)
-		throws TupleQueryResultHandlerException
-	{
-		try {
-			xmlWriter.writeStylesheet(url);
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	public void startHeader()
-		throws TupleQueryResultHandlerException
-	{
-		try {
-			xmlWriter.startTag(ROOT_TAG);
-
-			xmlWriter.startTag(HEAD_TAG);
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	public void handleLinks(List<String> linkUrls)
-		throws TupleQueryResultHandlerException
-	{
-		try {
-			// Write link URLs
-			for (String name : linkUrls) {
-				xmlWriter.setAttribute(HREF_ATT, name);
-				xmlWriter.emptyElement(LINK_TAG);
-			}
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
 	}
 
 	protected void endDocument()
