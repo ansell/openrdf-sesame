@@ -1,7 +1,15 @@
-/*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+/* Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. Aduna licenses this file
+ * to you under the terms of the Aduna BSD License (the "License"); 
+ * you may not use this file except in compliance with the License. See 
+ * the LICENSE.txt file distributed with this work for the full License.
  *
- * Licensed under the Aduna BSD-style license.
+ * Unless required by applicable law or agreed to in writing,software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied.  See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.openrdf.model.util;
 
@@ -26,10 +34,10 @@ public class ModelUtil {
 
 	/**
 	 * Compares two models, defined by two statement collections, and returns
-	 * <tt>true</tt> if they are equal. Models are equal if they contain the
-	 * same set of statements. Blank node IDs are not relevant for model
-	 * equality, they are mapped from one model to the other by using the
-	 * attached properties.
+	 * <tt>true</tt> if they are equal. Models are equal if they contain the same
+	 * set of statements. Blank node IDs are not relevant for model equality,
+	 * they are mapped from one model to the other by using the attached
+	 * properties.
 	 */
 	public static boolean equals(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2) {
 		// Filter duplicates
@@ -44,10 +52,10 @@ public class ModelUtil {
 
 	/**
 	 * Compares two models, defined by two statement collections, and returns
-	 * <tt>true</tt> if they are equal. Models are equal if they contain the
-	 * same set of statements. Blank node IDs are not relevant for model
-	 * equality, they are mapped from one model to the other by using the
-	 * attached properties.
+	 * <tt>true</tt> if they are equal. Models are equal if they contain the same
+	 * set of statements. Blank node IDs are not relevant for model equality,
+	 * they are mapped from one model to the other by using the attached
+	 * properties.
 	 */
 	public static boolean equals(Set<? extends Statement> model1, Set<? extends Statement> model2) {
 		// Compare the number of statements in both sets

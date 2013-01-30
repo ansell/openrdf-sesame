@@ -1,7 +1,18 @@
-/*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 2007.
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
  *
- * Licensed under the Aduna BSD-style license.
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.openrdf.model.impl;
 
@@ -24,8 +35,13 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
 /**
+ * Basic implementation of Graph.
+ * 
+ * @deprecated since release 2.7.0. Use a {@link Model} implementation (e.g.
+ *             {@link TreeModel} or {@link LinkedHashModel} instead.
  * @author Arjohn Kampman
  */
+@Deprecated
 public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 
 	/**
@@ -65,20 +81,17 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	@Override
-	public Iterator<Statement> iterator()
-	{
+	public Iterator<Statement> iterator() {
 		return statements.iterator();
 	}
 
 	@Override
-	public int size()
-	{
+	public int size() {
 		return statements.size();
 	}
 
 	@Override
-	public boolean add(Statement st)
-	{
+	public boolean add(Statement st) {
 		return statements.add(st);
 	}
 
@@ -103,15 +116,15 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		return new PatternIterator(iterator(), subj, pred, obj, contexts);
 	}
-	
-	private void writeObject(ObjectOutputStream out) 
-		throws IOException 
+
+	private void writeObject(ObjectOutputStream out)
+		throws IOException
 	{
 		out.defaultWriteObject();
 	}
 
-	private void readObject(ObjectInputStream in) 
-		throws IOException, ClassNotFoundException 
+	private void readObject(ObjectInputStream in)
+		throws IOException, ClassNotFoundException
 	{
 		in.defaultReadObject();
 		setValueFactory(new ValueFactoryImpl());
@@ -142,8 +155,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 		}
 
 		@Override
-		protected boolean accept(Statement st)
-		{
+		protected boolean accept(Statement st) {
 			if (subj != null && !subj.equals(st.getSubject())) {
 				return false;
 			}

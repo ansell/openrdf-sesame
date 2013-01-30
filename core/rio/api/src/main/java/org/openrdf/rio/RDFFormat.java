@@ -1,7 +1,18 @@
-/*
- * Copyright Aduna (http://www.aduna-software.com/) (c) 1997-2007.
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
  *
- * Licensed under the Aduna BSD-style license.
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
  */
 package org.openrdf.rio;
 
@@ -200,13 +211,14 @@ public class RDFFormat extends FileFormat {
 			Charset.forName("UTF-8"), "jsonld", SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
-	 * The Talis <a href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html">RDF/JSON</a>
-	 * file format, an RDF serialization format that supports recording of named
-	 * graphs.
+	 * The Talis <a
+	 * href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html"
+	 * >RDF/JSON</a> file format, an RDF serialization format that supports
+	 * recording of named graphs.
 	 * <p>
-	 * The file extension <code>.rj</code> is recommended for RDF/JSON
-	 * documents. The media type is <code>application/rdf+json</code> and the
-	 * encoding is UTF-8.
+	 * The file extension <code>.rj</code> is recommended for RDF/JSON documents.
+	 * The media type is <code>application/rdf+json</code> and the encoding is
+	 * UTF-8.
 	 * </p>
 	 * 
 	 * @see http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html
@@ -214,6 +226,22 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", "application/rdf+json",
 			Charset.forName("UTF-8"), "rj", NO_NAMESPACES, SUPPORTS_CONTEXTS);
+
+	/**
+	 * The <a href="http://www.w3.org/TR/xhtml-rdfa/">RDFa</a> file format, an
+	 * RDF serialization format.
+	 * <p>
+	 * The file extension <code>.xhtml</code> is recommended for RDFa documents.
+	 * The preferred media type is <code>application/xhtml+xml</code> and the
+	 * encoding is UTF-8.
+	 * </p>
+	 * 
+	 * @see http://www.w3.org/TR/xhtml-rdfa/
+	 * @since 2.7.0
+	 */
+	public static final RDFFormat RDFA = new RDFFormat("RDFa", Arrays.asList("application/xhtml+xml",
+			"application/html", "text/html"), Charset.forName("UTF-8"), Arrays.asList("xhtml", "html"),
+			SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/*------------------*
 	 * Static variables *
@@ -223,7 +251,7 @@ public class RDFFormat extends FileFormat {
 	 * List of known RDF file formats.
 	 */
 	// FIXME: remove/deprecate this list?
-	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(8);
+	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(12);
 
 	/*--------------------*
 	 * Static initializer *
@@ -241,6 +269,7 @@ public class RDFFormat extends FileFormat {
 		register(NQUADS);
 		register(JSONLD);
 		register(RDFJSON);
+		register(RDFA);
 	}
 
 	/*----------------*
