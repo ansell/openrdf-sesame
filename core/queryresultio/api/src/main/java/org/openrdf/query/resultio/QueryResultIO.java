@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResults;
@@ -585,12 +586,12 @@ public class QueryResultIO {
 	 *         If an unsupported query result file format was specified.
 	 */
 	public static void write(boolean value, BooleanQueryResultFormat format, OutputStream out)
-		throws IOException, UnsupportedQueryResultFormatException
+		throws BooleanQueryResultHandlerException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultWriter writer = createWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
-		writer.write(value);
+		writer.handleBoolean(value);
 	}
 
 	/**

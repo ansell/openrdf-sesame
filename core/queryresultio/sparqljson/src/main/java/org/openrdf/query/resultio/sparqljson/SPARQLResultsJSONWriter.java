@@ -36,7 +36,9 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-json-res/">SPARQL Query Results JSON
  * Format</a>.
  */
-public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements TupleQueryResultWriter {
+public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase<TupleQueryResultFormat> implements
+		TupleQueryResultWriter
+{
 
 	/*-----------*
 	 * Variables *
@@ -59,6 +61,11 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.JSON;
+	}
+
+	@Override
+	public TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
+import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -39,7 +40,9 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements BooleanQueryResultWriter {
+public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase<BooleanQueryResultFormat> implements
+		BooleanQueryResultWriter
+{
 
 	/*--------------*
 	 * Constructors *
@@ -63,55 +66,103 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 	}
 
 	@Override
+	public final BooleanQueryResultFormat getQueryResultFormat() {
+		return getBooleanQueryResultFormat();
+	}
+
+	@Override
 	public void startDocument()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		documentOpen = true;
 		headerComplete = false;
 
-		xmlWriter.startDocument();
+		try {
+			xmlWriter.startDocument();
+			xmlWriter.setAttribute("xmlns", NAMESPACE);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 
-		xmlWriter.setAttribute("xmlns", NAMESPACE);
 	}
 
 	@Override
 	public void handleStylesheet(String url)
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		xmlWriter.writeStylesheet(url);
+		try {
+			xmlWriter.writeStylesheet(url);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void startHeader()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		xmlWriter.startTag(ROOT_TAG);
+		try {
+			xmlWriter.startTag(ROOT_TAG);
 
-		xmlWriter.startTag(HEAD_TAG);
+			xmlWriter.startTag(HEAD_TAG);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+
 	}
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		// Write link URLs
-		for (String name : linkUrls) {
-			xmlWriter.setAttribute(HREF_ATT, name);
-			xmlWriter.emptyElement(LINK_TAG);
+		try {
+			// Write link URLs
+			for (String name : linkUrls) {
+				xmlWriter.setAttribute(HREF_ATT, name);
+				xmlWriter.emptyElement(LINK_TAG);
+			}
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
 		}
 	}
 
 	@Override
 	public void endHeader()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		xmlWriter.endTag(HEAD_TAG);
-		headerComplete = true;
+		try {
+			xmlWriter.endTag(HEAD_TAG);
+			headerComplete = true;
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void write(boolean value)
 		throws IOException
+	{
+		try {
+			handleBoolean(value);
+		}
+		catch (BooleanQueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws BooleanQueryResultHandlerException
 	{
 		if (!documentOpen) {
 			startDocument();
@@ -122,13 +173,18 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 			endHeader();
 		}
 
-		if (value) {
-			xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
-		}
-		else {
-			xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_FALSE);
-		}
+		try {
+			if (value) {
+				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
+			}
+			else {
+				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_FALSE);
+			}
 
-		endDocument();
+			endDocument();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 }

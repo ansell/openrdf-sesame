@@ -19,13 +19,26 @@ package org.openrdf.query.resultio;
 import java.io.IOException;
 import java.util.List;
 
+import org.openrdf.query.BooleanQueryResultHandler;
+import org.openrdf.query.BooleanQueryResultHandlerException;
+
 /**
  * The interface of objects that writer query results in a specific query result
  * format.
  * 
  * @author Arjohn Kampman
  */
-public interface BooleanQueryResultWriter extends QueryResultWriter {
+public interface BooleanQueryResultWriter extends QueryResultWriter<BooleanQueryResultFormat>,
+		BooleanQueryResultHandler
+{
+
+	/**
+	 * Writes the specified boolean value.
+	 * 
+	 * @deprecated Use {@link #handleBoolean(boolean)} instead.
+	 */
+	void write(boolean value)
+		throws IOException;
 
 	/**
 	 * Gets the query result format that this writer uses.
@@ -33,19 +46,13 @@ public interface BooleanQueryResultWriter extends QueryResultWriter {
 	BooleanQueryResultFormat getBooleanQueryResultFormat();
 
 	/**
-	 * Writes the specified boolean value.
-	 */
-	void write(boolean value)
-		throws IOException;
-	
-	/**
 	 * Indicates the start of the document.
 	 * 
-	 * @throws IOException
+	 * @throws BooleanQueryResultHandlerException
 	 * @since 2.8.0
 	 */
 	void startDocument()
-		throws IOException;
+		throws BooleanQueryResultHandlerException;
 
 	/**
 	 * Handles a stylesheet URL. If this is called, it must be called after
@@ -55,20 +62,21 @@ public interface BooleanQueryResultWriter extends QueryResultWriter {
 	 * 
 	 * @param stylesheetUrl
 	 *        The URL of the stylesheet to be used to style the results.
+	 * @throws BooleanQueryResultHandlerException
 	 * @since 2.8.0
 	 */
 	void handleStylesheet(String stylesheetUrl)
-		throws IOException;
+		throws BooleanQueryResultHandlerException;
 
 	/**
 	 * Indicates the start of the header.
 	 * 
 	 * @see http://www.w3.org/TR/2012/PER-rdf-sparql-XMLres-20121108/#head
-	 * @throws IOException
+	 * @throws BooleanQueryResultHandlerException
 	 * @since 2.8.0
 	 */
 	void startHeader()
-		throws IOException;
+		throws BooleanQueryResultHandlerException;
 
 	/**
 	 * Handles the insertion of links elements into the header. <br/>
@@ -78,20 +86,20 @@ public interface BooleanQueryResultWriter extends QueryResultWriter {
 	 * @see http://www.w3.org/TR/sparql11-results-json/#select-link
 	 * @param linkUrls
 	 *        The URLs of the links to insert into the header.
-	 * @throws IOException
+	 * @throws BooleanQueryResultHandlerException
 	 * @since 2.8.0
 	 */
 	void handleLinks(List<String> linkUrls)
-		throws IOException;
+		throws BooleanQueryResultHandlerException;
 
 	/**
 	 * Indicates the end of the header. This must be called after
 	 * {@link #startHeader} and before any calls to {@link #handleSolution}.
 	 * 
-	 * @throws IOException
+	 * @throws BooleanQueryResultHandlerException
 	 * @since 2.8.0
 	 */
 	void endHeader()
-		throws IOException;
+		throws BooleanQueryResultHandlerException;
 
 }

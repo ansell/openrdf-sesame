@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -17,7 +18,9 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-json-res/">SPARQL Query Results JSON
  * Format</a>.
  */
-public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements BooleanQueryResultWriter {
+public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase<BooleanQueryResultFormat> implements
+		BooleanQueryResultWriter
+{
 
 	/*--------------*
 	 * Constructors *
@@ -31,55 +34,98 @@ public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements Boo
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.JSON;
 	}
 
 	@Override
+	public final BooleanQueryResultFormat getQueryResultFormat() {
+		return getBooleanQueryResultFormat();
+	}
+
+	@Override
 	public void startDocument()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		documentOpen = true;
 		headerComplete = false;
-		openBraces();
+		try {
+			openBraces();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void handleStylesheet(String stylesheetUrl)
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		// Ignore, as JSON does not support stylesheets
 	}
 
 	@Override
 	public void startHeader()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		// Write header
-		writeKey("head");
-		openBraces();
+		try {
+			// Write header
+			writeKey("head");
+			openBraces();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		writeKeyValue("link", linkUrls);
+		try {
+			writeKeyValue("link", linkUrls);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void endHeader()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
-		closeBraces();
+		try {
+			closeBraces();
 
-		writeComma();
-		headerComplete = true;
+			writeComma();
+			headerComplete = true;
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void write(boolean value)
 		throws IOException
+	{
+		try {
+			handleBoolean(value);
+		}
+		catch (BooleanQueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws BooleanQueryResultHandlerException
 	{
 		if (!documentOpen) {
 			startDocument();
@@ -90,14 +136,19 @@ public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements Boo
 			endHeader();
 		}
 
-		if (value) {
-			writeKeyValue("boolean", "true");
-		}
-		else {
-			writeKeyValue("boolean", "false");
-		}
+		try {
+			if (value) {
+				writeKeyValue("boolean", "true");
+			}
+			else {
+				writeKeyValue("boolean", "false");
+			}
 
-		endDocument();
+			endDocument();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 }

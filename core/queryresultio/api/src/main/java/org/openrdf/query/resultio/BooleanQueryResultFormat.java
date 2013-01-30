@@ -22,8 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import info.aduna.lang.FileFormat;
-
 /**
  * Represents the concept of a boolean query result serialization format.
  * Boolean query result formats are identified by a {@link #getName() name} and
@@ -32,7 +30,7 @@ import info.aduna.lang.FileFormat;
  * 
  * @author Arjohn Kampman
  */
-public class BooleanQueryResultFormat extends FileFormat {
+public class BooleanQueryResultFormat extends QueryResultFormat {
 
 	/*-----------*
 	 * Constants *

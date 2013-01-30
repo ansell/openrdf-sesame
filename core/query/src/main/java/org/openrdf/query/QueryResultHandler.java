@@ -14,23 +14,14 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio;
-
-import org.openrdf.query.QueryResultHandler;
+package org.openrdf.query;
 
 /**
- * The base interface for writers of query results sets and boolean results.
+ * The super class of all handlers for processing query results.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
  * @since 2.8.0
+ * @author Peter Ansell p_ansell@yahoo.com
  */
-public interface QueryResultWriter<T extends QueryResultFormat> extends QueryResultHandler {
-
-	/**
-	 * Gets the query result format that this writer uses.
-	 * 
-	 * @since 2.8.0
-	 */
-	T getQueryResultFormat();
+public interface QueryResultHandler {
 
 }

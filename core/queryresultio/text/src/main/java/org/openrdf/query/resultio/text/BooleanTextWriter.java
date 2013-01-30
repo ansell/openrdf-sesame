@@ -23,7 +23,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -61,44 +61,71 @@ public class BooleanTextWriter implements BooleanQueryResultWriter {
 	}
 
 	@Override
+	public final BooleanQueryResultFormat getQueryResultFormat() {
+		return getBooleanQueryResultFormat();
+	}
+
+	@Override
 	public void write(boolean value)
 		throws IOException
 	{
-		writer.write(Boolean.toString(value));
-		writer.flush();
+		try {
+			handleBoolean(value);
+		}
+		catch (BooleanQueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws BooleanQueryResultHandlerException
+	{
+		try {
+			writer.write(Boolean.toString(value));
+			writer.flush();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void startDocument()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
 	@Override
 	public void handleStylesheet(String stylesheetUrl)
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
 	@Override
 	public void startHeader()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		// Ignored by BooleanTextWriter
 	}
 
 	@Override
 	public void endHeader()
-		throws IOException
+		throws BooleanQueryResultHandlerException
 	{
 		// Ignored by BooleanTextWriter
 	}

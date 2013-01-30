@@ -22,61 +22,62 @@ import java.io.IOException;
 import org.junit.Test;
 
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultIO;
 
 /**
  * Abstract test for QueryResultIO.
  * 
  * @author jeen
+ * @author Peter Ansell p_ansell@yahoo.com
  */
-public abstract class AbstractQueryResultIOBooleanTest {
-
-	/**
-	 * @return An example filename that will match the
-	 *         {@link BooleanQueryResultFormat} returned by
-	 *         {@link #getBooleanFormat()}.
-	 */
-	protected abstract String getFileName();
-
-	/**
-	 * @return The {@link BooleanQueryResultFormat} that this test is running
-	 *         against.
-	 */
-	protected abstract BooleanQueryResultFormat getBooleanFormat();
-
-	/**
-	 * Test method for
-	 * {@link org.openrdf.query.resultio.QueryResultIO#getParserFormatForFileName(java.lang.String)}
-	 * .
-	 */
-	@Test
-	public final void testGetParserFormatForFileNameString() {
-		String fileName = getFileName();
-		BooleanQueryResultFormat format = QueryResultIO.getBooleanParserFormatForFileName(fileName);
-
-		assertNotNull("Could not find parser for this format.", format);
-		assertEquals(getBooleanFormat(), format);
-	}
-
-	@Test
-	public final void testBooleanResultFormat()
-		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException
-	{
-		testQueryResultFormat(getBooleanFormat(), true);
-		testQueryResultFormat(getBooleanFormat(), false);
-	}
-
-	private void testQueryResultFormat(BooleanQueryResultFormat format, boolean input)
-		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException
-	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		QueryResultIO.write(input, format, out);
-		out.flush();
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
-
-		assertEquals(output, input);
-	}
+public abstract class AbstractQueryResultIOBooleanTest
+{
+    
+    /**
+     * @return An example filename that will match the {@link BooleanQueryResultFormat} returned by
+     *         {@link #getBooleanFormat()}.
+     */
+    protected abstract String getFileName();
+    
+    /**
+     * @return The {@link BooleanQueryResultFormat} that this test is running against.
+     */
+    protected abstract BooleanQueryResultFormat getBooleanFormat();
+    
+    /**
+     * Test method for
+     * {@link org.openrdf.query.resultio.QueryResultIO#getParserFormatForFileName(java.lang.String)}
+     * .
+     */
+    @Test
+    public final void testGetParserFormatForFileNameString()
+    {
+        String fileName = getFileName();
+        BooleanQueryResultFormat format = QueryResultIO.getBooleanParserFormatForFileName(fileName);
+        
+        assertNotNull("Could not find parser for this format.", format);
+        assertEquals(getBooleanFormat(), format);
+    }
+    
+    @Test
+    public final void testBooleanResultFormat() throws IOException, QueryResultHandlerException,
+        QueryResultParseException, UnsupportedQueryResultFormatException, QueryEvaluationException
+    {
+        testQueryResultFormat(getBooleanFormat(), true);
+        testQueryResultFormat(getBooleanFormat(), false);
+    }
+    
+    private void testQueryResultFormat(BooleanQueryResultFormat format, boolean input) throws IOException,
+        QueryResultHandlerException, QueryResultParseException, UnsupportedQueryResultFormatException,
+        QueryEvaluationException
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+        QueryResultIO.write(input, format, out);
+        out.flush();
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        boolean output = QueryResultIO.parse(in, format);
+        
+        assertEquals(output, input);
+    }
 }

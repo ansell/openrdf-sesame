@@ -100,10 +100,17 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.BINARY;
 	}
 
+	@Override
+	public final TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
+	}
+
+	@Override
 	public void startDocument()
 		throws TupleQueryResultHandlerException
 	{
@@ -117,6 +124,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -144,6 +152,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -156,6 +165,7 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -320,24 +330,28 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		out.write(byteBuf.array(), 0, byteBuf.remaining());
 	}
 
+	@Override
 	public void handleStylesheet(String stylesheetUrl)
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
 
+	@Override
 	public void startHeader()
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
 
+	@Override
 	public void handleLinks(List<String> linkUrls)
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
 
+	@Override
 	public void endHeader()
 		throws TupleQueryResultHandlerException
 	{

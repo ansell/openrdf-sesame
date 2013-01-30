@@ -14,23 +14,22 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio;
-
-import org.openrdf.query.QueryResultHandler;
+package org.openrdf.query;
 
 /**
- * The base interface for writers of query results sets and boolean results.
+ * An interface defining methods related to handling boolean results.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
  * @since 2.8.0
+ * @author Peter Ansell p_ansell@yahoo.com
  */
-public interface QueryResultWriter<T extends QueryResultFormat> extends QueryResultHandler {
+public interface BooleanQueryResultHandler extends QueryResultHandler {
 
 	/**
-	 * Gets the query result format that this writer uses.
+	 * Writes the specified boolean value.
 	 * 
 	 * @since 2.8.0
 	 */
-	T getQueryResultFormat();
+	void handleBoolean(boolean value)
+		throws BooleanQueryResultHandlerException;
 
 }

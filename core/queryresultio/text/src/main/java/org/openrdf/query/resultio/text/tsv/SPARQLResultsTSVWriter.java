@@ -56,6 +56,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		writer = new BufferedWriter(w, 1024);
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -76,6 +77,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -88,6 +90,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -110,8 +113,14 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 	}
 
-	public TupleQueryResultFormat getTupleQueryResultFormat() {
+	@Override
+	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.TSV;
+	}
+
+	@Override
+	public final TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
 	}
 
 	protected void writeValue(Value val)
@@ -189,30 +198,35 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		return s;
 	}
 
+	@Override
 	public void startDocument()
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored in SPARQLResultsTSVWriter
 	}
 
+	@Override
 	public void handleStylesheet(String stylesheetUrl)
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored in SPARQLResultsTSVWriter
 	}
 
+	@Override
 	public void startHeader()
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored in SPARQLResultsTSVWriter
 	}
 
+	@Override
 	public void handleLinks(List<String> linkUrls)
 		throws TupleQueryResultHandlerException
 	{
 		// Ignored in SPARQLResultsTSVWriter
 	}
 
+	@Override
 	public void endHeader()
 		throws TupleQueryResultHandlerException
 	{

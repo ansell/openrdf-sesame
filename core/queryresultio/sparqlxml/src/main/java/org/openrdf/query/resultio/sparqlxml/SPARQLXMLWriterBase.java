@@ -23,6 +23,7 @@ import java.io.OutputStream;
 
 import info.aduna.xml.XMLWriter;
 
+import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultWriter;
 
 /**
@@ -31,7 +32,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell p_ansell@yahoo.com
  */
-abstract class SPARQLXMLWriterBase implements QueryResultWriter {
+abstract class SPARQLXMLWriterBase<T extends QueryResultFormat> implements QueryResultWriter<T> {
 
 	/*-----------*
 	 * Variables *

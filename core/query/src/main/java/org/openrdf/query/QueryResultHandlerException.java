@@ -14,23 +14,44 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio;
+package org.openrdf.query;
 
-import org.openrdf.query.QueryResultHandler;
+import org.openrdf.OpenRDFException;
 
 /**
- * The base interface for writers of query results sets and boolean results.
+ * The super class of exceptions originating from {@link QueryResultHandler}
+ * implementations.
  * 
  * @author Peter Ansell p_ansell@yahoo.com
  * @since 2.8.0
  */
-public interface QueryResultWriter<T extends QueryResultFormat> extends QueryResultHandler {
+public abstract class QueryResultHandlerException extends OpenRDFException {
 
 	/**
-	 * Gets the query result format that this writer uses.
 	 * 
-	 * @since 2.8.0
 	 */
-	T getQueryResultFormat();
+	private static final long serialVersionUID = 5096811224670124398L;
+
+	/**
+	 * @param msg
+	 */
+	public QueryResultHandlerException(String msg) {
+		super(msg);
+	}
+
+	/**
+	 * @param t
+	 */
+	public QueryResultHandlerException(Throwable t) {
+		super(t);
+	}
+
+	/**
+	 * @param msg
+	 * @param t
+	 */
+	public QueryResultHandlerException(String msg, Throwable t) {
+		super(msg, t);
+	}
 
 }

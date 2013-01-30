@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * An interface defining methods related to handling sequences of Solutions.
  */
-public interface TupleQueryResultHandler {
+public interface TupleQueryResultHandler extends QueryResultHandler {
 
 	/**
 	 * Indicates the start of a sequence of Solutions. The supplied bindingNames
