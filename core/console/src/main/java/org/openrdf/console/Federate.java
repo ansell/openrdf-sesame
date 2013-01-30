@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.runtime.RepositoryManagerFederator;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.http.config.HTTPRepositoryFactory;
