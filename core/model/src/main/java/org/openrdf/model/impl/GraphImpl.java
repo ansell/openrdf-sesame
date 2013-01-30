@@ -35,8 +35,13 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
 /**
+ * Basic implementation of Graph.
+ * 
+ * @deprecated since release 2.7.0. Use a {@link Model} implementation (e.g.
+ *             {@link TreeModel} or {@link LinkedHashModel} instead.
  * @author Arjohn Kampman
  */
+@Deprecated
 public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 
 	/**
@@ -76,20 +81,17 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	@Override
-	public Iterator<Statement> iterator()
-	{
+	public Iterator<Statement> iterator() {
 		return statements.iterator();
 	}
 
 	@Override
-	public int size()
-	{
+	public int size() {
 		return statements.size();
 	}
 
 	@Override
-	public boolean add(Statement st)
-	{
+	public boolean add(Statement st) {
 		return statements.add(st);
 	}
 
@@ -114,15 +116,15 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		return new PatternIterator(iterator(), subj, pred, obj, contexts);
 	}
-	
-	private void writeObject(ObjectOutputStream out) 
-		throws IOException 
+
+	private void writeObject(ObjectOutputStream out)
+		throws IOException
 	{
 		out.defaultWriteObject();
 	}
 
-	private void readObject(ObjectInputStream in) 
-		throws IOException, ClassNotFoundException 
+	private void readObject(ObjectInputStream in)
+		throws IOException, ClassNotFoundException
 	{
 		in.defaultReadObject();
 		setValueFactory(new ValueFactoryImpl());
@@ -153,8 +155,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 		}
 
 		@Override
-		protected boolean accept(Statement st)
-		{
+		protected boolean accept(Statement st) {
 			if (subj != null && !subj.equals(st.getSubject())) {
 				return false;
 			}

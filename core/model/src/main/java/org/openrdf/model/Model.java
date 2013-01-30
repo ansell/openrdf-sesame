@@ -24,13 +24,13 @@ import org.openrdf.model.util.ModelException;
 
 /**
  * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s with predictable
- * iteration order.
+ * iteration order. Model is a feature-rich extension of the basic {@link Graph} interface.
  * 
  * @since 2.7.0
  * 
  * @author James Leigh
  */
-public interface Model extends Set<Statement>, Serializable {
+public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Returns an unmodifiable view of this model. This method provides
@@ -119,14 +119,14 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return <code>true</code> if statements match the specified pattern.
 	 */
-	public boolean contains(Value subj, Value pred, Value obj, Value... contexts);
+	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Adds one or more statements to the model. This method creates a statement
 	 * for each specified context and adds those to the model. If no contexts are
 	 * specified, a single statement with no associated context is added. If this
 	 * Model is a filtered Model then null (if context empty) values are
-	 * permitted and will used the corresponding filtered values.
+	 * permitted and will use the corresponding filtered values.
 	 * 
 	 * @param subj
 	 *        The statement's subject.
@@ -140,7 +140,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *         If This Model cannot store the given statement, because it is
 	 *         filtered out of this view.
 	 * @throws UnsupportedOperationException
-	 *         If this Model cannot accept any statements, because it is filter
+	 *         If this Model cannot accept any statements, because it is filtered
 	 *         to the empty set.
 	 */
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
@@ -152,7 +152,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        The context of the statements to remove.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean clear(Value... context);
+	public boolean clear(Resource... context);
 
 	/**
 	 * Removes statements with the specified subject, predicate, object and
@@ -190,7 +190,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        matching one of these will be removed.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean remove(Value subj, Value pred, Value obj, Value... contexts);
+	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	// Views
 
@@ -241,7 +241,7 @@ public interface Model extends Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
 	 */
-	public Model filter(Value subj, Value pred, Value obj, Value... contexts);
+	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The

@@ -45,11 +45,6 @@ public abstract class ApacheSetTestCase extends AbstractTestSet {
 	}
 
 	@Override
-	public boolean isTestSerialization() {
-		return false;
-	}
-
-	@Override
 	public abstract Set makeEmptySet();
 
 	@Override

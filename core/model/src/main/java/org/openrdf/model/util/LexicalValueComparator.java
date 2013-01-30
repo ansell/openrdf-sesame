@@ -16,6 +16,7 @@
  */
 package org.openrdf.model.util;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import info.aduna.lang.ObjectUtil;
@@ -33,7 +34,8 @@ import org.openrdf.model.datatypes.XMLDatatypeUtil;
  * @author james
  * @author Arjohn Kampman
  */
-public class LexicalValueComparator implements Comparator<Value> {
+public class LexicalValueComparator implements Serializable, Comparator<Value> {
+	private static final long serialVersionUID = -7055973992568220217L;
 
 	public int compare(Value o1, Value o2) {
 		// check equality
