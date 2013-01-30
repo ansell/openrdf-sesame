@@ -36,52 +36,57 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.Iterations;
-
-import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.exceptions.BadRequestException;
 
+/**
+ * Request wrapper used by {@link org.openrdf.workbench.base
+ * TransformationServlet}.
+ */
 public class WorkbenchRequest extends HttpServletRequestWrapper {
 
 	private static final String UTF_8 = "UTF-8";
 
-	private Logger logger = LoggerFactory.getLogger(WorkbenchRequest.class);
-
 	private Map<String, String> parameters;
 
-	private Map<String, String> defaults;
-
-	private Repository repository;
-
-	private ValueFactory vf;
+	private final Map<String, String> defaults;
 
 	private InputStream content;
 
 	private String contentFileName;
-	
+
+	private final ValueDecoder decoder;
+
+	/**
+	 * Wrap a request with an object aware of the current repository and
+	 * application defaults.
+	 * 
+	 * @param repository
+	 *        currently connected repository
+	 * @param request
+	 *        current request
+	 * @param defaults
+	 *        application default parameter values
+	 * @throws RepositoryException
+	 *         if there is an issue retrieving the parameter map
+	 * @throws IOException
+	 *         if there is an issue retrieving the parameter map
+	 * @throws FileUploadException
+	 *         if there is an issue retrieving the parameter map
+	 */
 	public WorkbenchRequest(Repository repository, HttpServletRequest request, Map<String, String> defaults)
 		throws RepositoryException, IOException, FileUploadException
 	{
 		super(request);
 		this.defaults = defaults;
-		if (repository == null) {
-			this.vf = new ValueFactoryImpl();
-		}
-		else {
-			this.repository = repository;
-			this.vf = repository.getValueFactory();
-		}
+		this.decoder = new ValueDecoder(repository, (repository == null) ? new ValueFactoryImpl()
+				: repository.getValueFactory());
 		String url = request.getRequestURL().toString();
 		if (ServletFileUpload.isMultipartContent(this)) {
 			parameters = getMultipartParameterMap();
@@ -91,89 +96,143 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		}
 	}
 
-	public InputStream getContentParameter()
-		throws RepositoryException, BadRequestException, IOException, FileUploadException
-	{
+	/**
+	 * Get the content of any uploaded file that is part of this request.
+	 * 
+	 * @return the uploaded file contents, or null if not applicable
+	 */
+	public InputStream getContentParameter() {
 		return content;
 	}
-	
+
+	/**
+	 * Get the name of any uploaded file that is part of this request.
+	 * 
+	 * @return the uploaded file name, or null if not applicable
+	 */
 	public String getContentFileName() {
 		return contentFileName;
 	}
 
 	/***
-	 * Get the integer value associated with the given parameter name. 
-	 * Internally uses getParameter(String), so looks in this order:
-	 * 1. the query parameters that were parsed at construction, using the 
-	 * last value if multiple exist. 2. Request cookies. 3. The defaults. 
+	 * Get the integer value associated with the given parameter name. Internally
+	 * uses getParameter(String), so looks in this order: 1. the query parameters
+	 * that were parsed at construction, using the last value if multiple exist.
+	 * 2. Request cookies. 3. The defaults.
 	 * 
 	 * @returns the value of the parameter, or zero if it is not present
-	 * @throws BadRequestException if the parameter is present but does not
-	 * parse as an integer
+	 * @throws BadRequestException
+	 *         if the parameter is present but does not parse as an integer
 	 */
 	public int getInt(String name)
 		throws BadRequestException
 	{
+		int result = 0;
 		String limit = getParameter(name);
-		if (limit == null || limit.length() == 0)
-			return 0;
-		try {
-			return Integer.parseInt(limit);
+		if (limit != null && !limit.isEmpty()) {
+			try {
+				result = Integer.parseInt(limit);
+			}
+			catch (NumberFormatException exc) {
+				throw new BadRequestException(exc.getMessage(), exc);
+			}
 		}
-		catch (NumberFormatException exc) {
-			throw new BadRequestException(exc.getMessage(), exc);
-		}
+		return result;
 	}
 
 	@Override
 	public String getParameter(String name) {
-		if (parameters != null && parameters.containsKey(name))
-			return parameters.get(name);
-		String[] values = super.getParameterValues(name);
-		if (values != null && values.length > 0)
-			// use the last one as it maybe appended in js
-			return values[values.length - 1];
+		String result = null;
+		if (parameters != null && parameters.containsKey(name)) {
+			result = parameters.get(name);
+		}
+		else {
+			String[] values = super.getParameterValues(name);
+			if (values != null && values.length > 0) {
+				// use the last one as it may be appended in JavaScript
+				result = values[values.length - 1];
+			}
+			else {
+				result = getCookie(name);
+				if (result == null && defaults != null && defaults.containsKey(name)) {
+					result = defaults.get(name);
+				}
+			}
+		}
+		return result;
+	}
+
+	private String getCookie(String name) {
+		String result = null;
 		Cookie[] cookies = getCookies();
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
 				if (name.equals(cookie.getName())) {
-					return cookie.getValue();
+					result = cookie.getValue();
+					break;
 				}
 			}
 		}
-		if (defaults != null && defaults.containsKey(name))
-			return defaults.get(name);
-		return null;
+		return result;
 	}
 
 	@Override
 	public String[] getParameterValues(String name) {
-		if (parameters != null && parameters.containsKey(name))
-			return new String[] { parameters.get(name) };
-		return super.getParameterValues(name);
+		return (parameters != null && parameters.containsKey(name)) ? new String[] { parameters.get(name) }
+				: super.getParameterValues(name);
 	}
 
+	/**
+	 * Returns whether a non-null, non-empty value is available for the given
+	 * parameter name.
+	 * 
+	 * @param name
+	 *        parameter name to check
+	 * @return true if a non-null, non-empty value exists, false otherwise
+	 */
 	public boolean isParameterPresent(String name) {
-		if (parameters != null && parameters.get(name) != null)
-			return parameters.get(name).length() > 0;
-		String[] values = super.getParameterValues(name);
-		if (values != null && values.length > 0)
-			// use the last one as it maybe appended in js
-			return values[values.length - 1].length() > 0;
-		return false;
+		boolean result = false;
+		if (parameters == null || parameters.get(name) == null) {
+			String[] values = super.getParameterValues(name);
+			if (values != null && values.length > 0) {
+				// use the last one as it may be appended in JavaScript
+				result = !values[values.length - 1].isEmpty();
+			}
+		}
+		else {
+			result = !parameters.get(name).isEmpty();
+		}
+		return result;
 	}
 
+	/**
+	 * Returns a {@link org.openrdf.model.Resource} corresponding to the value of
+	 * the given parameter name.
+	 * 
+	 * @param name
+	 *        of parameter to retrieve resource from
+	 * @return value corresponding to the given parameter name
+	 * @throws BadRequestException
+	 *         if a problem occurs parsing the parameter value
+	 */
 	public Resource getResource(String name)
 		throws BadRequestException, RepositoryException
 	{
-		Value value = decodeValue(getParameter(name));
-		if (value == null || value instanceof Resource)
+		Value value = getValue(name);
+		if (value == null || value instanceof Resource) {
 			return (Resource)value;
+		}
 		throw new BadRequestException("Not a BNode or URI: " + value);
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Gets a map of the all parameters with values, also caching them in this
+	 * {@link WorkbenchRequest}.
+	 * 
+	 * @return a map of all parameters with values
+	 */
 	public Map<String, String> getSingleParameterMap() {
+		@SuppressWarnings("unchecked")
 		Map<String, String[]> map = super.getParameterMap();
 		Map<String, String> parameters = new HashMap<String, String>(map.size());
 		for (String name : map.keySet()) {
@@ -187,117 +246,86 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		return parameters;
 	}
 
+	/**
+	 * Gets the value of the 'type' parameter.
+	 * 
+	 * @return the value of the 'type' parameter
+	 */
 	public String getTypeParameter() {
 		return getParameter("type");
 	}
 
+	/**
+	 * Gets the URI referred to by the parameter value.
+	 * 
+	 * @param name
+	 *        of the parameter to check
+	 * @return the URI, or null if the parameter has no value, is only
+	 *         whitespace, or equals "null"
+	 * @throws BadRequestException
+	 *         if the value doesn't parse as a URI
+	 * @throws RepositoryException
+	 *         if the name space prefix is not resolvable
+	 */
 	public URI getURI(String name)
 		throws BadRequestException, RepositoryException
 	{
-		Value value = decodeValue(getParameter(name));
-		if (value == null || value instanceof URI)
+		Value value = getValue(name);
+		if (value == null || value instanceof URI) {
 			return (URI)value;
+		}
 		throw new BadRequestException("Not a URI: " + value);
 	}
 
+	/**
+	 * Gets the URL referred to by the parameter value.
+	 * 
+	 * @param name
+	 *        of the parameter to check
+	 * @return the URL
+	 * @throws BadRequestException
+	 *         if the value doesn't parse as a URL
+	 */
 	public URL getUrl(String name)
-		throws RepositoryException, BadRequestException, IOException, FileUploadException
+		throws BadRequestException
 	{
 		String url = getParameter(name);
 		try {
 			return new URL(url);
 		}
 		catch (MalformedURLException exc) {
-			throw new BadRequestException(exc.getMessage());
+			throw new BadRequestException(exc.getMessage(), exc);
 		}
 	}
 
+	/**
+	 * Gets the {@link org.openrdf.model.Value} referred to by the parameter value.
+	 * 
+	 * @param name
+	 *        of the parameter to check
+	 * @return the value, or null if the parameter has no value, is only
+	 *         whitespace, or equals "null"
+	 * @throws BadRequestException
+	 *         if the value doesn't parse as a URI
+	 * @throws RepositoryException
+	 *         if any name space prefix is not resolvable
+	 */
 	public Value getValue(String name)
 		throws BadRequestException, RepositoryException
 	{
-		return decodeValue(getParameter(name));
-	}
-
-	private Value decodeValue(String string)
-		throws RepositoryException, BadRequestException
-	{
-		try {
-			if (string == null)
-				return null;
-			String value = string.trim();
-			if (value.length() == 0 || value.equals("null"))
-				return null;
-			if (value.startsWith("_:")) {
-				String label = value.substring("_:".length());
-				return vf.createBNode(label);
-			}
-			else if (value.startsWith("<") && value.endsWith(">")) {
-				String label = value.substring(1, value.length() - 1);
-				return vf.createURI(label);
-			}
-			else if (value.charAt(0) == '"') {
-				String label = value.substring(1, value.lastIndexOf('"'));
-				String rest = value.substring(label.length() + 2);
-				if (rest.startsWith("^^")) {
-					Value datatype = decodeValue(rest.substring(2));
-					if (datatype instanceof URI)
-						return vf.createLiteral(label, (URI)datatype);
-					throw new BadRequestException("Malformed datatype: " + value);
-				}
-				else if (rest.startsWith("@")) {
-					return vf.createLiteral(label, rest.substring(1));
-				}
-				else {
-					return vf.createLiteral(label);
-				}
-			}
-			else {
-				String prefix = value.substring(0, value.indexOf(':'));
-				String localPart = value.substring(prefix.length() + 1);
-				String ns = getNamespace(prefix);
-				if (ns == null)
-					throw new BadRequestException("Undefined prefix: " + value);
-				return vf.createURI(ns, localPart);
-			}
-		}
-		catch (Exception exc) {
-			logger.warn(exc.toString(), exc);
-			throw new BadRequestException("Malformed value: " + string, exc);
-		}
+		return decoder.decodeValue(getParameter(name));
 	}
 
 	private String firstLine(FileItemStream item)
 		throws IOException
 	{
-		InputStream in = item.openStream();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+		InputStream stream = item.openStream();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		try {
 			return reader.readLine();
 		}
 		finally {
 			reader.close();
-		}
-	}
-
-	private String getNamespace(String prefix)
-		throws RepositoryException
-	{
-		RepositoryConnection con = repository.getConnection();
-		try {
-			String ns = con.getNamespace(prefix);
-			if (ns != null)
-				return ns;
-			for (Namespace n : Iterations.asList(con.getNamespaces())) {
-				if (prefix.equals(n.getPrefix()))
-					ns = n.getName();
-			}
-			if (ns != null) {
-				logger.error("Namespace could not be found, but it does exist");
-			}
-			return ns;
-		}
-		finally {
-			con.close();
 		}
 	}
 
@@ -313,11 +341,10 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 			if ("content".equals(name)) {
 				content = item.openStream();
 				contentFileName = item.getName();
-				return parameters;
+				break;
 			}
 			else {
-				String firstLine = firstLine(item);
-				parameters.put(name, firstLine);
+				parameters.put(name, firstLine(item));
 			}
 		}
 		return parameters;
@@ -336,5 +363,4 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 		}
 		return parameters;
 	}
-
 }

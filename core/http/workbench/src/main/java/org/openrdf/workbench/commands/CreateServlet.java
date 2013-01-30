@@ -28,8 +28,7 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
@@ -49,7 +48,7 @@ public class CreateServlet extends TransformationServlet {
 
 	@Override
 	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws Exception
+		throws ServletException
 	{
 		try {
 			resp.sendRedirect("../" + createRepositoryConfig(req) + "/summary");
@@ -90,9 +89,8 @@ public class CreateServlet extends TransformationServlet {
 		throws IOException, OpenRDFException
 	{
 		final Repository systemRepo = manager.getSystemRepository();
-		final ValueFactory factory = systemRepo.getValueFactory();
-		final Graph graph = new GraphImpl(factory);
-		final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, factory);
+		final Graph graph = new LinkedHashModel();
+		final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
 		rdfParser.setRDFHandler(new StatementCollector(graph));
 		rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
 		final RepositoryConfig repConfig = RepositoryConfig.create(graph,

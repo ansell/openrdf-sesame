@@ -24,6 +24,7 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileUploadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,27 +40,29 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class AddServlet extends TransformationServlet {
 
-	private Logger logger = LoggerFactory.getLogger(AddServlet.class);
+	private static final String URL = "url";
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AddServlet.class);
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
-		throws Exception, IOException
+		throws IOException, RepositoryException, FileUploadException
 	{
 		try {
 			String baseURI = req.getParameter("baseURI");
-			Resource context = req.getResource("context");
 			String contentType = req.getParameter("Content-Type");
-			if (req.isParameterPresent("context")) {
-				if (req.isParameterPresent("url")) {
-					add(req.getUrl("url"), baseURI, contentType, context);
+			if (req.isParameterPresent(CONTEXT)) {
+				Resource context = req.getResource(CONTEXT);
+				if (req.isParameterPresent(URL)) {
+					add(req.getUrl(URL), baseURI, contentType, context);
 				}
 				else {
 					add(req.getContentParameter(), baseURI, contentType, req.getContentFileName(), context);
 				}
 			}
 			else {
-				if (req.isParameterPresent("url")) {
-					add(req.getUrl("url"), baseURI, contentType);
+				if (req.isParameterPresent(URL)) {
+					add(req.getUrl(URL), baseURI, contentType);
 				}
 				else {
 					add(req.getContentParameter(), baseURI, contentType, req.getContentFileName());
@@ -68,24 +71,24 @@ public class AddServlet extends TransformationServlet {
 			resp.sendRedirect("summary");
 		}
 		catch (BadRequestException exc) {
-			logger.warn(exc.toString(), exc);
+			LOGGER.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			PrintWriter out = resp.getWriter();
 			TupleResultBuilder builder = new TupleResultBuilder(out);
 			builder.transform(xslPath, "add.xsl");
-			builder.start("error-message", "baseURI", "context", "Content-Type");
+			builder.start("error-message", "baseURI", CONTEXT, "Content-Type");
 			builder.link("info");
 			String baseURI = req.getParameter("baseURI");
-			String context = req.getParameter("context");
+			String context = req.getParameter(CONTEXT);
 			String contentType = req.getParameter("Content-Type");
 			builder.result(exc.getMessage(), baseURI, context, contentType);
 			builder.end();
 		}
 	}
 
-	private void add(InputStream in, String baseURI, String contentType, String contentFileName,
+	private void add(InputStream stream, String baseURI, String contentType, String contentFileName,
 			Resource... context)
-		throws Exception
+		throws BadRequestException, RepositoryException, IOException
 	{
 		if (contentType == null) {
 			throw new BadRequestException("No Content-Type provided");
@@ -95,7 +98,8 @@ public class AddServlet extends TransformationServlet {
 		if ("autodetect".equals(contentType)) {
 			format = RDFFormat.forFileName(contentFileName);
 			if (format == null) {
-				throw new BadRequestException("Could not automatically determine Content-Type for content: " + contentFileName);
+				throw new BadRequestException("Could not automatically determine Content-Type for content: "
+						+ contentFileName);
 			}
 		}
 		else {
@@ -108,13 +112,13 @@ public class AddServlet extends TransformationServlet {
 
 		RepositoryConnection con = repository.getConnection();
 		try {
-			con.add(in, baseURI, format, context);
+			con.add(stream, baseURI, format, context);
 		}
 		catch (RDFParseException exc) {
-			throw new BadRequestException(exc.getMessage());
+			throw new BadRequestException(exc.getMessage(), exc);
 		}
 		catch (IllegalArgumentException exc) {
-			throw new BadRequestException(exc.getMessage());
+			throw new BadRequestException(exc.getMessage(), exc);
 		}
 		finally {
 			con.close();
@@ -122,17 +126,18 @@ public class AddServlet extends TransformationServlet {
 	}
 
 	private void add(URL url, String baseURI, String contentType, Resource... context)
-		throws Exception
+		throws BadRequestException, RepositoryException, IOException
 	{
 		if (contentType == null) {
 			throw new BadRequestException("No Content-Type provided");
 		}
-		
+
 		RDFFormat format = null;
 		if ("autodetect".equals(contentType)) {
 			format = RDFFormat.forFileName(url.getFile());
 			if (format == null) {
-				throw new BadRequestException("Could not automatically determine Content-Type for content: " + url.getFile());
+				throw new BadRequestException("Could not automatically determine Content-Type for content: "
+						+ url.getFile());
 			}
 		}
 		else {
@@ -142,7 +147,7 @@ public class AddServlet extends TransformationServlet {
 			}
 
 		}
-		
+
 		try {
 			RepositoryConnection con = repository.getConnection();
 			try {
@@ -153,13 +158,13 @@ public class AddServlet extends TransformationServlet {
 			}
 		}
 		catch (RDFParseException exc) {
-			throw new BadRequestException(exc.getMessage());
+			throw new BadRequestException(exc.getMessage(), exc);
 		}
 		catch (MalformedURLException exc) {
-			throw new BadRequestException(exc.getMessage());
+			throw new BadRequestException(exc.getMessage(), exc);
 		}
 		catch (IllegalArgumentException exc) {
-			throw new BadRequestException(exc.getMessage());
+			throw new BadRequestException(exc.getMessage(), exc);
 		}
 	}
 

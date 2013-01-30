@@ -18,7 +18,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.RepositoryConnection;
@@ -93,7 +93,7 @@ public class RepositoryManagerFederator {
 	public void addFed(String memberType, String fedID, String description, Collection<String> members)
 		throws MalformedURLException, OpenRDFException
 	{
-		Graph graph = new GraphImpl(valueFactory);
+		Graph graph = new LinkedHashModel();
 		BNode fedRepoNode = valueFactory.createBNode();
 		LOGGER.debug("Federation repository root node: {}", fedRepoNode);
 		addToGraph(graph, fedRepoNode, RDF.TYPE, RepositoryConfigSchema.REPOSITORY);
