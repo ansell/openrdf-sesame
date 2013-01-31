@@ -33,7 +33,7 @@ import org.openrdf.query.impl.AbstractQuery;
  */
 public abstract class HTTPQuery extends AbstractQuery {
 
-	private static Executor executor = Executors.newCachedThreadPool();
+	private static Executor executor = Executors.newFixedThreadPool(20);
 
 	protected final HTTPRepositoryConnection httpCon;
 
