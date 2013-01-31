@@ -15,7 +15,9 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<form action="create">
+		<script src="../../scripts/create.js" type="text/javascript">
+		</script>
+		<form action="create" method="post">
 			<table class="dataentry">
 				<tbody>
 					<tr>
@@ -24,37 +26,6 @@
 						</th>
 						<td>
 							<select id="type" name="type">
-								<option value="memory">
-									In Memory Store
-								</option>
-								<option value="memory-rdfs">
-									In Memory Store RDF Schema
-								</option>
-								<option value="memory-rdfs-dt">
-									In Memory Store RDF Schema and
-									Direct Type
-									Hierarchy
-								</option>
-								<option value="native">
-									Native Java Store
-								</option>
-								<option value="native-rdfs">
-									Native Java Store RDF Schema
-								</option>
-								<option value="native-rdfs-dt">
-									Native Java Store RDF Schema and
-									Direct Type
-									Hierarchy
-								</option>
-								<option value="mysql">
-									MySql RDF Store
-								</option>
-								<option value="pgsql">
-									PostgreSQL RDF Store
-								</option>
-								<option value="remote">
-									Remote RDF Store
-								</option>
 								<option value="federate">Federation Store</option>
 							</select>
 						</td>
@@ -65,7 +36,8 @@
 							<xsl:value-of select="$repository-id.label" />
 						</th>
 						<td>
-							<input type="text" id="id" name="id" size="16" />
+							<input type="text" id="id" name="Local repository ID" size="16"
+								value="fed" />
 						</td>
 						<td></td>
 					</tr>
@@ -74,7 +46,8 @@
 							<xsl:value-of select="$repository-title.label" />
 						</th>
 						<td>
-							<input type="text" id="title" name="title" size="48" />
+							<input type="text" id="title" name="Repository title" size="48"
+								value="Federation" />
 						</td>
 						<td></td>
 					</tr>
@@ -83,7 +56,7 @@
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
-							<input type="submit" name="next" value="{$next.label}" />
+							<input type="submit" value="{$create.label}" />
 						</td>
 					</tr>
 				</tbody>

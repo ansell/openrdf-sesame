@@ -32,10 +32,12 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -46,6 +48,10 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class CreateServlet extends TransformationServlet {
 
+	/**
+	 * POST requests to this servlet come from the various specific create-* form
+	 * submissions.
+	 */
 	@Override
 	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws ServletException
@@ -58,21 +64,34 @@ public class CreateServlet extends TransformationServlet {
 		}
 	}
 
+	/**
+	 * GET requests to this servlet come from the Workbench side bar or from
+	 * create.xsl form submissions.
+	 * 
+	 * @throws RepositoryException
+	 */
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException
+		throws IOException, RepositoryException
 	{
 		resp.setContentType("application/xml");
 		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		boolean federate = false;
 		if (req.isParameterPresent("type")) {
 			final String type = req.getTypeParameter();
+			federate = "federate".equals(type);
 			builder.transform(xslPath, "create-" + type + ".xsl");
 		}
 		else {
 			builder.transform(xslPath, "create.xsl");
 		}
-		builder.start();
+		builder.start(federate ? new String[] { "id", "description", "location" } : new String[] {});
 		builder.link("info");
+		if (federate) {
+			for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
+				builder.result(info.getId(), info.getDescription(), info.getLocation());
+			}
+		}
 		builder.end();
 	}
 
