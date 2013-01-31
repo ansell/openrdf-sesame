@@ -38,6 +38,7 @@ import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.manager.RepositoryInfo;
+import org.openrdf.repository.manager.SystemRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -89,7 +90,10 @@ public class CreateServlet extends TransformationServlet {
 		builder.link("info");
 		if (federate) {
 			for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
-				builder.result(info.getId(), info.getDescription(), info.getLocation());
+				String identity = info.getId();
+				if (!SystemRepository.ID.equals(identity)) {
+					builder.result(info.getId(), info.getDescription(), info.getLocation());
+				}
 			}
 		}
 		builder.end();

@@ -15,7 +15,8 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/create.js" type="text/javascript">
+		<script src="../../scripts/create.js" type="text/javascript"></script>
+		<script src="../../scripts/create-federate.js" type="text/javascript">
 		</script>
 		<form action="create" method="post">
 			<table class="dataentry">
@@ -52,16 +53,56 @@
 						<td></td>
 					</tr>
 					<tr>
+						<th>
+							<xsl:value-of select="$federation-members.label" />
+						</th>
+						<td>
+							<xsl:apply-templates select="*" />
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$federation-type.label" />
+						</th>
+						<td>
+							<input type="radio" name="type" value="http" checked="true" />
+							HTTP Repository
+						</td>
+						<td>
+							<input type="radio" name="type" value="sparql" />
+							SPARQL Endpoint
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$read-only.label" />
+						</th>
+						<td>
+							<input type="checkbox" name="readonly" value="readonly"
+								checked="true" />
+						</td>
+					</tr>
+					<tr>
 						<td></td>
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
-							<input type="submit" value="{$create.label}" />
+							<input id="create" type="submit" value="{$create.label}" />
+							<span class="error" id="create-feedback">Select at least two federation
+								members.</span>
 						</td>
 					</tr>
 				</tbody>
 			</table>
 		</form>
 	</xsl:template>
+
+	<xsl:template match="sparql:binding[@name='id']">
+		<input type="checkbox" class="memberID" name="memberID" value="{sparql:literal}" />
+		<xsl:value-of select="sparql:literal" />
+		<br />
+	</xsl:template>
+	<xsl:template match="sparql:binding[@name='description']" />
+	<xsl:template match="sparql:binding[@name='location']" />
 
 </xsl:stylesheet>
