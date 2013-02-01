@@ -61,7 +61,7 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		// load 1000 triples in two different contexts
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		ValueFactory vf = testCon.getValueFactory();
 		URI context1 = vf.createURI("http://my.context.1");
 		URI context2 = vf.createURI("http://my.context.2");
