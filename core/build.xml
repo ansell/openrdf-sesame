@@ -14,7 +14,7 @@
 		<echo message="- docs:		create user and system documentation only" />
 	</target>
 
-	<target name="package" depends="issuewarnings,mvn,override-onejar-services" description="Create release artifacts"/>
+	<target name="package" depends="issuewarnings,mvn" description="Create release artifacts"/>
 
 	<target name="mvn">
 		<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" failonerror="true">
@@ -81,13 +81,6 @@
 		<antcall target="concat-service-file">
 			<param name="service" value="org.openrdf.sail.config.SailFactory"/>
 		</antcall>
-	</target>
-
-	<target name="override-onejar-services" depends="create-service-files">
-		<xmlproperty file="pom.xml" />
-		<zip destfile="target/openrdf-sesame-${project.parent.version}-onejar.jar" update="true">
-			<fileset dir="target/services"/>
-		</zip>
 	</target>
 
 	<target name="concat-service-file">
