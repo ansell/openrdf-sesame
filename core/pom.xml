@@ -28,24 +28,31 @@
 	 <module>sail</module>
 	 <module>config</module>
 	 <module>util</module>
+	 
+	 <module>distribution</module>
   </modules>
 
   <name>OpenRDF Sesame Core</name>
   <description>Core modules for OpenRDF Sesame</description>
 
   <build>
+	<pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<inherited>false</inherited>
+				<configuration>
+					<finalName>openrdf-sesame-${project.version}</finalName>
+					<descriptors>
+						<descriptor>src/main/assembly/onejar.xml</descriptor>
+						<descriptor>src/main/assembly/sdk.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+		</plugins>
+	</pluginManagement>
 	 <plugins>
-		<plugin>
-		  <artifactId>maven-assembly-plugin</artifactId>
-		  <inherited>false</inherited>
-		  <configuration>
-			 <finalName>openrdf-sesame-${project.version}</finalName>
-			 <descriptors>
-				<descriptor>src/main/assembly/onejar.xml</descriptor>
-				<descriptor>src/main/assembly/sdk.xml</descriptor>
-			 </descriptors>
-		  </configuration>
-		</plugin>
 		<plugin>
 		  <groupId>org.apache.maven.plugins</groupId>
 		  <artifactId>maven-antrun-plugin</artifactId>

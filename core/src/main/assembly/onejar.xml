@@ -9,6 +9,12 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<includeSiteDirectory>false</includeSiteDirectory>
 
+	<containerDescriptorHandlers>
+		<containerDescriptorHandler>
+			<handlerName>metaInf-services</handlerName>
+		</containerDescriptorHandler>
+	</containerDescriptorHandlers>
+
 	<moduleSets>
 		<moduleSet>
 			<includes>
@@ -18,7 +24,7 @@
 				<unpack>true</unpack>
 				<outputDirectory></outputDirectory>
 				<outputFileNameMapping></outputFileNameMapping>
-				<useStrictFiltering>true</useStrictFiltering>
+				<!-- <useStrictFiltering>true</useStrictFiltering> -->
 				<dependencySets>
 					<dependencySet>
 						<unpack>true</unpack>
