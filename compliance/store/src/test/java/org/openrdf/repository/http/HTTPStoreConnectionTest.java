@@ -16,7 +16,6 @@
  */
 package org.openrdf.repository.http;
 
-import org.eclipse.jdt.internal.core.Assert;
 import org.junit.Test;
 
 import org.openrdf.model.URI;
@@ -139,7 +138,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
 
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		update.execute();
 
 		// NOTE this is only correct because HTTPconnection does not implement true transaction isolation.
