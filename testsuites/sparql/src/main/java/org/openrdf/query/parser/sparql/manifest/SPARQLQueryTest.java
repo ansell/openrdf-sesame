@@ -467,8 +467,9 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
-		con.setAutoCommit(false);
+		
 		try {
+			con.begin();
 			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
 			RDFParser rdfParser = Rio.createParser(rdfFormat, dataRep.getValueFactory());
 			rdfParser.setVerifyData(false);
@@ -488,7 +489,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 				in.close();
 			}
 
-			con.setAutoCommit(true);
+			con.commit();
+		}
+		catch(Exception e) {
+			if(con.isActive()) {
+				con.rollback();
+			}
 		}
 		finally {
 			con.close();
