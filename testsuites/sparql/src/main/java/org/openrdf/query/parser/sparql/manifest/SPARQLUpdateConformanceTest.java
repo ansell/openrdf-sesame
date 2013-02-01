@@ -218,6 +218,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		try {
 			String updateString = readUpdateString();
 
+			con.begin();
 			con.setReadContexts((URI)null);
 			
 			Update update = con.prepareUpdate(QueryLanguage.SPARQL, updateString, requestFileURL);
@@ -226,6 +227,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 			}
 			update.execute();
 
+			con.commit();
+			
 			// check default graph
 			logger.info("checking default graph");
 			compareGraphs(Iterations.asList(con.getStatements(null, null, null, true, (Resource)null)),
@@ -237,6 +240,12 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 				compareGraphs(Iterations.asList(con.getStatements(null, null, null, true, contextURI)),
 						Iterations.asList(erCon.getStatements(null, null, null, true, contextURI)));
 			}
+		}
+		catch(Exception e) {
+			if(con.isActive()) {
+				con.rollback();
+			}
+			throw e;
 		}
 		finally {
 			con.close();
