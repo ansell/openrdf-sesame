@@ -9,6 +9,7 @@
 	</parent>
 
 	<artifactId>sesame-runtime</artifactId>
+	<packaging>jar</packaging>
 
 	<name>OpenRDF Sesame: Runtime</name>
 	<description>Runtime dependencies for an OpenRDF application</description>
