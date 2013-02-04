@@ -16,12 +16,111 @@
  */
 package org.openrdf.query;
 
+import java.util.List;
+
 /**
  * The super class of all handlers for processing query results.
+ * <p>
+ * This interface contains methods for optionally processing both boolean and
+ * tuple results sets simultaneously, but there are no guarantees that an
+ * implementation will be able to process these values together. If a method is
+ * not supported then an {@link UnsupportedOperationException} will be thrown to
+ * indicate this failure. This failure may be prevented by checking for whether
+ * the class implements {@link BooleanQueryResultHandler} or
+ * {@link TupleQueryResultHandler}, for boolean and tuple results support
+ * respectively.
+ * <p>
+ * If both boolean and tuple results are supported but they are not able to to
+ * be processed simultaneously, then a checked exception, either
+ * {@link BooleanQueryResultHandlerException} or
+ * {@link TupleQueryResultHandlerException}, will be thrown to indicate this
+ * failure when the relevant methods are called.
  * 
- * @since 2.8.0
+ * @since 2.7.0
  * @author Peter Ansell p_ansell@yahoo.com
  */
 public interface QueryResultHandler {
 
+	/**
+	 * Handles the specified boolean value.
+	 * 
+	 * @param value
+	 *        The boolean value to handle.
+	 * @throws QueryResultHandlerException
+	 *         If there was an error during the handling of this value. This
+	 *         exception may be thrown if the {@link #startQueryResult(List)},
+	 *         {@link #handleSolution(BindingSet)} or {@link #endQueryResult()}
+	 *         methods were called before this method was called, and the handler
+	 *         cannot process both boolean and tuple results simultaneously.
+	 * @throws UnsupportedOperationException
+	 *         If this method is not supported
+	 * @since 2.7.0
+	 */
+	void handleBoolean(boolean value)
+		throws QueryResultHandlerException;
+
+	/**
+	 * Indicates the start of a sequence of Solutions. The supplied bindingNames
+	 * are an indication of the values that are in the Solutions. For example, a
+	 * SeRQL query like <tt>select X, Y from {X} P {Y} </tt> will have binding
+	 * names <tt>X</tt> and <tt>Y</tt>.
+	 * 
+	 * @param bindingNames
+	 *        An ordered set of binding names.
+	 * @throws TupleQueryResultHandlerException
+	 *         If there was an error during the starting of the query result
+	 *         handler. This exception may be thrown if the
+	 *         {@link #handleBoolean(boolean)} method was called before this
+	 *         method and the handler cannot process both boolean and tuple
+	 *         results simultaneously.
+	 * @throws UnsupportedOperationException
+	 *         If this method is not supported
+	 * @throws IllegalStateException
+	 *         If the {@link #handleSolution(BindingSet)} or
+	 *         {@link #endQueryResult()} methods were called before this method
+	 *         and the handler cannot process multiple sets of tuple results
+	 *         simultaneously.
+	 */
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException;
+
+	/**
+	 * Indicates the end of a sequence of solutions.
+	 * 
+	 * @throws TupleQueryResultHandlerException
+	 *         If there was an error during the ending of the query result
+	 *         handler. This exception may be thrown if the
+	 *         {@link #handleBoolean(boolean)} method was called before this
+	 *         method and the handler cannot process both boolean and tuple
+	 *         results simultaneously.
+	 * @throws UnsupportedOperationException
+	 *         If this method is not supported
+	 * @throws IllegalStateException
+	 *         If the {@link #endQueryResult()} was previously called for this
+	 *         handler.
+	 */
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException;
+
+	/**
+	 * Handles a solution.
+	 * 
+	 * @param bindingSet
+	 *        A single set of tuple results, with binding names bound to values.
+	 *        Each of the binding names in the solution must have previously been
+	 *        registered with the {@link #startQueryResult(List)} method.
+	 * @throws TupleQueryResultHandlerException
+	 *         If there was an error during the handling of the query solution.
+	 *         This exception may be thrown if the
+	 *         {@link #handleBoolean(boolean)} method was called before this
+	 *         method and the handler cannot process both boolean and tuple
+	 *         results simultaneously.
+	 * @throws UnsupportedOperationException
+	 *         If this method is not supported
+	 * @throws IllegalStateException
+	 *         If the {@link #endQueryResult()} method was called before this
+	 *         method.
+	 */
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException;
 }

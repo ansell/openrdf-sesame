@@ -37,14 +37,15 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
- * A TupleQueryResultWriter that converts query results to an RDF graph using
- * the Data Access Working Group Test Result Set RDF Vocabulary
+ * A {@link TupleQueryResultHandler} that converts query results to an RDF graph
+ * using the Data Access Working Group Test Result Set RDF Vocabulary
  * (http://www.w3.org/2001/sw/DataAccess/tests/result-set#).
  */
 public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
@@ -85,6 +86,7 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -106,6 +108,7 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -119,6 +122,7 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 		}
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -160,5 +164,12 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 		throws RDFHandlerException
 	{
 		rdfHandler.handleStatement(vf.createStatement(subject, predicate, object));
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

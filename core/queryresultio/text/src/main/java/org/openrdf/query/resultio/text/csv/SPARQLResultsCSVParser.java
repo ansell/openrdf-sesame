@@ -26,7 +26,6 @@ import java.util.List;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
@@ -47,10 +46,12 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase {
 
 	private List<String> bindingNames;
 
+	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.CSV;
 	}
 
+	@Override
 	public void parse(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{

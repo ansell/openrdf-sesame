@@ -27,6 +27,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -36,10 +37,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-json-res/">SPARQL Query Results JSON
  * Format</a>.
  */
-public class SPARQLResultsJSONWriter extends
-		SPARQLJSONWriterBase<TupleQueryResultFormat, TupleQueryResultHandlerException> implements
-		TupleQueryResultWriter
-{
+public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements TupleQueryResultWriter {
 
 	/*-----------*
 	 * Variables *
@@ -253,4 +251,10 @@ public class SPARQLResultsJSONWriter extends
 		writer.write(" }");
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
 }

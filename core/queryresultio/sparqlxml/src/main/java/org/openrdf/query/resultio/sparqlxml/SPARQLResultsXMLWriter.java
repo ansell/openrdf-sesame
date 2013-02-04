@@ -45,6 +45,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -54,10 +55,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLResultsXMLWriter extends
-		SPARQLXMLWriterBase<TupleQueryResultFormat, TupleQueryResultHandlerException> implements
-		TupleQueryResultWriter
-{
+public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements TupleQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *
@@ -87,7 +85,7 @@ public class SPARQLResultsXMLWriter extends
 
 	@Override
 	public void startDocument()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		documentOpen = true;
 		headerComplete = false;
@@ -104,7 +102,7 @@ public class SPARQLResultsXMLWriter extends
 
 	@Override
 	public void handleStylesheet(String url)
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			xmlWriter.writeStylesheet(url);
@@ -116,7 +114,7 @@ public class SPARQLResultsXMLWriter extends
 
 	@Override
 	public void startHeader()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			xmlWriter.startTag(ROOT_TAG);
@@ -130,7 +128,7 @@ public class SPARQLResultsXMLWriter extends
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			// Write link URLs
@@ -146,7 +144,7 @@ public class SPARQLResultsXMLWriter extends
 
 	@Override
 	public void endHeader()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			xmlWriter.endTag(HEAD_TAG);
@@ -166,11 +164,11 @@ public class SPARQLResultsXMLWriter extends
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
-		if (!documentOpen) {
-			startDocument();
-			startHeader();
-		}
 		try {
+			if (!documentOpen) {
+				startDocument();
+				startHeader();
+			}
 			// Write binding names
 			for (String name : bindingNames) {
 				xmlWriter.setAttribute(VAR_NAME_ATT, name);
@@ -180,20 +178,32 @@ public class SPARQLResultsXMLWriter extends
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
 	}
 
 	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
-		if (!headerComplete) {
-			endHeader();
-		}
 		try {
+			if (!headerComplete) {
+				endHeader();
+			}
 			xmlWriter.endTag(RESULT_SET_TAG);
 			endDocument();
 		}
 		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
 	}
@@ -202,10 +212,11 @@ public class SPARQLResultsXMLWriter extends
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
-		if (!headerComplete) {
-			endHeader();
-		}
 		try {
+			if (!headerComplete) {
+				endHeader();
+			}
+
 			xmlWriter.startTag(RESULT_TAG);
 
 			for (Binding binding : bindingSet) {
@@ -220,6 +231,12 @@ public class SPARQLResultsXMLWriter extends
 			xmlWriter.endTag(RESULT_TAG);
 		}
 		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
 	}
@@ -264,4 +281,10 @@ public class SPARQLResultsXMLWriter extends
 		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
 }

@@ -17,18 +17,18 @@
 package org.openrdf.query;
 
 /**
- * An exception that can be thrown by an TupleQueryResultHandler when it
- * encounters an unrecoverable error. If an exception is associated with the
- * error then this exception can be wrapped in a TupleHandlerException and can
- * later be retrieved from it when the TupleHandlerException is caught using the
- * <tt>getCause()</tt>.
+ * An exception that can be thrown by an BooleanQueryResultHandler when it
+ * encounters an unrecoverable error.
+ * 
+ * @author Peter Ansell p_ansell@yahoo.com
+ * @since 2.7.0
  */
 public class BooleanQueryResultHandlerException extends QueryResultHandlerException {
 
 	private static final long serialVersionUID = 8530574857852836665L;
 
 	/**
-	 * Creates a new TupleQueryResultHandlerException.
+	 * Creates a new BooleanQueryResultHandlerException.
 	 * 
 	 * @param msg
 	 *        An error message.
@@ -38,7 +38,8 @@ public class BooleanQueryResultHandlerException extends QueryResultHandlerExcept
 	}
 
 	/**
-	 * Creates a new TupleQueryResultHandlerException wrapping another exception.
+	 * Creates a new BooleanQueryResultHandlerException wrapping another
+	 * exception.
 	 * 
 	 * @param cause
 	 *        The cause of the exception.
@@ -48,7 +49,8 @@ public class BooleanQueryResultHandlerException extends QueryResultHandlerExcept
 	}
 
 	/**
-	 * Creates a new TupleQueryResultHandlerException wrapping another exception.
+	 * Creates a new BooleanQueryResultHandlerException wrapping another
+	 * exception.
 	 * 
 	 * @param msg
 	 *        An error message.

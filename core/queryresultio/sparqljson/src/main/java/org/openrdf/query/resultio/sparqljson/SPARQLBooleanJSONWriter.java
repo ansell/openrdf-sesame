@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQueryResultHandlerException;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -18,10 +21,7 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-json-res/">SPARQL Query Results JSON
  * Format</a>.
  */
-public class SPARQLBooleanJSONWriter extends
-		SPARQLJSONWriterBase<BooleanQueryResultFormat, BooleanQueryResultHandlerException> implements
-		BooleanQueryResultWriter
-{
+public class SPARQLBooleanJSONWriter extends SPARQLJSONWriterBase implements BooleanQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *
@@ -47,7 +47,7 @@ public class SPARQLBooleanJSONWriter extends
 
 	@Override
 	public void startDocument()
-		throws BooleanQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		documentOpen = true;
 		headerComplete = false;
@@ -61,14 +61,14 @@ public class SPARQLBooleanJSONWriter extends
 
 	@Override
 	public void handleStylesheet(String stylesheetUrl)
-		throws BooleanQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignore, as JSON does not support stylesheets
 	}
 
 	@Override
 	public void startHeader()
-		throws BooleanQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			// Write header
@@ -82,7 +82,7 @@ public class SPARQLBooleanJSONWriter extends
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws BooleanQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			writeKeyValue("link", linkUrls);
@@ -94,7 +94,7 @@ public class SPARQLBooleanJSONWriter extends
 
 	@Override
 	public void endHeader()
-		throws BooleanQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		try {
 			closeBraces();
@@ -114,7 +114,7 @@ public class SPARQLBooleanJSONWriter extends
 		try {
 			handleBoolean(value);
 		}
-		catch (BooleanQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			if (e.getCause() != null && e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}
@@ -126,7 +126,7 @@ public class SPARQLBooleanJSONWriter extends
 
 	@Override
 	public void handleBoolean(boolean value)
-		throws BooleanQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		if (!documentOpen) {
 			startDocument();
@@ -150,6 +150,27 @@ public class SPARQLBooleanJSONWriter extends
 		catch (IOException e) {
 			throw new BooleanQueryResultHandlerException(e);
 		}
+	}
+
+	@Override
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
 	}
 
 }

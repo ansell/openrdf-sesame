@@ -20,30 +20,11 @@ import java.util.List;
 
 /**
  * An interface defining methods related to handling sequences of Solutions.
+ * <p>
+ * Instances of this interface are capable of handling tuple results using the
+ * {@link #startQueryResult(List)}, {@link #handleSolution(BindingSet)} and
+ * {@link #endQueryResult()} methods.
  */
 public interface TupleQueryResultHandler extends QueryResultHandler {
 
-	/**
-	 * Indicates the start of a sequence of Solutions. The supplied bindingNames
-	 * are an indication of the values that are in the Solutions. For example, a
-	 * SeRQL query like <tt>select X, Y from {X} P {Y} </tt> will have binding
-	 * names <tt>X</tt> and <tt>Y</tt>.
-	 * 
-	 * @param bindingNames
-	 *        An ordered set of binding names.
-	 */
-	public void startQueryResult(List<String> bindingNames)
-		throws TupleQueryResultHandlerException;
-
-	/**
-	 * Indicates the end of a sequence of solutions.
-	 */
-	public void endQueryResult()
-		throws TupleQueryResultHandlerException;
-
-	/**
-	 * Handles a solution.
-	 */
-	public void handleSolution(BindingSet bindingSet)
-		throws TupleQueryResultHandlerException;
 }

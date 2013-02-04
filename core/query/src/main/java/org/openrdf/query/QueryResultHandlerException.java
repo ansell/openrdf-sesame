@@ -23,32 +23,39 @@ import org.openrdf.OpenRDFException;
  * implementations.
  * 
  * @author Peter Ansell p_ansell@yahoo.com
- * @since 2.8.0
+ * @since 2.7.0
  */
-public abstract class QueryResultHandlerException extends OpenRDFException {
+public class QueryResultHandlerException extends OpenRDFException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5096811224670124398L;
 
 	/**
+	 * Creates a new QueryResultHandlerException.
+	 * 
 	 * @param msg
+	 *        An error message.
 	 */
 	public QueryResultHandlerException(String msg) {
 		super(msg);
 	}
 
 	/**
-	 * @param t
+	 * Creates a new QueryResultHandlerException wrapping another exception.
+	 * 
+	 * @param cause
+	 *        The cause of the exception.
 	 */
 	public QueryResultHandlerException(Throwable t) {
 		super(t);
 	}
 
 	/**
+	 * Creates a new QueryResultHandlerException wrapping another exception.
+	 * 
 	 * @param msg
-	 * @param t
+	 *        An error message.
+	 * @param cause
+	 *        The cause of the exception.
 	 */
 	public QueryResultHandlerException(String msg, Throwable t) {
 		super(msg, t);

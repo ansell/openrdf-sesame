@@ -31,7 +31,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultImpl;
@@ -43,9 +43,7 @@ import org.openrdf.repository.RepositoryException;
  * @author James Leigh
  * @author Jeen Broekstra
  */
-public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnable,
-		TupleQueryResultHandler
-{
+public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnable, TupleQueryResultHandler {
 
 	private volatile boolean closed;
 
@@ -57,7 +55,10 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 
 	private List<String> bindingNames;
 
-	/** countdown that indicates when binding names have been processed in the query result */
+	/**
+	 * countdown that indicates when binding names have been processed in the
+	 * query result
+	 */
 	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
 
 	private QueryLanguage queryLanguage;
@@ -93,6 +94,7 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 		this.bindings = bindings;
 	}
 
+	@Override
 	public List<String> getBindingNames() {
 		try {
 			bindingNamesReady.await();
@@ -107,11 +109,13 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 		}
 	}
 
+	@Override
 	public void run() {
 		parserThread = Thread.currentThread();
 		try {
 			// TODO set max query time?
-			httpClient.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, 0, this, bindings);
+			httpClient.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, 0, this,
+					bindings);
 		}
 		catch (TupleQueryResultHandlerException e) {
 			// parsing cancelled or interrupted
@@ -138,6 +142,7 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 		}
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -145,6 +150,7 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 		bindingNamesReady.countDown();
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -158,6 +164,7 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -175,4 +182,10 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 		super.handleClose();
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
 }

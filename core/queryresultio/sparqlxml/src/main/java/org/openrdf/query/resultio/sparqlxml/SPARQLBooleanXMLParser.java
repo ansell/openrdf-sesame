@@ -57,10 +57,12 @@ public class SPARQLBooleanXMLParser implements BooleanQueryResultParser {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.SPARQL;
 	}
 
+	@Override
 	public boolean parse(InputStream in)
 		throws IOException, QueryResultParseException
 	{

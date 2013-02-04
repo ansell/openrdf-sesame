@@ -43,6 +43,7 @@ import info.aduna.xml.XMLReaderFactory;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
@@ -52,8 +53,8 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
 /**
  * Parser for reading tuple query results formatted as SPARQL Results Documents.
  * See <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results
- * XML Format</a> for the definition of this format. The parser assumes that
- * the XML is wellformed.
+ * XML Format</a> for the definition of this format. The parser assumes that the
+ * XML is wellformed.
  */
 public class SPARQLResultsXMLParser extends TupleQueryResultParserBase {
 
@@ -81,10 +82,12 @@ public class SPARQLResultsXMLParser extends TupleQueryResultParserBase {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.SPARQL;
 	}
 
+	@Override
 	public void parse(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{

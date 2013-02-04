@@ -25,72 +25,81 @@ import org.openrdf.query.QueryResultHandlerException;
  * The base interface for writers of query results sets and boolean results.
  * 
  * @author Peter Ansell p_ansell@yahoo.com
- * @since 2.8.0
+ * @since 2.7.0
  */
-public interface QueryResultWriter<T extends QueryResultFormat, E extends QueryResultHandlerException> extends QueryResultHandler {
+public interface QueryResultWriter extends QueryResultHandler {
 
 	/**
 	 * Gets the query result format that this writer uses.
 	 * 
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
-	T getQueryResultFormat();
+	QueryResultFormat getQueryResultFormat();
 
 	/**
 	 * Indicates the start of the document.
 	 * 
-	 * @throws E
-	 * @since 2.8.0
+	 * @throws QueryResultHandlerException
+	 *         If there was an error starting the writing of the results.
+	 * @since 2.7.0
 	 */
 	void startDocument()
-		throws E;
+		throws QueryResultHandlerException;
 
 	/**
 	 * Handles a stylesheet URL. If this is called, it must be called after
-	 * {@link #startDocument} and before {@link #startHeader}. <br/>
+	 * {@link #startDocument} and before {@link #startHeader}.
+	 * <p>
 	 * NOTE: If the format does not support stylesheets, it must silently ignore
 	 * calls to this method.
 	 * 
 	 * @param stylesheetUrl
 	 *        The URL of the stylesheet to be used to style the results.
-	 * @throws E
-	 * @since 2.8.0
+	 * @throws QueryResultHandlerException
+	 *         If there was an error handling the stylesheet. This error is not
+	 *         thrown in cases where stylesheets are not supported.
+	 * @since 2.7.0
 	 */
 	void handleStylesheet(String stylesheetUrl)
-		throws E;
+		throws QueryResultHandlerException;
 
 	/**
 	 * Indicates the start of the header.
 	 * 
 	 * @see http://www.w3.org/TR/2012/PER-rdf-sparql-XMLres-20121108/#head
-	 * @throws E
-	 * @since 2.8.0
+	 * @throws QueryResultHandlerException
+	 *         If there was an error writing the start of the header.
+	 * @since 2.7.0
 	 */
 	void startHeader()
-		throws E;
+		throws QueryResultHandlerException;
 
 	/**
-	 * Handles the insertion of links elements into the header. <br/>
+	 * Handles the insertion of links elements into the header.
+	 * <p>
 	 * NOTE: If the format does not support links, it must silently ignore a call
 	 * to this method.
 	 * 
 	 * @see http://www.w3.org/TR/sparql11-results-json/#select-link
 	 * @param linkUrls
 	 *        The URLs of the links to insert into the header.
-	 * @throws E
-	 * @since 2.8.0
+	 * @throws QueryResultHandlerException
+	 *         If there was an error handling the set of link URLs. This error is
+	 *         not thrown in cases where links are not supported.
+	 * @since 2.7.0
 	 */
 	void handleLinks(List<String> linkUrls)
-		throws E;
+		throws QueryResultHandlerException;
 
 	/**
 	 * Indicates the end of the header. This must be called after
 	 * {@link #startHeader} and before any calls to {@link #handleSolution}.
 	 * 
-	 * @throws E
-	 * @since 2.8.0
+	 * @throws QueryResultHandlerException
+	 *         If there was an error writing the end of the header.
+	 * @since 2.7.0
 	 */
 	void endHeader()
-		throws E;
+		throws QueryResultHandlerException;
 
 }

@@ -26,7 +26,7 @@ import info.aduna.lang.FileFormat;
  * Currently this includes tuple and boolean queries.
  * 
  * @author Peter Ansell p_ansell@yahoo.com
- * @since 2.8.0
+ * @since 2.7.0
  */
 public class QueryResultFormat extends FileFormat {
 

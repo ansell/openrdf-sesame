@@ -33,9 +33,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell p_ansell@yahoo.com
  */
-abstract class SPARQLXMLWriterBase<T extends QueryResultFormat, E extends QueryResultHandlerException>
-		implements QueryResultWriter<T, E>
-{
+abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *

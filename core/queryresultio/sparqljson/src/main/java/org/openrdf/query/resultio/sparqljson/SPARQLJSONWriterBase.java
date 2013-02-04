@@ -37,7 +37,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell p_ansell@yahoo.com
  */
-abstract class SPARQLJSONWriterBase<T extends QueryResultFormat, E extends QueryResultHandlerException> implements QueryResultWriter<T, E> {
+abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *

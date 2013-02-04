@@ -17,15 +17,12 @@
 package org.openrdf.query.resultio;
 
 import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
 
 /**
  * The interface of objects that writer query results in a specific query result
  * format.
  */
-public interface TupleQueryResultWriter extends TupleQueryResultHandler,
-		QueryResultWriter<TupleQueryResultFormat, TupleQueryResultHandlerException>
-{
+public interface TupleQueryResultWriter extends TupleQueryResultHandler, QueryResultWriter {
 
 	/**
 	 * Gets the query result format that this writer uses.

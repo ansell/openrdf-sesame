@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.BooleanQueryResultHandlerException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
@@ -68,7 +69,7 @@ public class BooleanQueryResultView extends QueryResultView {
 			boolean value = (Boolean)model.get(QUERY_RESULT_KEY);
 			qrWriter.handleBoolean(value);
 		}
-		catch (BooleanQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			if (e.getCause() != null && e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}

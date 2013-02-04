@@ -47,6 +47,7 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		return (ParsedTupleQuery)super.getParsedQuery();
 	}
 
+	@Override
 	public TupleQueryResult evaluate()
 		throws QueryEvaluationException
 	{
@@ -67,6 +68,7 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		}
 	}
 
+	@Override
 	public void evaluate(TupleQueryResultHandler handler)
 		throws QueryEvaluationException, TupleQueryResultHandlerException
 	{

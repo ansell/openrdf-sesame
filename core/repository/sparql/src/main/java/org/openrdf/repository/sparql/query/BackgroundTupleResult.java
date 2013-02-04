@@ -25,7 +25,9 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.httpclient.HttpMethod;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -56,13 +58,13 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
 
-	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in,
-			HttpMethod connection) {
+	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
 		this(new QueueCursor<BindingSet>(10), parser, in, connection);
 	}
 
-	public BackgroundTupleResult(QueueCursor<BindingSet> queue,
-			TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
+	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
+			HttpMethod connection)
+	{
 		super(Collections.EMPTY_LIST, queue);
 		this.queue = queue;
 		this.parser = parser;
@@ -71,7 +73,9 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	}
 
 	@Override
-	protected synchronized void handleClose() throws QueryEvaluationException {
+	protected synchronized void handleClose()
+		throws QueryEvaluationException
+	{
 		closed = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
@@ -79,18 +83,22 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 		super.handleClose();
 	}
 
+	@Override
 	public List<String> getBindingNames() {
 		try {
 			bindingNamesReady.await();
 			queue.checkException();
 			return bindingNames;
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new UndeclaredThrowableException(e);
-		} catch (QueryEvaluationException e) {
+		}
+		catch (QueryEvaluationException e) {
 			throw new UndeclaredThrowableException(e);
 		}
 	}
 
+	@Override
 	public void run() {
 		boolean completed = false;
 		parserThread = Thread.currentThread();
@@ -100,13 +108,17 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 			// release connection back into pool if all results have been read
 			method.releaseConnection();
 			completed = true;
-		} catch (TupleQueryResultHandlerException e) {
+		}
+		catch (TupleQueryResultHandlerException e) {
 			// parsing cancelled or interrupted
-		} catch (QueryResultParseException e) {
+		}
+		catch (QueryResultParseException e) {
 			queue.toss(e);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			queue.toss(e);
-		} finally {
+		}
+		finally {
 			parserThread = null;
 			queue.done();
 			bindingNamesReady.countDown();
@@ -117,25 +129,39 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 		}
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
-			throws TupleQueryResultHandlerException {
+		throws TupleQueryResultHandlerException
+	{
 		this.bindingNames = bindingNames;
 		bindingNamesReady.countDown();
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
-			throws TupleQueryResultHandlerException {
+		throws TupleQueryResultHandlerException
+	{
 		if (closed)
 			throw new TupleQueryResultHandlerException("Result closed");
 		try {
 			queue.put(bindingSet);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
 	}
 
-	public void endQueryResult() throws TupleQueryResultHandlerException {
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
 		// no-op
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
 }

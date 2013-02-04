@@ -67,10 +67,12 @@ public abstract class TupleQueryResultParserBase implements TupleQueryResultPars
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
 	}
 
+	@Override
 	public void setTupleQueryResultHandler(TupleQueryResultHandler handler) {
 		this.handler = handler;
 	}

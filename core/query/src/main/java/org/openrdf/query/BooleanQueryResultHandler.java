@@ -17,19 +17,12 @@
 package org.openrdf.query;
 
 /**
- * An interface defining methods related to handling boolean results.
+ * An interface that indicates that this QueryResultHandler is capable of
+ * handling boolean results using the {@link #handleBoolean(boolean)} method.
  * 
- * @since 2.8.0
+ * @since 2.7.0
  * @author Peter Ansell p_ansell@yahoo.com
  */
 public interface BooleanQueryResultHandler extends QueryResultHandler {
-
-	/**
-	 * Writes the specified boolean value.
-	 * 
-	 * @since 2.8.0
-	 */
-	void handleBoolean(boolean value)
-		throws BooleanQueryResultHandlerException;
 
 }

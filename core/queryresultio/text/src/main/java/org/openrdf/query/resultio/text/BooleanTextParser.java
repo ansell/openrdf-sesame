@@ -48,10 +48,12 @@ public class BooleanTextParser implements BooleanQueryResultParser {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.TEXT;
 	}
 
+	@Override
 	public synchronized boolean parse(InputStream in)
 		throws IOException, QueryResultParseException
 	{

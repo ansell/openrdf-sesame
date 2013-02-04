@@ -50,6 +50,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -332,28 +333,28 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 
 	@Override
 	public void handleStylesheet(String stylesheetUrl)
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
 
 	@Override
 	public void startHeader()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
 
 	@Override
 	public void endHeader()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by Binary Query Results format
 	}
@@ -363,5 +364,12 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	{
 		out.flush();
 		documentStarted = false;
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

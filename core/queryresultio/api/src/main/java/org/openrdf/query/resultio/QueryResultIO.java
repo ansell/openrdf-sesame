@@ -24,6 +24,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -559,12 +560,15 @@ public class QueryResultIO {
 			writer.startHeader();
 			QueryResults.report(tqr, writer);
 		}
-		catch (TupleQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			if (e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}
+			else if (e instanceof TupleQueryResultHandlerException) {
+				throw (TupleQueryResultHandlerException)e;
+			}
 			else {
-				throw e;
+				throw new TupleQueryResultHandlerException(e);
 			}
 		}
 	}
@@ -584,9 +588,49 @@ public class QueryResultIO {
 	 *         the stream.
 	 * @throws UnsupportedQueryResultFormatException
 	 *         If an unsupported query result file format was specified.
+	 * @deprecated Use
+	 *             {@link #writeBoolean(boolean, BooleanQueryResultFormat, OutputStream)}
+	 *             instead.
 	 */
+	@Deprecated
 	public static void write(boolean value, BooleanQueryResultFormat format, OutputStream out)
-		throws BooleanQueryResultHandlerException, UnsupportedQueryResultFormatException
+		throws IOException, UnsupportedQueryResultFormatException
+	{
+		BooleanQueryResultWriter writer = createWriter(format, out);
+		try {
+			writer.startDocument();
+			writer.startHeader();
+		}
+		catch (QueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
+		writer.write(value);
+	}
+
+	/**
+	 * Writes a boolean query result document in a specific boolean query result
+	 * format to an output stream.
+	 * 
+	 * @param value
+	 *        The value to write.
+	 * @param format
+	 *        The file format of the document to write.
+	 * @param out
+	 *        An OutputStream to write the document to.
+	 * @throws IOException
+	 *         If an I/O error occured while writing the query result document to
+	 *         the stream.
+	 * @throws UnsupportedQueryResultFormatException
+	 *         If an unsupported query result file format was specified.
+	 * @since 2.7.0
+	 */
+	public static void writeBoolean(boolean value, BooleanQueryResultFormat format, OutputStream out)
+		throws QueryResultHandlerException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultWriter writer = createWriter(format, out);
 		writer.startDocument();

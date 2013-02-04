@@ -31,7 +31,10 @@ import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQueryResultHandlerException;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -40,10 +43,7 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLBooleanXMLWriter extends
-		SPARQLXMLWriterBase<BooleanQueryResultFormat, BooleanQueryResultHandlerException> implements
-		BooleanQueryResultWriter
-{
+public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements BooleanQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *
@@ -188,4 +188,26 @@ public class SPARQLBooleanXMLWriter extends
 			throw new BooleanQueryResultHandlerException(e);
 		}
 	}
+
+	@Override
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
 }

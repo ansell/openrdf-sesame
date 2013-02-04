@@ -32,6 +32,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -208,37 +209,43 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 
 	@Override
 	public void startDocument()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by SPARQLResultsCSVWriter
 	}
 
 	@Override
 	public void handleStylesheet(String stylesheetUrl)
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by SPARQLResultsCSVWriter
 	}
 
 	@Override
 	public void startHeader()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by SPARQLResultsCSVWriter
 	}
 
 	@Override
 	public void handleLinks(List<String> linkUrls)
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by SPARQLResultsCSVWriter
 	}
 
 	@Override
 	public void endHeader()
-		throws TupleQueryResultHandlerException
+		throws QueryResultHandlerException
 	{
 		// Ignored by SPARQLResultsCSVWriter
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
 }
