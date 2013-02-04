@@ -192,7 +192,7 @@ public class QueryResultIO {
 	 * @return An RDFFormat object if a match was found, or <tt>null</tt>
 	 *         otherwise.
 	 * @see #getBooleanParserFormatForMIMEType(String, BooleanQueryResultFormat)
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanParserFormatForMIMEType(String mimeType) {
 		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType, null);
@@ -212,7 +212,7 @@ public class QueryResultIO {
 	 *        The format that will be returned if no match was found.
 	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
 	 *         match was found.
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanParserFormatForMIMEType(String mimeType,
 			BooleanQueryResultFormat fallback)
@@ -229,7 +229,7 @@ public class QueryResultIO {
 	 * @return An BooleanQueryResultFormat object if a match was found, or
 	 *         <tt>null</tt> otherwise.
 	 * @see #getBooleanParserFormatForFileName(String, BooleanQueryResultFormat)
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanParserFormatForFileName(String fileName) {
 		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(fileName);
@@ -249,7 +249,7 @@ public class QueryResultIO {
 	 *        The format that will be returned if no match was found.
 	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
 	 *         match was found.
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanParserFormatForFileName(String fileName,
 			BooleanQueryResultFormat fallback)
@@ -266,7 +266,7 @@ public class QueryResultIO {
 	 * @return An BooleanQueryResultFormat object if a match was found, or
 	 *         <tt>null</tt> otherwise.
 	 * @see #getBooleanWriterFormatForMIMEType(String, BooleanQueryResultFormat)
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanWriterFormatForMIMEType(String mimeType) {
 		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForMIMEType(mimeType);
@@ -286,7 +286,7 @@ public class QueryResultIO {
 	 *        The format that will be returned if no match was found.
 	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
 	 *         match was found.
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanWriterFormatForMIMEType(String mimeType,
 			BooleanQueryResultFormat fallback)
@@ -303,7 +303,7 @@ public class QueryResultIO {
 	 * @return An BooleanQueryResultFormat object if a match was found, or
 	 *         <tt>null</tt> otherwise.
 	 * @see #getBooleanWriterFormatForFileName(String, BooleanQueryResultFormat)
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanWriterFormatForFileName(String fileName) {
 		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForFileName(fileName);
@@ -323,7 +323,7 @@ public class QueryResultIO {
 	 *        The format that will be returned if no match was found.
 	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
 	 *         match was found.
-	 * @since 2.8.0
+	 * @since 2.7.0
 	 */
 	public static BooleanQueryResultFormat getBooleanWriterFormatForFileName(String fileName,
 			BooleanQueryResultFormat fallback)
