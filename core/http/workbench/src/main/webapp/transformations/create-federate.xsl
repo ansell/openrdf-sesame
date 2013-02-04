@@ -75,6 +75,14 @@
 					</tr>
 					<tr>
 						<th>
+							<xsl:value-of select="$distinct.label" />
+						</th>
+						<td>
+							<input type="checkbox" name="distinct" value="distinct" />
+						</td>
+					</tr>
+					<tr>
+						<th>
 							<xsl:value-of select="$read-only.label" />
 						</th>
 						<td>
@@ -89,7 +97,8 @@
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
 							<input id="create" type="submit" value="{$create.label}" />
 							<span class="error" id="create-feedback">Select at least two federation
-								members.</span>
+								members.
+							</span>
 						</td>
 					</tr>
 				</tbody>

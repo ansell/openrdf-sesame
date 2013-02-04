@@ -103,9 +103,15 @@ public class CreateServlet extends TransformationServlet {
 		throws IOException, OpenRDFException
 	{
 		final String type = req.getTypeParameter();
-		final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
-		final RepositoryConfig repConfig = updateRepositoryConfig(configString);
-		return repConfig.getID();
+		String newID = "";
+		if ("federate".equals(type)) {
+		}
+		else {
+			final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
+			final RepositoryConfig repConfig = updateRepositoryConfig(configString);
+			newID = repConfig.getID();
+		}
+		return newID;
 	}
 
 	private RepositoryConfig updateRepositoryConfig(final String configString)

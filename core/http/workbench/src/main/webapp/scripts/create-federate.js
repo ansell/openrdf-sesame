@@ -1,3 +1,4 @@
+// Prerequisite: template.js
 // Prerequisite: jquery-1.9.0.min.js
 
 function respondToFormState() {

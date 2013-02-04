@@ -170,6 +170,7 @@
 		Remote repository ID
 	</variable>
 	<variable name="federation-members.label">Federation members</variable>
+	<variable name="distinct.label">Distinct</variable>
 	<variable name="read-only.label">Read-only</variable>
 	<variable name="federation-type.label">Member type</variable>
 	<variable name="jdbc-driver.label">JDBC Driver</variable>
