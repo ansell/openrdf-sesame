@@ -54,7 +54,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -229,7 +229,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testTransactionIsolation()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
@@ -377,7 +377,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testAutoCommit()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 
 		assertTrue("Uncommitted update should be visible to own connection",
@@ -387,14 +387,12 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertTrue("Repository should contain statement after commit",
 				testCon.hasStatement(alice, name, nameAlice, false));
-
-		testCon.setAutoCommit(true);
 	}
 
 	public void testRollback()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 
 		assertTrue("Uncommitted updates should be visible to own connection",
@@ -404,8 +402,6 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertFalse("Repository should not contain statement after rollback",
 				testCon.hasStatement(alice, name, nameAlice, false));
-
-		testCon.setAutoCommit(true);
 	}
 
 	public void testSimpleTupleQuery()
@@ -888,7 +884,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testGetStatementsInSingleContext()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		testCon.add(bob, mbox, mboxBob, context1);
 		testCon.add(context1, publisher, nameBob);
@@ -896,7 +892,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.add(alice, name, nameAlice, context2);
 		testCon.add(alice, mbox, mboxAlice, context2);
 		testCon.add(context2, publisher, nameAlice);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue("Repository should contain statement", testCon.hasStatement(bob, name, nameBob, false));
 
@@ -955,11 +951,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		testCon.clear();
 
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice, context2);
 		testCon.add(alice, mbox, mboxAlice, context2);
 		testCon.add(context2, publisher, nameAlice);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		// get statements with either no context or context2
 		CloseableIteration<? extends Statement, RepositoryException> iter = testCon.getStatements(null, null,
@@ -1018,11 +1014,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 
 		// add statements to context1
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		testCon.add(bob, mbox, mboxBob, context1);
 		testCon.add(context1, publisher, nameBob);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		iter = testCon.getStatements(null, null, null, false, context1);
 		try {
@@ -1070,11 +1066,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testDuplicateFilter()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		testCon.add(bob, name, nameBob, context1);
 		testCon.add(bob, name, nameBob, context2);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		RepositoryResult<Statement> result = testCon.getStatements(bob, name, null, true);
 		result.enableDuplicateFilter();
@@ -1090,10 +1086,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testRemoveStatements()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		testCon.add(alice, name, nameAlice);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
@@ -1111,10 +1107,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testRemoveStatementCollection()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 		testCon.add(bob, name, nameBob);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
@@ -1131,10 +1127,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testRemoveStatementIteration()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 		testCon.add(bob, name, nameBob);
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertTrue(testCon.hasStatement(bob, name, nameBob, false));
 		assertTrue(testCon.hasStatement(alice, name, nameAlice, false));
@@ -1364,7 +1360,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		Graph graph;
 		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
 		try {
-			graph = new GraphImpl(vf, Iterations.asList(statements));
+			graph = new LinkedHashModel(Iterations.asList(statements));
 		}
 		finally {
 			statements.close();
@@ -1393,7 +1389,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertTrue(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertFalse(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
@@ -1407,7 +1403,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertTrue(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertFalse(testCon.isEmpty());
 		assertTrue(testCon2.isEmpty());
@@ -1431,7 +1427,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertEquals(0, testCon.size());
 		assertEquals(0, testCon2.size());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertEquals(1, testCon.size());
 		assertEquals(0, testCon2.size());
@@ -1448,7 +1444,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	{
 		assertEquals(0, testCon.size());
 		assertEquals(0, testCon2.size());
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(vf.createBNode(), vf.createURI("urn:pred"), vf.createBNode());
 		assertEquals(1, testCon.size());
 		assertEquals(0, testCon2.size());
@@ -1468,7 +1464,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		testCon.add(bob, RDF.TYPE, FOAF_PERSON);
 
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(stmt);
 		testCon.remove(stmt);
 		testCon.commit();
@@ -1505,18 +1501,20 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(0, Iterations.asList(testCon.getContextIDs()).size());
 
 		// load data
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		assertEquals(Arrays.asList(context1), Iterations.asList(testCon.getContextIDs()));
 
 		testCon.remove(bob, name, nameBob, context1);
 		assertEquals(0, Iterations.asList(testCon.getContextIDs()).size());
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		assertEquals(0, Iterations.asList(testCon.getContextIDs()).size());
 
+		testCon.begin();
 		testCon.add(bob, name, nameBob, context2);
 		assertEquals(Arrays.asList(context2), Iterations.asList(testCon.getContextIDs()));
+		testCon.commit();
 	}
 
 	public void testXmlCalendarZ()
@@ -1623,11 +1621,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	public void testOrderByQueriesAreInterruptable()
 		throws Exception
 	{
-		testCon.setAutoCommit(false);
+		testCon.begin();
 		for (int index = 0; index < 512; index++) {
 			testCon.add(RDFS.CLASS, RDFS.COMMENT, testCon.getValueFactory().createBNode());
 		}
-		testCon.setAutoCommit(true);
+		testCon.commit();
 
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL,
 				"SELECT * WHERE { ?s ?p ?o . ?s1 ?p1 ?o1 . ?s2 ?p2 ?o2 . ?s3 ?p3 ?o3 } ORDER BY ?s1 ?p1 ?o1 LIMIT 1000");
@@ -1654,7 +1652,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		URI graph = vf.createURI("urn:test:default");
 		testCon.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
 		assertEquals(0, size(graph));
-		testCon.add(vf.createURI("urn:test:s2"), vf.createURI("urn:test:p2"), vf.createURI("urn:test:o2"), graph);
+		testCon.add(vf.createURI("urn:test:s2"), vf.createURI("urn:test:p2"), vf.createURI("urn:test:o2"),
+				graph);
 		assertEquals(1, size(graph));
 	}
 
@@ -1662,11 +1661,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		throws Exception
 	{
 		testCon.add(vf.createURI("urn:test:s1"), vf.createURI("urn:test:p1"), vf.createURI("urn:test:o1"));
-		TupleQueryResult rs = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { <> ?p ?o }", "urn:test:s1").evaluate();
+		TupleQueryResult rs = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { <> ?p ?o }",
+				"urn:test:s1").evaluate();
 		try {
 			assertTrue(rs.hasNext());
-		}finally {
-			 rs.close();
+		}
+		finally {
+			rs.close();
 		}
 	}
 
@@ -1707,8 +1708,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(2, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(2, Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size());
 		assertEquals(2, size(defaultGraph));
-		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"), (Resource)null);
-		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"), vf.createURI("urn:test:other"));
+		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
+				(Resource)null);
+		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
+				vf.createURI("urn:test:other"));
 		assertEquals(3, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(4, Iterations.asList(testCon.getStatements(null, null, null, true)).size());
 		assertEquals(3, size(defaultGraph));
@@ -1731,8 +1734,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(2, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(2, Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size());
 		assertEquals(2, size(defaultGraph));
-		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"), (Resource)null);
-		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"), vf.createURI("urn:test:other"));
+		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
+				(Resource)null);
+		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
+				vf.createURI("urn:test:other"));
 		assertEquals(4, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(3, Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size());
 		assertEquals(4, Iterations.asList(testCon.getStatements(null, null, null, true)).size());
@@ -1758,8 +1763,10 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(2, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(2, Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size());
 		assertEquals(2, size(defaultGraph));
-		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"), (Resource)null);
-		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"), vf.createURI("urn:test:other"));
+		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
+				(Resource)null);
+		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
+				vf.createURI("urn:test:other"));
 		assertEquals(3, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(4, Iterations.asList(testCon.getStatements(null, null, null, true)).size());
 		assertEquals(3, size(defaultGraph));
@@ -1781,12 +1788,13 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		TupleQueryResult result = qry.evaluate();
 		try {
 			int count = 0;
-			while(result.hasNext()) {
+			while (result.hasNext()) {
 				result.next();
 				count++;
 			}
 			return count;
-		} finally {
+		}
+		finally {
 			result.close();
 		}
 	}

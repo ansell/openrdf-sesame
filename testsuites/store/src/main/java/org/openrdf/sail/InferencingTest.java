@@ -117,7 +117,7 @@ public class InferencingTest extends TestCase {
 		repository.initialize();
 
 		RepositoryConnection con = repository.getConnection();
-		con.setAutoCommit(false);
+		con.begin();
 
 		// clear the input store
 		con.clear();
@@ -126,11 +126,17 @@ public class InferencingTest extends TestCase {
 		// Upload input data
 		InputStream stream = getClass().getResourceAsStream(inputData);
 		try {
+			con.begin();
 			con.add(stream, inputData, RDFFormat.NTRIPLES);
 			con.commit();
 
 			entailedStatements = Iterations.addAll(con.getStatements(null, null, null, true),
 					new HashSet<Statement>());
+		}
+		catch (Exception e) {
+			if (con.isActive()) {
+				con.rollback();
+			}
 		}
 		finally {
 			stream.close();
@@ -141,15 +147,20 @@ public class InferencingTest extends TestCase {
 		Repository outputRepository = new SailRepository(new MemoryStore());
 		outputRepository.initialize();
 		con = outputRepository.getConnection();
-		con.setAutoCommit(false);
 
 		stream = getClass().getResourceAsStream(outputData);
 		try {
+			con.begin();
 			con.add(stream, outputData, RDFFormat.NTRIPLES);
 			con.commit();
 
 			expectedStatements = Iterations.addAll(con.getStatements(null, null, null, false),
 					new HashSet<Statement>());
+		}
+		catch (Exception e) {
+			if (con.isActive()) {
+				con.rollback();
+			}
 		}
 		finally {
 			stream.close();

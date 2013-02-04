@@ -60,24 +60,24 @@ public class ManifestTest {
 	{
 		final String manifestFile;
 		final File tmpDir;
-		
+
 		if (REMOTE) {
 			manifestFile = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/manifest-evaluation.ttl";
 			tmpDir = null;
 		}
 		else {
 			URL url = ManifestTest.class.getResource("/testcases-dawg/data-r2/manifest-evaluation.ttl");
-			
+
 			if ("jar".equals(url.getProtocol())) {
 				// Extract manifest files to a temporary directory
 				try {
 					tmpDir = FileUtil.createTempDir("sparql-evaluation");
-					
+
 					JarURLConnection con = (JarURLConnection)url.openConnection();
 					JarFile jar = con.getJarFile();
-					
+
 					ZipUtil.extract(jar, tmpDir);
-					
+
 					File localFile = new File(tmpDir, con.getEntryName());
 					manifestFile = localFile.toURI().toURL().toString();
 				}
@@ -90,7 +90,7 @@ public class ManifestTest {
 				tmpDir = null;
 			}
 		}
-		
+
 		TestSuite suite = new TestSuite(factory.getClass().getName()) {
 
 			@Override
@@ -104,7 +104,8 @@ public class ManifestTest {
 							FileUtil.deleteDir(tmpDir);
 						}
 						catch (IOException e) {
-							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': " + e.getMessage());
+							System.err.println("Unable to clean up temporary directory '" + tmpDir + "': "
+									+ e.getMessage());
 						}
 					}
 				}
@@ -138,7 +139,7 @@ public class ManifestTest {
 	}
 
 	static void addTurtle(RepositoryConnection con, URL url, String baseURI, Resource... contexts)
-		throws IOException, RepositoryException, RDFParseException
+		throws IOException, RepositoryException, RDFParseException, RDFHandlerException
 	{
 		if (baseURI == null) {
 			baseURI = url.toExternalForm();
@@ -160,27 +161,30 @@ public class ManifestTest {
 			rdfInserter.enforceContext(contexts);
 			rdfParser.setRDFHandler(rdfInserter);
 
-			boolean autoCommit = con.isAutoCommit();
-			con.setAutoCommit(false);
+			con.begin();
 
 			try {
 				rdfParser.parse(in, baseURI);
+				con.commit();
 			}
 			catch (RDFHandlerException e) {
-				if (autoCommit) {
+				if (con.isActive()) {
 					con.rollback();
 				}
-				// RDFInserter only throws wrapped RepositoryExceptions
-				throw (RepositoryException)e.getCause();
+				if (e.getCause() != null && e.getCause() instanceof RepositoryException) {
+					// RDFInserter only throws wrapped RepositoryExceptions
+					throw (RepositoryException)e.getCause();
+				}
+				else {
+					throw e;
+				}
+
 			}
 			catch (RuntimeException e) {
-				if (autoCommit) {
+				if (con.isActive()) {
 					con.rollback();
 				}
 				throw e;
-			}
-			finally {
-				con.setAutoCommit(autoCommit);
 			}
 		}
 		finally {

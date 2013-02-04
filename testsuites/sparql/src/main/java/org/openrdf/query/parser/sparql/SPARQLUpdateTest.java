@@ -42,7 +42,6 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
@@ -162,7 +161,6 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 	}
-	
 
 	@Test
 	public void testInsertWhereWithBindings2()
@@ -400,7 +398,7 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
 	}
-	
+
 	@Test
 	public void testDeleteWhereOptional()
 		throws Exception
@@ -416,18 +414,17 @@ public abstract class SPARQLUpdateTest {
 
 		Literal mboxBob = f.createLiteral("bob@example.org");
 		Literal mboxAlice = f.createLiteral("alice@example.org");
-		assertTrue(con.hasStatement(bob, FOAF.MBOX, mboxBob , true));
+		assertTrue(con.hasStatement(bob, FOAF.MBOX, mboxBob, true));
 		assertTrue(con.hasStatement(alice, FOAF.MBOX, mboxAlice, true));
-
 
 		assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-		
+
 		operation.execute();
 
-		assertFalse(con.hasStatement(bob, FOAF.MBOX, mboxBob , true));
+		assertFalse(con.hasStatement(bob, FOAF.MBOX, mboxBob, true));
 		assertTrue(con.hasStatement(alice, FOAF.MBOX, mboxAlice, true));
-		
+
 		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
@@ -445,7 +442,7 @@ public abstract class SPARQLUpdateTest {
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		operation.setBinding("x", bob);
-		
+
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
@@ -457,7 +454,7 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 	}
-	
+
 	@Test
 	public void testDeleteInsertWhereWithBindings2()
 		throws Exception
@@ -470,7 +467,7 @@ public abstract class SPARQLUpdateTest {
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		operation.setBinding("z", f.createLiteral("person"));
-		
+
 		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
@@ -482,7 +479,7 @@ public abstract class SPARQLUpdateTest {
 		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 	}
-	
+
 	@Test
 	public void testDeleteInsertWhereLoopingBehavior()
 		throws Exception
@@ -523,45 +520,52 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
 
-		boolean autoCommit = con.isAutoCommit();
-
-		con.setAutoCommit(false);
-		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-
-		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-		operation.execute();
-
-		// update should be visible to own connection.
-		assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-		assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
-		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-
-		RepositoryConnection con2 = rep.getConnection();
-		try {
-			// update should not yet be visible to separate connection
-			assertFalse(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-			assertFalse(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-			assertTrue(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
-			assertTrue(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-
-			con.commit();
-
-			// after commit, update should be visible to separate connection.
-			assertTrue(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-			assertTrue(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-			assertFalse(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
-			assertFalse(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-
+		try
+		{
+			con.begin();
+			Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+	
+			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+	
+			operation.execute();
+	
+			// update should be visible to own connection.
+			assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+			assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+	
+			assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+			assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+	
+			RepositoryConnection con2 = rep.getConnection();
+			try {
+				// update should not yet be visible to separate connection
+				assertFalse(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+				assertFalse(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+	
+				assertTrue(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+				assertTrue(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+	
+				con.commit();
+	
+				// after commit, update should be visible to separate connection.
+				assertTrue(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+				assertTrue(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+	
+				assertFalse(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+				assertFalse(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+			}
+			finally {
+				con2.close();
+			}
+		}
+		catch (Exception e) {
+			if(con.isActive()) {
+				con.rollback();
+			}
 		}
 		finally {
-			con2.close();
-			con.setAutoCommit(autoCommit);
+			con.close();
 		}
 	}
 
@@ -577,34 +581,39 @@ public abstract class SPARQLUpdateTest {
 		update1.append(getNamespaceDeclarations());
 		update1.append("DELETE { ?x foaf:name ?y } WHERE {?x foaf:name ?y }");
 
-		boolean autoCommit = con.isAutoCommit();
+		try {
+			con.begin();
+			Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update1.toString());
 
-		con.setAutoCommit(false);
-		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update1.toString());
+			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 
-		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+			operation.execute();
 
-		operation.execute();
+			// update should be visible to own connection.
+			assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+			assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 
-		// update should be visible to own connection.
-		assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
-		assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+			StringBuilder update2 = new StringBuilder();
+			update2.append(getNamespaceDeclarations());
+			update2.append("INSERT { ?x rdfs:label ?y } WHERE {?x foaf:name ?y }");
 
-		StringBuilder update2 = new StringBuilder();
-		update2.append(getNamespaceDeclarations());
-		update2.append("INSERT { ?x rdfs:label ?y } WHERE {?x foaf:name ?y }");
+			operation = con.prepareUpdate(QueryLanguage.SPARQL, update2.toString());
 
-		operation = con.prepareUpdate(QueryLanguage.SPARQL, update2.toString());
+			operation.execute();
 
-		operation.execute();
-
-		// update should not have resulted in any inserts: where clause is empty.
-		assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
-		assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-
-		con.setAutoCommit(autoCommit);
-
+			con.commit();
+			
+			// update should not have resulted in any inserts: where clause is
+			// empty.
+			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
+			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
+		}
+		catch (Exception e) {
+			if(con.isActive()) {
+				con.rollback();
+			}
+		}
 	}
 
 	@Test
@@ -766,7 +775,6 @@ public abstract class SPARQLUpdateTest {
 
 	}
 
-
 	@Test
 	public void testInsertData()
 		throws Exception
@@ -790,7 +798,7 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
 		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
 	}
-	
+
 	@Test
 	public void testInsertDataBlankNode()
 		throws Exception
@@ -808,17 +816,19 @@ public abstract class SPARQLUpdateTest {
 
 		operation.execute();
 
-		RepositoryResult<Statement> titleStatements = con.getStatements(null, DC.TITLE, f.createLiteral("book 1"), true);
+		RepositoryResult<Statement> titleStatements = con.getStatements(null, DC.TITLE,
+				f.createLiteral("book 1"), true);
 		assertNotNull(titleStatements);
-		
-		RepositoryResult<Statement> creatorStatements = con.getStatements(null, DC.CREATOR, f.createLiteral("Ringo"), true);
+
+		RepositoryResult<Statement> creatorStatements = con.getStatements(null, DC.CREATOR,
+				f.createLiteral("Ringo"), true);
 		assertNotNull(creatorStatements);
-		
+
 		BNode bookNode = null;
 		if (titleStatements.hasNext()) {
 			Statement ts = titleStatements.next();
 			assertFalse(titleStatements.hasNext());
-			
+
 			Resource subject = ts.getSubject();
 			assertTrue(subject instanceof BNode);
 			bookNode = (BNode)subject;
@@ -826,11 +836,11 @@ public abstract class SPARQLUpdateTest {
 		titleStatements.close();
 		assertNotNull(bookNode);
 		assertFalse("_:foo".equals(bookNode.getID()));
-		
+
 		if (creatorStatements.hasNext()) {
 			Statement cs = creatorStatements.next();
-			assertFalse (creatorStatements.hasNext());
-			
+			assertFalse(creatorStatements.hasNext());
+
 			Resource subject = cs.getSubject();
 			assertTrue(subject instanceof BNode);
 			assertEquals(bookNode, subject);
@@ -1216,7 +1226,7 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph1));
 		assertFalse(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph3));
 	}
-	
+
 	@Test
 	public void testAddFromDefaultToDefault()
 		throws Exception
