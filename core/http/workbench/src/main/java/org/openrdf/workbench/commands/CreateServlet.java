@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Arrays;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,18 +39,29 @@ import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.http.config.HTTPRepositoryFactory;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.SystemRepository;
+import org.openrdf.repository.sparql.config.SPARQLRepositoryFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.runtime.RepositoryManagerFederator;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class CreateServlet extends TransformationServlet {
 
+	private RepositoryManagerFederator rmf;
+
+	@Override
+	public void init(final ServletConfig config) throws ServletException{
+		super.init(config);
+		this.rmf = new RepositoryManagerFederator(manager);
+	}
+	
 	/**
 	 * POST requests to this servlet come from the various specific create-* form
 	 * submissions.
@@ -103,8 +116,12 @@ public class CreateServlet extends TransformationServlet {
 		throws IOException, OpenRDFException
 	{
 		final String type = req.getTypeParameter();
-		String newID = "";
+		String newID;
 		if ("federate".equals(type)) {
+			newID = req.getParameter("Local repository ID");
+			rmf.addFed("http".equals(req.getParameter("federation-type")) ? HTTPRepositoryFactory.REPOSITORY_TYPE
+					: SPARQLRepositoryFactory.REPOSITORY_TYPE, newID, req.getParameter("Repository title"),
+					Arrays.asList(req.getParameterValues("memberID")));
 		}
 		else {
 			final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
