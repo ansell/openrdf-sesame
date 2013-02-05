@@ -3,10 +3,8 @@
    <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
  ]>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
 
@@ -22,8 +20,7 @@
 				<tbody>
 					<tr>
 						<th>
-							<xsl:value-of
-								select="$repository-type.label" />
+							<xsl:value-of select="$repository-type.label" />
 						</th>
 						<td>
 							<select id="type" name="type">
@@ -35,7 +32,8 @@
 								</option>
 								<option value="memory-rdfs-dt">
 									In Memory Store RDF Schema and
-									Direct Type Hierarchy
+									Direct Type
+									Hierarchy
 								</option>
 								<option value="native">
 									Native Java Store
@@ -45,7 +43,8 @@
 								</option>
 								<option value="native-rdfs-dt">
 									Native Java Store RDF Schema and
-									Direct Type Hierarchy
+									Direct Type
+									Hierarchy
 								</option>
 								<option value="mysql">
 									MySql RDF Store
@@ -56,6 +55,7 @@
 								<option value="remote">
 									Remote RDF Store
 								</option>
+								<option value="federate">Federation Store</option>
 							</select>
 						</td>
 						<td></td>
@@ -65,30 +65,25 @@
 							<xsl:value-of select="$repository-id.label" />
 						</th>
 						<td>
-							<input type="text" id="id" name="id"
-								size="16" />
+							<input type="text" id="id" name="id" size="16" />
 						</td>
 						<td></td>
 					</tr>
 					<tr>
 						<th>
-							<xsl:value-of
-								select="$repository-title.label" />
+							<xsl:value-of select="$repository-title.label" />
 						</th>
 						<td>
-							<input type="text" id="title" name="title"
-								size="48" />
+							<input type="text" id="title" name="title" size="48" />
 						</td>
 						<td></td>
 					</tr>
 					<tr>
 						<td></td>
 						<td>
-							<input type="button" value="{$cancel.label}"
-								style="float:right" href="repositories"
-								onclick="document.location.href=this.getAttribute('href')" />
-							<input type="submit" name="next"
-								value="{$next.label}" />
+							<input type="button" value="{$cancel.label}" style="float:right"
+								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
+							<input type="submit" name="next" value="{$next.label}" />
 						</td>
 					</tr>
 				</tbody>

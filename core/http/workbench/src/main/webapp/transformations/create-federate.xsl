@@ -15,7 +15,8 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/create.js" type="text/javascript">
+		<script src="../../scripts/create.js" type="text/javascript"></script>
+		<script src="../../scripts/create-federate.js" type="text/javascript">
 		</script>
 		<form action="create" method="post">
 			<table class="dataentry">
@@ -26,11 +27,7 @@
 						</th>
 						<td>
 							<select id="type" name="type">
-								<option value="memory-rdfs-dt">
-									In Memory Store RDF Schema and
-									Direct Type
-									Hierarchy
-								</option>
+								<option value="federate">Federation Store</option>
 							</select>
 						</td>
 						<td></td>
@@ -40,8 +37,8 @@
 							<xsl:value-of select="$repository-id.label" />
 						</th>
 						<td>
-							<input type="text" id="id" name="Repository ID" size="16"
-								value="memory-rdfs-dt" />
+							<input type="text" id="id" name="Local repository ID" size="16"
+								value="fed" />
 						</td>
 						<td></td>
 					</tr>
@@ -51,33 +48,47 @@
 						</th>
 						<td>
 							<input type="text" id="title" name="Repository title" size="48"
-								value="Memory store with RDF Schema and direct type inferencing" />
-						</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td>
-							<xsl:value-of select="$repository-persist.label" />
-						</td>
-						<td>
-							<input type="radio" id="persist" name="Persist" size="48"
-								value="true" checked="true" />
-							<xsl:value-of select="$true.label" />
-							<input type="radio" id="persist" name="Persist" size="48"
-								value="false" />
-							<xsl:value-of select="$false.label" />
+								value="Federation" />
 						</td>
 						<td></td>
 					</tr>
 					<tr>
 						<th>
-							<xsl:value-of select="$repository-sync-delay.label" />
+							<xsl:value-of select="$federation-members.label" />
 						</th>
 						<td>
-							<input type="text" id="delay" name="Sync delay" size="4"
-								value="0" />
+							<xsl:apply-templates select="*" />
 						</td>
-						<td></td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$federation-type.label" />
+						</th>
+						<td>
+							<input type="radio" name="federation-type" value="http" checked="true" />
+							HTTP Repository
+						</td>
+						<td>
+							<input type="radio" name="federation-type" value="sparql" />
+							SPARQL Endpoint
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$distinct.label" />
+						</th>
+						<td>
+							<input type="checkbox" name="distinct" value="distinct" />
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$read-only.label" />
+						</th>
+						<td>
+							<input type="checkbox" name="readonly" value="readonly"
+								checked="true" />
+						</td>
 					</tr>
 					<tr>
 						<td></td>
@@ -85,11 +96,22 @@
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
 							<input id="create" type="submit" value="{$create.label}" />
+							<span class="error" id="create-feedback">Select at least two federation
+								members.
+							</span>
 						</td>
 					</tr>
 				</tbody>
 			</table>
 		</form>
 	</xsl:template>
+
+	<xsl:template match="sparql:binding[@name='id']">
+		<input type="checkbox" class="memberID" name="memberID" value="{sparql:literal}" />
+		<xsl:value-of select="sparql:literal" />
+		<br />
+	</xsl:template>
+	<xsl:template match="sparql:binding[@name='description']" />
+	<xsl:template match="sparql:binding[@name='location']" />
 
 </xsl:stylesheet>

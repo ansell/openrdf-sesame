@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Arrays;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,28 +30,45 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.http.config.HTTPRepositoryFactory;
+import org.openrdf.repository.manager.RepositoryInfo;
+import org.openrdf.repository.manager.SystemRepository;
+import org.openrdf.repository.sparql.config.SPARQLRepositoryFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.runtime.RepositoryManagerFederator;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class CreateServlet extends TransformationServlet {
 
+	private RepositoryManagerFederator rmf;
+
+	@Override
+	public void init(final ServletConfig config) throws ServletException{
+		super.init(config);
+		this.rmf = new RepositoryManagerFederator(manager);
+	}
+	
+	/**
+	 * POST requests to this servlet come from the various specific create-* form
+	 * submissions.
+	 */
 	@Override
 	protected void doPost(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws Exception
+		throws ServletException
 	{
 		try {
 			resp.sendRedirect("../" + createRepositoryConfig(req) + "/summary");
@@ -59,21 +78,37 @@ public class CreateServlet extends TransformationServlet {
 		}
 	}
 
+	/**
+	 * GET requests to this servlet come from the Workbench side bar or from
+	 * create.xsl form submissions.
+	 * 
+	 * @throws RepositoryException
+	 */
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException
+		throws IOException, RepositoryException
 	{
 		resp.setContentType("application/xml");
 		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		boolean federate = false;
 		if (req.isParameterPresent("type")) {
 			final String type = req.getTypeParameter();
+			federate = "federate".equals(type);
 			builder.transform(xslPath, "create-" + type + ".xsl");
 		}
 		else {
 			builder.transform(xslPath, "create.xsl");
 		}
-		builder.start();
+		builder.start(federate ? new String[] { "id", "description", "location" } : new String[] {});
 		builder.link("info");
+		if (federate) {
+			for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
+				String identity = info.getId();
+				if (!SystemRepository.ID.equals(identity)) {
+					builder.result(info.getId(), info.getDescription(), info.getLocation());
+				}
+			}
+		}
 		builder.end();
 	}
 
@@ -81,18 +116,27 @@ public class CreateServlet extends TransformationServlet {
 		throws IOException, OpenRDFException
 	{
 		final String type = req.getTypeParameter();
-		final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
-		final RepositoryConfig repConfig = updateRepositoryConfig(configString);
-		return repConfig.getID();
+		String newID;
+		if ("federate".equals(type)) {
+			newID = req.getParameter("Local repository ID");
+			rmf.addFed("http".equals(req.getParameter("federation-type")) ? HTTPRepositoryFactory.REPOSITORY_TYPE
+					: SPARQLRepositoryFactory.REPOSITORY_TYPE, newID, req.getParameter("Repository title"),
+					Arrays.asList(req.getParameterValues("memberID")));
+		}
+		else {
+			final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
+			final RepositoryConfig repConfig = updateRepositoryConfig(configString);
+			newID = repConfig.getID();
+		}
+		return newID;
 	}
 
 	private RepositoryConfig updateRepositoryConfig(final String configString)
 		throws IOException, OpenRDFException
 	{
 		final Repository systemRepo = manager.getSystemRepository();
-		final ValueFactory factory = systemRepo.getValueFactory();
-		final Graph graph = new GraphImpl(factory);
-		final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, factory);
+		final Graph graph = new LinkedHashModel();
+		final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
 		rdfParser.setRDFHandler(new StatementCollector(graph));
 		rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
 		final RepositoryConfig repConfig = RepositoryConfig.create(graph,

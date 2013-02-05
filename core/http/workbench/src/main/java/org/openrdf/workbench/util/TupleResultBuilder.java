@@ -92,7 +92,7 @@ public class TupleResultBuilder {
 	public TupleResultBuilder binding(String name, Object result) {
 		closeHead();
 		out.println("    <result>");
-		_result(name, result);
+		outputNamedResult(name, result);
 		out.println("    </result>");
 		return this;
 	}
@@ -103,13 +103,13 @@ public class TupleResultBuilder {
 		for (int i = 0; i < result.length; i++) {
 			if (result[i] == null)
 				continue;
-			_result(variables.get(i), result[i]);
+			outputNamedResult(variables.get(i), result[i]);
 		}
 		out.println("    </result>");
 		return this;
 	}
 
-	private void _result(String name, Object result) {
+	private void outputNamedResult(String name, Object result) {
 		out.print("      <binding name='");
 		out.print(name);
 		out.println("'>");

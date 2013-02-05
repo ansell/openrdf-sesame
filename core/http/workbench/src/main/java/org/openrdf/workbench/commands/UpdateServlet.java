@@ -17,32 +17,27 @@
 package org.openrdf.workbench.commands;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class UpdateServlet extends TransformationServlet {
 
-	private Logger logger = LoggerFactory.getLogger(UpdateServlet.class);
+	private final Logger logger = LoggerFactory.getLogger(UpdateServlet.class);
 
 	@Override
 	public String[] getCookieNames() {

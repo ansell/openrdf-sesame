@@ -37,6 +37,8 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class TransformationServlet extends BaseRepositoryServlet {
 
+	protected static final String CONTEXT = "context";
+
 	protected static final String INFO = "info";
 
 	private static final String TRANSFORMATIONS = "transformations";
@@ -46,7 +48,7 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 	private final Map<String, String> defaults = new HashMap<String, String>();
 
 	protected CookieHandler cookies;
-	
+
 	@Override
 	public void init(final ServletConfig config)
 		throws ServletException

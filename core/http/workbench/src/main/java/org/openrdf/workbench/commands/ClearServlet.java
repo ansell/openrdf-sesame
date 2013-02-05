@@ -31,41 +31,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ClearServlet extends TransformationServlet {
-	private Logger logger = LoggerFactory.getLogger(ClearServlet.class);
+
+	private final Logger logger = LoggerFactory.getLogger(ClearServlet.class);
 
 	@Override
-	protected void doPost(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception, IOException {
+	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws IOException, RepositoryException
+	{
 		try {
 			RepositoryConnection con = repository.getConnection();
 			try {
-				if (req.isParameterPresent("context")) {
-					con.clear(req.getResource("context"));
-				} else {
+				if (req.isParameterPresent(CONTEXT)) {
+					con.clear(req.getResource(CONTEXT));
+				}
+				else {
 					con.clear();
 				}
-			} catch (ClassCastException exc) {
+			}
+			catch (ClassCastException exc) {
 				throw new BadRequestException(exc.getMessage(), exc);
-			} finally {
+			}
+			finally {
 				con.close();
 			}
 			resp.sendRedirect("summary");
-		} catch (BadRequestException exc) {
+		}
+		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			PrintWriter out = resp.getWriter();
 			TupleResultBuilder builder = new TupleResultBuilder(out);
 			builder.transform(xslPath, "clear.xsl");
-			builder.start("error-message", "context");
+			builder.start("error-message", CONTEXT);
 			builder.link("info");
-			builder.result(exc.getMessage(), req.getParameter("context"));
+			builder.result(exc.getMessage(), req.getParameter(CONTEXT));
 			builder.end();
 		}
 	}
 
 	@Override
 	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
+		throws RepositoryException
+	{
 		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "clear.xsl");
 		builder.start();
