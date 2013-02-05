@@ -31,7 +31,7 @@ public interface TupleQueryResultParser {
 	/**
 	 * Gets the query result format that this parser can parse.
 	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat();
+	TupleQueryResultFormat getTupleQueryResultFormat();
 
 	/**
 	 * Sets the ValueFactory that the parser will use to create Value objects for
@@ -40,13 +40,13 @@ public interface TupleQueryResultParser {
 	 * @param valueFactory
 	 *        The value factory that the parser should use.
 	 */
-	public void setValueFactory(ValueFactory valueFactory);
+	void setValueFactory(ValueFactory valueFactory);
 
 	/**
 	 * Sets the TupleQueryResultHandler that will handle the parsed query result
 	 * data.
 	 */
-	public void setTupleQueryResultHandler(TupleQueryResultHandler handler);
+	void setTupleQueryResultHandler(TupleQueryResultHandler handler);
 
 	/**
 	 * Parses the data from the supplied InputStream.
@@ -61,6 +61,6 @@ public interface TupleQueryResultParser {
 	 *         If the configured query result handler has encountered an
 	 *         unrecoverable error.
 	 */
-	public void parse(InputStream in)
+	void parse(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException;
 }

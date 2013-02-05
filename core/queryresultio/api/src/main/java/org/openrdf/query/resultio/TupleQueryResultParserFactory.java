@@ -17,8 +17,8 @@
 package org.openrdf.query.resultio;
 
 /**
- * A TupleQueryResultParserFactory returns {@link TupleQueryResultParser}s for
- * a specific tuple query result format.
+ * A TupleQueryResultParserFactory returns {@link TupleQueryResultParser}s for a
+ * specific tuple query result format.
  * 
  * @author Arjohn Kampman
  */
@@ -27,10 +27,10 @@ public interface TupleQueryResultParserFactory {
 	/**
 	 * Returns the tuple query result format for this factory.
 	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat();
+	TupleQueryResultFormat getTupleQueryResultFormat();
 
 	/**
 	 * Returns a TupleQueryResultParser instance.
 	 */
-	public TupleQueryResultParser getParser();
+	TupleQueryResultParser getParser();
 }

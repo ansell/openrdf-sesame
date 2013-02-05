@@ -27,10 +27,10 @@ public interface BooleanQueryResultParserFactory {
 	/**
 	 * Returns the boolean query result format for this factory.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat();
+	BooleanQueryResultFormat getBooleanQueryResultFormat();
 
 	/**
 	 * Returns a BooleanQueryResultParser instance.
 	 */
-	public BooleanQueryResultParser getParser();
+	BooleanQueryResultParser getParser();
 }

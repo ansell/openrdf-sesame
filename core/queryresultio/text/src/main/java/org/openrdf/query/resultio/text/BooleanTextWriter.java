@@ -21,7 +21,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.List;
 
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQueryResultHandlerException;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -53,14 +58,99 @@ public class BooleanTextWriter implements BooleanQueryResultWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.TEXT;
 	}
 
+	@Override
+	public final BooleanQueryResultFormat getQueryResultFormat() {
+		return getBooleanQueryResultFormat();
+	}
+
+	@Override
 	public void write(boolean value)
 		throws IOException
 	{
-		writer.write(Boolean.toString(value));
-		writer.flush();
+		try {
+			handleBoolean(value);
+		}
+		catch (QueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		try {
+			writer.write(Boolean.toString(value));
+			writer.flush();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startDocument()
+		throws QueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws QueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	@Override
+	public void startHeader()
+		throws QueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	@Override
+	public void endHeader()
+		throws QueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
+
+	@Override
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
 	}
 }

@@ -23,8 +23,8 @@ import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
 /**
- * Base class for {@link TupleQueryResultHandler}s with dummy implementations
- * of all methods. This class is a useful superclass for classes that implement
+ * Base class for {@link TupleQueryResultHandler}s with dummy implementations of
+ * all methods. This class is a useful superclass for classes that implement
  * only one or two TupleQueryResultHandler methods.
  */
 public class TupleQueryResultHandlerBase implements TupleQueryResultHandler {
@@ -44,4 +44,11 @@ public class TupleQueryResultHandlerBase implements TupleQueryResultHandler {
 	{
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		// This is a base class for handling tuple results
+		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
 }

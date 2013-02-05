@@ -16,17 +16,10 @@
  */
 package org.openrdf.query.resultio.sparqljson;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
-
-import info.aduna.io.IndentingWriter;
-import info.aduna.text.StringUtil;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -34,6 +27,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -43,13 +37,11 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-json-res/">SPARQL Query Results JSON
  * Format</a>.
  */
-public class SPARQLResultsJSONWriter implements TupleQueryResultWriter {
+public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements TupleQueryResultWriter {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	private IndentingWriter writer;
 
 	private boolean firstTupleWritten;
 
@@ -58,29 +50,44 @@ public class SPARQLResultsJSONWriter implements TupleQueryResultWriter {
 	 *--------------*/
 
 	public SPARQLResultsJSONWriter(OutputStream out) {
-		Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
-		w = new BufferedWriter(w, 1024);
-		writer = new IndentingWriter(w);
+		super(out);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.JSON;
 	}
 
+	@Override
+	public TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
+	}
+
+	@Override
 	public void startQueryResult(List<String> columnHeaders)
 		throws TupleQueryResultHandlerException
 	{
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
+		}
 		try {
-			openBraces();
-
-			// Write header
-			writeKey("head");
-			openBraces();
 			writeKeyValue("vars", columnHeaders);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		try {
 			closeBraces();
 
 			writeComma();
@@ -91,31 +98,20 @@ public class SPARQLResultsJSONWriter implements TupleQueryResultWriter {
 
 			writeKey("bindings");
 			openArray();
-
-			firstTupleWritten = false;
+			headerComplete = true;
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
 	}
 
-	public void endQueryResult()
-		throws TupleQueryResultHandlerException
-	{
-		try {
-			closeArray(); // bindings array
-			closeBraces(); // results braces
-			closeBraces(); // root braces
-			writer.flush();
-		}
-		catch (IOException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if (!headerComplete) {
+			endHeader();
+		}
 		try {
 			if (firstTupleWritten) {
 				writeComma();
@@ -146,35 +142,75 @@ public class SPARQLResultsJSONWriter implements TupleQueryResultWriter {
 		}
 	}
 
-	private void writeKeyValue(String key, String value)
-		throws IOException
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
 	{
-		writeKey(key);
-		writeString(value);
+		try {
+			closeArray(); // bindings array
+			closeBraces(); // results braces
+			endDocument();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
 	}
 
-	private void writeKeyValue(String key, Value value)
+	@Override
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		documentOpen = true;
+		headerComplete = false;
+		try {
+			openBraces();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignore, as JSON does not support stylesheets
+	}
+
+	@Override
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			// Write header
+			writeKey("head");
+			openBraces();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			writeKeyValue("link", linkUrls);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	protected void writeKeyValue(String key, Value value)
 		throws IOException, TupleQueryResultHandlerException
 	{
 		writeKey(key);
 		writeValue(value);
 	}
 
-	private void writeKeyValue(String key, Iterable<String> array)
-		throws IOException
-	{
-		writeKey(key);
-		writeArray(array);
-	}
-
-	private void writeKey(String key)
-		throws IOException
-	{
-		writeString(key);
-		writer.write(": ");
-	}
-
-	private void writeValue(Value value)
+	protected void writeValue(Value value)
 		throws IOException, TupleQueryResultHandlerException
 	{
 		writer.write("{ ");
@@ -215,79 +251,10 @@ public class SPARQLResultsJSONWriter implements TupleQueryResultWriter {
 		writer.write(" }");
 	}
 
-	private void writeString(String value)
-		throws IOException
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
 	{
-		// Escape special characters
-		value = StringUtil.gsub("\\", "\\\\", value);
-		value = StringUtil.gsub("\"", "\\\"", value);
-		value = StringUtil.gsub("/", "\\/", value);
-		value = StringUtil.gsub("\b", "\\b", value);
-		value = StringUtil.gsub("\f", "\\f", value);
-		value = StringUtil.gsub("\n", "\\n", value);
-		value = StringUtil.gsub("\r", "\\r", value);
-		value = StringUtil.gsub("\t", "\\t", value);
-
-		writer.write("\"");
-		writer.write(value);
-		writer.write("\"");
-	}
-
-	private void writeArray(Iterable<String> array)
-		throws IOException
-	{
-		writer.write("[ ");
-
-		Iterator<String> iter = array.iterator();
-		while (iter.hasNext()) {
-			String value = iter.next();
-
-			writeString(value);
-
-			if (iter.hasNext()) {
-				writer.write(", ");
-			}
-		}
-
-		writer.write(" ]");
-	}
-
-	private void openArray()
-		throws IOException
-	{
-		writer.write("[");
-		writer.writeEOL();
-		writer.increaseIndentation();
-	}
-
-	private void closeArray()
-		throws IOException
-	{
-		writer.writeEOL();
-		writer.decreaseIndentation();
-		writer.write("]");
-	}
-
-	private void openBraces()
-		throws IOException
-	{
-		writer.write("{");
-		writer.writeEOL();
-		writer.increaseIndentation();
-	}
-
-	private void closeBraces()
-		throws IOException
-	{
-		writer.writeEOL();
-		writer.decreaseIndentation();
-		writer.write("}");
-	}
-
-	private void writeComma()
-		throws IOException
-	{
-		writer.write(", ");
-		writer.writeEOL();
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

@@ -50,6 +50,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -86,6 +87,8 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 
 	private List<String> bindingNames;
 
+	private boolean documentStarted = false;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -98,21 +101,43 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.BINARY;
 	}
 
+	@Override
+	public final TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
+	}
+
+	@Override
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		documentStarted = true;
+		try {
+			out.write(MAGIC_NUMBER);
+			out.writeInt(FORMAT_VERSION);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
+		if (!documentStarted) {
+			startDocument();
+		}
+
 		// Copy supplied column headers list and make it unmodifiable
 		bindingNames = new ArrayList<String>(bindingNames);
 		this.bindingNames = Collections.unmodifiableList(bindingNames);
 
 		try {
-			out.write(MAGIC_NUMBER);
-			out.writeInt(FORMAT_VERSION);
-
 			out.writeInt(this.bindingNames.size());
 
 			for (String bindingName : this.bindingNames) {
@@ -128,18 +153,20 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
 		try {
 			out.writeByte(TABLE_END_RECORD_MARKER);
-			out.flush();
+			endDocument();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -302,5 +329,47 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		ByteBuffer byteBuf = charsetEncoder.encode(CharBuffer.wrap(s));
 		out.writeInt(byteBuf.remaining());
 		out.write(byteBuf.array(), 0, byteBuf.remaining());
+	}
+
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws QueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	@Override
+	public void startHeader()
+		throws QueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	@Override
+	public void endHeader()
+		throws QueryResultHandlerException
+	{
+		// Ignored by Binary Query Results format
+	}
+
+	private void endDocument()
+		throws IOException
+	{
+		out.flush();
+		documentStarted = false;
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

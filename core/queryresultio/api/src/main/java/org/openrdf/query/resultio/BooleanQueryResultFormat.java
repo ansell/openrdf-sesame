@@ -22,8 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import info.aduna.lang.FileFormat;
-
 /**
  * Represents the concept of a boolean query result serialization format.
  * Boolean query result formats are identified by a {@link #getName() name} and
@@ -32,7 +30,7 @@ import info.aduna.lang.FileFormat;
  * 
  * @author Arjohn Kampman
  */
-public class BooleanQueryResultFormat extends FileFormat {
+public class BooleanQueryResultFormat extends QueryResultFormat {
 
 	/*-----------*
 	 * Constants *
@@ -43,6 +41,12 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 */
 	public static final BooleanQueryResultFormat SPARQL = new BooleanQueryResultFormat("SPARQL/XML",
 			"application/sparql-results+xml", Charset.forName("UTF-8"), "srx");
+
+	/**
+	 * SPARQL Query Results JSON Format.
+	 */
+	public static final BooleanQueryResultFormat JSON = new BooleanQueryResultFormat("SPARQL/JSON",
+			"application/sparql-results+json", Charset.forName("UTF-8"), "srj");
 
 	/**
 	 * Plain text encoding using values "true" and "false" (case-insensitive).
@@ -89,8 +93,8 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML file
 	 *        format.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML files.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML files.
 	 */
 	public static BooleanQueryResultFormat register(String name, String mimeType, String fileExt) {
 		BooleanQueryResultFormat format = new BooleanQueryResultFormat(name, mimeType, fileExt);
@@ -181,11 +185,10 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
 	 *        The MIME type of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML.
 	 */
 	public BooleanQueryResultFormat(String name, String mimeType, String fileExt) {
 		this(name, mimeType, null, fileExt);
@@ -198,14 +201,13 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
 	 *        The MIME type of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param charset
 	 *        The default character encoding of the format. Specify <tt>null</tt>
 	 *        if not applicable.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML.
 	 */
 	public BooleanQueryResultFormat(String name, String mimeType, Charset charset, String fileExt) {
 		super(name, mimeType, charset, fileExt);
@@ -218,9 +220,9 @@ public class BooleanQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeTypes
 	 *        The MIME types of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format. The first item in the list is interpreted as the default
-	 *        MIME type for the format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
 	 * @param charset
 	 *        The default character encoding of the format. Specify <tt>null</tt>
 	 *        if not applicable.

@@ -16,17 +16,25 @@
  */
 package org.openrdf.query.resultio.sparqlxml;
 
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_FALSE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TRUE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQueryResultHandlerException;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -35,65 +43,171 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLBooleanXMLWriter implements BooleanQueryResultWriter {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * XMLWriter to write XML to.
-	 */
-	private XMLWriter xmlWriter;
+public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements BooleanQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public SPARQLBooleanXMLWriter(OutputStream out) {
-		this(new XMLWriter(out));
+		super(out);
 	}
 
 	public SPARQLBooleanXMLWriter(XMLWriter xmlWriter) {
-		this.xmlWriter = xmlWriter;
-		this.xmlWriter.setPrettyPrint(true);
+		super(xmlWriter);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	/**
-	 * Enables/disables addition of indentation characters and newlines in the
-	 * XML document. By default, pretty-printing is set to <tt>true</tt>. If
-	 * set to <tt>false</tt>, no indentation and newlines are added to the XML
-	 * document. This method has to be used before writing starts (that is,
-	 * before {@link #write} is called).
-	 */
-	public void setPrettyPrint(boolean prettyPrint) {
-		xmlWriter.setPrettyPrint(prettyPrint);
-	}
-
+	@Override
 	public final BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.SPARQL;
 	}
 
+	@Override
+	public final BooleanQueryResultFormat getQueryResultFormat() {
+		return getBooleanQueryResultFormat();
+	}
+
+	@Override
+	public void startDocument()
+		throws BooleanQueryResultHandlerException
+	{
+		documentOpen = true;
+		headerComplete = false;
+
+		try {
+			xmlWriter.startDocument();
+			xmlWriter.setAttribute("xmlns", NAMESPACE);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+
+	}
+
+	@Override
+	public void handleStylesheet(String url)
+		throws BooleanQueryResultHandlerException
+	{
+		try {
+			xmlWriter.writeStylesheet(url);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startHeader()
+		throws BooleanQueryResultHandlerException
+	{
+		try {
+			xmlWriter.startTag(ROOT_TAG);
+
+			xmlWriter.startTag(HEAD_TAG);
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws BooleanQueryResultHandlerException
+	{
+		try {
+			// Write link URLs
+			for (String name : linkUrls) {
+				xmlWriter.setAttribute(HREF_ATT, name);
+				xmlWriter.emptyElement(LINK_TAG);
+			}
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void endHeader()
+		throws BooleanQueryResultHandlerException
+	{
+		try {
+			xmlWriter.endTag(HEAD_TAG);
+			headerComplete = true;
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
 	public void write(boolean value)
 		throws IOException
 	{
-		xmlWriter.startDocument();
-		xmlWriter.setAttribute("xmlns", NAMESPACE);
-		xmlWriter.startTag(ROOT_TAG);
-		xmlWriter.emptyElement(HEAD_TAG);
-
-		if (value) {
-			xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
+		try {
+			handleBoolean(value);
 		}
-		else {
-			xmlWriter.textElement(BOOLEAN_TAG, SPARQLResultsXMLConstants.BOOLEAN_FALSE);
+		catch (BooleanQueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
 		}
-
-		xmlWriter.endTag(ROOT_TAG);
-		xmlWriter.endDocument();
 	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws BooleanQueryResultHandlerException
+	{
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
+		}
+
+		if (!headerComplete) {
+			endHeader();
+		}
+
+		try {
+			if (value) {
+				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
+			}
+			else {
+				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_FALSE);
+			}
+
+			endDocument();
+		}
+		catch (IOException e) {
+			throw new BooleanQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
+	@Override
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle tuple results");
+	}
+
 }

@@ -20,6 +20,8 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BIN
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BINDING_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BNODE_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_DATATYPE_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
@@ -43,6 +45,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -52,92 +55,168 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * XMLWriter to write XML to.
-	 */
-	private XMLWriter xmlWriter;
+public class SPARQLResultsXMLWriter extends SPARQLXMLWriterBase implements TupleQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	public SPARQLResultsXMLWriter(OutputStream out) {
-		this(new XMLWriter(out));
+		super(out);
 	}
 
 	public SPARQLResultsXMLWriter(XMLWriter xmlWriter) {
-		this.xmlWriter = xmlWriter;
-		this.xmlWriter.setPrettyPrint(true);
+		super(xmlWriter);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.SPARQL;
 	}
 
-	/**
-	 * Enables/disables addition of indentation characters and newlines in the
-	 * XML document. By default, pretty-printing is set to <tt>true</tt>. If
-	 * set to <tt>false</tt>, no indentation and newlines are added to the XML
-	 * document. This method has to be used before writing starts (that is,
-	 * before {@link #startQueryResult(List)} is called).
-	 */
-	public void setPrettyPrint(boolean prettyPrint) {
-		xmlWriter.setPrettyPrint(prettyPrint);
+	@Override
+	public final TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
 	}
 
-	public void startQueryResult(List<String> bindingNames)
-		throws TupleQueryResultHandlerException
+	@Override
+	public void startDocument()
+		throws QueryResultHandlerException
 	{
+		documentOpen = true;
+		headerComplete = false;
+
 		try {
 			xmlWriter.startDocument();
 
 			xmlWriter.setAttribute("xmlns", NAMESPACE);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleStylesheet(String url)
+		throws QueryResultHandlerException
+	{
+		try {
+			xmlWriter.writeStylesheet(url);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startHeader()
+		throws QueryResultHandlerException
+	{
+		try {
 			xmlWriter.startTag(ROOT_TAG);
 
-			// Write header
 			xmlWriter.startTag(HEAD_TAG);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		try {
+			// Write link URLs
+			for (String name : linkUrls) {
+				xmlWriter.setAttribute(HREF_ATT, name);
+				xmlWriter.emptyElement(LINK_TAG);
+			}
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void endHeader()
+		throws QueryResultHandlerException
+	{
+		try {
+			xmlWriter.endTag(HEAD_TAG);
+
+			// Write start of results, which must always exist, even if there are
+			// no result bindings
+			xmlWriter.startTag(RESULT_SET_TAG);
+
+			headerComplete = true;
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			if (!documentOpen) {
+				startDocument();
+				startHeader();
+			}
+			// Write binding names
 			for (String name : bindingNames) {
 				xmlWriter.setAttribute(VAR_NAME_ATT, name);
 				xmlWriter.emptyElement(VAR_TAG);
 			}
-			xmlWriter.endTag(HEAD_TAG);
-
-			// Write start of results
-			xmlWriter.startTag(RESULT_SET_TAG);
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!headerComplete) {
+				endHeader();
+			}
 			xmlWriter.endTag(RESULT_SET_TAG);
-			xmlWriter.endTag(ROOT_TAG);
-
-			xmlWriter.endDocument();
+			endDocument();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!headerComplete) {
+				endHeader();
+			}
+
 			xmlWriter.startTag(RESULT_TAG);
 
 			for (Binding binding : bindingSet) {
@@ -152,6 +231,12 @@ public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
 			xmlWriter.endTag(RESULT_TAG);
 		}
 		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
 	}
@@ -194,5 +279,12 @@ public class SPARQLResultsXMLWriter implements TupleQueryResultWriter {
 		}
 
 		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

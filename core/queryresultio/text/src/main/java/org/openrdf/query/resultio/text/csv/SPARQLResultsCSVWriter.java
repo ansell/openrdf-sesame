@@ -32,6 +32,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -56,6 +57,7 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 		writer = new BufferedWriter(w, 1024);
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -75,6 +77,7 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -87,6 +90,7 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -109,8 +113,14 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 		}
 	}
 
-	public TupleQueryResultFormat getTupleQueryResultFormat() {
+	@Override
+	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.CSV;
+	}
+
+	@Override
+	public final TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
 	}
 
 	protected void writeValue(Value val)
@@ -180,7 +190,7 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 
 			// add quotes around the string (escaped with a second quote for the
 			// CSV parser)
-//			label = "\"\"" + label + "\"\"";
+			// label = "\"\"" + label + "\"\"";
 		}
 
 		if (quoted) {
@@ -195,5 +205,47 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 			writer.write("\"");
 		}
 
+	}
+
+	@Override
+	public void startDocument()
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	@Override
+	public void startHeader()
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	@Override
+	public void endHeader()
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

@@ -21,8 +21,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -179,6 +181,154 @@ public class QueryResultIO {
 			TupleQueryResultFormat fallback)
 	{
 		return TupleQueryResultWriterRegistry.getInstance().getFileFormatForFileName(fileName, fallback);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be parsed.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @return An RDFFormat object if a match was found, or <tt>null</tt>
+	 *         otherwise.
+	 * @see #getBooleanParserFormatForMIMEType(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForMIMEType(String mimeType) {
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType, null);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be parsed. This method calls
+	 * {@link BooleanQueryResultFormat#matchMIMEType(String, Iterable)} with the
+	 * specified MIME type, the keys of
+	 * {@link BooleanQueryResultParserRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForMIMEType(String mimeType,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForMIMEType(mimeType, fallback);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be parsed.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @return An BooleanQueryResultFormat object if a match was found, or
+	 *         <tt>null</tt> otherwise.
+	 * @see #getBooleanParserFormatForFileName(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForFileName(String fileName) {
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(fileName);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be parsed. This method calls
+	 * {@link BooleanQueryResultFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
+	 * with the specified MIME type, the keys of
+	 * {@link BooleanQueryResultParserRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanParserFormatForFileName(String fileName,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(fileName, fallback);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be written.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @return An BooleanQueryResultFormat object if a match was found, or
+	 *         <tt>null</tt> otherwise.
+	 * @see #getBooleanWriterFormatForMIMEType(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForMIMEType(String mimeType) {
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForMIMEType(mimeType);
+	}
+
+	/**
+	 * Tries to match a MIME type against the list of boolean query result
+	 * formats that can be written. This method calls
+	 * {@link BooleanQueryResultFormat#matchMIMEType(String, Iterable, info.aduna.lang.FileFormat)}
+	 * with the specified MIME type, the keys of
+	 * {@link BooleanQueryResultWriterRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param mimeType
+	 *        A MIME type, e.g. "application/sparql-results+xml".
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForMIMEType(String mimeType,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForMIMEType(mimeType, fallback);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be written.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @return An BooleanQueryResultFormat object if a match was found, or
+	 *         <tt>null</tt> otherwise.
+	 * @see #getBooleanWriterFormatForFileName(String, BooleanQueryResultFormat)
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForFileName(String fileName) {
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForFileName(fileName);
+	}
+
+	/**
+	 * Tries to match the extension of a file name against the list of RDF
+	 * formats that can be written. This method calls
+	 * {@link BooleanQueryResultFormat#matchFileName(String, Iterable, info.aduna.lang.FileFormat)}
+	 * with the specified MIME type, the keys of
+	 * {@link BooleanQueryResultWriterRegistry#getInstance()} and the fallback
+	 * format as parameters.
+	 * 
+	 * @param fileName
+	 *        A file name.
+	 * @param fallback
+	 *        The format that will be returned if no match was found.
+	 * @return The matching BooleanQueryResultFormat, or <tt>fallback</tt> if no
+	 *         match was found.
+	 * @since 2.7.0
+	 */
+	public static BooleanQueryResultFormat getBooleanWriterFormatForFileName(String fileName,
+			BooleanQueryResultFormat fallback)
+	{
+		return BooleanQueryResultWriterRegistry.getInstance().getFileFormatForFileName(fileName, fallback);
 	}
 
 	/**
@@ -406,14 +556,19 @@ public class QueryResultIO {
 	{
 		TupleQueryResultWriter writer = createWriter(format, out);
 		try {
+			writer.startDocument();
+			writer.startHeader();
 			QueryResults.report(tqr, writer);
 		}
-		catch (TupleQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			if (e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}
+			else if (e instanceof TupleQueryResultHandlerException) {
+				throw (TupleQueryResultHandlerException)e;
+			}
 			else {
-				throw e;
+				throw new TupleQueryResultHandlerException(e);
 			}
 		}
 	}
@@ -433,12 +588,54 @@ public class QueryResultIO {
 	 *         the stream.
 	 * @throws UnsupportedQueryResultFormatException
 	 *         If an unsupported query result file format was specified.
+	 * @deprecated Use
+	 *             {@link #writeBoolean(boolean, BooleanQueryResultFormat, OutputStream)}
+	 *             instead.
 	 */
+	@Deprecated
 	public static void write(boolean value, BooleanQueryResultFormat format, OutputStream out)
 		throws IOException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultWriter writer = createWriter(format, out);
+		try {
+			writer.startDocument();
+			writer.startHeader();
+		}
+		catch (QueryResultHandlerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw (IOException)e.getCause();
+			}
+			else {
+				throw new IOException(e);
+			}
+		}
 		writer.write(value);
+	}
+
+	/**
+	 * Writes a boolean query result document in a specific boolean query result
+	 * format to an output stream.
+	 * 
+	 * @param value
+	 *        The value to write.
+	 * @param format
+	 *        The file format of the document to write.
+	 * @param out
+	 *        An OutputStream to write the document to.
+	 * @throws IOException
+	 *         If an I/O error occured while writing the query result document to
+	 *         the stream.
+	 * @throws UnsupportedQueryResultFormatException
+	 *         If an unsupported query result file format was specified.
+	 * @since 2.7.0
+	 */
+	public static void writeBoolean(boolean value, BooleanQueryResultFormat format, OutputStream out)
+		throws QueryResultHandlerException, UnsupportedQueryResultFormatException
+	{
+		BooleanQueryResultWriter writer = createWriter(format, out);
+		writer.startDocument();
+		writer.startHeader();
+		writer.handleBoolean(value);
 	}
 
 	/**

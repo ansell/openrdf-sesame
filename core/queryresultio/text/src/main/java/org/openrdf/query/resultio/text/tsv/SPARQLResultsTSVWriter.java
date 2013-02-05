@@ -32,6 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
@@ -56,6 +57,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		writer = new BufferedWriter(w, 1024);
 	}
 
+	@Override
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
@@ -76,6 +78,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 	}
 
+	@Override
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
@@ -88,6 +91,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 
 	}
 
+	@Override
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
@@ -110,8 +114,14 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 	}
 
-	public TupleQueryResultFormat getTupleQueryResultFormat() {
+	@Override
+	public final TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.TSV;
+	}
+
+	@Override
+	public final TupleQueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
 	}
 
 	protected void writeValue(Value val)
@@ -162,7 +172,7 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		}
 
 		writer.write(encodeString(label));
-		
+
 		if (quoted) {
 			writer.write("\"");
 		}
@@ -187,5 +197,47 @@ public class SPARQLResultsTSVWriter implements TupleQueryResultWriter {
 		s = StringUtil.gsub("\r", "\\r", s);
 		s = StringUtil.gsub("\"", "\\\"", s);
 		return s;
+	}
+
+	@Override
+	public void startDocument()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	@Override
+	public void handleStylesheet(String stylesheetUrl)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	@Override
+	public void startHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	@Override
+	public void endHeader()
+		throws TupleQueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
+
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
 }

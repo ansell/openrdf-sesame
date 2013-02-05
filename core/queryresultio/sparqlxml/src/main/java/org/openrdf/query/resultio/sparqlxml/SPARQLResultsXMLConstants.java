@@ -31,9 +31,13 @@ interface SPARQLResultsXMLConstants {
 
 	public static final String HEAD_TAG = "head";
 
+	public static final String LINK_TAG = "link";
+
 	public static final String VAR_TAG = "variable";
 
 	public static final String VAR_NAME_ATT = "name";
+
+	public static final String HREF_ATT = "href";
 
 	public static final String BOOLEAN_TAG = "boolean";
 

@@ -23,8 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import info.aduna.lang.FileFormat;
-
 /**
  * Represents the concept of an tuple query result serialization format. Tuple
  * query result formats are identified by a {@link #getName() name} and can have
@@ -33,7 +31,7 @@ import info.aduna.lang.FileFormat;
  * 
  * @author Arjohn Kampman
  */
-public class TupleQueryResultFormat extends FileFormat {
+public class TupleQueryResultFormat extends QueryResultFormat {
 
 	/*-----------*
 	 * Constants *
@@ -43,7 +41,8 @@ public class TupleQueryResultFormat extends FileFormat {
 	 * SPARQL Query Results XML Format.
 	 */
 	public static final TupleQueryResultFormat SPARQL = new TupleQueryResultFormat("SPARQL/XML",
-			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"), Arrays.asList("srx", "xml"));
+			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"),
+			Arrays.asList("srx", "xml"));
 
 	/**
 	 * Binary RDF results table format.
@@ -60,17 +59,15 @@ public class TupleQueryResultFormat extends FileFormat {
 	/**
 	 * SPARQL Query Result CSV Format.
 	 */
-	public static final TupleQueryResultFormat CSV =  new TupleQueryResultFormat("SPARQL/CSV",
-			"text/csv", Charset.forName("UTF-8"), "csv");
-	
-	
+	public static final TupleQueryResultFormat CSV = new TupleQueryResultFormat("SPARQL/CSV", "text/csv",
+			Charset.forName("UTF-8"), "csv");
+
 	/**
 	 * SPARQL Query Result TSV Format.
 	 */
-	public static final TupleQueryResultFormat TSV =  new TupleQueryResultFormat("SPARQL/TSV",
+	public static final TupleQueryResultFormat TSV = new TupleQueryResultFormat("SPARQL/TSV",
 			"text/tab-separated-values", Charset.forName("UTF-8"), "tsv");
 
-	
 	/*------------------*
 	 * Static variables *
 	 *------------------*/
@@ -113,8 +110,8 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML file
 	 *        format.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML files.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML files.
 	 */
 	public static TupleQueryResultFormat register(String name, String mimeType, String fileExt) {
 		TupleQueryResultFormat format = new TupleQueryResultFormat(name, mimeType, fileExt);
@@ -205,11 +202,10 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
 	 *        The MIME type of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML.
 	 */
 	public TupleQueryResultFormat(String name, String mimeType, String fileExt) {
 		this(name, mimeType, null, fileExt);
@@ -222,14 +218,13 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
 	 *        The MIME type of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param charset
 	 *        The default character encoding of the format. Specify <tt>null</tt>
 	 *        if not applicable.
 	 * @param fileExt
-	 *        The (default) file extension for the format, e.g. <tt>srx</tt>
-	 *        for SPARQL/XML.
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML.
 	 */
 	public TupleQueryResultFormat(String name, String mimeType, Charset charset, String fileExt) {
 		super(name, mimeType, charset, fileExt);
@@ -242,9 +237,9 @@ public class TupleQueryResultFormat extends FileFormat {
 	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeTypes
 	 *        The MIME types of the format, e.g.
-	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML
-	 *        format. The first item in the list is interpreted as the default
-	 *        MIME type for the format.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
 	 * @param charset
 	 *        The default character encoding of the format. Specify <tt>null</tt>
 	 *        if not applicable.

@@ -29,7 +29,7 @@ public interface BooleanQueryResultParser {
 	/**
 	 * Gets the query result format that this parser can parse.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat();
+	BooleanQueryResultFormat getBooleanQueryResultFormat();
 
 	/**
 	 * Parses the data from the supplied InputStream.
@@ -41,6 +41,6 @@ public interface BooleanQueryResultParser {
 	 * @throws QueryResultParseException
 	 *         If the parser has encountered an unrecoverable parse error.
 	 */
-	public boolean parse(InputStream in)
+	boolean parse(InputStream in)
 		throws IOException, QueryResultParseException;
 }

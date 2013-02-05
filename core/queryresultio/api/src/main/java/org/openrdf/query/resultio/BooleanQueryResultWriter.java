@@ -18,22 +18,27 @@ package org.openrdf.query.resultio;
 
 import java.io.IOException;
 
+import org.openrdf.query.BooleanQueryResultHandler;
+
 /**
  * The interface of objects that writer query results in a specific query result
  * format.
  * 
  * @author Arjohn Kampman
  */
-public interface BooleanQueryResultWriter {
+public interface BooleanQueryResultWriter extends QueryResultWriter, BooleanQueryResultHandler {
+
+	/**
+	 * Writes the specified boolean value.
+	 * 
+	 * @deprecated Use {@link #handleBoolean(boolean)} instead.
+	 */
+	void write(boolean value)
+		throws IOException;
 
 	/**
 	 * Gets the query result format that this writer uses.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat();
+	BooleanQueryResultFormat getBooleanQueryResultFormat();
 
-	/**
-	 * Writes the specified boolean value.
-	 */
-	public void write(boolean value)
-		throws IOException;
 }

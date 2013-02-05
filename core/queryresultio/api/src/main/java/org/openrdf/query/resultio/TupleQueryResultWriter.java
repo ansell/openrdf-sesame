@@ -22,10 +22,11 @@ import org.openrdf.query.TupleQueryResultHandler;
  * The interface of objects that writer query results in a specific query result
  * format.
  */
-public interface TupleQueryResultWriter extends TupleQueryResultHandler {
+public interface TupleQueryResultWriter extends TupleQueryResultHandler, QueryResultWriter {
 
 	/**
 	 * Gets the query result format that this writer uses.
 	 */
-	public TupleQueryResultFormat getTupleQueryResultFormat();
+	TupleQueryResultFormat getTupleQueryResultFormat();
+
 }

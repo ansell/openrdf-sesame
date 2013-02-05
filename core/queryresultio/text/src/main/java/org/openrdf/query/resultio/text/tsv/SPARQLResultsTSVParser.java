@@ -33,6 +33,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
@@ -48,10 +49,12 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 
 	private List<String> bindingNames;
 
+	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.TSV;
 	}
 
+	@Override
 	public void parse(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
@@ -65,7 +68,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
 				// header is mandatory in SPARQL TSV
 				String[] names = nextLine.split("\t", -1);
 				bindingNames = new ArrayList<String>(names.length);
-				for (String name: names) {
+				for (String name : names) {
 					// strip the '?' prefix
 					bindingNames.add(name.substring(1));
 				}

@@ -31,8 +31,8 @@ import org.openrdf.query.TupleQueryResult;
 /**
  * A generic implementation of the {@link TupleQueryResult} interface.
  */
-public class TupleQueryResultImpl extends IterationWrapper<BindingSet, QueryEvaluationException>
-		implements TupleQueryResult
+public class TupleQueryResultImpl extends IterationWrapper<BindingSet, QueryEvaluationException> implements
+		TupleQueryResult
 {
 
 	/*-----------*
@@ -84,9 +84,11 @@ public class TupleQueryResultImpl extends IterationWrapper<BindingSet, QueryEval
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public List<String> getBindingNames()
 		throws QueryEvaluationException
 	{
 		return bindingNames;
 	}
+
 }
