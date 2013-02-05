@@ -85,7 +85,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	{
 		super(request);
 		this.defaults = defaults;
-		this.decoder = new ValueDecoder(repository, (repository == null) ? new ValueFactoryImpl()
+		this.decoder = new ValueDecoder(repository, (repository == null) ? ValueFactoryImpl.getInstance()
 				: repository.getValueFactory());
 		String url = request.getRequestURL().toString();
 		if (ServletFileUpload.isMultipartContent(this)) {
@@ -299,7 +299,8 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	}
 
 	/**
-	 * Gets the {@link org.openrdf.model.Value} referred to by the parameter value.
+	 * Gets the {@link org.openrdf.model.Value} referred to by the parameter
+	 * value.
 	 * 
 	 * @param name
 	 *        of the parameter to check

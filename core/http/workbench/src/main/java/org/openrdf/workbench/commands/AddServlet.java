@@ -42,7 +42,7 @@ public class AddServlet extends TransformationServlet {
 
 	private static final String URL = "url";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AddServlet.class);
+	private final Logger logger = LoggerFactory.getLogger(AddServlet.class);
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
@@ -71,7 +71,7 @@ public class AddServlet extends TransformationServlet {
 			resp.sendRedirect("summary");
 		}
 		catch (BadRequestException exc) {
-			LOGGER.warn(exc.toString(), exc);
+			logger.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			PrintWriter out = resp.getWriter();
 			TupleResultBuilder builder = new TupleResultBuilder(out);

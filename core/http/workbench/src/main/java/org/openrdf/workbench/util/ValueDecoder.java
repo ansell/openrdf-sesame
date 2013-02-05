@@ -140,18 +140,7 @@ class ValueDecoder {
 	{
 		RepositoryConnection con = repository.getConnection();
 		try {
-			String namespace = con.getNamespace(prefix);
-			if (namespace == null) {
-				for (Namespace n : Iterations.asList(con.getNamespaces())) {
-					if (prefix.equals(n.getPrefix())) {
-						namespace = n.getName();
-					}
-				}
-				if (namespace != null) {
-					LOGGER.error("Namespace could not be found, but it does exist");
-				}
-			}
-			return namespace;
+			return con.getNamespace(prefix);
 		}
 		finally {
 			con.close();

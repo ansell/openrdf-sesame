@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 public class ClearServlet extends TransformationServlet {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClearServlet.class);
+	private final Logger logger = LoggerFactory.getLogger(ClearServlet.class);
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
@@ -57,7 +57,7 @@ public class ClearServlet extends TransformationServlet {
 			resp.sendRedirect("summary");
 		}
 		catch (BadRequestException exc) {
-			LOGGER.warn(exc.toString(), exc);
+			logger.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			PrintWriter out = resp.getWriter();
 			TupleResultBuilder builder = new TupleResultBuilder(out);

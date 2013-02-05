@@ -38,7 +38,7 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class RemoveServlet extends TransformationServlet {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RemoveServlet.class);
+	private final Logger logger = LoggerFactory.getLogger(RemoveServlet.class);
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
@@ -70,7 +70,7 @@ public class RemoveServlet extends TransformationServlet {
 			resp.sendRedirect("summary");
 		}
 		catch (BadRequestException exc) {
-			LOGGER.warn(exc.toString(), exc);
+			logger.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			PrintWriter out = resp.getWriter();
 			TupleResultBuilder builder = new TupleResultBuilder(out);
