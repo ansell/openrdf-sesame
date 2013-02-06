@@ -69,6 +69,7 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 
 	static {
 		register(TEXT);
+		register(JSON);
 		register(SPARQL);
 	}
 
