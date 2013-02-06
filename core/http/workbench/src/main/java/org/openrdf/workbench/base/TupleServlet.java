@@ -33,6 +33,7 @@ public abstract class TupleServlet extends TransformationServlet {
 	protected String[] variables;
 
 	public TupleServlet(String xsl, String... variables) {
+		super();
 		this.xsl = xsl;
 		this.variables = variables;
 	}

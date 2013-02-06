@@ -21,13 +21,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import info.aduna.iteration.CloseableIteration;
+
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.workbench.base.TupleServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -35,7 +40,7 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class ExploreServlet extends TupleServlet {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExploreServlet.class);
+	private final Logger logger = LoggerFactory.getLogger(ExploreServlet.class);
 
 	public ExploreServlet() {
 		super("explore.xsl", "subject", "predicate", "object", "context");
@@ -54,7 +59,7 @@ public class ExploreServlet extends TupleServlet {
 			super.service(req, resp, xslPath);
 		}
 		catch (BadRequestException exc) {
-			LOGGER.warn(exc.toString(), exc);
+			logger.warn(exc.toString(), exc);
 			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 			builder.transform(xslPath, "explore.xsl");
 			builder.start("error-message");
@@ -67,10 +72,10 @@ public class ExploreServlet extends TupleServlet {
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp,
 			final TupleResultBuilder builder, final RepositoryConnection con)
-		throws Exception
+		throws BadRequestException, OpenRDFException
 	{
 		final Value value = req.getValue("resource");
-		LOGGER.info("resource = {}", value);
+		logger.debug("resource = {}", value);
 
 		// At worst, malicious parameter value could cause inaccurate
 		// reporting of count in page.
@@ -78,14 +83,12 @@ public class ExploreServlet extends TupleServlet {
 		if (count == 0) {
 			count = this.processResource(con, builder, value, 0, Integer.MAX_VALUE, false);
 		}
-
 		this.cookies.addTotalResultCountCookie(req, resp, count);
 		final int offset = req.getInt("offset");
 		int limit = req.getInt("limit");
 		if (limit == 0) {
 			limit = Integer.MAX_VALUE;
 		}
-
 		this.processResource(con, builder, value, offset, limit, true);
 	}
 
@@ -105,33 +108,31 @@ public class ExploreServlet extends TupleServlet {
 	 *        The limit on the number of results to render.
 	 * @param render
 	 *        If false, suppresses output to the HTTP response.
+	 * @throws OpenRDFException
+	 *         if there is an issue iterating through results
 	 * @returns The count of all triples in the repository using the given value.
 	 */
-	private int processResource(final RepositoryConnection con, final TupleResultBuilder builder,
+	protected int processResource(final RepositoryConnection con, final TupleResultBuilder builder,
 			final Value value, final int offset, final int limit, final boolean render)
-		throws RepositoryException
+		throws OpenRDFException
 	{
 		final ResultCursor cursor = new ResultCursor(offset, limit, render);
 		if (value instanceof Resource) {
 			export(con, builder, cursor, (Resource)value, null, null);
-			LOGGER.info("After subject, total = {}", cursor.getTotalResultCount());
+			logger.debug("After subject, total = {}", cursor.getTotalResultCount());
 		}
-
 		if (value instanceof URI) {
 			export(con, builder, cursor, null, (URI)value, null);
-			LOGGER.info("After predicate, total = {}", cursor.getTotalResultCount());
+			logger.debug("After predicate, total = {}", cursor.getTotalResultCount());
 		}
-
 		if (value != null) {
 			export(con, builder, cursor, null, null, value);
-			LOGGER.info("After object, total = {}", cursor.getTotalResultCount());
+			logger.debug("After object, total = {}", cursor.getTotalResultCount());
 		}
-
 		if (value instanceof Resource) {
 			export(con, builder, cursor, null, null, null, (Resource)value);
-			LOGGER.info("After context, total = {}", cursor.getTotalResultCount());
+			logger.debug("After context, total = {}", cursor.getTotalResultCount());
 		}
-
 		return cursor.getTotalResultCount();
 	}
 
@@ -151,20 +152,31 @@ public class ExploreServlet extends TupleServlet {
 	 *        the triple predicate
 	 * @param obj
 	 *        the triple object
-	 * @param ctx
+	 * @param context
 	 *        the triple context
 	 */
-	private void export(final RepositoryConnection con, final TupleResultBuilder builder,
-			final ResultCursor cursor, final Resource subj, final URI pred, final Value obj,
-			final Resource... ctx)
-		throws RepositoryException
+	private void export(RepositoryConnection con, TupleResultBuilder builder, ResultCursor cursor,
+			Resource subj, URI pred, Value obj, Resource... context)
+		throws OpenRDFException, MalformedQueryException, QueryEvaluationException
 	{
-		final RepositoryResult<Statement> result = con.getStatements(subj, pred, obj, true, ctx);
+		boolean contextQuery = (null == subj && null == pred && null == obj && 1 == context.length);
+		CloseableIteration<Statement, ? extends OpenRDFException> result;
+		if (contextQuery) {
+			GraphQuery query = con.prepareGraphQuery(QueryLanguage.SPARQL,
+					"construct {?s ?p ?o } where { graph ?c { ?s ?p ?o . "
+							+ "minus { ?s ?p ?o . filter (?s = ?c || ?p = ?c || ?o = ?c) } } } ");
+			query.setBinding("c", context[0]);
+			result = query.evaluate();
+		}
+		else {
+			result = con.getStatements(subj, pred, obj, true, context);
+		}
 		try {
 			while (result.hasNext()) {
-				final Statement st = result.next();
+				final Statement statement = result.next();
 				if (cursor.mayRender()) {
-					builder.result(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+					builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
+							contextQuery ? context[0] : statement.getContext());
 				}
 
 				cursor.advance();
