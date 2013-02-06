@@ -22,6 +22,7 @@ import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 
+import info.aduna.io.UncloseableInputStream;
 import info.aduna.xml.SimpleSAXParser;
 import info.aduna.xml.XMLReaderFactory;
 
@@ -62,77 +63,86 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
 		BufferedInputStream buff = new BufferedInputStream(in);
-		buff.mark(Integer.MAX_VALUE);
-		boolean result = false;
-
-		SAXException caughtException = null;
+		UncloseableInputStream uncloseable = new UncloseableInputStream(buff);
 
 		try {
-			SPARQLBooleanSAXParser valueParser = new SPARQLBooleanSAXParser();
+			buff.mark(Integer.MAX_VALUE);
+			boolean result = false;
 
-			SimpleSAXParser booleanSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
-			booleanSAXParser.setListener(valueParser);
-			booleanSAXParser.parse(buff);
+			SAXException caughtException = null;
 
-			result = valueParser.getValue();
+			try {
+				SPARQLBooleanSAXParser valueParser = new SPARQLBooleanSAXParser();
 
-			if (this.handler != null) {
-				try {
-					this.handler.handleBoolean(result);
+				SimpleSAXParser booleanSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+				booleanSAXParser.setListener(valueParser);
+				booleanSAXParser.parse(uncloseable);
+
+				result = valueParser.getValue();
+
+				if (this.handler != null) {
+					try {
+						this.handler.handleBoolean(result);
+					}
+					catch (QueryResultHandlerException e) {
+						if (e.getCause() != null && e.getCause() instanceof IOException) {
+							throw (IOException)e.getCause();
+						}
+						else {
+							throw new QueryResultParseException("Found an issue with the query result handler", e);
+						}
+					}
 				}
-				catch (QueryResultHandlerException e) {
-					if (e.getCause() != null && e.getCause() instanceof IOException) {
-						throw (IOException)e.getCause();
-					}
-					else {
-						throw new QueryResultParseException("Found an issue with the query result handler", e);
-					}
+				// if there were no exceptions up to this point, return the boolean
+				// result;
+				return result;
+			}
+			catch (SAXException e) {
+				caughtException = e;
+			}
+
+			// Reset the buffered input stream and try again looking for tuple
+			// results
+			buff.reset();
+
+			try {
+				SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+
+				resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
+
+				resultsSAXParser.parse(uncloseable);
+
+				// we had success, so remove the exception that we were tracking
+				// from
+				// the boolean failure
+				caughtException = null;
+			}
+			catch (SAXException e) {
+				caughtException = e;
+			}
+
+			if (caughtException != null) {
+				Exception wrappedExc = caughtException.getException();
+
+				if (wrappedExc == null) {
+					throw new QueryResultParseException(caughtException);
+				}
+				else if (wrappedExc instanceof QueryResultParseException) {
+					throw (QueryResultParseException)wrappedExc;
+				}
+				else if (wrappedExc instanceof QueryResultHandlerException) {
+					throw (QueryResultHandlerException)wrappedExc;
+				}
+				else {
+					throw new QueryResultParseException(wrappedExc);
 				}
 			}
-			// if there were no exceptions up to this point, return the boolean
-			// result;
+
 			return result;
 		}
-		catch (SAXException e) {
-			caughtException = e;
+		finally {
+			uncloseable.doClose();
 		}
-
-		// Reset the buffered input stream and try again looking for tuple results
-		buff.reset();
-
-		try {
-			SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
-
-			resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
-
-			resultsSAXParser.parse(buff);
-
-			// we had success, so remove the exception that we were tracking from
-			// the boolean failure
-			caughtException = null;
-		}
-		catch (SAXException e) {
-			caughtException = e;
-		}
-
-		if (caughtException != null) {
-			Exception wrappedExc = caughtException.getException();
-
-			if (wrappedExc == null) {
-				throw new QueryResultParseException(caughtException);
-			}
-			else if (wrappedExc instanceof QueryResultParseException) {
-				throw (QueryResultParseException)wrappedExc;
-			}
-			else if (wrappedExc instanceof QueryResultHandlerException) {
-				throw (QueryResultHandlerException)wrappedExc;
-			}
-			else {
-				throw new QueryResultParseException(wrappedExc);
-			}
-		}
-
-		return result;
 	}
 
 }
