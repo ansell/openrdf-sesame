@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import info.aduna.text.StringUtil;
@@ -33,11 +32,11 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.query.resultio.TupleQueryResultParserBase;
 
 /**
@@ -45,7 +44,7 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
  * 
  * @author Jeen Broekstra
  */
-public class SPARQLResultsTSVParser extends TupleQueryResultParserBase {
+public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implements TupleQueryResultParser {
 
 	private List<String> bindingNames;
 

@@ -19,14 +19,13 @@ package org.openrdf.query.resultio;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
 /**
  * A general interface for tuple query result parsers.
  */
-public interface TupleQueryResultParser {
+public interface TupleQueryResultParser extends QueryResultParser {
 
 	/**
 	 * Gets the query result format that this parser can parse.
@@ -34,18 +33,11 @@ public interface TupleQueryResultParser {
 	TupleQueryResultFormat getTupleQueryResultFormat();
 
 	/**
-	 * Sets the ValueFactory that the parser will use to create Value objects for
-	 * the parsed query result.
-	 * 
-	 * @param valueFactory
-	 *        The value factory that the parser should use.
-	 */
-	void setValueFactory(ValueFactory valueFactory);
-
-	/**
 	 * Sets the TupleQueryResultHandler that will handle the parsed query result
 	 * data.
+	 * @deprecated Use {@link #setQueryResultHandler(org.openrdf.query.QueryResultHandler)} instead.
 	 */
+	@Deprecated
 	void setTupleQueryResultHandler(TupleQueryResultHandler handler);
 
 	/**
@@ -60,7 +52,9 @@ public interface TupleQueryResultParser {
 	 * @throws TupleQueryResultHandlerException
 	 *         If the configured query result handler has encountered an
 	 *         unrecoverable error.
+	 * @deprecated Use {@link #parseQueryResult(InputStream)} instead.
 	 */
+	@Deprecated
 	void parse(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException;
 }
