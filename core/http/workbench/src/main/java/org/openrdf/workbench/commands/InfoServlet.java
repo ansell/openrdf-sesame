@@ -63,19 +63,16 @@ public class InfoServlet extends TransformationServlet {
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();
-			// TODO: How does this map to QueryResultHandler.handleSolution?
-			builder.binding("upload-format", mimeType + " " + name);
+			builder.namedResult("upload-format", mimeType + " " + name);
 		}
 		for (QueryParserFactory factory : getInstance().getAll()) {
 			String name = factory.getQueryLanguage().getName();
-			// TODO: How does this map to QueryResultHandler.handleSolution?
-			builder.binding("query-format", name + " " + name);
+			builder.namedResult("query-format", name + " " + name);
 		}
 		for (RDFWriterFactory writer : RDFWriterRegistry.getInstance().getAll()) {
 			String mimeType = writer.getRDFFormat().getDefaultMIMEType();
 			String name = writer.getRDFFormat().getName();
-			// TODO: How does this map to QueryResultHandler.handleSolution?
-			builder.binding("download-format", mimeType + " " + name);
+			builder.namedResult("download-format", mimeType + " " + name);
 		}
 		builder.end();
 	}
