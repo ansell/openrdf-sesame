@@ -510,9 +510,9 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 				parser.setValueFactory(ValueFactoryImpl.getInstance());
 	
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
-				parser.setTupleQueryResultHandler(qrBuilder);
+				parser.setQueryResultHandler(qrBuilder);
 	
-				parser.parse(in);
+				parser.parseQueryResult(in);
 				return qrBuilder.getQueryResult();
 			}
 			finally {

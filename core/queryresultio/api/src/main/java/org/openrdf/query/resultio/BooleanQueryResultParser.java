@@ -24,7 +24,7 @@ import java.io.InputStream;
  * 
  * @author Arjohn Kampman
  */
-public interface BooleanQueryResultParser {
+public interface BooleanQueryResultParser extends QueryResultParser {
 
 	/**
 	 * Gets the query result format that this parser can parse.
@@ -40,7 +40,9 @@ public interface BooleanQueryResultParser {
 	 *         If an I/O error occurred while data was read from the InputStream.
 	 * @throws QueryResultParseException
 	 *         If the parser has encountered an unrecoverable parse error.
+	 * @deprecated Use {@link #parseQueryResult(InputStream)} instead.
 	 */
+	@Deprecated
 	boolean parse(InputStream in)
 		throws IOException, QueryResultParseException;
 }

@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultHandlerException;
@@ -474,8 +473,18 @@ public class QueryResultIO {
 	{
 		TupleQueryResultParser parser = createParser(format);
 		parser.setValueFactory(valueFactory);
-		parser.setTupleQueryResultHandler(handler);
-		parser.parse(in);
+		parser.setQueryResultHandler(handler);
+		try {
+			parser.parseQueryResult(in);
+		}
+		catch (QueryResultHandlerException e) {
+			if (e instanceof TupleQueryResultHandlerException) {
+				throw (TupleQueryResultHandlerException)e;
+			}
+			else {
+				throw new TupleQueryResultHandlerException(e);
+			}
+		}
 	}
 
 	/**
@@ -504,9 +513,19 @@ public class QueryResultIO {
 		TupleQueryResultParser parser = createParser(format);
 
 		TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
-		parser.setTupleQueryResultHandler(qrBuilder);
+		parser.setQueryResultHandler(qrBuilder);
 
-		parser.parse(in);
+		try {
+			parser.parseQueryResult(in);
+		}
+		catch (QueryResultHandlerException e) {
+			if (e instanceof TupleQueryResultHandlerException) {
+				throw (TupleQueryResultHandlerException)e;
+			}
+			else {
+				throw new TupleQueryResultHandlerException(e);
+			}
+		}
 
 		return qrBuilder.getQueryResult();
 	}

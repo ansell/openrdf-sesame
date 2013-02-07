@@ -35,6 +35,7 @@ import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.query.resultio.TupleQueryResultParserBase;
 
 /**
@@ -42,7 +43,7 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
  * 
  * @author Jeen Broekstra
  */
-public class SPARQLResultsCSVParser extends TupleQueryResultParserBase {
+public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implements TupleQueryResultParser {
 
 	private List<String> bindingNames;
 

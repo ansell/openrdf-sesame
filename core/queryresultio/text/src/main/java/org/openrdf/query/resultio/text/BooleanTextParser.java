@@ -24,14 +24,21 @@ import java.nio.charset.Charset;
 
 import info.aduna.io.IOUtil;
 
+import org.openrdf.model.ValueFactory;
+import org.openrdf.query.QueryResultHandler;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
+import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultParseException;
+import org.openrdf.query.resultio.QueryResultParserBase;
 
 /**
  * Reader for the plain text boolean result format.
  */
-public class BooleanTextParser implements BooleanQueryResultParser {
+public class BooleanTextParser extends QueryResultParserBase implements BooleanQueryResultParser {
+
+	private QueryResultHandler handler;
 
 	/*--------------*
 	 * Constructors *
@@ -61,14 +68,44 @@ public class BooleanTextParser implements BooleanQueryResultParser {
 		String value = IOUtil.readString(reader, 16);
 		value = value.trim();
 
+		boolean result = false;
+
 		if (value.equalsIgnoreCase("true")) {
-			return true;
+			result = true;
 		}
 		else if (value.equalsIgnoreCase("false")) {
-			return false;
+			result = false;
 		}
 		else {
 			throw new QueryResultParseException("Invalid value: " + value);
 		}
+
+		if (this.handler != null) {
+			try {
+				this.handler.handleBoolean(result);
+			}
+			catch (QueryResultHandlerException e) {
+				if (e.getCause() != null && e.getCause() instanceof IOException) {
+					throw (IOException)e.getCause();
+				}
+				else {
+					throw new QueryResultParseException("Found an issue with the query result handler", e);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public final QueryResultFormat getQueryResultFormat() {
+		return getBooleanQueryResultFormat();
+	}
+
+	@Override
+	public void parseQueryResult(InputStream in)
+		throws IOException, QueryResultParseException, QueryResultHandlerException
+	{
+		parse(in);
 	}
 }

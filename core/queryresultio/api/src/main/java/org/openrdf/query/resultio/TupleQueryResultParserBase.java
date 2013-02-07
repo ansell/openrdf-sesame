@@ -16,64 +16,54 @@
  */
 package org.openrdf.query.resultio;
 
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.resultio.TupleQueryResultParser;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.TupleQueryResultHandler;
 
 /**
- * Base class for {@link TupleQueryResultParser}s offering common functionality for
- * query result parsers.
+ * Base class for {@link TupleQueryResultParser}s offering common functionality
+ * for query result parsers.
  */
-public abstract class TupleQueryResultParserBase implements TupleQueryResultParser {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	/**
-	 * The ValueFactory to use for creating RDF model objects.
-	 */
-	protected ValueFactory valueFactory;
-
-	/**
-	 * The TupleQueryResultHandler that will handle the parsed query results.
-	 */
-	protected TupleQueryResultHandler handler;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
+public abstract class TupleQueryResultParserBase extends QueryResultParserBase implements
+		TupleQueryResultParser
+{
 
 	/**
 	 * Creates a new parser base that, by default, will use an instance of
 	 * {@link ValueFactoryImpl} to create Value objects.
 	 */
 	public TupleQueryResultParserBase() {
-		this(new ValueFactoryImpl());
+		super();
 	}
 
 	/**
-	 * Creates a new parser base that will use the supplied ValueFactory to
-	 * create Value objects.
+	 * Creates a new parser base that will use the supplied {@link ValueFactory}
+	 * to create {@link Value} objects.
 	 */
 	public TupleQueryResultParserBase(ValueFactory valueFactory) {
-		setValueFactory(valueFactory);
+		super(valueFactory);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
+	@Override
+	public QueryResultFormat getQueryResultFormat() {
+		return getTupleQueryResultFormat();
+	}
 
 	@Override
-	public void setValueFactory(ValueFactory valueFactory) {
-		this.valueFactory = valueFactory;
+	public void parseQueryResult(InputStream in)
+		throws IOException, QueryResultParseException, QueryResultHandlerException
+	{
+		parse(in);
 	}
 
 	@Override
 	public void setTupleQueryResultHandler(TupleQueryResultHandler handler) {
-		this.handler = handler;
+		setQueryResultHandler(handler);
 	}
+
 }
