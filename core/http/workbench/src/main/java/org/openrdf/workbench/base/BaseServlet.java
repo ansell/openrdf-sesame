@@ -149,7 +149,7 @@ public abstract class BaseServlet implements Servlet {
 	 * @throws IOException
 	 * @throws UnsupportedQueryResultFormatException
 	 */
-	protected TupleResultBuilder getTupleResultBuilder(WorkbenchRequest req, HttpServletResponse resp)
+	protected TupleResultBuilder getTupleResultBuilder(HttpServletRequest req, HttpServletResponse resp)
 		throws UnsupportedQueryResultFormatException, IOException
 	{
 		QueryResultWriter resultWriter = getResultWriter(req, resp);
