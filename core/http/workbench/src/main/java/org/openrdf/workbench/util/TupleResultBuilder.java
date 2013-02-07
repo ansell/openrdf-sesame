@@ -16,7 +16,6 @@
  */
 package org.openrdf.workbench.util;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,197 +25,196 @@ import java.util.Map;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Binding;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.impl.BindingImpl;
+import org.openrdf.query.resultio.QueryResultWriter;
 
 public class TupleResultBuilder {
-	private PrintWriter out;
+
+	private final QueryResultWriter out;
+
+	private final ValueFactory vf;
+
 	private List<String> variables = new ArrayList<String>();
-	private boolean started;
-	private boolean headClosed;
+
 	private Map<String, String> prefixes = new HashMap<String, String>();
 
-	public TupleResultBuilder(PrintWriter out) {
-		this.out = out;
+	public TupleResultBuilder(QueryResultWriter writer, ValueFactory valueFactory) {
+		this.out = writer;
+		this.vf = valueFactory;
 	}
 
 	public void prefix(String prefix, String namespace) {
 		prefixes.put(namespace, prefix);
 	}
 
-	public TupleResultBuilder transform(String path, String xsl) {
-		out.println("<?xml version='1.0' encoding='utf-8'?>");
-		out.print("<?xml-stylesheet type='text/xsl' href='");
-		out.print(path);
-		out.print("/");
-		out.print(xsl);
-		out.println("'?>");
-		started = true;
+	public TupleResultBuilder transform(String path, String xsl)
+		throws QueryResultHandlerException
+	{
+		out.handleStylesheet(path + "/" + xsl);
+		// out.println("<?xml version='1.0' encoding='utf-8'?>");
+		// out.print("<?xml-stylesheet type='text/xsl' href='");
+		// out.print(path);
+		// out.print("/");
+		// out.print(xsl);
+		// out.println("'?>");
 		return this;
 	}
 
-	public TupleResultBuilder start(String... variables) {
-		if (!started) {
-			out.println("<?xml version='1.0' encoding='UTF-8'?>");
-		}
-		out.print("<sparql xmlns='http://www.w3.org/2005/sparql-results#'");
-		out.println(" xmlns:q='http://www.openrdf.org/schema/qname#'>");
-		out.println("  <head>");
+	public TupleResultBuilder start(String... variables)
+		throws QueryResultHandlerException
+	{
 		variables(variables);
 		return this;
 	}
 
-	public TupleResultBuilder variables(String... names) {
-		variables.addAll(Arrays.asList(names));
-		for (String variable : names) {
-			out.print("    <variable name='");
-			out.print(variable);
-			out.println("'/>");
-		}
+	public TupleResultBuilder variables(String... names)
+		throws QueryResultHandlerException
+	{
+		variables = Arrays.asList(names);
+		out.startQueryResult(variables);
 		return this;
 	}
 
-	public TupleResultBuilder link(String url) {
-		out.print("    <link href='");
-		out.print(url);
-		out.println("'/>");
+	public TupleResultBuilder link(List<String> url)
+		throws QueryResultHandlerException
+	{
+		out.handleLinks(url);
 		return this;
 	}
 
-	public void bool(boolean result) {
-		closeHeadBoolean();
-		out.print("  <boolean>");
-		out.print(result);
-		out.println("</boolean>");
+	public void bool(boolean result)
+		throws QueryResultHandlerException
+	{
+		out.handleBoolean(result);
 	}
 
-	public TupleResultBuilder binding(String name, Object result) {
-		closeHead();
-		out.println("    <result>");
+	// FIXME: Replace the calls to this with calls to result and variables
+	private TupleResultBuilder binding(String name, Object result)
+		throws QueryResultHandlerException
+	{
 		outputNamedResult(name, result);
-		out.println("    </result>");
 		return this;
 	}
 
-	public TupleResultBuilder result(Object... result) {
+	public TupleResultBuilder result(Object... result)
+		throws QueryResultHandlerException
+	{
 		closeHead();
-		out.println("    <result>");
+		QueryBindingSet bindingSet = new QueryBindingSet();
 		for (int i = 0; i < result.length; i++) {
 			if (result[i] == null)
 				continue;
-			outputNamedResult(variables.get(i), result[i]);
+			bindingSet.addBinding(outputNamedResult(variables.get(i), result[i]));
 		}
-		out.println("    </result>");
+		out.handleSolution(bindingSet);
 		return this;
 	}
 
-	private void outputNamedResult(String name, Object result) {
-		out.print("      <binding name='");
-		out.print(name);
-		out.println("'>");
+	private Binding outputNamedResult(String name, Object result)
+		throws QueryResultHandlerException
+	{
+		final Value nextValue;
 		if (result instanceof Boolean) {
-			out.print("        <literal datatype='");
-			out.print(XMLSchema.BOOLEAN);
-			out.print("'>");
-			out.print(result);
-			out.println("</literal>");
-		} else if (isQName(result)) {
-			URI uri = (URI) result;
-			out.print("        <uri q:qname='");
-			out.print(enc(prefixes.get(uri.getNamespace())));
-			out.print(":");
-			out.print(enc(uri.getLocalName()));
-			out.print("'>");
-			out.print(enc(uri.stringValue()));
-			out.println("</uri>");
-		} else if (result instanceof URI) {
-			URI uri = (URI) result;
-			out.print("        <uri>");
-			out.print(enc(uri.stringValue()));
-			out.println("</uri>");
-		} else if (result instanceof BNode) {
-			BNode bnode = (BNode) result;
-			out.print("        <bnode>");
-			out.print(enc(bnode.stringValue()));
-			out.println("</bnode>");
-		} else if (result instanceof Literal) {
-			Literal lit = (Literal) result;
-			out.print("        <literal");
-			URI uri = lit.getDatatype();
-			if (isQName(uri)) {
-				out.print(" q:qname='");
-				out.print(enc(prefixes.get(uri.getNamespace())));
-				out.print(":");
-				out.print(enc(uri.getLocalName()));
-				out.print("'");
-			}
-			if (uri != null) {
-				out.print(" datatype='");
-				out.print(enc(uri.stringValue()));
-				out.print("'");
-			}
-			if (lit.getLanguage() != null) {
-				out.print(" xml:lang='");
-				out.print(enc(lit.getLanguage()));
-				out.print("'");
-			}
-			out.print(">");
-			out.print(enc(lit.stringValue()));
-			out.println("</literal>");
-		} else {
-			out.print("        <literal>");
-			out.print(enc(result.toString()));
-			out.println("</literal>");
+			nextValue = vf.createLiteral(((Boolean)result).booleanValue());
+			// out.print("        <literal datatype='");
+			// out.print(XMLSchema.BOOLEAN);
+			// out.print("'>");
+			// out.print(result);
+			// out.println("</literal>");
 		}
-		out.println("      </binding>");
-	}
-
-	private String enc(String stringValue) {
-		String str = stringValue.replace("&", "&amp;");
-		str = str.replace("<", "&lt;");
-		str = str.replace(">", "&gt;");
-		str = str.replace("\"", "&quot;");
-		str = str.replace("'", "&apos;");
-		return str;
+		else if (isQName(result)) {
+			nextValue = (URI)result;
+			// URI uri = (URI) result;
+			// out.print("        <uri q:qname='");
+			// out.print(enc(prefixes.get(uri.getNamespace())));
+			// out.print(":");
+			// out.print(enc(uri.getLocalName()));
+			// out.print("'>");
+			// out.print(enc(uri.stringValue()));
+			// out.println("</uri>");
+		}
+		else if (result instanceof URI) {
+			nextValue = (URI)result;
+			// URI uri = (URI) result;
+			// out.print("        <uri>");
+			// out.print(enc(uri.stringValue()));
+			// out.println("</uri>");
+		}
+		else if (result instanceof BNode) {
+			nextValue = (BNode)result;
+			// BNode bnode = (BNode) result;
+			// out.print("        <bnode>");
+			// out.print(enc(bnode.stringValue()));
+			// out.println("</bnode>");
+		}
+		else if (result instanceof Literal) {
+			nextValue = (Literal)result;
+			// Literal lit = (Literal) result;
+			// out.print("        <literal");
+			// URI uri = lit.getDatatype();
+			// if (isQName(uri)) {
+			// out.print(" q:qname='");
+			// out.print(enc(prefixes.get(uri.getNamespace())));
+			// out.print(":");
+			// out.print(enc(uri.getLocalName()));
+			// out.print("'");
+			// }
+			// if (uri != null) {
+			// out.print(" datatype='");
+			// out.print(enc(uri.stringValue()));
+			// out.print("'");
+			// }
+			// if (lit.getLanguage() != null) {
+			// out.print(" xml:lang='");
+			// out.print(enc(lit.getLanguage()));
+			// out.print("'");
+			// }
+			// out.print(">");
+			// out.print(enc(lit.stringValue()));
+			// out.println("</literal>");
+		}
+		else {
+			nextValue = vf.createLiteral(result);
+			// out.print("        <literal>");
+			// out.print(enc(result.toString()));
+			// out.println("</literal>");
+		}
+		// out.println("      </binding>");
+		return new BindingImpl(name, nextValue);
 	}
 
 	private boolean isQName(Object result) {
 		if (result instanceof URI) {
-			URI uri = (URI) result;
+			URI uri = (URI)result;
 			return prefixes.containsKey(uri.getNamespace());
 		}
 		return false;
 	}
 
-	public TupleResultBuilder end() {
-		closeHead();
-		out.println("  </results>");
-		out.println("</sparql>");
+	public TupleResultBuilder end()
+		throws QueryResultHandlerException
+	{
+		out.endQueryResult();
 		return this;
 	}
 
 	public TupleResultBuilder endBoolean() {
-		closeHeadBoolean();
-		out.println("</sparql>");
+		// do nothing, as the call to handleBoolean always ends the document
 		return this;
 	}
 
-	private void closeHead() {
-		if (!headClosed) {
-			headClosed = true;
-			out.println("  </head>");
-			out.println("  <results ordered='false' distinct='false'>");
-		}
-	}
-
-	private void closeHeadBoolean() {
-		if (!headClosed) {
-			headClosed = true;
-			out.println("  </head>");
-		}
+	private void closeHead()
+		throws QueryResultHandlerException
+	{
+		out.endHeader();
 	}
 
 	public void flush() {
-		out.flush();
 	}
 
 }
