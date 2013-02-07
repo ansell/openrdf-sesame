@@ -51,15 +51,12 @@ public class InfoServlet extends TransformationServlet {
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
-		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable(), req.getParameter("limit"),
-				req.getParameter("queryLn"), req.getParameter("infer"), req.getParameter("Accept"),
-				req.getParameter("Content-Type"));
-		// builder.binding("default-limit", req.getParameter("limit"));
-		// builder.binding("default-queryLn", req.getParameter("queryLn"));
-		// builder.binding("default-infer", req.getParameter("infer"));
-		// builder.binding("default-Accept", req.getParameter("Accept"));
-		// builder.binding("default-Content-Type",
-		// req.getParameter("Content-Type"));
+		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable());
+		builder.namedResult("default-limit", req.getParameter("limit"));
+		builder.namedResult("default-queryLn", req.getParameter("queryLn"));
+		builder.namedResult("default-infer", req.getParameter("infer"));
+		builder.namedResult("default-Accept", req.getParameter("Accept"));
+		builder.namedResult("default-Content-Type", req.getParameter("Content-Type"));
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();
