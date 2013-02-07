@@ -93,14 +93,6 @@ public class TupleResultBuilder {
 		out.handleBoolean(result);
 	}
 
-	// FIXME: Replace the calls to this with calls to result and variables
-	private TupleResultBuilder binding(String name, Object result)
-		throws QueryResultHandlerException
-	{
-		outputNamedResult(name, result);
-		return this;
-	}
-
 	public TupleResultBuilder result(Object... result)
 		throws QueryResultHandlerException
 	{
@@ -111,6 +103,16 @@ public class TupleResultBuilder {
 				continue;
 			bindingSet.addBinding(outputNamedResult(variables.get(i), result[i]));
 		}
+		out.handleSolution(bindingSet);
+		return this;
+	}
+
+	public TupleResultBuilder namedResult(String name, Object result)
+		throws QueryResultHandlerException
+	{
+		closeHead();
+		QueryBindingSet bindingSet = new QueryBindingSet();
+		bindingSet.addBinding(outputNamedResult(name, result));
 		out.handleSolution(bindingSet);
 		return this;
 	}
