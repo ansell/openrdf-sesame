@@ -38,7 +38,7 @@ public abstract class TupleQueryResultParserBase extends QueryResultParserBase i
 	 * {@link ValueFactoryImpl} to create Value objects.
 	 */
 	public TupleQueryResultParserBase() {
-		this(new ValueFactoryImpl());
+		super();
 	}
 
 	/**
@@ -46,7 +46,7 @@ public abstract class TupleQueryResultParserBase extends QueryResultParserBase i
 	 * to create {@link Value} objects.
 	 */
 	public TupleQueryResultParserBase(ValueFactory valueFactory) {
-		setValueFactory(valueFactory);
+		super(valueFactory);
 	}
 
 	@Override

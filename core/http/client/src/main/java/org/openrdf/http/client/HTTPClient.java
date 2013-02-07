@@ -77,6 +77,7 @@ import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -160,7 +161,6 @@ public class HTTPClient {
 		params.setDefaultMaxConnectionsPerHost(20);
 		manager.setParams(params);
 
-		
 		httpClient = new HttpClient(manager);
 
 		configureProxySettings(httpClient);
@@ -611,7 +611,8 @@ public class HTTPClient {
 
 		if (dataset != null) {
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, String.valueOf(defaultGraphURI)));
+				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
+						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
 				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
@@ -645,13 +646,16 @@ public class HTTPClient {
 				queryParams.add(new NameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
 			}
 			if (dataset.getDefaultInsertGraph() != null) {
-				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME, String.valueOf(dataset.getDefaultInsertGraph())));
+				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
+						String.valueOf(dataset.getDefaultInsertGraph())));
 			}
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.USING_GRAPH_PARAM_NAME, String.valueOf(defaultGraphURI)));
+				queryParams.add(new NameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
+						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
+				queryParams.add(new NameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
+						String.valueOf(namedGraphURI)));
 			}
 		}
 
@@ -1085,8 +1089,10 @@ public class HTTPClient {
 		}
 	}
 
-	public void deleteRepository(String repositoryID) throws HttpException, IOException, RepositoryException {
-		
+	public void deleteRepository(String repositoryID)
+		throws HttpException, IOException, RepositoryException
+	{
+
 		HttpMethod method = new DeleteMethod(Protocol.getRepositoryLocation(serverURL, repositoryID));
 		setDoAuthentication(method);
 
@@ -1109,7 +1115,7 @@ public class HTTPClient {
 			releaseConnection(method);
 		}
 	}
-	
+
 	/*------------------*
 	 * Response parsing *
 	 *------------------*/
@@ -1151,14 +1157,22 @@ public class HTTPClient {
 			try {
 				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 				TupleQueryResultParser parser = QueryResultIO.createParser(format, getValueFactory());
-				parser.setTupleQueryResultHandler(handler);
-				parser.parse(method.getResponseBodyAsStream());
+				parser.setQueryResultHandler(handler);
+				parser.parseQueryResult(method.getResponseBodyAsStream());
 			}
 			catch (UnsupportedQueryResultFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (QueryResultParseException e) {
 				throw new RepositoryException("Malformed query result from server", e);
+			}
+			catch (QueryResultHandlerException e) {
+				if (e instanceof TupleQueryResultHandlerException) {
+					throw (TupleQueryResultHandlerException)e;
+				}
+				else {
+					throw new TupleQueryResultHandlerException(e);
+				}
 			}
 		}
 		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -1414,7 +1428,7 @@ public class HTTPClient {
 	public void setConnectionTimeout(long timeout) {
 		this.httpClient.getParams().setConnectionManagerTimeout(timeout);
 	}
-	
+
 	private static void configureProxySettings(HttpClient httpClient) {
 		String proxyHostName = System.getProperty("http.proxyHost");
 		if (proxyHostName != null && proxyHostName.length() > 0) {
@@ -1427,11 +1441,12 @@ public class HTTPClient {
 			}
 			ProxyHost proxyHost = new ProxyHost(proxyHostName, proxyPort);
 			httpClient.getHostConfiguration().setProxyHost(proxyHost);
-			
+
 			String proxyUser = System.getProperty("http.proxyUser");
 			if (proxyUser != null) {
 				String proxyPassword = System.getProperty("http.proxyPassword");
-				httpClient.getState().setProxyCredentials( new AuthScope(proxyHost.getHostName(), proxyHost.getPort()), 
+				httpClient.getState().setProxyCredentials(
+						new AuthScope(proxyHost.getHostName(), proxyHost.getPort()),
 						new UsernamePasswordCredentials(proxyUser, proxyPassword));
 				httpClient.getParams().setAuthenticationPreemptive(true);
 			}

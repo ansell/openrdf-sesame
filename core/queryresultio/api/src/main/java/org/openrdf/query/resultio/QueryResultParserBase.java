@@ -16,15 +16,7 @@
  */
 package org.openrdf.query.resultio;
 
-import java.io.InputStream;
-
-import org.xml.sax.SAXException;
-
-import info.aduna.xml.SimpleSAXParser;
-import info.aduna.xml.XMLReaderFactory;
-
 import org.openrdf.query.QueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -54,11 +46,11 @@ public abstract class QueryResultParserBase implements QueryResultParser {
 	 *--------------*/
 
 	/**
-	 * Creates a new parser base that, by default, will use an instance of
-	 * {@link ValueFactoryImpl} to create Value objects.
+	 * Creates a new parser base that, by default, will use the global instance
+	 * of {@link ValueFactoryImpl} to create Value objects.
 	 */
 	public QueryResultParserBase() {
-		this(new ValueFactoryImpl());
+		this(ValueFactoryImpl.getInstance());
 	}
 
 	/**
@@ -82,6 +74,5 @@ public abstract class QueryResultParserBase implements QueryResultParser {
 	public void setQueryResultHandler(QueryResultHandler handler) {
 		this.handler = handler;
 	}
-	
-	
+
 }

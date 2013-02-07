@@ -103,13 +103,13 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 		boolean completed = false;
 		parserThread = Thread.currentThread();
 		try {
-			parser.setTupleQueryResultHandler(this);
-			parser.parse(in);
+			parser.setQueryResultHandler(this);
+			parser.parseQueryResult(in);
 			// release connection back into pool if all results have been read
 			method.releaseConnection();
 			completed = true;
 		}
-		catch (TupleQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			// parsing cancelled or interrupted
 		}
 		catch (QueryResultParseException e) {

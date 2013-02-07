@@ -75,8 +75,9 @@ import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * A SPARQL query test suite, created by reading in a W3C working-group style manifest.  
- *
+ * A SPARQL query test suite, created by reading in a W3C working-group style
+ * manifest.
+ * 
  * @author Jeen Broekstra
  */
 public abstract class SPARQLQueryTest extends TestCase {
@@ -201,7 +202,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			if (name.contains("pp34")) {
 				System.out.println(name);
 			}
-			
+
 			if (query instanceof TupleQuery) {
 				TupleQueryResult queryResult = ((TupleQuery)query).evaluate();
 
@@ -467,7 +468,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
-		
+
 		try {
 			con.begin();
 			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
@@ -491,8 +492,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 			con.commit();
 		}
-		catch(Exception e) {
-			if(con.isActive()) {
+		catch (Exception e) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 		}
@@ -525,9 +526,9 @@ public abstract class SPARQLQueryTest extends TestCase {
 				parser.setValueFactory(dataRep.getValueFactory());
 
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
-				parser.setTupleQueryResultHandler(qrBuilder);
+				parser.setQueryResultHandler(qrBuilder);
 
-				parser.parse(in);
+				parser.parseQueryResult(in);
 				return qrBuilder.getQueryResult();
 			}
 			finally {

@@ -25,6 +25,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
@@ -80,14 +81,14 @@ public class SPARQLTupleQuery extends SPARQLQuery implements TupleQuery {
 			boolean complete = false;
 			HttpMethod response = getResponse();
 			try {
-				parser.setTupleQueryResultHandler(handler);
-				parser.parse(response.getResponseBodyAsStream());
+				parser.setQueryResultHandler(handler);
+				parser.parseQueryResult(response.getResponseBodyAsStream());
 				complete = true;
 			} catch (HttpException e) {
 				throw new QueryEvaluationException(e);
 			} catch (QueryResultParseException e) {
 				throw new QueryEvaluationException(e);
-			} catch (TupleQueryResultHandlerException e) {
+			} catch (QueryResultHandlerException e) {
 				throw new QueryEvaluationException(e);
 			} finally {
 				if (!complete) {
@@ -101,6 +102,6 @@ public class SPARQLTupleQuery extends SPARQLQuery implements TupleQuery {
 
 	@Override
 	protected String getAccept() {
-		return parser.getTupleQueryResultFormat().getDefaultMIMEType();
+		return parser.getQueryResultFormat().getDefaultMIMEType();
 	}
 }
