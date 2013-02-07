@@ -16,6 +16,8 @@
  */
 package org.openrdf.workbench.commands;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -57,10 +59,10 @@ public class ExploreServlet extends TupleServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(xslPath, "explore.xsl");
 			builder.start("error-message");
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			builder.result(exc.getMessage());
 			builder.end();
 		}

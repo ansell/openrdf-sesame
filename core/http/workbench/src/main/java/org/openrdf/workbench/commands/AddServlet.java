@@ -18,9 +18,9 @@ package org.openrdf.workbench.commands;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Resource;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
@@ -46,7 +47,7 @@ public class AddServlet extends TransformationServlet {
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
-		throws IOException, RepositoryException, FileUploadException
+		throws IOException, RepositoryException, FileUploadException, QueryResultHandlerException
 	{
 		try {
 			String baseURI = req.getParameter("baseURI");
@@ -72,12 +73,10 @@ public class AddServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			resp.setContentType("application/xml");
-			PrintWriter out = resp.getWriter();
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(xslPath, "add.xsl");
 			builder.start("error-message", "baseURI", CONTEXT, "Content-Type");
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			String baseURI = req.getParameter("baseURI");
 			String context = req.getParameter(CONTEXT);
 			String contentType = req.getParameter("Content-Type");
@@ -169,13 +168,13 @@ public class AddServlet extends TransformationServlet {
 	}
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-		throws RepositoryException
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryResultHandlerException
 	{
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+		// TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 		builder.transform(xslPath, "add.xsl");
 		builder.start();
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		builder.end();
 	}
 

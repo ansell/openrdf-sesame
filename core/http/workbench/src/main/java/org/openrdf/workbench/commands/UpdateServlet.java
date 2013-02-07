@@ -18,6 +18,7 @@ package org.openrdf.workbench.commands;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.RepositoryConnection;
@@ -57,13 +59,10 @@ public class UpdateServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			resp.setContentType("application/xml");
-			PrintWriter out = resp.getWriter();
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(xslPath, "update.xsl");
 			builder.start("error-message", "update");
-			builder.link("info");
-			builder.link("namespaces");
+			builder.link(Arrays.asList(INFO, "namespaces"));
 
 			String updateString = req.getParameter("update");
 			builder.result(exc.getMessage(), updateString);
@@ -95,14 +94,12 @@ public class UpdateServlet extends TransformationServlet {
 	}
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-		throws RepositoryException
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryResultHandlerException
 	{
-		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "update.xsl");
 		builder.start();
-		builder.link("info");
-		builder.link("namespaces");
+		builder.link(Arrays.asList(INFO, "namespaces"));
 		builder.end();
 	}
 

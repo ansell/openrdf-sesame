@@ -43,9 +43,7 @@ public class InfoServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-		resp.setContentType("application/xml");
-		PrintWriter out = resp.getWriter();
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+		TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
 				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
 				"query-format", "download-format");
@@ -79,7 +77,8 @@ public class InfoServlet extends TransformationServlet {
 	private URL getServer() {
 		try {
 			return manager.getLocation();
-		} catch (MalformedURLException exc) {
+		}
+		catch (MalformedURLException exc) {
 			return null;
 		}
 	}

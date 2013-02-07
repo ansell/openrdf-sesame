@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -114,7 +115,12 @@ public class WorkbenchServlet extends BaseServlet {
 			resp.sendRedirect(req.getRequestURI() + defaultPath.substring(1));
 		}
 		else if ('/' == pathInfo.charAt(0)) {
-			handleRequest(req, resp, pathInfo);
+			try {
+				handleRequest(req, resp, pathInfo);
+			}
+			catch (QueryResultHandlerException e) {
+				throw new IOException(e);
+			}
 		}
 		else {
 			throw new BadRequestException("Request path must contain a repository ID");
@@ -122,15 +128,19 @@ public class WorkbenchServlet extends BaseServlet {
 	}
 
 	/**
-	 * @param req the servlet request
-	 * @param resp the servlet response
-	 * @param pathInfo the path info from the request
+	 * @param req
+	 *        the servlet request
+	 * @param resp
+	 *        the servlet response
+	 * @param pathInfo
+	 *        the path info from the request
 	 * @throws IOException
 	 * @throws ServletException
+	 * @throws QueryResultHandlerException
 	 */
 	private void handleRequest(final HttpServletRequest req, final HttpServletResponse resp,
 			final String pathInfo)
-		throws IOException, ServletException
+		throws IOException, ServletException, QueryResultHandlerException
 	{
 		int idx = pathInfo.indexOf('/', 1);
 		if (idx < 0) {
@@ -149,7 +159,8 @@ public class WorkbenchServlet extends BaseServlet {
 		catch (ServletException e) {
 			if (e.getCause() instanceof UnauthorizedException) {
 				handleUnauthorizedException(req, resp);
-			} else {
+			}
+			else {
 				throw e;
 			}
 		}
@@ -162,14 +173,15 @@ public class WorkbenchServlet extends BaseServlet {
 	 * @param req
 	 * @param resp
 	 * @throws IOException
+	 * @throws QueryResultHandlerException
 	 */
 	private void handleUnauthorizedException(final HttpServletRequest req, final HttpServletResponse resp)
-		throws IOException
+		throws IOException, QueryResultHandlerException
 	{
-		// Invalid credentials or insufficient authorization.  Present 
+		// Invalid credentials or insufficient authorization. Present
 		// entry form again with error message.
-		resp.setContentType("application/xml");
-		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		// resp.setContentType("application/xml");
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 		builder.transform(this.getTransformationUrl(req), "server.xsl");
 		builder.start("error-message");
 		builder.result("The entered credentials entered either failed to authenticate to the Sesame server, or were unauthorized for the requested operation.");

@@ -18,7 +18,7 @@ package org.openrdf.workbench.commands;
 
 import static org.openrdf.query.QueryLanguage.SERQL;
 
-import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,6 +26,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
@@ -38,6 +39,7 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class DeleteServlet extends TransformationServlet {
+
 	/**
 	 * Query that yields the context of a specific repository configuration.
 	 */
@@ -49,22 +51,24 @@ public class DeleteServlet extends TransformationServlet {
 		query.append("FROM CONTEXT C ");
 		query.append("   {} rdf:type {sys:Repository};");
 		query.append("      sys:repositoryID {ID} ");
-		query
-				.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
+		query.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
 		CONTEXT_QUERY = query.toString();
 	}
 
 	@Override
-	protected void doPost(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception {
+	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws Exception
+	{
 		dropRepository(req.getParameter("id"));
 		resp.sendRedirect("../");
 	}
 
-	private void dropRepository(String id) throws Exception {
-		
+	private void dropRepository(String id)
+		throws Exception
+	{
+
 		manager.removeRepository(id);
-		
+
 		/*
 		Repository systemRepo = manager.getSystemRepository();
 		RepositoryConnection con = systemRepo.getConnection();
@@ -79,36 +83,36 @@ public class DeleteServlet extends TransformationServlet {
 	}
 
 	private Resource findContext(String id, RepositoryConnection con)
-			throws RepositoryException, MalformedQueryException,
-			QueryEvaluationException, BadRequestException {
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException, BadRequestException
+	{
 		TupleQuery query = con.prepareTupleQuery(SERQL, CONTEXT_QUERY);
 		query.setBinding("ID", vf.createLiteral(id));
 		TupleQueryResult result = query.evaluate();
 		try {
 			if (!result.hasNext())
-				throw new BadRequestException("Cannot find repository of id: "
-						+ id);
+				throw new BadRequestException("Cannot find repository of id: " + id);
 			BindingSet bindings = result.next();
-			Resource context = (Resource) bindings.getValue("C");
+			Resource context = (Resource)bindings.getValue("C");
 			if (result.hasNext())
-				throw new BadRequestException(
-						"Multiple contexts found for repository '" + id + "'");
+				throw new BadRequestException("Multiple contexts found for repository '" + id + "'");
 			return context;
-		} finally {
+		}
+		finally {
 			result.close();
 		}
 	}
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryResultHandlerException
+	{
+		// TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "delete.xsl");
 		builder.start("readable", "writeable", "id", "description", "location");
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
-			builder.result(info.isReadable(), info.isWritable(), info.getId(),
-					info.getDescription(), info.getLocation());
+			builder.result(info.isReadable(), info.isWritable(), info.getId(), info.getDescription(),
+					info.getLocation());
 		}
 		builder.end();
 	}

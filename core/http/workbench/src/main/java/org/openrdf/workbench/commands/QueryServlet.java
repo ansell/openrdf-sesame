@@ -20,6 +20,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -38,6 +39,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
@@ -53,7 +55,7 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 public class QueryServlet extends TransformationServlet {
 
 	private static final String ACCEPT = "Accept";
-	
+
 	private static final String QUERY = "query";
 
 	private static final String[] EDIT_PARAMS = new String[] { "queryLn", QUERY, "infer", "limit" };
@@ -108,12 +110,11 @@ public class QueryServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			LOGGER.warn(exc.toString(), exc);
-			resp.setContentType("application/xml");
-			final TupleResultBuilder builder = new TupleResultBuilder(out);
+			// resp.setContentType("application/xml");
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(xslPath, "query.xsl");
 			builder.start("error-message");
-			builder.link(INFO);
-			builder.link("namespaces");
+			builder.link(Arrays.asList(INFO, "namespaces"));
 			builder.result(exc.getMessage());
 			builder.end();
 		}
@@ -128,12 +129,10 @@ public class QueryServlet extends TransformationServlet {
 			saveQuery(req, resp);
 		}
 		else if ("edit".equals(action)) {
-			resp.setContentType("application/xml");
-			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(xslPath, "query.xsl");
 			builder.start(EDIT_PARAMS);
-			builder.link(INFO);
-			builder.link("namespaces");
+			builder.link(Arrays.asList(INFO, "namespaces"));
 			final String queryLn = req.getParameter(EDIT_PARAMS[0]);
 			final String query = req.getParameter(EDIT_PARAMS[1]);
 			final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
@@ -204,11 +203,11 @@ public class QueryServlet extends TransformationServlet {
 
 	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final PrintWriter out,
 			final String xslPath)
-		throws BadRequestException, OpenRDFException
+		throws BadRequestException, OpenRDFException, UnsupportedQueryResultFormatException, IOException
 	{
 		final RepositoryConnection con = repository.getConnection();
 		try {
-			final TupleResultBuilder builder = new TupleResultBuilder(out);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
@@ -229,8 +228,7 @@ public class QueryServlet extends TransformationServlet {
 			else {
 				builder.transform(xslPath, "query.xsl");
 				builder.start();
-				builder.link(INFO);
-				builder.link("namespaces");
+				builder.link(Arrays.asList(INFO, "namespaces"));
 				builder.end();
 			}
 		}

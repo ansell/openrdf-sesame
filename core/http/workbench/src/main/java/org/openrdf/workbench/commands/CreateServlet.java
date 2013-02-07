@@ -33,6 +33,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.ConfigTemplate;
@@ -83,13 +84,13 @@ public class CreateServlet extends TransformationServlet {
 	 * create.xsl form submissions.
 	 * 
 	 * @throws RepositoryException
+	 * @throws QueryResultHandlerException 
 	 */
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException, RepositoryException
+		throws IOException, RepositoryException, QueryResultHandlerException
 	{
-		resp.setContentType("application/xml");
-		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 		boolean federate;
 		if (req.isParameterPresent("type")) {
 			final String type = req.getTypeParameter();
@@ -101,7 +102,7 @@ public class CreateServlet extends TransformationServlet {
 			builder.transform(xslPath, "create.xsl");
 		}
 		builder.start(federate ? new String[] { "id", "description", "location" } : new String[] {});
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		if (federate) {
 			for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
 				String identity = info.getId();

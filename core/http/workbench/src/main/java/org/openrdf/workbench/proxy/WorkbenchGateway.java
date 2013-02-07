@@ -28,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.workbench.base.BaseServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
@@ -109,7 +110,12 @@ public class WorkbenchGateway extends BaseServlet {
 	{
 		final String change = getChangeServerPath();
 		if (change != null && change.equals(req.getPathInfo())) {
-			changeServer(req, resp);
+			try {
+				changeServer(req, resp);
+			}
+			catch (QueryResultHandlerException e) {
+				throw new IOException(e);
+			}
 		}
 		else {
 			final WorkbenchServlet servlet = findWorkbenchServlet(req, resp);
@@ -143,15 +149,15 @@ public class WorkbenchGateway extends BaseServlet {
 	 *        the servlet response object
 	 * @throws IOException
 	 *         if an issue occurs writing to the response
+	 * @throws QueryResultHandlerException
 	 */
 	private void changeServer(final HttpServletRequest req, final HttpServletResponse resp)
-		throws IOException
+		throws IOException, QueryResultHandlerException
 	{
 		final String server = req.getParameter(SERVER_COOKIE);
 		if (server == null) {
 			// Server parameter was not present, so present entry form.
-			resp.setContentType("application/xml");
-			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start();
 			builder.end();
@@ -172,8 +178,7 @@ public class WorkbenchGateway extends BaseServlet {
 		else {
 			// Invalid server was submitted by form. Present entry form again
 			// with error message.
-			resp.setContentType("application/xml");
-			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start("error-message");
 			builder.result("Invalid Server URL");
