@@ -30,11 +30,23 @@ import info.aduna.app.AppConfiguration;
 import info.aduna.app.AppVersion;
 import info.aduna.io.MavenUtil;
 
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.QueryResultFormat;
+import org.openrdf.query.resultio.QueryResultIO;
+import org.openrdf.query.resultio.QueryResultWriter;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
+import org.openrdf.workbench.util.TupleResultBuilder;
+import org.openrdf.workbench.util.WorkbenchRequest;
+
 public abstract class BaseServlet implements Servlet {
 
 	protected static final String SERVER_USER = "server-user";
 
 	protected static final String SERVER_PASSWORD = "server-password";
+
+	protected static final String ACCEPT = "Accept";
 
 	protected ServletConfig config;
 
@@ -78,5 +90,70 @@ public abstract class BaseServlet implements Servlet {
 		throws ServletException, IOException
 	{
 		// default empty implementation
+	}
+
+	protected QueryResultFormat getTupleResultFormat(final HttpServletRequest req, final ServletResponse resp)
+	{
+		String header = req.getHeader(ACCEPT);
+
+		if (header != null) {
+			TupleQueryResultFormat tupleFormat = QueryResultIO.getParserFormatForFileName(header);
+			if (tupleFormat != null) {
+				return tupleFormat;
+			}
+		}
+
+		return null;
+	}
+
+	protected QueryResultFormat getBooleanResultFormat(final HttpServletRequest req, final ServletResponse resp)
+	{
+		String header = req.getHeader(ACCEPT);
+		if (header != null) {
+			// Then try boolean format
+			BooleanQueryResultFormat booleanFormat = QueryResultIO.getBooleanParserFormatForMIMEType(header);
+			if (booleanFormat != null) {
+				return booleanFormat;
+			}
+		}
+
+		return null;
+	}
+
+	protected QueryResultWriter getResultWriter(final HttpServletRequest req, final ServletResponse resp)
+		throws UnsupportedQueryResultFormatException, IOException
+	{
+		QueryResultFormat resultFormat = getTupleResultFormat(req, resp);
+
+		if (resultFormat == null) {
+			resultFormat = getBooleanResultFormat(req, resp);
+		}
+
+		if (resultFormat == null) {
+			// This is safe with the current SPARQL Results XML implementation that
+			// is able to write out boolean results from the "Tuple" writer.
+			resultFormat = TupleQueryResultFormat.SPARQL;
+		}
+
+		return QueryResultIO.createWriter(resultFormat, resp.getOutputStream());
+	}
+
+	/**
+	 * Gets a {@link TupleResultBuilder} based on the Accept header, and sets the
+	 * result content type to the best available match for that, returning a
+	 * builder that can be used to write out the results.
+	 * 
+	 * @param req
+	 * @param resp
+	 * @return
+	 * @throws IOException
+	 * @throws UnsupportedQueryResultFormatException
+	 */
+	protected TupleResultBuilder getTupleResultBuilder(WorkbenchRequest req, HttpServletResponse resp)
+		throws UnsupportedQueryResultFormatException, IOException
+	{
+		QueryResultWriter resultWriter = getResultWriter(req, resp);
+		resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
+		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());
 	}
 }
