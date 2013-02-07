@@ -101,6 +101,8 @@ public class QueryServlet extends TransformationServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws IOException, OpenRDFException
 	{
+		// FIXME: The following will currently break if this is a query for a
+		// tuple or boolean format, and not a graph format
 		setContentType(req, resp);
 		final PrintWriter out = resp.getWriter();
 		try {
