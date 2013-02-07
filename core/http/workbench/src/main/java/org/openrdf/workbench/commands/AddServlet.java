@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Resource;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
@@ -46,7 +49,7 @@ public class AddServlet extends TransformationServlet {
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
-		throws IOException, RepositoryException, FileUploadException
+		throws IOException, RepositoryException, FileUploadException, QueryResultHandlerException
 	{
 		try {
 			String baseURI = req.getParameter("baseURI");
@@ -74,10 +77,11 @@ public class AddServlet extends TransformationServlet {
 			logger.warn(exc.toString(), exc);
 			resp.setContentType("application/xml");
 			PrintWriter out = resp.getWriter();
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			TupleResultBuilder builder = new TupleResultBuilder(getResultWriter(req, resp),
+					ValueFactoryImpl.getInstance());
 			builder.transform(xslPath, "add.xsl");
 			builder.start("error-message", "baseURI", CONTEXT, "Content-Type");
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			String baseURI = req.getParameter("baseURI");
 			String context = req.getParameter(CONTEXT);
 			String contentType = req.getParameter("Content-Type");
@@ -172,7 +176,7 @@ public class AddServlet extends TransformationServlet {
 	public void service(PrintWriter out, String xslPath)
 		throws RepositoryException
 	{
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+		TupleResultBuilder builder = new TupleResultBuilder(getResultWriter(req, resp), ValueFactoryImpl.getI);
 		builder.transform(xslPath, "add.xsl");
 		builder.start();
 		builder.link("info");

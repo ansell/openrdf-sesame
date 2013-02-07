@@ -30,6 +30,7 @@ import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UpdateExecutionException;
@@ -311,10 +312,13 @@ public final class QueryStorage {
 	 *         if the query is not legal SPARQL
 	 * @throws QueryEvaluationException
 	 *         if there is a problem while attempting to evaluate the query
+	 * @throws QueryResultHandlerException
+	 *         If there is a problem building the results.
 	 */
 	public void selectSavedQueries(final HTTPRepository repository, final String userName,
 			final TupleResultBuilder builder)
-		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException,
+		QueryResultHandlerException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT);
 		select.replaceQuote(USER_NAME, userName);

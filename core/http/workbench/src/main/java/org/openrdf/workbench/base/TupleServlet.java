@@ -18,18 +18,23 @@ package org.openrdf.workbench.base;
 
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Namespace;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class TupleServlet extends TransformationServlet {
+
 	protected String xsl;
+
 	protected String[] variables;
 
 	public TupleServlet(String xsl, String... variables) {
@@ -39,12 +44,11 @@ public abstract class TupleServlet extends TransformationServlet {
 	}
 
 	@Override
-	protected void service(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception {
-		resp.setContentType("application/xml");
-		PrintWriter writer = new PrintWriter(
-				new BufferedWriter(resp.getWriter()));
-		TupleResultBuilder builder = new TupleResultBuilder(writer);
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, QueryResultWriter writer,
+			String xslPath)
+		throws Exception
+	{
+		TupleResultBuilder builder = new TupleResultBuilder(writer, ValueFactoryImpl.getInstance());
 		if (xsl != null) {
 			builder.transform(xslPath, xsl);
 		}
@@ -54,23 +58,24 @@ public abstract class TupleServlet extends TransformationServlet {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
 			builder.start(variables);
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			this.service(req, resp, builder, con);
 			builder.end();
-			writer.flush();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
 
-	protected void service(WorkbenchRequest req, HttpServletResponse resp,
-			TupleResultBuilder builder, RepositoryConnection con) 
-					throws Exception {
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, TupleResultBuilder builder,
+			RepositoryConnection con)
+		throws Exception
+	{
 		service(builder, con);
 	}
 
-	protected void service(TupleResultBuilder builder, 
-			RepositoryConnection con)
-			throws Exception {
+	protected void service(TupleResultBuilder builder, RepositoryConnection con)
+		throws Exception
+	{
 	}
 }

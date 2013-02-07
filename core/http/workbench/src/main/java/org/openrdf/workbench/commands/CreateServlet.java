@@ -31,8 +31,11 @@ import info.aduna.io.IOUtil;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.ConfigTemplate;
@@ -57,11 +60,13 @@ public class CreateServlet extends TransformationServlet {
 	private RepositoryManagerFederator rmf;
 
 	@Override
-	public void init(final ServletConfig config) throws ServletException{
+	public void init(final ServletConfig config)
+		throws ServletException
+	{
 		super.init(config);
 		this.rmf = new RepositoryManagerFederator(manager);
 	}
-	
+
 	/**
 	 * POST requests to this servlet come from the various specific create-* form
 	 * submissions.
@@ -83,13 +88,14 @@ public class CreateServlet extends TransformationServlet {
 	 * create.xsl form submissions.
 	 * 
 	 * @throws RepositoryException
+	 * @throws QueryResultHandlerException 
 	 */
 	@Override
-	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException, RepositoryException
+	protected void service(final WorkbenchRequest req, final HttpServletResponse resp,
+			final QueryResultWriter writer, final String xslPath)
+		throws IOException, RepositoryException, QueryResultHandlerException
 	{
-		resp.setContentType("application/xml");
-		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+		final TupleResultBuilder builder = new TupleResultBuilder(writer, ValueFactoryImpl.getInstance());
 		boolean federate = false;
 		if (req.isParameterPresent("type")) {
 			final String type = req.getTypeParameter();
@@ -100,7 +106,7 @@ public class CreateServlet extends TransformationServlet {
 			builder.transform(xslPath, "create.xsl");
 		}
 		builder.start(federate ? new String[] { "id", "description", "location" } : new String[] {});
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		if (federate) {
 			for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
 				String identity = info.getId();
@@ -119,8 +125,9 @@ public class CreateServlet extends TransformationServlet {
 		String newID;
 		if ("federate".equals(type)) {
 			newID = req.getParameter("Local repository ID");
-			rmf.addFed("http".equals(req.getParameter("federation-type")) ? HTTPRepositoryFactory.REPOSITORY_TYPE
-					: SPARQLRepositoryFactory.REPOSITORY_TYPE, newID, req.getParameter("Repository title"),
+			rmf.addFed(
+					"http".equals(req.getParameter("federation-type")) ? HTTPRepositoryFactory.REPOSITORY_TYPE
+							: SPARQLRepositoryFactory.REPOSITORY_TYPE, newID, req.getParameter("Repository title"),
 					Arrays.asList(req.getParameterValues("memberID")));
 		}
 		else {

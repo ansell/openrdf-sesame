@@ -20,6 +20,7 @@ import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
@@ -112,22 +114,23 @@ public final class QueryEvaluator {
 	}
 
 	/***
-	 * Evaluate a tuple query, and create an XML results document.
+	 * Evaluate a tuple query, and create a results document.
 	 * 
 	 * @param builder
-	 *        response builder helper for generating the XML response to the
+	 *        response builder helper for generating the results response to the
 	 *        client
 	 * @param query
 	 *        the query to be evaluated
+	 * @throws QueryResultHandlerException
 	 */
 	public void evaluateTupleQuery(final TupleResultBuilder builder, final TupleQuery query)
-		throws QueryEvaluationException
+		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final TupleQueryResult result = query.evaluate();
 		try {
 			final String[] names = result.getBindingNames().toArray(new String[0]);
 			builder.variables(names);
-			builder.link(INFO);
+			builder.link(Arrays.asList(INFO));
 			final List<Object> values = new ArrayList<Object>();
 			while (result.hasNext()) {
 				final BindingSet set = result.next();
@@ -151,14 +154,15 @@ public final class QueryEvaluator {
 	 *        client
 	 * @param query
 	 *        the query to be evaluated
+	 * @throws QueryResultHandlerException
 	 */
 	private void evaluateGraphQuery(final TupleResultBuilder builder, final GraphQuery query)
-		throws QueryEvaluationException
+		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final GraphQueryResult result = query.evaluate();
 		try {
 			builder.variables("subject", "predicate", "object");
-			builder.link(INFO);
+			builder.link(Arrays.asList(INFO));
 			while (result.hasNext()) {
 				final Statement statement = result.next();
 				builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
@@ -213,10 +217,10 @@ public final class QueryEvaluator {
 	}
 
 	private void evaluateBooleanQuery(final TupleResultBuilder builder, final BooleanQuery query)
-		throws QueryEvaluationException
+		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final boolean result = query.evaluate();
-		builder.link(INFO);
+		builder.link(Arrays.asList(INFO));
 		builder.bool(result);
 	}
 

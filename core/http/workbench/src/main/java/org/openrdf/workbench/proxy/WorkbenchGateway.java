@@ -151,6 +151,7 @@ public class WorkbenchGateway extends BaseServlet {
 		if (server == null) {
 			// Server parameter was not present, so present entry form.
 			resp.setContentType("application/xml");
+			req.getHeader(ACCEPT);
 			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start();

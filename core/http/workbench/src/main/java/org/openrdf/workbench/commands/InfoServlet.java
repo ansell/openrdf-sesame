@@ -24,7 +24,9 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.parser.QueryParserFactory;
+import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
@@ -40,12 +42,14 @@ public class InfoServlet extends TransformationServlet {
 		return new String[] { "limit", "queryLn", "infer", "Accept", "Content-Type" };
 	}
 
-	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+	@Override
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, QueryResultWriter writer,
+			String xslPath)
 		throws Exception
 	{
-		resp.setContentType("application/xml");
-		PrintWriter out = resp.getWriter();
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+		//resp.setContentType("application/xml");
+		//PrintWriter out = resp.getWriter();
+		TupleResultBuilder builder = new TupleResultBuilder(writer, ValueFactoryImpl.getInstance());
 		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
 				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
 				"query-format", "download-format");
@@ -68,9 +72,9 @@ public class InfoServlet extends TransformationServlet {
 			String name = factory.getQueryLanguage().getName();
 			builder.binding("query-format", name + " " + name);
 		}
-		for (RDFWriterFactory writer : RDFWriterRegistry.getInstance().getAll()) {
-			String mimeType = writer.getRDFFormat().getDefaultMIMEType();
-			String name = writer.getRDFFormat().getName();
+		for (RDFWriterFactory writerFactory : RDFWriterRegistry.getInstance().getAll()) {
+			String mimeType = writerFactory.getRDFFormat().getDefaultMIMEType();
+			String name = writerFactory.getRDFFormat().getName();
 			builder.binding("download-format", mimeType + " " + name);
 		}
 		builder.end();
@@ -79,7 +83,8 @@ public class InfoServlet extends TransformationServlet {
 	private URL getServer() {
 		try {
 			return manager.getLocation();
-		} catch (MalformedURLException exc) {
+		}
+		catch (MalformedURLException exc) {
 			return null;
 		}
 	}

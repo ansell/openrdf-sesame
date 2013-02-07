@@ -33,6 +33,12 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.resultio.QueryResultWriter;
 
+/**
+ * A wrapper around a {@link QueryResultWriter} to make it easier to generate
+ * results from workbench servlets.
+ * 
+ * @author Peter Ansell p_ansell@yahoo.com
+ */
 public class TupleResultBuilder {
 
 	private final QueryResultWriter out;

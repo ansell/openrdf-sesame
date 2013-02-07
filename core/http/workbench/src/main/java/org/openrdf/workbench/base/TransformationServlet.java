@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.CookieHandler;
 import org.openrdf.workbench.util.WorkbenchRequest;
@@ -111,18 +112,25 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		service(wreq, resp, xslPath);
 	}
 
-	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
+	protected final void service(final WorkbenchRequest req, final HttpServletResponse resp,
+			final String xslPath)
 		throws Exception
 	{
-		resp.setContentType("application/xml");
-		service(resp.getWriter(), xslPath);
+		// resp.setContentType("application/xml");
+		QueryResultWriter resultWriter = getResultWriter(req, resp);
+		resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
+		service(req, resp, resultWriter, xslPath);
 	}
 
-	protected void service(final PrintWriter writer, final String xslPath)
-		throws Exception
-	{
-		LOGGER.info("Call made to empty superclass implementation of service(PrintWriter,String) for path: {}",
-				xslPath);
-	}
+	/**
+	 * Child classes must override this method to provide results.
+	 * 
+	 * @param writer
+	 * @param xslPath
+	 * @throws Exception
+	 */
+	protected abstract void service(final WorkbenchRequest req, final HttpServletResponse resp,
+			final QueryResultWriter writer, final String xslPath)
+		throws Exception;
 
 }
