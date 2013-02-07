@@ -16,8 +16,6 @@
  */
 package org.openrdf.workbench.base;
 
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
@@ -45,9 +43,7 @@ public abstract class TupleServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-		PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
 		TupleResultBuilder builder = getTupleResultBuilder(req, resp);
-		resp.setContentType("application/xml");
 		if (xsl != null) {
 			builder.transform(xslPath, xsl);
 		}
@@ -60,7 +56,6 @@ public abstract class TupleServlet extends TransformationServlet {
 			builder.link(Arrays.asList("info"));
 			this.service(req, resp, builder, con);
 			builder.end();
-			writer.flush();
 		}
 		finally {
 			con.close();
