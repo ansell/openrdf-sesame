@@ -17,7 +17,6 @@
 package org.openrdf.workbench.base;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.CookieHandler;
+import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class TransformationServlet extends BaseRepositoryServlet {
@@ -114,11 +114,11 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws Exception
 	{
-		resp.setContentType("application/xml");
-		service(resp.getWriter(), xslPath);
+		// resp.setContentType("application/xml");
+		service(getTupleResultBuilder(req, resp), xslPath);
 	}
 
-	protected void service(final PrintWriter writer, final String xslPath)
+	protected void service(final TupleResultBuilder writer, final String xslPath)
 		throws Exception
 	{
 		LOGGER.info("Call made to empty superclass implementation of service(PrintWriter,String) for path: {}",
