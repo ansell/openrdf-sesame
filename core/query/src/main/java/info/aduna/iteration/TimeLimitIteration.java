@@ -58,9 +58,15 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 		throws X
 	{
 		checkInterrupted();
-		boolean result = super.hasNext();
-		checkInterrupted();
-		return result;
+		try {
+			boolean result = super.hasNext();
+			checkInterrupted();
+			return result;
+		}
+		catch (NoSuchElementException e) {
+			checkInterrupted();
+			throw e;
+		}
 	}
 
 	@Override
@@ -105,9 +111,8 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 		throws X;
 
 	void interrupt() {
+		isInterrupted = true;
 		if (!isClosed()) {
-			isInterrupted = true;
-
 			try {
 				close();
 			}
