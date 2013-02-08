@@ -121,6 +121,9 @@ public class OWL {
 	/** http://www.w3.org/2002/07/owl#versionInfo */
 	public final static URI VERSIONINFO;
 
+	/** http://www.w3.org/2002/07/owl#versionIRI */
+	public final static URI VERSIONIRI;
+
 	/** http://www.w3.org/2002/07/owl#priorVersion */
 	public final static URI PRIORVERSION;
 
