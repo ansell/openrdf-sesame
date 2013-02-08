@@ -218,6 +218,8 @@ public class OWL {
 		INTERSECTIONOF = factory.createURI(OWL.NAMESPACE, "intersectionOf");
 
 		VERSIONINFO = factory.createURI(OWL.NAMESPACE, "versionInfo");
+		
+		VERSIONIRI = factory.createURI(OWL.NAMESPACE, "versionIRI");
 
 		PRIORVERSION = factory.createURI(OWL.NAMESPACE, "priorVersion");
 
