@@ -59,22 +59,24 @@
 	<xsl:template name="explore">
 		<xsl:param name="resource" />
 		<xsl:param name="url" select="string('')" />
-		<a>
-			<xsl:attribute name="href">
+		<span class="resource">
+			<a>
+				<xsl:attribute name="href">
 				<xsl:text>explore?resource=</xsl:text>
 				<xsl:call-template name="url-encode">
 					<xsl:with-param name="str" select="$resource" />
 				</xsl:call-template>
 			</xsl:attribute>
-			<xsl:value-of select="$resource" />
-		</a>
-		<xsl:if test="$url != string('')">
-			[
-			<a href="{$url}" target="_blank">
-				<img src="../../images/external.png" alt="web" />
+				<xsl:value-of select="$resource" />
 			</a>
-			]
-		</xsl:if>
+			<span class="resourceURL">
+				<xsl:if test="$url != string('')">
+					<a href="{$url}" target="_blank">
+						<img src="../../images/external.png" alt="web" />
+					</a>
+				</xsl:if>
+			</span>
+		</span>
 	</xsl:template>
 
 	<xsl:template name="explore-literal">
@@ -208,6 +210,7 @@
 	<xsl:template match="sparql:uri">
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource" select="concat('&lt;', text(), '&gt;')" />
+			<xsl:with-param name="url" select="text()" />
 		</xsl:call-template>
 	</xsl:template>
 

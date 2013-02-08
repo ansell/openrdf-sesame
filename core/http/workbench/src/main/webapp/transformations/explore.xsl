@@ -51,6 +51,8 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
+		<script src="../../scripts/jquery-1.9.0-min.js" type="text/javascript">
+		</script>
 		<script src="../../scripts/paging.js" type="text/javascript">  </script>
 		<script src="../../scripts/explore.js" type="text/javascript">  </script>
 		<xsl:if test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">

@@ -34,4 +34,5 @@ function() {
 		newHTML = newHTML + ')';
 		h1.innerHTML = newHTML;
 	}
+    hideExternalLinksAndSetHoverEvent();
 });
