@@ -100,16 +100,6 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(model.contains(VF.createStatement(a, p, b)));
 	}
 	
-	public void testAsGraph()
-			throws QueryEvaluationException
-		{
-			Graph graph = QueryResults.asGraph(gqr);
-		
-			assertFalse(gqr.hasNext());
-			assertNotNull(graph);
-			assertTrue(graph.contains(VF.createStatement(a, p, b)));
-		}
-		
 	private class StubGraphQueryResult implements GraphQueryResult {
 
 		private List<Statement> statements = new ArrayList<Statement>();
