@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.BNode;
@@ -49,24 +50,6 @@ import org.openrdf.rio.RDFHandlerException;
  * @author Jeen Broekstra
  */
 public class QueryResults extends Iterations {
-
-	/**
-	 * Get a {@link Graph} containing all elements obtained from the specified
-	 * query result.
-	 * 
-	 * @since 2.7.0
-	 * @param gqr
-	 *        the {@link GraphQueryResult} to get the statements from
-	 * @return a {@link Graph} containing all statements obtained from the
-	 *         specified query result.
-	 */
-	public static Graph asGraph(GraphQueryResult gqr)
-		throws QueryEvaluationException
-	{
-		Graph graph = new GraphImpl();
-		addAll(gqr, graph);
-		return graph;
-	}
 
 	/**
 	 * Get a {@link Model} containing all elements obtained from the specified
@@ -113,7 +96,7 @@ public class QueryResults extends Iterations {
 	 * @return a single query result element.
 	 * @throws QueryEvaluationException
 	 */
-	public BindingSet singleResult(TupleQueryResult result)
+	public static BindingSet singleResult(TupleQueryResult result)
 		throws QueryEvaluationException
 	{
 		BindingSet singleResult = null;
@@ -122,6 +105,32 @@ public class QueryResults extends Iterations {
 		}
 		result.close();
 		return singleResult;
+	}
+
+	/**
+	 * Returns a {@link GraphQueryResult} that filters out any duplicate
+	 * solutions from the supplied queryResult.
+	 * 
+	 * @param queryResult
+	 *        a queryResult containing possible duplicate statements.
+	 * @return a {@link GraphQueryResult} with any duplicates filtered out.
+	 * @since 2.7.0
+	 */
+	public static GraphQueryResult distinctResults(GraphQueryResult queryResult) {
+		return new GraphQueryResultFilter(queryResult);
+	}
+
+	/**
+	 * Returns a {@link TupleQueryResult} that filters out any duplicate
+	 * solutions from the supplied queryResult.
+	 * 
+	 * @param queryResult
+	 *        a queryResult containing possible duplicate solutions.
+	 * @return a {@link TupleQueryResult} with any duplicates filtered out.
+	 * @since 2.7.0
+	 */
+	public static TupleQueryResult distinctResults(TupleQueryResult queryResult) {
+		return new TupleQueryResultFilter(queryResult);
 	}
 
 	/**
@@ -410,5 +419,100 @@ public class QueryResults extends Iterations {
 		}
 
 		return true;
+	}
+
+	private static class GraphQueryResultFilter implements GraphQueryResult {
+
+		private DistinctIteration<Statement, QueryEvaluationException> filter;
+
+		private GraphQueryResult unfiltered;
+
+		public GraphQueryResultFilter(GraphQueryResult wrappedResult) {
+			this.filter = new DistinctIteration<Statement, QueryEvaluationException>(wrappedResult);
+			this.unfiltered = wrappedResult;
+		}
+
+		@Override
+		public void close()
+			throws QueryEvaluationException
+		{
+			filter.close();
+		}
+
+		@Override
+		public boolean hasNext()
+			throws QueryEvaluationException
+		{
+			return filter.hasNext();
+		}
+
+		@Override
+		public Statement next()
+			throws QueryEvaluationException
+		{
+			return filter.next();
+		}
+
+		@Override
+		public void remove()
+			throws QueryEvaluationException
+		{
+			filter.remove();
+		}
+
+		@Override
+		public Map<String, String> getNamespaces()
+			throws QueryEvaluationException
+		{
+			return unfiltered.getNamespaces();
+		}
+	}
+
+	private static class TupleQueryResultFilter implements TupleQueryResult {
+
+		private DistinctIteration<BindingSet, QueryEvaluationException> filter;
+
+		private TupleQueryResult unfiltered;
+
+		public TupleQueryResultFilter(TupleQueryResult wrappedResult) {
+			this.filter = new DistinctIteration<BindingSet, QueryEvaluationException>(wrappedResult);
+			this.unfiltered = wrappedResult;
+		}
+
+		@Override
+		public void close()
+			throws QueryEvaluationException
+		{
+			filter.close();
+		}
+
+		@Override
+		public boolean hasNext()
+			throws QueryEvaluationException
+		{
+			return filter.hasNext();
+		}
+
+		@Override
+		public BindingSet next()
+			throws QueryEvaluationException
+		{
+			return filter.next();
+		}
+
+		@Override
+		public void remove()
+			throws QueryEvaluationException
+		{
+			filter.remove();
+		}
+
+		@Override
+		public List<String> getBindingNames()
+			throws QueryEvaluationException
+		{
+			return unfiltered.getBindingNames();
+		}
+
 	}
 }
