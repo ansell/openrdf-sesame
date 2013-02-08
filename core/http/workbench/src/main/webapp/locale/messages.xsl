@@ -88,6 +88,7 @@
 	<variable name="repository-delete.label">
 		Delete repository
 	</variable>
+	<variable name="show-datatypes.label">Show data types &amp; language tags</variable>
 
 	<!-- General labels -->
 	<variable name="copyright.label">

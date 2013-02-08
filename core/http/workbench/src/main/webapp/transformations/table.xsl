@@ -59,14 +59,27 @@
 	<xsl:template name="explore">
 		<xsl:param name="resource" />
 		<xsl:param name="url" select="string('')" />
+		<xsl:param name="shortform" select="string('')" />
 		<span class="resource">
+			<xsl:if test="$shortform != string('')">
+				<xsl:attribute name="data-longform">
+					<xsl:call-template name="url-encode">
+						<xsl:with-param name="str" select="$resource" />
+					</xsl:call-template>
+				</xsl:attribute>
+				<xsl:attribute name="data-shortform">
+					<xsl:call-template name="url-encode">
+						<xsl:with-param name="str" select="$shortform" />
+					</xsl:call-template>
+				</xsl:attribute>
+			</xsl:if>
 			<a>
 				<xsl:attribute name="href">
-				<xsl:text>explore?resource=</xsl:text>
-				<xsl:call-template name="url-encode">
-					<xsl:with-param name="str" select="$resource" />
-				</xsl:call-template>
-			</xsl:attribute>
+					<xsl:text>explore?resource=</xsl:text>
+					<xsl:call-template name="url-encode">
+						<xsl:with-param name="str" select="$resource" />
+					</xsl:call-template>
+				</xsl:attribute>
 				<xsl:value-of select="$resource" />
 			</a>
 			<span class="resourceURL">
@@ -107,6 +120,7 @@
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource"
 				select="concat('&quot;', text(), '&quot;^^&lt;', @datatype, '&gt;')" />
+			<xsl:with-param name="shortform" select="text()" />
 		</xsl:call-template>
 	</xsl:template>
 
@@ -114,6 +128,7 @@
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource"
 				select="concat('&quot;', text(), '&quot;^^', @q:qname)" />
+			<xsl:with-param name="shortform" select="text()" />
 		</xsl:call-template>
 	</xsl:template>
 
@@ -182,6 +197,7 @@
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource"
 				select="concat('&quot;', text(), '&quot;@', @xml:lang)" />
+			<xsl:with-param name="shortform" select="text()" />
 		</xsl:call-template>
 	</xsl:template>
 

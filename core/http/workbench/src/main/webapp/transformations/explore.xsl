@@ -51,7 +51,7 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/jquery-1.9.0-min.js" type="text/javascript">
+		<script src="../../scripts/jquery-1.9.0.min.js" type="text/javascript">
 		</script>
 		<script src="../../scripts/paging.js" type="text/javascript">  </script>
 		<script src="../../scripts/explore.js" type="text/javascript">  </script>
@@ -130,6 +130,14 @@
 						<td>
 							<input id="nextX" type="button"
 								value="{$nextX.label}" onclick="nextOffset();" />
+						</td>
+					</tr>
+						<tr>
+						<th>
+							<xsl:value-of select="$show-datatypes.label" />
+						</th>
+						<td>
+							<input type="checkbox" name="show-datatypes" value="show-dataypes" checked="checked" />
 						</td>
 					</tr>
 				</tbody>

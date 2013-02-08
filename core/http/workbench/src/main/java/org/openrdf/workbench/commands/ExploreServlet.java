@@ -48,7 +48,7 @@ public class ExploreServlet extends TupleServlet {
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "total_result_count" };
+		return new String[] { "limit", "total_result_count", "show-datatypes"};
 	}
 
 	@Override

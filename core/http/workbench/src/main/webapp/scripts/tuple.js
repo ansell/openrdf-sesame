@@ -35,4 +35,5 @@ function() {
 		h1.innerHTML = newHTML;
 	}
     hideExternalLinksAndSetHoverEvent();
+    setShowDataTypesCheckboxAndSetChangeEvent();
 });
