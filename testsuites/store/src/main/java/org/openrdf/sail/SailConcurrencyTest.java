@@ -138,8 +138,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 									assertNotNull(context);
 									contextCount++;
 								}
-								// System.out.println("Found " + contextCount + "
-								// contexts");
+								 System.out.println("Found " + contextCount + " contexts");
 							}
 							finally {
 								contextIter.close();

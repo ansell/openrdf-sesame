@@ -20,6 +20,7 @@ package org.openrdf.sail.memory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.LockingIteration;
@@ -93,6 +94,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 */
 	private volatile Lock txnStLock;
 
+	/**
+	 * flag indicating the current transaction has initiated the exclusive lock.
+	 */
+	private volatile boolean txnLockInitialized;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -145,7 +151,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
 			new QueryJoinOptimizer(new MemEvaluationStatistics()).optimize(tupleExpr, dataset, bindings);
-//			new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			// new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
 			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
 			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
@@ -343,6 +349,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		txnStLock = store.getStatementsReadLock();
+
+		/*
 		boolean releaseLocks = true;
 
 		try {
@@ -364,6 +372,27 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				txnStLock.release();
 			}
 		}
+		*/
+	}
+
+	private synchronized void initializeTransactionExclusiveLock()
+		throws SailException
+	{
+		if (!txnLockInitialized) {
+			txnLock = store.getTransactionLock();
+			boolean releaseLocks = true;
+			try {
+				store.startTransaction();
+				releaseLocks = false;
+				txnLockInitialized = true;
+			}
+			finally {
+				if (releaseLocks) {
+					txnLock.release();
+					txnLockInitialized = false;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -371,7 +400,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		store.commit();
-		txnLock.release();
+		if (txnLock != null) {
+			txnLock.release();
+			txnLockInitialized = false;
+		}
 		txnStLock.release();
 	}
 
@@ -383,7 +415,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			store.rollback();
 		}
 		finally {
-			txnLock.release();
+			if (txnLock != null) {
+				txnLock.release();
+				txnLockInitialized = false;
+			}
 			txnStLock.release();
 		}
 	}
@@ -425,6 +460,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws SailException
 	{
+		initializeTransactionExclusiveLock();
+
 		assert txnStLock.isActive();
 		assert txnLock.isActive();
 
@@ -542,6 +579,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			boolean explicit)
 		throws SailException
 	{
+		initializeTransactionExclusiveLock();
+
 		boolean statementsRemoved = false;
 
 		try {
@@ -566,6 +605,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void setNamespaceInternal(String prefix, String name)
 		throws SailException
 	{
+		initializeTransactionExclusiveLock();
+		
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		try {
 			store.getNamespaceStore().setNamespace(prefix, name);
@@ -579,6 +620,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void removeNamespaceInternal(String prefix)
 		throws SailException
 	{
+		initializeTransactionExclusiveLock();
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().removeNamespace(prefix);
 	}
@@ -587,6 +629,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void clearNamespacesInternal()
 		throws SailException
 	{
+		
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().clear();
 	}
@@ -647,23 +690,27 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			@Override
 			public double getCardinality(StatementPattern sp) {
-				
+
 				Value subj = getConstantValue(sp.getSubjectVar());
 				if (!(subj instanceof Resource)) {
-					// can happen when a previous optimizer has inlined a comparison operator. 
-					// this can cause, for example, the subject variable to be equated to a literal value. 
+					// can happen when a previous optimizer has inlined a comparison
+					// operator.
+					// this can cause, for example, the subject variable to be
+					// equated to a literal value.
 					// See SES-970 / SES-998
 					subj = null;
 				}
 				Value pred = getConstantValue(sp.getPredicateVar());
 				if (!(pred instanceof URI)) {
-					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					// can happen when a previous optimizer has inlined a comparison
+					// operator. See SES-970 / SES-998
 					pred = null;
 				}
 				Value obj = getConstantValue(sp.getObjectVar());
 				Value context = getConstantValue(sp.getContextVar());
 				if (!(context instanceof Resource)) {
-					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					// can happen when a previous optimizer has inlined a comparison
+					// operator. See SES-970 / SES-998
 					context = null;
 				}
 
