@@ -120,7 +120,8 @@
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource"
 				select="concat('&quot;', text(), '&quot;^^&lt;', @datatype, '&gt;')" />
-			<xsl:with-param name="shortform" select="text()" />
+			<xsl:with-param name="shortform"
+				select="concat('&quot;', text(), '&quot;')" />
 		</xsl:call-template>
 	</xsl:template>
 
@@ -128,7 +129,8 @@
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource"
 				select="concat('&quot;', text(), '&quot;^^', @q:qname)" />
-			<xsl:with-param name="shortform" select="text()" />
+			<xsl:with-param name="shortform"
+				select="concat('&quot;', text(), '&quot;')" />
 		</xsl:call-template>
 	</xsl:template>
 
@@ -197,7 +199,8 @@
 		<xsl:call-template name="explore">
 			<xsl:with-param name="resource"
 				select="concat('&quot;', text(), '&quot;@', @xml:lang)" />
-			<xsl:with-param name="shortform" select="text()" />
+			<xsl:with-param name="shortform"
+				select="concat('&quot;', text(), '&quot;')" />
 		</xsl:call-template>
 	</xsl:template>
 
