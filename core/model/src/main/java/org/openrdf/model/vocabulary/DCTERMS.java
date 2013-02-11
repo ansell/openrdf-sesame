@@ -354,6 +354,70 @@ public class DCTERMS {
 	 */
 	public static final URI UDC;
 
+	// ----------------------------------------
+	// Syntax encoding schemes in Dublin Core Terms
+	// ----------------------------------------
+
+	/**
+	 * http://purl.org/dc/terms/Box
+	 */
+	public static final URI BOX;
+
+	/**
+	 * http://purl.org/dc/terms/ISO3166
+	 */
+	public static final URI ISO3166;
+
+	/**
+	 * http://purl.org/dc/terms/ISO639-2
+	 */
+	public static final URI ISO639_2;
+
+	/**
+	 * http://purl.org/dc/terms/ISO639-3
+	 */
+	public static final URI ISO639_3;
+
+	/**
+	 * http://purl.org/dc/terms/Period
+	 */
+	public static final URI PERIOD;
+
+	/**
+	 * http://purl.org/dc/terms/Point
+	 */
+	public static final URI POINT;
+
+	/**
+	 * http://purl.org/dc/terms/RFC1766
+	 */
+	public static final URI RFC1766;
+
+	/**
+	 * http://purl.org/dc/terms/RFC3066
+	 */
+	public static final URI RFC3066;
+
+	/**
+	 * http://purl.org/dc/terms/RFC4646
+	 */
+	public static final URI RFC4646;
+
+	/**
+	 * http://purl.org/dc/terms/RFC5646
+	 */
+	public static final URI RFC5646;
+
+	/**
+	 * http://purl.org/dc/terms/URI
+	 */
+	public static final URI URI;
+
+	/**
+	 * http://purl.org/dc/terms/W3CDTF
+	 */
+	public static final URI W3CDTF;
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
@@ -427,5 +491,21 @@ public class DCTERMS {
 		NLM = f.createURI(NAMESPACE, "NLM");
 		TGN = f.createURI(NAMESPACE, "TGN");
 		UDC = f.createURI(NAMESPACE, "UDC");
+
+		// Syntax encoding schemes in Dublin Core Terms
+
+		BOX = f.createURI(NAMESPACE, "Box");
+		ISO3166 = f.createURI(NAMESPACE, "ISO3166");
+		ISO639_2 = f.createURI(NAMESPACE, "ISO639-2");
+		ISO639_3 = f.createURI(NAMESPACE, "ISO639-3");
+		PERIOD = f.createURI(NAMESPACE, "Period");
+		POINT = f.createURI(NAMESPACE, "Point");
+		RFC1766 = f.createURI(NAMESPACE, "RFC1766");
+		RFC3066 = f.createURI(NAMESPACE, "RFC3066");
+		RFC4646 = f.createURI(NAMESPACE, "RFC4646");
+		RFC5646 = f.createURI(NAMESPACE, "RFC5646");
+		URI = f.createURI(NAMESPACE, "URI");
+		W3CDTF = f.createURI(NAMESPACE, "W3CDTF");
+
 	}
 }
