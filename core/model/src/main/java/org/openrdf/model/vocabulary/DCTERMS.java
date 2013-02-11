@@ -418,6 +418,122 @@ public class DCTERMS {
 	 */
 	public static final URI W3CDTF;
 
+	// ----------------------------------------
+	// Classes in Dublin Core Terms
+	// ----------------------------------------
+
+	/**
+	 * http://purl.org/dc/terms/Agent
+	 */
+	public static final URI AGENT;
+
+	/**
+	 * http://purl.org/dc/terms/AgentClass
+	 */
+	public static final URI AGENT_CLASS;
+
+	/**
+	 * http://purl.org/dc/terms/BibliographicResource
+	 */
+	public static final URI BIBLIOGRAPHIC_RESOURCE;
+
+	/**
+	 * http://purl.org/dc/terms/FileFormat
+	 */
+	public static final URI FILE_FORMAT;
+
+	/**
+	 * http://purl.org/dc/terms/Frequency
+	 */
+	public static final URI FREQUENCY;
+
+	/**
+	 * http://purl.org/dc/terms/Jurisdiction
+	 */
+	public static final URI JURISDICTION;
+
+	/**
+	 * http://purl.org/dc/terms/LicenseDocument
+	 */
+	public static final URI LICENSE_DOCUMENT;
+
+	/**
+	 * http://purl.org/dc/terms/LinguisticSystem
+	 */
+	public static final URI LINGUISTIC_SYSTEM;
+
+	/**
+	 * http://purl.org/dc/terms/Location
+	 */
+	public static final URI LOCATION;
+
+	/**
+	 * http://purl.org/dc/terms/LocationPeriodOrJurisdiction
+	 */
+	public static final URI LOCATION_PERIOD_OR_JURISDICTION;
+
+	/**
+	 * http://purl.org/dc/terms/MediaType
+	 */
+	public static final URI MEDIA_TYPE;
+
+	/**
+	 * http://purl.org/dc/terms/MediaTypeOrExtent
+	 */
+	public static final URI MEDIA_TYPE_OR_EXTENT;
+
+	/**
+	 * http://purl.org/dc/terms/MethodOfAccrual
+	 */
+	public static final URI METHOD_OF_ACCRUAL;
+
+	/**
+	 * http://purl.org/dc/terms/MethodOfInstruction
+	 */
+	public static final URI METHOD_OF_INSTRUCTION;
+
+	/**
+	 * http://purl.org/dc/terms/PeriodOfTime
+	 */
+	public static final URI PERIOD_OF_TIME;
+
+	/**
+	 * http://purl.org/dc/terms/PhysicalMedium
+	 */
+	public static final URI PHYSICAL_MEDIUM;
+
+	/**
+	 * http://purl.org/dc/terms/PhysicalResource
+	 */
+	public static final URI PHYSICAL_RESOURCE;
+
+	/**
+	 * http://purl.org/dc/terms/Policy
+	 */
+	public static final URI POLICY;
+
+	/**
+	 * http://purl.org/dc/terms/ProvenanceStatement
+	 */
+	public static final URI PROVENANCE_STATEMENT;
+
+	/**
+	 * http://purl.org/dc/terms/RightsStatement
+	 */
+	public static final URI RIGHTS_STATEMENT;
+
+	/**
+	 * http://purl.org/dc/terms/SizeOrDuration
+	 */
+	public static final URI SIZE_OR_DURATION;
+
+	/**
+	 * http://purl.org/dc/terms/Standard
+	 */
+	public static final URI STANDARD;
+
+	// Static initializer for fields
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
@@ -507,5 +623,29 @@ public class DCTERMS {
 		URI = f.createURI(NAMESPACE, "URI");
 		W3CDTF = f.createURI(NAMESPACE, "W3CDTF");
 
+		// Classes in Dublin Core Terms
+
+		AGENT = f.createURI(NAMESPACE, "Agent");
+		AGENT_CLASS = f.createURI(NAMESPACE, "AgentClass");
+		BIBLIOGRAPHIC_RESOURCE = f.createURI(NAMESPACE, "BibliographicResource");
+		FILE_FORMAT = f.createURI(NAMESPACE, "FileFormat");
+		FREQUENCY = f.createURI(NAMESPACE, "Frequency");
+		JURISDICTION = f.createURI(NAMESPACE, "Jurisdiction");
+		LICENSE_DOCUMENT = f.createURI(NAMESPACE, "LicenseDocument");
+		LINGUISTIC_SYSTEM = f.createURI(NAMESPACE, "LinguisticSystem");
+		LOCATION = f.createURI(NAMESPACE, "Location");
+		LOCATION_PERIOD_OR_JURISDICTION = f.createURI(NAMESPACE, "LocationPeriodOrJurisdiction");
+		MEDIA_TYPE = f.createURI(NAMESPACE, "MediaType");
+		MEDIA_TYPE_OR_EXTENT = f.createURI(NAMESPACE, "MediaTypeOrExtent");
+		METHOD_OF_ACCRUAL = f.createURI(NAMESPACE, "MethodOfAccrual");
+		METHOD_OF_INSTRUCTION = f.createURI(NAMESPACE, "MethodOfInstruction");
+		PERIOD_OF_TIME = f.createURI(NAMESPACE, "PeriodOfTime");
+		PHYSICAL_MEDIUM = f.createURI(NAMESPACE, "PhysicalMedium");
+		PHYSICAL_RESOURCE = f.createURI(NAMESPACE, "PhysicalResource");
+		POLICY = f.createURI(NAMESPACE, "Policy");
+		PROVENANCE_STATEMENT = f.createURI(NAMESPACE, "ProvenanceStatement");
+		RIGHTS_STATEMENT = f.createURI(NAMESPACE, "RightsStatement");
+		SIZE_OR_DURATION = f.createURI(NAMESPACE, "SizeOrDuration");
+		STANDARD = f.createURI(NAMESPACE, "Standard");
 	}
 }
