@@ -9,6 +9,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * 
  * @see http://dublincore.org/documents/dcmi-terms/
  * @author Peter Ansell p_ansell@yahoo.com
+ * @since 2.7.0
  */
 public class DCTERMS {
 
