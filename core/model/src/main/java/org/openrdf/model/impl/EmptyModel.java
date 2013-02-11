@@ -18,10 +18,10 @@ package org.openrdf.model.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -32,6 +32,7 @@ import org.openrdf.model.Value;
  * model's namespaces.
  * 
  * @author James Leigh
+ * @since 2.7.0
  */
 public class EmptyModel extends AbstractModel {
 
@@ -46,22 +47,27 @@ public class EmptyModel extends AbstractModel {
 	private Set<Statement> emptySet = Collections.emptySet();
 
 	@Override
-	public String getNamespace(String prefix) {
+	public Namespace getNamespace(String prefix) {
 		return this.model.getNamespace(prefix);
 	}
 
 	@Override
-	public Map<String, String> getNamespaces() {
+	public Set<Namespace> getNamespaces() {
 		return this.model.getNamespaces();
 	}
 
 	@Override
-	public String setNamespace(String prefix, String name) {
+	public Namespace setNamespace(String prefix, String name) {
 		return this.model.setNamespace(prefix, name);
 	}
 
 	@Override
-	public String removeNamespace(String prefix) {
+	public void setNamespace(Namespace namespace) {
+		this.model.setNamespace(namespace);
+	}
+
+	@Override
+	public Namespace removeNamespace(String prefix) {
 		return this.model.removeNamespace(prefix);
 	}
 

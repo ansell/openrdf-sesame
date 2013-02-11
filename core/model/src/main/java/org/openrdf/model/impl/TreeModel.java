@@ -24,15 +24,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -74,7 +73,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 
 	private final LexicalValueComparator vc = new LexicalValueComparator();
 
-	final Map<String, String> namespaces = new TreeMap<String, String>();
+	final Set<Namespace> namespaces = new TreeSet<Namespace>();
 
 	final List<StatementTree> trees = new ArrayList<StatementTree>();
 
@@ -92,34 +91,51 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		addAll(c);
 	}
 
-	public TreeModel(Map<String, String> namespaces, Collection<? extends Statement> c) {
+	public TreeModel(Set<Namespace> namespaces, Collection<? extends Statement> c) {
 		this(c);
-		this.namespaces.putAll(namespaces);
+		this.namespaces.addAll(namespaces);
 	}
 
-	public TreeModel(Map<String, String> namespaces) {
+	public TreeModel(Set<Namespace> namespaces) {
 		this();
-		this.namespaces.putAll(namespaces);
+		this.namespaces.addAll(namespaces);
 	}
 
 	@Override
-	public String getNamespace(String prefix) {
-		return namespaces.get(prefix);
+	public Namespace getNamespace(String prefix) {
+		for (Namespace nextNamespace : namespaces) {
+			if (prefix.startsWith(nextNamespace.getPrefix())) {
+				return nextNamespace;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
-	public Map<String, String> getNamespaces() {
+	public Set<Namespace> getNamespaces() {
 		return namespaces;
 	}
 
 	@Override
-	public String setNamespace(String prefix, String name) {
-		return namespaces.put(prefix, name);
+	public Namespace setNamespace(String prefix, String name) {
+		Namespace result = new NamespaceImpl(prefix, name);
+		namespaces.add(result);
+		return result;
 	}
 
 	@Override
-	public String removeNamespace(String prefix) {
-		return namespaces.remove(prefix);
+	public void setNamespace(Namespace namespace) {
+		namespaces.add(namespace);
+	}
+
+	@Override
+	public Namespace removeNamespace(String prefix) {
+		Namespace result = getNamespace(prefix);
+		if (result != null) {
+			namespaces.remove(result);
+		}
+		return result;
 	}
 
 	@Override
@@ -736,19 +752,23 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			this.hiInclusive = hiInclusive;
 		}
 
-		public String getNamespace(String prefix) {
+		public Namespace getNamespace(String prefix) {
 			return model.getNamespace(prefix);
 		}
 
-		public Map<String, String> getNamespaces() {
+		public Set<Namespace> getNamespaces() {
 			return model.getNamespaces();
 		}
 
-		public String setNamespace(String prefix, String name) {
+		public Namespace setNamespace(String prefix, String name) {
 			return model.setNamespace(prefix, name);
 		}
 
-		public String removeNamespace(String prefix) {
+		public void setNamespace(Namespace namespace) {
+			model.setNamespace(namespace);
+		}
+
+		public Namespace removeNamespace(String prefix) {
 			return model.removeNamespace(prefix);
 		}
 

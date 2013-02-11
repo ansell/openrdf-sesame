@@ -24,12 +24,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -62,6 +62,7 @@ import org.openrdf.model.util.PatternIterator;
  * </pre>
  * 
  * @author James Leigh
+ * @since 2.7.0
  */
 @SuppressWarnings("unchecked")
 public class LinkedHashModel extends AbstractModel {
@@ -70,7 +71,7 @@ public class LinkedHashModel extends AbstractModel {
 
 	static final Resource[] NULL_CTX = new Resource[] { null };
 
-	Map<String, String> namespaces = new LinkedHashMap<String, String>();
+	Set<Namespace> namespaces = new LinkedHashSet<Namespace>();
 
 	transient Map<Value, ModelNode> values;
 
@@ -96,39 +97,56 @@ public class LinkedHashModel extends AbstractModel {
 		statements = new LinkedHashSet<ModelStatement>(size);
 	}
 
-	public LinkedHashModel(Map<String, String> namespaces, Collection<? extends Statement> c) {
+	public LinkedHashModel(Set<Namespace> namespaces, Collection<? extends Statement> c) {
 		this(c);
-		this.namespaces.putAll(namespaces);
+		this.namespaces.addAll(namespaces);
 	}
 
-	public LinkedHashModel(Map<String, String> namespaces) {
+	public LinkedHashModel(Set<Namespace> namespaces) {
 		this();
-		this.namespaces.putAll(namespaces);
+		this.namespaces.addAll(namespaces);
 	}
 
-	public LinkedHashModel(Map<String, String> namespaces, int size) {
+	public LinkedHashModel(Set<Namespace> namespaces, int size) {
 		this(size);
-		this.namespaces.putAll(namespaces);
+		this.namespaces.addAll(namespaces);
 	}
 
 	@Override
-	public String getNamespace(String prefix) {
-		return namespaces.get(prefix);
+	public Namespace getNamespace(String prefix) {
+		for (Namespace nextNamespace : namespaces) {
+			if (prefix.startsWith(nextNamespace.getPrefix())) {
+				return nextNamespace;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
-	public Map<String, String> getNamespaces() {
+	public Set<Namespace> getNamespaces() {
 		return namespaces;
 	}
 
 	@Override
-	public String setNamespace(String prefix, String name) {
-		return namespaces.put(prefix, name);
+	public Namespace setNamespace(String prefix, String name) {
+		Namespace result = new NamespaceImpl(prefix, name);
+		namespaces.add(result);
+		return result;
 	}
 
 	@Override
-	public String removeNamespace(String prefix) {
-		return namespaces.remove(prefix);
+	public void setNamespace(Namespace namespace) {
+		namespaces.add(namespace);
+	}
+
+	@Override
+	public Namespace removeNamespace(String prefix) {
+		Namespace result = getNamespace(prefix);
+		if (result != null) {
+			namespaces.remove(result);
+		}
+		return result;
 	}
 
 	@Override

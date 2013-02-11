@@ -17,10 +17,11 @@
 package org.openrdf.model.impl;
 
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -28,6 +29,8 @@ import org.openrdf.model.Value;
 
 /**
  * Applies a basic graph pattern filter to what triples can be see.
+ * 
+ * @since 2.7.0
  */
 public abstract class FilteredModel extends AbstractModel {
 
@@ -54,22 +57,27 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public String getNamespace(String prefix) {
+	public Namespace getNamespace(String prefix) {
 		return model.getNamespace(prefix);
 	}
 
 	@Override
-	public Map<String, String> getNamespaces() {
+	public Set<Namespace> getNamespaces() {
 		return model.getNamespaces();
 	}
 
 	@Override
-	public String setNamespace(String prefix, String name) {
+	public Namespace setNamespace(String prefix, String name) {
 		return model.setNamespace(prefix, name);
 	}
 
 	@Override
-	public String removeNamespace(String prefix) {
+	public void setNamespace(Namespace namespace) {
+		this.model.setNamespace(namespace);
+	}
+
+	@Override
+	public Namespace removeNamespace(String prefix) {
 		return model.removeNamespace(prefix);
 	}
 
