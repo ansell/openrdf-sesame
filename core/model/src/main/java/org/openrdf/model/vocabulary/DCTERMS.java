@@ -305,6 +305,55 @@ public class DCTERMS {
 	 */
 	public static final URI VALID;
 
+	// ----------------------------------------
+	// Vocabulary encoding schemes in Dublin Core Terms
+	// ----------------------------------------
+
+	/**
+	 * http://purl.org/dc/terms/DCMIType
+	 */
+	public static final URI DCMI_TYPE;
+
+	/**
+	 * http://purl.org/dc/terms/DDC
+	 */
+	public static final URI DDC;
+
+	/**
+	 * http://purl.org/dc/terms/IMT
+	 */
+	public static final URI IMT;
+
+	/**
+	 * http://purl.org/dc/terms/LCC
+	 */
+	public static final URI LCC;
+
+	/**
+	 * http://purl.org/dc/terms/LCSH
+	 */
+	public static final URI LCSH;
+
+	/**
+	 * http://purl.org/dc/terms/MESH
+	 */
+	public static final URI MESH;
+
+	/**
+	 * http://purl.org/dc/terms/NLM
+	 */
+	public static final URI NLM;
+
+	/**
+	 * http://purl.org/dc/terms/TGN
+	 */
+	public static final URI TGN;
+
+	/**
+	 * http://purl.org/dc/terms/UDC
+	 */
+	public static final URI UDC;
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
@@ -366,5 +415,17 @@ public class DCTERMS {
 		TABLE_OF_CONTENTS = f.createURI(NAMESPACE, "tableOfContents");
 		TEMPORAL = f.createURI(NAMESPACE, "temporal");
 		VALID = f.createURI(NAMESPACE, "valid");
+
+		// Vocabulary encoding schemes in Dublin Core Terms
+
+		DCMI_TYPE = f.createURI(NAMESPACE, "DCMIType");
+		DDC = f.createURI(NAMESPACE, "DDC");
+		IMT = f.createURI(NAMESPACE, "IMT");
+		LCC = f.createURI(NAMESPACE, "LCC");
+		LCSH = f.createURI(NAMESPACE, "LCSH");
+		MESH = f.createURI(NAMESPACE, "MESH");
+		NLM = f.createURI(NAMESPACE, "NLM");
+		TGN = f.createURI(NAMESPACE, "TGN");
+		UDC = f.createURI(NAMESPACE, "UDC");
 	}
 }
