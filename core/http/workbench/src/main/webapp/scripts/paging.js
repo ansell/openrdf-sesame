@@ -196,5 +196,36 @@ function hideExternalLinksAndSetHoverEvent() {
 			externalLink.css('visibility', 'hidden');
 		});
 	})
+}
 
+function setCookie(c_name,value,exdays)
+{
+	var exdate=new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+	document.cookie=c_name + "=" + c_value;
+}
+
+function setDataTypeVisibility(show) {
+	setCookie('show-datatypes', show, 365);
+	var data = show ? 'data-longform' : 'data-shortform';
+	$('span.resource[' + data + ']').each(function(index){
+		var newform = decodeURIComponent($(this).attr(data));
+		$(this).find('a:first').text(newform);
+	});
+}
+
+var showDatatypesCheckbox = "input[name='show-datatypes']";
+
+function respondToShowDataTypeChange(){
+	setDataTypeVisibility($(showDatatypesCheckbox).prop('checked'));
+}
+
+function setShowDataTypesCheckboxAndSetChangeEvent() {
+	var hideDataTypes = (getCookie('show-datatypes') == 'false');
+	if (hideDataTypes) {
+		$(showDatatypesCheckbox).prop('checked', false);
+		setDataTypeVisibility(false);
+	}
+	$(showDatatypesCheckbox).on('change', respondToShowDataTypeChange);
 }

@@ -70,7 +70,7 @@ public class QueryServlet extends TransformationServlet {
 	 */
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { QUERY, "limit", "queryLn", "infer", "total_result_count" };
+		return new String[] { QUERY, "limit", "queryLn", "infer", "total_result_count", "show-datatypes" };
 	}
 
 	/**
