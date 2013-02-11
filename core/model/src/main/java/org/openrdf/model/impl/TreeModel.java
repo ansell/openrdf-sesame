@@ -104,7 +104,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	@Override
 	public Namespace getNamespace(String prefix) {
 		for (Namespace nextNamespace : namespaces) {
-			if (prefix.startsWith(nextNamespace.getPrefix())) {
+			if (prefix.equals(nextNamespace.getPrefix())) {
 				return nextNamespace;
 			}
 		}
@@ -119,14 +119,20 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 
 	@Override
 	public Namespace setNamespace(String prefix, String name) {
-		Namespace result = new NamespaceImpl(prefix, name);
-		namespaces.add(result);
+		Namespace result = getNamespace(prefix);
+		if (result == null || !result.getName().equals(name)) {
+			result = new NamespaceImpl(prefix, name);
+			namespaces.add(result);
+		}
 		return result;
 	}
 
 	@Override
 	public void setNamespace(Namespace namespace) {
-		namespaces.add(namespace);
+		Namespace existing = getNamespace(namespace.getPrefix());
+		if (existing == null || !existing.getName().equals(namespace.getName())) {
+			namespaces.add(namespace);
+		}
 	}
 
 	@Override
