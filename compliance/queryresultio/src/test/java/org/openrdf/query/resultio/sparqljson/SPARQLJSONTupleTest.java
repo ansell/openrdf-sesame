@@ -24,7 +24,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 /**
  * TODO: Ignored as there is no SPARQLJSON Parser implementation yet.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 @Ignore
 public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {

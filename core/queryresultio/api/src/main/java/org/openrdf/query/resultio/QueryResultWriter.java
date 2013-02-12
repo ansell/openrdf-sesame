@@ -24,7 +24,7 @@ import org.openrdf.query.QueryResultHandlerException;
 /**
  * The base interface for writers of query results sets and boolean results.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public interface QueryResultWriter extends QueryResultHandler {

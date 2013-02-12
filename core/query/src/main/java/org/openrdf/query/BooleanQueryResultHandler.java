@@ -21,7 +21,7 @@ package org.openrdf.query;
  * handling boolean results using the {@link #handleBoolean(boolean)} method.
  * 
  * @since 2.7.0
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public interface BooleanQueryResultHandler extends QueryResultHandler {
 

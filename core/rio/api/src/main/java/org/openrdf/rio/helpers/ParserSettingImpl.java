@@ -21,7 +21,7 @@ import org.openrdf.rio.ParserSetting;
 /**
  * Basic implementation of {@link ParserSetting} interface.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public final class ParserSettingImpl<T> implements ParserSetting<T> {

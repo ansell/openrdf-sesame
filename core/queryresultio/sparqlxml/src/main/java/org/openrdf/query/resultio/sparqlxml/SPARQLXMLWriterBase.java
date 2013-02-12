@@ -31,7 +31,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * An abstract class to implement the base functionality for both
  * SPARQLBooleanXMLWriter and SPARQLResultsXMLWriter.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 

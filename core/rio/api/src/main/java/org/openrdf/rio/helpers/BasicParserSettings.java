@@ -23,7 +23,7 @@ import org.openrdf.rio.RDFParser.DatatypeHandling;
  * A class encapsulating the basic parser settings that most parsers may
  * support.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public class BasicParserSettings {

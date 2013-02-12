@@ -26,7 +26,7 @@ import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
  * A {@link BooleanQueryResultWriterFactory} for writers of SPARQL/JSON query
  * boolean results.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public class SPARQLBooleanJSONWriterFactory implements BooleanQueryResultWriterFactory {
 

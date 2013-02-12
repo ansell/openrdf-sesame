@@ -24,7 +24,7 @@ import org.openrdf.query.resultio.BooleanQueryResultFormat;
 /**
  * TODO: Ignored as there is no SPARQLJSON Parser implementation yet.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 @Ignore
 public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {

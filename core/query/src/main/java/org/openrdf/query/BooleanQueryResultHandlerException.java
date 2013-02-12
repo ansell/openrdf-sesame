@@ -20,7 +20,7 @@ package org.openrdf.query;
  * An exception that can be thrown by an BooleanQueryResultHandler when it
  * encounters an unrecoverable error.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public class BooleanQueryResultHandlerException extends QueryResultHandlerException {

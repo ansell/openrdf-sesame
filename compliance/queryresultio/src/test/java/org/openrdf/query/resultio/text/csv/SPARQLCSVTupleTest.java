@@ -21,7 +21,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
  * TODO disabled for now since CSV format is lossy and therefore does not
  * provide round-trip
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 @Ignore
 public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {

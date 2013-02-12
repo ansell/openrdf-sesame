@@ -37,7 +37,7 @@ import java.util.List;
  * failure when the relevant methods are called.
  * 
  * @since 2.7.0
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public interface QueryResultHandler {
 

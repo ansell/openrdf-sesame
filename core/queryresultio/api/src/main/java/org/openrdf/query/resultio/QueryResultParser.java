@@ -26,7 +26,7 @@ import org.openrdf.query.QueryResultHandlerException;
 /**
  * Base interface for parsers of query results in both boolean and tuple forms.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public interface QueryResultParser {

@@ -24,7 +24,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * Vocabulary constants for the Dublin Core Terms
  * 
  * @see http://dublincore.org/documents/dcmi-terms/
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public class DCTERMS {

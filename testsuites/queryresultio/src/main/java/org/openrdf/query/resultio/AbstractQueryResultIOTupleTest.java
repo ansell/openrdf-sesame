@@ -42,7 +42,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
  * Abstract test for QueryResultIO.
  * 
  * @author jeen
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public abstract class AbstractQueryResultIOTupleTest
 {

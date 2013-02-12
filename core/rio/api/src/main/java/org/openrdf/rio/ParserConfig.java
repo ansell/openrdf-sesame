@@ -31,7 +31,7 @@ import org.openrdf.rio.helpers.BasicParserSettings;
  * configuration options.
  * 
  * @author Jeen Broekstra
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public class ParserConfig implements Serializable {
 
