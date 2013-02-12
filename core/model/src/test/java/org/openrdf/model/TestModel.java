@@ -189,7 +189,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return createTerm("new value");
+					return createLiteral("new value");
 				}
 
 				@Override
@@ -216,7 +216,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return createTerm("new value");
+					return createLiteral("new value");
 				}
 
 				@Override
@@ -243,14 +243,14 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return createTerm("new value");
+					return createLiteral("new value");
 				}
 
 				@Override
 				public Object[] convert(Object[] seeds) {
 					List<Value> list = new ArrayList<Value>();
 					for (Object seed : seeds) {
-						list.add(createTerm(seed));
+						list.add(createLiteral(seed));
 					}
 					return list.toArray();
 				}
@@ -260,7 +260,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Set makeEmptySet() {
-					return new LinkedHashModel().filter(createURI("test"), RDF.VALUE, createTerm("value")).contexts();
+					return new LinkedHashModel().filter(createURI("test"), RDF.VALUE, createLiteral("value")).contexts();
 				}
 
 				@Override
@@ -270,7 +270,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return createTerm("new value");
+					return createLiteral("new value");
 				}
 
 				@Override
