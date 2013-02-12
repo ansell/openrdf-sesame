@@ -107,4 +107,19 @@ public class NamespaceImpl implements Namespace {
 	public String toString() {
 		return prefix + " :: " + name;
 	}
+
+	@Override
+	public int compareTo(Namespace o) {
+		if (getPrefix().equals(o.getPrefix())) {
+			if (getName().equals(o.getName())) {
+				return 0;
+			}
+			else {
+				return getName().compareTo(o.getName());
+			}
+		}
+		else {
+			return getPrefix().compareTo(o.getPrefix());
+		}
+	}
 }
