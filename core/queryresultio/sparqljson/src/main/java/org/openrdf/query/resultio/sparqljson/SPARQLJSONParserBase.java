@@ -183,7 +183,9 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 
 							if (type.equals(LITERAL)) {
 								// only check this if the type is literal
-								language = nextVarBinding.getString(XMLLANG);
+								if (nextVarBinding.has(XMLLANG)) {
+									language = nextVarBinding.getString(XMLLANG);
+								}
 							}
 
 							// provide some backwards compatibility with 2007 SPARQL
