@@ -165,34 +165,37 @@ public abstract class BaseServlet implements Servlet {
 	{
 		QueryResultWriter resultWriter = getResultWriter(req, resp);
 
+		String contentType = resultWriter.getQueryResultFormat().getDefaultMIMEType();
+
 		// HACK: In order to make XSLT stylesheet driven user interface work,
 		// browser user agents must receive application/xml if they are going to
 		// actually get application/sparql-results+xml
 		// NOTE: This will test against both BooleanQueryResultsFormat and
 		// TupleQueryResultsFormat
-		if (resultWriter.getQueryResultFormat().getDefaultMIMEType().equals(APPLICATION_SPARQL_RESULTS_XML)) {
+		if (contentType.equals(APPLICATION_SPARQL_RESULTS_XML)) {
 			String uaHeader = req.getHeader(USER_AGENT);
 			String acceptHeader = req.getHeader(ACCEPT);
 
+			if (acceptHeader != null && acceptHeader.contains(APPLICATION_SPARQL_RESULTS_XML)) {
+				// Do nothing, leave the contentType as
+				// application/sparql-results+xml
+			}
 			// Switch back to application/xml for user agents who claim to be
 			// Mozilla compatible
-			if (uaHeader != null && uaHeader.contains(MOZILLA)) {
-				resp.setContentType(APPLICATION_XML);
+			else if (uaHeader != null && uaHeader.contains(MOZILLA)) {
+				contentType = APPLICATION_XML;
 			}
 			// Switch back to application/xml for user agents who accept either
 			// application/xml or text/html
 			else if (acceptHeader != null
 					&& (acceptHeader.contains(APPLICATION_XML) || acceptHeader.contains(TEXT_HTML)))
 			{
-				resp.setContentType(APPLICATION_XML);
-			}
-			else {
-				resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
+				contentType = APPLICATION_XML;
 			}
 		}
-		else {
-			resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
-		}
+
+		resp.setContentType(contentType);
+
 		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());
 	}
 }
