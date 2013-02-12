@@ -27,8 +27,6 @@ import java.util.Iterator;
 import info.aduna.io.IndentingWriter;
 import info.aduna.text.StringUtil;
 
-import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultWriter;
 
 /**
