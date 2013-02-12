@@ -19,11 +19,24 @@ package org.openrdf.query.resultio.sparqljson;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import info.aduna.io.IOUtil;
 import info.aduna.io.UncloseableInputStream;
 
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.impl.BindingImpl;
+import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.QueryResultParserBase;
 
@@ -33,6 +46,18 @@ import org.openrdf.query.resultio.QueryResultParserBase;
  * @author Peter Ansell
  */
 public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
+
+	public static final String HEAD = "head";
+
+	public static final String LINK = "link";
+
+	public static final String VARS = "vars";
+
+	public static final String BOOLEAN = "boolean";
+
+	public static final String RESULTS = "results";
+
+	public static final String BINDINGS = "bindings";
 
 	/**
 	 * 
@@ -59,24 +84,91 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
 		BufferedInputStream buff = new BufferedInputStream(in);
-		UncloseableInputStream uncloseable = new UncloseableInputStream(buff);
 
 		try {
-			buff.mark(Integer.MAX_VALUE);
+			String json = IOUtil.readString(in);
+
 			boolean result = false;
 
-			// Try to parse it as a boolean result
-			
-			// Reset the buffered input stream and try again looking for tuple
-			// results
-			buff.reset();
+			// "This object has a "head" member and either a "results" member or a "boolean" member, depending on the query form"
+			// - http://www.w3.org/TR/sparql11-results-json/#json-result-object
+			JSONObject jsonObject = new JSONObject(json);
 
-			// If it failed to parse as a boolean result, try to parse it as a tuple result
-			
+			if (!jsonObject.has(HEAD)) {
+				throw new QueryResultParseException("Did not find head");
+			}
+
+			JSONObject head = jsonObject.getJSONObject(HEAD);
+
+			// Both Boolean and Tuple results can have headers with link elements.
+			if (head.has(LINK)) {
+				// FIXME: Extend QueryResultHandler interface to support link's
+			}
+
+			// check if we are handling a boolean first
+			if (jsonObject.has(BOOLEAN)) {
+				result = jsonObject.getBoolean(BOOLEAN);
+
+				handler.handleBoolean(result);
+			}
+			// we must be handling tuple solutions if it was not a boolean
+			else {
+				List<String> varsList = new ArrayList<String>();
+
+				if (!head.has(VARS)) {
+					throw new QueryResultParseException("Head object did not contain vars");
+				}
+
+				JSONArray vars = head.getJSONArray(VARS);
+
+				if (vars.length() == 0) {
+					throw new QueryResultParseException("Vars array was empty");
+				}
+
+				for (int i = 0; i < vars.length(); i++) {
+					varsList.add(vars.getString(i));
+				}
+
+				handler.startQueryResult(varsList);
+
+				if (!jsonObject.has(RESULTS)) {
+					throw new QueryResultParseException("Did not find results");
+				}
+
+				JSONObject resultsObject = jsonObject.getJSONObject(RESULTS);
+
+				if (!resultsObject.has(BINDINGS)) {
+					throw new QueryResultParseException("Results object did not contain a bindings object");
+				}
+
+				JSONArray bindings = resultsObject.getJSONArray(BINDINGS);
+
+				for (int i = 0; i < bindings.length(); i++) {
+
+					JSONObject nextBindingObject = bindings.getJSONObject(i);
+
+					MapBindingSet nextBindingSet = new MapBindingSet();
+
+					for (String nextVar : varsList) {
+
+						JSONObject nextVarBinding = nextBindingObject.getJSONObject(nextVar);
+
+						Value nextValue = null;
+
+						nextBindingSet.addBinding(new BindingImpl(nextVar, nextValue));
+					}
+
+					handler.handleSolution(nextBindingSet);
+				}
+			}
+
 			return result;
 		}
+		catch (JSONException e) {
+			throw new QueryResultParseException("Failed to parse JSON object", e);
+		}
 		finally {
-			uncloseable.doClose();
+			in.close();
 		}
 	}
 
