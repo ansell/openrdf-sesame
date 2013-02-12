@@ -16,17 +16,12 @@
  */
 package org.openrdf.query.resultio.sparqljson;
 
-import org.junit.Ignore;
-
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
- * TODO: Ignored as there is no SPARQLJSON Parser implementation yet.
- * 
  * @author Peter Ansell
  */
-@Ignore
 public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 
 	@Override
