@@ -328,7 +328,9 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			nativeStore.getNamespaceStore().sync();
 			nativeStore.getTripleStore().commit();
 
-			txnLock.release();
+			if (transactionInitialized) {
+				txnLock.release();
+			}
 			transactionInitialized = false;
 		}
 		catch (IOException e) {
@@ -361,7 +363,9 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			throw e;
 		}
 		finally {
-			txnLock.release();
+			if (transactionInitialized) { 
+				txnLock.release();
+			}
 			transactionInitialized = false;
 		}
 	}
