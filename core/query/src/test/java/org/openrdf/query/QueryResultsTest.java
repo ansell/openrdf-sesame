@@ -24,7 +24,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
@@ -46,8 +45,9 @@ public class QueryResultsTest extends TestCase {
 
 	private MutableTupleQueryResult tqr3;
 
+	/** a stub GraphQueryResult, containing a number of duplicate statements */
 	private GraphQueryResult gqr;
-	
+
 	private static ValueFactory VF = new ValueFactoryImpl();
 
 	private List<String> twoBindingNames = Arrays.asList("a", "b");
@@ -65,11 +65,15 @@ public class QueryResultsTest extends TestCase {
 	private Literal lit1;
 
 	private Literal lit2;
-	
+
 	private URI a = VF.createURI("urn:a");
+
 	private URI b = VF.createURI("urn:b");
+
 	private URI c = VF.createURI("urn:c");
+
 	private URI p = VF.createURI("urn:p");
+
 	private URI q = VF.createURI("urn:q");
 
 	@Override
@@ -79,7 +83,7 @@ public class QueryResultsTest extends TestCase {
 		tqr3 = new MutableTupleQueryResult(threeBindingNames);
 
 		gqr = new StubGraphQueryResult();
-		
+
 		foo = VF.createURI("http://example.org/foo");
 		bar = VF.createURI("http://example.org/bar");
 
@@ -94,23 +98,60 @@ public class QueryResultsTest extends TestCase {
 		throws QueryEvaluationException
 	{
 		Model model = QueryResults.asModel(gqr);
-	
+
 		assertFalse(gqr.hasNext());
 		assertNotNull(model);
 		assertTrue(model.contains(VF.createStatement(a, p, b)));
 	}
-	
+
+	public void testDistinctGraphQueryResults()
+		throws QueryEvaluationException
+	{
+
+		GraphQueryResult filtered = QueryResults.distinctResults(gqr);
+
+		List<Statement> processed = new ArrayList<Statement>();
+		while (filtered.hasNext()) {
+			Statement result = filtered.next();
+			assertFalse(processed.contains(result));
+			processed.add(result);
+		}
+	}
+
+	public void testDistinctTupleQueryResults()
+		throws QueryEvaluationException
+	{
+
+		BindingSet a = new ListBindingSet(twoBindingNames, foo, lit1);
+		BindingSet b = new ListBindingSet(twoBindingNames, bar, lit2);
+		tqr1.append(a);
+		tqr1.append(b);
+		tqr1.append(a);
+		tqr1.append(b);
+		tqr1.append(b);
+
+		TupleQueryResult filtered = QueryResults.distinctResults(tqr1);
+
+		List<BindingSet> processed = new ArrayList<BindingSet>();
+		while (filtered.hasNext()) {
+			BindingSet result = filtered.next();
+			assertFalse(processed.contains(result));
+			processed.add(result);
+		}
+	}
+
 	private class StubGraphQueryResult implements GraphQueryResult {
 
 		private List<Statement> statements = new ArrayList<Statement>();
 
-		
 		public StubGraphQueryResult() {
 			statements.add(VF.createStatement(a, p, b));
 			statements.add(VF.createStatement(b, q, c));
 			statements.add(VF.createStatement(c, q, a));
+			statements.add(VF.createStatement(c, q, a));
+			statements.add(VF.createStatement(a, p, b));
 		}
-		
+
 		public void close()
 			throws QueryEvaluationException
 		{
