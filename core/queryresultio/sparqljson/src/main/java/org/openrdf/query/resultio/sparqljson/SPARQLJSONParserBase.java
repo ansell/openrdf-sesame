@@ -59,6 +59,14 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 
 	public static final String BINDINGS = "bindings";
 
+	public static final String TYPE = "type";
+
+	public static final String VALUE = "value";
+
+	public static final String XMLLANG = "xml:lang";
+
+	public static final String DATATYPE = "datatype";
+
 	/**
 	 * 
 	 */
@@ -150,12 +158,34 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 					MapBindingSet nextBindingSet = new MapBindingSet();
 
 					for (String nextVar : varsList) {
+						if (nextBindingObject.has(nextVar)) {
+							JSONObject nextVarBinding = nextBindingObject.getJSONObject(nextVar);
 
-						JSONObject nextVarBinding = nextBindingObject.getJSONObject(nextVar);
+							if (!nextVarBinding.has(TYPE)) {
+								throw new QueryResultParseException("Binding did not contain a type: " + nextVar);
+							}
 
-						Value nextValue = null;
+							String type = nextVarBinding.getString(TYPE);
 
-						nextBindingSet.addBinding(new BindingImpl(nextVar, nextValue));
+							if (!nextVarBinding.has(VALUE)) {
+								throw new QueryResultParseException("Binding did not contain a value: " + nextVar);
+							}
+
+							String value = nextVarBinding.getString(VALUE);
+							
+							// TODO: only check this if the type is literal?
+							String language = nextVarBinding.getString(XMLLANG);
+							
+							String datatype = nextVarBinding.getString(DATATYPE);
+							
+							Value nextValue = parseValue(type, value, language, datatype);
+
+							nextBindingSet.addBinding(new BindingImpl(nextVar, nextValue));
+						}
+					}
+
+					if (nextBindingSet.size() == 0) {
+						throw new QueryResultParseException("Binding did not contain any variables");
 					}
 
 					handler.handleSolution(nextBindingSet);
@@ -172,4 +202,15 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 		}
 	}
 
+	/**
+	 * @param type2
+	 * @param value2
+	 * @param language
+	 * @param datatype2
+	 * @return
+	 */
+	private Value parseValue(String type, String value, String language, String datatype) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
