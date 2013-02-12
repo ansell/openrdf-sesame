@@ -27,6 +27,7 @@ import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
 
 /**
  * Parser for SPARQL-1.1 JSON Results Format documents
@@ -75,6 +76,9 @@ public class SPARQLResultsJSONParser extends SPARQLJSONParserBase implements Tup
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		try {
+			if (handler == null) {
+				handler = new QueryResultCollector();
+			}
 			parseQueryResultInternal(in);
 		}
 		catch (TupleQueryResultHandlerException e) {

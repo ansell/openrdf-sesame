@@ -25,6 +25,7 @@ import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultParseException;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
 
 /**
  * Parser for SPARQL-1.1 JSON Results Format documents
@@ -44,7 +45,8 @@ public class SPARQLBooleanJSONParser extends SPARQLJSONParserBase implements Boo
 	/**
 	 * Construct a parser with a specific {@link ValueFactory}.
 	 * 
-	 * @param valueFactory The factory to use to create values.
+	 * @param valueFactory
+	 *        The factory to use to create values.
 	 */
 	public SPARQLBooleanJSONParser(ValueFactory valueFactory) {
 		super(valueFactory);
@@ -66,6 +68,9 @@ public class SPARQLBooleanJSONParser extends SPARQLJSONParserBase implements Boo
 		throws IOException, QueryResultParseException
 	{
 		try {
+			if (handler == null) {
+				handler = new QueryResultCollector();
+			}
 			return parseQueryResultInternal(in);
 		}
 		catch (QueryResultHandlerException e) {
