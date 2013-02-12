@@ -38,7 +38,6 @@ import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.workbench.util.TupleResultBuilder;
-import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class BaseServlet implements Servlet {
 
@@ -47,6 +46,18 @@ public abstract class BaseServlet implements Servlet {
 	protected static final String SERVER_PASSWORD = "server-password";
 
 	protected static final String ACCEPT = "Accept";
+
+	protected static final String APPLICATION_XML = "application/xml";
+
+	protected static final String APPLICATION_SPARQL_RESULTS_XML = "application/sparql-results+xml";
+
+	protected static final String TEXT_HTML = "text/html";
+
+	protected static final String USER_AGENT = "User-Agent";
+
+	protected static final String MSIE = "MSIE";
+
+	protected static final String MOZILLA = "Mozilla";
 
 	protected ServletConfig config;
 
@@ -153,7 +164,35 @@ public abstract class BaseServlet implements Servlet {
 		throws UnsupportedQueryResultFormatException, IOException
 	{
 		QueryResultWriter resultWriter = getResultWriter(req, resp);
-		resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
+
+		// HACK: In order to make XSLT stylesheet driven user interface work,
+		// browser user agents must receive application/xml if they are going to
+		// actually get application/sparql-results+xml
+		// NOTE: This will test against both BooleanQueryResultsFormat and
+		// TupleQueryResultsFormat
+		if (resultWriter.getQueryResultFormat().getDefaultMIMEType().equals(APPLICATION_SPARQL_RESULTS_XML)) {
+			String uaHeader = req.getHeader(USER_AGENT);
+			String acceptHeader = req.getHeader(ACCEPT);
+
+			// Switch back to application/xml for user agents who claim to be
+			// Mozilla compatible
+			if (uaHeader != null && uaHeader.contains(MOZILLA)) {
+				resp.setContentType(APPLICATION_XML);
+			}
+			// Switch back to application/xml for user agents who accept either
+			// application/xml or text/html
+			else if (acceptHeader != null
+					&& (acceptHeader.contains(APPLICATION_XML) || acceptHeader.contains(TEXT_HTML)))
+			{
+				resp.setContentType(APPLICATION_XML);
+			}
+			else {
+				resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
+			}
+		}
+		else {
+			resp.setContentType(resultWriter.getQueryResultFormat().getDefaultMIMEType());
+		}
 		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());
 	}
 }
