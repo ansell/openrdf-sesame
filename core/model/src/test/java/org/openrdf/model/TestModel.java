@@ -194,7 +194,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<Value> list = new ArrayList<Value>();
+					List<URI> list = new ArrayList<URI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
@@ -221,7 +221,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<Value> list = new ArrayList<Value>();
+					List<URI> list = new ArrayList<URI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
@@ -248,7 +248,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<Value> list = new ArrayList<Value>();
+					List<Literal> list = new ArrayList<Literal>();
 					for (Object seed : seeds) {
 						list.add(createLiteral(seed));
 					}
@@ -275,7 +275,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<Value> list = new ArrayList<Value>();
+					List<URI> list = new ArrayList<URI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
