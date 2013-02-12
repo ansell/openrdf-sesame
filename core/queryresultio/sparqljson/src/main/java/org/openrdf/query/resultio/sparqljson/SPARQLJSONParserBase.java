@@ -25,15 +25,11 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import info.aduna.io.IOUtil;
-import info.aduna.io.UncloseableInputStream;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.Binding;
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.MapBindingSet;
@@ -41,7 +37,8 @@ import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.QueryResultParserBase;
 
 /**
- * Abstract base class for SPARQL Results JSON Parsers.
+ * Abstract base class for SPARQL Results JSON Parsers. Provides a common
+ * implementation of both boolean and tuple parsing.
  * 
  * @author Peter Ansell
  */
@@ -66,6 +63,14 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	public static final String XMLLANG = "xml:lang";
 
 	public static final String DATATYPE = "datatype";
+
+	public static final String LITERAL = "literal";
+
+	public static final String TYPED_LITERAL = "typed-literal";
+
+	public static final String BNODE = "bnode";
+
+	public static final String URI = "uri";
 
 	/**
 	 * 
@@ -172,12 +177,23 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 							}
 
 							String value = nextVarBinding.getString(VALUE);
-							
-							// TODO: only check this if the type is literal?
-							String language = nextVarBinding.getString(XMLLANG);
-							
-							String datatype = nextVarBinding.getString(DATATYPE);
-							
+
+							String language = null;
+							String datatype = null;
+
+							if (type.equals(LITERAL)) {
+								// only check this if the type is literal
+								language = nextVarBinding.getString(XMLLANG);
+							}
+
+							// provide some backwards compatibility with 2007 SPARQL
+							// Query Results in JSON W3C Working Group Note by
+							// supporting typed-literal here as well as literal
+							// http://www.w3.org/TR/2007/NOTE-rdf-sparql-json-res-20070618/
+							if (type.equals(LITERAL) || type.equals(TYPED_LITERAL)) {
+								datatype = nextVarBinding.getString(DATATYPE);
+							}
+
 							Value nextValue = parseValue(type, value, language, datatype);
 
 							nextBindingSet.addBinding(new BindingImpl(nextVar, nextValue));
@@ -203,14 +219,35 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	}
 
 	/**
-	 * @param type2
-	 * @param value2
+	 * Parse a value out of the elements for a binding.
+	 * 
+	 * @param type
+	 * @param value
 	 * @param language
-	 * @param datatype2
+	 * @param datatype
 	 * @return
 	 */
 	private Value parseValue(String type, String value, String language, String datatype) {
-		// TODO Auto-generated method stub
-		return null;
+		Value result = null;
+
+		if (type.equals(LITERAL) || type.equals(TYPED_LITERAL)) {
+			if (language != null) {
+				result = valueFactory.createLiteral(value, language);
+			}
+			else if (datatype != null) {
+				result = valueFactory.createLiteral(value, valueFactory.createURI(datatype));
+			}
+			else {
+				result = valueFactory.createLiteral(value);
+			}
+		}
+		else if (type.equals(BNODE)) {
+			result = valueFactory.createBNode(value);
+		}
+		else if (type.equals(URI)) {
+			result = valueFactory.createURI(value);
+		}
+
+		return result;
 	}
 }
