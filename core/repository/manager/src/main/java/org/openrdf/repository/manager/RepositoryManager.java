@@ -80,7 +80,8 @@ public abstract class RepositoryManager {
 	 * Indicates if this RepositoryManager has been initialized. Note that the
 	 * initialization status may change if the Repository is shut down.
 	 * 
-	 * @return true iff the repository has been initialized.
+	 * @return true iff the repository manager has been initialized.
+	 * @since 2.7.0
 	 */
 	public boolean isInitialized() {
 		Repository systemRepository = getSystemRepository();
