@@ -349,6 +349,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		txnStLock = store.getStatementsReadLock();
+		txnLockInitialized = false;
 
 		/*
 		boolean releaseLocks = true;
@@ -399,10 +400,12 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		store.commit();
-		if (txnLock != null) {
-			txnLock.release();
-			txnLockInitialized = false;
+		if (txnLockInitialized) {
+			store.commit();
+			if (txnLock != null) {
+				txnLock.release();
+				txnLockInitialized = false;
+			}
 		}
 		txnStLock.release();
 	}
@@ -412,7 +415,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		try {
-			store.rollback();
+			if (txnLockInitialized) {
+				store.rollback();
+			}
 		}
 		finally {
 			if (txnLock != null) {
@@ -606,7 +611,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		initializeTransactionExclusiveLock();
-		
+
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		try {
 			store.getNamespaceStore().setNamespace(prefix, name);
@@ -629,7 +634,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void clearNamespacesInternal()
 		throws SailException
 	{
-		
+
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().clear();
 	}
