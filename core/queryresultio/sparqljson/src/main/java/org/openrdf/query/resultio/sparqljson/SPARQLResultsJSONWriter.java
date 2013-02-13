@@ -116,9 +116,7 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 			if (firstTupleWritten) {
 				writeComma();
 			}
-			else {
-				firstTupleWritten = true;
-			}
+			firstTupleWritten = true;
 
 			openBraces(); // start of new solution
 
@@ -146,6 +144,9 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
+		if (!headerComplete) {
+			endHeader();
+		}
 		try {
 			closeArray(); // bindings array
 			closeBraces(); // results braces
