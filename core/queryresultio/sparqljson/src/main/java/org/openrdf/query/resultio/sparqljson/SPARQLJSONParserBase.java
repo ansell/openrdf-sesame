@@ -122,7 +122,9 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 			if (jsonObject.has(BOOLEAN)) {
 				result = jsonObject.getBoolean(BOOLEAN);
 
-				handler.handleBoolean(result);
+				if (this.handler != null) {
+					handler.handleBoolean(result);
+				}
 			}
 			// we must be handling tuple solutions if it was not a boolean
 			else {
@@ -142,7 +144,9 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 					varsList.add(vars.getString(i));
 				}
 
-				handler.startQueryResult(varsList);
+				if (this.handler != null) {
+					handler.startQueryResult(varsList);
+				}
 
 				if (!jsonObject.has(RESULTS)) {
 					throw new QueryResultParseException("Did not find results");
@@ -208,7 +212,12 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 						throw new QueryResultParseException("Binding did not contain any variables");
 					}
 
-					handler.handleSolution(nextBindingSet);
+					if (this.handler != null) {
+						handler.handleSolution(nextBindingSet);
+					}
+				}
+				if (this.handler != null) {
+					handler.endQueryResult();
 				}
 			}
 
