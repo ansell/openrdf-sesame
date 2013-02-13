@@ -193,7 +193,9 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 							// supporting typed-literal here as well as literal
 							// http://www.w3.org/TR/2007/NOTE-rdf-sparql-json-res-20070618/
 							if (type.equals(LITERAL) || type.equals(TYPED_LITERAL)) {
-								datatype = nextVarBinding.getString(DATATYPE);
+								if (nextVarBinding.has(DATATYPE)) {
+									datatype = nextVarBinding.getString(DATATYPE);
+								}
 							}
 
 							Value nextValue = parseValue(type, value, language, datatype);
