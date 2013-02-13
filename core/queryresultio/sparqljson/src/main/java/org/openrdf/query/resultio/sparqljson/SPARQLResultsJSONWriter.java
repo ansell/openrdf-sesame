@@ -228,18 +228,16 @@ public class SPARQLResultsJSONWriter extends SPARQLJSONWriterBase implements Tup
 		else if (value instanceof Literal) {
 			Literal lit = (Literal)value;
 
-			if (lit.getDatatype() != null) {
-				writeKeyValue("type", "typed-literal");
+			if (lit.getLanguage() != null) {
+				writeKeyValue("xml:lang", lit.getLanguage());
 				writer.write(", ");
+			}
+			if (lit.getDatatype() != null) {
 				writeKeyValue("datatype", lit.getDatatype().toString());
+				writer.write(", ");
 			}
-			else {
-				writeKeyValue("type", "literal");
-				if (lit.getLanguage() != null) {
-					writer.write(", ");
-					writeKeyValue("xml:lang", lit.getLanguage());
-				}
-			}
+
+			writeKeyValue("type", "literal");
 
 			writer.write(", ");
 			writeKeyValue("value", lit.getLabel());
