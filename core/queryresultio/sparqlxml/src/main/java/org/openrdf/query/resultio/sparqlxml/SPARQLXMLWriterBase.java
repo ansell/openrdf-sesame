@@ -16,15 +16,40 @@
  */
 package org.openrdf.query.resultio.sparqlxml;
 
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BINDING_NAME_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BINDING_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BNODE_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_FALSE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TRUE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_DATATYPE_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_SET_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.URI_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR_NAME_ATT;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR_TAG;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
+import org.openrdf.model.BNode;
+import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.resultio.QueryResultFormat;
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultWriter;
 
 /**
@@ -47,6 +72,8 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	protected boolean documentOpen = false;
 
 	protected boolean headerComplete = false;
+
+	protected boolean tupleVariablesFound = false;
 
 	/*--------------*
 	 * Constructors *
@@ -87,4 +114,234 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 		documentOpen = false;
 	}
 
+	@Override
+	public void handleBoolean(boolean value)
+		throws QueryResultHandlerException
+	{
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
+		}
+
+		if (!headerComplete) {
+			endHeader();
+		}
+
+		try {
+			if (value) {
+				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
+			}
+			else {
+				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_FALSE);
+			}
+
+			endDocument();
+		}
+		catch (IOException e) {
+			throw new QueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startDocument()
+		throws QueryResultHandlerException
+	{
+		documentOpen = true;
+		headerComplete = false;
+
+		try {
+			xmlWriter.startDocument();
+
+			xmlWriter.setAttribute("xmlns", NAMESPACE);
+		}
+		catch (IOException e) {
+			throw new QueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleStylesheet(String url)
+		throws QueryResultHandlerException
+	{
+		try {
+			xmlWriter.writeStylesheet(url);
+		}
+		catch (IOException e) {
+			throw new QueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startHeader()
+		throws QueryResultHandlerException
+	{
+		try {
+			xmlWriter.startTag(ROOT_TAG);
+
+			xmlWriter.startTag(HEAD_TAG);
+		}
+		catch (IOException e) {
+			throw new QueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		try {
+			// Write link URLs
+			for (String name : linkUrls) {
+				xmlWriter.setAttribute(HREF_ATT, name);
+				xmlWriter.emptyElement(LINK_TAG);
+			}
+		}
+		catch (IOException e) {
+			throw new QueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void endHeader()
+		throws QueryResultHandlerException
+	{
+		try {
+			xmlWriter.endTag(HEAD_TAG);
+
+			if (tupleVariablesFound) {
+				// Write start of results, which must always exist, even if there
+				// are
+				// no result bindings
+				xmlWriter.startTag(RESULT_SET_TAG);
+			}
+
+			headerComplete = true;
+		}
+		catch (IOException e) {
+			throw new QueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void startQueryResult(List<String> bindingNames)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			if (!documentOpen) {
+				startDocument();
+				startHeader();
+			}
+			tupleVariablesFound = true;
+			// Write binding names
+			for (String name : bindingNames) {
+				xmlWriter.setAttribute(VAR_NAME_ATT, name);
+				xmlWriter.emptyElement(VAR_TAG);
+			}
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void endQueryResult()
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			if (!headerComplete) {
+				endHeader();
+			}
+			xmlWriter.endTag(RESULT_SET_TAG);
+			endDocument();
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	@Override
+	public void handleSolution(BindingSet bindingSet)
+		throws TupleQueryResultHandlerException
+	{
+		try {
+			if (!headerComplete) {
+				endHeader();
+			}
+
+			xmlWriter.startTag(RESULT_TAG);
+
+			for (Binding binding : bindingSet) {
+				xmlWriter.setAttribute(BINDING_NAME_ATT, binding.getName());
+				xmlWriter.startTag(BINDING_TAG);
+
+				writeValue(binding.getValue());
+
+				xmlWriter.endTag(BINDING_TAG);
+			}
+
+			xmlWriter.endTag(RESULT_TAG);
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+		catch (TupleQueryResultHandlerException e) {
+			throw e;
+		}
+		catch (QueryResultHandlerException e) {
+			throw new TupleQueryResultHandlerException(e);
+		}
+	}
+
+	private void writeValue(Value value)
+		throws IOException
+	{
+		if (value instanceof URI) {
+			writeURI((URI)value);
+		}
+		else if (value instanceof BNode) {
+			writeBNode((BNode)value);
+		}
+		else if (value instanceof Literal) {
+			writeLiteral((Literal)value);
+		}
+	}
+
+	private void writeURI(URI uri)
+		throws IOException
+	{
+		xmlWriter.textElement(URI_TAG, uri.toString());
+	}
+
+	private void writeBNode(BNode bNode)
+		throws IOException
+	{
+		xmlWriter.textElement(BNODE_TAG, bNode.getID());
+	}
+
+	private void writeLiteral(Literal literal)
+		throws IOException
+	{
+		if (literal.getLanguage() != null) {
+			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
+		}
+
+		if (literal.getDatatype() != null) {
+			URI datatype = literal.getDatatype();
+			xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.toString());
+		}
+
+		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
+	}
 }
