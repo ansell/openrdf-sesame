@@ -16,7 +16,6 @@
  */
 package org.openrdf.query.resultio.sparqljson;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -96,8 +95,6 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	protected boolean parseQueryResultInternal(InputStream in)
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
-		BufferedInputStream buff = new BufferedInputStream(in);
-
 		try {
 			String json = IOUtil.readString(in);
 
