@@ -16,27 +16,19 @@
  */
 package org.openrdf.model;
 
-import java.io.Serializable;
+import org.openrdf.model.impl.TreeModel;
 
 /**
- * A namespace, consisting of a namespace name and a prefix that has been
- * assigned to it.
+ * Tests for {@link Namespace} support in {@link TreeModel} using the abstract
+ * tests defined in {@link ModelNamespacesTest}.
+ * 
+ * @author Peter Ansell p_ansell@yahoo.com
  */
-public interface Namespace extends Serializable, Comparable<Namespace> {
+public class TreeModelNamespacesTest extends ModelNamespacesTest {
 
-	/**
-	 * Gets the name of the current namespace (i.e. it's URI).
-	 * 
-	 * @return name of namespace
-	 */
-	public String getName();
+	@Override
+	protected Model getModelImplementation() {
+		return new TreeModel();
+	}
 
-	/**
-	 * Gets the prefix of the current namespace. The default namespace is
-	 * represented by an empty prefix string.
-	 * 
-	 * @return prefix of namespace, or an empty string in case of the default
-	 *         namespace.
-	 */
-	public String getPrefix();
 }
