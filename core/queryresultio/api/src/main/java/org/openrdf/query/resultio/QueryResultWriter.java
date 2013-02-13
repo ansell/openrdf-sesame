@@ -75,23 +75,6 @@ public interface QueryResultWriter extends QueryResultHandler {
 		throws QueryResultHandlerException;
 
 	/**
-	 * Handles the insertion of links elements into the header.
-	 * <p>
-	 * NOTE: If the format does not support links, it must silently ignore a call
-	 * to this method.
-	 * 
-	 * @see http://www.w3.org/TR/sparql11-results-json/#select-link
-	 * @param linkUrls
-	 *        The URLs of the links to insert into the header.
-	 * @throws QueryResultHandlerException
-	 *         If there was an error handling the set of link URLs. This error is
-	 *         not thrown in cases where links are not supported.
-	 * @since 2.7.0
-	 */
-	void handleLinks(List<String> linkUrls)
-		throws QueryResultHandlerException;
-
-	/**
 	 * Indicates the end of the header. This must be called after
 	 * {@link #startHeader} and before any calls to {@link #handleSolution}.
 	 * 

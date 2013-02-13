@@ -46,6 +46,8 @@ public class QueryResultCollector implements QueryResultHandler {
 
 	private List<BindingSet> bindingSets = Collections.emptyList();
 
+	private List<String> links = new ArrayList<String>();
+
 	public QueryResultCollector() {
 	}
 
@@ -85,6 +87,13 @@ public class QueryResultCollector implements QueryResultHandler {
 		// reset the start query result found variable at this point
 	}
 
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		this.links.addAll(linkUrls);
+	}
+
 	/**
 	 * @return True if there was a boolean handled by this set.
 	 */
@@ -101,7 +110,7 @@ public class QueryResultCollector implements QueryResultHandler {
 		throws QueryResultHandlerException
 	{
 		if (!hasBooleanSet) {
-			throw new BooleanQueryResultHandlerException("Did not collect a boolean value");
+			throw new QueryResultHandlerException("Did not collect a boolean value");
 		}
 		else {
 			return this.value;
@@ -130,7 +139,7 @@ public class QueryResultCollector implements QueryResultHandler {
 		throws QueryResultHandlerException
 	{
 		if (!endQueryResultFound) {
-			throw new TupleQueryResultHandlerException("Did not successfully collect a tuple results set.");
+			throw new QueryResultHandlerException("Did not successfully collect a tuple results set.");
 		}
 		else {
 			return bindingNames;
@@ -148,10 +157,18 @@ public class QueryResultCollector implements QueryResultHandler {
 		throws QueryResultHandlerException
 	{
 		if (!endQueryResultFound) {
-			throw new TupleQueryResultHandlerException("Did not successfully collect a tuple results set.");
+			throw new QueryResultHandlerException("Did not successfully collect a tuple results set.");
 		}
 		else {
 			return bindingSets;
 		}
+	}
+
+	/**
+	 * @return A list of links accumulated from calls to
+	 *         {@link #handleLinks(List)}.
+	 */
+	public List<String> getLinks() {
+		return Collections.unmodifiableList(links);
 	}
 }

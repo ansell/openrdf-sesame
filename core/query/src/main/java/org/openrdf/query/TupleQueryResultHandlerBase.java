@@ -51,4 +51,10 @@ public class TupleQueryResultHandlerBase implements TupleQueryResultHandler {
 		// This is a base class for handling tuple results
 		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+	}
 }
