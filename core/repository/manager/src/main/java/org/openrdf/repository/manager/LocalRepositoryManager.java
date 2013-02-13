@@ -73,7 +73,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * The base dir to resolve any relative paths against.
 	 */
-	private File baseDir;
+	private final File baseDir;
 
 	/*--------------*
 	 * Constructors *
@@ -119,9 +119,12 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * Gets the base dir against which to resolve relative paths.
 	 * 
-	 * @throws MalformedURLException If the path cannot be parsed as a URL
+	 * @throws MalformedURLException
+	 *         If the path cannot be parsed as a URL
 	 */
-	public URL getLocation() throws MalformedURLException {
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return baseDir.toURI().toURL();
 	}
 
@@ -193,24 +196,22 @@ public class LocalRepositoryManager extends RepositoryManager {
 		if (factory == null) {
 			throw new RepositoryConfigException("Unsupported repository type: " + config.getType());
 		}
-
+		if (factory instanceof ProxyRepositoryFactory) {
+			((ProxyRepositoryFactory)factory).setRepositoryManager(this);
+		}
 		Repository repository = factory.getRepository(config);
-
 		if (config instanceof DelegatingRepositoryImplConfig) {
 			RepositoryImplConfig delegateConfig = ((DelegatingRepositoryImplConfig)config).getDelegate();
-
 			Repository delegate = createRepositoryStack(delegateConfig);
-
 			try {
 				((DelegatingRepository)repository).setDelegate(delegate);
 			}
 			catch (ClassCastException e) {
 				throw new RepositoryConfigException(
 						"Delegate specified for repository that is not a DelegatingRepository: "
-								+ delegate.getClass());
+								+ delegate.getClass(), e);
 			}
 		}
-
 		return repository;
 	}
 
@@ -265,11 +266,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	class ConfigChangeListener extends RepositoryConnectionListenerAdapter {
 
-		private Map<RepositoryConnection, Set<Resource>> modifiedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
+		private final Map<RepositoryConnection, Set<Resource>> modifiedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
 
-		private Map<RepositoryConnection, Boolean> modifiedAllContextsByConnection = new HashMap<RepositoryConnection, Boolean>();
+		private final Map<RepositoryConnection, Boolean> modifiedAllContextsByConnection = new HashMap<RepositoryConnection, Boolean>();
 
-		private Map<RepositoryConnection, Set<Resource>> removedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
+		private final Map<RepositoryConnection, Set<Resource>> removedContextsByConnection = new HashMap<RepositoryConnection, Set<Resource>>();
 
 		private Set<Resource> getModifiedContexts(RepositoryConnection conn) {
 			Set<Resource> result = modifiedContextsByConnection.get(conn);
@@ -351,34 +352,37 @@ public class LocalRepositoryManager extends RepositoryManager {
 			else {
 				Set<Resource> modifiedContexts = modifiedContextsByConnection.remove(con);
 				Set<Resource> removedContexts = removedContextsByConnection.remove(con);
-				if(removedContexts != null && !removedContexts.isEmpty()) {
+				if (removedContexts != null && !removedContexts.isEmpty()) {
 					modifiedContexts.removeAll(removedContexts);
 				}
 				if (modifiedContexts != null) {
 					logger.debug("React to commit on SystemRepository for contexts {}", modifiedContexts);
 					try {
 						RepositoryConnection cleanupCon = getSystemRepository().getConnection();
-						
+
 						try {
 							// refresh all modified contexts
 							for (Resource context : modifiedContexts) {
-							logger.debug("Processing modified context {}.", context);
+								logger.debug("Processing modified context {}.", context);
 								try {
 									if (isRepositoryConfigContext(cleanupCon, context)) {
 										String repositoryID = getRepositoryID(cleanupCon, context);
 										logger.debug("Reacting to modified repository config for {}", repositoryID);
 										Repository repository = removeInitializedRepository(repositoryID);
 										if (repository != null) {
-											logger.debug("Modified repository {} has been initialized, refreshing...", repositoryID);
+											logger.debug("Modified repository {} has been initialized, refreshing...",
+													repositoryID);
 											// refresh single repository
 											refreshRepository(cleanupCon, repositoryID, repository);
 										}
 										else {
-											logger.debug("Modified repository {} has not been initialized, skipping...", repositoryID);
+											logger.debug("Modified repository {} has not been initialized, skipping...",
+													repositoryID);
 										}
 									}
 									else {
-										logger.debug("Context {} doesn't contain repository config information.", context);
+										logger.debug("Context {} doesn't contain repository config information.",
+												context);
 									}
 								}
 								catch (RepositoryException re) {
