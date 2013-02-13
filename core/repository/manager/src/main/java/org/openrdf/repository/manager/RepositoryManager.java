@@ -77,6 +77,17 @@ public abstract class RepositoryManager {
 	 *---------*/
 
 	/**
+	 * Indicates if this RepositoryManager has been initialized. Note that the
+	 * initialization status may change if the Repository is shut down.
+	 * 
+	 * @return true iff the repository has been initialized.
+	 */
+	public boolean isInitialized() {
+		Repository systemRepository = getSystemRepository();
+		return systemRepository != null && systemRepository.isInitialized();
+	}
+
+	/**
 	 * Initializes the repository manager.
 	 * 
 	 * @throws RepositoryException
@@ -497,7 +508,9 @@ public abstract class RepositoryManager {
 		synchronized (initializedRepositories) {
 			for (Repository repository : initializedRepositories.values()) {
 				try {
-					repository.shutDown();
+					if (repository.isInitialized()) {
+						repository.shutDown();
+					}
 				}
 				catch (RepositoryException e) {
 					logger.error("Repository shut down failed", e);
@@ -511,7 +524,9 @@ public abstract class RepositoryManager {
 	void refreshRepository(RepositoryConnection con, String repositoryID, Repository repository) {
 		logger.debug("Refreshing repository {}...", repositoryID);
 		try {
-			repository.shutDown();
+			if (repository.isInitialized()) {
+				repository.shutDown();
+			}
 		}
 		catch (RepositoryException e) {
 			logger.error("Failed to shut down repository", e);
