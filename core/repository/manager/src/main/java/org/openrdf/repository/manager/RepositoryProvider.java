@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
 
@@ -181,18 +180,6 @@ public class RepositoryProvider {
 		RepositoryManager manager = getRepositoryManagerOfRepository(url);
 		String id = getRepositoryIdOfRepository(url);
 		return manager.getRepository(id);
-	}
-
-	/**
-	 * Created a new RepositoryConnection, that must be closed by the caller. The
-	 * parameter must be a URL of the form http://host:port/path/repositories/id
-	 * or file:///path/repositories/id.
-	 */
-	public static RepositoryConnection getConnection(String url)
-		throws RepositoryException, RepositoryConfigException
-	{
-		Repository repository = getRepository(url);
-		return repository.getConnection();
 	}
 
 	static RepositoryManager createRepositoryManager(String url)
