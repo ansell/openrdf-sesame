@@ -13,17 +13,9 @@
  */
 package org.openrdf.query.resultio;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.Test;
-
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.resultio.QueryResultIO;
 
 /**
  * Abstract test for QueryResultIO.
@@ -31,14 +23,12 @@ import org.openrdf.query.resultio.QueryResultIO;
  * @author jeen
  * @author Peter Ansell
  */
-public abstract class AbstractQueryResultIOBooleanTest {
+public abstract class AbstractQueryResultIOBooleanTest extends AbstractQueryResultIOTest {
 
-	/**
-	 * @return An example filename that will match the
-	 *         {@link BooleanQueryResultFormat} returned by
-	 *         {@link #getBooleanFormat()}.
-	 */
-	protected abstract String getFileName();
+	@Override
+	protected final QueryResultFormat getFormat() {
+		return getBooleanFormat();
+	}
 
 	/**
 	 * @return The {@link BooleanQueryResultFormat} that this test is running
@@ -46,39 +36,46 @@ public abstract class AbstractQueryResultIOBooleanTest {
 	 */
 	protected abstract BooleanQueryResultFormat getBooleanFormat();
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.query.resultio.QueryResultIO#getParserFormatForFileName(java.lang.String)}
-	 * .
-	 */
 	@Test
-	public final void testGetParserFormatForFileNameString() {
-		String fileName = getFileName();
-		BooleanQueryResultFormat format = QueryResultIO.getBooleanParserFormatForFileName(fileName);
-
-		assertNotNull("Could not find parser for this format.", format);
-		assertEquals(getBooleanFormat(), format);
+	public final void testBooleanNoLinks()
+		throws Exception
+	{
+		doBooleanNoLinks(getBooleanFormat(), true);
+		doBooleanNoLinks(getBooleanFormat(), false);
 	}
 
 	@Test
-	public final void testBooleanResultFormat()
-		throws IOException, QueryResultHandlerException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+	public final void testBooleanEmptyLinks()
+		throws Exception
 	{
-		testQueryResultFormat(getBooleanFormat(), true);
-		testQueryResultFormat(getBooleanFormat(), false);
+		doBooleanLinks(getBooleanFormat(), true, Arrays.<String> asList());
+		doBooleanLinks(getBooleanFormat(), false, Arrays.<String> asList());
 	}
 
-	private void testQueryResultFormat(BooleanQueryResultFormat format, boolean input)
-		throws IOException, QueryResultHandlerException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+	@Test
+	public final void testBooleanOneLink()
+		throws Exception
 	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		QueryResultIO.writeBoolean(input, format, out);
-		out.flush();
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
-
-		assertEquals(output, input);
+		doBooleanLinks(getBooleanFormat(), true, Arrays.asList("info"));
+		doBooleanLinks(getBooleanFormat(), false, Arrays.asList("info"));
 	}
+
+	@Test
+	public final void testBooleanMultipleLinks()
+		throws Exception
+	{
+		doBooleanLinks(getBooleanFormat(), true, Arrays.asList("info", "alternate", "other", "another"));
+		doBooleanLinks(getBooleanFormat(), false, Arrays.asList("info", "alternate", "other", "another"));
+	}
+
+	@Test
+	public final void testBooleanMultipleLinksWithStylesheet()
+		throws Exception
+	{
+		doBooleanLinksAndStylesheet(getBooleanFormat(), true,
+				Arrays.asList("info", "alternate", "other", "another"), "test.xsl");
+		doBooleanLinksAndStylesheet(getBooleanFormat(), false,
+				Arrays.asList("info", "alternate", "other", "another"), "test.xsl");
+	}
+
 }
