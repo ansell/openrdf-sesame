@@ -146,16 +146,18 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	public void startDocument()
 		throws QueryResultHandlerException
 	{
-		documentOpen = true;
-		headerComplete = false;
+		if (!documentOpen) {
+			documentOpen = true;
+			headerComplete = false;
 
-		try {
-			xmlWriter.startDocument();
+			try {
+				xmlWriter.startDocument();
 
-			xmlWriter.setAttribute("xmlns", NAMESPACE);
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+				xmlWriter.setAttribute("xmlns", NAMESPACE);
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -163,6 +165,10 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	public void handleStylesheet(String url)
 		throws QueryResultHandlerException
 	{
+		if (!documentOpen) {
+			startDocument();
+		}
+
 		try {
 			xmlWriter.writeStylesheet(url);
 		}
@@ -175,6 +181,10 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	public void startHeader()
 		throws QueryResultHandlerException
 	{
+		if (!documentOpen) {
+			startDocument();
+		}
+
 		try {
 			xmlWriter.startTag(ROOT_TAG);
 
@@ -189,6 +199,11 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	public void handleLinks(List<String> linkUrls)
 		throws QueryResultHandlerException
 	{
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
+		}
+
 		try {
 			// Write link URLs
 			for (String name : linkUrls) {
@@ -205,13 +220,17 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	public void endHeader()
 		throws QueryResultHandlerException
 	{
+		if (!documentOpen) {
+			startDocument();
+			startHeader();
+		}
+
 		try {
 			xmlWriter.endTag(HEAD_TAG);
 
 			if (tupleVariablesFound) {
 				// Write start of results, which must always exist, even if there
-				// are
-				// no result bindings
+				// are no result bindings
 				xmlWriter.startTag(RESULT_SET_TAG);
 			}
 
