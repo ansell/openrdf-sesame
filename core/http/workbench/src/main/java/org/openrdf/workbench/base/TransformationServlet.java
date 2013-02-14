@@ -114,7 +114,6 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws Exception
 	{
-		// resp.setContentType("application/xml");
 		service(getTupleResultBuilder(req, resp), xslPath);
 	}
 

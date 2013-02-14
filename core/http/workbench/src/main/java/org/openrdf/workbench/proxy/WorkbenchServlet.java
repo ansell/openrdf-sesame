@@ -180,7 +180,6 @@ public class WorkbenchServlet extends BaseServlet {
 	{
 		// Invalid credentials or insufficient authorization. Present
 		// entry form again with error message.
-		// resp.setContentType("application/xml");
 		final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 		builder.transform(this.getTransformationUrl(req), "server.xsl");
 		builder.start("error-message");

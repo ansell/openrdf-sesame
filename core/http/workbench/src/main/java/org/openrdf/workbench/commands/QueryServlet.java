@@ -112,7 +112,6 @@ public class QueryServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			LOGGER.warn(exc.toString(), exc);
-			// resp.setContentType("application/xml");
 			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 			builder.transform(xslPath, "query.xsl");
 			builder.start("error-message");
