@@ -11,12 +11,6 @@ function respondToFormState() {
 	var validID = /.+/.test($('#id').val());
 	var disable = !(validID && enoughMembers);
 	$('input#create').prop('disabled', disable);
-	var sparql = $("input[name='federation-type']:checked").val() == 'sparql';
-	var readonly = $("input[name='readonly']");
-	if (sparql) {
-		readonly.prop('checked', true);
-	}
-	readonly.prop('disabled', sparql);
 }
 
 /**

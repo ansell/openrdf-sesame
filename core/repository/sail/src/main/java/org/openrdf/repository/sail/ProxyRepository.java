@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.manager;
+package org.openrdf.repository.sail;
 
 import java.io.File;
 
@@ -24,6 +24,8 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 
 /**
  * <p>
@@ -46,7 +48,7 @@ import org.openrdf.repository.base.RepositoryBase;
  * 
  * @author Dale Visser
  */
-public class ProxyRepository extends RepositoryBase {
+public class ProxyRepository extends RepositoryBase implements RepositoryResolverClient {
 
 	private File dataDir;
 
@@ -54,7 +56,7 @@ public class ProxyRepository extends RepositoryBase {
 
 	private String proxiedID;
 
-	private LocalRepositoryManager manager;
+	private RepositoryResolver resolver;
 
 	public ProxyRepository() {
 		super();
@@ -63,15 +65,15 @@ public class ProxyRepository extends RepositoryBase {
 	/**
 	 * Creates a repository instance that proxies to the given repository.
 	 * 
-	 * @param manager
+	 * @param resolver
 	 *        manager that the proxied repository is associated with
 	 * @param proxiedIdentity
 	 *        id of the proxied repository
 	 */
-	public ProxyRepository(LocalRepositoryManager manager, String proxiedIdentity)
+	public ProxyRepository(RepositoryResolver resolver, String proxiedIdentity)
 	{
 		super();
-		this.setManager(manager);
+		this.setRepositoryResolver(resolver);
 		this.setProxiedIdentity(proxiedIdentity);
 	}
 
@@ -86,19 +88,20 @@ public class ProxyRepository extends RepositoryBase {
 		return this.proxiedID;
 	}
 
-	protected final void setManager(LocalRepositoryManager manager) {
-		if (manager != this.manager) {
-			this.manager = manager;
+	@Override
+	public final void setRepositoryResolver(RepositoryResolver resolver) {
+		if (resolver != this.resolver) {
+			this.resolver = resolver;
 			this.proxiedRepository = null;
 		}
 	}
 
 	private Repository getProxiedRepository() {
 		if (null == proxiedRepository) {
-			assert null != manager : "Expected manager to be set.";
+			assert null != resolver : "Expected resolver to be set.";
 			assert null != proxiedID : "Expected proxiedID to be set.";
 			try {
-				proxiedRepository = manager.getRepository(proxiedID);
+				proxiedRepository = resolver.getRepository(proxiedID);
 			} catch (OpenRDFException ore) {
 				throw new IllegalStateException(ore);
 			}

@@ -78,14 +78,11 @@ public class PrintHelp implements Command {
 			+ "set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries (warning: buggy!)\n";
 
 	protected static final String FEDERATE = USAGE
-			+ "federate [distinct=<true|false>] [readonly=<true|false>] [type=<http|sparql>] <fedID> <repoID_1> <repoID_2> [<repoID_n>]*\n"
+			+ "federate [distinct=<true|false>] [readonly=<true|false>] <fedID> <repoID_1> <repoID_2> [<repoID_n>]*\n"
 			+ "  [distinct=<true|false>]  If true, uses a DISTINCT filter that suppresses duplicate results for identical quads\n"
 			+ "                           from different federation members. Default is false.\n"
-			+ "  [readonly=<true|false>]  If true, sets the fedearated repository as read-only. Federations of SPARQL endpoints\n"
-			+ "                           may only be read-only, and have stricter checking of standard data types. Default is\n"
-			+ "                           true. \n"
-			+ "  [type=http|sparql]       If http, then the federation will access its members as HTTP Sesame repositories. If\n"
-			+ "                           sparql, the members will be accessed as SPARQL endpoints. Default is http.\n"
+			+ "  [readonly=<true|false>]  If true, sets the fedearated repository as read-only. If any member is read-only, then\n"
+			+ "                           this may only be set to true. Default is true. \n"
 			+ "  <fedId>                  The id to assign the federated repository.\n"
 			+ "  <repoID1> <repoID2>      The id's of at least 2 repositories to federate.\n"
 			+ "  [<repoID_n>]*            The id's of 0 or mare additional repositories to federate.\n\n"

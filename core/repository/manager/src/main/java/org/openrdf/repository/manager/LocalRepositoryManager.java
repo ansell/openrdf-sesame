@@ -51,6 +51,7 @@ import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryRegistry;
 import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 
 /**
  * An implementation of the {@link RepositoryManager} interface that operates
@@ -196,8 +197,8 @@ public class LocalRepositoryManager extends RepositoryManager {
 		if (factory == null) {
 			throw new RepositoryConfigException("Unsupported repository type: " + config.getType());
 		}
-		if (factory instanceof ProxyRepositoryFactory) {
-			((ProxyRepositoryFactory)factory).setRepositoryManager(this);
+		if (factory instanceof RepositoryResolverClient) {
+			((RepositoryResolverClient)factory).setRepositoryResolver(this);
 		}
 		Repository repository = factory.getRepository(config);
 		if (config instanceof DelegatingRepositoryImplConfig) {
