@@ -14,31 +14,31 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio.sparqlxml;
+package org.openrdf.query.resultio.sparqljson;
 
-import org.openrdf.query.resultio.BooleanQueryResultFormat;
-import org.openrdf.query.resultio.BooleanQueryResultParser;
-import org.openrdf.query.resultio.BooleanQueryResultParserFactory;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultParser;
+import org.openrdf.query.resultio.TupleQueryResultParserFactory;
 
 /**
- * A {@link BooleanQueryResultParserFactory} for parsers of SPARQL/XML boolean
- * query results.
+ * A {@link TupleQueryResultParserFactory} for parsers of SPARQL-1.1 JSON Tuple
+ * Query Results.
  * 
- * @author Arjohn Kampman
+ * @author Peter Ansell
  */
-public class SPARQLBooleanXMLParserFactory implements BooleanQueryResultParserFactory {
+public class SPARQLResultsJSONParserFactory implements TupleQueryResultParserFactory {
 
 	/**
-	 * Returns {@link BooleanQueryResultFormat#SPARQL}.
+	 * Returns {@link TupleQueryResultFormat#JSON}.
 	 */
-	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
-		return BooleanQueryResultFormat.SPARQL;
+	public TupleQueryResultFormat getTupleQueryResultFormat() {
+		return TupleQueryResultFormat.JSON;
 	}
 
 	/**
-	 * Returns a new instance of SPARQLBooleanXMLParser.
+	 * Returns a new instance of {@link SPARQLResultsJSONParser}.
 	 */
-	public BooleanQueryResultParser getParser() {
-		return new SPARQLBooleanXMLParser();
+	public TupleQueryResultParser getParser() {
+		return new SPARQLResultsJSONParser();
 	}
 }

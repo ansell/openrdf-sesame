@@ -56,7 +56,11 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private List<String> bindingNames;
 
+	private List<String> links;
+
 	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
+
+	private CountDownLatch linksReady = new CountDownLatch(1);
 
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
 		this(new QueueCursor<BindingSet>(10), parser, in, connection);
@@ -163,5 +167,13 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 		throws QueryResultHandlerException
 	{
 		throw new UnsupportedOperationException("Cannot handle boolean results");
+	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		this.links = linkUrls;
+		linksReady.countDown();
 	}
 }

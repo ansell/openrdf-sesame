@@ -188,4 +188,11 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 	{
 		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		// no-op
+	}
 }

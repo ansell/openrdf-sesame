@@ -23,12 +23,14 @@ import java.io.OutputStream;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -547,7 +549,22 @@ public class QueryResultIO {
 		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultParser parser = createParser(format);
-		return parser.parse(in);
+		try {
+
+			QueryResultCollector handler = new QueryResultCollector();
+			parser.setQueryResultHandler(handler);
+			parser.parseQueryResult(in);
+
+			if (handler.getHandledBoolean()) {
+				return handler.getBoolean();
+			}
+			else {
+				throw new QueryResultParseException("Did not find a boolean result");
+			}
+		}
+		catch (QueryResultHandlerException e) {
+			throw new QueryResultParseException(e);
+		}
 	}
 
 	/**

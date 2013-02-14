@@ -16,25 +16,12 @@
  */
 package org.openrdf.query.resultio.sparqlxml;
 
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_FALSE;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TRUE;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HEAD_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.HREF_ATT;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LINK_TAG;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
-import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
-
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 import info.aduna.xml.XMLWriter;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
 
@@ -72,86 +59,13 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 	}
 
 	@Override
-	public void startDocument()
-		throws BooleanQueryResultHandlerException
-	{
-		documentOpen = true;
-		headerComplete = false;
-
-		try {
-			xmlWriter.startDocument();
-			xmlWriter.setAttribute("xmlns", NAMESPACE);
-		}
-		catch (IOException e) {
-			throw new BooleanQueryResultHandlerException(e);
-		}
-
-	}
-
-	@Override
-	public void handleStylesheet(String url)
-		throws BooleanQueryResultHandlerException
-	{
-		try {
-			xmlWriter.writeStylesheet(url);
-		}
-		catch (IOException e) {
-			throw new BooleanQueryResultHandlerException(e);
-		}
-	}
-
-	@Override
-	public void startHeader()
-		throws BooleanQueryResultHandlerException
-	{
-		try {
-			xmlWriter.startTag(ROOT_TAG);
-
-			xmlWriter.startTag(HEAD_TAG);
-		}
-		catch (IOException e) {
-			throw new BooleanQueryResultHandlerException(e);
-		}
-
-	}
-
-	@Override
-	public void handleLinks(List<String> linkUrls)
-		throws BooleanQueryResultHandlerException
-	{
-		try {
-			// Write link URLs
-			for (String name : linkUrls) {
-				xmlWriter.setAttribute(HREF_ATT, name);
-				xmlWriter.emptyElement(LINK_TAG);
-			}
-		}
-		catch (IOException e) {
-			throw new BooleanQueryResultHandlerException(e);
-		}
-	}
-
-	@Override
-	public void endHeader()
-		throws BooleanQueryResultHandlerException
-	{
-		try {
-			xmlWriter.endTag(HEAD_TAG);
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new BooleanQueryResultHandlerException(e);
-		}
-	}
-
-	@Override
 	public void write(boolean value)
 		throws IOException
 	{
 		try {
 			handleBoolean(value);
 		}
-		catch (BooleanQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			if (e.getCause() != null && e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}
@@ -159,55 +73,6 @@ public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements Boole
 				throw new IOException(e);
 			}
 		}
-	}
-
-	@Override
-	public void handleBoolean(boolean value)
-		throws BooleanQueryResultHandlerException
-	{
-		if (!documentOpen) {
-			startDocument();
-			startHeader();
-		}
-
-		if (!headerComplete) {
-			endHeader();
-		}
-
-		try {
-			if (value) {
-				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
-			}
-			else {
-				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_FALSE);
-			}
-
-			endDocument();
-		}
-		catch (IOException e) {
-			throw new BooleanQueryResultHandlerException(e);
-		}
-	}
-
-	@Override
-	public void startQueryResult(List<String> bindingNames)
-		throws TupleQueryResultHandlerException
-	{
-		throw new UnsupportedOperationException("Cannot handle tuple results");
-	}
-
-	@Override
-	public void endQueryResult()
-		throws TupleQueryResultHandlerException
-	{
-		throw new UnsupportedOperationException("Cannot handle tuple results");
-	}
-
-	@Override
-	public void handleSolution(BindingSet bindingSet)
-		throws TupleQueryResultHandlerException
-	{
-		throw new UnsupportedOperationException("Cannot handle tuple results");
 	}
 
 }

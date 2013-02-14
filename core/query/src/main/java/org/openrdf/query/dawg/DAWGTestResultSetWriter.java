@@ -172,4 +172,11 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 	{
 		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
+
+	@Override
+	public void handleLinks(List<String> linkUrls)
+		throws QueryResultHandlerException
+	{
+		// We do not support links, so do nothing
+	}
 }
