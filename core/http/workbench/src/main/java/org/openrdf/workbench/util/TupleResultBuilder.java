@@ -56,12 +56,6 @@ public class TupleResultBuilder {
 		throws QueryResultHandlerException
 	{
 		out.handleStylesheet(path + "/" + xsl);
-		// out.println("<?xml version='1.0' encoding='utf-8'?>");
-		// out.print("<?xml-stylesheet type='text/xsl' href='");
-		// out.print(path);
-		// out.print("/");
-		// out.print(xsl);
-		// out.println("'?>");
 		return this;
 	}
 
@@ -123,70 +117,22 @@ public class TupleResultBuilder {
 		final Value nextValue;
 		if (result instanceof Boolean) {
 			nextValue = vf.createLiteral(((Boolean)result).booleanValue());
-			// out.print("        <literal datatype='");
-			// out.print(XMLSchema.BOOLEAN);
-			// out.print("'>");
-			// out.print(result);
-			// out.println("</literal>");
 		}
 		else if (isQName(result)) {
 			nextValue = (URI)result;
-			// URI uri = (URI) result;
-			// out.print("        <uri q:qname='");
-			// out.print(enc(prefixes.get(uri.getNamespace())));
-			// out.print(":");
-			// out.print(enc(uri.getLocalName()));
-			// out.print("'>");
-			// out.print(enc(uri.stringValue()));
-			// out.println("</uri>");
 		}
 		else if (result instanceof URI) {
 			nextValue = (URI)result;
-			// URI uri = (URI) result;
-			// out.print("        <uri>");
-			// out.print(enc(uri.stringValue()));
-			// out.println("</uri>");
 		}
 		else if (result instanceof BNode) {
 			nextValue = (BNode)result;
-			// BNode bnode = (BNode) result;
-			// out.print("        <bnode>");
-			// out.print(enc(bnode.stringValue()));
-			// out.println("</bnode>");
 		}
 		else if (result instanceof Literal) {
 			nextValue = (Literal)result;
-			// Literal lit = (Literal) result;
-			// out.print("        <literal");
-			// URI uri = lit.getDatatype();
-			// if (isQName(uri)) {
-			// out.print(" q:qname='");
-			// out.print(enc(prefixes.get(uri.getNamespace())));
-			// out.print(":");
-			// out.print(enc(uri.getLocalName()));
-			// out.print("'");
-			// }
-			// if (uri != null) {
-			// out.print(" datatype='");
-			// out.print(enc(uri.stringValue()));
-			// out.print("'");
-			// }
-			// if (lit.getLanguage() != null) {
-			// out.print(" xml:lang='");
-			// out.print(enc(lit.getLanguage()));
-			// out.print("'");
-			// }
-			// out.print(">");
-			// out.print(enc(lit.stringValue()));
-			// out.println("</literal>");
 		}
 		else {
 			nextValue = vf.createLiteral(result);
-			// out.print("        <literal>");
-			// out.print(enc(result.toString()));
-			// out.println("</literal>");
 		}
-		// out.println("      </binding>");
 		return new BindingImpl(name, nextValue);
 	}
 
