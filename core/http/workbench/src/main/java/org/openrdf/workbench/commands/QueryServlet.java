@@ -39,6 +39,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -101,8 +103,6 @@ public class QueryServlet extends TransformationServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws IOException, OpenRDFException
 	{
-		// FIXME: The following will currently break if this is a query for a
-		// tuple or boolean format, and not a graph format
 		setContentType(req, resp);
 		final PrintWriter out = resp.getWriter();
 		try {
@@ -187,18 +187,37 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	private void setContentType(final WorkbenchRequest req, final HttpServletResponse resp) {
+		String result = "application/xml";
+		String ext = "xml";
 		if (req.isParameterPresent(ACCEPT)) {
 			final String accept = req.getParameter(ACCEPT);
 			final RDFFormat format = RDFFormat.forMIMEType(accept);
 			if (format != null) {
-				resp.setContentType(accept);
-				final String ext = format.getDefaultFileExtension();
-				final String attachment = "attachment; filename=query." + ext;
-				resp.setHeader("Content-disposition", attachment);
+				result = format.getDefaultMIMEType();
+				ext = format.getDefaultFileExtension();
+			}
+			else {
+				final TupleQueryResultFormat tupleFormat = TupleQueryResultFormat.forMIMEType(accept);
+
+				if (tupleFormat != null) {
+					result = tupleFormat.getDefaultMIMEType();
+					ext = tupleFormat.getDefaultFileExtension();
+				}
+				else {
+					final BooleanQueryResultFormat booleanFormat = BooleanQueryResultFormat.forMIMEType(accept);
+
+					if (booleanFormat != null) {
+						result = booleanFormat.getDefaultMIMEType();
+						ext = booleanFormat.getDefaultFileExtension();
+					}
+				}
 			}
 		}
-		else {
-			resp.setContentType("application/xml");
+
+		resp.setContentType(result);
+		if (!result.equals("application/xml")) {
+			final String attachment = "attachment; filename=query." + ext;
+			resp.setHeader("Content-disposition", attachment);
 		}
 	}
 
