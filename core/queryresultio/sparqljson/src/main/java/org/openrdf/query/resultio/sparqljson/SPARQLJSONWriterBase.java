@@ -60,6 +60,8 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 
 	protected boolean tupleVariablesFound = false;
 
+	protected boolean linksFound = false;
+
 	public SPARQLJSONWriterBase(OutputStream out) {
 		Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
 		w = new BufferedWriter(w, 1024);
@@ -100,6 +102,11 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 				startDocument();
 				startHeader();
 			}
+
+			if (linksFound) {
+				writeComma();
+			}
+
 			tupleVariablesFound = true;
 			try {
 				writeKeyValue("vars", columnHeaders);
@@ -107,6 +114,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 			catch (IOException e) {
 				throw new TupleQueryResultHandlerException(e);
 			}
+		}
+		catch (IOException e) {
+			throw new TupleQueryResultHandlerException(e);
 		}
 		catch (TupleQueryResultHandlerException e) {
 			throw e;
@@ -220,6 +230,17 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		throws QueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+				startHeader();
+			}
+
+			if (tupleVariablesFound) {
+				writeComma();
+			}
+
+			linksFound = true;
+
 			writeKeyValue("link", linkUrls);
 		}
 		catch (IOException e) {
