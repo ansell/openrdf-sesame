@@ -28,8 +28,10 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 
 import info.aduna.io.MavenUtil;
 
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryBase;
@@ -55,6 +57,11 @@ public class SPARQLRepository extends RepositoryBase {
 	 */
 	public static String ADDITIONAL_HEADER_NAME = "additionalHTTPHeaders";
 	
+	/**
+	 * The HTTP client that takes care of the client-server communication.
+	 */
+	private final HTTPClient httpClient;
+	
 	private String queryEndpointUrl;
 
 	private String updateEndpointUrl;
@@ -66,10 +73,16 @@ public class SPARQLRepository extends RepositoryBase {
 	private MultiThreadedHttpConnectionManager manager;
 	
 	public SPARQLRepository(String queryEndpointUrl) {
-		this.queryEndpointUrl = queryEndpointUrl;
+		this(queryEndpointUrl, null);
 	}
 
 	public SPARQLRepository(String queryEndpointUrl, String updateEndpointUrl) {
+		// initialize HTTP client
+		httpClient = new HTTPClient();
+		httpClient.setValueFactory(new ValueFactoryImpl());
+		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
+		httpClient.setQueryURL(queryEndpointUrl);
+		
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
 	}
@@ -125,6 +138,11 @@ public class SPARQLRepository extends RepositoryBase {
 	public HttpClient getHttpClient() {
 		return client;
 	}
+	
+	// TODO remove legacy http client and rename
+	public HTTPClient getNewHttpClient() {
+		return httpClient;
+	}
 
 	@Override
 	protected void shutDownInternal()
@@ -132,6 +150,7 @@ public class SPARQLRepository extends RepositoryBase {
 	{
 		if (manager!=null)
 			manager.shutdown();
+		httpClient.shutDown();
 	}
 
 	@Override

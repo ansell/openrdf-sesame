@@ -41,7 +41,7 @@ import org.openrdf.repository.sparql.SPARQLRepository;
  */
 public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 	
-	private int maxQueryTime = 0;
+	protected int maxQueryTime = 0;
 
 	/**
 	 * @param client

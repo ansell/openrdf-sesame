@@ -16,20 +16,14 @@
  */
 package org.openrdf.repository.sparql.query;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.PostMethod;
 
 import info.aduna.net.ParsedURI;
 
@@ -39,10 +33,8 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Operation;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.repository.sparql.SPARQLConnection;
 
 /**
  * @author jeen
@@ -52,11 +44,11 @@ public abstract class SPARQLOperation implements Operation {
 	private static Executor executor = Executors.newCachedThreadPool();
 	protected HttpClient client;
 	private String url;
-	private Dataset dataset = new DatasetImpl();
+	protected Dataset dataset = new DatasetImpl();
 
 	private String operation;
 	
-	private MapBindingSet bindings = new MapBindingSet();
+	protected MapBindingSet bindings = new MapBindingSet();
 
 	public SPARQLOperation(HttpClient client, String url, String base, String operation) {
 		this.url = url;

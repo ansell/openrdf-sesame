@@ -47,11 +47,18 @@ public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
 		throws QueryEvaluationException
 	{
 		HTTPClient client = httpCon.getRepository().getHTTPClient();
-
-		HTTPTupleQueryResult result = new HTTPTupleQueryResult(client, queryLanguage, queryString, baseURI,
-				dataset, includeInferred, getBindingsArray());
-		execute(result);
-		return result;
+		try {
+			return client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, getBindingsArray());
+		} 
+		catch (IOException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)

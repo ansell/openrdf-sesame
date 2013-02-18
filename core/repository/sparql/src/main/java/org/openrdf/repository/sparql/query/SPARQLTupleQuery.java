@@ -17,22 +17,27 @@
 package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+
+import org.openrdf.http.client.HTTPClient;
+import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLParser;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sparql.SPARQLConnection;
 
 /**
  * Parses tuple results in the background.
@@ -43,35 +48,47 @@ import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLParser;
 public class SPARQLTupleQuery extends SPARQLQuery implements TupleQuery {
 	private SPARQLResultsXMLParser parser = new SPARQLResultsXMLParser();
 
-	public SPARQLTupleQuery(HttpClient client, String url, String base,
-			String query) {
-		super(client, url, base, query);
+	// TODO move to base class
+	protected final SPARQLConnection conn;
+	protected final String baseUri;
+	
+	public SPARQLTupleQuery(SPARQLConnection conn, HttpClient client, String url, String baseUri,
+			String queryString) {
+		super(client, url, baseUri, queryString);
+		this.conn = conn;
+		this.baseUri = baseUri;
+	}
+	
+	// TODO move to base class, share with HTTPTupleQuery
+	// maybe change signature of HTTPClient to take BindingSet instead of Binding...
+	protected Binding[] getBindingsArray() {
+		BindingSet bindings = this.getBindings();
+
+		Binding[] bindingsArray = new Binding[bindings.size()];
+
+		Iterator<Binding> iter = bindings.iterator();
+		for (int i = 0; i < bindings.size(); i++) {
+			bindingsArray[i] = iter.next();
+		}
+
+		return bindingsArray;
 	}
 
 	public TupleQueryResult evaluate() throws QueryEvaluationException {
+		
+		HTTPClient client = conn.getRepository().getNewHttpClient();
 		try {
-			BackgroundTupleResult result = null;
-			HttpMethod response = getResponse();
-			try {
-				InputStream in = response.getResponseBodyAsStream();
-				result = new BackgroundTupleResult(parser, in, response);
-				execute(result);
-				InsertBindingSetCursor cursor = new InsertBindingSetCursor(
-						result, getBindings());
-				List<String> list = new ArrayList<String>(
-						result.getBindingNames());
-				list.addAll(getBindingNames());
-				return new TupleQueryResultImpl(list, cursor);
-			} catch (HttpException e) {
-				throw new QueryEvaluationException(e);
-			} finally {
-				if (result == null) {
-					response.abort();
-					response.releaseConnection();
-				}
-			}
-		} catch (IOException e) {
-			throw new QueryEvaluationException(e);
+			// TODO getQueryString() already inserts bindings
+			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseUri, dataset, false, maxQueryTime, getBindingsArray());
+		} 
+		catch (IOException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
 
