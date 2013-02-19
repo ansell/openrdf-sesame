@@ -82,6 +82,7 @@ public class SPARQLRepository extends RepositoryBase {
 		httpClient.setValueFactory(new ValueFactoryImpl());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
+		// TODO update URL
 		
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
@@ -170,6 +171,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 *        The additionalHttpHeaders to set as key value pairs.
 	 */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
+		// TODO apply to HTTP client directly
 		this.additionalHttpHeaders = additionalHttpHeaders;
 	}
 }

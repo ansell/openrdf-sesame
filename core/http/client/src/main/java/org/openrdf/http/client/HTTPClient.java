@@ -24,7 +24,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -123,6 +125,8 @@ public class HTTPClient {
 	private BooleanQueryResultFormat preferredBQRFormat = BooleanQueryResultFormat.TEXT;
 
 	private RDFFormat preferredRDFFormat = RDFFormat.TURTLE;
+
+	private Map<String, String> additionalHttpHeaders;
 
 	/*--------------*
 	 * Constructors *
@@ -277,6 +281,20 @@ public class HTTPClient {
 		}
 	}
 	
+	/**
+	 * @param additionalHttpHeaders
+	 *        The additionalHttpHeaders to set as key value pairs.
+	 */
+	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
+		this.additionalHttpHeaders = additionalHttpHeaders;
+	}
+	
+	/**
+	 * @return Returns the additionalHttpHeaders.
+	 */
+	public Map<String, String> getAdditionalHttpHeaders() {
+		return additionalHttpHeaders;
+	}
 	
 	protected void execute(Runnable command) {
 		executor.execute(command);
@@ -430,6 +448,12 @@ public class HTTPClient {
 
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
+		
+		// functionality to provide custom http headers as required by the applications
+		if (this.additionalHttpHeaders != null) {
+			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
+				queryParams.add( new NameValuePair(additionalHeader.getKey(), additionalHeader.getValue()));
+		}
 
 		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
 
@@ -455,6 +479,7 @@ public class HTTPClient {
 	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, String baseURI,
 			Dataset dataset, boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
+		// TODO there is a bunch of HttpRepository specific parameters here
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
 		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
@@ -662,30 +687,32 @@ public class HTTPClient {
 
 		if (httpCode == HttpURLConnection.HTTP_OK) {			
 			return; // everything OK, control flow can continue
-		} else {
-			// in any other case abort the http execution
-			method.abort();
-		}
+		} 
 		
-		if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-			throw new UnauthorizedException();
-		}
-		else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
-			throw new QueryInterruptedException();
-		}
-		else {
-			ErrorInfo errInfo = getErrorInfo(method);
-
-			// Throw appropriate exception
-			if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-				throw new MalformedQueryException(errInfo.getErrorMessage());
+		// error handling + http abort
+		try {
+			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+				throw new UnauthorizedException();
 			}
-			else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-				throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
+			else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
+				throw new QueryInterruptedException();
 			}
 			else {
-				throw new RepositoryException(errInfo.toString());
+				ErrorInfo errInfo = getErrorInfo(method);
+	
+				// Throw appropriate exception
+				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
+					throw new MalformedQueryException(errInfo.getErrorMessage());
+				}
+				else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
+					throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
+				}
+				else {
+					throw new RepositoryException(errInfo.toString());
+				}
 			}
+		} finally {
+			method.abort();
 		}
 	}
 
