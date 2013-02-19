@@ -36,6 +36,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.sail.config.RepositoryResolver;
 
 /**
  * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has one
@@ -47,7 +48,7 @@ import org.openrdf.repository.config.RepositoryConfigUtil;
  * 
  * @author Arjohn Kampman
  */
-public abstract class RepositoryManager {
+public abstract class RepositoryManager implements RepositoryResolver {
 
 	/*-----------*
 	 * Constants *
@@ -307,7 +308,7 @@ public abstract class RepositoryManager {
 	/**
 	 * Gets the repository that is known by the specified ID from this manager.
 	 * 
-	 * @param id
+	 * @param identity
 	 *        A repository ID.
 	 * @return An initialized Repository object, or <tt>null</tt> if no
 	 *         repository was known for the specified ID.
@@ -315,11 +316,12 @@ public abstract class RepositoryManager {
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
-	public Repository getRepository(String id)
+	@Override
+	public Repository getRepository(String identity)
 		throws RepositoryConfigException, RepositoryException
 	{
 		synchronized (initializedRepositories) {
-			Repository result = initializedRepositories.get(id);
+			Repository result = initializedRepositories.get(identity);
 
 			if (result != null && !result.isInitialized()) {
 				// repository exists but has been shut down. throw away the old
@@ -331,10 +333,10 @@ public abstract class RepositoryManager {
 			if (result == null) {
 				// First call (or old object thrown away), create and initialize the
 				// repository.
-				result = createRepository(id);
+				result = createRepository(identity);
 
 				if (result != null) {
-					initializedRepositories.put(id, result);
+					initializedRepositories.put(identity, result);
 				}
 			}
 

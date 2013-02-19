@@ -14,14 +14,17 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.manager;
+package org.openrdf.repository.sail.config;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
+import org.openrdf.repository.sail.ProxyRepository;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 
-public class ProxyRepositoryFactory implements RepositoryFactory {
+public class ProxyRepositoryFactory implements RepositoryFactory, RepositoryResolverClient {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -30,10 +33,11 @@ public class ProxyRepositoryFactory implements RepositoryFactory {
 	 */
 	public static final String REPOSITORY_TYPE = "openrdf:ProxyRepository";
 
-	private LocalRepositoryManager manager;
+	private RepositoryResolver resolver;
 
-	public void setRepositoryManager(LocalRepositoryManager manager) {
-		this.manager = manager;
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		this.resolver = resolver;
 	}
 
 	@Override
@@ -53,8 +57,8 @@ public class ProxyRepositoryFactory implements RepositoryFactory {
 		ProxyRepository result = null;
 
 		if (config instanceof ProxyRepositoryConfig) {
-			assert manager != null : "Expected manager to be set.";
-			result = new ProxyRepository(manager, ((ProxyRepositoryConfig)config).getProxiedRepositoryID());
+			assert resolver != null : "Expected resolver to be set.";
+			result = new ProxyRepository(resolver, ((ProxyRepositoryConfig)config).getProxiedRepositoryID());
 		}
 		else {
 			throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());

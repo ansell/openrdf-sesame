@@ -62,23 +62,10 @@
 					</tr>
 					<tr>
 						<th>
-							<xsl:value-of select="$federation-type.label" />
-						</th>
-						<td>
-							<input type="radio" name="federation-type" value="http" checked="true" />
-							HTTP Repository
-						</td>
-						<td>
-							<input type="radio" name="federation-type" value="sparql" />
-							SPARQL Endpoint
-						</td>
-					</tr>
-					<tr>
-						<th>
 							<xsl:value-of select="$distinct.label" />
 						</th>
 						<td>
-							<input type="checkbox" name="distinct" value="distinct" />
+							<input type="checkbox" name="distinct" value="true" />
 						</td>
 					</tr>
 					<tr>
@@ -86,7 +73,7 @@
 							<xsl:value-of select="$read-only.label" />
 						</th>
 						<td>
-							<input type="checkbox" name="readonly" value="readonly"
+							<input type="checkbox" name="readonly" value="true"
 								checked="true" />
 						</td>
 					</tr>

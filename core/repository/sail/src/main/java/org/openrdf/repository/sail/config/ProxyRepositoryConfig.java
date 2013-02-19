@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.manager;
+package org.openrdf.repository.sail.config;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;

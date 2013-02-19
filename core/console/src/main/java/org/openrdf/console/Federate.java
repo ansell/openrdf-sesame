@@ -27,12 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.runtime.RepositoryManagerFederator;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.http.config.HTTPRepositoryFactory;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.sparql.config.SPARQLRepositoryFactory;
+import org.openrdf.runtime.RepositoryManagerFederator;
 
 /**
  * Implements the 'federate' command for the Sesame Console.
@@ -71,18 +69,12 @@ public class Federate implements Command {
 			plist.remove(); // "federate"
 			boolean distinct = getOptionalParamValue(plist, "distinct", false);
 			boolean readonly = getOptionalParamValue(plist, "readonly", true);
-			String type = getOptionalParamValue(plist, "type", "http");
-			if ("http".equals(type) || "sparql".equals(type)) {
-				if (distinctValues(plist)) {
-					String fedID = plist.pop();
-					federate(distinct, readonly, type, fedID, plist);
-				}
-				else {
-					cio.writeError("Duplicate repository id's specified.");
-				}
+			if (distinctValues(plist)) {
+				String fedID = plist.pop();
+				federate(distinct, readonly, fedID, plist);
 			}
 			else {
-				cio.writeError("Invalid type specified for federation members.");
+				cio.writeError("Duplicate repository id's specified.");
 			}
 		}
 	}
@@ -91,27 +83,20 @@ public class Federate implements Command {
 		return plist.size() == new HashSet<String>(plist).size();
 	}
 
-	private void federate(boolean distinct, boolean readonly, String type, String fedID,
-			Deque<String> memberIDs)
-	{
+	private void federate(boolean distinct, boolean readonly, String fedID, Deque<String> memberIDs) {
 		if (LOGGER.isDebugEnabled()) {
-			logCallDetails(distinct, readonly, type, fedID, memberIDs);
-		}
-		if ((!readonly) && "sparql".equals(type)) {
-			cio.writeError("Federations with SPARQLRepository members must be read-only.");
+			logCallDetails(distinct, readonly, fedID, memberIDs);
 		}
 		else {
 			RepositoryManager manager = state.getManager();
 			try {
-				String memberType = "sparql".equals(type) ? SPARQLRepositoryFactory.REPOSITORY_TYPE
-						: HTTPRepositoryFactory.REPOSITORY_TYPE;
 				if (manager.hasRepositoryConfig(fedID)) {
 					cio.writeError(fedID + " already exists.");
 				}
-				else if (validateMembers(manager, memberIDs, memberType)) {
+				else if (validateMembers(manager, readonly, memberIDs)) {
 					String description = cio.readln("Federation Description (optional):");
 					RepositoryManagerFederator rmf = new RepositoryManagerFederator(manager);
-					rmf.addFed(memberType, fedID, description, memberIDs);
+					rmf.addFed(fedID, description, memberIDs, readonly, distinct);
 					cio.writeln("Federation created.");
 				}
 			}
@@ -133,37 +118,21 @@ public class Federate implements Command {
 		}
 	}
 
-	private boolean validateMembers(RepositoryManager manager, Deque<String> memberIDs, String fedMemberType)
-		throws MalformedURLException
-	{
+	private boolean validateMembers(RepositoryManager manager, boolean readonly, Deque<String> memberIDs) {
 		boolean result = true;
 		try {
 			for (String memberID : memberIDs) {
-				if (!manager.hasRepositoryConfig(memberID)) {
-					result = false;
-					cio.writeError(memberID + " does not exist.");
+				if (manager.hasRepositoryConfig(memberID)) {
+					if (!readonly) {
+						if (!manager.getRepository(memberID).isWritable()) {
+							result = false;
+							cio.writeError(memberID + " is read-only.");
+						}
+					}
 				}
 				else {
-					String memberType = manager.getRepositoryConfig(memberID).getRepositoryImplConfig().getType();
-					boolean isHTTP = HTTPRepositoryFactory.REPOSITORY_TYPE.equals(memberType);
-					if (SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(fedMemberType) && isHTTP) {
-						result = false;
-						cio.writeError(memberID + " is " + memberType + ", and can't be federated as "
-								+ fedMemberType);
-					}
-					boolean isSPARQL = SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(memberType);
-					if (isSPARQL && HTTPRepositoryFactory.REPOSITORY_TYPE.equals(fedMemberType)) {
-						result = false;
-						cio.writeError(memberID + " is " + memberType + ", and can't be federated as "
-								+ fedMemberType);
-					}
-					boolean local = !manager.getLocation().getProtocol().substring(0, 4).equalsIgnoreCase("http");
-					if (local && !(isSPARQL || isHTTP)) {
-						result = false;
-						cio.writeError("Connection is local, and " + memberID + " isn't a "
-								+ HTTPRepositoryFactory.REPOSITORY_TYPE + " or "
-								+ SPARQLRepositoryFactory.REPOSITORY_TYPE);
-					}
+					result = false;
+					cio.writeError(memberID + " does not exist.");
 				}
 			}
 		}
@@ -176,16 +145,14 @@ public class Federate implements Command {
 		return result;
 	}
 
-	private void logCallDetails(boolean distinct, boolean readonly, String type, String fedID,
-			Deque<String> memberIDs)
-	{
+	private void logCallDetails(boolean distinct, boolean readonly, String fedID, Deque<String> memberIDs) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Federate called with federation ID = " + fedID + ", and member ID's = ");
 		for (String member : memberIDs) {
 			builder.append("[").append(member).append("]");
 		}
-		builder.append(".\n  Distinct set to ").append(distinct).append(", readonly set to ").append(readonly).append(
-				", and type is ").append(type).append(".\n");
+		builder.append(".\n  Distinct set to ").append(distinct).append(", and readonly set to ").append(
+				readonly).append(".\n");
 		LOGGER.debug(builder.toString());
 	}
 

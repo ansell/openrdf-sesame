@@ -1,8 +1,25 @@
-package org.openrdf.repository.manager;
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
+ *
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+package org.openrdf.repository.sail.config;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,6 +38,8 @@ import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryImplConfig;
+import org.openrdf.repository.sail.ProxyRepository;
+import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -64,11 +83,11 @@ public class TestProxyRepositoryFactory {
 		assertThat(implConfig, instanceOf(ProxyRepositoryConfig.class));
 		assertThat(((ProxyRepositoryConfig)implConfig).getProxiedRepositoryID(), is("memory"));
 
-		// Factory just needs a manager instance to proceed with construction.
-		// It doesn't actually invoke the manager until the repository is
+		// Factory just needs a resolver instance to proceed with construction.
+		// It doesn't actually invoke the resolver until the repository is
 		// accessed. Normally LocalRepositoryManager is the caller of
 		// getRepository(), and will have called this setter itself.
-		factory.setRepositoryManager(new LocalRepositoryManager(null));
+		factory.setRepositoryResolver(mock(RepositoryResolver.class));
 		Repository repository = factory.getRepository(implConfig);
 		assertThat(repository, instanceOf(ProxyRepository.class));
 	}
