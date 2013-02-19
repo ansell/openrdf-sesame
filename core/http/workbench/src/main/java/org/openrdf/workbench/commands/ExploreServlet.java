@@ -21,18 +21,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.workbench.base.TupleServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -48,7 +45,7 @@ public class ExploreServlet extends TupleServlet {
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "total_result_count", "show-datatypes"};
+		return new String[] { "limit", "total_result_count", "show-datatypes" };
 	}
 
 	@Override
@@ -117,7 +114,8 @@ public class ExploreServlet extends TupleServlet {
 		throws OpenRDFException
 	{
 		final ResultCursor cursor = new ResultCursor(offset, limit, render);
-		if (value instanceof Resource) {
+		boolean resource = value instanceof Resource;
+		if (resource) {
 			export(con, builder, cursor, (Resource)value, null, null);
 			logger.debug("After subject, total = {}", cursor.getTotalResultCount());
 		}
@@ -129,7 +127,7 @@ public class ExploreServlet extends TupleServlet {
 			export(con, builder, cursor, null, null, value);
 			logger.debug("After object, total = {}", cursor.getTotalResultCount());
 		}
-		if (value instanceof Resource) {
+		if (resource) {
 			export(con, builder, cursor, null, null, null, (Resource)value);
 			logger.debug("After context, total = {}", cursor.getTotalResultCount());
 		}
@@ -159,27 +157,38 @@ public class ExploreServlet extends TupleServlet {
 			Resource subj, URI pred, Value obj, Resource... context)
 		throws OpenRDFException, MalformedQueryException, QueryEvaluationException
 	{
-		boolean contextQuery = (null == subj && null == pred && null == obj && 1 == context.length);
-		CloseableIteration<Statement, ? extends OpenRDFException> result;
-		if (contextQuery) {
-			GraphQuery query = con.prepareGraphQuery(QueryLanguage.SPARQL,
-					"construct {?s ?p ?o } where { graph ?c { ?s ?p ?o . "
-							+ "minus { ?s ?p ?o . filter (?s = ?c || ?p = ?c || ?o = ?c) } } } ");
-			query.setBinding("c", context[0]);
-			result = query.evaluate();
-		}
-		else {
-			result = con.getStatements(subj, pred, obj, true, context);
-		}
+		RepositoryResult<Statement> result = con.getStatements(subj, pred, obj, true, context);
 		try {
 			while (result.hasNext()) {
 				final Statement statement = result.next();
 				if (cursor.mayRender()) {
-					builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
-							contextQuery ? context[0] : statement.getContext());
+					Resource subject = statement.getSubject();
+					URI predicate = statement.getPredicate();
+					Value object = statement.getObject();
+					boolean render;
+					if (1 == context.length) {
+						// I.e., when context matches explore value.
+						Resource ctx = context[0];
+						render = !(ctx.equals(subject) || ctx.equals(predicate) || ctx.equals(object));
+					}
+					else if (null != obj) {
+						// I.e., when object matches explore value.
+						render = !(object.equals(subject) || object.equals(predicate));
+					}
+					else if (null != pred) {
+						// I.e., when predicate matches explore value.
+						render = !predicate.equals(subject);
+					}
+					else {
+						// The only case we don't filter is if subject matches explore
+						// value.
+						render = true;
+					}
+					if (render) {
+						builder.result(subject, predicate, object, statement.getContext());
+						cursor.advance();
+					}
 				}
-
-				cursor.advance();
 			}
 		}
 		finally {
