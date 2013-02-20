@@ -16,164 +16,31 @@
  */
 package org.openrdf.repository.sparql.query;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.httpclient.HttpMethod;
+
+import org.openrdf.http.client.QueueCursor;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQueryResultHandlerException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.TupleQueryResultImpl;
-import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 
 /**
  * Provides concurrent access to tuple results as they are being parsed.
  * 
  * @author James Leigh
+ * @deprecated use {@link org.openrdf.http.client.BackgroundTupleResult} instead
+ * @see org.openrdf.http.client.BackgroundTupleResult
  */
-public class BackgroundTupleResult extends TupleQueryResultImpl implements Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult extends org.openrdf.http.client.BackgroundTupleResult {
 
-	private volatile boolean closed;
-
-	private volatile Thread parserThread;
-
-	private TupleQueryResultParser parser;
-
-	private InputStream in;
-
-	private HttpMethod method;
-
-	private QueueCursor<BindingSet> queue;
-
-	private List<String> bindingNames;
-
-	private List<String> links;
-
-	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
-
-	private CountDownLatch linksReady = new CountDownLatch(1);
-
-	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
-		this(new QueueCursor<BindingSet>(10), parser, in, connection);
-	}
 
 	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
 			HttpMethod connection)
 	{
-		super(Collections.EMPTY_LIST, queue);
-		this.queue = queue;
-		this.parser = parser;
-		this.in = in;
-		this.method = connection;
+		super(queue, parser, in, connection);
 	}
 
-	@Override
-	protected synchronized void handleClose()
-		throws QueryEvaluationException
-	{
-		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
-		}
-		super.handleClose();
-	}
-
-	@Override
-	public List<String> getBindingNames() {
-		try {
-			bindingNamesReady.await();
-			queue.checkException();
-			return bindingNames;
-		}
-		catch (InterruptedException e) {
-			throw new UndeclaredThrowableException(e);
-		}
-		catch (QueryEvaluationException e) {
-			throw new UndeclaredThrowableException(e);
-		}
-	}
-
-	@Override
-	public void run() {
-		boolean completed = false;
-		parserThread = Thread.currentThread();
-		try {
-			parser.setQueryResultHandler(this);
-			parser.parseQueryResult(in);
-			// release connection back into pool if all results have been read
-			method.releaseConnection();
-			completed = true;
-		}
-		catch (QueryResultHandlerException e) {
-			// parsing cancelled or interrupted
-		}
-		catch (QueryResultParseException e) {
-			queue.toss(e);
-		}
-		catch (IOException e) {
-			queue.toss(e);
-		}
-		finally {
-			parserThread = null;
-			queue.done();
-			bindingNamesReady.countDown();
-			if (!completed) {
-				method.abort();
-				method.releaseConnection();
-			}
-		}
-	}
-
-	@Override
-	public void startQueryResult(List<String> bindingNames)
-		throws TupleQueryResultHandlerException
-	{
-		this.bindingNames = bindingNames;
-		bindingNamesReady.countDown();
-	}
-
-	@Override
-	public void handleSolution(BindingSet bindingSet)
-		throws TupleQueryResultHandlerException
-	{
-		if (closed)
-			throw new TupleQueryResultHandlerException("Result closed");
-		try {
-			queue.put(bindingSet);
-		}
-		catch (InterruptedException e) {
-			throw new TupleQueryResultHandlerException(e);
-		}
-	}
-
-	@Override
-	public void endQueryResult()
-		throws TupleQueryResultHandlerException
-	{
-		// no-op
-	}
-
-	@Override
-	public void handleBoolean(boolean value)
-		throws QueryResultHandlerException
-	{
-		throw new UnsupportedOperationException("Cannot handle boolean results");
-	}
-
-	@Override
-	public void handleLinks(List<String> linkUrls)
-		throws QueryResultHandlerException
-	{
-		this.links = linkUrls;
-		linksReady.countDown();
-	}
+	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
+		super(parser, in, connection);
+	}	
 }
