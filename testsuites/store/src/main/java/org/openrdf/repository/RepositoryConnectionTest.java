@@ -16,6 +16,11 @@
  */
 package org.openrdf.repository;
 
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,11 +30,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -454,7 +459,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
 
 		try {
-			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
+			testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
 		}
 		catch (UnsupportedOperationException e) {
 			fail("unsupported operation: " + e.getMessage());
@@ -471,7 +476,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append(" USING NAMESPACE foaf = <" + FOAF_NS + ">");
 
 		try {
-			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
+			testCon.prepareQuery(QueryLanguage.SERQL, queryBuilder.toString());
 		}
 		catch (UnsupportedOperationException e) {
 			fail("unsupported operation: " + e.getMessage());
@@ -491,7 +496,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append(" WHERE { ?person foaf:name ?y . }");
 
 		try {
-			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+			testCon.prepareQuery(QueryLanguage.SPARQL, queryBuilder.toString());
 		}
 		catch (UnsupportedOperationException e) {
 			fail("unsupported operation: " + e.getMessage());
@@ -509,7 +514,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		queryBuilder.append(" WHERE { ?person foaf:name ?y . }");
 
 		try {
-			TupleQuery query = (TupleQuery)testCon.prepareQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+			testCon.prepareQuery(QueryLanguage.SPARQL, queryBuilder.toString());
 		}
 		catch (UnsupportedOperationException e) {
 			fail("unsupported operation: " + e.getMessage());
@@ -1147,24 +1152,22 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 		assertFalse(testCon.hasStatement(bob, name, nameBob, false));
 		assertFalse(testCon.hasStatement(alice, name, nameAlice, false));
+	}
 
+	public void testGetNamespace()
+		throws RDFParseException, RepositoryException, IOException
+	{
+		setupNamespaces();
+		assertThat(testCon.getNamespace("example"), is(equalTo("http://example.org/")));
+		assertThat(testCon.getNamespace("rdfs"), is(equalTo("http://www.w3.org/2000/01/rdf-schema#")));
+		assertThat(testCon.getNamespace("rdf"), is(equalTo("http://www.w3.org/1999/02/22-rdf-syntax-ns#")));
+		assertThat(testCon.getNamespace("undefined"), is(nullValue()));
 	}
 
 	public void testGetNamespaces()
 		throws Exception
 	{
-		StringBuilder rdfFragment = new StringBuilder();
-		rdfFragment.append("<rdf:RDF\n");
-		rdfFragment.append("    xmlns:example='http://example.org/'\n");
-		rdfFragment.append("    xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'\n");
-		rdfFragment.append("    xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' >\n");
-		rdfFragment.append("  <rdf:Description rdf:about='http://example.org/Main'>\n");
-		rdfFragment.append("    <rdfs:label>Main Node</rdfs:label>\n");
-		rdfFragment.append("  </rdf:Description>\n");
-		rdfFragment.append("</rdf:RDF>");
-
-		testCon.add(new StringReader(rdfFragment.toString()), "", RDFFormat.RDFXML);
-
+		setupNamespaces();
 		CloseableIteration<? extends Namespace, RepositoryException> nsIter = testCon.getNamespaces();
 		try {
 			Map<String, String> map = new HashMap<String, String>();
@@ -1190,6 +1193,18 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		finally {
 			nsIter.close();
 		}
+	}
+
+	private void setupNamespaces()
+		throws IOException, RDFParseException, RepositoryException
+	{
+		StringBuilder rdfFragment = new StringBuilder(512);
+		rdfFragment.append("<rdf:RDF\n").append("    xmlns:example='http://example.org/'\n").append(
+				"    xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'\n").append(
+				"    xmlns:rdfs='http://www.w3.org/2000/01/rdf-schema#' >\n").append(
+				"  <rdf:Description rdf:about='http://example.org/Main'>\n").append(
+				"    <rdfs:label>Main Node</rdfs:label>\n  </rdf:Description>\n</rdf:RDF>");
+		testCon.add(new StringReader(rdfFragment.toString()), "", RDFFormat.RDFXML);
 	}
 
 	public void testClear()
@@ -1521,7 +1536,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		throws Exception
 	{
 		String NS = "http://example.org/rdf/";
-		int OFFSET = TimeZone.getDefault().getOffset(new Date(2007, Calendar.NOVEMBER, 6).getTime()) / 1000 / 60;
+		int OFFSET = TimeZone.getDefault().getOffset(
+				(new GregorianCalendar(2007 - 1900, Calendar.NOVEMBER, 6)).getTimeInMillis()) / 1000 / 60;
 		String SELECT_BY_DATE = "SELECT ?s ?d WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> ?d . FILTER (?d <= ?date) }";
 		DatatypeFactory data = DatatypeFactory.newInstance();
 		for (int i = 1; i < 5; i++) {
