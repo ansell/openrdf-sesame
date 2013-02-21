@@ -40,7 +40,12 @@
 							<input type="text" id="id" name="Local repository ID" size="16"
 								value="fed" />
 						</td>
-						<td></td>
+						<td>
+							<span id="recurse-message" class="ERROR" style="display: none;">
+								Federation ID
+								may not match an existing ID.
+							</span>
+						</td>
 					</tr>
 					<tr>
 						<th>
