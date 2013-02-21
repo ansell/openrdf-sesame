@@ -157,7 +157,7 @@ public class WorkbenchGateway extends BaseServlet {
 		final String server = req.getParameter(SERVER_COOKIE);
 		if (server == null) {
 			// Server parameter was not present, so present entry form.
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start();
 			builder.end();
@@ -178,7 +178,7 @@ public class WorkbenchGateway extends BaseServlet {
 		else {
 			// Invalid server was submitted by form. Present entry form again
 			// with error message.
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(getTransformationUrl(req), "server.xsl");
 			builder.start("error-message");
 			builder.result("Invalid Server URL");

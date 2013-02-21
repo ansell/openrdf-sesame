@@ -18,6 +18,7 @@ package org.openrdf.workbench.util;
 
 import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +84,7 @@ public final class QueryEvaluator {
 	 *         if there's a problem preparing the query
 	 */
 	public void extractQueryAndEvaluate(final TupleResultBuilder builder, final HttpServletResponse resp,
-			final PrintWriter out, final String xslPath, final RepositoryConnection con,
+			final OutputStream out, final String xslPath, final RepositoryConnection con,
 			final WorkbenchRequest req, final CookieHandler cookies)
 		throws BadRequestException, OpenRDFException
 	{
@@ -224,7 +225,7 @@ public final class QueryEvaluator {
 		builder.bool(result);
 	}
 
-	private void evaluate(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
+	private void evaluate(final TupleResultBuilder builder, final OutputStream out, final String xslPath,
 			final WorkbenchRequest req, final Query query)
 		throws OpenRDFException, BadRequestException
 	{

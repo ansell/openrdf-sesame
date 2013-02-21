@@ -180,7 +180,7 @@ public class WorkbenchServlet extends BaseServlet {
 	{
 		// Invalid credentials or insufficient authorization. Present
 		// entry form again with error message.
-		final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.transform(this.getTransformationUrl(req), "server.xsl");
 		builder.start("error-message");
 		builder.result("The entered credentials entered either failed to authenticate to the Sesame server, or were unauthorized for the requested operation.");

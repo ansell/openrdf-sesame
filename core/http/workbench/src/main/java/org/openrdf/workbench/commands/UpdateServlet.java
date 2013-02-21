@@ -59,7 +59,7 @@ public class UpdateServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "update.xsl");
 			builder.start("error-message", "update");
 			builder.link(Arrays.asList(INFO, "namespaces"));

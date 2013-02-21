@@ -43,7 +43,7 @@ public class InfoServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-		TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
 				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
 				"query-format", "download-format");

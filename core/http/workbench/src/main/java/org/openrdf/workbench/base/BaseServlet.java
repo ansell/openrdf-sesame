@@ -17,6 +17,7 @@
 package org.openrdf.workbench.base;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -131,7 +132,8 @@ public abstract class BaseServlet implements Servlet {
 		return null;
 	}
 
-	protected QueryResultWriter getResultWriter(final HttpServletRequest req, final ServletResponse resp)
+	protected QueryResultWriter getResultWriter(final HttpServletRequest req, final ServletResponse resp,
+			final OutputStream outputStream)
 		throws UnsupportedQueryResultFormatException, IOException
 	{
 		QueryResultFormat resultFormat = getTupleResultFormat(req, resp);
@@ -146,7 +148,7 @@ public abstract class BaseServlet implements Servlet {
 			resultFormat = TupleQueryResultFormat.SPARQL;
 		}
 
-		return QueryResultIO.createWriter(resultFormat, resp.getOutputStream());
+		return QueryResultIO.createWriter(resultFormat, outputStream);
 	}
 
 	/**
@@ -156,14 +158,17 @@ public abstract class BaseServlet implements Servlet {
 	 * 
 	 * @param req
 	 * @param resp
+	 * @param outputStream
+	 *        TODO
 	 * @return
 	 * @throws IOException
 	 * @throws UnsupportedQueryResultFormatException
 	 */
-	protected TupleResultBuilder getTupleResultBuilder(HttpServletRequest req, HttpServletResponse resp)
+	protected TupleResultBuilder getTupleResultBuilder(HttpServletRequest req, HttpServletResponse resp,
+			OutputStream outputStream)
 		throws UnsupportedQueryResultFormatException, IOException
 	{
-		QueryResultWriter resultWriter = getResultWriter(req, resp);
+		QueryResultWriter resultWriter = getResultWriter(req, resp, resp.getOutputStream());
 
 		String contentType = resultWriter.getQueryResultFormat().getDefaultMIMEType();
 

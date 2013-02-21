@@ -68,7 +68,7 @@ public class SavedQueriesServlet extends TransformationServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws IOException, OpenRDFException, BadRequestException
 	{
-		final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.transform(xslPath, "saved-queries.xsl");
 		builder.start();
 		builder.link(Arrays.asList(INFO));

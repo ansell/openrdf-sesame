@@ -59,7 +59,7 @@ public class ExploreServlet extends TupleServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "explore.xsl");
 			builder.start("error-message");
 			builder.link(Arrays.asList(INFO));

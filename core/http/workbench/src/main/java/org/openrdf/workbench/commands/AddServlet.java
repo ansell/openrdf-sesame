@@ -73,7 +73,7 @@ public class AddServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "add.xsl");
 			builder.start("error-message", "baseURI", CONTEXT, "Content-Type");
 			builder.link(Arrays.asList(INFO));

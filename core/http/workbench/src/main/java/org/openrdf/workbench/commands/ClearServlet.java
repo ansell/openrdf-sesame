@@ -60,7 +60,7 @@ public class ClearServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "clear.xsl");
 			builder.start("error-message", CONTEXT);
 			builder.link(Arrays.asList(INFO));

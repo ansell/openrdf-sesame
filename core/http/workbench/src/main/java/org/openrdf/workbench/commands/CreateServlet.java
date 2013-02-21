@@ -90,7 +90,7 @@ public class CreateServlet extends TransformationServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws IOException, RepositoryException, QueryResultHandlerException
 	{
-		final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		boolean federate;
 		if (req.isParameterPresent("type")) {
 			final String type = req.getTypeParameter();

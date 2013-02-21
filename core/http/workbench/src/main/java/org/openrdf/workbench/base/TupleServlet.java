@@ -43,7 +43,7 @@ public abstract class TupleServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-		TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		if (xsl != null) {
 			builder.transform(xslPath, xsl);
 		}

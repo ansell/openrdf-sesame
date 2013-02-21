@@ -18,6 +18,7 @@ package org.openrdf.workbench.commands;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -104,20 +105,21 @@ public class QueryServlet extends TransformationServlet {
 		throws IOException, OpenRDFException
 	{
 		setContentType(req, resp);
-		final PrintWriter out = resp.getWriter();
+		final OutputStream out = resp.getOutputStream();
 		try {
-			final PrintWriter writer = new PrintWriter(new BufferedWriter(out));
-			service(req, resp, writer, xslPath);
-			writer.flush();
+			service(req, resp, out, xslPath);
 		}
 		catch (BadRequestException exc) {
 			LOGGER.warn(exc.toString(), exc);
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, out);
 			builder.transform(xslPath, "query.xsl");
 			builder.start("error-message");
 			builder.link(Arrays.asList(INFO, "namespaces"));
 			builder.result(exc.getMessage());
 			builder.end();
+		}
+		finally {
+			out.flush();
 		}
 	}
 
@@ -130,7 +132,7 @@ public class QueryServlet extends TransformationServlet {
 			saveQuery(req, resp);
 		}
 		else if ("edit".equals(action)) {
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "query.xsl");
 			builder.start(EDIT_PARAMS);
 			builder.link(Arrays.asList(INFO, "namespaces"));
@@ -221,13 +223,13 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
-	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final PrintWriter out,
+	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final OutputStream out,
 			final String xslPath)
 		throws BadRequestException, OpenRDFException, UnsupportedQueryResultFormatException, IOException
 	{
 		final RepositoryConnection con = repository.getConnection();
 		try {
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
