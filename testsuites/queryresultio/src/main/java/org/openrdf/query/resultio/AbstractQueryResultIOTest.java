@@ -376,4 +376,20 @@ public abstract class AbstractQueryResultIOTest {
 		assertEquals(output, input);
 	}
 
+        protected void doBooleanStylesheet(BooleanQueryResultFormat format, boolean input, String stylesheetUrl)
+                throws IOException, QueryResultHandlerException, QueryResultParseException,
+                UnsupportedQueryResultFormatException, QueryEvaluationException
+        {
+                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+                BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+                writer.handleStylesheet(stylesheetUrl);
+                writer.handleBoolean(input);
+
+                System.out.println("output: " + out.toString("UTF-8"));
+
+                ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+                boolean output = QueryResultIO.parse(in, format);
+
+                assertEquals(output, input);
+        }
 }
