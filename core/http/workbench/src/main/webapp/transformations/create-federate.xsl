@@ -41,7 +41,7 @@
 								value="fed" />
 						</td>
 						<td>
-							<span id="recurse-message" class="ERROR" style="display: none;">
+							<span id="recurse-message" class="error" style="display: none;">
 								Federation ID
 								may not match an existing ID.
 							</span>
@@ -63,6 +63,11 @@
 						</th>
 						<td>
 							<xsl:apply-templates select="*" />
+						</td>
+						<td>
+							<span class="error" id="create-feedback">Select at least two federation
+								members.
+							</span>
 						</td>
 					</tr>
 					<tr>
@@ -88,9 +93,6 @@
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
 							<input id="create" type="submit" value="{$create.label}" />
-							<span class="error" id="create-feedback">Select at least two federation
-								members.
-							</span>
 						</td>
 					</tr>
 				</tbody>

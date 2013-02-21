@@ -12,16 +12,15 @@ function respondToFormState() {
 	var validID = /.+/.test(fedID);
 	var disable = !(validID && enoughMembers);
 	var matchExisting = false;
-	if (!disable) {
-		//test that fedID not equal any existing id
-		$('input.memberID').each(function() {
-			if (fedID == $(this).attr('value')) {
-				disable = true;
-				matchExisting = true;
-				return false;
-			}
-		});
-	}
+
+	// test that fedID not equal any existing id
+	$('input.memberID').each(function() {
+		if (fedID == $(this).attr('value')) {
+			disable = true;
+			matchExisting = true;
+			return false;
+		}
+	});
 	var recurseMessage = $('#recurse-message');
 	if (matchExisting) {
 		recurseMessage.show();
