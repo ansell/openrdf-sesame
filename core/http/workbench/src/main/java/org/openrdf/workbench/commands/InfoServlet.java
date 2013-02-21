@@ -18,13 +18,16 @@ package org.openrdf.workbench.commands;
 
 import static org.openrdf.query.parser.QueryParserRegistry.getInstance;
 
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.parser.QueryParserFactory;
+import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
+import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
+import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
+import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
@@ -46,7 +49,7 @@ public class InfoServlet extends TransformationServlet {
 		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
 				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
-				"query-format", "download-format");
+				"query-format", "graph-download-format", "tuple-download-format", "boolean-download-format");
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
@@ -69,7 +72,17 @@ public class InfoServlet extends TransformationServlet {
 		for (RDFWriterFactory writer : RDFWriterRegistry.getInstance().getAll()) {
 			String mimeType = writer.getRDFFormat().getDefaultMIMEType();
 			String name = writer.getRDFFormat().getName();
-			builder.namedResult("download-format", mimeType + " " + name);
+			builder.namedResult("graph-download-format", mimeType + " " + name);
+		}
+		for (TupleQueryResultWriterFactory writer : TupleQueryResultWriterRegistry.getInstance().getAll()) {
+			String mimeType = writer.getTupleQueryResultFormat().getDefaultMIMEType();
+			String name = writer.getTupleQueryResultFormat().getName();
+			builder.namedResult("tuple-download-format", mimeType + " " + name);
+		}
+		for (BooleanQueryResultWriterFactory writer : BooleanQueryResultWriterRegistry.getInstance().getAll()) {
+			String mimeType = writer.getBooleanQueryResultFormat().getDefaultMIMEType();
+			String name = writer.getBooleanQueryResultFormat().getName();
+			builder.namedResult("boolean-download-format", mimeType + " " + name);
 		}
 		builder.end();
 	}

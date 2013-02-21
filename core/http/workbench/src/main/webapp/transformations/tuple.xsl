@@ -40,6 +40,40 @@
 				<tbody>
 					<tr>
 						<th>
+							<xsl:value-of
+								select="$download-format.label" />
+						</th>
+						<td>
+							<select id="Accept" name="Accept">
+								<xsl:for-each
+									select="$info//sparql:binding[@name='tuple-download-format']">
+									<option
+										value="{substring-before(sparql:literal, ' ')}">
+										<xsl:if
+											test="$info//sparql:binding[@name='default-Accept']/sparql:literal = substring-before(sparql:literal, ' ')">
+											<xsl:attribute
+												name="selected">true</xsl:attribute>
+										</xsl:if>
+										<xsl:value-of
+											select="substring-after(sparql:literal, ' ')" />
+									</option>
+								</xsl:for-each>
+							</select>
+						</td>
+						<td>
+							<input type="submit"
+								onclick="addGraphParam('Accept');return false"
+								value="{$download.label}" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+		<form>
+			<table class="dataentry">
+				<tbody>
+					<tr>
+						<th>
 							<xsl:value-of select="$result-limit.label" />
 						</th>
 						<td>
