@@ -299,6 +299,58 @@ public abstract class AbstractQueryResultIOTest {
 		assertTrue(QueryResults.equals(expected, output));
 	}
 
+        protected void doTupleLinksAndStylesheetNoStarts(TupleQueryResultFormat format, TupleQueryResult input,
+                        TupleQueryResult expected, List<String> links, String stylesheetUrl)
+                throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+                UnsupportedQueryResultFormatException, IOException
+        {
+                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+                TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+                // Test for handling when startDocument and startHeader are not called
+                writer.handleStylesheet(stylesheetUrl);
+                writer.handleLinks(links);
+                QueryResults.report(input, writer);
+
+                System.out.println("output: " + out.toString("UTF-8"));
+
+                ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+                TupleQueryResult output = QueryResultIO.parse(in, format);
+
+                assertTrue(QueryResults.equals(expected, output));
+        }
+
+        protected void doTupleLinksAndStylesheetMultipleEndHeaders(TupleQueryResultFormat format,
+                        TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl)
+                throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+                UnsupportedQueryResultFormatException, IOException
+        {
+                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+                TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+                // Test for handling when startDocument and startHeader are not called
+                writer.handleStylesheet(stylesheetUrl);
+                writer.startQueryResult(input.getBindingNames());
+                writer.handleLinks(links);
+                writer.endHeader();
+                writer.endHeader();
+                try {
+                        while (input.hasNext()) {
+                                BindingSet bindingSet = input.next();
+                                writer.handleSolution(bindingSet);
+                        }
+                }
+                finally {
+                        input.close();
+                }
+                writer.endQueryResult();
+
+                System.out.println("output: " + out.toString("UTF-8"));
+
+                ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+                TupleQueryResult output = QueryResultIO.parse(in, format);
+
+                assertTrue(QueryResults.equals(expected, output));
+        }
+
 	protected void doBooleanNoLinks(BooleanQueryResultFormat format, boolean input)
 		throws IOException, QueryResultHandlerException, QueryResultParseException,
 		UnsupportedQueryResultFormatException, QueryEvaluationException

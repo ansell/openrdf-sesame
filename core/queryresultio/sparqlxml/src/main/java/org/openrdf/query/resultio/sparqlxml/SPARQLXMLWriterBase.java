@@ -275,19 +275,21 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			startHeader();
 		}
 
-		try {
-			xmlWriter.endTag(HEAD_TAG);
+		if (!headerComplete) {
+			try {
+				xmlWriter.endTag(HEAD_TAG);
 
-			if (tupleVariablesFound) {
-				// Write start of results, which must always exist, even if there
-				// are no result bindings
-				xmlWriter.startTag(RESULT_SET_TAG);
+				if (tupleVariablesFound) {
+					// Write start of results, which must always exist, even if there
+					// are no result bindings
+					xmlWriter.startTag(RESULT_SET_TAG);
+				}
+
+				headerComplete = true;
 			}
-
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 

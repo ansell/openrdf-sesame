@@ -127,6 +127,24 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 				"test.xsl", getNamespaces());
 	}
 
+        @Test
+        public final void testMultipleLinksWithResultsAndStylesheetNoStarts()
+                throws Exception
+        {
+                doTupleLinksAndStylesheetNoStarts(getTupleFormat(), createTupleMultipleBindingSets(),
+                                createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+                                "test.xsl");
+        }
+
+        @Test
+        public final void testMultipleLinksWithResultsAndStylesheetMultipleEndHeaders()
+                throws Exception
+        {
+                doTupleLinksAndStylesheetMultipleEndHeaders(getTupleFormat(), createTupleMultipleBindingSets(),
+                                createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+                                "test.xsl");
+        }
+
 	@Test
 	public final void testNoResultsAndStylesheet()
 		throws Exception
@@ -138,6 +156,9 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 	public final void testMultipleResultsAndStylesheet()
 		throws Exception
 	{
-		doTupleStylesheet(getTupleFormat(), createTupleMultipleBindingSets(), createTupleMultipleBindingSets(), "test.xsl");
+		doTupleStylesheet(getTupleFormat(), createTupleMultipleBindingSets(), createTupleMultipleBindingSets(),
+				"test.xsl");
 	}
+
+
 }

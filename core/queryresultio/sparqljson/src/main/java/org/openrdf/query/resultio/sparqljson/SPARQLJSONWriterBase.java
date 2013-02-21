@@ -57,6 +57,8 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 	protected boolean documentOpen = false;
 
+	protected boolean headerOpen = false;
+
 	protected boolean headerComplete = false;
 
 	protected boolean tupleVariablesFound = false;
@@ -73,24 +75,26 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	public void endHeader()
 		throws QueryResultHandlerException
 	{
-		try {
-			closeBraces();
+		if (!headerComplete) {
+			try {
+				closeBraces();
 
-			writeComma();
+				writeComma();
 
-			if (tupleVariablesFound) {
-				// Write results
-				writeKey("results");
-				openBraces();
+				if (tupleVariablesFound) {
+					// Write results
+					writeKey("results");
+					openBraces();
 
-				writeKey("bindings");
-				openArray();
+					writeKey("bindings");
+					openArray();
+				}
+
+				headerComplete = true;
 			}
-
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -101,6 +105,9 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+
+			if (!headerOpen) {
 				startHeader();
 			}
 
@@ -132,6 +139,14 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -173,6 +188,14 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -195,13 +218,16 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	public void startDocument()
 		throws QueryResultHandlerException
 	{
-		documentOpen = true;
-		headerComplete = false;
-		try {
-			openBraces();
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+		if (!documentOpen) {
+			documentOpen = true;
+			headerOpen = false;
+			headerComplete = false;
+			try {
+				openBraces();
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -216,13 +242,21 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	public void startHeader()
 		throws QueryResultHandlerException
 	{
-		try {
-			// Write header
-			writeKey("head");
-			openBraces();
+		if (!documentOpen) {
+			startDocument();
 		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+
+		if (!headerOpen) {
+			try {
+				// Write header
+				writeKey("head");
+				openBraces();
+
+				headerOpen = true;
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -233,6 +267,9 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+
+			if (!headerOpen) {
 				startHeader();
 			}
 
@@ -301,6 +338,9 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 

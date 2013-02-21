@@ -90,7 +90,6 @@ public class TupleResultBuilder {
 	public TupleResultBuilder result(Object... result)
 		throws QueryResultHandlerException
 	{
-		closeHead();
 		QueryBindingSet bindingSet = new QueryBindingSet();
 		for (int i = 0; i < result.length; i++) {
 			if (result[i] == null)
@@ -104,7 +103,6 @@ public class TupleResultBuilder {
 	public TupleResultBuilder namedResult(String name, Object result)
 		throws QueryResultHandlerException
 	{
-		closeHead();
 		QueryBindingSet bindingSet = new QueryBindingSet();
 		bindingSet.addBinding(outputNamedResult(name, result));
 		out.handleSolution(bindingSet);
@@ -154,12 +152,6 @@ public class TupleResultBuilder {
 	public TupleResultBuilder endBoolean() {
 		// do nothing, as the call to handleBoolean always ends the document
 		return this;
-	}
-
-	private void closeHead()
-		throws QueryResultHandlerException
-	{
-		out.endHeader();
 	}
 
 	public void flush() {
