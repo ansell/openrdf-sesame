@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -271,6 +272,24 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);
 		input.close();
+
+		System.out.println("output: " + out.toString("UTF-8"));
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResult output = QueryResultIO.parse(in, format);
+
+		assertTrue(QueryResults.equals(expected, output));
+	}
+
+	protected void doTupleStylesheet(TupleQueryResultFormat format, TupleQueryResult input,
+			TupleQueryResult expected, String stylesheetUrl)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		writer.handleStylesheet(stylesheetUrl);
+		QueryResults.report(input, writer);
 
 		System.out.println("output: " + out.toString("UTF-8"));
 

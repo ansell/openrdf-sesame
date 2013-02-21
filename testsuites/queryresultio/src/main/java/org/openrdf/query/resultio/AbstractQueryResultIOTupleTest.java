@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import org.openrdf.query.TupleQueryResult;
+
 /**
  * Abstract test for QueryResultIO.
  * 
@@ -123,5 +125,19 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 		doTupleLinksAndStylesheetAndNamespacesQName(getTupleFormat(), createTupleMultipleBindingSets(),
 				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
 				"test.xsl", getNamespaces());
+	}
+
+	@Test
+	public final void testNoResultsAndStylesheet()
+		throws Exception
+	{
+		doTupleStylesheet(getTupleFormat(), createTupleNoBindingSets(), createTupleNoBindingSets(), "test.xsl");
+	}
+
+	@Test
+	public final void testMultipleResultsAndStylesheet()
+		throws Exception
+	{
+		doTupleStylesheet(getTupleFormat(), createTupleMultipleBindingSets(), createTupleMultipleBindingSets(), "test.xsl");
 	}
 }
