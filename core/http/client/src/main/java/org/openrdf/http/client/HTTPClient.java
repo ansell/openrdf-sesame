@@ -22,11 +22,13 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,6 +37,7 @@ import org.apache.commons.httpclient.HeaderElement;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.ProxyHost;
@@ -63,7 +66,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
@@ -84,14 +86,24 @@ import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.ParseErrorLogger;
-import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Low-level HTTP client for Sesame's HTTP protocol. Methods correspond directly
  * to the functionality offered by the protocol.
  * 
+ * The HTTP client is used for all HTTP communication of the SPARQL repository
+ * as well as the HTTP Repository. For both Tuple and Graph queries there is
+ * a variant which parses the result in the background, see {@link BackgroundTupleResult}
+ * and {@link BackgroundGraphResult}. For boolean queries the result is parsed
+ * in the current thread.
+ * 
+ * All methods in this class guarantee that HTTP connections are closed properly
+ * and returned to the connection pool. 
+ * 
+ * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
+ * @author Andreas Schwarte
  */
 public class HTTPClient {
 
@@ -382,9 +394,8 @@ public class HTTPClient {
 		QueryInterruptedException
 	{
 		try {
-			StatementCollector collector = new StatementCollector();
-			sendGraphQuery(ql, query, baseURI, dataset, includeInferred, maxQueryTime, collector, bindings);
-			return new GraphQueryResultImpl(collector.getNamespaces(), collector.getStatements());
+			HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+			return getRDFBackground(method, false);
 		}
 		catch (RDFHandlerException e) {
 			// Found a bug in TupleQueryResultBuilder?
@@ -406,13 +417,7 @@ public class HTTPClient {
 		UnauthorizedException, QueryInterruptedException
 	{
 		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
-
-		try {
-			getRDF(method, handler, false);
-		}
-		finally {
-			releaseConnection(method);
-		}
+		getRDF(method, handler, false);
 	}
 
 	public boolean sendBooleanQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
@@ -428,17 +433,11 @@ public class HTTPClient {
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
 		QueryInterruptedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
-
-		try {
-			return getBoolean(method);
-		}
-		finally {
-			releaseConnection(method);
-		}
+		HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		return getBoolean(method);
 	}
 
-	protected HttpMethod getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+	protected HttpMethodBase getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
 		PostMethod method = new PostMethod(getQueryURL());
@@ -690,7 +689,212 @@ public class HTTPClient {
 		} 
 		
 		// error handling + http abort
+		handleHTTPError(httpCode, method);
+	}
+	
+	/**
+	 * Parse the response in a background thread. HTTP connections are dealt with
+	 * in the {@link BackgroundGraphResult} or (in the error-case) in this method.
+	 */
+	protected BackgroundGraphResult getRDFBackground(HttpMethodBase method, boolean requireContext)
+			throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+			UnauthorizedException, QueryInterruptedException
+	{
+		
+		boolean submitted = false;
 		try {
+			
+			// Specify which formats we support using Accept headers
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			if (rdfFormats.isEmpty()) {
+				throw new RepositoryException("No tuple RDF parsers have been registered");
+			}
+			
+			// send the tuple query
+			sendGraphQueryViaHttp(method, requireContext, rdfFormats);
+			
+			// if we get here, HTTP code is 200
+			String mimeType = getResponseMIMEType(method);
+			try {
+				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+				RDFParser parser = Rio.createParser(format, getValueFactory());
+				parser.setParserConfig(getParserConfig());
+				parser.setParseErrorListener(new ParseErrorLogger());
+				
+				// TODO copied from SPARQLGraphQuery repository, is this required?
+				String charset_str = method.getResponseCharSet();
+				Charset charset;
+				try {
+					charset = Charset.forName(charset_str);
+				} catch (IllegalCharsetNameException e) {
+					// work around for Joseki-3.2
+					// Content-Type: application/rdf+xml;
+					// charset=application/rdf+xml
+					charset = Charset.forName("UTF-8");
+				}
+				String baseURI = method.getURI().getURI();
+				
+				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, method.getResponseBodyAsStream(), charset, baseURI, method);
+				execute(gRes);
+				submitted = true;
+				return gRes;
+			}
+			catch (UnsupportedQueryResultFormatException e) {
+				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
+			}
+		} finally {
+			if (!submitted)
+				releaseConnection(method);
+		}
+		
+		
+	}
+	
+	/**
+	 * Parse the response in this thread using the provided {@link RDFHandler}.
+	 * All HTTP connections are closed and released in this method
+	 */
+	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
+		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+		UnauthorizedException, QueryInterruptedException
+	{
+		try {	
+			// Specify which formats we support using Accept headers
+			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+			if (rdfFormats.isEmpty()) {
+				throw new RepositoryException("No tuple RDF parsers have been registered");
+			}
+	
+			// send the tuple query
+			sendGraphQueryViaHttp(method, requireContext, rdfFormats);
+					
+			String mimeType = getResponseMIMEType(method);
+			try {
+				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+				RDFParser parser = Rio.createParser(format, getValueFactory());
+				parser.setParserConfig(getParserConfig());
+				parser.setParseErrorListener(new ParseErrorLogger());
+				parser.setRDFHandler(handler);
+				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
+			}
+			catch (UnsupportedRDFormatException e) {
+				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
+			}
+			catch (RDFParseException e) {
+				throw new RepositoryException("Malformed query result from server", e);
+			}
+		} finally {
+			releaseConnection(method);
+		}
+	}
+
+	private void sendGraphQueryViaHttp(HttpMethod method, boolean requireContext, Set<RDFFormat> rdfFormats)
+			throws RepositoryException, HttpException, IOException, QueryInterruptedException,
+			MalformedQueryException
+	{
+	
+		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, preferredRDFFormat);
+		for (String acceptParam : acceptParams) {
+			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+		}
+
+		int httpCode = httpClient.executeMethod(method);
+		
+		if (httpCode == HttpURLConnection.HTTP_OK) {			
+			return; // everything OK, control flow can continue
+		} 
+		
+		// error handling + http abort
+		handleHTTPError(httpCode, method);
+	}
+	
+	/**
+	 * Parse the response in this thread using a suitable {@link BooleanQueryResultParser}.
+	 * All HTTP connections are closed and released in this method
+	 */
+	protected boolean getBoolean(HttpMethodBase method)
+		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+		QueryInterruptedException
+	{
+		try {
+			// Specify which formats we support using Accept headers
+			Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
+			if (booleanFormats.isEmpty()) {
+				throw new RepositoryException("No boolean query result parsers have been registered");
+			}
+			
+			// send the tuple query
+			sendBooleanQueryViaHttp(method, booleanFormats);
+	
+			// if we get here, HTTP code is 200
+			String mimeType = getResponseMIMEType(method);
+			try {
+				BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
+				BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+				return parser.parse(method.getResponseBodyAsStream());
+			}
+			catch (UnsupportedQueryResultFormatException e) {
+				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
+			}
+			catch (QueryResultParseException e) {
+				throw new RepositoryException("Malformed query result from server", e);
+			}
+		} finally {
+			method.releaseConnection();
+		}
+
+	}
+	
+	private void sendBooleanQueryViaHttp(HttpMethod method, Set<BooleanQueryResultFormat> booleanFormats)
+			throws RepositoryException, HttpException, IOException, QueryInterruptedException,
+			MalformedQueryException
+	{
+		
+		for (BooleanQueryResultFormat format : booleanFormats) {
+			// Determine a q-value that reflects the user specified preference
+			int qValue = 10;
+
+			if (preferredBQRFormat != null && !preferredBQRFormat.equals(format)) {
+				// Prefer specified format over other formats
+				qValue -= 2;
+			}
+
+			for (String mimeType : format.getMIMETypes()) {
+				String acceptParam = mimeType;
+
+				if (qValue < 10) {
+					acceptParam += ";q=0." + qValue;
+				}
+
+				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+			}
+		}
+
+		int httpCode = httpClient.executeMethod(method);
+		
+		if (httpCode == HttpURLConnection.HTTP_OK) {			
+			return; // everything OK, control flow can continue
+		}
+		
+		// error handling + http abort
+		handleHTTPError(httpCode, method);
+	}
+	
+	/**
+	 * Convenience method to deal with HTTP level errors of tuple,
+	 * graph and boolean queries in the same way. This method
+	 * aborts the HTTP connection.
+	 * 
+	 * @param httpCode
+	 * @param method
+	 * @throws MalformedQueryException
+	 * @throws QueryInterruptedException
+	 * @throws RepositoryException
+	 */
+	private void handleHTTPError(int httpCode, HttpMethod method)
+		throws MalformedQueryException, QueryInterruptedException, RepositoryException
+	{
+	try {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
@@ -713,130 +917,6 @@ public class HTTPClient {
 			}
 		} finally {
 			method.abort();
-		}
-	}
-
-	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
-		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException, QueryInterruptedException
-	{
-		// Specify which formats we support using Accept headers
-		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-		if (rdfFormats.isEmpty()) {
-			throw new RepositoryException("No tuple RDF parsers have been registered");
-		}
-
-		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, preferredRDFFormat);
-		for (String acceptParam : acceptParams) {
-			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
-		}
-
-		int httpCode = httpClient.executeMethod(method);
-
-		if (httpCode == HttpURLConnection.HTTP_OK) {
-			String mimeType = getResponseMIMEType(method);
-			try {
-				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
-				RDFParser parser = Rio.createParser(format, getValueFactory());
-				parser.setParserConfig(getParserConfig());
-				parser.setParseErrorListener(new ParseErrorLogger());
-				parser.setRDFHandler(handler);
-				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
-			}
-			catch (UnsupportedRDFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
-			}
-			catch (RDFParseException e) {
-				throw new RepositoryException("Malformed query result from server", e);
-			}
-		}
-		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-			throw new UnauthorizedException();
-		}
-		else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
-			throw new QueryInterruptedException();
-		}
-		else {
-			ErrorInfo errInfo = getErrorInfo(method);
-
-			// Throw appropriate exception
-			if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-				throw new MalformedQueryException(errInfo.getErrorMessage());
-			}
-			else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-				throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-			}
-			else {
-				throw new RepositoryException(errInfo.toString());
-			}
-		}
-	}
-
-	protected boolean getBoolean(HttpMethod method)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
-	{
-		// Specify which formats we support using Accept headers
-		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
-		if (booleanFormats.isEmpty()) {
-			throw new RepositoryException("No boolean query result parsers have been registered");
-		}
-
-		for (BooleanQueryResultFormat format : booleanFormats) {
-			// Determine a q-value that reflects the user specified preference
-			int qValue = 10;
-
-			if (preferredBQRFormat != null && !preferredBQRFormat.equals(format)) {
-				// Prefer specified format over other formats
-				qValue -= 2;
-			}
-
-			for (String mimeType : format.getMIMETypes()) {
-				String acceptParam = mimeType;
-
-				if (qValue < 10) {
-					acceptParam += ";q=0." + qValue;
-				}
-
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
-			}
-		}
-
-		int httpCode = httpClient.executeMethod(method);
-
-		if (httpCode == HttpURLConnection.HTTP_OK) {
-			String mimeType = getResponseMIMEType(method);
-			try {
-				BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
-				BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-				return parser.parse(method.getResponseBodyAsStream());
-			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
-			}
-			catch (QueryResultParseException e) {
-				throw new RepositoryException("Malformed query result from server", e);
-			}
-		}
-		else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-			throw new UnauthorizedException();
-		}
-		else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
-			throw new QueryInterruptedException();
-		}
-		else {
-			ErrorInfo errInfo = getErrorInfo(method);
-
-			// Throw appropriate exception
-			if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-				throw new MalformedQueryException(errInfo.getErrorMessage());
-			}
-			else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-				throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-			}
-			else {
-				throw new RepositoryException(method.getStatusText());
-			}
 		}
 	}
 

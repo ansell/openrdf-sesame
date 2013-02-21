@@ -261,7 +261,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLBooleanQuery(client, queryEndpointUrl, base, query);
+			return new SPARQLBooleanQuery(getRepository().getNewHttpClient(), queryEndpointUrl, base, query);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
@@ -270,7 +270,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLGraphQuery(client, queryEndpointUrl, base, query);
+			return new SPARQLGraphQuery(getRepository().getNewHttpClient(), queryEndpointUrl, base, query);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
@@ -279,7 +279,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql))
-			return new SPARQLTupleQuery(this, client, queryEndpointUrl, base, query);
+			return new SPARQLTupleQuery(getRepository().getNewHttpClient(), queryEndpointUrl, base, query);
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 

@@ -14,87 +14,74 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.http;
+package org.openrdf.http.client;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.HashMap;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.openrdf.http.client.HTTPClient;
-import org.openrdf.http.protocol.UnauthorizedException;
+import org.apache.commons.httpclient.HttpMethod;
+
+import info.aduna.iteration.IterationWrapper;
+
 import org.openrdf.model.Statement;
-import org.openrdf.query.Binding;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.impl.GraphQueryResultImpl;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RDFParser;
 
 /**
- * A GraphQueryResult that provides concurrent access to statements as they are being parsed.
+ * Provides concurrent access to statements as they are being parsed.
  * 
  * @author James Leigh
- * @author Jeen Broekstra
  */
-public class HTTPGraphQueryResult extends GraphQueryResultImpl implements Runnable,
-		RDFHandler
+public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEvaluationException> implements
+		GraphQueryResult, Runnable, RDFHandler
 {
 
 	private volatile boolean closed;
 
 	private volatile Thread parserThread;
 
+	private RDFParser parser;
+
+	private Charset charset;
+
+	private InputStream in;
+
 	private String baseURI;
 
-	/** countdown to indicate when namespace declarations have been processed and are available */
 	private CountDownLatch namespacesReady = new CountDownLatch(1);
 
 	private Map<String, String> namespaces = new ConcurrentHashMap<String, String>();
 
 	private QueueCursor<Statement> queue;
 
-	private HTTPClient httpClient;
+	private HttpMethod method;
 
-	private QueryLanguage queryLanguage;
-
-	private String queryString;
-
-	private Binding[] bindings;
-
-	private boolean includeInferred;
-
-	private Dataset dataset;
-
-	public HTTPGraphQueryResult(HTTPClient httpClient, QueryLanguage queryLanguage, String queryString,
-			String baseURI, Dataset dataset, boolean includeInferred, Binding... bindings)
+	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI,
+			HttpMethod method)
 	{
-		this(new QueueCursor<Statement>(10), httpClient, queryLanguage, queryString, baseURI, dataset,
-				includeInferred, bindings);
+		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI, method);
 	}
 
-	public HTTPGraphQueryResult(QueueCursor<Statement> queue, HTTPClient httpClient,
-			QueryLanguage queryLanguage, String queryString, String baseURI, Dataset dataset,
-			boolean includeInferred, Binding... bindings)
+	public BackgroundGraphResult(QueueCursor<Statement> queue, RDFParser parser, InputStream in,
+			Charset charset, String baseURI, HttpMethod method)
 	{
-		super(new HashMap<String, String>(), queue);
-
+		super(queue);
 		this.queue = queue;
-		this.httpClient = httpClient;
-		this.queryLanguage = queryLanguage;
-		this.queryString = queryString;
+		this.parser = parser;
+		this.in = in;
+		this.charset = charset;
 		this.baseURI = baseURI;
-		this.dataset = dataset;
-		this.includeInferred = includeInferred;
-		this.bindings = bindings;
-
+		this.method = method;
 	}
 
 	public boolean hasNext()
@@ -119,42 +106,50 @@ public class HTTPGraphQueryResult extends GraphQueryResultImpl implements Runnab
 	protected void handleClose()
 		throws QueryEvaluationException
 	{
+		super.handleClose();
 		closed = true;
 		if (parserThread != null) {
 			parserThread.interrupt();
 		}
-		queue.close();
-		super.handleClose();
+		try {
+			queue.close();
+			in.close();
+		}
+		catch (IOException e) {
+			throw new QueryEvaluationException(e);
+		}
 	}
 
 	public void run() {
+		boolean completed = false;
 		parserThread = Thread.currentThread();
 		try {
-			// TODO set max query time?
-			httpClient.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, 0, this,
-					bindings);
-		}
-		catch (IOException e) {
-			queue.toss(e);
-		}
-		catch (UnauthorizedException e) {
-			queue.toss(e);
-		}
-		catch (QueryInterruptedException e) {
-			queue.toss(e);
-		}
-		catch (RepositoryException e) {
-			queue.toss(e);
-		}
-		catch (MalformedQueryException e) {
-			queue.toss(e);
+			parser.setRDFHandler(this);
+			if (charset == null) {
+				parser.parse(in, baseURI);
+			}
+			else {
+				parser.parse(new InputStreamReader(in, charset), baseURI);
+			}
+			method.releaseConnection();
+			completed = true;
 		}
 		catch (RDFHandlerException e) {
+			// parsing was cancelled or interrupted
+		}
+		catch (RDFParseException e) {
+			queue.toss(e);
+		}
+		catch (IOException e) {
 			queue.toss(e);
 		}
 		finally {
 			parserThread = null;
 			queue.done();
+			if (!completed) {
+				method.abort();
+				method.releaseConnection();
+			}
 		}
 	}
 

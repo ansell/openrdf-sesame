@@ -19,6 +19,7 @@ package org.openrdf.repository.http;
 import java.io.IOException;
 
 import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -33,17 +34,17 @@ import org.openrdf.repository.RepositoryException;
  * @see org.openrdf.http.protocol.UnauthorizedException
  * @author Arjohn Kampman
  */
-public class HTTPBooleanQuery extends HTTPQuery implements BooleanQuery {
+public class HTTPBooleanQuery extends AbstractHTTPQuery implements BooleanQuery {
 
 	public HTTPBooleanQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI)
 	{
-		super(con, ql, queryString, baseURI);
+		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
 	}
 
 	public boolean evaluate()
 		throws QueryEvaluationException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		HTTPClient client = getHttpClient();
 
 		try {
 			return client.sendBooleanQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,

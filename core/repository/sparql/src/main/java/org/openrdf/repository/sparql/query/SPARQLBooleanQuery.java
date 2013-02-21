@@ -18,13 +18,13 @@ package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
+import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.query.resultio.sparqlxml.SPARQLBooleanXMLParser;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Parses boolean query response from remote stores.
@@ -32,41 +32,33 @@ import org.openrdf.query.resultio.sparqlxml.SPARQLBooleanXMLParser;
  * @author James Leigh
  * 
  */
-public class SPARQLBooleanQuery extends SPARQLQuery implements BooleanQuery {
-	private SPARQLBooleanXMLParser parser = new SPARQLBooleanXMLParser();
+public class SPARQLBooleanQuery extends AbstractHTTPQuery implements BooleanQuery {
 
-	public SPARQLBooleanQuery(HttpClient client, String url, String base,
-			String query) {
-		super(client, url, base, query);
+	public SPARQLBooleanQuery(HTTPClient httpClient, String url, String baseURI,
+			String queryString) {
+		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}
 
 	public boolean evaluate() throws QueryEvaluationException {
-		try {
-			boolean complete = false;
-			HttpMethod response = getResponse();
-			try {
-				boolean result = parser.parse(response
-						.getResponseBodyAsStream());
-				response.releaseConnection();
-				complete = true;
-				return result;
-			} catch (HttpException e) {
-				throw new QueryEvaluationException(e);
-			} catch (QueryResultParseException e) {
-				throw new QueryEvaluationException(e);
-			} finally {
-				if (!complete) {
-					response.abort();
-					response.releaseConnection();
-				}
-			}
-		} catch (IOException e) {
-			throw new QueryEvaluationException(e);
-		}
-	}
+		
+		HTTPClient client = getHttpClient();
 
-	@Override
-	protected String getAccept() {
-		return parser.getBooleanQueryResultFormat().getDefaultMIMEType();
+		try {
+			return client.sendBooleanQuery(queryLanguage, getQueryString(), baseURI, dataset, includeInferred, maxQueryTime,
+					getBindingsArray());
+		}
+		catch (IOException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}		
+	}
+	
+	private String getQueryString() {
+		return QueryStringUtil.getQueryString(queryString, getBindings());
 	}
 }

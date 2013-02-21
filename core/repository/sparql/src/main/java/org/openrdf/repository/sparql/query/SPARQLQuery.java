@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 
+import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.model.URI;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Query;
@@ -37,9 +38,13 @@ import org.openrdf.repository.sparql.SPARQLRepository;
  * binding in a SPARQL query.
  * 
  * @author James Leigh
- * 
+ * @deprecated replaced by {@link AbstractHTTPQuery}
+ * @see AbstractHTTPQuery
  */
+@Deprecated
 public abstract class SPARQLQuery extends SPARQLOperation implements Query {
+	
+	// TODO maybe delete this class
 	
 	protected int maxQueryTime = 0;
 

@@ -18,13 +18,8 @@ package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
 
-import org.apache.commons.httpclient.HttpClient;
-
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -33,7 +28,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.SPARQLConnection;
 
 /**
  * Parses tuple results in the background.
@@ -43,10 +37,11 @@ import org.openrdf.repository.sparql.SPARQLConnection;
  */
 public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
+	// TODO there was some magic going on in SparqlOperation to get baseURI directly replaced within the query using BASE
 
-	public SPARQLTupleQuery(SPARQLConnection conn, HttpClient client, String url, String baseUri,
+	public SPARQLTupleQuery(HTTPClient httpClient, String url, String baseUri,
 			String queryString) {
-		super(conn.getRepository().getNewHttpClient(), QueryLanguage.SPARQL, queryString, baseUri);
+		super(httpClient, QueryLanguage.SPARQL, queryString, baseUri);
 	}
 	
 
@@ -86,59 +81,8 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
-
 	
-	// TODO think about the following, maybe move to utility class?
-	protected String getQueryString() {
-		if (bindings.size() == 0)
-			return queryString;
-		String qry = queryString;
-		int b = qry.indexOf('{');
-		String select = qry.substring(0, b);
-		String where = qry.substring(b);
-		for (String name : bindings.getBindingNames()) {
-			String replacement = getReplacement(bindings.getValue(name));
-			if (replacement != null) {
-				String pattern = "[\\?\\$]" + name + "(?=\\W)";
-				select = select.replaceAll(pattern, "");
-				where = where.replaceAll(pattern, replacement);
-			}
-		}
-		return select + where;
-	}
-
-	private String getReplacement(Value value) {
-		StringBuilder sb = new StringBuilder();
-		if (value instanceof URI) {
-			return appendValue(sb, (URI) value).toString();
-		} else if (value instanceof Literal) {
-			return appendValue(sb, (Literal) value).toString();
-		} else {
-			throw new IllegalArgumentException(
-					"BNode references not supported by SPARQL end-points");
-		}
-	}
-	
-	private StringBuilder appendValue(StringBuilder sb, URI uri) {
-		sb.append("<").append(uri.stringValue()).append(">");
-		return sb;
-	}
-
-	private StringBuilder appendValue(StringBuilder sb, Literal lit) {
-		sb.append('"');
-		sb.append(lit.getLabel().replace("\"", "\\\""));
-		sb.append('"');
-
-		if (lit.getLanguage() != null) {
-			sb.append('@');
-			sb.append(lit.getLanguage());
-		}
-
-		if (lit.getDatatype() != null) {
-			sb.append("^^<");
-			sb.append(lit.getDatatype().stringValue());
-			sb.append('>');
-		}
-		return sb;
+	private String getQueryString() {
+		return QueryStringUtil.getQueryString(queryString, getBindings());
 	}
 }
