@@ -8,8 +8,18 @@ function respondToFormState() {
 	} else {
 		$('#create-feedback').show();
 	}
-	var validID = /.+/.test($('#id').val());
+	var fedID = $('#id').val();
+	var validID = /.+/.test(fedID);
 	var disable = !(validID && enoughMembers);
+	if (!disable) {
+		//test that fedID not equal any existing id
+		$('input.memberID').each(function() {
+			if (fedID == $(this).attr('value')) {
+				disable = true;
+				return false;
+			}
+		});
+	}
 	$('input#create').prop('disabled', disable);
 }
 
