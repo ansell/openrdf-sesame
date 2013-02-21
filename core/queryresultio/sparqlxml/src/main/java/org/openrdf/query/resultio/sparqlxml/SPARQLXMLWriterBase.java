@@ -85,6 +85,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 	protected boolean documentOpen = false;
 
+	protected boolean headerOpen = false;
+
 	protected boolean headerComplete = false;
 
 	protected boolean tupleVariablesFound = false;
@@ -147,6 +149,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -175,6 +180,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			documentOpen = true;
+			headerOpen = false;
 			headerComplete = false;
 
 			try {
@@ -219,13 +225,17 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			startDocument();
 		}
 
-		try {
-			xmlWriter.startTag(ROOT_TAG);
+		if (!headerOpen) {
+			try {
+				xmlWriter.startTag(ROOT_TAG);
 
-			xmlWriter.startTag(HEAD_TAG);
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+				xmlWriter.startTag(HEAD_TAG);
+
+				headerOpen = true;
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -235,6 +245,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -256,6 +269,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -282,8 +298,11 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+			if (!headerOpen) {
 				startHeader();
 			}
+
 			tupleVariablesFound = true;
 			// Write binding names
 			for (String name : bindingNames) {
@@ -307,6 +326,14 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -329,6 +356,14 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
