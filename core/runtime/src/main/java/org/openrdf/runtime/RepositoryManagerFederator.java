@@ -111,6 +111,10 @@ public class RepositoryManagerFederator {
 			boolean distinct)
 		throws MalformedURLException, OpenRDFException
 	{
+		if (members.contains(fedID)) {
+			throw new RepositoryConfigException(
+					"A federation member may not have the same ID as the federation.");
+		}
 		Graph graph = new LinkedHashModel();
 		BNode fedRepoNode = valueFactory.createBNode();
 		LOGGER.debug("Federation repository root node: {}", fedRepoNode);
