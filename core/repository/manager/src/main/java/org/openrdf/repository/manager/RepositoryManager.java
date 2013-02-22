@@ -250,7 +250,7 @@ public abstract class RepositoryManager {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
 				Repository repository = initializedRepositories.remove(repositoryID);
 
-				if (repository != null) {
+				if (repository != null && repository.isInitialized()) {
 					repository.shutDown();
 				}
 
@@ -299,7 +299,7 @@ public abstract class RepositoryManager {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
 				Repository repository = initializedRepositories.remove(repositoryID);
 
-				if (repository != null) {
+				if (repository != null && repository.isInitialized()) {
 					repository.shutDown();
 				}
 
@@ -363,6 +363,7 @@ public abstract class RepositoryManager {
 	 */
 	public Set<String> getInitializedRepositoryIDs() {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return new HashSet<String>(initializedRepositories.keySet());
 		}
 	}
@@ -376,19 +377,33 @@ public abstract class RepositoryManager {
 	 */
 	public Collection<Repository> getInitializedRepositories() {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return new ArrayList<Repository>(initializedRepositories.values());
 		}
 	}
 
 	Repository getInitializedRepository(String repositoryID) {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return initializedRepositories.get(repositoryID);
 		}
 	}
 
 	Repository removeInitializedRepository(String repositoryID) {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return initializedRepositories.remove(repositoryID);
+		}
+	}
+
+	private void updateInitializedRepositories() {
+		synchronized (initializedRepositories) {
+			Iterator<Repository> iter = initializedRepositories.values().iterator();
+			while (iter.hasNext()) {
+				if (!iter.next().isInitialized()) {
+					iter.remove();
+				}
+			}
 		}
 	}
 
