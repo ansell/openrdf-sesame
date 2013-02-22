@@ -147,6 +147,7 @@ public class LockManager {
 					return;
 				nochange = before.equals(activeLocks);
 			}
+			// guard against so-called spurious wakeup
 			if (nochange && System.currentTimeMillis() - now >= waitToCollect / 2) {
 				releaseAbandoned();
 				now = -1;
