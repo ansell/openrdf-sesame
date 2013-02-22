@@ -17,6 +17,7 @@
 package org.openrdf.workbench.commands;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -48,12 +49,9 @@ public class TestExploreServlet {
 
 	private ExploreServlet servlet;
 
-	private URI foo;
+	private URI foo, bar, bang;
 
-	private URI bar;
-
-	private static final String PREFIX = "PREFIX test: <http://www.test.com/>\n"
-			+ "INSERT DATA { GRAPH test:foo { ";
+	private static final String PREFIX = "PREFIX : <http://www.test.com/>\nINSERT DATA { GRAPH :foo { ";
 
 	private static final String SUFFIX = " . } }";
 
@@ -78,6 +76,7 @@ public class TestExploreServlet {
 		ValueFactory factory = connection.getValueFactory();
 		foo = factory.createURI("http://www.test.com/foo");
 		bar = factory.createURI("http://www.test.com/bar");
+		bang = factory.createURI("http://www.test.com/bang");
 		builder = mock(TupleResultBuilder.class);
 	}
 
@@ -100,7 +99,7 @@ public class TestExploreServlet {
 	public final void testSubjectSameAsContext()
 		throws OpenRDFException
 	{
-		add("test:foo a test:bar");
+		addToFooContext(":foo a :bar");
 		assertStatementCount(foo, 1);
 		verify(builder).result(foo, RDF.TYPE, bar, foo);
 	}
@@ -109,7 +108,7 @@ public class TestExploreServlet {
 	public final void testPredicateSameAsContext()
 		throws OpenRDFException
 	{
-		add("test:bar test:foo test:bar");
+		addToFooContext(":bar :foo :bar");
 		assertStatementCount(foo, 1);
 		verify(builder).result(bar, foo, bar, foo);
 	}
@@ -118,7 +117,7 @@ public class TestExploreServlet {
 	public final void testObjectSameAsContext()
 		throws OpenRDFException
 	{
-		add("test:bar a test:foo");
+		addToFooContext(":bar a :foo");
 		assertStatementCount(foo, 1);
 		verify(builder).result(bar, RDF.TYPE, foo, foo);
 	}
@@ -127,7 +126,7 @@ public class TestExploreServlet {
 	public final void testNoValueSameAsContext()
 		throws OpenRDFException
 	{
-		add("test:bar a test:bar");
+		addToFooContext(":bar a :bar");
 		assertStatementCount(foo, 1);
 		verify(builder).result(bar, RDF.TYPE, bar, foo);
 	}
@@ -136,19 +135,69 @@ public class TestExploreServlet {
 	public final void testOneObjectSameAsContext()
 		throws OpenRDFException
 	{
-		add("test:bar a test:bar , test:foo");
+		addToFooContext(":bar a :bar , :foo");
 		assertStatementCount(foo, 2);
 		verify(builder).result(bar, RDF.TYPE, bar, foo);
 		verify(builder).result(bar, RDF.TYPE, foo, foo);
 	}
-	
-	private void add(String pattern)
-			throws UpdateExecutionException, RepositoryException, MalformedQueryException {
-			connection.prepareUpdate(QueryLanguage.SPARQL, PREFIX + pattern + SUFFIX).execute();
-		}
 
-	private void assertStatementCount(URI uri, int expectedValue) throws OpenRDFException{
+	@Test
+	public final void testSubjectSameAsPredicate()
+		throws OpenRDFException
+	{
+		addToFooContext(":bar :bar :bang");
+		assertStatementCount(bar, 1);
+		verify(builder).result(bar, bar, bang, foo);
+	}
+
+	@Test
+	public final void testSubjectSameAsObject()
+		throws OpenRDFException
+	{
+		addToFooContext(":bar a :bar");
+		assertStatementCount(bar, 1);
+		verify(builder).result(bar, RDF.TYPE, bar, foo);
+	}
+
+	@Test
+	public final void testPredicateSameAsObject()
+		throws OpenRDFException
+	{
+		addToFooContext(":bar :bang :bang");
+		assertStatementCount(bang, 1);
+		verify(builder).result(bar, bang, bang, foo);
+	}
+
+	@Test
+	public final void testWorstCaseDuplication()
+		throws OpenRDFException
+	{
+		addToFooContext(":foo :foo :foo");
+		assertStatementCount(foo, 1);
+		verify(builder).result(foo, foo, foo, foo);
+	}
+
+	@Test
+	public final void testSES1723regression()
+		throws OpenRDFException
+	{
+		addToFooContext(":foo :foo :foo");
+		connection.add(foo, foo, foo);
+		assertStatementCount(foo, 2);
+		verify(builder).result(foo, foo, foo, foo);
+		verify(builder).result(foo, foo, foo, null);
+	}
+
+	private void addToFooContext(String pattern)
+		throws UpdateExecutionException, RepositoryException, MalformedQueryException
+	{
+		connection.prepareUpdate(QueryLanguage.SPARQL, PREFIX + pattern + SUFFIX).execute();
+	}
+
+	private void assertStatementCount(URI uri, int expectedValue)
+		throws OpenRDFException
+	{
 		int count = servlet.processResource(connection, builder, uri, 0, 0, true);
-		assertThat(count, is(expectedValue));
+		assertThat(count, is(equalTo(expectedValue)));
 	}
 }
