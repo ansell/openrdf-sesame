@@ -42,8 +42,7 @@
 						</td>
 						<td>
 							<span id="recurse-message" class="error" style="display: none;">
-								Federation ID
-								may not match an existing ID.
+								Federation ID may not match an existing ID.
 							</span>
 						</td>
 					</tr>
