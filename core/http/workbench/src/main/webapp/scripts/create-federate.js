@@ -8,8 +8,25 @@ function respondToFormState() {
 	} else {
 		$('#create-feedback').show();
 	}
-	var validID = /.+/.test($('#id').val());
+	var fedID = $('#id').val();
+	var validID = /.+/.test(fedID);
 	var disable = !(validID && enoughMembers);
+	var matchExisting = false;
+
+	// test that fedID not equal any existing id
+	$('input.memberID').each(function() {
+		if (fedID == $(this).attr('value')) {
+			disable = true;
+			matchExisting = true;
+			return false;
+		}
+	});
+	var recurseMessage = $('#recurse-message');
+	if (matchExisting) {
+		recurseMessage.show();
+	} else {
+		recurseMessage.hide();
+	}
 	$('input#create').prop('disabled', disable);
 }
 
