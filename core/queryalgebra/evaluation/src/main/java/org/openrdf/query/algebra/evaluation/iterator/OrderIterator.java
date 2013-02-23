@@ -22,6 +22,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import info.aduna.iteration.CloseableIteration;
@@ -78,8 +82,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	protected Iteration<BindingSet, QueryEvaluationException> createIteration()
 		throws QueryEvaluationException
 	{
-		TreeMap<BindingSet, Collection<BindingSet>> map;
-		map = new TreeMap<BindingSet, Collection<BindingSet>>(comparator);
+		NavigableMap<BindingSet, Collection<BindingSet>> map = makeOrderedMap(comparator);
 
 		int size = 0;
 
@@ -92,11 +95,11 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 				if (size < limit || comparator.compare(next, map.lastKey()) < 0) {
 					Collection<BindingSet> list = map.get(next);
 					if (list == null) {
-						list = distinct ? new LinkedHashSet<BindingSet>() : new LinkedList<BindingSet>();
-						map.put(next, list);
+						list = distinct ? makeOrderedSet() : makeList();
+						put(map, next, list);
 					}
 
-					if (list.add(next)) {
+					if (add(next, list)) {
 						size++;
 					}
 
@@ -107,21 +110,12 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 						assert !lastResults.isEmpty();
 
-						if (lastResults instanceof LinkedList<?>) {
-							((LinkedList<BindingSet>)lastResults).removeLast();
-						}
-						else {
-							Iterator<BindingSet> iter = lastResults.iterator();
-							while (iter.hasNext()) {
-								iter.next();
-							}
-							iter.remove();
-						}
+						removeLast(lastResults);
 
 						size--;
 
 						if (lastResults.isEmpty()) {
-							map.remove(lastKey);
+							remove(map, lastKey);
 						}
 					}
 				}
@@ -136,7 +130,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		return new LookAheadIteration<BindingSet, QueryEvaluationException>() {
 
 			// Initialize with empty iteration so that var is never null
-			private volatile Iterator<BindingSet> iterator = Collections.<BindingSet>emptyList().iterator();
+			private volatile Iterator<BindingSet> iterator = Collections.<BindingSet> emptyList().iterator();
 
 			protected BindingSet getNextElement() {
 				while (!iterator.hasNext() && values.hasNext()) {
@@ -148,6 +142,56 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 				return null;
 			}
 		};
+	}
+
+	protected List<BindingSet> makeList() {
+		return new LinkedList<BindingSet>();
+	}
+
+	/**
+	 * This is used when distinct is set too true.
+	 * @return a new Set may be store specific.
+	 */
+	protected Set<BindingSet> makeOrderedSet() {
+		return new LinkedHashSet<BindingSet>();
+	}
+
+	protected void removeLast(Collection<BindingSet> lastResults) {
+		if (lastResults instanceof LinkedList<?>) {
+			((LinkedList<BindingSet>)lastResults).removeLast();
+		} else if (lastResults instanceof List<?>){
+			((List<BindingSet>)lastResults).remove(lastResults.size() - 1);
+		} else {
+			Iterator<BindingSet> iter = lastResults.iterator();
+			while (iter.hasNext()) {
+				iter.next();
+			}
+			iter.remove();
+		}
+	}
+
+	protected Collection<BindingSet> remove(NavigableMap<BindingSet, Collection<BindingSet>> map,
+			BindingSet lastKey)
+	{
+		return map.remove(lastKey);
+	}
+
+	protected boolean add(BindingSet next, Collection<BindingSet> list)
+		throws QueryEvaluationException
+	{
+		return list.add(next);
+	}
+
+	protected Collection<BindingSet> put(Map<BindingSet, Collection<BindingSet>> map, BindingSet next,
+			Collection<BindingSet> list)
+		throws QueryEvaluationException
+	{
+		return map.put(next, list);
+	}
+
+	protected NavigableMap<BindingSet, Collection<BindingSet>> makeOrderedMap(Comparator<BindingSet> comparator2)
+	{
+		return new TreeMap<BindingSet, Collection<BindingSet>>(comparator);
 	}
 
 	@Override

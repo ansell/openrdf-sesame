@@ -105,7 +105,7 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 	{
 		if (!initialized) {
 			// Build set of elements-to-exclude from right argument
-			excludeSet = Iterations.addAll(rightArg, new HashSet<BindingSet>());
+			excludeSet = makeSet(getRightArg());
 			initialized = true;
 		}
 
@@ -114,7 +114,7 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 		for (BindingSet excluded : excludeSet) {
 
 			// build set of shared variable names
-			Set<String> sharedBindingNames = new HashSet<String>(excluded.getBindingNames());
+			Set<String> sharedBindingNames = makeSet(excluded.getBindingNames());
 			sharedBindingNames.retainAll(object.getBindingNames());
 
 			// two bindingsets that share no variables are compatible by
@@ -136,11 +136,45 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 		return !compatible;
 	}
 
+	/**
+	 * @return
+	 */
+	protected Set<BindingSet> makeSet()
+		throws X
+	{
+		return new HashSet<BindingSet>();
+	}
+
+	protected Set<String> makeSet(Set<String> set)
+		throws X
+	{
+		return new HashSet<String>(set);
+	}
+
+	protected Set<BindingSet> makeSet(Iteration<BindingSet, X> rightArg2)
+		throws X
+	{
+		return Iterations.addAll(rightArg, makeSet());
+	}
+
 	@Override
 	protected void handleClose()
 		throws X
 	{
 		super.handleClose();
-		Iterations.closeCloseable(rightArg);
+		Iterations.closeCloseable(getRightArg());
+	}
+
+	/**
+	 * @return Returns the rightArg.
+	 */
+	protected Iteration<BindingSet, X> getRightArg() {
+		return rightArg;
+	}
+	
+	protected long clearExcludeSet() {
+		int size = excludeSet.size();
+		excludeSet.clear();
+		return size;
 	}
 }

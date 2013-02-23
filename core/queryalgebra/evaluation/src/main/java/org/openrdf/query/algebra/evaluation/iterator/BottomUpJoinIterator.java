@@ -19,6 +19,7 @@ package org.openrdf.query.algebra.evaluation.iterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
@@ -53,13 +54,13 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 
 	private CloseableIteration<BindingSet, QueryEvaluationException> restIter;
 
-	private HashMap<BindingSet, ArrayList<BindingSet>> hashTable;
+	private Map<BindingSet, List<BindingSet>> hashTable;
 
 	private Set<String> joinAttributes;
 
 	private BindingSet currentScanElem;
 
-	private ArrayList<BindingSet> hashTableValues;
+	private List<BindingSet> hashTableValues;
 
 	/*--------------*
 	 * Constructors *
@@ -88,10 +89,10 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		if (hashTable == null) {
 			setupHashTable();
 		}
-		
+
 		while (currentScanElem == null) {
 			if (scanList.size() > 0) {
-				currentScanElem = scanList.remove(0);
+				currentScanElem = removeFirstElement(scanList);
 			}
 			else {
 				if (restIter.hasNext()) {
@@ -104,17 +105,18 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 			}
 
 			if (currentScanElem instanceof EmptyBindingSet) {
-				// the empty bindingset should be merged with all bindingset in the hash table
-				hashTableValues = new ArrayList<BindingSet>();
-				for (BindingSet key : hashTable.keySet()) {
-					hashTableValues.addAll(hashTable.get(key));
+				// the empty bindingset should be merged with all bindingset in the
+				// hash table
+				hashTableValues = makeList();
+				for (Map.Entry<BindingSet, List<BindingSet>> key : hashTable.entrySet()) {
+					addAll(hashTableValues, key.getValue());
 				}
 			}
 			else {
 				BindingSet key = calcKey(currentScanElem, joinAttributes);
 
 				if (hashTable.containsKey(key)) {
-					hashTableValues = new ArrayList<BindingSet>(hashTable.get(key));
+					hashTableValues = makeList(hashTable.get(key));
 				}
 				else {
 					currentScanElem = null;
@@ -123,7 +125,7 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 			}
 		}
 
-		BindingSet nextHashTableValue = hashTableValues.remove(0);
+		BindingSet nextHashTableValue = removeFirstElement(hashTableValues);
 
 		QueryBindingSet result = new QueryBindingSet(currentScanElem);
 
@@ -148,13 +150,22 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		throws QueryEvaluationException
 	{
 		super.handleClose();
-		
+
 		leftIter.close();
 		rightIter.close();
-		
+
 		hashTable = null;
 		hashTableValues = null;
 		scanList = null;
+	}
+
+	/**
+	 * @return the size that the hashtable had before clearing it.
+	 */
+	protected long clearHashTable() {
+		int size = hashTable.size();
+		hashTable.clear();
+		return size;
 	}
 
 	private BindingSet calcKey(BindingSet bindings, Set<String> commonVars) {
@@ -167,19 +178,19 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		}
 		return q;
 	}
-	
-	private void setupHashTable() throws QueryEvaluationException {
-		
-		hashTable = new HashMap<BindingSet, ArrayList<BindingSet>>();
 
-		List<BindingSet> leftArgResults = new ArrayList<BindingSet>();
-		List<BindingSet> rightArgResults = new ArrayList<BindingSet>();
+	private void setupHashTable()
+		throws QueryEvaluationException
+	{
+
+		hashTable = makeMap();
+
+		List<BindingSet> leftArgResults = makeList();
+		List<BindingSet> rightArgResults = makeList();
 
 		while (leftIter.hasNext() && rightIter.hasNext()) {
-			BindingSet b = leftIter.next();
-			leftArgResults.add(b);
-			b = rightIter.next();
-			rightArgResults.add(b);
+			add(leftArgResults, leftIter.next());
+			add(rightArgResults, rightIter.next());
 		}
 
 		List<BindingSet> smallestResult = null;
@@ -199,17 +210,75 @@ public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEv
 		for (BindingSet b : smallestResult) {
 			BindingSet hashKey = calcKey(b, joinAttributes);
 
-			ArrayList<BindingSet> hashValue = null;
+			List<BindingSet> hashValue = null;
 			if (hashTable.containsKey(hashKey)) {
 				hashValue = hashTable.get(hashKey);
 			}
 			else {
-				hashValue = new ArrayList<BindingSet>();
+				hashValue = makeList();
 			}
-			hashValue.add(b);
-			hashTable.put(hashKey, hashValue);
+			add(hashValue, b);
+			put(hashTable, hashKey, hashValue);
 		}
 
+	}
 
+	protected void put(Map<BindingSet, List<BindingSet>> hashTable, BindingSet hashKey,
+			List<BindingSet> hashValue)
+		throws QueryEvaluationException
+	{
+		hashTable.put(hashKey, hashValue);
+	}
+
+	protected void addAll(List<BindingSet> hashTableValues, List<BindingSet> values)
+		throws QueryEvaluationException
+	{
+		hashTableValues.addAll(values);
+	}
+
+	protected void add(List<BindingSet> leftArgResults, BindingSet b)
+		throws QueryEvaluationException
+	{
+		leftArgResults.add(b);
+	}
+
+	/**
+	 * Utility methods to make it easier to inserted custom store dependent maps
+	 * 
+	 * @return map
+	 */
+	protected Map<BindingSet, List<BindingSet>> makeMap() {
+		return new HashMap<BindingSet, List<BindingSet>>();
+	}
+
+	/**
+	 * Utility methods to make it easier to inserted custom store dependent list
+	 * 
+	 * @return list
+	 */
+	protected List<BindingSet> makeList() {
+		return new ArrayList<BindingSet>();
+	}
+
+	/**
+	 * Utility methods to make it easier to inserted custom store dependent list
+	 * 
+	 * @return list
+	 */
+	protected List<BindingSet> makeList(List<BindingSet> key) {
+		return new ArrayList<BindingSet>(key);
+	}
+
+	/**
+	 * Remove the first (0 index) element from a BindingSet list.
+	 * 
+	 * @param list
+	 *        which is worked on.
+	 * @return the removed BindingSet
+	 */
+	protected BindingSet removeFirstElement(List<BindingSet> list)
+		throws QueryEvaluationException
+	{
+		return list.remove(0);
 	}
 }

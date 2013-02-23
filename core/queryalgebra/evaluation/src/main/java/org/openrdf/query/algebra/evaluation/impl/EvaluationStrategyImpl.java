@@ -16,11 +16,9 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -34,7 +32,6 @@ import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.IntersectIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LimitIteration;
-import info.aduna.iteration.LookAheadIteration;
 import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
@@ -133,14 +130,15 @@ import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.OrderIterator;
+import org.openrdf.query.algebra.evaluation.iterator.PathIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
+import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
 import org.openrdf.repository.RepositoryException;
 
@@ -230,466 +228,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Var contextVar = alp.getContextVar();
 		final long minLength = alp.getMinLength();
 
-		return new PathIteration(scope, subjectVar, pathExpression, objVar, contextVar, minLength, bindings);
-	}
-
-	private class ValuePair {
-
-		private final Value startValue;
-
-		private final Value endValue;
-
-		public ValuePair(Value startValue, Value endValue) {
-			this.startValue = startValue;
-			this.endValue = endValue;
-		}
-
-		/**
-		 * @return Returns the startValue.
-		 */
-		public Value getStartValue() {
-			return startValue;
-		}
-
-		/**
-		 * @return Returns the endValue.
-		 */
-		public Value getEndValue() {
-			return endValue;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result + ((endValue == null) ? 0 : endValue.hashCode());
-			result = prime * result + ((startValue == null) ? 0 : startValue.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (!(obj instanceof ValuePair)) {
-				return false;
-			}
-			ValuePair other = (ValuePair)obj;
-			if (!getOuterType().equals(other.getOuterType())) {
-				return false;
-			}
-			if (endValue == null) {
-				if (other.endValue != null) {
-					return false;
-				}
-			}
-			else if (!endValue.equals(other.endValue)) {
-				return false;
-			}
-			if (startValue == null) {
-				if (other.startValue != null) {
-					return false;
-				}
-			}
-			else if (!startValue.equals(other.startValue)) {
-				return false;
-			}
-			return true;
-		}
-
-		private EvaluationStrategyImpl getOuterType() {
-			return EvaluationStrategyImpl.this;
-		}
-
-	}
-
-	private class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
-
-		private long currentLength;
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> currentIter;
-
-		private BindingSet bindings;
-
-		private Scope scope;
-
-		private Var startVar;
-
-		private Var endVar;
-
-		private final boolean startVarFixed;
-
-		private final boolean endVarFixed;
-
-		private Queue<ValuePair> valueQueue = new ArrayDeque<ValuePair>();
-
-		private Set<ValuePair> reportedValues = new HashSet<ValuePair>(64, 0.9f);
-
-		private Set<ValuePair> unreportedValues = new HashSet<ValuePair>(64, 0.9f);
-
-		private TupleExpr pathExpression;
-
-		private Var contextVar;
-
-		private ValuePair currentVp;
-
-		private static final String JOINVAR_PREFIX = "intermediate-join-";
-
-		public PathIteration(Scope scope, Var startVar, TupleExpr pathExpression, Var endVar, Var contextVar,
-				long minLength, BindingSet bindings)
-			throws QueryEvaluationException
-		{
-			this.scope = scope;
-			this.startVar = startVar;
-			this.endVar = endVar;
-
-			this.startVarFixed = startVar.hasValue() || bindings.hasBinding(startVar.getName());
-			this.endVarFixed = endVar.hasValue() || bindings.hasBinding(endVar.getName());
-
-			this.pathExpression = pathExpression;
-			this.contextVar = contextVar;
-
-			this.currentLength = minLength;
-			this.bindings = bindings;
-
-			createIteration();
-		}
-
-		@Override
-		protected BindingSet getNextElement()
-			throws QueryEvaluationException
-		{
-			again: while (true) {
-				while (!currentIter.hasNext()) {
-					createIteration();
-					// stop condition: if the iter is an EmptyIteration
-					if (currentIter instanceof EmptyIteration<?, ?>) {
-						break;
-					}
-				}
-
-				while (currentIter.hasNext()) {
-					BindingSet nextElement = currentIter.next();
-
-					if (!startVarFixed && !endVarFixed && currentVp != null) {
-						Value startValue = currentVp.getStartValue();
-
-						if (startValue != null) {
-							nextElement = new QueryBindingSet(nextElement);
-							((QueryBindingSet)nextElement).addBinding(startVar.getName(), startValue);
-						}
-					}
-
-					Value v1, v2;
-
-					if (startVarFixed && endVarFixed && currentLength > 2) {
-						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = nextElement.getValue("END_" + JOINVAR_PREFIX + pathExpression.hashCode());
-					}
-					else if (startVarFixed && endVarFixed && currentLength == 2) {
-						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = nextElement.getValue(JOINVAR_PREFIX + (currentLength - 1) + "-"
-								+ pathExpression.hashCode());
-					}
-					else {
-						v1 = getVarValue(startVar, startVarFixed, nextElement);
-						v2 = getVarValue(endVar, endVarFixed, nextElement);
-					}
-
-					if (!isCyclicPath(v1, v2)) {
-
-						ValuePair vp = new ValuePair(v1, v2);
-						if (reportedValues.contains(vp)) {
-							// new arbitrary-length path semantics: filter out
-							// duplicates
-							continue;
-						}
-
-						if (startVarFixed && endVarFixed) {
-							Value endValue = getVarValue(endVar, endVarFixed, nextElement);
-							if (endValue.equals(v2)) {
-								reportedValues.add(vp);
-								if (!v1.equals(v2)) {
-									valueQueue.add(vp);
-								}
-								if (!nextElement.hasBinding(startVar.getName())) {
-									((QueryBindingSet)nextElement).addBinding(startVar.getName(), v1);
-								}
-								if (!nextElement.hasBinding(endVar.getName())) {
-									((QueryBindingSet)nextElement).addBinding(endVar.getName(), v2);
-								}
-								return nextElement;
-							}
-							else {
-								if (unreportedValues.add(vp)) {
-									if (!v1.equals(v2)) {
-										valueQueue.add(vp);
-									}
-								}
-								continue again;
-							}
-						}
-						else {
-							reportedValues.add(vp);
-							if (!v1.equals(v2)) {
-								valueQueue.add(vp);
-							}
-							if (!nextElement.hasBinding(startVar.getName())) {
-								((QueryBindingSet)nextElement).addBinding(startVar.getName(), v1);
-							}
-							if (!nextElement.hasBinding(endVar.getName())) {
-								((QueryBindingSet)nextElement).addBinding(endVar.getName(), v2);
-							}
-							return nextElement;
-						}
-					}
-					else {
-						continue again;
-					}
-				}
-
-				// if we're done, throw away the cached lists of values to avoid
-				// hogging resources
-				reportedValues = null;
-				unreportedValues = null;
-				valueQueue = null;
-				return null;
-			}
-		}
-
-		private Value getVarValue(Var var, boolean fixedValue, BindingSet bindingSet) {
-			Value v;
-			if (fixedValue) {
-				v = var.getValue();
-				if (v == null) {
-					v = this.bindings.getValue(var.getName());
-				}
-			}
-			else {
-				v = bindingSet.getValue(var.getName());
-			}
-
-			return v;
-		}
-
-		private boolean isCyclicPath(Value v1, Value v2) {
-			if (currentLength <= 2) {
-				return false;
-			}
-
-			return reportedValues.contains(new ValuePair(v1, v2));
-
-		}
-
-		private void createIteration()
-			throws QueryEvaluationException
-		{
-
-			if (currentLength == 0L) {
-				ZeroLengthPath zlp = new ZeroLengthPath(scope, startVar, endVar, contextVar);
-				currentIter = evaluate(zlp, bindings);
-				currentLength++;
-			}
-			else if (currentLength == 1) {
-				TupleExpr pathExprClone = pathExpression.clone();
-
-				if (startVarFixed && endVarFixed) {
-					Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-"
-							+ pathExpression.hashCode());
-
-					VarReplacer replacer = new VarReplacer(endVar, replacement, 0, false);
-					pathExprClone.visit(replacer);
-				}
-				currentIter = evaluate(pathExprClone, bindings);
-				currentLength++;
-			}
-			else {
-
-				currentVp = valueQueue.poll();
-
-				if (currentVp != null) {
-
-					TupleExpr pathExprClone = pathExpression.clone();
-
-					if (startVarFixed && endVarFixed) {
-
-						Var startReplacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-"
-								+ pathExpression.hashCode());
-						Var endReplacement = createAnonVar("END_" + JOINVAR_PREFIX + pathExpression.hashCode());
-						startReplacement.setAnonymous(false);
-						endReplacement.setAnonymous(false);
-
-						Value v = currentVp.getEndValue();
-						startReplacement.setValue(v);
-
-						VarReplacer replacer = new VarReplacer(startVar, startReplacement, 0, false);
-						pathExprClone.visit(replacer);
-
-						replacer = new VarReplacer(endVar, endReplacement, 0, false);
-						pathExprClone.visit(replacer);
-					}
-					else {
-						Var toBeReplaced;
-						Value v;
-						if (!endVarFixed) {
-							toBeReplaced = startVar;
-							v = currentVp.getEndValue();
-						}
-						else {
-							toBeReplaced = endVar;
-							v = currentVp.getStartValue();
-						}
-
-						Var replacement = createAnonVar(JOINVAR_PREFIX + currentLength + "-"
-								+ pathExpression.hashCode());
-						replacement.setValue(v);
-
-						VarReplacer replacer = new VarReplacer(toBeReplaced, replacement, 0, false);
-						pathExprClone.visit(replacer);
-					}
-
-					currentIter = evaluate(pathExprClone, bindings);
-				}
-				else {
-					currentIter = new EmptyIteration<BindingSet, QueryEvaluationException>();
-				}
-				currentLength++;
-
-			}
-		}
-
-		/*
-		private ValueExpr createPairwiseDistinctExpr(Var beginVar, Var endVar, List<Var> variables) {
-			ValueExpr pairwiseDistinct = null;
-
-			variables.add(beginVar);
-			variables.add(endVar);
-
-			int numberOfVars = variables.size();
-
-			// all intermediate vars should be pairwise distinct,
-			// begin and end var should be pairwise distinct from all
-			// intermediates, but not each other.
-			for (int i = 0; i < numberOfVars; i++) {
-				Var var1 = variables.get(i);
-				for (int j = i + 1; j < numberOfVars; j++) {
-					Var var2 = variables.get(j);
-
-					if (var1.equals(beginVar) || var1.equals(endVar)) {
-						if (var2.equals(endVar) || var2.equals(beginVar)) {
-							continue;
-						}
-					}
-
-					Compare compare = new Compare(var1, var2, CompareOp.NE);
-					if (pairwiseDistinct == null) {
-						pairwiseDistinct = compare;
-					}
-					else {
-						And and = new And();
-						and.setLeftArg(pairwiseDistinct);
-						and.setRightArg(compare);
-						pairwiseDistinct = and;
-					}
-				}
-			}
-
-			return pairwiseDistinct;
-		}
-		*/
-
-		/*
-		private Join createMultiJoin(Scope scope, Var subjVar, TupleExpr pathExpression, Var endVar,
-				Var contextVar, long numberOfJoins)
-			throws QueryEvaluationException
-		{
-			Join join = new Join();
-			Join currentJoin = join;
-
-			Var subjectJoinVar = subjVar;
-
-			// we only need to replace unvalued anonymous vars in the path
-			// expression if it is not a statement pattern.
-			boolean replaceAnonVars = !(pathExpression instanceof StatementPattern);
-
-			for (long i = 0L; i < numberOfJoins; i++) {
-				Var joinVar = createAnonVar("path-join-" + numberOfJoins + "-" + i);
-
-				TupleExpr clone = pathExpression.clone();
-				VarReplacer replacer = new VarReplacer(endVar, joinVar, i, replaceAnonVars);
-				clone.visit(replacer);
-
-				replacer = new VarReplacer(subjVar, subjectJoinVar, i, false);
-				clone.visit(replacer);
-
-				currentJoin.setLeftArg(clone);
-
-				if (i == numberOfJoins - 1L) {
-
-					clone = pathExpression.clone();
-					replacer = new VarReplacer(subjVar, joinVar, i + 1, replaceAnonVars);
-					clone.visit(replacer);
-
-					currentJoin.setRightArg(clone);
-				}
-				else {
-					Join newJoin = new Join();
-					currentJoin.setRightArg(newJoin);
-					currentJoin = newJoin;
-				}
-				subjectJoinVar = joinVar;
-			}
-
-			return join;
-		}
-		*/
-	}
-
-	private class VarReplacer extends QueryModelVisitorBase<QueryEvaluationException> {
-
-		private Var toBeReplaced;
-
-		private Var replacement;
-
-		private long index;
-
-		private boolean replaceAnons;
-
-		public VarReplacer(Var toBeReplaced, Var replacement, long index, boolean replaceAnons) {
-			this.toBeReplaced = toBeReplaced;
-			this.replacement = replacement;
-			this.index = index;
-			this.replaceAnons = replaceAnons;
-		}
-
-		@Override
-		public void meet(Var var) {
-			if (toBeReplaced.equals(var)
-					|| (toBeReplaced.isAnonymous() && var.isAnonymous() && (toBeReplaced.hasValue() && toBeReplaced.getValue().equals(
-							var.getValue()))))
-			{
-				QueryModelNode parent = var.getParentNode();
-				parent.replaceChildNode(var, replacement);
-				replacement.setParentNode(parent);
-			}
-			else if (replaceAnons && var.isAnonymous() && !var.hasValue()) {
-				Var replacementVar = createAnonVar("anon-replace-" + var.getName() + index);
-				QueryModelNode parent = var.getParentNode();
-				parent.replaceChildNode(var, replacementVar);
-				replacementVar.setParentNode(parent);
-			}
-		}
-	}
-
-	private Var createAnonVar(String varName) {
-		Var var = new Var(varName);
-		var.setAnonymous(true);
-		return var;
+		return new PathIteration(this, scope, subjectVar, pathExpression, objVar, contextVar, minLength, bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ZeroLengthPath zlp,
@@ -721,131 +260,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 		}
 
-		return new ZeroLengthPathIteration(subjectVar, objVar, subj, obj, contextVar, bindings);
+		return getZeroLengthPathIterator(bindings, subjectVar, objVar, contextVar, subj, obj);
 	}
 
-	private class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
-		private QueryBindingSet result;
-
-		private Var subjectVar;
-
-		private Var objVar;
-
-		private Value subj;
-
-		private Value obj;
-
-		private BindingSet bindings;
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> subjectIter;
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> objectIter;
-
-		private Set<Value> reportedValues = new HashSet<Value>();
-
-		private Var contextVar;
-
-		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, Var contextVar,
-				BindingSet bindings)
-		{
-			result = new QueryBindingSet(bindings);
-			this.subjectVar = subjectVar;
-			this.objVar = objVar;
-			this.contextVar = contextVar;
-			this.subj = subj;
-			this.obj = obj;
-			this.bindings = bindings;
-
-			if (subj != null && obj == null) {
-				result.addBinding(objVar.getName(), subj);
-			}
-
-			if (obj != null && subj == null) {
-				result.addBinding(subjectVar.getName(), obj);
-			}
-
-		}
-
-		@Override
-		protected BindingSet getNextElement()
-			throws QueryEvaluationException
-		{
-			if (subj == null && obj == null) {
-				if (this.subjectIter == null) {
-					subjectIter = createSubjectIteration();
-				}
-
-				while (subjectIter.hasNext()) {
-					QueryBindingSet next = new QueryBindingSet(subjectIter.next());
-
-					Value v = next.getValue(subjectVar.getName());
-
-					if (reportedValues.add(v)) {
-						next.addBinding(objVar.getName(), v);
-						return next;
-					}
-				}
-
-				if (this.objectIter == null) {
-					objectIter = createObjectIteration();
-				}
-				while (objectIter.hasNext()) {
-					QueryBindingSet next = new QueryBindingSet(objectIter.next());
-
-					Value v = next.getValue(objVar.getName());
-
-					if (reportedValues.add(v)) {
-						next.addBinding(subjectVar.getName(), v);
-						return next;
-					}
-				}
-			}
-			else {
-				QueryBindingSet next = result;
-				result = null;
-				return next;
-			}
-
-			// if we're done, throw away the cached list of values to avoid hogging
-			// resources
-			reportedValues = null;
-			return null;
-		}
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> createSubjectIteration()
-			throws QueryEvaluationException
-		{
-			Var predicate = createAnonVar("zero-length-internal-pred");
-			Var endVar = createAnonVar("zero-length-internal-end");
-
-			StatementPattern subjects = new StatementPattern(subjectVar, predicate, endVar);
-
-			if (contextVar != null) {
-				subjects.setScope(Scope.NAMED_CONTEXTS);
-				subjects.setContextVar(contextVar);
-			}
-			CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(subjects, bindings);
-
-			return iter;
-		}
-
-		private CloseableIteration<BindingSet, QueryEvaluationException> createObjectIteration()
-			throws QueryEvaluationException
-		{
-			Var startVar = createAnonVar("zero-length-internal-start");
-			Var predicate = createAnonVar("zero-length-internal-pred");
-
-			StatementPattern subjects = new StatementPattern(startVar, predicate, objVar);
-			if (contextVar != null) {
-				subjects.setScope(Scope.NAMED_CONTEXTS);
-				subjects.setContextVar(contextVar);
-			}
-			CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(subjects, bindings);
-
-			return iter;
-		}
-
+	protected ZeroLengthPathIteration getZeroLengthPathIterator(final BindingSet bindings,
+			final Var subjectVar, final Var objVar, final Var contextVar, Value subj, Value obj)
+	{
+		return new ZeroLengthPathIteration(this, subjectVar, objVar, subj, obj, contextVar, bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
@@ -1269,7 +691,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		ValueComparator vcmp = new ValueComparator();
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
-		boolean reduced = isReduced(node);
+		boolean reduced = isReducedOrDistinct(node);
 		long limit = getLimit(node);
 		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced);
 	}
@@ -2335,10 +1757,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
-	private boolean isReduced(QueryModelNode node) {
+	protected boolean isReducedOrDistinct(QueryModelNode node) {
 		QueryModelNode parent = node.getParentNode();
 		if (parent instanceof Slice) {
-			return isReduced(parent);
+			return isReducedOrDistinct(parent);
 		}
 		return parent instanceof Distinct || parent instanceof Reduced;
 	}
@@ -2347,7 +1769,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Returns the limit of the current variable bindings before any further
 	 * projection.
 	 */
-	private long getLimit(QueryModelNode node) {
+	protected long getLimit(QueryModelNode node) {
 		long offset = 0;
 		if (node instanceof Slice) {
 			Slice slice = (Slice)node;
