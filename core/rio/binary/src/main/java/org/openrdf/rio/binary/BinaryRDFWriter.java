@@ -48,11 +48,12 @@ import org.openrdf.model.Value;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
  * @author Arjohn Kampman
  */
-public class BinaryRDFWriter implements RDFWriter {
+public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 
 	private final BlockingQueue<Statement> statementQueue;
 

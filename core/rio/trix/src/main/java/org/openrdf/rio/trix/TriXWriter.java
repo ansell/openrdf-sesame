@@ -42,6 +42,7 @@ import org.openrdf.model.Value;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in <a
@@ -49,7 +50,7 @@ import org.openrdf.rio.RDFWriter;
  * 
  * @author Arjohn Kampman
  */
-public class TriXWriter implements RDFWriter {
+public class TriXWriter extends RDFWriterBase implements RDFWriter {
 
 	/*-----------*
 	 * Variables *

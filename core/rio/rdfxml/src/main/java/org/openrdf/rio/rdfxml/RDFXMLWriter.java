@@ -36,12 +36,13 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
  * XML-serialized RDF format.
  */
-public class RDFXMLWriter implements RDFWriter {
+public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 	/*-----------*
 	 * Variables *
@@ -50,8 +51,6 @@ public class RDFXMLWriter implements RDFWriter {
 	protected Writer writer;
 
 	protected String defaultNamespace;
-
-	protected final Map<String, String> namespaceTable;
 
 	protected boolean writingStarted;
 
