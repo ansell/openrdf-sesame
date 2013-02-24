@@ -103,10 +103,10 @@ public interface RDFParser {
 	public ParserConfig getParserConfig();
 
 	/**
-	 * @return A collection of {@link ParserSetting}s that are supported by this
+	 * @return A collection of {@link RioSetting}s that are supported by this
 	 *         RDFParser.
 	 */
-	public Collection<ParserSetting<?>> getSupportedSettings();
+	public Collection<RioSetting<?>> getSupportedSettings();
 
 	/**
 	 * Sets whether the parser should verify the data it parses (default value is

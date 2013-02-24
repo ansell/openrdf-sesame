@@ -17,7 +17,6 @@
 package org.openrdf.rio.helpers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,12 +35,11 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.XMLSchema;
 
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
-import org.openrdf.rio.ParserSetting;
+import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -158,10 +156,12 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
 	}
 
+	@Override
 	public void setRDFHandler(RDFHandler handler) {
 		rdfHandler = handler;
 	}
@@ -170,6 +170,7 @@ public abstract class RDFParserBase implements RDFParser {
 		return rdfHandler;
 	}
 
+	@Override
 	public void setParseErrorListener(ParseErrorListener el) {
 		errListener = el;
 	}
@@ -178,6 +179,7 @@ public abstract class RDFParserBase implements RDFParser {
 		return errListener;
 	}
 
+	@Override
 	public void setParseLocationListener(ParseLocationListener el) {
 		locationListener = el;
 	}
@@ -186,10 +188,12 @@ public abstract class RDFParserBase implements RDFParser {
 		return locationListener;
 	}
 
+	@Override
 	public void setParserConfig(ParserConfig config) {
 		this.parserConfig = config;
 	}
 
+	@Override
 	public ParserConfig getParserConfig() {
 		return this.parserConfig;
 	}
@@ -197,8 +201,9 @@ public abstract class RDFParserBase implements RDFParser {
 	/*
 	 * Default implementation, specific parsers are encouraged to override this method as necessary.
 	 */
-	public Collection<ParserSetting<?>> getSupportedSettings() {
-		Collection<ParserSetting<?>> result = new ArrayList<ParserSetting<?>>(4);
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		Collection<RioSetting<?>> result = new ArrayList<RioSetting<?>>(4);
 
 		result.add(BasicParserSettings.DATATYPE_HANDLING);
 		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
@@ -208,6 +213,7 @@ public abstract class RDFParserBase implements RDFParser {
 		return result;
 	}
 
+	@Override
 	public void setVerifyData(boolean verifyData) {
 		this.parserConfig.set(BasicParserSettings.VERIFY_DATA, verifyData);
 	}
@@ -216,6 +222,7 @@ public abstract class RDFParserBase implements RDFParser {
 		return this.parserConfig.get(BasicParserSettings.VERIFY_DATA);
 	}
 
+	@Override
 	public void setPreserveBNodeIDs(boolean preserveBNodeIDs) {
 		this.parserConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, preserveBNodeIDs);
 	}
@@ -224,6 +231,7 @@ public abstract class RDFParserBase implements RDFParser {
 		return this.parserConfig.get(BasicParserSettings.PRESERVE_BNODE_IDS);
 	}
 
+	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
 		this.parserConfig.set(BasicParserSettings.STOP_AT_FIRST_ERROR, stopAtFirstError);
 	}
@@ -232,6 +240,7 @@ public abstract class RDFParserBase implements RDFParser {
 		return this.parserConfig.get(BasicParserSettings.STOP_AT_FIRST_ERROR);
 	}
 
+	@Override
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
 		this.parserConfig.set(BasicParserSettings.DATATYPE_HANDLING, datatypeHandling);
 	}
