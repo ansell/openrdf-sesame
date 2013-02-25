@@ -39,6 +39,22 @@ public interface QueryResultWriter extends QueryResultHandler {
 	QueryResultFormat getQueryResultFormat();
 
 	/**
+	 * Handles a namespace prefix declaration.
+	 * <p>
+	 * NOTE: If the format does not support namespaces, it must silently ignore
+	 * calls to this method.
+	 * 
+	 * @param prefix
+	 *        The prefix to use for the namespace
+	 * @param uri
+	 *        The full URI that is to be represented by the prefix.
+	 * @throws QueryResultHandlerException
+	 * @since 2.7.0
+	 */
+	void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException;
+
+	/**
 	 * Indicates the start of the document.
 	 * 
 	 * @throws QueryResultHandlerException
@@ -86,7 +102,7 @@ public interface QueryResultWriter extends QueryResultHandler {
 	 */
 	void endHeader()
 		throws QueryResultHandlerException;
-	
+
 	/**
 	 * Sets all supplied writer configuration options.
 	 * 
