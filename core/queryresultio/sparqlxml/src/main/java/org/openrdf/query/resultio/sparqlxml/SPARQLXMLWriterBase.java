@@ -38,6 +38,8 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import info.aduna.xml.XMLWriter;
@@ -50,8 +52,10 @@ import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.query.resultio.QueryResultWriterBase;
+import org.openrdf.rio.RioSetting;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -322,6 +326,15 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		catch (QueryResultHandlerException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
+	}
+
+	@Override
+	public final Collection<RioSetting<?>> getSupportedSettings() {
+		ArrayList<RioSetting<?>> result = new ArrayList<RioSetting<?>>(super.getSupportedSettings());
+
+		result.add(BasicQueryWriterSettings.ADD_SESAME_QNAME);
+
+		return result;
 	}
 
 	private void writeValue(Value value)
