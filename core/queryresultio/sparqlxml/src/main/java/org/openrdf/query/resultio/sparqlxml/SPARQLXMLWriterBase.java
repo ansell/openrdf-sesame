@@ -51,6 +51,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultWriter;
+import org.openrdf.query.resultio.QueryResultWriterBase;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -58,7 +59,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell
  */
-abstract class SPARQLXMLWriterBase implements QueryResultWriter {
+abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *

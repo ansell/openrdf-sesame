@@ -29,13 +29,14 @@ import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
+import org.openrdf.query.resultio.QueryResultWriterBase;
 
 /**
  * Writer for the plain text boolean result format.
  * 
  * @author Arjohn Kampman
  */
-public class BooleanTextWriter implements BooleanQueryResultWriter {
+public class BooleanTextWriter extends QueryResultWriterBase implements BooleanQueryResultWriter {
 
 	/*-----------*
 	 * Variables *

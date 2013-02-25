@@ -16,7 +16,12 @@
  */
 package org.openrdf.query.resultio;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.openrdf.query.QueryResultHandler;
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.RioSetting;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -40,6 +45,8 @@ public abstract class QueryResultParserBase implements QueryResultParser {
 	 * The {@link QueryResultHandler} that will handle the parsed query results.
 	 */
 	protected QueryResultHandler handler;
+
+	private ParserConfig parserConfig;
 
 	/*--------------*
 	 * Constructors *
@@ -75,4 +82,21 @@ public abstract class QueryResultParserBase implements QueryResultParser {
 		this.handler = handler;
 	}
 
+	@Override
+	public void setParserConfig(ParserConfig config) {
+		this.parserConfig = config;
+	}
+
+	@Override
+	public ParserConfig getParserConfig() {
+		return this.parserConfig;
+	}
+
+	/*
+	 * Default implementation. Implementing classes may override this to declare their supported settings.
+	 */
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		return Collections.emptyList();
+	}
 }
