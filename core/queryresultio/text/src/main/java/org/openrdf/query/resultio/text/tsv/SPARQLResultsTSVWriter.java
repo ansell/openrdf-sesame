@@ -241,4 +241,11 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	{
 		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Ignored in SPARQLResultsTSVWriter
+	}
 }

@@ -154,4 +154,11 @@ public class BooleanTextWriter extends QueryResultWriterBase implements BooleanQ
 	{
 		throw new UnsupportedOperationException("Cannot handle tuple results");
 	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Ignored by BooleanTextWriter
+	}
 }

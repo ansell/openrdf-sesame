@@ -323,6 +323,13 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		}
 	}
 
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLJSONWriterBase
+	}
+
 	protected void endDocument()
 		throws IOException
 	{
