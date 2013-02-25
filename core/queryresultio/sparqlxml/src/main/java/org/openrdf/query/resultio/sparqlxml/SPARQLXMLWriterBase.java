@@ -111,7 +111,11 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	 * to <tt>false</tt>, no indentation and newlines are added to the XML
 	 * document. This method has to be used before writing starts (that is,
 	 * before {@link #startDocument} is called).
+	 * 
+	 * @deprecated Use {@link #getWriterConfig()}
+	 *             .set(BasicWriterSettings.PRETTY_PRINT, prettyPrint) instead.
 	 */
+	@Deprecated
 	public void setPrettyPrint(boolean prettyPrint) {
 		getWriterConfig().set(BasicWriterSettings.PRETTY_PRINT, prettyPrint);
 		xmlWriter.setPrettyPrint(prettyPrint);
@@ -348,6 +352,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	public final Collection<RioSetting<?>> getSupportedSettings() {
 		ArrayList<RioSetting<?>> result = new ArrayList<RioSetting<?>>(super.getSupportedSettings());
 
+		result.add(BasicWriterSettings.PRETTY_PRINT);
 		result.add(BasicQueryWriterSettings.ADD_SESAME_QNAME);
 
 		return result;
