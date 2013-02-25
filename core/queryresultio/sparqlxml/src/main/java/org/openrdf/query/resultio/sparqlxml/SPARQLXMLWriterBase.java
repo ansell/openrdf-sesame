@@ -29,6 +29,7 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LIT
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.QNAME;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_SET_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
@@ -38,7 +39,14 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import info.aduna.xml.XMLWriter;
 
@@ -46,11 +54,17 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.SESAMEQNAME;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.QueryResultWriter;
+import org.openrdf.query.resultio.QueryResultWriterBase;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -58,7 +72,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell
  */
-abstract class SPARQLXMLWriterBase implements QueryResultWriter {
+abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *
@@ -74,6 +88,14 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	protected boolean headerComplete = false;
 
 	protected boolean tupleVariablesFound = false;
+
+	/**
+	 * Map with keys as namespace URI strings and the values as the shortened
+	 * prefixes.
+	 */
+	private Map<String, String> namespaceTable = new HashMap<String, String>();
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/*--------------*
 	 * Constructors *
@@ -98,8 +120,13 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 	 * to <tt>false</tt>, no indentation and newlines are added to the XML
 	 * document. This method has to be used before writing starts (that is,
 	 * before {@link #startDocument} is called).
+	 * 
+	 * @deprecated Use {@link #getWriterConfig()}
+	 *             .set(BasicWriterSettings.PRETTY_PRINT, prettyPrint) instead.
 	 */
+	@Deprecated
 	public void setPrettyPrint(boolean prettyPrint) {
+		getWriterConfig().set(BasicWriterSettings.PRETTY_PRINT, prettyPrint);
 		xmlWriter.setPrettyPrint(prettyPrint);
 	}
 
@@ -151,9 +178,16 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 			headerComplete = false;
 
 			try {
+				xmlWriter.setPrettyPrint(getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT));
+
 				xmlWriter.startDocument();
 
 				xmlWriter.setAttribute("xmlns", NAMESPACE);
+				xmlWriter.setAttribute("xmlns:q", SESAMEQNAME.NAMESPACE);
+
+				for (String nextPrefix : namespaceTable.keySet()) {
+					xmlWriter.setAttribute("xmlns:" + namespaceTable.get(nextPrefix), nextPrefix);
+				}
 			}
 			catch (IOException e) {
 				throw new QueryResultHandlerException(e);
@@ -323,6 +357,29 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 		}
 	}
 
+	@Override
+	public final Collection<RioSetting<?>> getSupportedSettings() {
+		ArrayList<RioSetting<?>> result = new ArrayList<RioSetting<?>>(super.getSupportedSettings());
+
+		result.add(BasicWriterSettings.PRETTY_PRINT);
+		result.add(BasicQueryWriterSettings.ADD_SESAME_QNAME);
+
+		return result;
+	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// we only support the addition of prefixes before the document is open
+		// fail silently if namespaces are added after this point
+		if (!documentOpen) {
+			// NOTE: The keys in the namespace table are the URIs and the values
+			// are the prefixes
+			this.namespaceTable.put(uri, prefix);
+		}
+	}
+
 	private void writeValue(Value value)
 		throws IOException
 	{
@@ -337,9 +394,32 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 		}
 	}
 
+	private boolean isQName(URI nextUri) {
+		return namespaceTable.containsKey(nextUri.getNamespace());
+	}
+
+	/**
+	 * Write a QName for the given URI if and only if the
+	 * {@link BasicQueryWriterSettings#ADD_SESAME_QNAME} setting has been set to
+	 * true. By default it is false, to ensure that this implementation stays
+	 * within the specification by default.
+	 * 
+	 * @param nextUri
+	 *        The prefixed URI to be written as a sesame qname attribute.
+	 */
+	private void writeQName(URI nextUri) {
+		if (getWriterConfig().get(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+			xmlWriter.setAttribute(QNAME,
+					namespaceTable.get(nextUri.getNamespace()) + ":" + nextUri.getLocalName());
+		}
+	}
+
 	private void writeURI(URI uri)
 		throws IOException
 	{
+		if (isQName(uri)) {
+			writeQName(uri);
+		}
 		xmlWriter.textElement(URI_TAG, uri.toString());
 	}
 
@@ -358,6 +438,9 @@ abstract class SPARQLXMLWriterBase implements QueryResultWriter {
 
 		if (literal.getDatatype() != null) {
 			URI datatype = literal.getDatatype();
+			if (isQName(datatype)) {
+				writeQName(datatype);
+			}
 			xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.toString());
 		}
 

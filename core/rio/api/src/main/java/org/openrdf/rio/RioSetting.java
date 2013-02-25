@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @author Peter Ansell
  * @since 2.7.0
  */
-public interface ParserSetting<T extends Object> extends Serializable {
+public interface RioSetting<T extends Object> extends Serializable {
 
 	/**
 	 * A unique key for this parser setting.
@@ -39,7 +39,7 @@ public interface ParserSetting<T extends Object> extends Serializable {
 	 * @return The name for this parser setting.
 	 */
 	String getDescription();
-	
+
 	/**
 	 * Returns the default value for this parser setting if it is not set by a
 	 * user.

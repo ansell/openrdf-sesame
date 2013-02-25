@@ -14,24 +14,34 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio.sparqlxml;
+package org.openrdf.query.resultio;
 
-import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.RioSettingImpl;
 
 /**
+ * {@link RioSetting} constants to use with {@link QueryResultWriter}s.
+ * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
-public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {
+public class BasicQueryWriterSettings {
 
-	@Override
-	protected String getFileName() {
-		return "test.srx";
-	}
+	/**
+	 * Specifies whether the writer should add the proprietary
+	 * "http://www.openrdf.org/schema/qname#qname" annotations to output.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public final static RioSetting<Boolean> ADD_SESAME_QNAME = new RioSettingImpl<Boolean>(
+			"org.openrdf.query.resultio.addsesameqname", "Add Sesame QName", false);
 
-	@Override
-	protected TupleQueryResultFormat getTupleFormat() {
-		return TupleQueryResultFormat.SPARQL;
+	/**
+	 * Private default constructor
+	 */
+	private BasicQueryWriterSettings() {
 	}
 
 }

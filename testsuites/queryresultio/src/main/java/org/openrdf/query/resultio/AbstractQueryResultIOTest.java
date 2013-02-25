@@ -19,13 +19,16 @@ package org.openrdf.query.resultio;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -118,10 +121,25 @@ public abstract class AbstractQueryResultIOTest {
 		solution2.addBinding("a", new LiteralImpl("1", XMLSchema.INTEGER));
 		solution2.addBinding("c", new LiteralImpl("Hello World!", "en"));
 
+		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
+		solution1.addBinding("a", new URIImpl("http://example.org/test/ns/bindingA"));
+		solution1.addBinding("b", new LiteralImpl("http://example.com/other/ns/bindingB"));
+		solution1.addBinding("c", new URIImpl("http://example.com/other/ns/bindingC"));
+
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
+		return result;
+	}
+
+	/**
+	 * @return A map of test namespaces for the writer to handle.
+	 */
+	protected Map<String, String> getNamespaces() {
+		Map<String, String> result = new HashMap<String, String>();
+		result.put("test", "http://example.org/test/ns/");
+		result.put("other", "http://example.com/other/ns/");
 		return result;
 	}
 
@@ -174,6 +192,75 @@ public abstract class AbstractQueryResultIOTest {
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
 		assertTrue(QueryResults.equals(expected, output));
+	}
+
+	protected void doTupleLinksAndStylesheetAndNamespaces(TupleQueryResultFormat format,
+			TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl,
+			Map<String, String> namespaces)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		for (String nextPrefix : namespaces.keySet()) {
+			writer.handleNamespace(nextPrefix, namespaces.get(nextPrefix));
+		}
+		writer.startDocument();
+		writer.handleStylesheet(stylesheetUrl);
+		writer.startHeader();
+		writer.handleLinks(links);
+		QueryResults.report(input, writer);
+
+		System.out.println("output: " + out.toString("UTF-8"));
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResult output = QueryResultIO.parse(in, format);
+
+		assertTrue(QueryResults.equals(expected, output));
+	}
+
+	/**
+	 * Test specifically for QName support.
+	 */
+	protected void doTupleLinksAndStylesheetAndNamespacesQName(TupleQueryResultFormat format,
+			TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl,
+			Map<String, String> namespaces)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+			System.out.println("Enabling Sesame qname support");
+			writer.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
+		}
+
+		for (String nextPrefix : namespaces.keySet()) {
+			writer.handleNamespace(nextPrefix, namespaces.get(nextPrefix));
+		}
+		writer.startDocument();
+		writer.handleStylesheet(stylesheetUrl);
+		writer.startHeader();
+		writer.handleLinks(links);
+		QueryResults.report(input, writer);
+
+		String result = out.toString("UTF-8");
+
+		System.out.println("output: " + result);
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResult output = QueryResultIO.parse(in, format);
+
+		assertTrue(QueryResults.equals(expected, output));
+
+		// only do this additional test if sesame q:qname is supported by this
+		// writer
+		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+			assertTrue(result.contains("test:bindingA"));
+			assertFalse(result.contains("other:bindingB"));
+			assertTrue(result.contains("other:bindingC"));
+		}
+
 	}
 
 	protected void doTupleNoLinks(TupleQueryResultFormat format, TupleQueryResult input,
@@ -232,6 +319,30 @@ public abstract class AbstractQueryResultIOTest {
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		writer.startDocument();
+		writer.handleStylesheet(stylesheetUrl);
+		writer.startHeader();
+		writer.handleLinks(links);
+		writer.handleBoolean(input);
+
+		System.out.println("output: " + out.toString("UTF-8"));
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		boolean output = QueryResultIO.parse(in, format);
+
+		assertEquals(output, input);
+	}
+
+	protected void doBooleanLinksAndStylesheetAndNamespaces(BooleanQueryResultFormat format, boolean input,
+			List<String> links, String stylesheetUrl, Map<String, String> namespaces)
+		throws IOException, QueryResultHandlerException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, QueryEvaluationException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		for (String nextPrefix : namespaces.keySet()) {
+			writer.handleNamespace(nextPrefix, namespaces.get(nextPrefix));
+		}
 		writer.startDocument();
 		writer.handleStylesheet(stylesheetUrl);
 		writer.startHeader();

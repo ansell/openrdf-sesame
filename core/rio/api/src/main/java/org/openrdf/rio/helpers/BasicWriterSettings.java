@@ -14,24 +14,30 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio.sparqlxml;
+package org.openrdf.rio.helpers;
 
-import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.rio.RioSetting;
 
 /**
+ * A class encapsulating the basic writer settings that most writers may
+ * support.
+ * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
-public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {
+public class BasicWriterSettings {
 
-	@Override
-	protected String getFileName() {
-		return "test.srx";
-	}
+	/**
+	 * Boolean setting for writer to determine whether pretty printing is preferred. <br>
+	 * Defaults to true.
+	 */
+	public static final RioSetting<Boolean> PRETTY_PRINT = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.prettyprint", "Pretty print", Boolean.TRUE);
 
-	@Override
-	protected TupleQueryResultFormat getTupleFormat() {
-		return TupleQueryResultFormat.SPARQL;
+	/**
+	 * Private default constructor.
+	 */
+	private BasicWriterSettings() {
 	}
 
 }

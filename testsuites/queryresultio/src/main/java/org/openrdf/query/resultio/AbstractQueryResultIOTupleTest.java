@@ -107,4 +107,21 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 				"test.xsl");
 	}
 
+	@Test
+	public final void testMultipleLinksWithResultsAndStylesheetAndNamespaces()
+		throws Exception
+	{
+		doTupleLinksAndStylesheetAndNamespaces(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl", getNamespaces());
+	}
+
+	@Test
+	public final void testMultipleLinksWithResultsAndStylesheetAndNamespacesQName()
+		throws Exception
+	{
+		doTupleLinksAndStylesheetAndNamespacesQName(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl", getNamespaces());
+	}
 }

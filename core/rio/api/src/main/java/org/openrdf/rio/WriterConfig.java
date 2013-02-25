@@ -14,24 +14,28 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio.sparqlxml;
+package org.openrdf.rio;
 
-import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
+import java.io.Serializable;
 
 /**
+ * A container object for easy setting and passing of {@link RDFWriter}
+ * configuration options.
+ * 
+ * @author Jeen Broekstra
  * @author Peter Ansell
  */
-public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {
+public class WriterConfig extends RioConfig implements Serializable {
 
-	@Override
-	protected String getFileName() {
-		return "test.srx";
+	/**
+	 * @since 2.7.0
+	 */
+	private static final long serialVersionUID = 270L;
+
+	/**
+	 * Creates a ParserConfig object starting with default settings.
+	 */
+	public WriterConfig() {
+		super();
 	}
-
-	@Override
-	protected TupleQueryResultFormat getTupleFormat() {
-		return TupleQueryResultFormat.SPARQL;
-	}
-
 }

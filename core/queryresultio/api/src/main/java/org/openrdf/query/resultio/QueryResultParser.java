@@ -18,10 +18,13 @@ package org.openrdf.query.resultio;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.RioSetting;
 
 /**
  * Base interface for parsers of query results in both boolean and tuple forms.
@@ -76,4 +79,31 @@ public interface QueryResultParser {
 	 */
 	void parseQueryResult(InputStream in)
 		throws IOException, QueryResultParseException, QueryResultHandlerException;
+	
+
+	/**
+	 * Sets all supplied parser configuration options.
+	 * 
+	 * @param config
+	 *        a parser configuration object.
+	 * @since 2.7.0
+	 */
+	public void setParserConfig(ParserConfig config);
+
+	/**
+	 * Retrieves the current parser configuration as a single object.
+	 * 
+	 * @return a parser configuration object representing the current
+	 *         configuration of the parser.
+	 * @since 2.7.0
+	 */
+	public ParserConfig getParserConfig();
+
+	/**
+	 * @return A collection of {@link RioSetting}s that are supported by this
+	 *         QueryResultParser.
+	 * @since 2.7.0
+	 */
+	public Collection<RioSetting<?>> getSupportedSettings();
+
 }
