@@ -56,6 +56,7 @@ import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -105,6 +106,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	 * before {@link #startDocument} is called).
 	 */
 	public void setPrettyPrint(boolean prettyPrint) {
+		getWriterConfig().set(BasicWriterSettings.PRETTY_PRINT, prettyPrint);
 		xmlWriter.setPrettyPrint(prettyPrint);
 	}
 
