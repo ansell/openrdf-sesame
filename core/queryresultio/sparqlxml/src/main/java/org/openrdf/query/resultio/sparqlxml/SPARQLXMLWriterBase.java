@@ -165,6 +165,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			headerComplete = false;
 
 			try {
+				xmlWriter.setPrettyPrint(getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT));
+
 				xmlWriter.startDocument();
 
 				xmlWriter.setAttribute("xmlns", NAMESPACE);
