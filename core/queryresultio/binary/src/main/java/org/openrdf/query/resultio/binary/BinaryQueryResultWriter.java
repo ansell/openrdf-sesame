@@ -225,6 +225,13 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		out.writeByte(EMPTY_ROW_RECORD_MARKER);
 	}
 
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Binary format does not support explicit setting of namespace prefixes.
+	}
+
 	private void writeQName(URI uri)
 		throws IOException
 	{
