@@ -39,7 +39,9 @@ public interface QueryResultWriter extends QueryResultHandler {
 	QueryResultFormat getQueryResultFormat();
 
 	/**
-	 * Handles a namespace prefix declaration.
+	 * Handles a namespace prefix declaration. If this is called, it should be
+	 * called before {@link #startDocument()} to ensure that it has a document
+	 * wide effect.
 	 * <p>
 	 * NOTE: If the format does not support namespaces, it must silently ignore
 	 * calls to this method.
