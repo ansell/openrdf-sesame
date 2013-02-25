@@ -105,6 +105,7 @@ public interface RDFParser {
 	/**
 	 * @return A collection of {@link RioSetting}s that are supported by this
 	 *         RDFParser.
+	 * @since 2.7.0
 	 */
 	public Collection<RioSetting<?>> getSupportedSettings();
 
