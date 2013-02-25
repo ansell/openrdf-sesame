@@ -447,7 +447,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql))
-			return new SPARQLUpdate(client, queryEndpointUrl, baseURI, update);
+			return new SPARQLUpdate(this, queryEndpointUrl, baseURI, update);
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 

@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
@@ -62,6 +61,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 */
 	private final HTTPClient httpClient;
 	
+	// TODO remove ?
 	private String queryEndpointUrl;
 
 	private String updateEndpointUrl;
@@ -82,7 +82,8 @@ public class SPARQLRepository extends RepositoryBase {
 		httpClient.setValueFactory(new ValueFactoryImpl());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
-		// TODO update URL
+		httpClient.setUpdateURL(updateEndpointUrl);
+
 		
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;

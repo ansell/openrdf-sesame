@@ -21,18 +21,18 @@ import java.util.Iterator;
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.impl.AbstractQuery;
+import org.openrdf.query.Update;
+import org.openrdf.query.impl.AbstractUpdate;
 
 
 /**
- * Base class for any {@link Query} operation of the HTTP Repository
+ * Base class for any {@link Update} operation of the HTTP Repository
  * and SPARQL Repository.
  * 
  * @author Andreas Schwarte
  */
-public abstract class AbstractHTTPQuery extends AbstractQuery {
+public abstract class AbstractHTTPUpdate extends AbstractUpdate {
 
 	
 	private final HTTPClient httpClient;
@@ -50,15 +50,12 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 	 * @param queryString
 	 * @param baseURI
 	 */
-	public AbstractHTTPQuery(HTTPClient httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
+	public AbstractHTTPUpdate(HTTPClient httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
 		super();
 		this.httpClient = httpClient;
 		this.queryLanguage = queryLanguage;
 		this.queryString = queryString;
-		// TODO think about the following
-		// for legacy reasons we should support the empty string for baseURI
-		// this is used in the SPARQL repository in several places, e.g. in getStatements
-		this.baseURI = baseURI!=null && baseURI.length()>0 ? baseURI : null;
+		this.baseURI = baseURI;
 	}
 	
 	/**
@@ -82,10 +79,25 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 		return bindingsArray;
 	}
 	
-	@Override
-	public void setMaxQueryTime(int maxQueryTime) {
-		super.setMaxQueryTime(maxQueryTime);
-		this.httpClient.setConnectionTimeout(1000L * this.maxQueryTime);
+	/**
+	 * @return Returns the baseURI.
+	 */
+	public String getBaseURI() {
+		return baseURI;
+	}
+
+	/**
+	 * @return Returns the queryLanguage.
+	 */
+	public QueryLanguage getQueryLanguage() {
+		return queryLanguage;
+	}
+
+	/**
+	 * @return Returns the queryString.
+	 */
+	public String getQueryString() {
+		return queryString;
 	}
 	
 	@Override

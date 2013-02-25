@@ -190,7 +190,12 @@ public class HTTPClient {
 		this.queryURL = queryURL;
 	}
 	
-	// TODO set updateURL
+	public void setUpdateURL(String updateURL) {
+		if (updateURL == null) {
+			throw new IllegalArgumentException("updateURL must not be null");
+		}
+		this.updateURL = updateURL;
+	}
 
 	/**
 	 * Sets the preferred format for encoding tuple query results. The
@@ -361,19 +366,8 @@ public class HTTPClient {
 		try {
 			int httpCode = httpClient.executeMethod(method);
 
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (!is2xx(httpCode)) {
-				ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
-
-				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-					throw new MalformedQueryException(errInfo.getErrorMessage());
-				}
-				else {
-					throw new RepositoryException("Failed to execute update: " + errInfo);
-				}
-			}
+			if (!is2xx(httpCode))
+				handleHTTPError(httpCode, method);			
 		}
 		finally {
 			releaseConnection(method);

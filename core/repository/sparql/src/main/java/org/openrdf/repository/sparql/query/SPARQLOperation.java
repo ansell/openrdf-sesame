@@ -39,6 +39,7 @@ import org.openrdf.query.impl.MapBindingSet;
 /**
  * @author jeen
  */
+@Deprecated
 public abstract class SPARQLOperation implements Operation {
 
 	private static Executor executor = Executors.newCachedThreadPool();
