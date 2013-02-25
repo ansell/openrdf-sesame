@@ -29,6 +29,7 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LIT
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.NAMESPACE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.QNAME;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_SET_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.ROOT_TAG;
@@ -40,7 +41,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import info.aduna.xml.XMLWriter;
 
@@ -48,6 +51,8 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.SESAMEQNAME;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
@@ -80,6 +85,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	protected boolean headerComplete = false;
 
 	protected boolean tupleVariablesFound = false;
+
+	private Map<String, String> namespaceTable = new HashMap<String, String>();
 
 	/*--------------*
 	 * Constructors *
@@ -161,6 +168,11 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 				xmlWriter.startDocument();
 
 				xmlWriter.setAttribute("xmlns", NAMESPACE);
+				xmlWriter.setAttribute("xmlns:q", SESAMEQNAME.NAMESPACE);
+
+				for (String nextPrefix : namespaceTable.keySet()) {
+					xmlWriter.setAttribute("xmlns:" + nextPrefix, namespaceTable.get(nextPrefix));
+				}
 			}
 			catch (IOException e) {
 				throw new QueryResultHandlerException(e);
@@ -339,6 +351,17 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		return result;
 	}
 
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// we only support the addition of prefixes before the document is open
+		// fail silently if namespaces are added after this point
+		if (!documentOpen) {
+			this.namespaceTable.put(prefix, uri);
+		}
+	}
+
 	private void writeValue(Value value)
 		throws IOException
 	{
@@ -353,9 +376,32 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		}
 	}
 
+	private boolean isQName(URI nextUri) {
+		return namespaceTable.containsKey(nextUri.getNamespace());
+	}
+
+	/**
+	 * Write a QName for the given URI if and only if the
+	 * {@link BasicQueryWriterSettings#ADD_SESAME_QNAME} setting has been set to
+	 * true. By default it is false, to ensure that this implementation stays
+	 * within the specification by default.
+	 * 
+	 * @param nextUri
+	 *        The prefixed URI to be written as a sesame qname attribute.
+	 */
+	private void writeQName(URI nextUri) {
+		if (getWriterConfig().get(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+			xmlWriter.setAttribute(QNAME,
+					namespaceTable.get(nextUri.getNamespace()) + ":" + nextUri.getLocalName());
+		}
+	}
+
 	private void writeURI(URI uri)
 		throws IOException
 	{
+		if (isQName(uri)) {
+			writeQName(uri);
+		}
 		xmlWriter.textElement(URI_TAG, uri.toString());
 	}
 
@@ -374,6 +420,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 		if (literal.getDatatype() != null) {
 			URI datatype = literal.getDatatype();
+			if (isQName(datatype)) {
+				writeQName(datatype);
+			}
 			xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.toString());
 		}
 
