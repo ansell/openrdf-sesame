@@ -31,7 +31,7 @@ import org.openrdf.rio.WriterConfig;
  */
 public abstract class QueryResultWriterBase implements QueryResultWriter {
 
-	private WriterConfig writerConfig;
+	private WriterConfig writerConfig = new WriterConfig();
 
 	/**
 	 * Default constructor.

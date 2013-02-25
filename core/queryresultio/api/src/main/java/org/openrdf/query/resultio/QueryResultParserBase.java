@@ -46,7 +46,7 @@ public abstract class QueryResultParserBase implements QueryResultParser {
 	 */
 	protected QueryResultHandler handler;
 
-	private ParserConfig parserConfig;
+	private ParserConfig parserConfig = new ParserConfig();
 
 	/*--------------*
 	 * Constructors *
