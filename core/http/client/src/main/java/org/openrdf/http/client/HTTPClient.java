@@ -463,6 +463,12 @@ public class HTTPClient {
 
 		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
 				includeInferred, bindings);
+		
+		// functionality to provide custom http headers as required by the applications
+		if (this.additionalHttpHeaders != null) {
+			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
+				queryParams.add( new NameValuePair(additionalHeader.getKey(), additionalHeader.getValue()));
+		}
 
 		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
 

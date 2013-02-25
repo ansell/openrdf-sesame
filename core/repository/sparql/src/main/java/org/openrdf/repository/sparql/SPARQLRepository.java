@@ -19,12 +19,6 @@ package org.openrdf.repository.sparql;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-
 import info.aduna.io.MavenUtil;
 
 import org.openrdf.http.client.HTTPClient;
@@ -51,26 +45,16 @@ public class SPARQLRepository extends RepositoryBase {
 			"sesame-repository-sparql", "devel");
 	
 	/**
-	 * The key under which the (optional) HTTP header are stored in the
-	 * HttpClientParams
-	 */
-	public static String ADDITIONAL_HEADER_NAME = "additionalHTTPHeaders";
-	
-	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private final HTTPClient httpClient;
 	
-	// TODO remove ?
+	// TODO remove from here and from SPARQLConnection entirely?
 	private String queryEndpointUrl;
 
 	private String updateEndpointUrl;
 
 	private Map<String, String> additionalHttpHeaders;
-
-	private HttpClient client;
-	
-	private MultiThreadedHttpConnectionManager manager;
 	
 	public SPARQLRepository(String queryEndpointUrl) {
 		this(queryEndpointUrl, null);
@@ -83,7 +67,6 @@ public class SPARQLRepository extends RepositoryBase {
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
 		httpClient.setUpdateURL(updateEndpointUrl);
-
 		
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
@@ -109,22 +92,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
-			// HttpClient
-			manager = new MultiThreadedHttpConnectionManager();
-
-			// Allow 20 concurrent connections to the same host (default is 2)
-			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-			params.setDefaultMaxConnectionsPerHost(20);
-			manager.setParams(params);
-
-			HttpClientParams clientParams = new HttpClientParams();
-			clientParams.setParameter(HttpMethodParams.USER_AGENT,
-					APP_NAME + "/" + VERSION + " " + clientParams.getParameter(HttpMethodParams.USER_AGENT));
-			// set additional HTTP headers, if desired by the user
-			if (getAdditionalHttpHeaders() != null)
-				clientParams.setParameter(ADDITIONAL_HEADER_NAME, getAdditionalHttpHeaders());
-			client = new HttpClient(clientParams, manager);
+		// no-op
 	}
 
 	public boolean isWritable()
@@ -137,11 +105,6 @@ public class SPARQLRepository extends RepositoryBase {
 		// no-op
 	}
 	
-	public HttpClient getHttpClient() {
-		return client;
-	}
-	
-	// TODO remove legacy http client and rename
 	public HTTPClient getNewHttpClient() {
 		return httpClient;
 	}
@@ -150,8 +113,6 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (manager!=null)
-			manager.shutdown();
 		httpClient.shutDown();
 	}
 
@@ -172,7 +133,6 @@ public class SPARQLRepository extends RepositoryBase {
 	 *        The additionalHttpHeaders to set as key value pairs.
 	 */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		// TODO apply to HTTP client directly
-		this.additionalHttpHeaders = additionalHttpHeaders;
+		httpClient.setAdditionalHttpHeaders(additionalHttpHeaders);
 	}
 }

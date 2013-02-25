@@ -26,8 +26,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpClient;
-
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.EmptyIteration;
@@ -84,8 +82,6 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private static final String NAMEDGRAPHS = "SELECT DISTINCT ?_ WHERE { GRAPH ?_ { ?s ?p ?o } }";
 
-	private final HttpClient client;
-
 	private String queryEndpointUrl;
 
 	private String updateEndpointUrl;
@@ -94,7 +90,6 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		super(repository);
 		this.queryEndpointUrl = queryEndpointUrl;
 		this.updateEndpointUrl = updateEndpointUrl;
-		client = repository.getHttpClient();
 	}
 
 	@Override
