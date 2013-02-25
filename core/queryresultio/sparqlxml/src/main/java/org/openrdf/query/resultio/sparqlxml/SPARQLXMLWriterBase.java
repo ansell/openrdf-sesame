@@ -45,6 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.xml.XMLWriter;
 
 import org.openrdf.model.BNode;
@@ -86,7 +89,13 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 	protected boolean tupleVariablesFound = false;
 
+	/**
+	 * Map with keys as namespace URI strings and the values as the shortened
+	 * prefixes.
+	 */
 	private Map<String, String> namespaceTable = new HashMap<String, String>();
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/*--------------*
 	 * Constructors *
@@ -177,7 +186,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 				xmlWriter.setAttribute("xmlns:q", SESAMEQNAME.NAMESPACE);
 
 				for (String nextPrefix : namespaceTable.keySet()) {
-					xmlWriter.setAttribute("xmlns:" + nextPrefix, namespaceTable.get(nextPrefix));
+					xmlWriter.setAttribute("xmlns:" + namespaceTable.get(nextPrefix), nextPrefix);
 				}
 			}
 			catch (IOException e) {
@@ -365,7 +374,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		// we only support the addition of prefixes before the document is open
 		// fail silently if namespaces are added after this point
 		if (!documentOpen) {
-			this.namespaceTable.put(prefix, uri);
+			// NOTE: The keys in the namespace table are the URIs and the values
+			// are the prefixes
+			this.namespaceTable.put(uri, prefix);
 		}
 	}
 
