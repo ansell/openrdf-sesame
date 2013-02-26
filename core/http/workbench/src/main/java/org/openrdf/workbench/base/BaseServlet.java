@@ -32,6 +32,7 @@ import info.aduna.app.AppVersion;
 import info.aduna.io.MavenUtil;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultIO;
@@ -169,6 +170,10 @@ public abstract class BaseServlet implements Servlet {
 		throws UnsupportedQueryResultFormatException, IOException
 	{
 		QueryResultWriter resultWriter = getResultWriter(req, resp, resp.getOutputStream());
+
+		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
+		}
 
 		String contentType = resultWriter.getQueryResultFormat().getDefaultMIMEType();
 

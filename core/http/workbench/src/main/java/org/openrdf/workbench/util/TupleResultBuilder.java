@@ -83,7 +83,6 @@ public class TupleResultBuilder {
 		throws QueryResultHandlerException
 	{
 		out.handleBoolean(result);
-
 		return this;
 	}
 
