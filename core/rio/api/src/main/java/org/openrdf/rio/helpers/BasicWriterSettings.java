@@ -28,11 +28,41 @@ import org.openrdf.rio.RioSetting;
 public class BasicWriterSettings {
 
 	/**
-	 * Boolean setting for writer to determine whether pretty printing is preferred. <br>
+	 * Boolean setting for writer to determine whether pretty printing is
+	 * preferred.
+	 * <p>
 	 * Defaults to true.
 	 */
 	public static final RioSetting<Boolean> PRETTY_PRINT = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.prettyprint", "Pretty print", Boolean.TRUE);
+
+	/**
+	 * Boolean setting for writer to determine whether it should attempt to
+	 * remove the xsd:string datatype from literals and represent them as RDF-1.0
+	 * Plain Literals.
+	 * <p>
+	 * In RDF-1.1, all literals that would have been Plain Literals in RDF-1.0
+	 * will be typed as xsd:string internally.
+	 * <p>
+	 * Defaults to false to allow for backwards compatibility without enforcing
+	 * it.
+	 */
+	public static final RioSetting<Boolean> XSD_STRING_TO_PLAIN_LITERAL = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.rdf10plainliterals", "RDF-1.0 compatible Plain Literals", Boolean.FALSE);
+
+	/**
+	 * Boolean setting for writer to determine whether it should attempt to
+	 * remove the rdf:langString datatype from literals and represent them as
+	 * RDF-1.0 Language Literals.
+	 * <p>
+	 * In RDF-1.1, all literals that would have been Language Literals in RDF-1.0
+	 * will be typed as rdf:langString internally.
+	 * <p>
+	 * Defaults to false to allow for backwards compatibility without enforcing
+	 * it.
+	 */
+	public static final RioSetting<Boolean> RDF_LANGSTRING_TO_LANG_LITERAL = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.rdf10languageliterals", "RDF-1.0 compatible Language Literals", Boolean.FALSE);
 
 	/**
 	 * Private default constructor.

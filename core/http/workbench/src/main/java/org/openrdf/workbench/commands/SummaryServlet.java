@@ -16,11 +16,12 @@
  */
 package org.openrdf.workbench.commands;
 
-import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Arrays;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
@@ -31,13 +32,13 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 public class SummaryServlet extends TransformationServlet {
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException, QueryEvaluationException,
-			MalformedQueryException {
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryEvaluationException, MalformedQueryException,
+		QueryResultHandlerException
+	{
 		builder.transform(xslPath, "summary.xsl");
 		builder.start("id", "description", "location", "server");
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
@@ -46,16 +47,18 @@ public class SummaryServlet extends TransformationServlet {
 		try {
 			builder.result(id, desc, loc, server);
 			builder.end();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
 
 	private String getServer() {
 		if (manager instanceof LocalRepositoryManager) {
-			return ((LocalRepositoryManager) manager).getBaseDir().toString();
-		} else if (manager instanceof RemoteRepositoryManager) {
-			return ((RemoteRepositoryManager) manager).getServerURL();
+			return ((LocalRepositoryManager)manager).getBaseDir().toString();
+		}
+		else if (manager instanceof RemoteRepositoryManager) {
+			return ((RemoteRepositoryManager)manager).getServerURL();
 		}
 		return null;
 	}

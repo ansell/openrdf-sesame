@@ -18,13 +18,16 @@ package org.openrdf.workbench.commands;
 
 import static org.openrdf.query.parser.QueryParserRegistry.getInstance;
 
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.parser.QueryParserFactory;
+import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
+import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
+import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
+import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
@@ -43,35 +46,43 @@ public class InfoServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-		resp.setContentType("application/xml");
-		PrintWriter out = resp.getWriter();
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
 				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
-				"query-format", "download-format");
+				"query-format", "graph-download-format", "tuple-download-format", "boolean-download-format");
 		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
 		builder.result(id, desc, loc, server, info.isReadable(), info.isWritable());
-		builder.binding("default-limit", req.getParameter("limit"));
-		builder.binding("default-queryLn", req.getParameter("queryLn"));
-		builder.binding("default-infer", req.getParameter("infer"));
-		builder.binding("default-Accept", req.getParameter("Accept"));
-		builder.binding("default-Content-Type", req.getParameter("Content-Type"));
+		builder.namedResult("default-limit", req.getParameter("limit"));
+		builder.namedResult("default-queryLn", req.getParameter("queryLn"));
+		builder.namedResult("default-infer", req.getParameter("infer"));
+		builder.namedResult("default-Accept", req.getParameter("Accept"));
+		builder.namedResult("default-Content-Type", req.getParameter("Content-Type"));
 		for (RDFParserFactory parser : RDFParserRegistry.getInstance().getAll()) {
 			String mimeType = parser.getRDFFormat().getDefaultMIMEType();
 			String name = parser.getRDFFormat().getName();
-			builder.binding("upload-format", mimeType + " " + name);
+			builder.namedResult("upload-format", mimeType + " " + name);
 		}
 		for (QueryParserFactory factory : getInstance().getAll()) {
 			String name = factory.getQueryLanguage().getName();
-			builder.binding("query-format", name + " " + name);
+			builder.namedResult("query-format", name + " " + name);
 		}
 		for (RDFWriterFactory writer : RDFWriterRegistry.getInstance().getAll()) {
 			String mimeType = writer.getRDFFormat().getDefaultMIMEType();
 			String name = writer.getRDFFormat().getName();
-			builder.binding("download-format", mimeType + " " + name);
+			builder.namedResult("graph-download-format", mimeType + " " + name);
+		}
+		for (TupleQueryResultWriterFactory writer : TupleQueryResultWriterRegistry.getInstance().getAll()) {
+			String mimeType = writer.getTupleQueryResultFormat().getDefaultMIMEType();
+			String name = writer.getTupleQueryResultFormat().getName();
+			builder.namedResult("tuple-download-format", mimeType + " " + name);
+		}
+		for (BooleanQueryResultWriterFactory writer : BooleanQueryResultWriterRegistry.getInstance().getAll()) {
+			String mimeType = writer.getBooleanQueryResultFormat().getDefaultMIMEType();
+			String name = writer.getBooleanQueryResultFormat().getName();
+			builder.namedResult("boolean-download-format", mimeType + " " + name);
 		}
 		builder.end();
 	}
@@ -79,7 +90,8 @@ public class InfoServlet extends TransformationServlet {
 	private URL getServer() {
 		try {
 			return manager.getLocation();
-		} catch (MalformedURLException exc) {
+		}
+		catch (MalformedURLException exc) {
 			return null;
 		}
 	}

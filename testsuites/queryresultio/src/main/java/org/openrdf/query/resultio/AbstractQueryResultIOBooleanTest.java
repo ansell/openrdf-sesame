@@ -78,4 +78,12 @@ public abstract class AbstractQueryResultIOBooleanTest extends AbstractQueryResu
 				Arrays.asList("info", "alternate", "other", "another"), "test.xsl");
 	}
 
+	@Test
+	public final void testMultipleResultsAndStylesheet()
+		throws Exception
+	{
+		doBooleanStylesheet(getBooleanFormat(), true, "test.xsl");
+		doBooleanStylesheet(getBooleanFormat(), false, "test.xsl");
+	}
+
 }

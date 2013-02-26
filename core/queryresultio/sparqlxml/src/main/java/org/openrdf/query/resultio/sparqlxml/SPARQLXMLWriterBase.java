@@ -39,11 +39,12 @@ import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.VAR
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +55,9 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAMEQNAME;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
@@ -84,6 +86,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	protected XMLWriter xmlWriter;
 
 	protected boolean documentOpen = false;
+
+	protected boolean headerOpen = false;
 
 	protected boolean headerComplete = false;
 
@@ -147,6 +151,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -175,6 +182,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			documentOpen = true;
+			headerOpen = false;
 			headerComplete = false;
 
 			try {
@@ -183,9 +191,14 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 				xmlWriter.startDocument();
 
 				xmlWriter.setAttribute("xmlns", NAMESPACE);
-				xmlWriter.setAttribute("xmlns:q", SESAMEQNAME.NAMESPACE);
+
+				if (getWriterConfig().get(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+					xmlWriter.setAttribute("xmlns:q", SESAMEQNAME.NAMESPACE);
+				}
 
 				for (String nextPrefix : namespaceTable.keySet()) {
+					this.log.debug("Adding custom prefix for <{}> to map to <{}>", nextPrefix,
+							namespaceTable.get(nextPrefix));
 					xmlWriter.setAttribute("xmlns:" + namespaceTable.get(nextPrefix), nextPrefix);
 				}
 			}
@@ -219,13 +232,17 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			startDocument();
 		}
 
-		try {
-			xmlWriter.startTag(ROOT_TAG);
+		if (!headerOpen) {
+			try {
+				xmlWriter.startTag(ROOT_TAG);
 
-			xmlWriter.startTag(HEAD_TAG);
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+				xmlWriter.startTag(HEAD_TAG);
+
+				headerOpen = true;
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -235,6 +252,9 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -256,22 +276,27 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
-		try {
-			xmlWriter.endTag(HEAD_TAG);
+		if (!headerComplete) {
+			try {
+				xmlWriter.endTag(HEAD_TAG);
 
-			if (tupleVariablesFound) {
-				// Write start of results, which must always exist, even if there
-				// are no result bindings
-				xmlWriter.startTag(RESULT_SET_TAG);
+				if (tupleVariablesFound) {
+					// Write start of results, which must always exist, even if there
+					// are no result bindings
+					xmlWriter.startTag(RESULT_SET_TAG);
+				}
+
+				headerComplete = true;
 			}
-
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -282,8 +307,11 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+			if (!headerOpen) {
 				startHeader();
 			}
+
 			tupleVariablesFound = true;
 			// Write binding names
 			for (String name : bindingNames) {
@@ -307,6 +335,14 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -329,6 +365,14 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -359,10 +403,12 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 	@Override
 	public final Collection<RioSetting<?>> getSupportedSettings() {
-		ArrayList<RioSetting<?>> result = new ArrayList<RioSetting<?>>(super.getSupportedSettings());
+		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
 
 		result.add(BasicWriterSettings.PRETTY_PRINT);
 		result.add(BasicQueryWriterSettings.ADD_SESAME_QNAME);
+		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+		result.add(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 
 		return result;
 	}
@@ -374,9 +420,13 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		// we only support the addition of prefixes before the document is open
 		// fail silently if namespaces are added after this point
 		if (!documentOpen) {
+			this.log.debug("Handle namespace: Will map <{}> to <{}>", uri, prefix);
 			// NOTE: The keys in the namespace table are the URIs and the values
 			// are the prefixes
 			this.namespaceTable.put(uri, prefix);
+		}
+		else {
+			this.log.warn("handleNamespace was ignored after startDocument: <{}> to <{}>", uri, prefix);
 		}
 	}
 
@@ -434,16 +484,35 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (literal.getLanguage() != null) {
 			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
-		}
-
-		if (literal.getDatatype() != null) {
-			URI datatype = literal.getDatatype();
-			if (isQName(datatype)) {
-				writeQName(datatype);
+			if (!rdfLangStringToLangLiteral() && literal.getDatatype() != null) {
+				// Only enter this section if there is a datatype. Whatever datatype
+				// it is, it should be RDF.LANGSTRING
+				if (isQName(RDF.LANGSTRING)) {
+					writeQName(RDF.LANGSTRING);
+				}
+				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, RDF.LANGSTRING.stringValue());
 			}
-			xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.toString());
+		}
+		// Only enter this section for non-language literals now, as the
+		// rdf:langString datatype is handled implicitly above
+		else if (literal.getDatatype() != null) {
+			URI datatype = literal.getDatatype();
+			if (!datatype.equals(XMLSchema.STRING) || !xsdStringToPlainLiteral()) {
+				if (isQName(datatype)) {
+					writeQName(datatype);
+				}
+				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.stringValue());
+			}
 		}
 
 		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
+	}
+
+	private boolean xsdStringToPlainLiteral() {
+		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+	}
+
+	private boolean rdfLangStringToLangLiteral() {
+		return getWriterConfig().get(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 	}
 }

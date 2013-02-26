@@ -16,13 +16,14 @@
  */
 package org.openrdf.workbench.commands;
 
-import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Namespace;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -32,37 +33,42 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 public class NamespacesServlet extends TransformationServlet {
 
 	@Override
-	protected void doPost(WorkbenchRequest req, HttpServletResponse resp,
-			String xslPath) throws Exception {
+	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws Exception
+	{
 		RepositoryConnection con = repository.getConnection();
 		try {
 			String prefix = req.getParameter("prefix");
 			String namespace = req.getParameter("namespace");
 			if (namespace.length() > 0) {
 				con.setNamespace(prefix, namespace);
-			} else {
+			}
+			else {
 				con.removeNamespace(prefix);
 			}
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		super.service(req, resp, xslPath);
 	}
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-			throws RepositoryException {
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryResultHandlerException
+	{
+		// TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "namespaces.xsl");
 		RepositoryConnection con = repository.getConnection();
 		try {
 			builder.start("prefix", "namespace");
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.result(ns.getPrefix(), ns.getName());
 			}
 			builder.end();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
