@@ -16,8 +16,10 @@
  */
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -38,6 +40,12 @@ public class SESAMEQNAME {
 	 * Recommended prefix for the Sesame QName Schema namespace: "q"
 	 */
 	public static final String PREFIX = "q";
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the Sesame QName
+	 * namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
 
 	/** <tt>http://www.openrdf.org/schema/qname#qname</tt> */
 	public final static URI QNAME;

@@ -16,8 +16,10 @@
  */
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -38,6 +40,12 @@ public class DCTERMS {
 	 * Recommend prefix for the Dublin Core Terms namespace: "dcterms"
 	 */
 	public static final String PREFIX = "dcterms";
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the Dublin Core
+	 * Terms namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
 
 	// ----------------------------------------
 	// Properties common to Dublin Core Elements set

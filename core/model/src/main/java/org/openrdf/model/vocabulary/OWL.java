@@ -16,8 +16,10 @@
  */
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -30,11 +32,16 @@ public class OWL {
 	/** The OWL namespace: http://www.w3.org/2002/07/owl# */
 	public static final String NAMESPACE = "http://www.w3.org/2002/07/owl#";
 
-	/** 
+	/**
 	 * Recommended prefix for the OWL namespace: "owl"
 	 */
 	public static final String PREFIX = "owl";
-	
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the OWL namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+
 	// OWL Lite
 
 	/** http://www.w3.org/2002/07/owl#Class */
@@ -42,10 +49,10 @@ public class OWL {
 
 	/** http://www.w3.org/2002/07/owl#Individual */
 	public final static URI INDIVIDUAL;
-	
+
 	/** http://www.w3.org/2002/07/owl#Thing */
 	public static final URI THING;
-	
+
 	/** http://www.w3.org/2002/07/owl#Nothing */
 	public static final URI NOTHING;
 
@@ -164,16 +171,15 @@ public class OWL {
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
-		
+
 		CLASS = factory.createURI(OWL.NAMESPACE, "Class");
 		INDIVIDUAL = factory.createURI(OWL.NAMESPACE, "Individual");
-		
+
 		THING = factory.createURI(OWL.NAMESPACE, "Thing");
 		NOTHING = factory.createURI(NAMESPACE, "Nothing");
-		
+
 		EQUIVALENTCLASS = factory.createURI(OWL.NAMESPACE, "equivalentClass");
-		EQUIVALENTPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"equivalentProperty");
+		EQUIVALENTPROPERTY = factory.createURI(OWL.NAMESPACE, "equivalentProperty");
 		SAMEAS = factory.createURI(OWL.NAMESPACE, "sameAs");
 		DIFFERENTFROM = factory.createURI(OWL.NAMESPACE, "differentFrom");
 		ALLDIFFERENT = factory.createURI(OWL.NAMESPACE, "AllDifferent");
@@ -186,16 +192,13 @@ public class OWL {
 
 		INVERSEOF = factory.createURI(OWL.NAMESPACE, "inverseOf");
 
-		TRANSITIVEPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"TransitiveProperty");
+		TRANSITIVEPROPERTY = factory.createURI(OWL.NAMESPACE, "TransitiveProperty");
 
 		SYMMETRICPROPERTY = factory.createURI(OWL.NAMESPACE, "SymmetricProperty");
 
-		FUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"FunctionalProperty");
+		FUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE, "FunctionalProperty");
 
-		INVERSEFUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"InverseFunctionalProperty");
+		INVERSEFUNCTIONALPROPERTY = factory.createURI(OWL.NAMESPACE, "InverseFunctionalProperty");
 
 		RESTRICTION = factory.createURI(OWL.NAMESPACE, "Restriction");
 
@@ -218,23 +221,20 @@ public class OWL {
 		INTERSECTIONOF = factory.createURI(OWL.NAMESPACE, "intersectionOf");
 
 		VERSIONINFO = factory.createURI(OWL.NAMESPACE, "versionInfo");
-		
+
 		VERSIONIRI = factory.createURI(OWL.NAMESPACE, "versionIRI");
 
 		PRIORVERSION = factory.createURI(OWL.NAMESPACE, "priorVersion");
 
-		BACKWARDCOMPATIBLEWITH = factory.createURI(OWL.NAMESPACE,
-				"backwardCompatibleWith");
+		BACKWARDCOMPATIBLEWITH = factory.createURI(OWL.NAMESPACE, "backwardCompatibleWith");
 
 		INCOMPATIBLEWITH = factory.createURI(OWL.NAMESPACE, "incompatibleWith");
 
 		DEPRECATEDCLASS = factory.createURI(OWL.NAMESPACE, "DeprecatedClass");
 
-		DEPRECATEDPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"DeprecatedProperty");
+		DEPRECATEDPROPERTY = factory.createURI(OWL.NAMESPACE, "DeprecatedProperty");
 
-		ANNOTATIONPROPERTY = factory.createURI(OWL.NAMESPACE,
-				"AnnotationProperty");
+		ANNOTATIONPROPERTY = factory.createURI(OWL.NAMESPACE, "AnnotationProperty");
 
 		ONTOLOGYPROPERTY = factory.createURI(OWL.NAMESPACE, "OntologyProperty");
 
