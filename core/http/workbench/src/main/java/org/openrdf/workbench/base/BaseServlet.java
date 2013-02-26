@@ -27,11 +27,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.app.AppConfiguration;
 import info.aduna.app.AppVersion;
 import info.aduna.io.MavenUtil;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.QueryResultFormat;
@@ -42,6 +46,8 @@ import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 
 public abstract class BaseServlet implements Servlet {
+
+	protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	protected static final String SERVER_USER = "server-user";
 
@@ -171,10 +177,6 @@ public abstract class BaseServlet implements Servlet {
 	{
 		QueryResultWriter resultWriter = getResultWriter(req, resp, resp.getOutputStream());
 
-		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
-			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
-		}
-
 		String contentType = resultWriter.getQueryResultFormat().getDefaultMIMEType();
 
 		// HACK: In order to make XSLT stylesheet driven user interface work,
@@ -205,6 +207,20 @@ public abstract class BaseServlet implements Servlet {
 		}
 
 		resp.setContentType(contentType);
+
+		// Setup qname support for result writers who declare that they support it
+		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
+			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
+		}
+
+		// Explicitly support the xsd prefix for XMLSchema namespace as it is
+		// required by XSLT scripts
+		try {
+			resultWriter.handleNamespace("xsd", "http://www.w3.org/2001/XMLSchema#");
+		}
+		catch (QueryResultHandlerException e) {
+			throw new IOException(e);
+		}
 
 		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());
 	}
