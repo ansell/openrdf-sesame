@@ -16,10 +16,12 @@
  */
 package org.openrdf.query.resultio;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.WriterConfig;
 
 /**
  * The base interface for writers of query results sets and boolean results.
@@ -35,6 +37,24 @@ public interface QueryResultWriter extends QueryResultHandler {
 	 * @since 2.7.0
 	 */
 	QueryResultFormat getQueryResultFormat();
+
+	/**
+	 * Handles a namespace prefix declaration. If this is called, it should be
+	 * called before {@link #startDocument()} to ensure that it has a document
+	 * wide effect.
+	 * <p>
+	 * NOTE: If the format does not support namespaces, it must silently ignore
+	 * calls to this method.
+	 * 
+	 * @param prefix
+	 *        The prefix to use for the namespace
+	 * @param uri
+	 *        The full URI that is to be represented by the prefix.
+	 * @throws QueryResultHandlerException
+	 * @since 2.7.0
+	 */
+	void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException;
 
 	/**
 	 * Indicates the start of the document.
@@ -84,5 +104,30 @@ public interface QueryResultWriter extends QueryResultHandler {
 	 */
 	void endHeader()
 		throws QueryResultHandlerException;
+
+	/**
+	 * Sets all supplied writer configuration options.
+	 * 
+	 * @param config
+	 *        a writer configuration object.
+	 * @since 2.7.0
+	 */
+	public void setWriterConfig(WriterConfig config);
+
+	/**
+	 * Retrieves the current writer configuration as a single object.
+	 * 
+	 * @return a writer configuration object representing the current
+	 *         configuration of the writer.
+	 * @since 2.7.0
+	 */
+	public WriterConfig getWriterConfig();
+
+	/**
+	 * @return A collection of {@link RioSetting}s that are supported by this
+	 *         {@link QueryResultWriter}.
+	 * @since 2.7.0
+	 */
+	public Collection<RioSetting<?>> getSupportedSettings();
 
 }

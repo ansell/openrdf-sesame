@@ -14,30 +14,28 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.workbench.commands;
+package org.openrdf.rio;
 
-import info.aduna.iteration.Iterations;
+import java.io.Serializable;
 
-import org.openrdf.model.Resource;
-import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.workbench.base.TupleServlet;
-import org.openrdf.workbench.util.TupleResultBuilder;
+/**
+ * A container object for easy setting and passing of {@link RDFWriter}
+ * configuration options.
+ * 
+ * @author Jeen Broekstra
+ * @author Peter Ansell
+ */
+public class WriterConfig extends RioConfig implements Serializable {
 
-public class ContextsServlet extends TupleServlet {
+	/**
+	 * @since 2.7.0
+	 */
+	private static final long serialVersionUID = 270L;
 
-	public ContextsServlet() {
-		super("contexts.xsl", "context");
+	/**
+	 * Creates a ParserConfig object starting with default settings.
+	 */
+	public WriterConfig() {
+		super();
 	}
-
-	@Override
-	protected void service(TupleResultBuilder builder, RepositoryConnection con)
-		throws RepositoryException, QueryResultHandlerException
-	{
-		for (Resource ctx : Iterations.asList(con.getContextIDs())) {
-			builder.result(ctx);
-		}
-	}
-
 }

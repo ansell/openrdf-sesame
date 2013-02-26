@@ -37,6 +37,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultWriter;
+import org.openrdf.query.resultio.QueryResultWriterBase;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -44,7 +45,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell
  */
-abstract class SPARQLJSONWriterBase implements QueryResultWriter {
+abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *
@@ -55,6 +56,8 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	protected boolean firstTupleWritten = false;
 
 	protected boolean documentOpen = false;
+
+	protected boolean headerOpen = false;
 
 	protected boolean headerComplete = false;
 
@@ -72,24 +75,26 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void endHeader()
 		throws QueryResultHandlerException
 	{
-		try {
-			closeBraces();
+		if (!headerComplete) {
+			try {
+				closeBraces();
 
-			writeComma();
+				writeComma();
 
-			if (tupleVariablesFound) {
-				// Write results
-				writeKey("results");
-				openBraces();
+				if (tupleVariablesFound) {
+					// Write results
+					writeKey("results");
+					openBraces();
 
-				writeKey("bindings");
-				openArray();
+					writeKey("bindings");
+					openArray();
+				}
+
+				headerComplete = true;
 			}
-
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -100,6 +105,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+
+			if (!headerOpen) {
 				startHeader();
 			}
 
@@ -131,6 +139,14 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -172,6 +188,14 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -194,13 +218,16 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void startDocument()
 		throws QueryResultHandlerException
 	{
-		documentOpen = true;
-		headerComplete = false;
-		try {
-			openBraces();
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+		if (!documentOpen) {
+			documentOpen = true;
+			headerOpen = false;
+			headerComplete = false;
+			try {
+				openBraces();
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -215,13 +242,21 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void startHeader()
 		throws QueryResultHandlerException
 	{
-		try {
-			// Write header
-			writeKey("head");
-			openBraces();
+		if (!documentOpen) {
+			startDocument();
 		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+
+		if (!headerOpen) {
+			try {
+				// Write header
+				writeKey("head");
+				openBraces();
+
+				headerOpen = true;
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -232,6 +267,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+
+			if (!headerOpen) {
 				startHeader();
 			}
 
@@ -300,6 +338,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -320,6 +361,13 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		catch (IOException e) {
 			throw new QueryResultHandlerException(e);
 		}
+	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLJSONWriterBase
 	}
 
 	protected void endDocument()

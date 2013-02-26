@@ -14,24 +14,44 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio.sparqlxml;
+package org.openrdf.query.resultio;
 
-import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.WriterConfig;
 
 /**
+ * Base class for {@link QueryResultWriter}s offering common functionality for
+ * query result writers.
+ * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
-public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {
+public abstract class QueryResultWriterBase implements QueryResultWriter {
 
-	@Override
-	protected String getFileName() {
-		return "test.srx";
+	private WriterConfig writerConfig = new WriterConfig();
+
+	/**
+	 * Default constructor.
+	 */
+	public QueryResultWriterBase() {
 	}
 
 	@Override
-	protected TupleQueryResultFormat getTupleFormat() {
-		return TupleQueryResultFormat.SPARQL;
+	public void setWriterConfig(WriterConfig config) {
+		this.writerConfig = config;
+	}
+
+	@Override
+	public WriterConfig getWriterConfig() {
+		return this.writerConfig;
+	}
+
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		return Collections.emptyList();
 	}
 
 }

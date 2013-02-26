@@ -29,7 +29,6 @@ import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
@@ -143,7 +142,7 @@ public class QueryResults extends Iterations {
 	 * @throws TupleQueryResultHandlerException
 	 *         If such an exception is thrown by the used query result writer.
 	 */
-	public static void report(TupleQueryResult tqr, TupleQueryResultHandler handler)
+	public static void report(TupleQueryResult tqr, QueryResultHandler handler)
 		throws TupleQueryResultHandlerException, QueryEvaluationException
 	{
 		handler.startQueryResult(tqr.getBindingNames());

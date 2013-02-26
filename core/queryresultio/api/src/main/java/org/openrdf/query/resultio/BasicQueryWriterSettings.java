@@ -14,30 +14,34 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.workbench.commands;
+package org.openrdf.query.resultio;
 
-import info.aduna.iteration.Iterations;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.RioSettingImpl;
 
-import org.openrdf.model.Resource;
-import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.workbench.base.TupleServlet;
-import org.openrdf.workbench.util.TupleResultBuilder;
+/**
+ * {@link RioSetting} constants to use with {@link QueryResultWriter}s.
+ * 
+ * @author Peter Ansell
+ * @since 2.7.0
+ */
+public class BasicQueryWriterSettings {
 
-public class ContextsServlet extends TupleServlet {
+	/**
+	 * Specifies whether the writer should add the proprietary
+	 * "http://www.openrdf.org/schema/qname#qname" annotations to output.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public final static RioSetting<Boolean> ADD_SESAME_QNAME = new RioSettingImpl<Boolean>(
+			"org.openrdf.query.resultio.addsesameqname", "Add Sesame QName", false);
 
-	public ContextsServlet() {
-		super("contexts.xsl", "context");
-	}
-
-	@Override
-	protected void service(TupleResultBuilder builder, RepositoryConnection con)
-		throws RepositoryException, QueryResultHandlerException
-	{
-		for (Resource ctx : Iterations.asList(con.getContextIDs())) {
-			builder.result(ctx);
-		}
+	/**
+	 * Private default constructor
+	 */
+	private BasicQueryWriterSettings() {
 	}
 
 }

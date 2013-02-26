@@ -37,24 +37,20 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
  * Turtle format. The Turtle format is defined in <a
  * href="http://www.dajobe.org/2004/01/turtle/">in this document</a>.
  */
-public class TurtleWriter implements RDFWriter {
+public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	protected IndentingWriter writer;
-
-	/**
-	 * Table mapping namespace names (key) to namespace prefixes (value).
-	 */
-	protected Map<String, String> namespaceTable;
 
 	protected boolean writingStarted;
 

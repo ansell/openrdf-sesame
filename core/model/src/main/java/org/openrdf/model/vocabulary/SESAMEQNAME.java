@@ -14,24 +14,36 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.resultio.sparqlxml;
+package org.openrdf.model.vocabulary;
 
-import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
+ * Defines constants for the Sesame QName schema namespace.
+ * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
-public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {
+public class SESAMEQNAME {
 
-	@Override
-	protected String getFileName() {
-		return "test.srx";
+	/**
+	 * The Sesame QName Schema namespace (
+	 * <tt>http://www.openrdf.org/schema/qname#</tt>).
+	 */
+	public static final String NAMESPACE = "http://www.openrdf.org/schema/qname#";
+
+	/**
+	 * Recommended prefix for the Sesame QName Schema namespace: "q"
+	 */
+	public static final String PREFIX = "q";
+
+	/** <tt>http://www.openrdf.org/schema/qname#qname</tt> */
+	public final static URI QNAME;
+
+	static {
+		ValueFactory factory = ValueFactoryImpl.getInstance();
+		QNAME = factory.createURI(SESAMEQNAME.NAMESPACE, "qname");
 	}
-
-	@Override
-	protected TupleQueryResultFormat getTupleFormat() {
-		return TupleQueryResultFormat.SPARQL;
-	}
-
 }
