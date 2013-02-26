@@ -43,6 +43,7 @@ import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.workbench.util.TupleResultBuilder;
 
 public abstract class BaseServlet implements Servlet {
@@ -211,6 +212,20 @@ public abstract class BaseServlet implements Servlet {
 		// Setup qname support for result writers who declare that they support it
 		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
+		}
+		
+		// TODO: Make the following two settings configurable
+		
+		// Convert xsd:string back to plain literals where this behaviour is
+		// supported
+		if (resultWriter.getSupportedSettings().contains(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL)) {
+			resultWriter.getWriterConfig().set(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL, true);
+		}
+
+		// Convert rdf:langString back to language literals where this behaviour
+		// is supported
+		if (resultWriter.getSupportedSettings().contains(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL)) {
+			resultWriter.getWriterConfig().set(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, true);
 		}
 
 		// Explicitly support the xsd prefix for XMLSchema namespace as it is
