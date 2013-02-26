@@ -484,7 +484,12 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (literal.getLanguage() != null) {
 			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
-			if (!rdfLangStringToLangLiteral()) {
+			if (!rdfLangStringToLangLiteral() && literal.getDatatype() != null) {
+				// Only enter this section if there is a datatype. Whatever datatype
+				// it is, it should be RDF.LANGSTRING
+				if (isQName(RDF.LANGSTRING)) {
+					writeQName(RDF.LANGSTRING);
+				}
 				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, RDF.LANGSTRING.stringValue());
 			}
 		}
