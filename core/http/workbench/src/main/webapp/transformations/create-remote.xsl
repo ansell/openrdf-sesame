@@ -78,7 +78,8 @@
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
-							<input id="create" type="submit" value="{$create.label}" />
+							<input id="create" type="button" value="{$create.label}"
+								onclick="checkOverwrite()" />
 						</td>
 					</tr>
 				</tbody>

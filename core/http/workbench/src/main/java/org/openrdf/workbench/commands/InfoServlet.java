@@ -28,6 +28,7 @@ import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.RDFWriterFactory;
@@ -46,11 +47,19 @@ public class InfoServlet extends TransformationServlet {
 	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
+		String id = info.getId();
+		
+		// "Caching" of servlet instances can cause this request to succeed even
+		// if the repository has been deleted. Client-side code using InfoServlet
+		// for repository existential checks expects an error response when the id 
+		// no longer exists. 
+		if (!manager.hasRepositoryConfig(id)){
+			throw new RepositoryConfigException(id + " does not exist.");
+		}
 		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.start("id", "description", "location", "server", "readable", "writeable", "default-limit",
 				"default-queryLn", "default-infer", "default-Accept", "default-Content-Type", "upload-format",
 				"query-format", "graph-download-format", "tuple-download-format", "boolean-download-format");
-		String id = info.getId();
 		String desc = info.getDescription();
 		URL loc = info.getLocation();
 		URL server = getServer();
