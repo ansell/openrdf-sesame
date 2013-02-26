@@ -18,9 +18,7 @@ package org.openrdf.workbench.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -41,15 +39,15 @@ public class TupleResultBuilder {
 
 	private List<String> variables = new ArrayList<String>();
 
-	private Map<String, String> prefixes = new HashMap<String, String>();
-
 	public TupleResultBuilder(QueryResultWriter writer, ValueFactory valueFactory) {
 		this.out = writer;
 		this.vf = valueFactory;
 	}
 
-	public void prefix(String prefix, String namespace) {
-		prefixes.put(namespace, prefix);
+	public void prefix(String prefix, String namespace)
+		throws QueryResultHandlerException
+	{
+		out.handleNamespace(prefix, namespace);
 	}
 
 	public TupleResultBuilder transform(String path, String xsl)
@@ -81,10 +79,12 @@ public class TupleResultBuilder {
 		return this;
 	}
 
-	public void bool(boolean result)
+	public TupleResultBuilder bool(boolean result)
 		throws QueryResultHandlerException
 	{
 		out.handleBoolean(result);
+
+		return this;
 	}
 
 	public TupleResultBuilder result(Object... result)
@@ -116,9 +116,6 @@ public class TupleResultBuilder {
 		if (result instanceof Boolean) {
 			nextValue = vf.createLiteral(((Boolean)result).booleanValue());
 		}
-		else if (isQName(result)) {
-			nextValue = (URI)result;
-		}
 		else if (result instanceof URI) {
 			nextValue = (URI)result;
 		}
@@ -132,14 +129,6 @@ public class TupleResultBuilder {
 			nextValue = vf.createLiteral(result);
 		}
 		return new BindingImpl(name, nextValue);
-	}
-
-	private boolean isQName(Object result) {
-		if (result instanceof URI) {
-			URI uri = (URI)result;
-			return prefixes.containsKey(uri.getNamespace());
-		}
-		return false;
 	}
 
 	public TupleResultBuilder end()
