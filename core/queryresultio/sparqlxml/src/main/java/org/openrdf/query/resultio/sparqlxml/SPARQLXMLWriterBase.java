@@ -55,7 +55,9 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAMEQNAME;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
@@ -405,6 +407,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 		result.add(BasicWriterSettings.PRETTY_PRINT);
 		result.add(BasicQueryWriterSettings.ADD_SESAME_QNAME);
+		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+		result.add(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 
 		return result;
 	}
@@ -480,16 +484,30 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (literal.getLanguage() != null) {
 			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
-		}
-
-		if (literal.getDatatype() != null) {
-			URI datatype = literal.getDatatype();
-			if (isQName(datatype)) {
-				writeQName(datatype);
+			if (!rdfLangStringToLangLiteral()) {
+				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, RDF.LANGSTRING.stringValue());
 			}
-			xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.toString());
+		}
+		// Only enter this section for non-language literals now, as the
+		// rdf:langString datatype is handled implicitly above
+		else if (literal.getDatatype() != null) {
+			URI datatype = literal.getDatatype();
+			if (!datatype.equals(XMLSchema.STRING) || !xsdStringToPlainLiteral()) {
+				if (isQName(datatype)) {
+					writeQName(datatype);
+				}
+				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, datatype.stringValue());
+			}
 		}
 
 		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
+	}
+
+	private boolean xsdStringToPlainLiteral() {
+		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+	}
+
+	private boolean rdfLangStringToLangLiteral() {
+		return getWriterConfig().get(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 	}
 }
