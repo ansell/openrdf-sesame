@@ -78,11 +78,11 @@ public class ExploreServlet extends TupleServlet {
 
 		// At worst, malicious parameter value could cause inaccurate
 		// reporting of count in page.
-		int count = req.getInt("know_total");
+		long count = req.getInt("know_total");
 		if (count == 0) {
-			count = this.processResource(con, builder, value, 0, Integer.MAX_VALUE, false);
+			count = this.processResource(con, builder, value, 0, Integer.MAX_VALUE, false).getTotalResultCount();
 		}
-		this.cookies.addTotalResultCountCookie(req, resp, count);
+		this.cookies.addTotalResultCountCookie(req, resp, (int)count);
 		final int offset = req.getInt("offset");
 		int limit = req.getInt("limit");
 		if (limit == 0) {
@@ -111,7 +111,7 @@ public class ExploreServlet extends TupleServlet {
 	 *         if there is an issue iterating through results
 	 * @returns The count of all triples in the repository using the given value.
 	 */
-	protected int processResource(final RepositoryConnection con, final TupleResultBuilder builder,
+	protected ResultCursor processResource(final RepositoryConnection con, final TupleResultBuilder builder,
 			final Value value, final int offset, final int limit, final boolean render)
 		throws OpenRDFException
 	{
@@ -133,7 +133,7 @@ public class ExploreServlet extends TupleServlet {
 			export(con, builder, cursor, null, null, null, (Resource)value);
 			logger.debug("After context, total = {}", cursor.getTotalResultCount());
 		}
-		return cursor.getTotalResultCount();
+		return cursor;
 	}
 
 	/**
@@ -204,13 +204,13 @@ public class ExploreServlet extends TupleServlet {
 	 * 
 	 * @author Dale Visser
 	 */
-	private class ResultCursor {
+	protected class ResultCursor {
 
 		private int untilFirst;
 
-		private int totalResults = 0;
+		private long totalResults = 0;
 
-		private int renderedResults = 0;
+		private long renderedResults = 0;
 
 		private final int limit;
 
@@ -236,8 +236,19 @@ public class ExploreServlet extends TupleServlet {
 		 * 
 		 * @returns the number of times advance() has been called
 		 */
-		public int getTotalResultCount() {
+		public long getTotalResultCount() {
 			return this.totalResults;
+		}
+
+		/**
+		 * Gets the number of results that were actually rendered. Only meant to
+		 * be called after advance() has been called for all results in the set.
+		 * 
+		 * @returns the number of times advance() has been called when
+		 *          this.mayRender() evaluated to true
+		 */
+		public long getRenderedResultCount() {
+			return this.renderedResults;
 		}
 
 		/**
