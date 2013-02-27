@@ -84,8 +84,10 @@ public abstract class RepositoryManager {
 	 * @since 2.7.0
 	 */
 	public boolean isInitialized() {
-		Repository systemRepository = getSystemRepository();
-		return systemRepository != null && systemRepository.isInitialized();
+		synchronized (initializedRepositories) {
+			Repository repo = initializedRepositories.get(SystemRepository.ID);
+			return repo != null && repo.isInitialized();
+		}
 	}
 
 	/**
@@ -111,6 +113,8 @@ public abstract class RepositoryManager {
 	 * Gets the SYSTEM repository.
 	 */
 	public Repository getSystemRepository() {
+		if (!isInitialized())
+			throw new IllegalStateException("Repository Manager is not initialized");
 		synchronized (initializedRepositories) {
 			return initializedRepositories.get(SystemRepository.ID);
 		}
