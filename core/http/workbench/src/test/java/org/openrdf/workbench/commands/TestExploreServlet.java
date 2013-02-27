@@ -49,7 +49,7 @@ public class TestExploreServlet {
 
 	private ExploreServlet servlet;
 
-	private URI foo, bar, bang;
+	private URI foo, bar, bang, foos[];
 
 	private static final String PREFIX = "PREFIX : <http://www.test.com/>\nINSERT DATA { GRAPH :foo { ";
 
@@ -77,6 +77,10 @@ public class TestExploreServlet {
 		foo = factory.createURI("http://www.test.com/foo");
 		bar = factory.createURI("http://www.test.com/bar");
 		bang = factory.createURI("http://www.test.com/bang");
+		foos = new URI[0x80];
+		for (int i = 0; i < foos.length; i++) {
+			foos[i] = factory.createURI("http://www.test.com/foo/" + i);
+		}
 		builder = mock(TupleResultBuilder.class);
 	}
 
@@ -86,6 +90,14 @@ public class TestExploreServlet {
 	{
 		connection.close();
 		servlet.destroy();
+	}
+
+	@Test
+	public final void testRegressionSES1748() throws OpenRDFException {
+		for (int i=0; i<foos.length; i++){
+			connection.add(foo, bar, foos[i]);
+		}
+		assertStatementCount(foo, 10, foos.length);
 	}
 
 	/**
@@ -197,7 +209,13 @@ public class TestExploreServlet {
 	private void assertStatementCount(URI uri, int expectedValue)
 		throws OpenRDFException
 	{
-		int count = servlet.processResource(connection, builder, uri, 0, 0, true);
+		// limit = 0 means render all
+		assertStatementCount(uri, 0, expectedValue);
+	}
+	
+	private void assertStatementCount(URI uri, int limit, int expectedValue)
+		throws OpenRDFException {
+		int count = servlet.processResource(connection, builder, uri, 0, limit, true);
 		assertThat(count, is(equalTo(expectedValue)));
 	}
 }
