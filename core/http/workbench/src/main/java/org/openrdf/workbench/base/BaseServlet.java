@@ -68,6 +68,11 @@ public abstract class BaseServlet implements Servlet {
 
 	protected static final String MOZILLA = "Mozilla";
 
+	/**
+	 * JSONP callback function
+	 */
+	protected static final String CALLBACK = "callback";
+
 	protected ServletConfig config;
 
 	protected AppConfiguration appConfig;
@@ -209,12 +214,35 @@ public abstract class BaseServlet implements Servlet {
 			}
 		}
 
-		resp.setContentType(contentType);
-
 		// Setup qname support for result writers who declare that they support it
 		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
 		}
+
+		// Search for a callback function name in the query if the result writer
+		// could handle it
+		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK)) {
+			String parameter = req.getParameter(CALLBACK);
+
+			if (parameter != null) {
+				parameter = parameter.trim();
+
+				// check callback function name is alphanumeric
+				for (char nextChar : parameter.toCharArray()) {
+					if (!Character.isLetterOrDigit(nextChar)) {
+						throw new IOException("Callback function name was invalid");
+					}
+				}
+
+				if (parameter.isEmpty()) {
+					parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+				}
+
+				resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
+			}
+		}
+
+		resp.setContentType(contentType);
 
 		// TODO: Make the following two settings configurable
 
