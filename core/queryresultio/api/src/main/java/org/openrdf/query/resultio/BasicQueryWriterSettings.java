@@ -17,7 +17,6 @@
 package org.openrdf.query.resultio;
 
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.WriterConfig;
 import org.openrdf.rio.helpers.RioSettingImpl;
 
 /**
@@ -43,13 +42,12 @@ public class BasicQueryWriterSettings {
 	 * Specifies a callback function name for wrapping JSON results to support
 	 * the JSONP cross-origin request methodology.
 	 * <p>
-	 * Defaults to "callback", however, it is not used unless explicitly set in
-	 * the {@link WriterConfig} for the {@link QueryResultWriter}.
+	 * Defaults to "sesamecallback".
 	 * 
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<String> JSONP_CALLBACK = new RioSettingImpl<String>(
-			"org.openrdf.query.resultio.jsonpcallback", "JSONP callback function", "callback");
+			"org.openrdf.query.resultio.jsonpcallback", "JSONP callback function", "sesamecallback");
 
 	/**
 	 * Private default constructor
