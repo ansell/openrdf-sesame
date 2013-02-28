@@ -234,6 +234,15 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 					// SES-1019 : Write the callbackfunction name as a wrapper for
 					// the results here
 					String callbackName = getWriterConfig().get(BasicQueryWriterSettings.JSONP_CALLBACK);
+
+					writer.write(callbackName);
+					writer.write("(");
+				}
+
+				if (!getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
+					// Set the indentation string to the empty string if pretty
+					// printing is disabled
+					writer.setIndentationString("");
 				}
 
 				openBraces();
@@ -324,10 +333,14 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		else if (value instanceof Literal) {
 			Literal lit = (Literal)value;
 
+			// TODO: Implement support for
+			// BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL here
 			if (lit.getLanguage() != null) {
 				writeKeyValue("xml:lang", lit.getLanguage());
 				writer.write(", ");
 			}
+			// TODO: Implement support for
+			// BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL here
 			if (lit.getDatatype() != null) {
 				writeKeyValue("datatype", lit.getDatatype().toString());
 				writer.write(", ");
@@ -381,7 +394,6 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
 
 		result.add(BasicQueryWriterSettings.JSONP_CALLBACK);
-		// TODO: Add implementation for this
 		result.add(BasicWriterSettings.PRETTY_PRINT);
 		// TODO: Add implementation for this
 		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
@@ -403,7 +415,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	{
 		closeBraces(); // root braces
 		if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
-			// TODO: SES-1019: Close callback function declaration here
+			writer.write(");");
 		}
 		writer.flush();
 		documentOpen = false;
