@@ -420,10 +420,19 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		// we only support the addition of prefixes before the document is open
 		// fail silently if namespaces are added after this point
 		if (!documentOpen) {
-			this.log.debug("Handle namespace: Will map <{}> to <{}>", uri, prefix);
-			// NOTE: The keys in the namespace table are the URIs and the values
-			// are the prefixes
-			this.namespaceTable.put(uri, prefix);
+			// SES-1751 : Do not allow overriding of the fixed sparql or
+			// sesameqname prefixes
+			if (!prefix.trim().isEmpty() && !prefix.trim().equals(SESAMEQNAME.PREFIX)) {
+				this.log.debug("Handle namespace: Will map <{}> to <{}>", uri, prefix);
+				// NOTE: The keys in the namespace table are the URIs and the values
+				// are the prefixes
+				this.namespaceTable.put(uri, prefix);
+			}
+			else {
+				this.log.debug(
+						"handleNamespace was ignored for either the empty prefix or the sesame qname prefix (q). Attempted to map: <{}> to <{}>",
+						uri, prefix);
+			}
 		}
 		else {
 			this.log.warn("handleNamespace was ignored after startDocument: <{}> to <{}>", uri, prefix);

@@ -24,7 +24,6 @@ import static org.junit.Assert.assertFalse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -123,11 +122,11 @@ public abstract class AbstractQueryResultIOTest {
 		solution2.addBinding("c", new LiteralImpl("Hello World!", "en"));
 
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new URIImpl("http://example.org/test/ns/bindingA"));
-		solution1.addBinding("b", new LiteralImpl("http://example.com/other/ns/bindingB"));
-		solution1.addBinding("c", new URIImpl("http://example.com/other/ns/bindingC"));
+		solution3.addBinding("a", new URIImpl("http://example.org/test/ns/bindingA"));
+		solution3.addBinding("b", new LiteralImpl("http://example.com/other/ns/bindingB"));
+		solution3.addBinding("c", new URIImpl("http://example.com/other/ns/bindingC"));
 
-		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
+		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3);
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
@@ -141,6 +140,18 @@ public abstract class AbstractQueryResultIOTest {
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("test", "http://example.org/test/ns/");
 		result.put("other", "http://example.com/other/ns/");
+		return result;
+	}
+
+	/**
+	 * @return A map of test namespaces for the writer to handle, including an
+	 *         empty namespace.
+	 */
+	protected Map<String, String> getNamespacesWithEmpty() {
+		Map<String, String> result = new HashMap<String, String>();
+		result.put("test", "http://example.org/test/ns/");
+		result.put("other", "http://example.com/other/ns/");
+		result.put("", "http://other.example.org/ns/");
 		return result;
 	}
 
@@ -166,7 +177,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleLinks(links);
 		QueryResults.report(input, writer);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
@@ -187,7 +198,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleLinks(links);
 		QueryResults.report(input, writer);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
@@ -212,7 +223,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleLinks(links);
 		QueryResults.report(input, writer);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
@@ -232,7 +243,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
 		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
-			System.out.println("Enabling Sesame qname support");
+			// System.out.println("Enabling Sesame qname support");
 			writer.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
 		}
 
@@ -247,7 +258,7 @@ public abstract class AbstractQueryResultIOTest {
 
 		String result = out.toString("UTF-8");
 
-		System.out.println("output: " + result);
+		// System.out.println("output: " + result);
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
@@ -273,7 +284,7 @@ public abstract class AbstractQueryResultIOTest {
 		QueryResultIO.write(input, format, out);
 		input.close();
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
@@ -291,7 +302,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleStylesheet(stylesheetUrl);
 		QueryResults.report(input, writer);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
@@ -299,57 +310,57 @@ public abstract class AbstractQueryResultIOTest {
 		assertTrue(QueryResults.equals(expected, output));
 	}
 
-        protected void doTupleLinksAndStylesheetNoStarts(TupleQueryResultFormat format, TupleQueryResult input,
-                        TupleQueryResult expected, List<String> links, String stylesheetUrl)
-                throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-                UnsupportedQueryResultFormatException, IOException
-        {
-                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-                TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
-                // Test for handling when startDocument and startHeader are not called
-                writer.handleStylesheet(stylesheetUrl);
-                writer.handleLinks(links);
-                QueryResults.report(input, writer);
+	protected void doTupleLinksAndStylesheetNoStarts(TupleQueryResultFormat format, TupleQueryResult input,
+			TupleQueryResult expected, List<String> links, String stylesheetUrl)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		// Test for handling when startDocument and startHeader are not called
+		writer.handleStylesheet(stylesheetUrl);
+		writer.handleLinks(links);
+		QueryResults.report(input, writer);
 
-                System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
-                ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-                TupleQueryResult output = QueryResultIO.parse(in, format);
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-                assertTrue(QueryResults.equals(expected, output));
-        }
+		assertTrue(QueryResults.equals(expected, output));
+	}
 
-        protected void doTupleLinksAndStylesheetMultipleEndHeaders(TupleQueryResultFormat format,
-                        TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl)
-                throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-                UnsupportedQueryResultFormatException, IOException
-        {
-                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-                TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
-                // Test for handling when startDocument and startHeader are not called
-                writer.handleStylesheet(stylesheetUrl);
-                writer.startQueryResult(input.getBindingNames());
-                writer.handleLinks(links);
-                writer.endHeader();
-                writer.endHeader();
-                try {
-                        while (input.hasNext()) {
-                                BindingSet bindingSet = input.next();
-                                writer.handleSolution(bindingSet);
-                        }
-                }
-                finally {
-                        input.close();
-                }
-                writer.endQueryResult();
+	protected void doTupleLinksAndStylesheetMultipleEndHeaders(TupleQueryResultFormat format,
+			TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		// Test for handling when startDocument and startHeader are not called
+		writer.handleStylesheet(stylesheetUrl);
+		writer.startQueryResult(input.getBindingNames());
+		writer.handleLinks(links);
+		writer.endHeader();
+		writer.endHeader();
+		try {
+			while (input.hasNext()) {
+				BindingSet bindingSet = input.next();
+				writer.handleSolution(bindingSet);
+			}
+		}
+		finally {
+			input.close();
+		}
+		writer.endQueryResult();
 
-                System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
-                ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-                TupleQueryResult output = QueryResultIO.parse(in, format);
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-                assertTrue(QueryResults.equals(expected, output));
-        }
+		assertTrue(QueryResults.equals(expected, output));
+	}
 
 	protected void doBooleanNoLinks(BooleanQueryResultFormat format, boolean input)
 		throws IOException, QueryResultHandlerException, QueryResultParseException,
@@ -375,7 +386,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleLinks(links);
 		writer.handleBoolean(input);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		boolean output = QueryResultIO.parse(in, format);
@@ -396,7 +407,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleLinks(links);
 		writer.handleBoolean(input);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		boolean output = QueryResultIO.parse(in, format);
@@ -420,7 +431,7 @@ public abstract class AbstractQueryResultIOTest {
 		writer.handleLinks(links);
 		writer.handleBoolean(input);
 
-		System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		boolean output = QueryResultIO.parse(in, format);
@@ -428,20 +439,20 @@ public abstract class AbstractQueryResultIOTest {
 		assertEquals(output, input);
 	}
 
-        protected void doBooleanStylesheet(BooleanQueryResultFormat format, boolean input, String stylesheetUrl)
-                throws IOException, QueryResultHandlerException, QueryResultParseException,
-                UnsupportedQueryResultFormatException, QueryEvaluationException
-        {
-                ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-                BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
-                writer.handleStylesheet(stylesheetUrl);
-                writer.handleBoolean(input);
+	protected void doBooleanStylesheet(BooleanQueryResultFormat format, boolean input, String stylesheetUrl)
+		throws IOException, QueryResultHandlerException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, QueryEvaluationException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		writer.handleStylesheet(stylesheetUrl);
+		writer.handleBoolean(input);
 
-                System.out.println("output: " + out.toString("UTF-8"));
+		// System.out.println("output: " + out.toString("UTF-8"));
 
-                ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-                boolean output = QueryResultIO.parse(in, format);
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		boolean output = QueryResultIO.parse(in, format);
 
-                assertEquals(output, input);
-        }
+		assertEquals(output, input);
+	}
 }

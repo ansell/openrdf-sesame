@@ -17,8 +17,6 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import org.openrdf.query.TupleQueryResult;
-
 /**
  * Abstract test for QueryResultIO.
  * 
@@ -127,23 +125,41 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 				"test.xsl", getNamespaces());
 	}
 
-        @Test
-        public final void testMultipleLinksWithResultsAndStylesheetNoStarts()
-                throws Exception
-        {
-                doTupleLinksAndStylesheetNoStarts(getTupleFormat(), createTupleMultipleBindingSets(),
-                                createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
-                                "test.xsl");
-        }
+	@Test
+	public final void testMultipleLinksWithResultsAndStylesheetAndNamespacesWithEmpty()
+		throws Exception
+	{
+		doTupleLinksAndStylesheetAndNamespaces(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl", getNamespacesWithEmpty());
+	}
 
-        @Test
-        public final void testMultipleLinksWithResultsAndStylesheetMultipleEndHeaders()
-                throws Exception
-        {
-                doTupleLinksAndStylesheetMultipleEndHeaders(getTupleFormat(), createTupleMultipleBindingSets(),
-                                createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
-                                "test.xsl");
-        }
+	@Test
+	public final void testMultipleLinksWithResultsAndStylesheetAndNamespacesQNameWithEmpty()
+		throws Exception
+	{
+		doTupleLinksAndStylesheetAndNamespacesQName(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl", getNamespacesWithEmpty());
+	}
+
+	@Test
+	public final void testMultipleLinksWithResultsAndStylesheetNoStarts()
+		throws Exception
+	{
+		doTupleLinksAndStylesheetNoStarts(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl");
+	}
+
+	@Test
+	public final void testMultipleLinksWithResultsAndStylesheetMultipleEndHeaders()
+		throws Exception
+	{
+		doTupleLinksAndStylesheetMultipleEndHeaders(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl");
+	}
 
 	@Test
 	public final void testNoResultsAndStylesheet()
@@ -159,6 +175,5 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 		doTupleStylesheet(getTupleFormat(), createTupleMultipleBindingSets(), createTupleMultipleBindingSets(),
 				"test.xsl");
 	}
-
 
 }
