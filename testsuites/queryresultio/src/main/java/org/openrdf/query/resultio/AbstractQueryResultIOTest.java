@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -273,6 +275,44 @@ public abstract class AbstractQueryResultIOTest {
 			assertTrue(result.contains("other:bindingC"));
 		}
 
+	}
+
+	/**
+	 * Test specifically for JSONP callback support.
+	 */
+	protected void doTupleJSONPCallback(TupleQueryResultFormat format, TupleQueryResult input,
+			TupleQueryResult expected)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+
+		// only do this test if the callback is enabled
+		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK)) {
+
+			String callback = "nextfunctionname" + new Random().nextInt();
+
+			writer.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, callback);
+
+			QueryResults.report(input, writer);
+
+			String result = out.toString("UTF-8");
+
+			// System.out.println("output: " + result);
+
+			assertTrue(result.startsWith(callback + "("));
+			assertTrue(result.endsWith(");"));
+
+			// Strip off the callback function and verify that it contains a valid
+			// JSON object containing the correct results
+			result = result.substring(callback.length() + 1, result.length() - 2);
+
+			ByteArrayInputStream in = new ByteArrayInputStream(result.getBytes("UTF-8"));
+			TupleQueryResult output = QueryResultIO.parse(in, format);
+
+			assertTrue(QueryResults.equals(expected, output));
+		}
 	}
 
 	protected void doTupleNoLinks(TupleQueryResultFormat format, TupleQueryResult input,
