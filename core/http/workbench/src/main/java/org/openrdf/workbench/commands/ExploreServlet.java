@@ -163,34 +163,35 @@ public class ExploreServlet extends TupleServlet {
 		try {
 			while (result.hasNext()) {
 				final Statement statement = result.next();
-				if (cursor.mayRender()) {
-					Resource subject = statement.getSubject();
-					URI predicate = statement.getPredicate();
-					Value object = statement.getObject();
-					boolean render;
-					if (1 == context.length) {
-						// I.e., when context matches explore value.
-						Resource ctx = context[0];
-						render = !(ctx.equals(subject) || ctx.equals(predicate) || ctx.equals(object));
-					}
-					else if (null != obj) {
-						// I.e., when object matches explore value.
-						render = !(object.equals(subject) || object.equals(predicate));
-					}
-					else if (null != pred) {
-						// I.e., when predicate matches explore value.
-						render = !predicate.equals(subject);
-					}
-					else {
-						// The only case we don't filter is if subject matches explore
-						// value.
-						render = true;
-					}
-					if (render) {
-						builder.result(subject, predicate, object, statement.getContext());
-						cursor.advance();
+				Resource subject = statement.getSubject();
+				URI predicate = statement.getPredicate();
+				Value object = statement.getObject();
+				if (1 == context.length) {
+					// I.e., when context matches explore value.
+					Resource ctx = context[0];
+					if (ctx.equals(subject) || ctx.equals(predicate) || ctx.equals(object)) {
+						continue;
 					}
 				}
+				else if (null != obj) {
+					// I.e., when object matches explore value.
+					if (object.equals(subject) || object.equals(predicate)) {
+						continue;
+					}
+				}
+				else if (null != pred) {
+					// I.e., when predicate matches explore value.
+					if (predicate.equals(subject)) {
+						continue;
+					}
+				}
+
+				// The only case we don't ever skip is if subject matches explore
+				// value.
+				if (cursor.mayRender()) {
+					builder.result(subject, predicate, object, statement.getContext());
+				}
+				cursor.advance();
 			}
 		}
 		finally {
@@ -252,17 +253,10 @@ public class ExploreServlet extends TupleServlet {
 		}
 
 		/**
-		 * @returns whether the rendering limit has been reached yet.
-		 */
-		public boolean hasMore() {
-			return this.renderedResults < this.limit;
-		}
-
-		/**
 		 * @returns whether it is allowed to render the next result
 		 */
 		public boolean mayRender() {
-			return this.render && (this.untilFirst == 0 && this.hasMore());
+			return this.render && (this.untilFirst == 0 && this.renderedResults < this.limit);
 		}
 
 		/**
