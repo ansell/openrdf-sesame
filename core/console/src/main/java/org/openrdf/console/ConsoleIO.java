@@ -31,13 +31,14 @@ class ConsoleIO {
 
 	private final BufferedReader input;
 
-	private final PrintStream out;
+	private final PrintStream out, err;
 
 	private final ConsoleState appInfo;
 
-	ConsoleIO(BufferedReader input, PrintStream out, ConsoleState info) {
+	ConsoleIO(BufferedReader input, PrintStream out, PrintStream err, ConsoleState info) {
 		this.input = input;
 		this.out = out;
+		this.err = err;
 		this.appInfo = info;
 	}
 
@@ -103,7 +104,7 @@ class ConsoleIO {
 	}
 
 	protected void writeError(final String errMsg) {
-		writeln("ERROR: " + errMsg);
+		err.println(errMsg);
 	}
 
 	protected void writeUnopenedError() {
@@ -111,15 +112,14 @@ class ConsoleIO {
 	}
 
 	protected void writeParseError(final String prefix, final int lineNo, final int colNo, final String msg) {
-		final StringBuilder builder = new StringBuilder(256);
-		builder.append(prefix);
-		builder.append(": ");
-		builder.append(msg);
-		final String locationString = RDFParseException.getLocationString(lineNo, colNo);
-		if (locationString.length() > 0) {
+		String locationString = RDFParseException.getLocationString(lineNo, colNo);
+		int locSize = locationString.length();
+		final StringBuilder builder = new StringBuilder(locSize + prefix.length() + msg.length() + 3);
+		builder.append(prefix).append(": ").append(msg);
+		if (locSize > 0) {
 			builder.append(" ").append(locationString);
 		}
-		writeln(builder.toString());
+		writeError(builder.toString());
 	}
 
 	protected boolean askProceed(final String msg, final boolean defaultValue)

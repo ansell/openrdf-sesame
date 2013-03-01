@@ -178,7 +178,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		throws IOException
 	{
 		appConfig.init();
-		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, this);
+		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, System.err, this);
 		commandMap.put("federate", new Federate(consoleIO, this));
 		this.queryEvaluator = new QueryEvaluator(consoleIO, this, this);
 		LockRemover lockRemover = new LockRemover(consoleIO);
