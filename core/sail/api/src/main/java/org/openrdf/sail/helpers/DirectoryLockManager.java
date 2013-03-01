@@ -23,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.management.ManagementFactory;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.security.AccessControlException;
@@ -218,8 +217,6 @@ public class DirectoryLockManager implements LockManager {
 	private Lock createLock(final RandomAccessFile raf, final FileLock fileLock) {
 		return new Lock() {
 
-			private boolean active = true;
-
 			private Thread hook;
 			{
 				try {
@@ -238,14 +235,14 @@ public class DirectoryLockManager implements LockManager {
 			}
 
 			public boolean isActive() {
-				return active;
+				return fileLock.isValid() || hook != null;
 			}
 
 			public void release() {
-				active = false;
 				try {
 					if (hook != null) {
 						Runtime.getRuntime().removeShutdownHook(hook);
+						hook = null;
 					}
 				}
 				catch (IllegalStateException e) {
@@ -259,11 +256,10 @@ public class DirectoryLockManager implements LockManager {
 
 			void delete() {
 				try {
-					fileLock.release();
-					raf.close();
-				}
-				catch (ClosedChannelException e) {
-					// already closed by jvm
+					if (raf.getChannel().isOpen()) {
+						fileLock.release();
+						raf.close();
+					}
 				}
 				catch (IOException e) {
 					logger.warn(e.toString(), e);
