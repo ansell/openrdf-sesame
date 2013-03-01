@@ -156,11 +156,12 @@ function correctButtons() {
 	var count = parseInt(buttonNumberPattern.exec(oldNext), 10);
 	nextButton.value = buttonWordPattern.exec(oldNext) + limit;
 	previousButton.value = buttonWordPattern.exec(previousButton.value) + limit;
-	if (getOffset() <= 0 || limit <= 0) {
+	var offset = getOffset();
+	if (offset <= 0 || limit <= 0) {
 		previousButton.disabled = true;
 	}
 
-	if (count < limit || limit <= 0) {
+	if (count < limit || limit <= 0 || (offset+count) >= getTotalResultCount()) {
 		nextButton.disabled = true;
 	}
 }

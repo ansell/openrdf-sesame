@@ -78,7 +78,7 @@ public class TestExploreServlet {
 		foo = factory.createURI("http://www.test.com/foo");
 		bar = factory.createURI("http://www.test.com/bar");
 		bang = factory.createURI("http://www.test.com/bang");
-		foos = new URI[0x80];
+		foos = new URI[128];
 		for (int i = 0; i < foos.length; i++) {
 			foos[i] = factory.createURI("http://www.test.com/foo/" + i);
 		}
@@ -209,14 +209,14 @@ public class TestExploreServlet {
 		connection.prepareUpdate(QueryLanguage.SPARQL, PREFIX + pattern + SUFFIX).execute();
 	}
 
-	private void assertStatementCount(URI uri, long expectedTotal, long expectedRendered)
+	private void assertStatementCount(URI uri, int expectedTotal, int expectedRendered)
 		throws OpenRDFException
 	{
 		// limit = 0 means render all
 		assertStatementCount(uri, 0, expectedTotal, expectedRendered);
 	}
 
-	private void assertStatementCount(URI uri, int limit, long expectedTotal, long expectedRendered)
+	private void assertStatementCount(URI uri, int limit, int expectedTotal, int expectedRendered)
 		throws OpenRDFException
 	{
 		ResultCursor cursor = servlet.processResource(connection, builder, uri, 0, limit, true);

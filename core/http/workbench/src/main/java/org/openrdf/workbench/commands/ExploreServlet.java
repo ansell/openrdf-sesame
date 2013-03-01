@@ -78,7 +78,7 @@ public class ExploreServlet extends TupleServlet {
 
 		// At worst, malicious parameter value could cause inaccurate
 		// reporting of count in page.
-		long count = req.getInt("know_total");
+		int count = req.getInt("know_total");
 		if (count == 0) {
 			count = this.processResource(con, builder, value, 0, Integer.MAX_VALUE, false).getTotalResultCount();
 		}
@@ -209,9 +209,9 @@ public class ExploreServlet extends TupleServlet {
 
 		private int untilFirst;
 
-		private long totalResults = 0;
+		private int totalResults = 0;
 
-		private long renderedResults = 0;
+		private int renderedResults = 0;
 
 		private final int limit;
 
@@ -237,7 +237,7 @@ public class ExploreServlet extends TupleServlet {
 		 * 
 		 * @returns the number of times advance() has been called
 		 */
-		public long getTotalResultCount() {
+		public int getTotalResultCount() {
 			return this.totalResults;
 		}
 
@@ -248,7 +248,7 @@ public class ExploreServlet extends TupleServlet {
 		 * @returns the number of times advance() has been called when
 		 *          this.mayRender() evaluated to true
 		 */
-		public long getRenderedResultCount() {
+		public int getRenderedResultCount() {
 			return this.renderedResults;
 		}
 
