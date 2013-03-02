@@ -29,7 +29,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
@@ -97,18 +96,62 @@ public class Console implements ConsoleState, ConsoleParameters {
 		throws IOException
 	{
 		final Console console = new Console();
-
-		// Parse command line options
-		final Options options = new Options();
 		final Option helpOption = new Option("h", "help", false, "print this help");
 		final Option versionOption = new Option("v", "version", false, "print version information");
 		final Option serverURLOption = new Option("s", "serverURL", true,
 				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
 		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		Option echoOption = new Option("e", "echo", false,
-				"Echo, i.e., echoes input back to stdout, useful for logging script sessions.");
-		Option quietOption = new Option("q", "quiet", false,
-				"Quiet, i.e., suppresses prompts, useful for scripting.");
+				"echoes input back to stdout, useful for logging script sessions");
+		Option quietOption = new Option("q", "quiet", false, "suppresses prompts, useful for scripting");
+		final Options options = createOptionsCollection(helpOption, serverURLOption, dirOption, echoOption,
+				quietOption);
+		CommandLine commandLine = parseCommandLine(args, console, options);
+		handleInfoOptions(console, helpOption, versionOption, options, commandLine);
+		final String dir = commandLine.getOptionValue(dirOption.getOpt());
+		final String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
+		console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
+		console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
+		final String[] otherArgs = commandLine.getArgs();
+		if (otherArgs.length > 1) {
+			printUsage(console.consoleIO, options);
+			System.exit(1);
+		}
+		connectAndOpen(console, dir, serverURL, otherArgs);
+		console.start();
+	}
+
+	private static CommandLine parseCommandLine(final String[] args, final Console console,
+			final Options options)
+	{
+		CommandLine commandLine = null;
+		try {
+			commandLine = new PosixParser().parse(options, args);
+		}
+		catch (ParseException e) {
+			console.consoleIO.writeError(e.getMessage());
+			System.exit(1);
+		}
+		return commandLine;
+	}
+
+	private static void handleInfoOptions(final Console console, final Option helpOption,
+			final Option versionOption, final Options options, final CommandLine commandLine)
+	{
+		if (commandLine.hasOption(helpOption.getOpt())) {
+			printUsage(console.consoleIO, options);
+			System.exit(0);
+		}
+		if (commandLine.hasOption(versionOption.getOpt())) {
+			console.consoleIO.writeln(console.appConfig.getFullName());
+			System.exit(0);
+		}
+	}
+
+	private static Options createOptionsCollection(final Option helpOption, final Option serverURLOption,
+			final Option dirOption, Option echoOption, Option quietOption)
+	{
+		final Options options = new Options();
 		options.addOption(quietOption);
 		options.addOption(echoOption);
 		options.addOption(helpOption);
@@ -116,51 +159,28 @@ public class Console implements ConsoleState, ConsoleParameters {
 		connectGroup.addOption(serverURLOption);
 		connectGroup.addOption(dirOption);
 		options.addOptionGroup(connectGroup);
-		final CommandLineParser argsParser = new PosixParser();
-		try {
-			final CommandLine commandLine = argsParser.parse(options, args);
-			if (commandLine.hasOption(helpOption.getOpt())) {
-				printUsage(console.consoleIO, options);
-				System.exit(0);
-			}
-			if (commandLine.hasOption(versionOption.getOpt())) {
-				console.consoleIO.writeln(console.appConfig.getFullName());
-				System.exit(0);
-			}
-			final String dir = commandLine.getOptionValue(dirOption.getOpt());
-			final String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
-			console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
-			console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
-			final String[] otherArgs = commandLine.getArgs();
+		return options;
+	}
 
-			if (otherArgs.length > 1) {
-				printUsage(console.consoleIO, options);
-				System.exit(1);
-			}
-
-			boolean connected = false;
-			if (dir == null) {
-				connected = (serverURL == null) ? console.connect.connectDefault()
-						: console.connect.connectRemote(serverURL);
-			}
-			else {
-				connected = console.connect.connectLocal(dir);
-			}
-
-			if (!connected) {
-				System.exit(2);
-			}
-
-			if (otherArgs.length > 0) {
-				console.open.openRepository(otherArgs[0]);
-			}
+	private static void connectAndOpen(final Console console, final String dir, final String serverURL,
+			final String[] otherArgs)
+	{
+		boolean connected = false;
+		if (dir == null) {
+			connected = (serverURL == null) ? console.connect.connectDefault()
+					: console.connect.connectRemote(serverURL);
 		}
-		catch (ParseException e) {
-			console.consoleIO.writeError(e.getMessage());
-			System.exit(1);
+		else {
+			connected = console.connect.connectLocal(dir);
 		}
 
-		console.start();
+		if (!connected) {
+			System.exit(2);
+		}
+
+		if (otherArgs.length > 0) {
+			console.open.openRepository(otherArgs[0]);
+		}
 	}
 
 	private static void printUsage(ConsoleIO cio, Options options) {

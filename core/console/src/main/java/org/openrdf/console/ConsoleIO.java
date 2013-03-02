@@ -54,10 +54,10 @@ class ConsoleIO {
 		throws IOException
 	{
 		String repositoryID = appInfo.getRepositoryID();
-		if (repositoryID != null) {
-			write(repositoryID);
-		}
 		if (!quiet) {
+			if (repositoryID != null) {
+				write(repositoryID);
+			}
 			write("> ");
 		}
 		String line = input.readLine();
