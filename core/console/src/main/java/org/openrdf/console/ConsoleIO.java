@@ -39,6 +39,10 @@ class ConsoleIO {
 
 	private boolean quiet = false;
 
+	private boolean force = false;
+
+	private boolean cautious = false;
+
 	ConsoleIO(BufferedReader input, PrintStream out, PrintStream err, ConsoleState info) {
 		this.input = input;
 		this.out = out;
@@ -143,21 +147,23 @@ class ConsoleIO {
 		throws IOException
 	{
 		final String defaultString = defaultValue ? "yes" : "no";
-		boolean result = defaultValue;
-		while (true) {
-			writeln(msg);
-			write("Proceed? (yes|no) [" + defaultString + "]: ");
-			final String reply = readln();
-			if ("no".equalsIgnoreCase(reply) || "no.".equalsIgnoreCase(reply)) {
-				result = false;
-				break;
-			}
-			else if ("yes".equalsIgnoreCase(reply) || "yes.".equalsIgnoreCase(reply)) {
-				result = true;
-				break;
-			}
-			else if (reply.trim().isEmpty()) {
-				break;
+		boolean result = force ? true : (cautious ? false : defaultValue);
+		if (!force && !cautious) {
+			while (true) {
+				writeln(msg);
+				write("Proceed? (yes|no) [" + defaultString + "]: ");
+				final String reply = readln();
+				if ("no".equalsIgnoreCase(reply) || "no.".equalsIgnoreCase(reply)) {
+					result = false;
+					break;
+				}
+				else if ("yes".equalsIgnoreCase(reply) || "yes.".equalsIgnoreCase(reply)) {
+					result = true;
+					break;
+				}
+				else if (reply.trim().isEmpty()) {
+					break;
+				}
 			}
 		}
 		return result;
@@ -177,5 +183,17 @@ class ConsoleIO {
 	 */
 	public void setQuiet(boolean quiet) {
 		this.quiet = quiet;
+	}
+
+	/**
+	 */
+	public void setForce() {
+		this.force = true;
+	}
+
+	/**
+	 */
+	public void setCautious() {
+		this.cautious = true;
 	}
 }

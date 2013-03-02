@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.cli.AlreadySelectedException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -104,14 +105,43 @@ public class Console implements ConsoleState, ConsoleParameters {
 		Option echoOption = new Option("e", "echo", false,
 				"echoes input back to stdout, useful for logging script sessions");
 		Option quietOption = new Option("q", "quiet", false, "suppresses prompts, useful for scripting");
-		final Options options = createOptionsCollection(helpOption, serverURLOption, dirOption, echoOption,
-				quietOption);
+		Option forceOption = new Option("f", "force", false,
+				"always answer yes to (suppressed) confirmation prompts");
+		Option cautiousOption = new Option("c", "cautious", false,
+				"always answer no to (suppressed) confirmation prompts");
+		final Options options = new Options();
+		OptionGroup cautionGroup = new OptionGroup().addOption(cautiousOption).addOption(forceOption);
+		OptionGroup locationGroup = new OptionGroup().addOption(serverURLOption).addOption(dirOption);
+		options.addOptionGroup(locationGroup).addOptionGroup(cautionGroup);
+		options.addOption(helpOption).addOption(versionOption).addOption(echoOption).addOption(quietOption);
 		CommandLine commandLine = parseCommandLine(args, console, options);
 		handleInfoOptions(console, helpOption, versionOption, options, commandLine);
-		final String dir = commandLine.getOptionValue(dirOption.getOpt());
-		final String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
 		console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
 		console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
+		String dir = null;
+		String serverURL = null;
+		try {
+			if (commandLine.hasOption(forceOption.getOpt())) {
+				cautionGroup.setSelected(forceOption);
+				console.consoleIO.setForce();
+			}
+			if (commandLine.hasOption(cautiousOption.getOpt())) {
+				cautionGroup.setSelected(cautiousOption);
+				console.consoleIO.setCautious();
+			}
+			if (commandLine.hasOption(dirOption.getOpt())) {
+				locationGroup.setSelected(dirOption);
+				dir = commandLine.getOptionValue(dirOption.getOpt());
+			}
+			if (commandLine.hasOption(serverURLOption.getOpt())) {
+				locationGroup.setSelected(serverURLOption);
+				serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
+			}
+		}
+		catch (AlreadySelectedException e) {
+			printUsage(console.consoleIO, options);
+			System.exit(3);
+		}
 		final String[] otherArgs = commandLine.getArgs();
 		if (otherArgs.length > 1) {
 			printUsage(console.consoleIO, options);
@@ -146,20 +176,6 @@ public class Console implements ConsoleState, ConsoleParameters {
 			console.consoleIO.writeln(console.appConfig.getFullName());
 			System.exit(0);
 		}
-	}
-
-	private static Options createOptionsCollection(final Option helpOption, final Option serverURLOption,
-			final Option dirOption, Option echoOption, Option quietOption)
-	{
-		final Options options = new Options();
-		options.addOption(quietOption);
-		options.addOption(echoOption);
-		options.addOption(helpOption);
-		final OptionGroup connectGroup = new OptionGroup();
-		connectGroup.addOption(serverURLOption);
-		connectGroup.addOption(dirOption);
-		options.addOptionGroup(connectGroup);
-		return options;
 	}
 
 	private static void connectAndOpen(final Console console, final String dir, final String serverURL,
