@@ -165,7 +165,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 	private static void connectAndOpen(final Console console, final String dir, final String serverURL,
 			final String[] otherArgs)
 	{
-		boolean connected = false;
+		boolean connected;
 		if (dir == null) {
 			connected = (serverURL == null) ? console.connect.connectDefault()
 					: console.connect.connectRemote(serverURL);
@@ -256,21 +256,21 @@ public class Console implements ConsoleState, ConsoleParameters {
 	private boolean executeCommand(final String command)
 		throws IOException
 	{
-		boolean exit = false;
-		if (0 < command.length()) {
+		boolean exit = (0 == command.length());
+		if (!exit) {
 			final String[] tokens = parse(command);
 			final String operation = tokens[0].toLowerCase(Locale.ENGLISH);
-			if ("quit".equals(operation) || "exit".equals(operation)) {
-				exit = true;
-			}
-			else if (commandMap.containsKey(operation)) {
-				commandMap.get(operation).execute(tokens);
-			}
-			else if ("disconnect".equals(operation)) {
-				disconnect.execute(true);
-			}
-			else {
-				queryEvaluator.executeQuery(command, operation);
+			exit = "quit".equals(operation) || "exit".equals(operation);
+			if (!exit) {
+				if (commandMap.containsKey(operation)) {
+					commandMap.get(operation).execute(tokens);
+				}
+				else if ("disconnect".equals(operation)) {
+					disconnect.execute(true);
+				}
+				else {
+					queryEvaluator.executeQuery(command, operation);
+				}
 			}
 		}
 
