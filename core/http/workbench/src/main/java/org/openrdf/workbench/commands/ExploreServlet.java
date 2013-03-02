@@ -109,7 +109,7 @@ public class ExploreServlet extends TupleServlet {
 	 *        If false, suppresses output to the HTTP response.
 	 * @throws OpenRDFException
 	 *         if there is an issue iterating through results
-	 * @returns The count of all triples in the repository using the given value.
+	 * @return The count of all triples in the repository using the given value.
 	 */
 	protected ResultCursor processResource(final RepositoryConnection con, final TupleResultBuilder builder,
 			final Value value, final int offset, final int limit, final boolean render)
@@ -137,8 +137,18 @@ public class ExploreServlet extends TupleServlet {
 	}
 
 	/**
+	 * <p>
 	 * Render statements in the repository matching the given pattern to the HTTP
-	 * response.
+	 * response. It is an implicit assumption when this calls
+	 * {@link #isFirstTimeSeen} that {@link #processResource} 's calls into here
+	 * have been made in the following order:
+	 * </p>
+	 * <ol>
+	 * <li>export(*, subject, null, null, null)</li>
+	 * <li>export(*, null, predicate, null, null)</li>
+	 * <li>export(*, null, null, object, null)</li>
+	 * <li>export(*, null, null, null, context)</li>
+	 * </ol>
 	 * 
 	 * @param con
 	 *        the connection to the repository
@@ -162,41 +172,62 @@ public class ExploreServlet extends TupleServlet {
 		RepositoryResult<Statement> result = con.getStatements(subj, pred, obj, true, context);
 		try {
 			while (result.hasNext()) {
-				final Statement statement = result.next();
-				Resource subject = statement.getSubject();
-				URI predicate = statement.getPredicate();
-				Value object = statement.getObject();
-				if (1 == context.length) {
-					// I.e., when context matches explore value.
-					Resource ctx = context[0];
-					if (ctx.equals(subject) || ctx.equals(predicate) || ctx.equals(object)) {
-						continue;
+				Statement statement = result.next();
+				if (isFirstTimeSeen(statement, pred, obj, context)) {
+					if (cursor.mayRender()) {
+						builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
+								statement.getContext());
 					}
+					cursor.advance();
 				}
-				else if (null != obj) {
-					// I.e., when object matches explore value.
-					if (object.equals(subject) || object.equals(predicate)) {
-						continue;
-					}
-				}
-				else if (null != pred) {
-					// I.e., when predicate matches explore value.
-					if (predicate.equals(subject)) {
-						continue;
-					}
-				}
-
-				// The only case we don't ever skip is if subject matches explore
-				// value.
-				if (cursor.mayRender()) {
-					builder.result(subject, predicate, object, statement.getContext());
-				}
-				cursor.advance();
 			}
 		}
 		finally {
 			result.close();
 		}
+	}
+
+	/**
+	 * Gets whether this is the first time the result quad has been seen.
+	 * 
+	 * @param patternPredicate
+	 *        the predicate asked for, or null if another quad element was asked
+	 *        for
+	 * @param patternObject
+	 *        the object asked for, or null if another quad element was asked for
+	 * @param result
+	 *        the result statement to determine if we've already seen
+	 * @param patternContext
+	 *        the context asked for, or null if another quad element was asked
+	 *        for
+	 * @return true, if this is the first time the quad has been seen, false
+	 *         otherwise
+	 */
+	private boolean isFirstTimeSeen(Statement result, URI patternPredicate, Value patternObject,
+			Resource... patternContext)
+	{
+		Resource resultSubject = result.getSubject();
+		URI resultPredicate = result.getPredicate();
+		Value resultObject = result.getObject();
+		boolean firstTimeSeen;
+		if (1 == patternContext.length) {
+			// I.e., when context matches explore value.
+			Resource ctx = patternContext[0];
+			firstTimeSeen = !(ctx.equals(resultSubject) || ctx.equals(resultPredicate) || ctx.equals(resultObject));
+		}
+		else if (null != patternObject) {
+			// I.e., when object matches explore value.
+			firstTimeSeen = !(resultObject.equals(resultSubject) || resultObject.equals(resultPredicate));
+		}
+		else if (null != patternPredicate) {
+			// I.e., when predicate matches explore value.
+			firstTimeSeen = !(resultPredicate.equals(resultSubject));
+		}
+		else {
+			// I.e., when subject matches explore value.
+			firstTimeSeen = true;
+		}
+		return firstTimeSeen;
 	}
 
 	/**
@@ -235,7 +266,7 @@ public class ExploreServlet extends TupleServlet {
 		 * Gets the total number of results. Only meant to be called after
 		 * advance() has been called for all results in the set.
 		 * 
-		 * @returns the number of times advance() has been called
+		 * @return the number of times advance() has been called
 		 */
 		public int getTotalResultCount() {
 			return this.totalResults;
@@ -245,7 +276,7 @@ public class ExploreServlet extends TupleServlet {
 		 * Gets the number of results that were actually rendered. Only meant to
 		 * be called after advance() has been called for all results in the set.
 		 * 
-		 * @returns the number of times advance() has been called when
+		 * @return the number of times advance() has been called when
 		 *          this.mayRender() evaluated to true
 		 */
 		public int getRenderedResultCount() {
@@ -253,7 +284,7 @@ public class ExploreServlet extends TupleServlet {
 		}
 
 		/**
-		 * @returns whether it is allowed to render the next result
+		 * @return whether it is allowed to render the next result
 		 */
 		public boolean mayRender() {
 			return this.render && (this.untilFirst == 0 && this.renderedResults < this.limit);
