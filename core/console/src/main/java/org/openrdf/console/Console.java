@@ -118,8 +118,22 @@ public class Console implements ConsoleState, ConsoleParameters {
 		handleInfoOptions(console, helpOption, versionOption, options, commandLine);
 		console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
 		console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
-		String dir = null;
-		String serverURL = null;
+		String location = handleOptionGroups(console, serverURLOption, dirOption, forceOption, cautiousOption,
+				options, cautionGroup, locationGroup, commandLine);
+		final String[] otherArgs = commandLine.getArgs();
+		if (otherArgs.length > 1) {
+			printUsage(console.consoleIO, options);
+			System.exit(1);
+		}
+		connectAndOpen(console, locationGroup.getSelected(), location, otherArgs);
+		console.start();
+	}
+
+	private static String handleOptionGroups(final Console console, final Option serverURLOption,
+			final Option dirOption, Option forceOption, Option cautiousOption, final Options options,
+			OptionGroup cautionGroup, OptionGroup locationGroup, CommandLine commandLine)
+	{
+		String location = null;
 		try {
 			if (commandLine.hasOption(forceOption.getOpt())) {
 				cautionGroup.setSelected(forceOption);
@@ -131,24 +145,18 @@ public class Console implements ConsoleState, ConsoleParameters {
 			}
 			if (commandLine.hasOption(dirOption.getOpt())) {
 				locationGroup.setSelected(dirOption);
-				dir = commandLine.getOptionValue(dirOption.getOpt());
+				location = commandLine.getOptionValue(dirOption.getOpt());
 			}
 			if (commandLine.hasOption(serverURLOption.getOpt())) {
 				locationGroup.setSelected(serverURLOption);
-				serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
+				location = commandLine.getOptionValue(serverURLOption.getOpt());
 			}
 		}
 		catch (AlreadySelectedException e) {
 			printUsage(console.consoleIO, options);
 			System.exit(3);
 		}
-		final String[] otherArgs = commandLine.getArgs();
-		if (otherArgs.length > 1) {
-			printUsage(console.consoleIO, options);
-			System.exit(1);
-		}
-		connectAndOpen(console, dir, serverURL, otherArgs);
-		console.start();
+		return location;
 	}
 
 	private static CommandLine parseCommandLine(final String[] args, final Console console,
@@ -178,22 +186,22 @@ public class Console implements ConsoleState, ConsoleParameters {
 		}
 	}
 
-	private static void connectAndOpen(final Console console, final String dir, final String serverURL,
-			final String[] otherArgs)
+	private static void connectAndOpen(Console console, String selectedLocationOption, String location,
+			String[] otherArgs)
 	{
 		boolean connected;
-		if (dir == null) {
-			connected = (serverURL == null) ? console.connect.connectDefault()
-					: console.connect.connectRemote(serverURL);
+		if ("s".equals(selectedLocationOption)) {
+			connected = console.connect.connectRemote(location);
+		}
+		else if ("d".equals(selectedLocationOption)) {
+			connected = console.connect.connectLocal(location);
 		}
 		else {
-			connected = console.connect.connectLocal(dir);
+			connected = console.connect.connectDefault();
 		}
-
 		if (!connected) {
 			System.exit(2);
 		}
-
 		if (otherArgs.length > 0) {
 			console.open.openRepository(otherArgs[0]);
 		}
