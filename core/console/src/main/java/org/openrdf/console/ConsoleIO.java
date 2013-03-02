@@ -35,6 +35,10 @@ class ConsoleIO {
 
 	private final ConsoleState appInfo;
 
+	private boolean echo = false;
+
+	private boolean quiet = false;
+
 	ConsoleIO(BufferedReader input, PrintStream out, PrintStream err, ConsoleState info) {
 		this.input = input;
 		this.out = out;
@@ -53,7 +57,9 @@ class ConsoleIO {
 		if (repositoryID != null) {
 			write(repositoryID);
 		}
-		write("> ");
+		if (!quiet) {
+			write("> ");
+		}
 		String line = input.readLine();
 		String result = null;
 		if (line != null) {
@@ -69,26 +75,37 @@ class ConsoleIO {
 			buf.setLength(buf.length() - 1);
 			result = buf.toString().trim();
 		}
+		if (echo) {
+			writeln(result);
+		}
 		return result;
 	}
 
 	protected String readln(String... message)
 		throws IOException
 	{
-		if (message.length > 0) {
+		if (!quiet && message.length > 0) {
 			String prompt = message[0];
 			if (prompt != null) {
 				write(prompt + " ");
 			}
 		}
-		return input.readLine();
+		String result = input.readLine();
+		if (echo) {
+			writeln(result);
+		}
+		return result;
 	}
 
 	protected String readPassword(final String message)
 		throws IOException
 	{
 		// TODO: Proper password reader
-		return readln(message);
+		String result = readln(message);
+		if (echo && !result.isEmpty()) {
+			writeln("************");
+		}
+		return result;
 	}
 
 	protected void write(final String string) {
@@ -146,4 +163,19 @@ class ConsoleIO {
 		return result;
 	}
 
+	/**
+	 * @param echo
+	 *        whether to echo user input to output stream
+	 */
+	protected void setEcho(boolean echo) {
+		this.echo = echo;
+	}
+
+	/**
+	 * @param quiet
+	 *        whether to suppress printing of prompts to output
+	 */
+	public void setQuiet(boolean quiet) {
+		this.quiet = quiet;
+	}
 }

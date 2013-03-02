@@ -105,6 +105,12 @@ public class Console implements ConsoleState, ConsoleParameters {
 		final Option serverURLOption = new Option("s", "serverURL", true,
 				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
 		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
+		Option echoOption = new Option("e", "echo", false,
+				"Echo, i.e., echoes input back to stdout, useful for logging script sessions.");
+		Option quietOption = new Option("q", "quiet", false,
+				"Quiet, i.e., suppresses prompts, useful for scripting.");
+		options.addOption(quietOption);
+		options.addOption(echoOption);
 		options.addOption(helpOption);
 		final OptionGroup connectGroup = new OptionGroup();
 		connectGroup.addOption(serverURLOption);
@@ -123,6 +129,8 @@ public class Console implements ConsoleState, ConsoleParameters {
 			}
 			final String dir = commandLine.getOptionValue(dirOption.getOpt());
 			final String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
+			console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
+			console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
 			final String[] otherArgs = commandLine.getArgs();
 
 			if (otherArgs.length > 1) {
@@ -178,7 +186,8 @@ public class Console implements ConsoleState, ConsoleParameters {
 		throws IOException
 	{
 		appConfig.init();
-		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, System.err, this);
+		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, System.err,
+				this);
 		commandMap.put("federate", new Federate(consoleIO, this));
 		this.queryEvaluator = new QueryEvaluator(consoleIO, this, this);
 		LockRemover lockRemover = new LockRemover(consoleIO);
