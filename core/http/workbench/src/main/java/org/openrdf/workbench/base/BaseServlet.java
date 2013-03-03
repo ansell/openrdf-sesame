@@ -18,6 +18,7 @@ package org.openrdf.workbench.base;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -72,6 +73,8 @@ public abstract class BaseServlet implements Servlet {
 	 * JSONP callback function
 	 */
 	protected static final String CALLBACK = "callback";
+
+	protected static final Pattern JSONP_VALIDATOR = Pattern.compile("^[A-Za-z]\\w+$");
 
 	protected ServletConfig config;
 
@@ -227,15 +230,13 @@ public abstract class BaseServlet implements Servlet {
 			if (parameter != null) {
 				parameter = parameter.trim();
 
-				// check callback function name is alphanumeric
-				for (char nextChar : parameter.toCharArray()) {
-					if (!Character.isLetterOrDigit(nextChar)) {
-						throw new IOException("Callback function name was invalid");
-					}
-				}
-
 				if (parameter.isEmpty()) {
 					parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+				}
+
+				// check callback function name is a valid javascript function name
+				if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
+					throw new IOException("Callback function name was invalid");
 				}
 
 				resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
