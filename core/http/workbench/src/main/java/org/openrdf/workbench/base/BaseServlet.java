@@ -57,8 +57,23 @@ public abstract class BaseServlet implements Servlet {
 
 	protected static final String ACCEPT = "Accept";
 
+	/**
+	 * This response content type is always used for JSONP results.
+	 */
+	protected static final String APPLICATION_JAVASCRIPT = "application/javascript";
+
+	/**
+	 * This response content type is used in cases where application/xml is
+	 * explicitly requested, or in cases where the user agent is known to be a
+	 * commonly available browser.
+	 */
 	protected static final String APPLICATION_XML = "application/xml";
 
+	/**
+	 * This response content type is used for SPARQL Results XML results in
+	 * non-browser user agents or other cases where application/xml is not
+	 * specifically requested.
+	 */
 	protected static final String APPLICATION_SPARQL_RESULTS_XML = "application/sparql-results+xml";
 
 	protected static final String TEXT_HTML = "text/html";
@@ -70,11 +85,19 @@ public abstract class BaseServlet implements Servlet {
 	protected static final String MOZILLA = "Mozilla";
 
 	/**
-	 * JSONP callback function
+	 * JSONP property for enabling/disabling jsonp functionality.
 	 */
-	protected static final String CALLBACK = "callback";
+	protected static final String JSONP_ENABLED = "org.openrdf.workbench.jsonp.enabled";
+
+	/**
+	 * This query parameter is only used in cases where the configuration
+	 * property is not setup explicitly.
+	 */
+	protected static final String DEFAULT_JSONP_CALLBACK_PARAMETER = "callback";
 
 	protected static final Pattern JSONP_VALIDATOR = Pattern.compile("^[A-Za-z]\\w+$");
+
+	protected static final String JSONP_CALLBACK_PARAMETER = "org.openrdf.workbench.jsonp.callbackparameter";
 
 	protected ServletConfig config;
 
@@ -222,24 +245,57 @@ public abstract class BaseServlet implements Servlet {
 			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
 		}
 
-		// Search for a callback function name in the query if the result writer
-		// could handle it
+		// Search for and setup the JSONP callback function if the user requested
+		// it and the result writer could handle it
 		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK)) {
-			String parameter = req.getParameter(CALLBACK);
 
-			if (parameter != null) {
-				parameter = parameter.trim();
+			// JSONP is enabled in the default properties, but if users setup their
+			// own application.properties file then it must be inserted explicitly
+			// to be enabled
+			if (appConfig.getProperties().containsKey(JSONP_ENABLED)) {
 
-				if (parameter.isEmpty()) {
-					parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+				String jsonpEnabledProperty = appConfig.getProperties().getProperty(JSONP_ENABLED);
+
+				// check if jsonp is a property and it is set to true
+				if (jsonpEnabledProperty != null && !jsonpEnabledProperty.trim().isEmpty()
+						&& Boolean.parseBoolean(jsonpEnabledProperty))
+				{
+					String parameterName = null;
+
+					// check whether they customised the parameter to use to identify
+					// the jsonp callback
+					if (appConfig.getProperties().containsKey(JSONP_CALLBACK_PARAMETER)) {
+						parameterName = appConfig.getProperties().getProperty(JSONP_CALLBACK_PARAMETER);
+					}
+
+					// Use default parameter name if it was missing in the
+					// configuration after jsonp was enabled
+					if (parameterName == null || parameterName.trim().isEmpty()) {
+						parameterName = DEFAULT_JSONP_CALLBACK_PARAMETER;
+					}
+
+					String parameter = req.getParameter(parameterName);
+
+					if (parameter != null) {
+						parameter = parameter.trim();
+
+						if (parameter.isEmpty()) {
+							parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+						}
+
+						// check callback function name is a valid javascript function
+						// name
+						if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
+							throw new IOException("Callback function name was invalid");
+						}
+
+						resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
+
+						// explicitly set the content type to "application/javascript"
+						// to fit JSONP best practices
+						contentType = APPLICATION_JAVASCRIPT;
+					}
 				}
-
-				// check callback function name is a valid javascript function name
-				if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
-					throw new IOException("Callback function name was invalid");
-				}
-
-				resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
 			}
 		}
 
