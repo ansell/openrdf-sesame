@@ -171,6 +171,18 @@ public abstract class BaseServlet implements Servlet {
 		return null;
 	}
 
+	protected QueryResultFormat getJSONPResultFormat(final HttpServletRequest req, final ServletResponse resp)
+	{
+		String header = req.getHeader(ACCEPT);
+		if (header != null) {
+			if (header.equals(APPLICATION_JAVASCRIPT)) {
+				return TupleQueryResultFormat.JSON;
+			}
+		}
+
+		return null;
+	}
+
 	protected QueryResultWriter getResultWriter(final HttpServletRequest req, final ServletResponse resp,
 			final OutputStream outputStream)
 		throws UnsupportedQueryResultFormatException, IOException
@@ -179,6 +191,10 @@ public abstract class BaseServlet implements Servlet {
 
 		if (resultFormat == null) {
 			resultFormat = getBooleanResultFormat(req, resp);
+		}
+
+		if (resultFormat == null) {
+			resultFormat = getJSONPResultFormat(req, resp);
 		}
 
 		if (resultFormat == null) {
