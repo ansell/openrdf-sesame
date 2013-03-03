@@ -18,6 +18,7 @@ package org.openrdf.query.resultio;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -40,13 +41,15 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 * SPARQL Query Results XML Format.
 	 */
 	public static final BooleanQueryResultFormat SPARQL = new BooleanQueryResultFormat("SPARQL/XML",
-			"application/sparql-results+xml", Charset.forName("UTF-8"), "srx");
+			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"),
+			Arrays.asList("srx", "xml"));
 
 	/**
 	 * SPARQL Query Results JSON Format.
 	 */
 	public static final BooleanQueryResultFormat JSON = new BooleanQueryResultFormat("SPARQL/JSON",
-			"application/sparql-results+json", Charset.forName("UTF-8"), "srj");
+			Arrays.asList("application/sparql-results+json", "application/json"), Charset.forName("UTF-8"),
+			Arrays.asList("srj", "json"));
 
 	/**
 	 * Plain text encoding using values "true" and "false" (case-insensitive).
