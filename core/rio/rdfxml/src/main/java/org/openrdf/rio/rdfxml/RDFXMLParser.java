@@ -456,7 +456,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		results.addAll(getCompulsoryXmlFeatureSettings());
 		results.addAll(getOptionalXmlPropertySettings());
 		results.addAll(getOptionalXmlFeatureSettings());
-
+		
+		results.add(XMLParserSettings.CUSTOM_XML_READER);
+		
 		return results;
 	}
 
