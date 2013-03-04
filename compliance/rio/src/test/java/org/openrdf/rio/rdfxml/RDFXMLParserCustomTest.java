@@ -86,8 +86,7 @@ public class RDFXMLParserCustomTest {
 
 		try {
 			// this should trigger a SAX parse exception that will blow up at the
-			// 64k
-			// entity limit rather than OOMing
+			// 64k entity limit rather than OOMing
 			aParser.parse(
 					this.getClass().getResourceAsStream("/testcases/rdfxml/openrdf/bad-entity-expansion-limit.rdf"),
 					"http://example.org");
@@ -118,8 +117,7 @@ public class RDFXMLParserCustomTest {
 
 		try {
 			// this should trigger a SAX parse exception that will blow up at the
-			// 64k
-			// entity limit rather than OOMing
+			// 64k entity limit rather than OOMing
 			aParser.parse(
 					this.getClass().getResourceAsStream("/testcases/rdfxml/openrdf/bad-entity-expansion-limit.rdf"),
 					"http://example.org");
@@ -143,7 +141,7 @@ public class RDFXMLParserCustomTest {
 	 * @throws Exception
 	 */
 	@Ignore
-	@Test
+	@Test(timeout = 10000)
 	public void testEntityExpansionNoSecureProcessing()
 		throws Exception
 	{
@@ -156,9 +154,7 @@ public class RDFXMLParserCustomTest {
 		aParser.setParserConfig(config);
 
 		try {
-			// this should trigger a SAX parse exception that will blow up at the
-			// 64k
-			// entity limit rather than OOMing
+			// IMPORTANT: This will not use the entity limit
 			aParser.parse(
 					this.getClass().getResourceAsStream("/testcases/rdfxml/openrdf/bad-entity-expansion-limit.rdf"),
 					"http://example.org");
