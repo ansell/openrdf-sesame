@@ -19,6 +19,7 @@ package org.openrdf.rio.rdfxml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.RDFXMLParserSettings;
 
 /**
  * A parser for XML-serialized RDF. This parser operates directly on the SAX
@@ -374,7 +376,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 *         {@link XMLReader#setFeature(String, boolean)}.
 	 */
 	public Collection<RioSetting<Boolean>> getSupportedXmlFeatureSettings() {
-		return Collections.<RioSetting<Boolean>> emptyList();
+		Set<RioSetting<Boolean>> results = new HashSet<RioSetting<Boolean>>();
+		results.add(RDFXMLParserSettings.SECURE_PROCESSING);
+		return results;
 	}
 
 	@Override
