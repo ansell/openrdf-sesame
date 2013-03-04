@@ -281,15 +281,6 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			xmlReader.setContentHandler(saxFilter);
 			xmlReader.setErrorHandler(this);
 
-			// turn this on by default, but a user can override w/ false in the
-			// subsequent feature setting
-			try {
-				xmlReader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			}
-			catch (Exception e) {
-				// ignorable, however unuseful this is.
-			}
-
 			for (RioSetting<Boolean> aSetting : getSupportedXmlFeatureSettings()) {
 				try {
 					xmlReader.setFeature(aSetting.getKey(), getParserConfig().get(aSetting));
