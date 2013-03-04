@@ -101,7 +101,7 @@ public abstract class RDFParserBase implements RDFParser {
 	/**
 	 * The ValueFactory to use for creating RDF model objects.
 	 */
-	private ValueFactory valueFactory;
+	protected ValueFactory valueFactory;
 
 	/**
 	 * The base URI for resolving relative URIs.
