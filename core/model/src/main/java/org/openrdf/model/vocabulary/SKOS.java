@@ -1,7 +1,9 @@
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -22,6 +24,12 @@ public class SKOS {
 	 * The recommended prefix for the SKOS namespace: "skos"
 	 */
 	public static final String PREFIX = "skos";
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the SKOS
+	 * namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
 
 	/* classes */
 
@@ -107,14 +115,13 @@ public class SKOS {
 	 * @see http://www.w3.org/TR/skos-reference/#collections
 	 */
 	public static final URI MEMBER;
-	
+
 	/**
 	 * The skos:memberList relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#collections
 	 */
 	public static final URI MEMBER_LIST;
-	
 
 	/* notation properties */
 
@@ -199,37 +206,37 @@ public class SKOS {
 	 * @see http://www.w3.org/TR/skos-reference/#semantic-relations
 	 */
 	public static final URI NARROWER;
-	
+
 	/**
 	 * The skos:narrowerTransitive relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#semantic-relations
 	 */
 	public static final URI NARROWER_TRANSITIVE;
-	
+
 	/**
 	 * The skos:related relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#semantic-relations
 	 */
 	public static final URI RELATED;
-	
+
 	/**
 	 * The skos:semanticRelation relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#semantic-relations
 	 */
 	public static final URI SEMANTIC_RELATION;
-	
+
 	/* mapping properties */
-	
+
 	/**
 	 * The skos:broadMatch relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#mapping
 	 */
 	public static final URI BROAD_MATCH;
-	
+
 	/**
 	 * The skos:closeMatch relation.
 	 * 
@@ -243,29 +250,28 @@ public class SKOS {
 	 * @see http://www.w3.org/TR/skos-reference/#mapping
 	 */
 	public static final URI EXACT_MATCH;
-	
+
 	/**
 	 * The skos:mappingRelation relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#mapping
 	 */
 	public static final URI MAPPING_RELATION;
-	
+
 	/**
 	 * The skos:narrowMatch relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#mapping
 	 */
 	public static final URI NARROW_MATCH;
-	
+
 	/**
 	 * The skos:relatedMatch relation.
 	 * 
 	 * @see http://www.w3.org/TR/skos-reference/#mapping
 	 */
 	public static final URI RELATED_MATCH;
-	
-	
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
@@ -282,13 +288,13 @@ public class SKOS {
 
 		HAS_TOP_CONCEPT = f.createURI(NAMESPACE, "hasTopConcept");
 		MEMBER = f.createURI(NAMESPACE, "member");
-		
+
 		HIDDEN_LABEL = f.createURI(NAMESPACE, "hiddenLabel");
-		
+
 		IN_SCHEME = f.createURI(NAMESPACE, "inScheme");
-		
+
 		TOP_CONCEPT_OF = f.createURI(NAMESPACE, "topConceptOf");
-		
+
 		MEMBER_LIST = f.createURI(NAMESPACE, "memberList");
 		NOTATION = f.createURI(NAMESPACE, "notation");
 		CHANGE_NOTE = f.createURI(NAMESPACE, "changeNote");
@@ -308,6 +314,6 @@ public class SKOS {
 		MAPPING_RELATION = f.createURI(NAMESPACE, "mappingRelation");
 		NARROW_MATCH = f.createURI(NAMESPACE, "narrowMatch");
 		RELATED_MATCH = f.createURI(NAMESPACE, "relatedMatch");
-		
+
 	}
 }
