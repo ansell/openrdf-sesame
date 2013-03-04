@@ -20,6 +20,7 @@ import javax.xml.XMLConstants;
 
 import org.xml.sax.XMLReader;
 
+import org.openrdf.rio.RioConfig;
 import org.openrdf.rio.RioSetting;
 
 /**
@@ -34,6 +35,8 @@ public class XMLParserSettings {
 	/**
 	 * Parser setting for the secure processing feature of XML parsers to avoid
 	 * DOS attacks
+	 * <p>
+	 * Defaults to true
 	 * 
 	 * @see http 
 	 *      ://docs.oracle.com/javase/1.5.0/docs/api/javax/xml/XMLConstants.html
@@ -46,6 +49,9 @@ public class XMLParserSettings {
 	/**
 	 * Parser setting to customise the XMLReader that is used by an XML based Rio
 	 * parser.
+	 * <p>
+	 * Defaults to null, This settings is only useful if
+	 * {@link RioConfig#isSet(RioSetting)} returns true.
 	 * 
 	 * @since 2.7.0
 	 */
