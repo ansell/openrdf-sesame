@@ -44,13 +44,13 @@ public abstract class TupleServlet extends TransformationServlet {
 		throws Exception
 	{
 		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
-		if (xsl != null) {
-			builder.transform(xslPath, xsl);
-		}
 		RepositoryConnection con = repository.getConnection();
 		try {
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());
+			}
+			if (xsl != null) {
+				builder.transform(xslPath, xsl);
 			}
 			builder.start(variables);
 			builder.link(Arrays.asList("info"));
