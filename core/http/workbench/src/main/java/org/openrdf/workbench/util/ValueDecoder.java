@@ -115,22 +115,27 @@ class ValueDecoder {
 		throws BadRequestException
 	{
 		String label = value.substring(1, value.lastIndexOf('"'));
-		String rest = value.substring(label.length() + 2);
 		Value result;
-		if (rest.startsWith("^^")) {
-			Value datatype = decodeValue(rest.substring(2));
-			if (datatype instanceof URI) {
-				result = factory.createLiteral(label, (URI)datatype);
-			}
-			else {
-				throw new BadRequestException("Malformed datatype: " + value);
-			}
-		}
-		else if (rest.charAt(0) == '@') {
-			result = factory.createLiteral(label, rest.substring(1));
+		if (value.length() == (label.length() + 2)) {
+			result = factory.createLiteral(label);
 		}
 		else {
-			result = factory.createLiteral(label);
+			String rest = value.substring(label.length() + 2);
+			if (rest.startsWith("^^")) {
+				Value datatype = decodeValue(rest.substring(2));
+				if (datatype instanceof URI) {
+					result = factory.createLiteral(label, (URI)datatype);
+				}
+				else {
+					throw new BadRequestException("Malformed datatype: " + value);
+				}
+			}
+			else if (rest.charAt(0) == '@') {
+				result = factory.createLiteral(label, rest.substring(1));
+			}
+			else {
+				throw new BadRequestException("Malformed language tag or datatype: " + value);
+			}
 		}
 		return result;
 	}
