@@ -29,7 +29,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
-import org.openrdf.rio.helpers.RDFXMLParserSettings;
+import org.openrdf.rio.helpers.XMLParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -112,7 +112,7 @@ public class RDFXMLParserCustomTest {
 		aParser.setRDFHandler(new StatementCollector(aGraph));
 
 		ParserConfig config = new ParserConfig();
-		config.set(RDFXMLParserSettings.SECURE_PROCESSING, true);
+		config.set(XMLParserSettings.SECURE_PROCESSING, true);
 		aParser.setParserConfig(config);
 
 		try {
@@ -150,7 +150,7 @@ public class RDFXMLParserCustomTest {
 		aParser.setRDFHandler(new StatementCollector(aGraph));
 
 		ParserConfig config = new ParserConfig();
-		config.set(RDFXMLParserSettings.SECURE_PROCESSING, false);
+		config.set(XMLParserSettings.SECURE_PROCESSING, false);
 		aParser.setParserConfig(config);
 
 		try {

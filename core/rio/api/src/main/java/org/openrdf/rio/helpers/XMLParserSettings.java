@@ -18,19 +18,21 @@ package org.openrdf.rio.helpers;
 
 import javax.xml.XMLConstants;
 
+import org.xml.sax.XMLReader;
+
 import org.openrdf.rio.RioSetting;
 
 /**
- * ParserSettings for the RDFXML parser features.
+ * ParserSettings for the XML parser features.
  * 
  * @author Michael Grove
  * @see XMLConstants
  * @since 2.7.0
  */
-public class RDFXMLParserSettings {
+public class XMLParserSettings {
 
 	/**
-	 * ParserSetting for the secure processing feature of XML parsers to avoid
+	 * Parser setting for the secure processing feature of XML parsers to avoid
 	 * DOS attacks
 	 * 
 	 * @see http 
@@ -42,9 +44,18 @@ public class RDFXMLParserSettings {
 			XMLConstants.FEATURE_SECURE_PROCESSING, "Secure processing feature of XMLConstants", true);
 
 	/**
+	 * Parser setting to customise the XMLReader that is used by an XML based Rio
+	 * parser.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<XMLReader> CUSTOM_XML_READER = new RioSettingImpl<XMLReader>(
+			"org.openrdf.rio.xmlreader", "Custom XML Reader", null);
+
+	/**
 	 * Private constructor
 	 */
-	private RDFXMLParserSettings() {
+	private XMLParserSettings() {
 	}
 
 }
