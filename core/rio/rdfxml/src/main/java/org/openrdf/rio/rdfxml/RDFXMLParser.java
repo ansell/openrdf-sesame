@@ -443,7 +443,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 *         {@link XMLReader#setFeature(String, boolean)}.
 	 */
 	public Collection<RioSetting<Boolean>> getOptionalXmlFeatureSettings() {
-		return Collections.<RioSetting<Boolean>> emptyList();
+		Set<RioSetting<Boolean>> results = new HashSet<RioSetting<Boolean>>();
+		results.add(XMLParserSettings.LOAD_EXTERNAL_DTD);
+		return results;
 	}
 
 	@Override
@@ -456,9 +458,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		results.addAll(getCompulsoryXmlFeatureSettings());
 		results.addAll(getOptionalXmlPropertySettings());
 		results.addAll(getOptionalXmlFeatureSettings());
-		
+
 		results.add(XMLParserSettings.CUSTOM_XML_READER);
-		
+
 		return results;
 	}
 
