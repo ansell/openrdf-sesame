@@ -289,7 +289,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			xmlReader.setContentHandler(saxFilter);
 			xmlReader.setErrorHandler(this);
 
-			for (RioSetting<Boolean> aSetting : getSupportedXmlFeatureSettings()) {
+			// Set all compulsory feature settings, using the defaults if they are
+			// not explicitly set
+			for (RioSetting<Boolean> aSetting : getCompulsoryXmlFeatureSettings()) {
 				try {
 					xmlReader.setFeature(aSetting.getKey(), getParserConfig().get(aSetting));
 				}
@@ -301,9 +303,43 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 				}
 			}
 
-			for (RioSetting<?> aSetting : getSupportedXmlPropertySettings()) {
+			// Set all compulsory property settings, using the defaults if they are
+			// not explicitly set
+			for (RioSetting<?> aSetting : getCompulsoryXmlPropertySettings()) {
 				try {
 					xmlReader.setProperty(aSetting.getKey(), getParserConfig().get(aSetting));
+				}
+				catch (SAXNotRecognizedException e) {
+					reportWarning(String.format("%s is not a recognized SAX property.", aSetting.getKey()));
+				}
+				catch (SAXNotSupportedException e) {
+					reportWarning(String.format("%s is not a supportd SAX property.", aSetting.getKey()));
+				}
+			}
+
+			// Check for any optional feature settings that are explicitly set in
+			// the parser config
+			for (RioSetting<Boolean> aSetting : getOptionalXmlFeatureSettings()) {
+				try {
+					if (getParserConfig().isSet(aSetting)) {
+						xmlReader.setFeature(aSetting.getKey(), getParserConfig().get(aSetting));
+					}
+				}
+				catch (SAXNotRecognizedException e) {
+					reportWarning(String.format("%s is not a recognized SAX feature.", aSetting.getKey()));
+				}
+				catch (SAXNotSupportedException e) {
+					reportWarning(String.format("%s is not a supportd SAX feature.", aSetting.getKey()));
+				}
+			}
+
+			// Check for any optional property settings that are explicitly set in
+			// the parser config
+			for (RioSetting<?> aSetting : getOptionalXmlPropertySettings()) {
+				try {
+					if (getParserConfig().isSet(aSetting)) {
+						xmlReader.setProperty(aSetting.getKey(), getParserConfig().get(aSetting));
+					}
 				}
 				catch (SAXNotRecognizedException e) {
 					reportWarning(String.format("%s is not a recognized SAX property.", aSetting.getKey()));
@@ -352,21 +388,53 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	/**
-	 * Returns a collection of settings that can be validly set as XML parser
+	 * Returns a collection of settings that will always be set as XML parser
 	 * properties using {@link XMLReader#setProperty(String, Object)}
+	 * <p>
+	 * Subclasses can override this to specify more supported settings.
+	 * 
+	 * @return A collection of {@link RioSetting}s that indicate which properties
+	 *         will always be setup using
+	 *         {@link XMLReader#setProperty(String, Object)}.
+	 */
+	public Collection<RioSetting<?>> getCompulsoryXmlPropertySettings() {
+		return Collections.<RioSetting<?>> emptyList();
+	}
+
+	/**
+	 * Returns a collection of settings that will always be set as XML parser
+	 * features using {@link XMLReader#setFeature(String, boolean)}.
+	 * <p>
+	 * Subclasses can override this to specify more supported settings.
+	 * 
+	 * @return A collection of {@link RioSetting}s that indicate which boolean
+	 *         settings will always be setup using
+	 *         {@link XMLReader#setFeature(String, boolean)}.
+	 */
+	public Collection<RioSetting<Boolean>> getCompulsoryXmlFeatureSettings() {
+		Set<RioSetting<Boolean>> results = new HashSet<RioSetting<Boolean>>();
+		results.add(XMLParserSettings.SECURE_PROCESSING);
+		return results;
+	}
+
+	/**
+	 * Returns a collection of settings that will be used, if set in
+	 * {@link #getParserConfig()}, as XML parser properties using
+	 * {@link XMLReader#setProperty(String, Object)}
 	 * <p>
 	 * Subclasses can override this to specify more supported settings.
 	 * 
 	 * @return A collection of {@link RioSetting}s that indicate which properties
 	 *         can be setup using {@link XMLReader#setProperty(String, Object)}.
 	 */
-	public Collection<RioSetting<?>> getSupportedXmlPropertySettings() {
+	public Collection<RioSetting<?>> getOptionalXmlPropertySettings() {
 		return Collections.<RioSetting<?>> emptyList();
 	}
 
 	/**
-	 * Returns a collection of settings that can be validly set as XML parser
-	 * features using {@link XMLReader#setFeature(String, boolean)}.
+	 * Returns a collection of settings that will be used, if set in
+	 * {@link #getParserConfig()}, as XML parser features using
+	 * {@link XMLReader#setFeature(String, boolean)}.
 	 * <p>
 	 * Subclasses can override this to specify more supported settings.
 	 * 
@@ -374,10 +442,8 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 *         settings can be setup using
 	 *         {@link XMLReader#setFeature(String, boolean)}.
 	 */
-	public Collection<RioSetting<Boolean>> getSupportedXmlFeatureSettings() {
-		Set<RioSetting<Boolean>> results = new HashSet<RioSetting<Boolean>>();
-		results.add(XMLParserSettings.SECURE_PROCESSING);
-		return results;
+	public Collection<RioSetting<Boolean>> getOptionalXmlFeatureSettings() {
+		return Collections.<RioSetting<Boolean>> emptyList();
 	}
 
 	@Override
@@ -386,8 +452,10 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		Set<RioSetting<?>> results = new HashSet<RioSetting<?>>();
 
 		results.addAll(super.getSupportedSettings());
-		results.addAll(getSupportedXmlPropertySettings());
-		results.addAll(getSupportedXmlFeatureSettings());
+		results.addAll(getCompulsoryXmlPropertySettings());
+		results.addAll(getCompulsoryXmlFeatureSettings());
+		results.addAll(getOptionalXmlPropertySettings());
+		results.addAll(getOptionalXmlFeatureSettings());
 
 		return results;
 	}
