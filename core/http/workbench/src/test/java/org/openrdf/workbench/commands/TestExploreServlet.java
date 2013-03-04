@@ -38,6 +38,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.workbench.commands.ExploreServlet.ResultCursor;
 import org.openrdf.workbench.util.TupleResultBuilder;
 
 /**
@@ -49,7 +50,7 @@ public class TestExploreServlet {
 
 	private ExploreServlet servlet;
 
-	private URI foo, bar, bang;
+	private URI foo, bar, bang, foos[];
 
 	private static final String PREFIX = "PREFIX : <http://www.test.com/>\nINSERT DATA { GRAPH :foo { ";
 
@@ -77,6 +78,10 @@ public class TestExploreServlet {
 		foo = factory.createURI("http://www.test.com/foo");
 		bar = factory.createURI("http://www.test.com/bar");
 		bang = factory.createURI("http://www.test.com/bang");
+		foos = new URI[128];
+		for (int i = 0; i < foos.length; i++) {
+			foos[i] = factory.createURI("http://www.test.com/foo/" + i);
+		}
 		builder = mock(TupleResultBuilder.class);
 	}
 
@@ -86,6 +91,16 @@ public class TestExploreServlet {
 	{
 		connection.close();
 		servlet.destroy();
+	}
+
+	@Test
+	public final void testRegressionSES1748()
+		throws OpenRDFException
+	{
+		for (int i = 0; i < foos.length; i++) {
+			connection.add(foo, bar, foos[i]);
+		}
+		assertStatementCount(foo, 10, foos.length, 10);
 	}
 
 	/**
@@ -100,7 +115,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":foo a :bar");
-		assertStatementCount(foo, 1);
+		assertStatementCount(foo, 1, 1);
 		verify(builder).result(foo, RDF.TYPE, bar, foo);
 	}
 
@@ -109,7 +124,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar :foo :bar");
-		assertStatementCount(foo, 1);
+		assertStatementCount(foo, 1, 1);
 		verify(builder).result(bar, foo, bar, foo);
 	}
 
@@ -118,7 +133,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar a :foo");
-		assertStatementCount(foo, 1);
+		assertStatementCount(foo, 1, 1);
 		verify(builder).result(bar, RDF.TYPE, foo, foo);
 	}
 
@@ -127,7 +142,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar a :bar");
-		assertStatementCount(foo, 1);
+		assertStatementCount(foo, 1, 1);
 		verify(builder).result(bar, RDF.TYPE, bar, foo);
 	}
 
@@ -136,7 +151,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar a :bar , :foo");
-		assertStatementCount(foo, 2);
+		assertStatementCount(foo, 2, 2);
 		verify(builder).result(bar, RDF.TYPE, bar, foo);
 		verify(builder).result(bar, RDF.TYPE, foo, foo);
 	}
@@ -146,7 +161,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar :bar :bang");
-		assertStatementCount(bar, 1);
+		assertStatementCount(bar, 1, 1);
 		verify(builder).result(bar, bar, bang, foo);
 	}
 
@@ -155,7 +170,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar a :bar");
-		assertStatementCount(bar, 1);
+		assertStatementCount(bar, 1, 1);
 		verify(builder).result(bar, RDF.TYPE, bar, foo);
 	}
 
@@ -164,7 +179,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":bar :bang :bang");
-		assertStatementCount(bang, 1);
+		assertStatementCount(bang, 1, 1);
 		verify(builder).result(bar, bang, bang, foo);
 	}
 
@@ -173,7 +188,7 @@ public class TestExploreServlet {
 		throws OpenRDFException
 	{
 		addToFooContext(":foo :foo :foo");
-		assertStatementCount(foo, 1);
+		assertStatementCount(foo, 1, 1);
 		verify(builder).result(foo, foo, foo, foo);
 	}
 
@@ -183,7 +198,7 @@ public class TestExploreServlet {
 	{
 		addToFooContext(":foo :foo :foo");
 		connection.add(foo, foo, foo);
-		assertStatementCount(foo, 2);
+		assertStatementCount(foo, 2, 2);
 		verify(builder).result(foo, foo, foo, foo);
 		verify(builder).result(foo, foo, foo, null);
 	}
@@ -194,10 +209,18 @@ public class TestExploreServlet {
 		connection.prepareUpdate(QueryLanguage.SPARQL, PREFIX + pattern + SUFFIX).execute();
 	}
 
-	private void assertStatementCount(URI uri, int expectedValue)
+	private void assertStatementCount(URI uri, int expectedTotal, int expectedRendered)
 		throws OpenRDFException
 	{
-		int count = servlet.processResource(connection, builder, uri, 0, 0, true);
-		assertThat(count, is(equalTo(expectedValue)));
+		// limit = 0 means render all
+		assertStatementCount(uri, 0, expectedTotal, expectedRendered);
+	}
+
+	private void assertStatementCount(URI uri, int limit, int expectedTotal, int expectedRendered)
+		throws OpenRDFException
+	{
+		ResultCursor cursor = servlet.processResource(connection, builder, uri, 0, limit, true);
+		assertThat(cursor.getTotalResultCount(), is(equalTo(expectedTotal)));
+		assertThat(cursor.getRenderedResultCount(), is(equalTo(expectedRendered)));
 	}
 }
