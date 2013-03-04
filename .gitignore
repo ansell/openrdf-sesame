@@ -19,3 +19,8 @@ target/
 
 # GEdit generated stuff
 *.*~
+
+# Mac nonsense
+.DS_Store
+
+
