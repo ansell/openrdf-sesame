@@ -277,7 +277,15 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			// saxFilter.clear();
 			saxFilter.setDocumentURI(documentURI);
 
-			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+			XMLReader xmlReader;
+
+			if (getParserConfig().isSet(XMLParserSettings.CUSTOM_XML_READER)) {
+				xmlReader = getParserConfig().get(XMLParserSettings.CUSTOM_XML_READER);
+			}
+			else {
+				xmlReader = XMLReaderFactory.createXMLReader();
+			}
+
 			xmlReader.setContentHandler(saxFilter);
 			xmlReader.setErrorHandler(this);
 
