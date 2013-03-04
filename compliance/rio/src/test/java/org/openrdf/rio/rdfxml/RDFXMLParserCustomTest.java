@@ -18,6 +18,7 @@ package org.openrdf.rio.rdfxml;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Model;
@@ -131,11 +132,17 @@ public class RDFXMLParserCustomTest {
 	}
 
 	/**
-	 * Test with Secure processing setting off. Only turn this on to verify it is
-	 * still working, as there is no way to safely perform this test.
+	 * Test with Secure processing setting off.
+	 * <p>
+	 * IMPORTANT: Only turn this on to verify it is still working, as there is no
+	 * way to safely perform this test.
+	 * <p>
+	 * WARNING: This test will cause an OutOfMemoryException when it eventually
+	 * fails, as it will eventually fail.
 	 * 
 	 * @throws Exception
 	 */
+	@Ignore
 	@Test
 	public void testEntityExpansionNoSecureProcessing()
 		throws Exception
