@@ -31,13 +31,22 @@ class ConsoleIO {
 
 	private final BufferedReader input;
 
-	private final PrintStream out;
+	private final PrintStream out, err;
 
 	private final ConsoleState appInfo;
 
-	ConsoleIO(BufferedReader input, PrintStream out, ConsoleState info) {
+	private boolean echo = false;
+
+	private boolean quiet = false;
+
+	private boolean force = false;
+
+	private boolean cautious = false;
+
+	ConsoleIO(BufferedReader input, PrintStream out, PrintStream err, ConsoleState info) {
 		this.input = input;
 		this.out = out;
+		this.err = err;
 		this.appInfo = info;
 	}
 
@@ -49,10 +58,12 @@ class ConsoleIO {
 		throws IOException
 	{
 		String repositoryID = appInfo.getRepositoryID();
-		if (repositoryID != null) {
-			write(repositoryID);
+		if (!quiet) {
+			if (repositoryID != null) {
+				write(repositoryID);
+			}
+			write("> ");
 		}
-		write("> ");
 		String line = input.readLine();
 		String result = null;
 		if (line != null) {
@@ -68,26 +79,37 @@ class ConsoleIO {
 			buf.setLength(buf.length() - 1);
 			result = buf.toString().trim();
 		}
+		if (echo) {
+			writeln(result);
+		}
 		return result;
 	}
 
 	protected String readln(String... message)
 		throws IOException
 	{
-		if (message.length > 0) {
+		if (!quiet && message.length > 0) {
 			String prompt = message[0];
 			if (prompt != null) {
 				write(prompt + " ");
 			}
 		}
-		return input.readLine();
+		String result = input.readLine();
+		if (echo) {
+			writeln(result);
+		}
+		return result;
 	}
 
 	protected String readPassword(final String message)
 		throws IOException
 	{
 		// TODO: Proper password reader
-		return readln(message);
+		String result = readln(message);
+		if (echo && !result.isEmpty()) {
+			writeln("************");
+		}
+		return result;
 	}
 
 	protected void write(final String string) {
@@ -103,7 +125,7 @@ class ConsoleIO {
 	}
 
 	protected void writeError(final String errMsg) {
-		writeln("ERROR: " + errMsg);
+		err.println(errMsg);
 	}
 
 	protected void writeUnopenedError() {
@@ -111,39 +133,67 @@ class ConsoleIO {
 	}
 
 	protected void writeParseError(final String prefix, final int lineNo, final int colNo, final String msg) {
-		final StringBuilder builder = new StringBuilder(256);
-		builder.append(prefix);
-		builder.append(": ");
-		builder.append(msg);
-		final String locationString = RDFParseException.getLocationString(lineNo, colNo);
-		if (locationString.length() > 0) {
+		String locationString = RDFParseException.getLocationString(lineNo, colNo);
+		int locSize = locationString.length();
+		final StringBuilder builder = new StringBuilder(locSize + prefix.length() + msg.length() + 3);
+		builder.append(prefix).append(": ").append(msg);
+		if (locSize > 0) {
 			builder.append(" ").append(locationString);
 		}
-		writeln(builder.toString());
+		writeError(builder.toString());
 	}
 
 	protected boolean askProceed(final String msg, final boolean defaultValue)
 		throws IOException
 	{
 		final String defaultString = defaultValue ? "yes" : "no";
-		boolean result = defaultValue;
-		while (true) {
-			writeln(msg);
-			write("Proceed? (yes|no) [" + defaultString + "]: ");
-			final String reply = readln();
-			if ("no".equalsIgnoreCase(reply) || "no.".equalsIgnoreCase(reply)) {
-				result = false;
-				break;
-			}
-			else if ("yes".equalsIgnoreCase(reply) || "yes.".equalsIgnoreCase(reply)) {
-				result = true;
-				break;
-			}
-			else if (reply.trim().isEmpty()) {
-				break;
+		boolean result = force ? true : (cautious ? false : defaultValue);
+		if (!force && !cautious) {
+			while (true) {
+				writeln(msg);
+				write("Proceed? (yes|no) [" + defaultString + "]: ");
+				final String reply = readln();
+				if ("no".equalsIgnoreCase(reply) || "no.".equalsIgnoreCase(reply)) {
+					result = false;
+					break;
+				}
+				else if ("yes".equalsIgnoreCase(reply) || "yes.".equalsIgnoreCase(reply)) {
+					result = true;
+					break;
+				}
+				else if (reply.trim().isEmpty()) {
+					break;
+				}
 			}
 		}
 		return result;
 	}
 
+	/**
+	 * @param echo
+	 *        whether to echo user input to output stream
+	 */
+	protected void setEcho(boolean echo) {
+		this.echo = echo;
+	}
+
+	/**
+	 * @param quiet
+	 *        whether to suppress printing of prompts to output
+	 */
+	public void setQuiet(boolean quiet) {
+		this.quiet = quiet;
+	}
+
+	/**
+	 */
+	public void setForce() {
+		this.force = true;
+	}
+
+	/**
+	 */
+	public void setCautious() {
+		this.cautious = true;
+	}
 }
