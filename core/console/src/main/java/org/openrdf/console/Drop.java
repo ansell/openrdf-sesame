@@ -84,18 +84,14 @@ public class Drop implements Command {
 		}
 	}
 
-	/**
-	 * @param repoID
-	 * @param manager
-	 * @throws IOException
-	 * @throws RepositoryException
-	 * @throws RepositoryConfigException
-	 */
 	private void dropRepository(final String repoID)
 		throws IOException, RepositoryException, RepositoryConfigException
 	{
-		final boolean proceed = consoleIO.askProceed("WARNING: you are about to drop repository '" + repoID
+		boolean proceed = consoleIO.askProceed("WARNING: you are about to drop repository '" + repoID
 				+ "'.", true);
+		if (proceed && !state.getManager().isSafeToRemove(repoID)) {
+			proceed = consoleIO.askProceed("WARNING: dropping this repository may break another that is proxying it.", false);
+		}
 		if (proceed) {
 			if (repoID.equals(state.getRepositoryID())) {
 				close.closeRepository(false);
