@@ -44,7 +44,7 @@ public class RDFInserter extends RDFHandlerBase {
 	/**
 	 * The connection to use for the add operations.
 	 */
-	private final RepositoryConnection con;
+	protected final RepositoryConnection con;
 
 	/**
 	 * The contexts to add the statements to. If this variable is a non-empty
