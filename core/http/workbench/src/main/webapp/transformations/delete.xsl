@@ -3,10 +3,8 @@
    <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
  ]>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
 
@@ -17,7 +15,9 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<form action="delete" method="post">
+		<script src="../../scripts/delete.js" type="text/javascript">
+		</script>
+		<form action="delete" method="post" onsubmit="return checkIsSafeToDelete();">
 			<table class="dataentry">
 				<tbody>
 					<tr>
@@ -26,13 +26,11 @@
 						</th>
 						<td>
 							<select id="id" name="id">
-							<option value=""></option>
+								<option value=""></option>
 								<xsl:for-each
 									select="//sparql:result[sparql:binding[@name='id']/sparql:literal/text()!='SYSTEM']">
-									<option
-										value="{sparql:binding[@name='id']/sparql:literal}">
-										<xsl:value-of
-											select="sparql:binding[@name='id']/sparql:literal" />
+									<option value="{sparql:binding[@name='id']/sparql:literal}">
+										<xsl:value-of select="sparql:binding[@name='id']/sparql:literal" />
 										-
 										<xsl:value-of
 											select="sparql:binding[@name='description']/sparql:literal" />
@@ -45,8 +43,7 @@
 					<tr>
 						<td></td>
 						<td colspan="2">
-							<input type="submit"
-								value="{$delete.label}" />
+							<input type="submit" value="{$delete.label}" />
 						</td>
 					</tr>
 				</tbody>
