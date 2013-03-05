@@ -273,9 +273,7 @@ public abstract class BaseServlet implements Servlet {
 				String jsonpEnabledProperty = appConfig.getProperties().getProperty(JSONP_ENABLED);
 
 				// check if jsonp is a property and it is set to true
-				if (jsonpEnabledProperty != null && !jsonpEnabledProperty.trim().isEmpty()
-						&& Boolean.parseBoolean(jsonpEnabledProperty))
-				{
+				if (jsonpEnabledProperty != null && Boolean.parseBoolean(jsonpEnabledProperty)) {
 					String parameterName = null;
 
 					// check whether they customised the parameter to use to identify
