@@ -54,8 +54,6 @@ public class SPARQLRepository extends RepositoryBase {
 
 	private String updateEndpointUrl;
 
-	private Map<String, String> additionalHttpHeaders;
-	
 	public SPARQLRepository(String queryEndpointUrl) {
 		this(queryEndpointUrl, null);
 	}
@@ -125,7 +123,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 * @return Returns the additionalHttpHeaders.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders;
+		return httpClient.getAdditionalHttpHeaders();
 	}
 
 	/**
