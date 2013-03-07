@@ -125,7 +125,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 * @return Returns the additionalHttpHeaders.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders;
+		return httpClient.getAdditionalHttpHeaders();
 	}
 
 	/**
