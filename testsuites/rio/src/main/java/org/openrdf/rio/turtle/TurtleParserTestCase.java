@@ -33,6 +33,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
@@ -74,7 +75,24 @@ public abstract class TurtleParserTestCase {
 	 * @see http 
 	 *      ://lists.w3.org/Archives/Public/public-rdf-comments/2013Feb/0070.html
 	 */
-	private static String TEST_AFS_MANIFEST_GOOD_URL = "/testcases/turtle/tests-ttl/manifest.ttl";
+	private static String TEST_AFS_MANIFEST_URL = "/testcases/turtle/tests-ttl/manifest.ttl";
+
+	/**
+	 * Base URL for coverage tests.
+	 * 
+	 * @see
+	 */
+	protected static String TESTS_COVERAGE_BASE_URL = "http://example/base/";
+
+	/**
+	 * Base directory for coverage tests.
+	 */
+	private static String TEST_COVERAGE_FILE_BASE_PATH = "/testcases/turtle/coverage/tests/";
+
+	/**
+	 * Manifest for coverage tests.
+	 */
+	private static String TEST_COVERAGE_MANIFEST_URL = "/testcases/turtle/coverage/tests/manifest.ttl";
 
 	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
 
@@ -97,14 +115,42 @@ public abstract class TurtleParserTestCase {
 		String baseURL = NTRIPLES_TEST_URL;
 		suite.addTest(new PositiveParserTest(testName, inputURL, outputURL, baseURL));
 
-		// Add the manifest for positive test cases to a repository and query it
-		Repository repository = new SailRepository(new MemoryStore());
-		repository.initialize();
-		RepositoryConnection con = repository.getConnection();
+		// Add the manifest for AFS test cases to a repository and query it
+		Repository afsRepository = new SailRepository(new MemoryStore());
+		afsRepository.initialize();
+		RepositoryConnection afsCon = afsRepository.getConnection();
 
-		InputStream inputStream = this.getClass().getResourceAsStream(TEST_AFS_MANIFEST_GOOD_URL);
-		con.add(inputStream, TESTS_AFS_BASE_URL, RDFFormat.TURTLE);
+		InputStream inputStream = this.getClass().getResourceAsStream(TEST_AFS_MANIFEST_URL);
+		afsCon.add(inputStream, TESTS_AFS_BASE_URL, RDFFormat.TURTLE);
 
+		parsePositiveSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
+		parseNegativeSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
+		parsePositiveEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
+		parseNegativeEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
+
+		afsCon.close();
+		afsRepository.shutDown();
+
+		// Add the manifest for coverage test cases to a repository and query it
+		Repository coverageRepository = new SailRepository(new MemoryStore());
+		coverageRepository.initialize();
+		RepositoryConnection coverageCon = coverageRepository.getConnection();
+
+		InputStream coverageInputStream = this.getClass().getResourceAsStream(TEST_COVERAGE_MANIFEST_URL);
+		coverageCon.add(coverageInputStream, TESTS_COVERAGE_BASE_URL, RDFFormat.TURTLE);
+
+		parsePositiveEvalTests(suite, TEST_COVERAGE_FILE_BASE_PATH, TESTS_COVERAGE_BASE_URL, coverageCon);
+
+		coverageCon.close();
+		coverageRepository.shutDown();
+
+		return suite;
+	}
+
+	private void parsePositiveSyntaxTests(TestSuite suite, String fileBasePath, String baseUrl,
+			RepositoryConnection con)
+		throws Exception
+	{
 		StringBuilder positiveQuery = new StringBuilder();
 		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
 		positiveQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
@@ -123,15 +169,21 @@ public abstract class TurtleParserTestCase {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
+			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
+			String nextBaseUrl = baseUrl + nextTestFile;
 
 			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, null, nextBaseUrl));
 		}
 
 		queryResult.close();
 
+	}
+
+	private void parseNegativeSyntaxTests(TestSuite suite, String fileBasePath, String baseUrl,
+			RepositoryConnection con)
+		throws Exception
+	{
 		StringBuilder negativeQuery = new StringBuilder();
 		negativeQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
 		negativeQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
@@ -143,22 +195,28 @@ public abstract class TurtleParserTestCase {
 		negativeQuery.append("     ?test mf:action ?inputURL . ");
 		negativeQuery.append(" }");
 
-		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
 
 		// Add all negative parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
+			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
+			String nextBaseUrl = baseUrl + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl));
 		}
 
 		queryResult.close();
 
+	}
+
+	private void parsePositiveEvalTests(TestSuite suite, String fileBasePath, String baseUrl,
+			RepositoryConnection con)
+		throws Exception
+	{
 		StringBuilder positiveEvalQuery = new StringBuilder();
 		positiveEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
 		positiveEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
@@ -171,24 +229,28 @@ public abstract class TurtleParserTestCase {
 		positiveEvalQuery.append("     ?test mf:result ?outputURL . ");
 		positiveEvalQuery.append(" }");
 
-		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveEvalQuery.toString()).evaluate();
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveEvalQuery.toString()).evaluate();
 
 		// Add all positive eval tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
-			String nextOutputURL = TEST_AFS_FILE_BASE_PATH
-					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString());
+			String nextInputURL = fileBasePath + nextTestFile;
+			String nextOutputURL = fileBasePath + removeBase(((URI)bindingSet.getValue("outputURL")).toString());
 
-			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
+			String nextBaseUrl = baseUrl + nextTestFile;
 
 			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, nextOutputURL, nextBaseUrl));
 		}
 
 		queryResult.close();
+	}
 
+	private void parseNegativeEvalTests(TestSuite suite, String fileBasePath, String baseUrl,
+			RepositoryConnection con)
+		throws Exception
+	{
 		StringBuilder negativeEvalQuery = new StringBuilder();
 		negativeEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
 		negativeEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
@@ -200,26 +262,21 @@ public abstract class TurtleParserTestCase {
 		negativeEvalQuery.append("     ?test mf:action ?inputURL . ");
 		negativeEvalQuery.append(" }");
 
-		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeEvalQuery.toString()).evaluate();
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeEvalQuery.toString()).evaluate();
 
 		// Add all negative eval tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
+			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
+			String nextBaseUrl = baseUrl + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl));
 		}
 
 		queryResult.close();
-
-		con.close();
-		repository.shutDown();
-
-		return suite;
 	}
 
 	protected abstract RDFParser createRDFParser();
@@ -346,9 +403,9 @@ public abstract class TurtleParserTestCase {
 				turtleParser.parse(in, baseURL);
 				in.close();
 
-				System.err.println("Ignoring Turtle Negative Parser Test that does not report an expected error: "
-						+ inputURL);
-				// fail("Parser parses erroneous data without reporting errors");
+				// System.err.println("Ignoring Turtle Negative Parser Test that does not report an expected error: "
+				// + inputURL);
+				fail("Parser parses erroneous data without reporting errors");
 			}
 			catch (RDFParseException e) {
 				// This is expected as the input file is incorrect RDF
