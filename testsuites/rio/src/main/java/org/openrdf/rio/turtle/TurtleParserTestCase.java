@@ -322,7 +322,7 @@ public abstract class TurtleParserTestCase {
 		{
 			// Parse input data
 			RDFParser turtleParser = createRDFParser();
-			turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			//turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
 			StatementCollector inputCollector = new StatementCollector(inputCollection);
@@ -395,7 +395,7 @@ public abstract class TurtleParserTestCase {
 				// Try parsing the input; this should result in an error being
 				// reported.
 				RDFParser turtleParser = createRDFParser();
-				turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+				//turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 				turtleParser.setRDFHandler(new StatementCollector());
 
