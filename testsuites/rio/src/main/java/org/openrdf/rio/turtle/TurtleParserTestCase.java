@@ -47,7 +47,7 @@ import org.openrdf.sail.memory.MemoryStore;
 
 /**
  * JUnit test for the Turtle parser that uses the tests that are available <a
- * href="http://cvs.ilrt.org/cvsweb/redland/raptor/tests/turtle/">online</a>.
+ * href="https://dvcs.w3.org/hg/rdf/file/09a9da374a9f/rdf-turtle/">online</a>.
  */
 public abstract class TurtleParserTestCase {
 
