@@ -73,7 +73,8 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		return new String[0];
 	}
 
-	public final void service(final HttpServletRequest req, final HttpServletResponse resp)
+	@Override
+	public void service(final HttpServletRequest req, final HttpServletResponse resp)
 		throws ServletException, IOException
 	{
 		if (req.getCharacterEncoding() == null) {

@@ -25,6 +25,7 @@ import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
@@ -57,11 +58,17 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class QueryServlet extends TransformationServlet {
 
+	private static final String LIMIT = "limit";
+
+	private static final String QUERY_LN = "queryLn";
+
+	private static final String INFER = "infer";
+
 	private static final String ACCEPT = "Accept";
 
 	private static final String QUERY = "query";
 
-	private static final String[] EDIT_PARAMS = new String[] { "queryLn", QUERY, "infer", "limit" };
+	private static final String[] EDIT_PARAMS = new String[] { QUERY_LN, QUERY, INFER, LIMIT };
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
 
@@ -69,13 +76,22 @@ public class QueryServlet extends TransformationServlet {
 
 	private QueryStorage storage;
 
+	private boolean writeQueryCookie;
+
 	/**
 	 * @return the names of the cookies that will be retrieved from the request,
 	 *         and returned in the response
 	 */
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { QUERY, "limit", "queryLn", "infer", "total_result_count", "show-datatypes" };
+		String[] result;
+		if (writeQueryCookie) {
+			result = new String[] { QUERY, LIMIT, QUERY_LN, INFER, "total_result_count", "show-datatypes" };
+		}
+		else {
+			result = new String[] { LIMIT, QUERY_LN, INFER, "total_result_count", "show-datatypes" };
+		}
+		return result;
 	}
 
 	/**
@@ -98,6 +114,23 @@ public class QueryServlet extends TransformationServlet {
 		catch (IOException e) {
 			throw new ServletException(e);
 		}
+	}
+
+	/**
+	 * Long query strings could blow past the Tomcat default 8k HTTP header limit
+	 * if stuffed into a cookie. In this case, we need to set a flag to avoid
+	 * this happening before
+	 * {@link TransformationServlet#service(HttpServletRequest, HttpServletResponse)}
+	 * is called. A much lower limit on the size of the query text is used to
+	 * stay well below the Tomcat limitation.
+	 */
+	@Override
+	public final void service(final HttpServletRequest req, final HttpServletResponse resp)
+		throws ServletException, IOException
+	{
+		String queryText = req.getParameter(QUERY);
+		this.writeQueryCookie = (null == queryText || queryText.length() <= 2048);
+		super.service(req, resp);
 	}
 
 	@Override
@@ -144,8 +177,11 @@ public class QueryServlet extends TransformationServlet {
 			builder.result(queryLn, query, infer, limit);
 			builder.end();
 		}
+		else if ("exec".equals(action)) {
+			service(req, resp, xslPath);
+		}
 		else {
-			throw new BadRequestException("Query doPost() is only for 'action=save' or 'action=edit'.");
+			throw new BadRequestException("POST with unexpected action parameter value: " + action);
 		}
 	}
 
@@ -166,12 +202,12 @@ public class QueryServlet extends TransformationServlet {
 			final boolean existed = storage.askExists(http, queryName, userName);
 			json.put("existed", existed);
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
-			final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
-			final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
-			final String queryText = req.getParameter(QUERY);
-			final boolean infer = Boolean.valueOf(req.getParameter("infer"));
-			final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
 			if (written) {
+				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
+				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
+				final String queryText = req.getParameter(QUERY);
+				final boolean infer = Boolean.valueOf(req.getParameter(INFER));
+				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
