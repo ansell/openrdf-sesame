@@ -73,6 +73,10 @@ public final class QueryEvaluator {
 	 *        style sheet path
 	 * @param con
 	 *        connection to repository
+	 * @param queryText
+	 *        the query text, having been pulled using
+	 *        {@link org.openrdf.workbench.commands.QueryServlet} from one of
+	 *        three request parameters: "query", "queryhash" or "saved"
 	 * @param req
 	 *        the request object
 	 * @param cookies
@@ -84,12 +88,11 @@ public final class QueryEvaluator {
 	 *         if there's a problem preparing the query
 	 */
 	public void extractQueryAndEvaluate(final TupleResultBuilder builder, final HttpServletResponse resp,
-			final OutputStream out, final String xslPath, final RepositoryConnection con,
+			final OutputStream out, final String xslPath, final RepositoryConnection con, String queryText,
 			final WorkbenchRequest req, final CookieHandler cookies)
 		throws BadRequestException, OpenRDFException
 	{
 		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
-		String queryText = req.getParameter("query");
 		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
 			final int know_total = req.getInt("know_total");
@@ -104,8 +107,7 @@ public final class QueryEvaluator {
 			final int limit = req.getInt("limit");
 			final int offset = req.getInt("offset");
 			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
-			queryText = pagedQuery.toString();
-			query = QueryFactory.prepareQuery(con, queryLn, queryText);
+			query = QueryFactory.prepareQuery(con, queryLn, pagedQuery.toString());
 		}
 		if (req.isParameterPresent("infer")) {
 			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
