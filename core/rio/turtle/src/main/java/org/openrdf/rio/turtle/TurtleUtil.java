@@ -252,6 +252,14 @@ public class TurtleUtil {
 				sb.append('\n');
 				startIdx = backSlashIdx + 2;
 			}
+			else if (c == 'b') {
+				sb.append('\b');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == 'f') {
+				sb.append('\f');
+				startIdx = backSlashIdx + 2;
+			}
 			else if (c == '"') {
 				sb.append('"');
 				startIdx = backSlashIdx + 2;
