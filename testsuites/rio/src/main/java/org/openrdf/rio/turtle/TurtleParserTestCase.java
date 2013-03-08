@@ -55,11 +55,26 @@ public abstract class TurtleParserTestCase {
 	 * Constants *
 	 *-----------*/
 
-	protected static String BASE_URL = "http://example/base/";
+	/**
+	 * Base URL for tests submitted to the W3C by Andy Seaborne.
+	 */
+	protected static String TESTS_AFS_BASE_URL = "http://example/base/";
 
-	private static String TEST_FILE_BASE_PATH = "/testcases/turtle/";
+	/**
+	 * Base directory for tests submitted to the W3C by Andy Seaborne.
+	 */
+	private static String TEST_AFS_FILE_BASE_PATH = "/testcases/turtle/tests-ttl/";
 
-	private static String MANIFEST_GOOD_URL = "/testcases/turtle/manifest.ttl";
+	/**
+	 * Manifest for tests submitted to the W3C by Andy Seaborne.
+	 * <p>
+	 * FIXME: This is currently under an Apache License as Andy did not relicense
+	 * it before submitting.
+	 * 
+	 * @see http 
+	 *      ://lists.w3.org/Archives/Public/public-rdf-comments/2013Feb/0070.html
+	 */
+	private static String TEST_AFS_MANIFEST_GOOD_URL = "/testcases/turtle/tests-ttl/manifest.ttl";
 
 	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
 
@@ -87,8 +102,8 @@ public abstract class TurtleParserTestCase {
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
 
-		InputStream inputStream = this.getClass().getResourceAsStream(MANIFEST_GOOD_URL);
-		con.add(inputStream, BASE_URL, RDFFormat.TURTLE);
+		InputStream inputStream = this.getClass().getResourceAsStream(TEST_AFS_MANIFEST_GOOD_URL);
+		con.add(inputStream, TESTS_AFS_BASE_URL, RDFFormat.TURTLE);
 
 		StringBuilder positiveQuery = new StringBuilder();
 		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
@@ -108,9 +123,9 @@ public abstract class TurtleParserTestCase {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
+			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
 
-			String nextBaseUrl = BASE_URL + nextTestFile;
+			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
 
 			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, null, nextBaseUrl));
 		}
@@ -135,9 +150,9 @@ public abstract class TurtleParserTestCase {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
+			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
 
-			String nextBaseUrl = BASE_URL + nextTestFile;
+			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl));
 		}
@@ -163,11 +178,11 @@ public abstract class TurtleParserTestCase {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
-			String nextOutputURL = TEST_FILE_BASE_PATH
+			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
+			String nextOutputURL = TEST_AFS_FILE_BASE_PATH
 					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString());
 
-			String nextBaseUrl = BASE_URL + nextTestFile;
+			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
 
 			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, nextOutputURL, nextBaseUrl));
 		}
@@ -192,9 +207,9 @@ public abstract class TurtleParserTestCase {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
-			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
+			String nextInputURL = TEST_AFS_FILE_BASE_PATH + nextTestFile;
 
-			String nextBaseUrl = BASE_URL + nextTestFile;
+			String nextBaseUrl = TESTS_AFS_BASE_URL + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl));
 		}
@@ -350,8 +365,8 @@ public abstract class TurtleParserTestCase {
 	 * @return
 	 */
 	private String removeBase(String baseUrl) {
-		if (baseUrl.startsWith(BASE_URL)) {
-			return baseUrl.substring(BASE_URL.length());
+		if (baseUrl.startsWith(TESTS_AFS_BASE_URL)) {
+			return baseUrl.substring(TESTS_AFS_BASE_URL.length());
 		}
 
 		return baseUrl;
