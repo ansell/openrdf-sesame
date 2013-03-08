@@ -168,7 +168,7 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
 			String nextBaseUrl = baseUrl + nextTestFile;
@@ -201,7 +201,7 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
 			String nextBaseUrl = baseUrl + nextTestFile;
@@ -235,9 +235,10 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
-			String nextOutputURL = fileBasePath + removeBase(((URI)bindingSet.getValue("outputURL")).toString());
+			String nextOutputURL = fileBasePath
+					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString(), baseUrl);
 
 			String nextBaseUrl = baseUrl + nextTestFile;
 
@@ -268,7 +269,7 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
 			String nextBaseUrl = baseUrl + nextTestFile;
@@ -322,7 +323,7 @@ public abstract class TurtleParserTestCase {
 		{
 			// Parse input data
 			RDFParser turtleParser = createRDFParser();
-			//turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			// turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
 			StatementCollector inputCollector = new StatementCollector(inputCollection);
@@ -395,7 +396,7 @@ public abstract class TurtleParserTestCase {
 				// Try parsing the input; this should result in an error being
 				// reported.
 				RDFParser turtleParser = createRDFParser();
-				//turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+				// turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
 				turtleParser.setRDFHandler(new StatementCollector());
 
@@ -421,9 +422,9 @@ public abstract class TurtleParserTestCase {
 	 * @param baseUrl
 	 * @return
 	 */
-	private String removeBase(String baseUrl) {
-		if (baseUrl.startsWith(TESTS_AFS_BASE_URL)) {
-			return baseUrl.substring(TESTS_AFS_BASE_URL.length());
+	private String removeBase(String baseUrl, String redundantBaseUrl) {
+		if (baseUrl.startsWith(redundantBaseUrl)) {
+			return baseUrl.substring(redundantBaseUrl.length());
 		}
 
 		return baseUrl;
