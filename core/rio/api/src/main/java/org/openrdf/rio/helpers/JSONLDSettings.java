@@ -81,6 +81,19 @@ public class JSONLDSettings {
 			"org.openrdf.rio.jsonld.userdftype", "Use RDF Type", Boolean.FALSE);
 
 	/**
+	 * The {@link JSONLDMode} that the writer will use to reorganise the JSONLD
+	 * document after it is created.
+	 * <p>
+	 * Defaults to {@link JSONLDMode#EXPAND} to provide maximum RDF
+	 * compatibility.
+	 * 
+	 * @since 2.7.0
+	 * @see http://json-ld.org/spec/latest/json-ld-api/#features
+	 */
+	public static final RioSetting<JSONLDMode> JSONLD_MODE = new RioSettingImpl<JSONLDMode>(
+			"org.openrdf.rio.jsonld.mode", "JSONLD_MODE", JSONLDMode.EXPAND);
+
+	/**
 	 * Private default constructor.
 	 */
 	private JSONLDSettings() {
