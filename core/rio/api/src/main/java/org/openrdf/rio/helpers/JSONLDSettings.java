@@ -91,7 +91,7 @@ public class JSONLDSettings {
 	 * @see http://json-ld.org/spec/latest/json-ld-api/#features
 	 */
 	public static final RioSetting<JSONLDMode> JSONLD_MODE = new RioSettingImpl<JSONLDMode>(
-			"org.openrdf.rio.jsonld.mode", "JSONLD_MODE", JSONLDMode.EXPAND);
+			"org.openrdf.rio.jsonld.mode", "JSONLD Mode", JSONLDMode.EXPAND);
 
 	/**
 	 * Private default constructor.
