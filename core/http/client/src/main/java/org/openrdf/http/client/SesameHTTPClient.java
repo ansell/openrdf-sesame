@@ -70,16 +70,14 @@ import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * An {@link HTTPClient} subclass which bundles special functionality 
- * for remote repositories
+ * for Sesame remote repositories
  *
  * @author Andreas Schwarte
  */
-public class RemoteRepositoryHTTPClient extends HTTPClient {
+public class SesameHTTPClient extends HTTPClient {
 
 
 	private String serverURL;
-	
-	private String repositoryURL;
 	
 	
 
@@ -91,25 +89,17 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 		this.serverURL = serverURL;
 	}	
 	
-	private void setRepositoryURL(String repositoryURL) {
-		this.repositoryURL = repositoryURL;
-		this.setQueryURL(repositoryURL);
-	}
-
 	public String getServerURL() {
 		return serverURL;
 	}
 	
-	// TODO we need to find a shared concept for HttpRepository and SPARQLRepository
-	// such that we can use the same code to create the POST URL
-	// maybe reuse queryURL variable?
 	public String getRepositoryURL() {
-		return repositoryURL;
+		return this.getQueryURL();
 	}
 	
 	public void setRepository(String serverURL, String repositoryID) {
 		setServerURL(serverURL);
-		setRepositoryURL(Protocol.getRepositoryLocation(serverURL, repositoryID));
+		setQueryURL(Protocol.getRepositoryLocation(serverURL, repositoryID));
 	}
 	
 	public void setRepository(String repositoryURL) {
@@ -121,11 +111,11 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 			setServerURL(matcher.group(1));
 		}
 		
-		setRepositoryURL(repositoryURL);
+		setQueryURL(repositoryURL);
 	}
 	
 	protected void checkRepositoryURL() {
-		if (repositoryURL == null) {
+		if (getQueryURL() == null) {
 			throw new IllegalStateException("Repository URL has not been set");
 		}
 	}
@@ -139,7 +129,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	
 	@Override
 	protected String getUpdateURL() {
-		return Protocol.getStatementsLocation(getRepositoryURL());
+		return Protocol.getStatementsLocation(getQueryURL());
 	}
 	
 	
@@ -234,7 +224,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 			contextParams[i] = new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
 		}
 
-		HttpMethod method = new GetMethod(Protocol.getSizeLocation(repositoryURL));
+		HttpMethod method = new GetMethod(Protocol.getSizeLocation(getQueryURL()));
 		setDoAuthentication(method);
 		method.setQueryString(contextParams);
 
@@ -313,7 +303,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new GetMethod(Protocol.getNamespacesLocation(repositoryURL));
+		HttpMethod method = new GetMethod(Protocol.getNamespacesLocation(getQueryURL()));
 		setDoAuthentication(method);
 
 		try {
@@ -333,7 +323,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new GetMethod(Protocol.getNamespacePrefixLocation(repositoryURL, prefix));
+		HttpMethod method = new GetMethod(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
 		setDoAuthentication(method);
 
 		try {
@@ -363,7 +353,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		EntityEnclosingMethod method = new PutMethod(Protocol.getNamespacePrefixLocation(repositoryURL, prefix));
+		EntityEnclosingMethod method = new PutMethod(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
 		setDoAuthentication(method);
 		method.setRequestEntity(new StringRequestEntity(name, "text/plain", "UTF-8"));
 
@@ -388,7 +378,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new DeleteMethod(Protocol.getNamespacePrefixLocation(repositoryURL, prefix));
+		HttpMethod method = new DeleteMethod(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
 		setDoAuthentication(method);
 
 		try {
@@ -412,7 +402,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new DeleteMethod(Protocol.getNamespacesLocation(repositoryURL));
+		HttpMethod method = new DeleteMethod(Protocol.getNamespacesLocation(getQueryURL()));
 		setDoAuthentication(method);
 
 		try {
@@ -456,7 +446,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		GetMethod method = new GetMethod(Protocol.getContextsLocation(getRepositoryURL()));
+		GetMethod method = new GetMethod(Protocol.getContextsLocation(getQueryURL()));
 		setDoAuthentication(method);
 
 		try {
@@ -484,7 +474,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		GetMethod method = new GetMethod(Protocol.getStatementsLocation(getRepositoryURL()));
+		GetMethod method = new GetMethod(Protocol.getStatementsLocation(getQueryURL()));
 		setDoAuthentication(method);
 
 		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
@@ -521,7 +511,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		PostMethod method = new PostMethod(Protocol.getStatementsLocation(getRepositoryURL()));
+		PostMethod method = new PostMethod(Protocol.getStatementsLocation(getQueryURL()));
 		setDoAuthentication(method);
 
 		// Create a RequestEntity for the transaction data
@@ -612,7 +602,7 @@ public class RemoteRepositoryHTTPClient extends HTTPClient {
 
 		checkRepositoryURL();
 
-		String uploadURL = Protocol.getStatementsLocation(getRepositoryURL());
+		String uploadURL = Protocol.getStatementsLocation(getQueryURL());
 
 		// Select appropriate HTTP method
 		EntityEnclosingMethod method;

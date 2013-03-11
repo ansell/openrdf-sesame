@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.apache.commons.httpclient.HttpException;
 
-import org.openrdf.http.client.RemoteRepositoryHTTPClient;
+import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -200,7 +200,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		try {
-			RemoteRepositoryHTTPClient httpClient = new RemoteRepositoryHTTPClient();
+			SesameHTTPClient httpClient = new SesameHTTPClient();
 			httpClient.setRepository(serverURL, null);
 			httpClient.setUsernameAndPassword(username, password);
 			try {
@@ -269,7 +269,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		boolean existingRepo = RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
 
 		if (existingRepo) {
-			RemoteRepositoryHTTPClient httpClient = new RemoteRepositoryHTTPClient();
+			SesameHTTPClient httpClient = new SesameHTTPClient();
 
 			try {
 				httpClient.setServerURL(serverURL);

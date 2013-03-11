@@ -31,7 +31,7 @@ import java.util.Set;
 import info.aduna.iteration.CloseableIteratorIteration;
 
 import org.openrdf.http.client.HTTPClient;
-import org.openrdf.http.client.RemoteRepositoryHTTPClient;
+import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -408,7 +408,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		// in the httpclient itself (and thus in the protocol).
 		if (!isActive()) { 
 			// Send bytes directly to the server
-			RemoteRepositoryHTTPClient httpClient = getRepository().getHTTPClient();
+			SesameHTTPClient httpClient = getRepository().getHTTPClient();
 			httpClient.upload(in, baseURI, dataFormat, false, contexts);
 		}
 		else {
@@ -424,7 +424,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		// in the httpclient itself (and thus in the protocol).
 		if (!isActive()) { 
 			// Send bytes directly to the server
-			RemoteRepositoryHTTPClient httpClient = getRepository().getHTTPClient();
+			SesameHTTPClient httpClient = getRepository().getHTTPClient();
 			httpClient.upload(reader, baseURI, dataFormat, false, contexts);
 		}
 		else {

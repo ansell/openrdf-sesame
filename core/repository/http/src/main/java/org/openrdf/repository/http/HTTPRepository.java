@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.openrdf.http.client.HTTPClient;
-import org.openrdf.http.client.RemoteRepositoryHTTPClient;
+import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -64,7 +64,7 @@ public class HTTPRepository extends RepositoryBase {
 
 	private HTTPRepository() {
 		super();
-		httpClient = new RemoteRepositoryHTTPClient();
+		httpClient = new SesameHTTPClient();
 		httpClient.setValueFactory(new ValueFactoryImpl());
 	}
 
@@ -235,7 +235,7 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	// httpClient is shared with HTTPConnection
-	RemoteRepositoryHTTPClient getHTTPClient() {
-		return (RemoteRepositoryHTTPClient)httpClient;
+	SesameHTTPClient getHTTPClient() {
+		return (SesameHTTPClient)httpClient;
 	}
 }

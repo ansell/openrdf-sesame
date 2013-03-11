@@ -88,22 +88,24 @@ import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
- * Low-level HTTP client for Sesame's HTTP protocol. Methods correspond directly
- * to the functionality offered by the protocol.
+ * The HTTP client provides low level HTTP methods for the HTTP communication 
+ * of the SPARQL repository as well as the HTTP Repository. All methods are
+ * compliant to the SPARQL 1.1 protocol. 
  * 
- * The HTTP client is used for all HTTP communication of the SPARQL repository
- * as well as the HTTP Repository. For both Tuple and Graph queries there is
- * a variant which parses the result in the background, see {@link BackgroundTupleResult}
- * and {@link BackgroundGraphResult}. For boolean queries the result is parsed
- * in the current thread.
+ * For both Tuple and Graph queries there is a variant which parses the result 
+ * in the background, see {@link BackgroundTupleResult} and {@link BackgroundGraphResult}. 
+ * For boolean queries the result is parsed in the current thread.
  * 
  * All methods in this class guarantee that HTTP connections are closed properly
  * and returned to the connection pool. 
  * 
+ * Functionality specific to the Sesame HTTP protocol can be found in
+ * {@link SesameHTTPClient} (which is used by Remote Repositories).
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
  * @author Andreas Schwarte
+ * @see SesameHTTPClient
  */
 public class HTTPClient {
 
