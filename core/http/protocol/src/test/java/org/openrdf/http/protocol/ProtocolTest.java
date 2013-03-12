@@ -28,6 +28,8 @@ import static org.openrdf.http.protocol.Protocol.getNamespacesLocation;
 import static org.openrdf.http.protocol.Protocol.getProtocolLocation;
 import static org.openrdf.http.protocol.Protocol.getRepositoriesLocation;
 import static org.openrdf.http.protocol.Protocol.getRepositoryLocation;
+import static org.openrdf.http.protocol.Protocol.getServerLocation;
+import static org.openrdf.http.protocol.Protocol.getRepositoryID;
 import junit.framework.TestCase;
 
 public class ProtocolTest extends TestCase {
@@ -51,6 +53,22 @@ public class ProtocolTest extends TestCase {
 	public void testGetRepositoriesLocation() {
 		String result = getRepositoriesLocation(serverLocation);
 		assertEquals(result, serverLocation + "/" + REPOSITORIES);
+	}
+	
+	public void testGetServerLocation() {
+		String repositoryLocation = getRepositoryLocation(serverLocation, repositoryID);
+		
+		String result = getServerLocation(repositoryLocation);
+		assertEquals(serverLocation, result);
+	}
+	
+	
+	public void testGetRepositoryID() {
+		String repositoryLocation = getRepositoryLocation(serverLocation, repositoryID);
+		
+		String result = getRepositoryID(repositoryLocation);
+		System.out.println(result);
+		assertEquals(repositoryID, result);
 	}
 
 	public void testGetRepositoryLocation() {

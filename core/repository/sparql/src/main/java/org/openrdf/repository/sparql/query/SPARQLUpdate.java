@@ -33,7 +33,7 @@ import org.openrdf.repository.sparql.SPARQLRepository;
 /**
  * Update operation of the {@link SPARQLRepository}
  * 
- * @author jeen
+ * @author Jeen Broekstra
  * @author Andreas Schwarte
  */
 public class SPARQLUpdate extends AbstractHTTPUpdate {
@@ -45,8 +45,8 @@ public class SPARQLUpdate extends AbstractHTTPUpdate {
 	 * @param base
 	 * @param operation
 	 */
-	public SPARQLUpdate(SPARQLConnection conn, String url, String baseURI, String queryString) {
-		super(conn.getRepository().getNewHttpClient(), QueryLanguage.SPARQL, queryString, baseURI);
+	public SPARQLUpdate(HTTPClient httpClient, String baseURI, String queryString) {
+		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}
 
 	@Override

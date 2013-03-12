@@ -94,11 +94,11 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 	protected ValueFactory vf;
 
-	protected BNode bob;
+	protected Resource bob;
 
-	protected BNode alice;
+	protected Resource alice;
 
-	protected BNode alexander;
+	protected Resource alexander;
 
 	protected URI name;
 
@@ -1767,6 +1767,9 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				(Resource)null);
 		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
 				vf.createURI("urn:test:other"));
+		
+		List<Statement> list = Iterations.asList(con.getStatements(null, null, null));
+		
 		assertEquals(3, Iterations.asList(con.getStatements(null, null, null)).size());
 		assertEquals(4, Iterations.asList(testCon.getStatements(null, null, null, true)).size());
 		assertEquals(3, size(defaultGraph));

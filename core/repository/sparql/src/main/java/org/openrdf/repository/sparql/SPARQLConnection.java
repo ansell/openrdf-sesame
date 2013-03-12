@@ -18,11 +18,6 @@ package org.openrdf.repository.sparql;
 
 import static org.openrdf.query.QueryLanguage.SPARQL;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,15 +25,17 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
-import info.aduna.iteration.Iteration;
 import info.aduna.iteration.SingletonIteration;
 
+import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -55,6 +52,7 @@ import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
@@ -64,10 +62,8 @@ import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
 import org.openrdf.repository.sparql.query.SPARQLTupleQuery;
 import org.openrdf.repository.sparql.query.SPARQLUpdate;
-import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
 
 /**
  * Provides a {@link RepositoryConnection} interface to any SPARQL endpoint.
@@ -82,19 +78,17 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private static final String NAMEDGRAPHS = "SELECT DISTINCT ?_ WHERE { GRAPH ?_ { ?s ?p ?o } }";
 
-	private String queryEndpointUrl;
+	private StringBuffer sparqlTransaction;
 
-	private String updateEndpointUrl;
+	private Object transactionLock = new Object();
 
-	public SPARQLConnection(SPARQLRepository repository, String queryEndpointUrl, String updateEndpointUrl) {
+	public SPARQLConnection(SPARQLRepository repository) {
 		super(repository);
-		this.queryEndpointUrl = queryEndpointUrl;
-		this.updateEndpointUrl = updateEndpointUrl;
 	}
 
 	@Override
 	public String toString() {
-		return queryEndpointUrl;
+		return getRepository().getHTTPClient().getQueryURL();
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -228,7 +222,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 			throw new RepositoryException(e);
 		}
 	}
-	
+
 	@Override
 	public SPARQLRepository getRepository() {
 		return (SPARQLRepository)super.getRepository();
@@ -256,7 +250,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLBooleanQuery(getRepository().getNewHttpClient(), queryEndpointUrl, base, query);
+			return new SPARQLBooleanQuery(getRepository().getHTTPClient(), base, query);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
@@ -265,7 +259,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLGraphQuery(getRepository().getNewHttpClient(), queryEndpointUrl, base, query);
+			return new SPARQLGraphQuery(getRepository().getHTTPClient(), base, query);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
@@ -274,175 +268,209 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql))
-			return new SPARQLTupleQuery(getRepository().getNewHttpClient(), queryEndpointUrl, base, query);
+			return new SPARQLTupleQuery(getRepository().getHTTPClient(), base, query);
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
 	public void commit()
 		throws RepositoryException
 	{
-		// no-op
-	}
+		synchronized (transactionLock) {
+			if (isActive()) {
+				synchronized (transactionLock) {
+					SPARQLUpdate transaction = new SPARQLUpdate(getRepository().getHTTPClient(), null,
+							sparqlTransaction.toString());
+					try {
+						transaction.execute();
+					}
+					catch (UpdateExecutionException e) {
+						throw new RepositoryException("error executing transaction", e);
+					}
 
-	@Deprecated
-	public boolean isAutoCommit()
-		throws RepositoryException
-	{
-		return true;
+					sparqlTransaction = null;
+				}
+			}
+			else {
+				throw new RepositoryException("no transaction active.");
+			}
+		}
 	}
 
 	public void rollback()
 		throws RepositoryException
 	{
-		// no-op
+		synchronized (transactionLock) {
+			if (isActive()) {
+				synchronized (transactionLock) {
+					sparqlTransaction = null;
+				}
+			}
+			else {
+				throw new RepositoryException("no transaction active.");
+			}
+		}
 	}
 
 	public void begin()
 		throws RepositoryException
 	{
-		// no-op
-	}
-
-	@Deprecated
-	public void setAutoCommit(boolean autoCommit)
-		throws RepositoryException
-	{
-		if (!autoCommit) {
-			throw new UnsupportedOperationException();
+		synchronized (transactionLock) {
+			if (!isActive()) {
+				synchronized (transactionLock) {
+					sparqlTransaction = new StringBuffer();
+				}
+			}
+			else {
+				throw new RepositoryException("active transaction already exists");
+			}
 		}
 	}
 
 	public void add(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+
 		List<Statement> list = new ArrayList<Statement>(1);
 		list.add(st);
-
 		String sparqlCommand = createInsertDataCommand(list, contexts);
 
-		Update update;
+		sparqlTransaction.append(sparqlCommand);
+		sparqlTransaction.append("; ");
+
 		try {
-			update = prepareUpdate(QueryLanguage.SPARQL, sparqlCommand);
-			update.execute();
+			conditionalCommit(localTransaction);
 		}
-		catch (MalformedQueryException e) {
-			throw new RuntimeException("unexpected error creating SPARQL update command", e);
-		}
-		catch (UpdateExecutionException e) {
-			throw new RepositoryException("error executing update", e);
+		catch (RepositoryException e) {
+			conditionalRollback(localTransaction);
+			throw e;
 		}
 	}
 
 	public void add(Iterable<? extends Statement> statements, Resource... contexts)
 		throws RepositoryException
 	{
+		boolean localTransaction = startLocalTransaction();
+
 		String sparqlCommand = createInsertDataCommand(statements, contexts);
 
-		Update update;
+		sparqlTransaction.append(sparqlCommand);
+		sparqlTransaction.append("; ");
+
 		try {
-			update = prepareUpdate(QueryLanguage.SPARQL, sparqlCommand);
-			update.execute();
+			conditionalCommit(localTransaction);
 		}
-		catch (MalformedQueryException e) {
-			throw new RuntimeException("unexpected error creating SPARQL update command", e);
+		catch (RepositoryException e) {
+			conditionalRollback(localTransaction);
+			throw e;
 		}
-		catch (UpdateExecutionException e) {
-			throw new RepositoryException("error executing update", e);
-		}
-	}
-
-	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws RepositoryException, E
-	{
-
-		throw new UnsupportedOperationException();
-	}
-
-	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	public void clear(Resource... contexts)
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		boolean localTransaction = startLocalTransaction();
+
+		if (contexts.length == 0) {
+			sparqlTransaction.append("CLEAR ALL ");
+			sparqlTransaction.append("; ");
+		}
+		else {
+			for (Resource context : contexts) {
+				if (context == null) {
+					sparqlTransaction.append("CLEAR DEFAULT ");
+					sparqlTransaction.append("; ");
+				}
+				else if (context instanceof URI) {
+					sparqlTransaction.append("CLEAR GRAPH <" + context.stringValue() + "> ");
+					sparqlTransaction.append("; ");
+				}
+				else {
+					throw new RepositoryException(
+							"SPARQL does not support named graphs identified by blank nodes.");
+				}
+			}
+		}
+
+		try {
+			conditionalCommit(localTransaction);
+		}
+		catch (RepositoryException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
 	}
 
 	public void clearNamespaces()
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
+		// silently ignore
+
+		// throw new UnsupportedOperationException();
 	}
 
 	public void remove(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
+		boolean localTransaction = startLocalTransaction();
+
+		List<Statement> list = new ArrayList<Statement>(1);
+		list.add(st);
+		String sparqlCommand = createDeleteDataCommand(list, contexts);
+
+		sparqlTransaction.append(sparqlCommand);
+		sparqlTransaction.append("; ");
+
+		try {
+			conditionalCommit(localTransaction);
+		}
+		catch (RepositoryException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+
 	}
 
 	public void remove(Iterable<? extends Statement> statements, Resource... contexts)
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
-	}
+		boolean localTransaction = startLocalTransaction();
 
-	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
-			Resource... contexts)
-		throws RepositoryException, E
-	{
-		throw new UnsupportedOperationException();
-	}
+		String sparqlCommand = createDeleteDataCommand(statements, contexts);
 
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
-	{
-		throw new UnsupportedOperationException();
+		sparqlTransaction.append(sparqlCommand);
+		sparqlTransaction.append("; ");
+
+		try {
+			conditionalCommit(localTransaction);
+		}
+		catch (RepositoryException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
 	}
 
 	public void removeNamespace(String prefix)
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
+		// no-op, ignore silently
+		//throw new UnsupportedOperationException();
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws RepositoryException
 	{
-		throw new UnsupportedOperationException();
+		// no-op, ignore silently
+		//throw new UnsupportedOperationException();
 	}
 
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
-		if (SPARQL.equals(ql))
-			return new SPARQLUpdate(this, queryEndpointUrl, baseURI, update);
+		if (SPARQL.equals(ql)) {
+			return new SPARQLUpdate(getRepository().getHTTPClient(), baseURI, update);
+		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
@@ -460,10 +488,10 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		if (obj != null) {
 			query.setBinding("o", obj);
 		}
-		if (contexts != null && contexts.length > 0 && (contexts[0] != null || contexts.length > 1)) {
+		if (contexts != null && contexts.length > 0) {
 			DatasetImpl dataset = new DatasetImpl();
 			for (Resource ctx : contexts) {
-				if (ctx instanceof URI) {
+				if (ctx == null || ctx instanceof URI) {
 					dataset.addDefaultGraph((URI)ctx);
 				}
 				else {
@@ -474,31 +502,54 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
-		throws RepositoryException
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	private String createInsertDataCommand(Iterable<? extends Statement> statements, Resource... contexts) {
 		StringBuilder qb = new StringBuilder();
 		qb.append("INSERT DATA \n");
 		qb.append("{ \n");
-		if (contexts != null) {
+		if (contexts.length > 0) {
 			for (Resource context : contexts) {
 				if (context != null) {
-					qb.append("    GRAPH <" + context.stringValue() + "> { \n");
+					String namedGraph = context.stringValue();
+					if (context instanceof BNode) {
+						// SPARQL does not allow blank nodes as named graph
+						// identifiers, so we need to skolemize
+						// the blank node id.
+						namedGraph = "urn:nodeid:" + context.stringValue();
+					}
+					qb.append("    GRAPH <" + namedGraph + "> { \n");
 				}
 				createDataBody(qb, statements);
+				if (context != null && context instanceof URI) {
+					qb.append(" } \n");
+				}
+			}
+		}
+		else {
+			createDataBody(qb, statements);
+		}
+		qb.append("}");
+
+		return qb.toString();
+	}
+
+	private String createDeleteDataCommand(Iterable<? extends Statement> statements, Resource... contexts) {
+		StringBuilder qb = new StringBuilder();
+		qb.append("DELETE DATA \n");
+		qb.append("{ \n");
+		if (contexts.length > 0) {
+			for (Resource context : contexts) {
 				if (context != null) {
+					String namedGraph = context.stringValue();
+					if (context instanceof BNode) {
+						// SPARQL does not allow blank nodes as named graph
+						// identifiers, so we need to skolemize
+						// the blank node id.
+						namedGraph = "urn:nodeid:" + context.stringValue();
+					}
+					qb.append("    GRAPH <" + namedGraph + "> { \n");
+				}
+				createDataBody(qb, statements);
+				if (context != null && context instanceof URI) {
 					qb.append(" } \n");
 				}
 			}
@@ -513,10 +564,33 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private void createDataBody(StringBuilder qb, Iterable<? extends Statement> statements) {
 		for (Statement st : statements) {
-			qb.append("<" + st.getSubject().stringValue() + "> ");
+			if (st.getSubject() instanceof BNode) {
+				qb.append("_:" + st.getSubject().stringValue() + " ");
+			}
+			else {
+				qb.append("<" + st.getSubject().stringValue() + "> ");
+			}
+
 			qb.append("<" + st.getPredicate().stringValue() + "> ");
+
 			if (st.getObject() instanceof Literal) {
-				qb.append(st.getObject().stringValue() + " ");
+				Literal lit = (Literal)st.getObject();
+				qb.append("\"");
+				qb.append(SPARQLUtil.encodeString(lit.getLabel()));
+				qb.append("\"");
+
+				if (lit.getLanguage() != null) {
+					qb.append("@");
+					qb.append(lit.getLanguage());
+				}
+
+				if (lit.getDatatype() != null) {
+					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
+				}
+				qb.append(" ");
+			}
+			else if (st.getObject() instanceof BNode) {
+				qb.append("_:" + st.getObject().stringValue() + " ");
 			}
 			else {
 				qb.append("<" + st.getObject().stringValue() + "> ");
@@ -528,6 +602,40 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	public boolean isActive()
 		throws UnknownTransactionStateException, RepositoryException
 	{
-		return false;
+		synchronized (transactionLock) {
+			return sparqlTransaction != null;
+		}
+	}
+
+	@Override
+	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		ValueFactory f = getValueFactory();
+
+		Statement st = f.createStatement(subject, predicate, object);
+
+		List<Statement> list = new ArrayList<Statement>(1);
+		list.add(st);
+		String sparqlCommand = createInsertDataCommand(list, contexts);
+
+		sparqlTransaction.append(sparqlCommand);
+		sparqlTransaction.append("; ");
+	}
+
+	@Override
+	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		ValueFactory f = getValueFactory();
+
+		Statement st = f.createStatement(subject, predicate, object);
+
+		List<Statement> list = new ArrayList<Statement>(1);
+		list.add(st);
+		String sparqlCommand = createDeleteDataCommand(list, contexts);
+
+		sparqlTransaction.append(sparqlCommand);
+		sparqlTransaction.append("; ");
 	}
 }

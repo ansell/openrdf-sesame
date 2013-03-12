@@ -30,29 +30,22 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryBase;
 
 /**
- * A proxy class to access any SPARQL endpoint. 
- * 
- * The instance must be initialized prior to using it.
+ * A proxy class to access any SPARQL endpoint. The instance must be initialized
+ * prior to using it.
  * 
  * @author James Leigh
  */
 public class SPARQLRepository extends RepositoryBase {
 
-
 	private static final String APP_NAME = "OpenRDF.org SPARQLConnection";
 
 	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
 			"sesame-repository-sparql", "devel");
-	
+
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private final HTTPClient httpClient;
-	
-	// TODO remove from here and from SPARQLConnection entirely?
-	private String queryEndpointUrl;
-
-	private String updateEndpointUrl;
 
 	public SPARQLRepository(String queryEndpointUrl) {
 		this(queryEndpointUrl, null);
@@ -60,22 +53,30 @@ public class SPARQLRepository extends RepositoryBase {
 
 	public SPARQLRepository(String queryEndpointUrl, String updateEndpointUrl) {
 		// initialize HTTP client
-		httpClient = new HTTPClient();
+		httpClient = createHTTPClient();
 		httpClient.setValueFactory(new ValueFactoryImpl());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
 		httpClient.setUpdateURL(updateEndpointUrl);
-		
-		this.queryEndpointUrl = queryEndpointUrl;
-		this.updateEndpointUrl = updateEndpointUrl;
+
 	}
 
+	/**
+	 * Creates a new HTTPClient object. Subclasses may override to return a more
+	 * specific HTTPClient subtype.
+	 * 
+	 * @return a HTTPClient object.
+	 */
+	protected HTTPClient createHTTPClient() {
+		return new HTTPClient();
+	}
+	
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
 		if (!isInitialized())
 			throw new RepositoryException("SPARQLRepository not initialized.");
-		return new SPARQLConnection(this, queryEndpointUrl, updateEndpointUrl);
+		return new SPARQLConnection(this);
 	}
 
 	public File getDataDir() {
@@ -102,8 +103,8 @@ public class SPARQLRepository extends RepositoryBase {
 	public void setDataDir(File dataDir) {
 		// no-op
 	}
-	
-	public HTTPClient getNewHttpClient() {
+
+	protected HTTPClient getHTTPClient() {
 		return httpClient;
 	}
 
@@ -111,19 +112,19 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		httpClient.shutDown();
+		getHTTPClient().shutDown();
 	}
 
 	@Override
 	public String toString() {
-		return queryEndpointUrl;
+		return getHTTPClient().getQueryURL();
 	}
 
 	/**
 	 * @return Returns the additionalHttpHeaders.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return httpClient.getAdditionalHttpHeaders();
+		return getHTTPClient().getAdditionalHttpHeaders();
 	}
 
 	/**
@@ -131,6 +132,6 @@ public class SPARQLRepository extends RepositoryBase {
 	 *        The additionalHttpHeaders to set as key value pairs.
 	 */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		httpClient.setAdditionalHttpHeaders(additionalHttpHeaders);
+		getHTTPClient().setAdditionalHttpHeaders(additionalHttpHeaders);
 	}
 }

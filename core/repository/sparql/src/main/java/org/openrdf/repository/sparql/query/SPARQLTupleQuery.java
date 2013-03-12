@@ -39,7 +39,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
 	// TODO there was some magic going on in SparqlOperation to get baseURI directly replaced within the query using BASE
 
-	public SPARQLTupleQuery(HTTPClient httpClient, String url, String baseUri,
+	public SPARQLTupleQuery(HTTPClient httpClient, String baseUri,
 			String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseUri);
 	}

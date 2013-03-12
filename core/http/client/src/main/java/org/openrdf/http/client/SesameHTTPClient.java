@@ -128,7 +128,7 @@ public class SesameHTTPClient extends HTTPClient {
 	
 	
 	@Override
-	protected String getUpdateURL() {
+	public String getUpdateURL() {
 		return Protocol.getStatementsLocation(getQueryURL());
 	}
 	

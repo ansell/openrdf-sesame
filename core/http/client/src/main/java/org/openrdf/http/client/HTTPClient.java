@@ -319,11 +319,11 @@ public class HTTPClient {
 		executor.execute(command);
 	}
 	
-	protected String getQueryURL() {
+	public String getQueryURL() {
 		return queryURL;
 	}
 
-	protected String getUpdateURL() {
+	public String getUpdateURL() {
 		return updateURL;
 	}
 

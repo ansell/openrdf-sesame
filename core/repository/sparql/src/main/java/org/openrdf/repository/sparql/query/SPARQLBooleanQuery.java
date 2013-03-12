@@ -34,7 +34,7 @@ import org.openrdf.repository.RepositoryException;
  */
 public class SPARQLBooleanQuery extends AbstractHTTPQuery implements BooleanQuery {
 
-	public SPARQLBooleanQuery(HTTPClient httpClient, String url, String baseURI,
+	public SPARQLBooleanQuery(HTTPClient httpClient, String baseURI,
 			String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}

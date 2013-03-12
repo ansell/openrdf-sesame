@@ -38,7 +38,7 @@ import org.openrdf.rio.RDFHandlerException;
  */
 public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
-	public SPARQLGraphQuery(HTTPClient httpClient, String url, String baseURI,
+	public SPARQLGraphQuery(HTTPClient httpClient, String baseURI,
 			String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}

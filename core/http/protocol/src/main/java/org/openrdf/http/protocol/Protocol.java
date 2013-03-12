@@ -69,7 +69,7 @@ public abstract class Protocol {
 	 * Parameter name for the update parameter.
 	 */
 	public static final String UPDATE_PARAM_NAME = "update";
-	
+
 	/**
 	 * Parameter name for the base-URI parameter.
 	 */
@@ -84,7 +84,7 @@ public abstract class Protocol {
 	 * Parameter name for the query language parameter.
 	 */
 	public static final String QUERY_LANGUAGE_PARAM_NAME = "queryLn";
-	
+
 	public static final String TIMEOUT_PARAM_NAME = "timeout";
 
 	/**
@@ -244,6 +244,34 @@ public abstract class Protocol {
 	public static final String getStatementsLocation(String repositoryLocation) {
 		return repositoryLocation + "/" + STATEMENTS;
 	}
+
+	/**
+	 * Extracts the server location from the repository location.
+	 * 
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
+	 * @return the location of the server resource for the specified repository.
+	 */
+	public static final String getServerLocation(String repositoryLocation) {
+		String serverLocation = repositoryLocation.substring(0, repositoryLocation.lastIndexOf('/'));
+		serverLocation = serverLocation.substring(0, serverLocation.lastIndexOf('/'));
+		return serverLocation;
+	}
+	
+
+	/**
+	 * Extracts the repository ID from the repository location.
+	 * 
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
+	 * @return the ID of the repository.
+	 */
+	public static final String getRepositoryID(String repositoryLocation) {
+		String repositoryID = repositoryLocation.substring(repositoryLocation.lastIndexOf('/') + 1);
+		return repositoryID;
+	}
+	
+	
 
 	/**
 	 * Get the location of the contexts lists resource for a specific repository.
