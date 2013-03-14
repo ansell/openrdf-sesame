@@ -41,7 +41,7 @@ public abstract class RDFWriterBase implements RDFWriter {
 	/**
 	 * A collection of configuration options for this writer.
 	 */
-	private WriterConfig writerConfig;
+	private WriterConfig writerConfig = new WriterConfig();
 
 	/**
 	 * Default constructor.
