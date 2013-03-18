@@ -157,10 +157,16 @@ public class QueryServlet extends TransformationServlet {
 	}
 
 	/**
-	 * This is a separate method for testing purposes.
+	 * <p>
+	 * Determines if the servlet should write out the query text into a cookie as
+	 * received, or write it's hash instead.
+	 * </p>
+	 * <p>
+	 * Note: This is a separate method for testing purposes.
+	 * </p>
 	 * 
-	 * @param req
-	 *        the HTTP request object
+	 * @param queryText
+	 *        the text received as the value for the parameter 'query'
 	 */
 	protected boolean shouldWriteQueryCookie(String queryText) {
 		return (null == queryText || queryText.length() <= 2048);
@@ -281,10 +287,6 @@ public class QueryServlet extends TransformationServlet {
 		writer.flush();
 	}
 
-	/**
-	 * @param req
-	 * @return
-	 */
 	private String getUserName(final WorkbenchRequest req) {
 		String userName = req.getParameter(SERVER_USER);
 		if (null == userName) {
