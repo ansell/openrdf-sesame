@@ -47,7 +47,7 @@ import org.openrdf.workbench.exceptions.BadRequestException;
  * 
  * @author Dale Visser
  */
-public final class QueryStorage {
+public class QueryStorage {
 
 	private static final Object LOCK = new Object();
 
@@ -98,6 +98,9 @@ public final class QueryStorage {
 	private static final String SELECT_URI = PRE
 			+ "SELECT ?query { ?query :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> . } ";
 
+	private static final String SELECT_TEXT = PRE
+			+ "SELECT ?queryText { [] :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> ; :query ?queryText . } ";
+	
 	private static final String SELECT = PRE
 			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?infer ?rowsPerPage "
 			+ "{ ?query :repository $<repository> ; :userName ?user ; :queryName ?queryName ; :shared ?shared ; "
@@ -123,7 +126,7 @@ public final class QueryStorage {
 	 *         if there is an issue creating the object to access the repository
 	 * @throws IOException
 	 */
-	private QueryStorage(final AppConfiguration appConfig)
+	protected QueryStorage(final AppConfiguration appConfig)
 		throws RepositoryException, IOException
 	{
 		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
@@ -354,6 +357,30 @@ public final class QueryStorage {
 			connection.close();
 		}
 	}
+	
+	public String getQueryText(final HTTPRepository repository, final String userName, final String queryName)
+			throws OpenRDFException, BadRequestException
+		{
+			final QueryStringBuilder select = new QueryStringBuilder(SELECT_TEXT);
+			select.replaceQuote(QueryStorage.USER_NAME, userName);
+			select.replaceURI(REPOSITORY, repository.getRepositoryURL());
+			select.replaceQuote(QUERY_NAME, queryName);
+			final RepositoryConnection connection = this.queries.getConnection();
+			final TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString());
+			try {
+				final TupleQueryResult result = query.evaluate();
+				if (result.hasNext()) {
+					return result.next().getValue("queryText").stringValue();
+				}
+				else {
+					throw new BadRequestException("Could not find query entry in storage.");
+				}
+			}
+			finally {
+				connection.close();
+			}
+		}
+	
 
 	private void updateQueryRepository(final String update)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException

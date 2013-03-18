@@ -8,29 +8,53 @@
  * button.)
  */
 function setQueryTextIfPresent() {
+	var query = getParameterFromUrlOrCookie('query');
+	if (query) {
+		var ref = getParameterFromUrlOrCookie('ref');
+		if (ref == 'id' || ref == 'hash') {
+			getQueryTextFromServer(query, ref);
+		} else {
+			$('#query').val(query);
+		}
+	}
+}
+
+function getQueryTextFromServer(queryParam, refParam) {
+	$.getJSON('query', {
+		action : "get",
+		query : queryParam,
+		ref : refParam
+	}, function(response) {
+		if (response.queryText) {
+			$('#query').val(response.queryText);
+		}
+	});
+}
+
+/**
+ * Gets a parameter from the URL or the cookies, preferentially in that order.
+ * 
+ * @param param
+ *            the name of the parameter
+ * @returns the value of the given parameter, or something that evaluates as
+ *          false, if the parameter was not found
+ */
+function getParameterFromUrlOrCookie(param) {
 	var href = document.location.href;
 	var elements = href.substring(href.indexOf('?') + 1).substring(
 			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
-	var param = 'query';
-	var query = document.getElementById(param);
-	var setFromHref = false;
+	var result = false;
 	for ( var i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
 		if (pair[0] == param) {
-			if (!query.value) {
-				query.value = value;
-				setFromHref = true;
-			}
+			result = value;
 		}
 	}
-
-	if (!setFromHref) {
-		var cookie = getCookie(param);
-		if (cookie) {
-			query.value = cookie;
-		}
+	if (!result) {
+		result = getCookie(param);
 	}
+	return result;
 }
 
 /**
@@ -229,13 +253,15 @@ function ajaxSave(overwrite) {
 			}
 		} else {
 			feedback.removeClass().addClass('error');
-			feedback.text('Repository was not accessible (check your permissions).');
+			feedback
+					.text('Repository was not accessible (check your permissions).');
 		}
 	};
 	var handleError = function(jqXHR, textStatus, errorThrown) {
 		feedback.removeClass().addClass('error');
 		if (textStatus == 'timeout') {
-			feedback.text('Timed out waiting for response. Uncertain if save occured.');
+			feedback
+					.text('Timed out waiting for response. Uncertain if save occured.');
 		} else {
 			feedback.text('Save Request Failed: Error Type = ' + textStatus
 					+ ', HTTP Status Text = "' + errorThrown + '"');
@@ -292,11 +318,9 @@ function doSubmit() {
 		// Published Internet Explorer restrictions on URL length, which are the
 		// most restrictive of the major browsers.
 		if (pathLength > 2048 || urlLength > 2083) {
-			if (confirm("Due to its length, your query will be posted in the request body. "
-					+ "Bookmarking the results page or using the browser back button won't recover it. "
-					+ "If you cancel, you can use the \"Save query\" button to store your query on the server.")) {
-				allowPageToSubmitForm = true;
-			}
+			alert("Due to its length, your query will be posted in the request body. "
+					+ "It won't be possible to use a bookmark for the results page.");
+			allowPageToSubmitForm = true;
 		} else {
 			// GET using the constructed URL, method exits here
 			document.location.href = href;
