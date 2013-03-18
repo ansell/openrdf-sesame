@@ -165,10 +165,12 @@ public abstract class BaseServlet implements Servlet {
 	 * builder that can be used to write out the results.
 	 * 
 	 * @param req
+	 *        the current HTTP request
 	 * @param resp
+	 *        the current HTTP response
 	 * @param outputStream
 	 *        TODO
-	 * @return
+	 * @return a builder that can be used to write out the results
 	 * @throws IOException
 	 * @throws UnsupportedQueryResultFormatException
 	 */
@@ -213,9 +215,9 @@ public abstract class BaseServlet implements Servlet {
 		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
 		}
-		
+
 		// TODO: Make the following two settings configurable
-		
+
 		// Convert xsd:string back to plain literals where this behaviour is
 		// supported
 		if (resultWriter.getSupportedSettings().contains(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL)) {

@@ -100,7 +100,7 @@ public class QueryStorage {
 
 	private static final String SELECT_TEXT = PRE
 			+ "SELECT ?queryText { [] :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> ; :query ?queryText . } ";
-	
+
 	private static final String SELECT = PRE
 			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?infer ?rowsPerPage "
 			+ "{ ?query :repository $<repository> ; :userName ?user ; :queryName ?queryName ; :shared ?shared ; "
@@ -307,8 +307,8 @@ public class QueryStorage {
 	 * @param userName
 	 *        that is requesting the saved queries
 	 * @param builder
-	 * @return a query result listing all the saved queries against the given
-	 *         repository and accessible to the given user
+	 *        receives a list of all the saved queries against the given
+	 *        repository and accessible to the given user
 	 * @throws RepositoryException
 	 *         if there's a problem connecting to the saved queries repository
 	 * @throws MalformedQueryException
@@ -357,30 +357,29 @@ public class QueryStorage {
 			connection.close();
 		}
 	}
-	
+
 	public String getQueryText(final HTTPRepository repository, final String userName, final String queryName)
-			throws OpenRDFException, BadRequestException
-		{
-			final QueryStringBuilder select = new QueryStringBuilder(SELECT_TEXT);
-			select.replaceQuote(QueryStorage.USER_NAME, userName);
-			select.replaceURI(REPOSITORY, repository.getRepositoryURL());
-			select.replaceQuote(QUERY_NAME, queryName);
-			final RepositoryConnection connection = this.queries.getConnection();
-			final TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString());
-			try {
-				final TupleQueryResult result = query.evaluate();
-				if (result.hasNext()) {
-					return result.next().getValue("queryText").stringValue();
-				}
-				else {
-					throw new BadRequestException("Could not find query entry in storage.");
-				}
+		throws OpenRDFException, BadRequestException
+	{
+		final QueryStringBuilder select = new QueryStringBuilder(SELECT_TEXT);
+		select.replaceQuote(QueryStorage.USER_NAME, userName);
+		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
+		select.replaceQuote(QUERY_NAME, queryName);
+		final RepositoryConnection connection = this.queries.getConnection();
+		final TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString());
+		try {
+			final TupleQueryResult result = query.evaluate();
+			if (result.hasNext()) {
+				return result.next().getValue("queryText").stringValue();
 			}
-			finally {
-				connection.close();
+			else {
+				throw new BadRequestException("Could not find query entry in storage.");
 			}
 		}
-	
+		finally {
+			connection.close();
+		}
+	}
 
 	private void updateQueryRepository(final String update)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
