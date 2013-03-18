@@ -51,7 +51,8 @@
 							<form method="post" name="exec-query" action="query">
 								<input type="hidden" name="action" value="exec" />
 								<input type="hidden" name="queryLn" value="{$queryLn}" />
-								<input type="hidden" name="query" value="{$queryText}" />
+								<input type="hidden" name="query" value="{$queryName}" />
+								<input type="hidden" name="ref" value="id" />
 								<input type="hidden" name="infer" value="{$infer}" />
 								<input type="hidden" name="limit" value="{$rowsPerPage}" />
 								<input type="submit" value="Execute" />
@@ -79,7 +80,8 @@
 							<form method="post" name="edit-query" action="query">
 								<input type="hidden" name="action" value="edit" />
 								<input type="hidden" name="queryLn" value="{$queryLn}" />
-								<input type="hidden" name="query" value="{$queryText}" />
+								<input type="hidden" name="query" value="{$queryName}" />
+								<input type="hidden" name="ref" value="id" />
 								<input type="hidden" name="infer" value="{$infer}" />
 								<input type="hidden" name="limit" value="{$rowsPerPage}" />
 								<input type="submit" value="Edit" />

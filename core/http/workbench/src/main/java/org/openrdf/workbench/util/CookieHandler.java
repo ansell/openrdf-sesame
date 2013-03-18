@@ -101,10 +101,15 @@ public class CookieHandler {
 	 *        the response object
 	 * @value the value to give the cookie
 	 */
-	public void addTotalResultCountCookie(final WorkbenchRequest req, final HttpServletResponse resp,
-			final int value)
+	public void addTotalResultCountCookie(WorkbenchRequest req, HttpServletResponse resp,
+			int value)
 	{
-		final Cookie cookie = new Cookie("total_result_count", String.valueOf(value));
+		addCookie(req, resp, "total_result_count", String.valueOf(value));
+	}
+	
+	public void addCookie(WorkbenchRequest req, HttpServletResponse resp,
+			String name, String value){
+		final Cookie cookie = new Cookie(name, value);
 		if (null == req.getContextPath()) {
 			cookie.setPath("/");
 		}

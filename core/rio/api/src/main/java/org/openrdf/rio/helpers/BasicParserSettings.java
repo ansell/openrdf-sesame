@@ -62,6 +62,27 @@ public class BasicParserSettings {
 			"org.openrdf.rio.datatypehandling", "Datatype handling", DatatypeHandling.VERIFY);
 
 	/**
+	 * Boolean setting for parser to determine whether parser should drop
+	 * statements that contain long literals. The maximum length of literals if
+	 * this setting is set to true is configured using
+	 * {@link #LONG_LITERALS_LIMIT}.
+	 * <p>
+	 * Defaults to false.
+	 */
+	public static final RioSetting<Boolean> DROP_LONG_LITERALS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.droplongliterals", "Drop long literals", Boolean.FALSE);
+
+	/**
+	 * If {@link #DROP_LONG_LITERALS} is set to true, then the value of this
+	 * setting corresponds to the maximum number of bytes for a literal before
+	 * the statement it is a part of is dropped silently by the parser.
+	 * <p>
+	 * Defaults to 1048576 bytes, which is equivalent to 1 megabyte.
+	 */
+	public static final RioSetting<Long> LONG_LITERALS_LIMIT = new RioSettingImpl<Long>(
+			"org.openrdf.rio.droplongliterals", "Size limit for long literals", 1048576L);
+
+	/**
 	 * Private default constructor.
 	 */
 	private BasicParserSettings() {

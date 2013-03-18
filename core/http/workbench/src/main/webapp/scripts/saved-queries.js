@@ -3,7 +3,10 @@
 function deleteQuery(savedBy, name, urn) {
 	var currentUser = getCookie("server-user");
 	if ((!savedBy || currentUser == savedBy)) {
-		if (confirm("Do you really wish to delete '" + name + "'?")) {
+		if (confirm("'"
+				+ name
+				+ "' will no longer be accessible, even using your browser's history. "
+				+ "Do you really wish to delete it?")) {
 			document.forms[urn].submit();
 		}
 	} else {
