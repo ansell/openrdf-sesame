@@ -176,12 +176,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 
 	/**
 	 * Creates the stack of Repository objects for the repository represented by
-	 * the specified <tt>repositoryImplNode</tt>.
+	 * the specified {@link org.openrdf.repository.config.RepositoryImplConfig}.
+	 * Uses a {@link org.openrdf.repository.config.RepositoryFactory} to create
+	 * the repository and initialize it.
 	 * 
-	 * @param con
-	 *        A connection to the repository containing the repository
-	 *        configuration.
-	 * @param repositoryImplNode
+	 * @param config
 	 *        The node representing the to-be-created repository in the
 	 *        configuration.
 	 * @return The created repository, or <tt>null</tt> if no such repository
