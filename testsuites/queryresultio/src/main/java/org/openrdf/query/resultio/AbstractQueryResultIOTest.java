@@ -60,9 +60,8 @@ public abstract class AbstractQueryResultIOTest {
 	}
 
 	/**
-	 * @return An example filename that will match the
-	 *         {@link TupleQueryResultFormat} returned by
-	 *         {@link #getTupleFormat()}.
+	 * @return An example filename that will match the {@link QueryResultFormat}
+	 *         returned by {@link #getFormat()}.
 	 */
 	protected abstract String getFileName();
 
