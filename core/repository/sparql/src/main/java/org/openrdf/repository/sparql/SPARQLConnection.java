@@ -20,6 +20,7 @@ import static org.openrdf.query.QueryLanguage.SPARQL;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
@@ -455,14 +456,14 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		// no-op, ignore silently
-		//throw new UnsupportedOperationException();
+		// throw new UnsupportedOperationException();
 	}
 
 	public void setNamespace(String prefix, String name)
 		throws RepositoryException
 	{
 		// no-op, ignore silently
-		//throw new UnsupportedOperationException();
+		// throw new UnsupportedOperationException();
 	}
 
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
@@ -627,15 +628,110 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		ValueFactory f = getValueFactory();
+		String sparqlCommand = "";
+		if (subject != null && predicate != null && object != null) {
+			ValueFactory f = getValueFactory();
 
-		Statement st = f.createStatement(subject, predicate, object);
+			Statement st = f.createStatement(subject, predicate, object);
 
-		List<Statement> list = new ArrayList<Statement>(1);
-		list.add(st);
-		String sparqlCommand = createDeleteDataCommand(list, contexts);
+			List<Statement> list = new ArrayList<Statement>(1);
+			list.add(st);
+			sparqlCommand = createDeleteDataCommand(list, contexts);
+		}
+		else {
+			sparqlCommand = createDeletePatternCommand(subject, predicate, object, contexts);
+		}
 
 		sparqlTransaction.append(sparqlCommand);
 		sparqlTransaction.append("; ");
+	}
+
+	/**
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 * @param contexts
+	 * @return
+	 */
+	private String createDeletePatternCommand(Resource subject, URI predicate, Value object,
+			Resource[] contexts)
+	{
+		StringBuilder qb = new StringBuilder();
+		qb.append("DELETE WHERE \n");
+		qb.append("{ \n");
+		if (contexts.length > 0) {
+			for (Resource context : contexts) {
+				if (context != null) {
+					String namedGraph = context.stringValue();
+					if (context instanceof BNode) {
+						// SPARQL does not allow blank nodes as named graph
+						// identifiers, so we need to skolemize
+						// the blank node id.
+						namedGraph = "urn:nodeid:" + context.stringValue();
+					}
+					qb.append("    GRAPH <" + namedGraph + "> { \n");
+				}
+				createBGP(qb, subject, predicate, object);
+				if (context != null && context instanceof URI) {
+					qb.append(" } \n");
+				}
+			}
+		}
+		else {
+			createBGP(qb, subject, predicate, object);
+		}
+		qb.append("}");
+
+		return qb.toString();
+	}
+
+	private void createBGP(StringBuilder qb, Resource subject, URI predicate, Value object) {
+		if (subject != null) {
+			if (subject instanceof BNode) {
+				qb.append("_:" + subject.stringValue() + " ");
+			}
+			else {
+				qb.append("<" + subject.stringValue() + "> ");
+			}
+		}
+		else {
+			qb.append("?subj");
+		}
+
+		if (predicate != null) {
+			qb.append("<" + predicate.stringValue() + "> ");
+		}
+		else {
+			qb.append("?pred");
+		}
+
+		if (object != null) {
+			if (object instanceof Literal) {
+				Literal lit = (Literal)object;
+				qb.append("\"");
+				qb.append(SPARQLUtil.encodeString(lit.getLabel()));
+				qb.append("\"");
+
+				if (lit.getLanguage() != null) {
+					qb.append("@");
+					qb.append(lit.getLanguage());
+				}
+
+				if (lit.getDatatype() != null) {
+					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
+				}
+				qb.append(" ");
+			}
+			else if (object instanceof BNode) {
+				qb.append("_:" + object.stringValue() + " ");
+			}
+			else {
+				qb.append("<" + object.stringValue() + "> ");
+			}
+		}
+		else {
+			qb.append("?obj");
+		}
+		qb.append(". \n");
 	}
 }
