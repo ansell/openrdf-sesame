@@ -20,11 +20,11 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-
+import org.openrdf.query.parser.sparql.SPARQLUtil;
 
 /**
- * Utility class to perfom query string manipulations as used
- * in {@link SPARQLTupleQuery}, {@link SPARQLGraphQuery} and
+ * Utility class to perfom query string manipulations as used in
+ * {@link SPARQLTupleQuery}, {@link SPARQLGraphQuery} and
  * {@link SPARQLBooleanQuery}.
  * 
  * @author Andreas Schwarte
@@ -35,18 +35,20 @@ import org.openrdf.query.BindingSet;
 public class QueryStringUtil {
 
 	// TODO maybe add BASE declaration here as well?
-	
+
 	/**
-	 * Retrieve a modified queryString into which all bindings of
-	 * the given argument are replaced.
+	 * Retrieve a modified queryString into which all bindings of the given
+	 * argument are replaced.
 	 * 
 	 * @param queryString
 	 * @param bindings
 	 * @return
 	 */
 	public static String getQueryString(String queryString, BindingSet bindings) {
-		if (bindings.size() == 0)
+		if (bindings.size() == 0) {
 			return queryString;
+		}
+		
 		String qry = queryString;
 		int b = qry.indexOf('{');
 		String select = qry.substring(0, b);
@@ -65,15 +67,16 @@ public class QueryStringUtil {
 	private static String getReplacement(Value value) {
 		StringBuilder sb = new StringBuilder();
 		if (value instanceof URI) {
-			return appendValue(sb, (URI) value).toString();
-		} else if (value instanceof Literal) {
-			return appendValue(sb, (Literal) value).toString();
-		} else {
-			throw new IllegalArgumentException(
-					"BNode references not supported by SPARQL end-points");
+			return appendValue(sb, (URI)value).toString();
+		}
+		else if (value instanceof Literal) {
+			return appendValue(sb, (Literal)value).toString();
+		}
+		else {
+			throw new IllegalArgumentException("BNode references not supported by SPARQL end-points");
 		}
 	}
-	
+
 	private static StringBuilder appendValue(StringBuilder sb, URI uri) {
 		sb.append("<").append(uri.stringValue()).append(">");
 		return sb;
@@ -81,7 +84,7 @@ public class QueryStringUtil {
 
 	private static StringBuilder appendValue(StringBuilder sb, Literal lit) {
 		sb.append('"');
-		sb.append(lit.getLabel().replace("\"", "\\\""));
+		sb.append(SPARQLUtil.encodeString(lit.getLabel()));
 		sb.append('"');
 
 		if (lit.getLanguage() != null) {
