@@ -41,7 +41,8 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
 /**
  * TupleQueryResultWriter for the SPARQL CSV (Comma-Separated Values) format.
  * 
- * @see http://www.w3.org/TR/sparql11-results-csv-tsv/#csv
+ * @see <a href="http://www.w3.org/TR/sparql11-results-csv-tsv/#csv">SPARQL 1.1
+ *      Query Results CSV Format</a>
  * @author Jeen Broekstra
  */
 public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements TupleQueryResultWriter {
