@@ -44,8 +44,9 @@ public class StackTracePatternLayout extends PatternLayout {
 	 * 
 	 * @param conversionPattern
 	 *        the conversion pattern to use
-	 * @see org.apache.log4j.PatternLayout for information on conversion
-	 *      patterns.
+	 * @see <a
+	 *      href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html">
+	 *      Information on Log4J conversion patterns.</a>
 	 */
 	public StackTracePatternLayout(String conversionPattern) {
 		super();
