@@ -36,6 +36,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.sail.config.ProxyRepositorySchema;
 import org.openrdf.repository.sail.config.RepositoryResolver;
 
 /**
@@ -270,6 +271,29 @@ public abstract class RepositoryManager implements RepositoryResolver {
 		}
 
 		return isRemoved;
+	}
+
+	/**
+	 * Checks on whether the given repository is referred to by a
+	 * {@link org.openrdf.repository.sail.ProxyRepository} configuration.
+	 * 
+	 * @param repositoryID
+	 *        id to check
+	 * @return true if there is no existing proxy reference to the given id,
+	 *         false otherwise
+	 * @throws RepositoryException
+	 */
+	public boolean isSafeToRemove(String repositoryID)
+		throws RepositoryException
+	{
+		RepositoryConnection connection = this.getSystemRepository().getConnection();
+		try {
+			return !connection.hasStatement(null, ProxyRepositorySchema.PROXIED_ID,
+					connection.getValueFactory().createLiteral(repositoryID), false);
+		}
+		finally {
+			connection.close();
+		}
 	}
 
 	/**

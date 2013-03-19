@@ -16,45 +16,35 @@
  */
 package org.openrdf.workbench.commands;
 
-import static org.openrdf.query.QueryLanguage.SERQL;
-
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.model.Resource;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.workbench.base.TransformationServlet;
-import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
+/**
+ * Servlet responsible for presenting the list of repositories, and deleting the
+ * chosen one.
+ */
 public class DeleteServlet extends TransformationServlet {
 
 	/**
-	 * Query that yields the context of a specific repository configuration.
+	 * Deletes the repository with the given ID, then redirects to the repository
+	 * selection page. If given a "checkSafe" parameter, instead returns JSON
+	 * response with safe field set to true if safe, false if not.
 	 */
-	public static final String CONTEXT_QUERY;
-
-	static {
-		StringBuilder query = new StringBuilder(256);
-		query.append("SELECT C ");
-		query.append("FROM CONTEXT C ");
-		query.append("   {} rdf:type {sys:Repository};");
-		query.append("      sys:repositoryID {ID} ");
-		query.append("USING NAMESPACE sys = <http://www.openrdf.org/config/repository#>");
-		CONTEXT_QUERY = query.toString();
-	}
-
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
@@ -63,50 +53,37 @@ public class DeleteServlet extends TransformationServlet {
 		resp.sendRedirect("../");
 	}
 
-	private void dropRepository(String id)
+	@Override
+	protected void service(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception
 	{
-
-		manager.removeRepository(id);
-
-		/*
-		Repository systemRepo = manager.getSystemRepository();
-		RepositoryConnection con = systemRepo.getConnection();
-		try {
-			Resource context = findContext(id, con);
-			manager.getRepository(id).shutDown();
-			con.clear(context);
-		} finally {
-			con.close();
+		String checkSafe = req.getParameter("checkSafe");
+		if (null == checkSafe) {
+			// Display the form.
+			super.service(req, resp, xslPath);
 		}
-		*/
+		else {
+			// Respond to 'checkSafe' XmlHttpRequest with JSON.
+			final PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
+			writer.write(new JSONObject().put("safe", manager.isSafeToRemove(checkSafe)).toString());
+			writer.flush();
+		}
+
 	}
 
-	private Resource findContext(String id, RepositoryConnection con)
-		throws RepositoryException, MalformedQueryException, QueryEvaluationException, BadRequestException
+	private void dropRepository(String identity)
+		throws RepositoryException, RepositoryConfigException
 	{
-		TupleQuery query = con.prepareTupleQuery(SERQL, CONTEXT_QUERY);
-		query.setBinding("ID", vf.createLiteral(id));
-		TupleQueryResult result = query.evaluate();
-		try {
-			if (!result.hasNext())
-				throw new BadRequestException("Cannot find repository of id: " + id);
-			BindingSet bindings = result.next();
-			Resource context = (Resource)bindings.getValue("C");
-			if (result.hasNext())
-				throw new BadRequestException("Multiple contexts found for repository '" + id + "'");
-			return context;
-		}
-		finally {
-			result.close();
-		}
+		manager.removeRepository(identity);
 	}
 
+	/**
+	 * Presents a page where the user can choose a repository ID to delete.
+	 */
 	@Override
 	public void service(TupleResultBuilder builder, String xslPath)
 		throws RepositoryException, QueryResultHandlerException
 	{
-		// TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "delete.xsl");
 		builder.start("readable", "writeable", "id", "description", "location");
 		builder.link(Arrays.asList(INFO));

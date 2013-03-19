@@ -16,10 +16,14 @@
  */
 package org.openrdf.repository.manager;
 
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -28,11 +32,11 @@ import org.junit.Test;
 import info.aduna.io.FileUtil;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.config.RepositoryImplConfig;
-import org.openrdf.repository.manager.LocalRepositoryManager;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.sail.config.ProxyRepositoryConfig;
 import org.openrdf.repository.sail.config.SailRepositoryConfig;
-import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.memory.config.MemoryStoreConfig;
 
 /**
@@ -44,7 +48,9 @@ public class TestLocalRepositoryManager {
 
 	private File datadir;
 
-	private String testRep = "test";
+	private static final String TEST_REPO = "test";
+
+	private static final String PROXY_ID = "proxy";
 
 	/**
 	 * @throws java.lang.Exception
@@ -57,22 +63,22 @@ public class TestLocalRepositoryManager {
 		manager = new LocalRepositoryManager(datadir);
 		manager.initialize();
 
-		// create a configuration for the SAIL stack
-		SailImplConfig backendConfig = new MemoryStoreConfig();
+		// Create configurations for the SAIL stack, and the repository
+		// implementation.
+		manager.addRepositoryConfig(new RepositoryConfig(TEST_REPO, new SailRepositoryConfig(
+				new MemoryStoreConfig())));
 
-		// create a configuration for the repository implementation
-		RepositoryImplConfig repositoryTypeSpec = new SailRepositoryConfig(backendConfig);
-		RepositoryConfig config = new RepositoryConfig(testRep, repositoryTypeSpec);
-
-		manager.addRepositoryConfig(config);
+		// Create configuration for proxy repository to previous repository.
+		manager.addRepositoryConfig(new RepositoryConfig(PROXY_ID, new ProxyRepositoryConfig(TEST_REPO)));
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws IOException
+	 *         if a problem occurs deleting temporary resources
 	 */
 	@After
 	public void tearDown()
-		throws Exception
+		throws IOException
 	{
 		manager.shutDown();
 		FileUtil.deleteDir(datadir);
@@ -82,20 +88,41 @@ public class TestLocalRepositoryManager {
 	 * Test method for
 	 * {@link org.openrdf.repository.manager.LocalRepositoryManager#getRepository(java.lang.String)}
 	 * .
+	 * 
+	 * @throws RepositoryException
+	 *         if a problem occurs accessing the repository
+	 * @throws RepositoryConfigException
+	 *         if a problem occurs accessing the repository
 	 */
 	@Test
-	public void testGetRepository() throws Exception {
-
-		Repository rep = manager.getRepository(testRep);
-		assertNotNull(rep);
-		assertTrue(rep.isInitialized());
-		
+	public void testGetRepository()
+		throws RepositoryConfigException, RepositoryException
+	{
+		Repository rep = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep);
+		assertTrue("Expected repository to be initialized.", rep.isInitialized());
 		rep.shutDown();
-		
-		rep = manager.getRepository(testRep);
-		assertNotNull(rep);
-		assertTrue(rep.isInitialized());
-		
+		rep = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep);
+		assertTrue("Expected repository to be initialized.", rep.isInitialized());
 	}
 
+	/**
+	 * Test method for {@link RepositoryManager.isSafeToRemove(String)}.
+	 * 
+	 * @throws RepositoryException
+	 *         if a problem occurs during execution
+	 * @throws RepositoryConfigException
+	 *         if a problem occurs during execution
+	 */
+	@Test
+	public void testIsSafeToRemove()
+		throws RepositoryException, RepositoryConfigException
+	{
+		assertThat(manager.isSafeToRemove(PROXY_ID), is(equalTo(true)));
+		assertThat(manager.isSafeToRemove(TEST_REPO), is(equalTo(false)));
+		manager.removeRepository(PROXY_ID);
+		assertThat(manager.hasRepositoryConfig(PROXY_ID), is(equalTo(false)));
+		assertThat(manager.isSafeToRemove(TEST_REPO), is(equalTo(true)));
+	}
 }
