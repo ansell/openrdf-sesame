@@ -206,7 +206,7 @@ public class SailUpdateExecutor {
 	}
 
 	/**
-	 * @param updateExpr
+	 * @param copy
 	 * @param uc
 	 * @throws SailException
 	 */
@@ -242,7 +242,7 @@ public class SailUpdateExecutor {
 	}
 
 	/**
-	 * @param updateExpr
+	 * @param add
 	 * @param uc
 	 * @throws SailException
 	 */
@@ -275,7 +275,7 @@ public class SailUpdateExecutor {
 	}
 
 	/**
-	 * @param updateExpr
+	 * @param move
 	 * @param uc
 	 * @throws SailException
 	 */
@@ -312,7 +312,7 @@ public class SailUpdateExecutor {
 	}
 
 	/**
-	 * @param updateExpr
+	 * @param clearExpr
 	 * @param uc
 	 * @throws SailException
 	 */
@@ -355,7 +355,7 @@ public class SailUpdateExecutor {
 	}
 
 	/**
-	 * @param updateExpr
+	 * @param insertDataExpr
 	 * @param uc
 	 * @throws SailException
 	 */
@@ -399,10 +399,8 @@ public class SailUpdateExecutor {
 	}
 
 	/**
-	 * @param updateExpr
-	 * @param dataset
-	 * @param bindings
-	 * @param includeInferred
+	 * @param deleteDataExpr
+	 * @param uc
 	 * @throws SailException
 	 */
 	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc)
@@ -479,13 +477,6 @@ public class SailUpdateExecutor {
 		return set.toArray(new URI[set.size()]);
 	}
 
-	/**
-	 * @param whereClause
-	 * @param uc
-	 * @return
-	 * @throws SailException
-	 * @throws QueryEvaluationException
-	 */
 	private CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateWhereClause(
 			final TupleExpr whereClause, final UpdateContext uc)
 		throws SailException, QueryEvaluationException
@@ -602,12 +593,6 @@ public class SailUpdateExecutor {
 		}
 	}
 
-	/**
-	 * @param pattern
-	 * @param sourceBinding
-	 * @return
-	 * @throws SailException
-	 */
 	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding,
 			MapBindingSet bnodeMapping)
 		throws SailException
