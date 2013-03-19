@@ -84,11 +84,6 @@ public class RepositoryManagerFederator {
 	 * repositories already managed by the
 	 * {@link org.openrdf.repository.manager.RepositoryManager}.
 	 * 
-	 * @param memberType
-	 *        either
-	 *        {@link org.openrdf.repository.http.config.HTTPRepositoryFactory#REPOSITORY_TYPE}
-	 *        or
-	 *        {@link org.openrdf.repository.sparql.config.SPARQLRepositoryFactory#REPOSITORY_TYPE}
 	 * @param fedID
 	 *        the desired identifier for the new federation repository
 	 * @param description
@@ -105,7 +100,7 @@ public class RepositoryManagerFederator {
 	 *         if the {@link org.openrdf.repository.manager.RepositoryManager}
 	 *         has a malformed location
 	 * @throws OpenRDFException
-	 *         if an problem otherwise occurs while creating the federation
+	 *         if a problem otherwise occurs while creating the federation
 	 */
 	public void addFed(String fedID, String description, Collection<String> members, boolean readonly,
 			boolean distinct)
