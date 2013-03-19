@@ -176,4 +176,19 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 				"test.xsl");
 	}
 
+	@Test
+	public final void testMultipleResultsJSONPCallback()
+		throws Exception
+	{
+		doTupleJSONPCallback(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets());
+	}
+
+	@Test
+	public final void testNoResultsJSONPCallback()
+		throws Exception
+	{
+		doTupleJSONPCallback(getTupleFormat(), createTupleNoBindingSets(), createTupleNoBindingSets());
+	}
+
 }

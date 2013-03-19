@@ -18,6 +18,7 @@ package org.openrdf.workbench.base;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -56,8 +57,23 @@ public abstract class BaseServlet implements Servlet {
 
 	protected static final String ACCEPT = "Accept";
 
+	/**
+	 * This response content type is always used for JSONP results.
+	 */
+	protected static final String APPLICATION_JAVASCRIPT = "application/javascript";
+
+	/**
+	 * This response content type is used in cases where application/xml is
+	 * explicitly requested, or in cases where the user agent is known to be a
+	 * commonly available browser.
+	 */
 	protected static final String APPLICATION_XML = "application/xml";
 
+	/**
+	 * This response content type is used for SPARQL Results XML results in
+	 * non-browser user agents or other cases where application/xml is not
+	 * specifically requested.
+	 */
 	protected static final String APPLICATION_SPARQL_RESULTS_XML = "application/sparql-results+xml";
 
 	protected static final String TEXT_HTML = "text/html";
@@ -67,6 +83,21 @@ public abstract class BaseServlet implements Servlet {
 	protected static final String MSIE = "MSIE";
 
 	protected static final String MOZILLA = "Mozilla";
+
+	/**
+	 * JSONP property for enabling/disabling jsonp functionality.
+	 */
+	protected static final String JSONP_ENABLED = "org.openrdf.workbench.jsonp.enabled";
+
+	/**
+	 * This query parameter is only used in cases where the configuration
+	 * property is not setup explicitly.
+	 */
+	protected static final String DEFAULT_JSONP_CALLBACK_PARAMETER = "callback";
+
+	protected static final Pattern JSONP_VALIDATOR = Pattern.compile("^[A-Za-z]\\w+$");
+
+	protected static final String JSONP_CALLBACK_PARAMETER = "org.openrdf.workbench.jsonp.callbackparameter";
 
 	protected ServletConfig config;
 
@@ -140,6 +171,18 @@ public abstract class BaseServlet implements Servlet {
 		return null;
 	}
 
+	protected QueryResultFormat getJSONPResultFormat(final HttpServletRequest req, final ServletResponse resp)
+	{
+		String header = req.getHeader(ACCEPT);
+		if (header != null) {
+			if (header.equals(APPLICATION_JAVASCRIPT)) {
+				return TupleQueryResultFormat.JSON;
+			}
+		}
+
+		return null;
+	}
+
 	protected QueryResultWriter getResultWriter(final HttpServletRequest req, final ServletResponse resp,
 			final OutputStream outputStream)
 		throws UnsupportedQueryResultFormatException, IOException
@@ -148,6 +191,10 @@ public abstract class BaseServlet implements Servlet {
 
 		if (resultFormat == null) {
 			resultFormat = getBooleanResultFormat(req, resp);
+		}
+
+		if (resultFormat == null) {
+			resultFormat = getJSONPResultFormat(req, resp);
 		}
 
 		if (resultFormat == null) {
@@ -209,12 +256,64 @@ public abstract class BaseServlet implements Servlet {
 			}
 		}
 
-		resp.setContentType(contentType);
-
 		// Setup qname support for result writers who declare that they support it
 		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			resultWriter.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
 		}
+
+		// Search for and setup the JSONP callback function if the user requested
+		// it and the result writer could handle it
+		if (resultWriter.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK)) {
+
+			// JSONP is enabled in the default properties, but if users setup their
+			// own application.properties file then it must be inserted explicitly
+			// to be enabled
+			if (appConfig.getProperties().containsKey(JSONP_ENABLED)) {
+
+				String jsonpEnabledProperty = appConfig.getProperties().getProperty(JSONP_ENABLED);
+
+				// check if jsonp is a property and it is set to true
+				if (jsonpEnabledProperty != null && Boolean.parseBoolean(jsonpEnabledProperty)) {
+					String parameterName = null;
+
+					// check whether they customised the parameter to use to identify
+					// the jsonp callback
+					if (appConfig.getProperties().containsKey(JSONP_CALLBACK_PARAMETER)) {
+						parameterName = appConfig.getProperties().getProperty(JSONP_CALLBACK_PARAMETER);
+					}
+
+					// Use default parameter name if it was missing in the
+					// configuration after jsonp was enabled
+					if (parameterName == null || parameterName.trim().isEmpty()) {
+						parameterName = DEFAULT_JSONP_CALLBACK_PARAMETER;
+					}
+
+					String parameter = req.getParameter(parameterName);
+
+					if (parameter != null) {
+						parameter = parameter.trim();
+
+						if (parameter.isEmpty()) {
+							parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+						}
+
+						// check callback function name is a valid javascript function
+						// name
+						if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
+							throw new IOException("Callback function name was invalid");
+						}
+
+						resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
+
+						// explicitly set the content type to "application/javascript"
+						// to fit JSONP best practices
+						contentType = APPLICATION_JAVASCRIPT;
+					}
+				}
+			}
+		}
+
+		resp.setContentType(contentType);
 
 		// TODO: Make the following two settings configurable
 

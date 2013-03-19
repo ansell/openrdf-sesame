@@ -39,6 +39,17 @@ public class BasicQueryWriterSettings {
 			"org.openrdf.query.resultio.addsesameqname", "Add Sesame QName", false);
 
 	/**
+	 * Specifies a callback function name for wrapping JSON results to support
+	 * the JSONP cross-origin request methodology.
+	 * <p>
+	 * Defaults to "sesamecallback".
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<String> JSONP_CALLBACK = new RioSettingImpl<String>(
+			"org.openrdf.query.resultio.jsonpcallback", "JSONP callback function", "sesamecallback");
+
+	/**
 	 * Private default constructor
 	 */
 	private BasicQueryWriterSettings() {
