@@ -232,10 +232,15 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	 * Parse a value out of the elements for a binding.
 	 * 
 	 * @param type
+	 *        {@link #LITERAL}, {@link #TYPED_LITERAL}, {@link #BNODE} or
+	 *        {@link #URI}
 	 * @param value
+	 *        actual value text
 	 * @param language
+	 *        language tag, if applicable
 	 * @param datatype
-	 * @return
+	 *        datatype tag, if applicable
+	 * @return the value corresponding to the given parameters
 	 */
 	private Value parseValue(String type, String value, String language, String datatype) {
 		Value result = null;
