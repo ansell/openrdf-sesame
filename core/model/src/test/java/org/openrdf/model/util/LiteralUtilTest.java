@@ -18,6 +18,12 @@ package org.openrdf.model.util;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -291,16 +297,206 @@ public class LiteralUtilTest {
 	 * .
 	 */
 	@Test
-	public void testCreateLiteralObject() {
+	public void testCreateLiteralObjectNull() {
+
+		Object obj = null;
+
+		try {
+			LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+			fail("Did not find expected exception");
+		}
+		catch (NullPointerException npe) {
+			assertTrue(npe.getMessage().contains("Cannot create a literal from a null"));
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectBoolean() {
+
+		Object obj = Boolean.TRUE;
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.BOOLEAN);
+		assertTrue(l.booleanValue());
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectByte() {
+
+		Object obj = new Integer(42).byteValue();
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.BYTE);
+		assertEquals(l.getLabel(), "42");
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectDouble() {
+
+		Object obj = new Double(42);
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.DOUBLE);
+		assertEquals(l.getLabel(), "42.0");
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectFloat() {
+
+		Object obj = new Float(42);
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.FLOAT);
+		assertEquals(l.getLabel(), "42.0");
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectInteger() {
 
 		Object obj = new Integer(4);
 
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.INT);
+		assertEquals(l.getLabel(), "4");
 
-		obj = "some string";
-		l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectLong() {
+
+		Object obj = new Long(42);
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.LONG);
+		assertEquals(l.getLabel(), "42");
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectShort() {
+
+		Object obj = Short.parseShort("42");
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.SHORT);
+		assertEquals("42", l.getLabel());
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectXMLGregorianCalendar() {
+
+		GregorianCalendar c = new GregorianCalendar();
+		c.setTime(new Date());
+		try {
+			Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+			Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+			assertNotNull(l);
+			assertEquals(l.getDatatype(), XMLSchema.DATETIME);
+			// TODO check lexical value?
+		}
+		catch (DatatypeConfigurationException e) {
+			e.printStackTrace();
+			fail("Could not instantiate javax.xml.datatype.DatatypeFactory");
+		}
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectDate() {
+
+		Object obj = new Date();
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.DATETIME);
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectString() {
+
+		Object obj = "random unique string";
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		assertNotNull(l);
+		assertEquals(l.getDatatype(), XMLSchema.STRING);
+		assertEquals(l.getLabel(), "random unique string");
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCreateLiteralObjectObject() {
+
+		Object obj = new Object();
+
+		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 
