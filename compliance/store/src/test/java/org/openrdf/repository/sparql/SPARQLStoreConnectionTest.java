@@ -198,6 +198,34 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		}
 	
 	@Override
+	public void testSimpleTupleQueryUnicode()
+			throws Exception
+		{
+			testCon.add(alexander, name, Александър);
+
+			StringBuilder queryBuilder = new StringBuilder();
+			queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
+			queryBuilder.append(" SELECT ?person");
+			queryBuilder.append(" WHERE { ?person foaf:name \"").append(Александър.getLabel()).append("\" . } ");
+
+			TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
+
+			try {
+				assertTrue(result != null);
+				assertTrue(result.hasNext());
+
+				while (result.hasNext()) {
+					BindingSet solution = result.next();
+					assertTrue(solution.hasBinding("person"));
+					assertEquals(alexander, solution.getValue("person"));
+				}
+			}
+			finally {
+				result.close();
+			}
+		}
+	
+	@Override
 	@Ignore
 	public void testBNodeSerialization()
 			throws Exception {
