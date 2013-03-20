@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -463,7 +464,35 @@ public class LiteralUtil {
 	 * @since 2.7.0
 	 */
 	public static Literal createLiteral(ValueFactory valueFactory, Object object) {
-		return createLiteral(valueFactory, object, false);
+		try {
+			return createLiteral(valueFactory, object, false);
+		}
+		catch (LiteralUtilException e) {
+			// This should not happen by design
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Creates a typed {@link Literal} out of the supplied object, mapping the
+	 * runtime type of the object to the appropriate XML Schema type. If no
+	 * mapping is available, the method throws a {@link LiteralUtilException}.
+	 * Recognized types are {@link Boolean}, {@link Byte}, {@link Double},
+	 * {@link Float}, {@link Integer}, {@link Long}, {@link Short},
+	 * {@link XMLGregorianCalendar } , and {@link Date}.
+	 * 
+	 * @param valueFactory
+	 * @param object
+	 *        an object to be converted to a typed literal.
+	 * @return a typed literal representation of the supplied object.
+	 * @throws LiteralUtilException
+	 *         If the literal could not be created.
+	 * @since 2.7.0
+	 */
+	public static Literal createLiteralOrFail(ValueFactory valueFactory, Object object)
+		throws OpenRDFException
+	{
+		return createLiteral(valueFactory, object, true);
 	}
 
 	/**
@@ -486,10 +515,13 @@ public class LiteralUtil {
 	 *        recognised. If false it returns a string typed literal based on the
 	 *        objects toString method.
 	 * @return a typed literal representation of the supplied object.
+	 * @throws LiteralUtilException
+	 *         If the literal could not be created.
 	 * @since 2.7.0
 	 */
 	public static Literal createLiteral(ValueFactory valueFactory, Object object,
 			boolean throwExceptionOnFailure)
+		throws LiteralUtilException
 	{
 		if (object instanceof Boolean) {
 			return valueFactory.createLiteral(((Boolean)object).booleanValue());
@@ -518,9 +550,12 @@ public class LiteralUtil {
 		else if (object instanceof Date) {
 			return valueFactory.createLiteral((Date)object);
 		}
+		else if (object instanceof String) {
+			return valueFactory.createLiteral(object.toString(), XMLSchema.STRING);
+		}
 		else {
 			if (throwExceptionOnFailure) {
-				throw new RuntimeException("Did not recognise object when creating literal");
+				throw new LiteralUtilException("Did not recognise object when creating literal");
 			}
 			return valueFactory.createLiteral(object.toString(), XMLSchema.STRING);
 		}
