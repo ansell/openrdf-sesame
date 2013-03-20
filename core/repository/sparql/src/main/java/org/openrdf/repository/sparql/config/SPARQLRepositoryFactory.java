@@ -39,15 +39,21 @@ public class SPARQLRepositoryFactory implements RepositoryFactory {
 	}
 
 	public SPARQLRepository getRepository(RepositoryImplConfig config)
-			throws RepositoryConfigException {
+		throws RepositoryConfigException
+	{
 		SPARQLRepository result = null;
 
 		if (config instanceof SPARQLRepositoryConfig) {
-			SPARQLRepositoryConfig httpConfig = (SPARQLRepositoryConfig) config;
-			result = new SPARQLRepository(httpConfig.getURL());
-		} else {
-			throw new RepositoryConfigException("Invalid configuration class: "
-					+ config.getClass());
+			SPARQLRepositoryConfig httpConfig = (SPARQLRepositoryConfig)config;
+			if (httpConfig.getUpdateEndpointUrl() != null) {
+				result = new SPARQLRepository(httpConfig.getQueryEndpointUrl(), httpConfig.getUpdateEndpointUrl());
+			}
+			else {
+				result = new SPARQLRepository(httpConfig.getQueryEndpointUrl());
+			}
+		}
+		else {
+			throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
 		}
 		return result;
 	}

@@ -33,33 +33,50 @@ import org.openrdf.repository.config.RepositoryImplConfigBase;
  */
 public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 
-	public static final URI ENDPOINT = new URIImpl(
-			"http://www.openrdf.org/config/repository/sparql#endpoint");
+	public static final URI QUERY_ENDPOINT = new URIImpl(
+			"http://www.openrdf.org/config/repository/sparql#query-endpoint");
 
-	private String url;
+	public static final URI UPDATE_ENDPOINT = new URIImpl(
+			"http://www.openrdf.org/config/repository/sparql#update-endpoint");
+
+	private String queryEndpointUrl;
+	private String updateEndpointUrl;
 
 	public SPARQLRepositoryConfig() {
 		super(SPARQLRepositoryFactory.REPOSITORY_TYPE);
 	}
 
-	public SPARQLRepositoryConfig(String url) {
-		setURL(url);
+	public SPARQLRepositoryConfig(String queryEndpointUrl) {
+		setQueryEndpointUrl(queryEndpointUrl);
+	}
+	
+	public SPARQLRepositoryConfig(String queryEndpointUrl, String updateEndpointUrl) {
+		this(queryEndpointUrl);
+		setUpdateEndpointUrl(updateEndpointUrl);
 	}
 
-	public String getURL() {
-		return url;
+	public String getQueryEndpointUrl() {
+		return queryEndpointUrl;
 	}
 
-	public void setURL(String url) {
-		this.url = url;
+	public void setQueryEndpointUrl(String url) {
+		this.queryEndpointUrl = url;
 	}
 
+	public String getUpdateEndpointUrl() {
+		return updateEndpointUrl;
+	}
+
+	public void setUpdateEndpointUrl(String url) {
+		this.updateEndpointUrl = url;
+	}
+	
 	@Override
 	public void validate() throws RepositoryConfigException {
 		super.validate();
-		if (url == null) {
+		if (getQueryEndpointUrl() == null) {
 			throw new RepositoryConfigException(
-					"No URL specified for SPARQL repository");
+					"No endpoint URL specified for SPARQL repository");
 		}
 	}
 
@@ -68,8 +85,11 @@ public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 		Resource implNode = super.export(graph);
 
 		ValueFactory vf = graph.getValueFactory();
-		if (url != null) {
-			graph.add(implNode, ENDPOINT, vf.createURI(url));
+		if (getQueryEndpointUrl() != null) {
+			graph.add(implNode, QUERY_ENDPOINT, vf.createURI(getQueryEndpointUrl()));
+		}
+		if (getUpdateEndpointUrl() != null) {
+			graph.add(implNode, UPDATE_ENDPOINT, vf.createURI(getUpdateEndpointUrl()));
 		}
 
 		return implNode;
@@ -81,9 +101,14 @@ public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, ENDPOINT);
+			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, QUERY_ENDPOINT);
 			if (uri != null) {
-				setURL(uri.stringValue());
+				setQueryEndpointUrl(uri.stringValue());
+			}
+			
+			uri = GraphUtil.getOptionalObjectURI(graph, implNode, UPDATE_ENDPOINT);
+			if (uri != null) {
+				setUpdateEndpointUrl(uri.stringValue());
 			}
 		} catch (GraphUtilException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
