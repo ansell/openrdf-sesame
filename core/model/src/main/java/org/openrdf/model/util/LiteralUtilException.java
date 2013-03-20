@@ -22,7 +22,7 @@ import org.openrdf.OpenRDFException;
  * An exception thrown by {@link LiteralUtil} when specific conditions are not
  * met.
  * 
- * @author Arjohn Kampman
+ * @author Peter Ansell
  */
 public class LiteralUtilException extends OpenRDFException {
 
