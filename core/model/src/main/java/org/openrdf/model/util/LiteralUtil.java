@@ -468,7 +468,7 @@ public class LiteralUtil {
 		}
 		catch (LiteralUtilException e) {
 			// This should not happen by design
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
