@@ -510,9 +510,9 @@ public class LiteralUtil {
 	 * @param object
 	 *        an object to be converted to a typed literal.
 	 * @param throwExceptionOnFailure
-	 *        If true throws a {@link RuntimeException} when the object is not
-	 *        recognised. If false it returns a string typed literal based on the
-	 *        objects toString method.
+	 *        If true throws a {@link LiteralUtilException} when the object is
+	 *        not recognised. If false it returns a string typed literal based on
+	 *        the objects toString method.
 	 * @return a typed literal representation of the supplied object.
 	 * @throws LiteralUtilException
 	 *         If the literal could not be created.
