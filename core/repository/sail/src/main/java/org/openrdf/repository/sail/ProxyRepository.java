@@ -30,20 +30,20 @@ import org.openrdf.repository.sail.config.RepositoryResolverClient;
 /**
  * <p>
  * {@link org.openrdf.repository.Repository} implementation that takes a
- * {@link LocalRepositoryManager} instance and the id of a managed repository,
- * and delegate all calls through to the given repository.
+ * {@link org.openrdf.repository.sail.config.RepositoryResolver} instance and
+ * the id of a managed repository, and delegate all calls through to the given
+ * repository.
  * </p>
  * <p>
- * The purpose is to allow {@link org.openrdf.sail.federation.Federation} to
- * federate local repositories without having to go through an HTTP layer.
+ * The purpose is to allow {@link org.openrdf.sail.Sail}s to refer to other
+ * local repositories using a unique identifier without having to go through an
+ * HTTP layer.
  * </p>
  * <p>
  * The implementation is independent of
  * {@link org.openrdf.repository.DelegatingRepository} so that it is freed from
- * having to provide implementation details in its configuration data, just as
- * {@link org.openrdf.repository.http.HTTPRepository} and
- * {@link org.openrdf.repository.sparql.SPARQLRepository}. Instead, it only has
- * to provide an unambiguous local identifier to the proxy.
+ * having to provide implementation details in its configuration data. Instead,
+ * it only has to provide an unambiguous local identifier to the proxy.
  * </p>
  * 
  * @author Dale Visser
@@ -70,8 +70,7 @@ public class ProxyRepository extends RepositoryBase implements RepositoryResolve
 	 * @param proxiedIdentity
 	 *        id of the proxied repository
 	 */
-	public ProxyRepository(RepositoryResolver resolver, String proxiedIdentity)
-	{
+	public ProxyRepository(RepositoryResolver resolver, String proxiedIdentity) {
 		super();
 		this.setRepositoryResolver(resolver);
 		this.setProxiedIdentity(proxiedIdentity);
@@ -102,7 +101,8 @@ public class ProxyRepository extends RepositoryBase implements RepositoryResolve
 			assert null != proxiedID : "Expected proxiedID to be set.";
 			try {
 				proxiedRepository = resolver.getRepository(proxiedID);
-			} catch (OpenRDFException ore) {
+			}
+			catch (OpenRDFException ore) {
 				throw new IllegalStateException(ore);
 			}
 		}

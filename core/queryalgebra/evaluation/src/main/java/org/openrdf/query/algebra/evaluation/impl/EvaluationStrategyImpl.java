@@ -16,7 +16,6 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -329,9 +328,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private Queue<ValuePair> valueQueue = new ArrayDeque<ValuePair>();
 
-		private Set<ValuePair> reportedValues = new HashSet<ValuePair>(64,0.9f);
+		private Set<ValuePair> reportedValues = new HashSet<ValuePair>(64, 0.9f);
 
-		private Set<ValuePair> unreportedValues = new HashSet<ValuePair>(64,0.9f);
+		private Set<ValuePair> unreportedValues = new HashSet<ValuePair>(64, 0.9f);
 
 		private TupleExpr pathExpression;
 
@@ -701,7 +700,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Var subjectVar = zlp.getSubjectVar();
 		final Var objVar = zlp.getObjectVar();
 		final Var contextVar = zlp.getContextVar();
-		
+
 		Value subj = null;
 		try {
 			subj = evaluate(subjectVar, bindings);
@@ -747,7 +746,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		private Var contextVar;
 
-		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, Var contextVar, BindingSet bindings) {
+		public ZeroLengthPathIteration(Var subjectVar, Var objVar, Value subj, Value obj, Var contextVar,
+				BindingSet bindings)
+		{
 			result = new QueryBindingSet(bindings);
 			this.subjectVar = subjectVar;
 			this.objVar = objVar;
@@ -1810,8 +1811,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Creates a URI from the operand value (a plain literal or a URI).
 	 * 
 	 * @param node
+	 *        represents an invocation of the SPARQL IRI function
 	 * @param bindings
-	 * @return
+	 *        used to generate the value that the URI is based on
+	 * @return a URI generated from the given arguments
 	 * @throws ValueExprEvaluationException
 	 * @throws QueryEvaluationException
 	 */

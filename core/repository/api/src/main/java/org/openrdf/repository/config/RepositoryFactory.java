@@ -20,10 +20,7 @@ import org.openrdf.repository.Repository;
 
 /**
  * A RepositoryFactory takes care of creating and initializing a specific type
- * of {@link Repository}s based on RDF configuration data. RepositoryFactory's
- * are used by the {@link org.openrdf.repository.manager.RepositoryManager} to
- * create specific repositories and to initialize them based on the
- * configuration data that it manages, for example in a server environment.
+ * of {@link Repository}s based on RDF configuration data.
  * 
  * @author Arjohn Kampman
  */

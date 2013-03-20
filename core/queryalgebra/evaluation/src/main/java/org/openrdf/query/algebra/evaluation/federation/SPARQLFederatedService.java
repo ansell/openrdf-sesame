@@ -52,35 +52,37 @@ import org.openrdf.repository.sparql.SPARQLRepository;
 import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
 
 /**
- * Federated Service wrapping the {@link SPARQLRepository} to communicate
- * with a SPARQL endpoint.
+ * Federated Service wrapping the {@link SPARQLRepository} to communicate with a
+ * SPARQL endpoint.
  * 
  * @author Andreas Schwarte
  */
 public class SPARQLFederatedService implements FederatedService {
 
 	final static Logger logger = LoggerFactory.getLogger(SPARQLFederatedService.class);
-	
+
 	/**
-	 * A convenience iteration for SERVICE expression which evaluates 
+	 * A convenience iteration for SERVICE expression which evaluates
 	 * intermediate results in batches and manages all results. Uses
-	 * {@link JoinExecutorBase} facilities to guarantee correct access
-	 * to the final results
+	 * {@link JoinExecutorBase} facilities to guarantee correct access to the
+	 * final results
 	 * 
 	 * @author as
 	 */
 	private class BatchingServiceIteration extends JoinExecutorBase<BindingSet> {
 
 		private final int blockSize;
+
 		private final Service service;
-		
+
 		/**
 		 * @param inputBindings
 		 * @throws QueryEvaluationException
 		 */
-		public BatchingServiceIteration(
-				CloseableIteration<BindingSet, QueryEvaluationException> inputBindings, int blockSize, Service service)
-				throws QueryEvaluationException {
+		public BatchingServiceIteration(CloseableIteration<BindingSet, QueryEvaluationException> inputBindings,
+				int blockSize, Service service)
+			throws QueryEvaluationException
+		{
 			super(inputBindings, null, EmptyBindingSet.getInstance());
 			this.blockSize = blockSize;
 			this.service = service;
@@ -88,208 +90,224 @@ public class SPARQLFederatedService implements FederatedService {
 		}
 
 		@Override
-		protected void handleBindings() throws Exception {	
+		protected void handleBindings()
+			throws Exception
+		{
 			while (!closed && leftIter.hasNext()) {
-								
+
 				ArrayList<BindingSet> blockBindings = new ArrayList<BindingSet>(blockSize);
-				for (int i=0; i<blockSize; i++) {
+				for (int i = 0; i < blockSize; i++) {
 					if (!leftIter.hasNext())
 						break;
 					blockBindings.add(leftIter.next());
 				}
-				CloseableIteration<BindingSet, QueryEvaluationException> materializedIter = 
-							new CollectionIteration<BindingSet, QueryEvaluationException>(blockBindings);
-				addResult(evaluateInternal(service, materializedIter, service.getBaseURI()));	
+				CloseableIteration<BindingSet, QueryEvaluationException> materializedIter = new CollectionIteration<BindingSet, QueryEvaluationException>(
+						blockBindings);
+				addResult(evaluateInternal(service, materializedIter, service.getBaseURI()));
 			}
-		}		
+		}
 	}
-	
+
 	protected final SPARQLRepository rep;
-	protected RepositoryConnection conn = null;	
-	
+
+	protected RepositoryConnection conn = null;
+
 	/**
-	 * 
-	 * @param serviceUrl the serviceUrl use to initialize the inner {@link SPARQLRepository}
+	 * @param serviceUrl
+	 *        the serviceUrl use to initialize the inner {@link SPARQLRepository}
 	 */
 	public SPARQLFederatedService(String serviceUrl) {
 		super();
 		this.rep = new SPARQLRepository(serviceUrl);
 	}
 
-
-
 	/**
-	 * Evaluate the provided sparqlQueryString at the initialized {@link SPARQLRepository}
-	 * of this {@link FederatedService}. Dependent on the type (ASK/SELECT) different
-	 * evaluation is necessary:
-	 * 
-	 * SELECT: insert bindings into SELECT query and evaluate
-	 * ASK: insert bindings, send ask query and return final result
+	 * Evaluate the provided sparqlQueryString at the initialized
+	 * {@link SPARQLRepository} of this {@link FederatedService}. Dependent on
+	 * the type (ASK/SELECT) different evaluation is necessary: SELECT: insert
+	 * bindings into SELECT query and evaluate ASK: insert bindings, send ask
+	 * query and return final result
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
-			String sparqlQueryString, BindingSet bindings, String baseUri,
-			QueryType type, Service service) throws QueryEvaluationException {
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(String sparqlQueryString,
+			BindingSet bindings, String baseUri, QueryType type, Service service)
+		throws QueryEvaluationException
+	{
 
 		try {
-			
-			if (type==QueryType.SELECT) {
-				
-				TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryString, baseUri);
-				
+
+			if (type == QueryType.SELECT) {
+
+				TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryString,
+						baseUri);
+
 				Iterator<Binding> bIter = bindings.iterator();
 				while (bIter.hasNext()) {
 					Binding b = bIter.next();
 					if (service.getServiceVars().contains(b.getName()))
 						query.setBinding(b.getName(), b.getValue());
-				}					
-				
+				}
+
 				TupleQueryResult res = query.evaluate();
 
 				// insert original bindings again
 				return new InsertBindingSetCursor(res, bindings);
-				
-			} else if (type==QueryType.ASK) {
-				BooleanQuery query = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, sparqlQueryString, baseUri);
-				
+
+			}
+			else if (type == QueryType.ASK) {
+				BooleanQuery query = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, sparqlQueryString,
+						baseUri);
+
 				Iterator<Binding> bIter = bindings.iterator();
 				while (bIter.hasNext()) {
 					Binding b = bIter.next();
 					if (service.getServiceVars().contains(b.getName()))
 						query.setBinding(b.getName(), b.getValue());
-				}	
-				
+				}
+
 				boolean exists = query.evaluate();
-				
+
 				// check if triples are available (with inserted bindings)
 				if (exists)
 					return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
 				else
-					return new EmptyIteration<BindingSet, QueryEvaluationException>();				
-			} else
+					return new EmptyIteration<BindingSet, QueryEvaluationException>();
+			}
+			else
 				throw new QueryEvaluationException("Unsupported QueryType: " + type.toString());
-			
-		} catch (MalformedQueryException e) {
-			throw new QueryEvaluationException(e);
-		} catch (RepositoryException e) {
-			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString() + " could not be initialized.", e);
-		}		
-	}	
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
-			Service service,
-			CloseableIteration<BindingSet, QueryEvaluationException> bindings,
-			String baseUri) throws QueryEvaluationException {
-		
-		// the number of bindings sent in a single subquery. 
-		// if blockSize is set to 0, the entire input stream is used as block input
+		}
+		catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e);
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString()
+					+ " could not be initialized.", e);
+		}
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
+			CloseableIteration<BindingSet, QueryEvaluationException> bindings, String baseUri)
+		throws QueryEvaluationException
+	{
+
+		// the number of bindings sent in a single subquery.
+		// if blockSize is set to 0, the entire input stream is used as block
+		// input
 		// the block size effectively determines the number of remote requests
-		int blockSize=15;	// TODO configurable block size
-		
-		if (blockSize>0) {
+		int blockSize = 15; // TODO configurable block size
+
+		if (blockSize > 0) {
 			return new BatchingServiceIteration(bindings, blockSize, service);
-		} else {
-			// if blocksize is 0 (i.e. disabled) the entire iteration is used as block
-			return evaluateInternal(service, bindings, service.getBaseURI());	
+		}
+		else {
+			// if blocksize is 0 (i.e. disabled) the entire iteration is used as
+			// block
+			return evaluateInternal(service, bindings, service.getBaseURI());
 		}
 	}
 
 	/**
-	 * Evaluate the SPARQL query that can be constructed from the SERVICE node
-	 * at the initialized {@link SPARQLRepository} of this {@link FederatedService}.
-	 * 
+	 * Evaluate the SPARQL query that can be constructed from the SERVICE node at
+	 * the initialized {@link SPARQLRepository} of this {@link FederatedService}.
 	 * Use specified bindings as constraints to the query. Try to evaluate using
 	 * BINDINGS clause, if this yields an exception fall back to the naive
-	 * implementation.
-	 * 
-	 * This method deals with SILENT SERVICEs.
+	 * implementation. This method deals with SILENT SERVICEs.
 	 */
-	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateInternal(
-			Service service,
+	protected CloseableIteration<BindingSet, QueryEvaluationException> evaluateInternal(Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings, String baseUri)
-			throws QueryEvaluationException {
-		
-		
-		
+		throws QueryEvaluationException
+	{
+
 		// materialize all bindings (to allow for fallback in case of errors)
 		// note that this may be blocking depending on the underlying iterator
 		List<BindingSet> allBindings = new LinkedList<BindingSet>();
 		while (bindings.hasNext()) {
 			allBindings.add(bindings.next());
 		}
-		
-		if (allBindings.size()==0) {
+
+		if (allBindings.size() == 0) {
 			return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		}
-		
+
 		// projection vars
 		Set<String> projectionVars = new HashSet<String>(service.getServiceVars());
 		projectionVars.removeAll(allBindings.get(0).getBindingNames());
-		
+
 		// below we need to take care for SILENT services
 		CloseableIteration<BindingSet, QueryEvaluationException> result = null;
 		try {
 			// fallback to simple evaluation (just a single binding)
-			if (allBindings.size()==1) {
+			if (allBindings.size() == 1) {
 				String queryString = service.getQueryString(projectionVars);
 				result = evaluate(queryString, allBindings.get(0), baseUri, QueryType.SELECT, service);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
-	
+
 			// To be able to insert the input bindings again later on, we need some
-			// means to identify the row of each binding. hence, we use an additional
+			// means to identify the row of each binding. hence, we use an
+			// additional
 			// projection variable, which is also passed in the BINDINGS clause
 			// with the value of the actual row. The value corresponds to the index
 			// of the binding in the index list
 			projectionVars.add("__rowIdx");
-			
-			String queryString = service.getQueryString(projectionVars);			
-			
+
+			String queryString = service.getQueryString(projectionVars);
+
 			List<String> relevantBindingNames = getRelevantBindingNames(allBindings, service.getServiceVars());
-			
-			if (relevantBindingNames.size()!=0) {
+
+			if (relevantBindingNames.size() != 0) {
 				// append the VALUES clause to the query
 				queryString += buildVALUESClause(allBindings, relevantBindingNames);
 			}
 
 			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, queryString, baseUri);
-			TupleQueryResult res=null;
+			TupleQueryResult res = null;
 			try {
-				query.setMaxQueryTime(60);		// TODO how to retrieve max query value from actual setting?
+				query.setMaxQueryTime(60); // TODO how to retrieve max query value
+													// from actual setting?
 				res = query.evaluate();
-			} catch (QueryEvaluationException q) {
-				
+			}
+			catch (QueryEvaluationException q) {
+
 				closeQuietly(res);
-				
+
 				// use fallback: endpoint might not support BINDINGS clause
 				String preparedQuery = service.getQueryString(projectionVars);
 				result = new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
-			
-			if (relevantBindingNames.size()==0)
-				result = new ServiceCrossProductIteration(res, allBindings);	// cross product
+
+			if (relevantBindingNames.size() == 0)
+				result = new ServiceCrossProductIteration(res, allBindings); // cross
+																									// product
 			else
-				result = new ServiceJoinConversionIteration(res, allBindings);	// common join
-			
+				result = new ServiceJoinConversionIteration(res, allBindings); // common
+																									// join
+
 			result = service.isSilent() ? new SilentIteration(result) : result;
 			return result;
-			
-		} catch (RepositoryException e) {
+
+		}
+		catch (RepositoryException e) {
 			Iterations.closeCloseable(result);
 			if (service.isSilent())
 				return new CollectionIteration<BindingSet, QueryEvaluationException>(allBindings);
-			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString() + " could not be initialized.", e);
-		} catch (MalformedQueryException e) {
+			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString()
+					+ " could not be initialized.", e);
+		}
+		catch (MalformedQueryException e) {
 			// this exception must not be silenced, bug in our code
 			throw new QueryEvaluationException(e);
-		} catch (QueryEvaluationException e) {
+		}
+		catch (QueryEvaluationException e) {
 			Iterations.closeCloseable(result);
 			if (service.isSilent())
 				return new CollectionIteration<BindingSet, QueryEvaluationException>(allBindings);
 			throw e;
-		} catch (RuntimeException e) {
+		}
+		catch (RuntimeException e) {
 			Iterations.closeCloseable(result);
 			// suppress special exceptions (e.g. UndeclaredThrowable with wrapped
 			// QueryEval) if silent
@@ -299,139 +317,144 @@ public class SPARQLFederatedService implements FederatedService {
 		}
 	}
 
-
-
-	public void initialize() throws RepositoryException {
-		rep.initialize();	
+	public void initialize()
+		throws RepositoryException
+	{
+		rep.initialize();
 	}
 
 	private void closeQuietly(TupleQueryResult res) {
 		try {
-			if (res!=null)
+			if (res != null)
 				res.close();
-		} catch (Exception e) {	
+		}
+		catch (Exception e) {
 			logger.debug("Could not close connection properly: " + e.getMessage(), e);
 		}
 	}
 
-
-	public void shutdown() throws RepositoryException {
-		if (conn!=null)
+	public void shutdown()
+		throws RepositoryException
+	{
+		if (conn != null)
 			conn.close();
 		rep.shutDown();
 	}
 
-	
-	protected RepositoryConnection getConnection() throws RepositoryException {
-		// use a cache connection if possible 
+	protected RepositoryConnection getConnection()
+		throws RepositoryException
+	{
+		// use a cache connection if possible
 		// (TODO add mechanism to unset/close connection)
-		if (conn==null) {
-			conn = rep.getConnection();			
+		if (conn == null) {
+			conn = rep.getConnection();
 		}
 		return conn;
 	}
-	
+
 	/**
-	 * Compute the relevant binding names using the variables occuring in the service 
-	 * expression and the input bindings. The idea is find all variables which need
-	 * to be projected in the subquery, i.e. those that will not be bound by 
-	 * an input binding.<p>
-	 * 
+	 * Compute the relevant binding names using the variables occuring in the
+	 * service expression and the input bindings. The idea is find all variables
+	 * which need to be projected in the subquery, i.e. those that will not be
+	 * bound by an input binding.
+	 * <p>
 	 * If the resulting list is empty, the cross product needs to be formed.
 	 * 
 	 * @param bindings
 	 * @param serviceVars
-	 * @return
-	 * 			the list of relevant bindings (if empty: the cross product needs to be formed)
+	 * @return the list of relevant bindings (if empty: the cross product needs
+	 *         to be formed)
 	 */
 	private List<String> getRelevantBindingNames(List<BindingSet> bindings, Set<String> serviceVars) {
-		
+
 		// get the bindings variables
 		// TODO CHECK: does the first bindingset give all relevant names
-		
+
 		List<String> relevantBindingNames = new ArrayList<String>(5);
 		for (String bName : bindings.get(0).getBindingNames()) {
 			if (serviceVars.contains(bName))
 				relevantBindingNames.add(bName);
 		}
-		
+
 		return relevantBindingNames;
 	}
-	
+
 	/**
-	 * Computes the VALUES clause for the set of relevant input bindings. The VALUES
-	 * clause is attached to a subquery for block-nested-loop evaluation. Implementation
-	 * note: we use a special binding to mark the rowIndex of the input binding.
+	 * Computes the VALUES clause for the set of relevant input bindings. The
+	 * VALUES clause is attached to a subquery for block-nested-loop evaluation.
+	 * Implementation note: we use a special binding to mark the rowIndex of the
+	 * input binding.
 	 * 
 	 * @param bindings
 	 * @param relevantBindingNames
-	 * @return
+	 * @return a string with the VALUES clause for the given set of relevant
+	 *         input bindings
 	 * @throws QueryEvaluationException
 	 */
-	private String buildVALUESClause(List<BindingSet> bindings, List<String> relevantBindingNames) 
-				throws QueryEvaluationException {
-		
+	private String buildVALUESClause(List<BindingSet> bindings, List<String> relevantBindingNames)
+		throws QueryEvaluationException
+	{
+
 		StringBuilder sb = new StringBuilder();
-		sb.append(" VALUES (?__rowIdx");	// __rowIdx: see comment in evaluate()
-		
+		sb.append(" VALUES (?__rowIdx"); // __rowIdx: see comment in evaluate()
+
 		for (String bName : relevantBindingNames) {
 			sb.append(" ?").append(bName);
 		}
-		
+
 		sb.append(") { ");
-		
-		int rowIdx=0;
+
+		int rowIdx = 0;
 		for (BindingSet b : bindings) {
 			sb.append(" (");
-			sb.append("\"").append(rowIdx++).append("\" ");		// identification of the row for post processing
+			sb.append("\"").append(rowIdx++).append("\" "); // identification of
+																			// the row for post
+																			// processing
 			for (String bName : relevantBindingNames) {
 				appendValueAsString(sb, b.getValue(bName)).append(" ");
 			}
 			sb.append(")");
 		}
-		
+
 		sb.append(" }");
 		return sb.toString();
 	}
-	
+
 	protected StringBuilder appendValueAsString(StringBuilder sb, Value value) {
-		
+
 		// TODO check if there is some convenient method in Sesame!
-		
-		if (value==null) 
-			return sb.append("UNDEF");		// see grammar for BINDINGs def
-		
+
+		if (value == null)
+			return sb.append("UNDEF"); // see grammar for BINDINGs def
+
 		else if (value instanceof URI)
 			return appendURI(sb, (URI)value);
-		
+
 		else if (value instanceof Literal)
 			return appendLiteral(sb, (Literal)value);
-		
+
 		// XXX check for other types ? BNode ?
 		throw new RuntimeException("Type not supported: " + value.getClass().getCanonicalName());
 	}
 
-	
-	
 	/**
 	 * Append the uri to the stringbuilder, i.e. <uri.stringValue>.
 	 * 
 	 * @param sb
 	 * @param uri
-	 * @return
+	 * @return the StringBuilder, for convenience
 	 */
 	protected static StringBuilder appendURI(StringBuilder sb, URI uri) {
 		sb.append("<").append(uri.stringValue()).append(">");
 		return sb;
 	}
 
-	
 	/**
 	 * Append the literal to the stringbuilder: "myLiteral"^^<dataType>
 	 * 
 	 * @param sb
 	 * @param lit
-	 * @return
+	 * @return the StringBuilder, for convenience
 	 */
 	protected static StringBuilder appendLiteral(StringBuilder sb, Literal lit) {
 		sb.append('"');
@@ -449,5 +472,5 @@ public class SPARQLFederatedService implements FederatedService {
 			sb.append('>');
 		}
 		return sb;
-	}	
+	}
 }

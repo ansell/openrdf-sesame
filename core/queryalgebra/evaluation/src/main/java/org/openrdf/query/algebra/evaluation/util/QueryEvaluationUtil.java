@@ -319,7 +319,9 @@ public class QueryEvaluationUtil {
 	 * Checks whether the supplied value is a "plain literal". A "plain literal"
 	 * is a literal with no datatype and optionally a language tag.
 	 * 
-	 * @see http://www.w3.org/TR/REC-rdf-concepts/#dfn-plain-literal
+	 * @see <a
+	 *      href="http://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#dfn-plain-literal">RDF
+	 *      Literal Documentation</a>
 	 */
 	public static boolean isPlainLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -333,7 +335,8 @@ public class QueryEvaluationUtil {
 	 * Checks whether the supplied value is a "simple literal". A
 	 * "simple literal" is a literal with no language tag nor datatype.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal
+	 * @see <a href="http://www.w3.org/TR/sparql11-query/#simple_literal">SPARQL
+	 *      Simple Literal Documentation</a>
 	 */
 	public static boolean isSimpleLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -347,7 +350,8 @@ public class QueryEvaluationUtil {
 	 * Checks whether the supplied literal is a "simple literal". A
 	 * "simple literal" is a literal with no language tag nor datatype.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-query/#simple_literal
+	 * @see <a href="http://www.w3.org/TR/sparql11-query/#simple_literal">SPARQL
+	 *      Simple Literal Documentation</a>
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
 		return l.getLanguage() == null && l.getDatatype() == null;
@@ -358,7 +362,8 @@ public class QueryEvaluationUtil {
 	 * literal" is either a simple literal, a plain literal with language tag, or
 	 * a literal with datatype xsd:string.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-query/#func-string
+	 * @see <a href="http://www.w3.org/TR/sparql11-query/#func-string">SPARQL
+	 *      Functions on Strings Documentation</a>
 	 */
 	public static boolean isStringLiteral(Value v) {
 		if (v instanceof Literal) {
@@ -379,7 +384,9 @@ public class QueryEvaluationUtil {
 	 * @return true iff the two supplied arguments are argument compatible, false
 	 *         otherwise
 	 * @since 2.7.0
-	 * @see http://www.w3.org/TR/sparql11-query/#func-arg-compatibility
+	 * @see <a
+	 *      href="http://www.w3.org/TR/sparql11-query/#func-arg-compatibility">SPARQL
+	 *      Argument Compatibility Rules</a>
 	 */
 	public static boolean compatibleArguments(Literal arg1, Literal arg2) {
 		boolean compatible = ((isSimpleLiteral(arg1) || XMLSchema.STRING.equals(arg1.getDatatype())) && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())))
@@ -395,7 +402,8 @@ public class QueryEvaluationUtil {
 	 * literal" is either a simple literal, a plain literal with language tag, or
 	 * a literal with datatype xsd:string.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-query/#func-string
+	 * @see <a href="http://www.w3.org/TR/sparql11-query/#func-string">SPARQL
+	 *      Functions on Strings Documentation</a>
 	 */
 	public static boolean isStringLiteral(Literal l) {
 		URI datatype = l.getDatatype();

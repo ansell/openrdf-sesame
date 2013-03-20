@@ -27,31 +27,27 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedService.QueryTyp
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.impl.EmptyBindingSet;
 
-
 /**
- * Fallback join handler, if the block join can not be performed, e.g. because the
- * BINDINGS clause is not supported by the endpoint. Gets a materialized collection
- * of bindings as input, and has to evaluate the join.
+ * Fallback join handler, if the block join can not be performed, e.g. because
+ * the BINDINGS clause is not supported by the endpoint. Gets a materialized
+ * collection of bindings as input, and has to evaluate the join.
  * 
  * @author Andreas Schwarte
  */
 public class ServiceFallbackIteration extends JoinExecutorBase<BindingSet> {
 
-	
 	protected final Service service;
+
 	protected final String preparedQuery;
+
 	protected final FederatedService federatedService;
+
 	protected final Collection<BindingSet> bindings;
-	
-	/**
-	 * @param leftIter
-	 * @param rightArg
-	 * @param bindings
-	 * @throws QueryEvaluationException
-	 */
-	public ServiceFallbackIteration(Service service, String preparedQuery, Collection<BindingSet> bindings, 
+
+	public ServiceFallbackIteration(Service service, String preparedQuery, Collection<BindingSet> bindings,
 			FederatedService federatedService)
-			throws QueryEvaluationException {
+		throws QueryEvaluationException
+	{
 		super(null, null, EmptyBindingSet.getInstance());
 		this.service = service;
 		this.preparedQuery = preparedQuery;
@@ -60,21 +56,23 @@ public class ServiceFallbackIteration extends JoinExecutorBase<BindingSet> {
 		run();
 	}
 
-	
 	@Override
-	protected void handleBindings() throws Exception {
+	protected void handleBindings()
+		throws Exception
+	{
 
 		// NOTE: we do not have to care about SILENT services, as this
 		// iteration by itself is wrapped in a silentiteration
-		
-		// handle each prepared query individually and add the result to this iteration
-		for (BindingSet b : bindings) {					
-			CloseableIteration<BindingSet, QueryEvaluationException> result = 
-				federatedService.evaluate(preparedQuery, b, service.getBaseURI(), QueryType.SELECT, service);
+
+		// handle each prepared query individually and add the result to this
+		// iteration
+		for (BindingSet b : bindings) {
+			CloseableIteration<BindingSet, QueryEvaluationException> result = federatedService.evaluate(
+					preparedQuery, b, service.getBaseURI(), QueryType.SELECT, service);
 			result = service.isSilent() ? new SilentIteration(result) : result;
 			addResult(result);
 		}
-		
+
 	}
 
 }

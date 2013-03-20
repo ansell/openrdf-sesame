@@ -313,9 +313,9 @@ public class AppConfiguration implements Configuration {
 	}
 
 	/**
-	 * Load and instantiate the LoggingConfiguration
+	 * Load and instantiate the logging configuration.
 	 * 
-	 * @return
+	 * @return the logging configuration
 	 * @throws ClassNotFoundException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException

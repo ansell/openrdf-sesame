@@ -84,7 +84,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				boundVars = origBoundVars;
 			}
 		}
-		
+
 		@Override
 		public void meet(Join node) {
 
@@ -158,11 +158,11 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 					for (i--; i >= 0; i--) {
 						replacement = new Join(orderedJoinArgs.get(i), replacement);
 					}
-					
+
 					if (subselectJoins != null) {
 						replacement = new Join(subselectJoins, replacement);
 					}
-					
+
 					// Replace old join hierarchy
 					node.replaceWith(replacement);
 
@@ -239,7 +239,8 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		 * </pre>
 		 * 
 		 * @param subselects
-		 * @return
+		 *        the original ordering of expressions
+		 * @return the optimized ordering of expressions
 		 */
 		protected List<TupleExpr> reorderSubselects(List<TupleExpr> subselects) {
 
@@ -251,7 +252,6 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			if (subselects == null || subselects.size() == 0) {
 				return result;
 			}
-			
 
 			// Step 1: determine size of join for each pair of arguments
 			HashMap<Integer, List<TupleExpr[]>> joinSizes = new HashMap<Integer, List<TupleExpr[]>>();

@@ -25,53 +25,56 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 /**
- * Iterator for efficient SERVICE evaluation (vectored).
+ * Iterator for efficient SERVICE evaluation (vectored). SERVICE is the right
+ * handside argument of this join.
  * 
- * SERVICE is the right handside argument of this join.
- *
  * @author Andreas Schwarte
  */
 public class ServiceJoinIterator extends JoinExecutorBase<BindingSet> {
 
 	protected Service service;
+
 	protected EvaluationStrategy strategy;
-	
+
 	/**
 	 * Construct a service join iteration to use vectored evaluation. The
 	 * constructor automatically starts evaluation.
 	 * 
 	 * @param leftIter
-	 * @param rightArg
+	 * @param service
 	 * @param bindings
+	 * @param strategy
 	 * @throws QueryEvaluationException
 	 */
-	public ServiceJoinIterator(
-			CloseableIteration<BindingSet, QueryEvaluationException> leftIter,
+	public ServiceJoinIterator(CloseableIteration<BindingSet, QueryEvaluationException> leftIter,
 			Service service, BindingSet bindings, EvaluationStrategy strategy)
-			throws QueryEvaluationException {
+		throws QueryEvaluationException
+	{
 		super(leftIter, service, bindings);
 		this.service = service;
 		this.strategy = strategy;
 		run();
-	}	
-	
+	}
+
 	@Override
-	protected void handleBindings() throws Exception {
+	protected void handleBindings()
+		throws Exception
+	{
 		Var serviceRef = service.getServiceRef();
 
 		String serviceUri;
 		if (serviceRef.hasValue())
 			serviceUri = serviceRef.getValue().stringValue();
 		else {
-			// case 2: the service ref is not defined beforehand 
-			//   => use a fallback to the naive evaluation.
+			// case 2: the service ref is not defined beforehand
+			// => use a fallback to the naive evaluation.
 			// exceptions occurring here must NOT be silenced!
 			while (!closed && leftIter.hasNext()) {
-				addResult( strategy.evaluate( service, leftIter.next()) );
-			}			
-			return;			
+				addResult(strategy.evaluate(service, leftIter.next()));
+			}
+			return;
 		}
-		
+
 		// use vectored evaluation
 		FederatedService fs = FederatedServiceManager.getInstance().getService(serviceUri);
 		addResult(fs.evaluate(service, leftIter, service.getBaseURI()));

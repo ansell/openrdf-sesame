@@ -33,7 +33,8 @@ import org.openrdf.query.QueryResults;
  * formal definition of the SPARQL 1.1 MINUS operator to determine which
  * BindingSets to return.
  * 
- * @see http://www.w3.org/TR/sparql11-query/#sparqlAlgebra
+ * @see <a href="http://www.w3.org/TR/sparql11-query/#sparqlAlgebra">SPARQL
+ *      Algebra Documentation</a>
  * @author Jeen
  */
 public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<BindingSet, X> {
@@ -116,13 +117,16 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 			Set<String> sharedBindingNames = new HashSet<String>(excluded.getBindingNames());
 			sharedBindingNames.retainAll(object.getBindingNames());
 
-			// two bindingsets that share no variables are compatible by definition, however, the formal 
-			// definition of SPARQL MINUS indicates that such disjoint sets should be filtered out.
+			// two bindingsets that share no variables are compatible by
+			// definition, however, the formal
+			// definition of SPARQL MINUS indicates that such disjoint sets should
+			// be filtered out.
 			// See http://www.w3.org/TR/sparql11-query/#sparqlAlgebra
 			if (!sharedBindingNames.isEmpty()) {
 				if (QueryResults.bindingSetsCompatible(excluded, object)) {
 					// at least one compatible bindingset has been found in the
-					// exclude set, therefore the object is compatible, therefore it should not be accepted.
+					// exclude set, therefore the object is compatible, therefore it
+					// should not be accepted.
 					compatible = true;
 					break;
 				}

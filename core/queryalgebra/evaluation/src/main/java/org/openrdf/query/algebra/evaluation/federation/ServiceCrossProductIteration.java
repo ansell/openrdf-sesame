@@ -37,7 +37,7 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
  * 
  * getNextElement() returns (r1,b1), (r1, b2), ..., (r2, b1), (r2, b2), ...
  * 
- * i.e. compute the cross product per result binding (see {@link #computedCrossProduct}
+ * i.e. compute the cross product per result binding
  * </source>
  * 
  * 
