@@ -576,7 +576,10 @@ public class LiteralUtil {
 	 */
 	public static boolean canCreateLiteral(Object object) {
 		if (object == null) {
-			throw new NullPointerException("Cannot create a literal from a null");
+			// Cannot create a literal from a null
+			// Avoid throwing a NullPointerException here to enable universal usage
+			// of this method
+			return false;
 		}
 
 		if (object instanceof Boolean || object instanceof Byte || object instanceof Double
