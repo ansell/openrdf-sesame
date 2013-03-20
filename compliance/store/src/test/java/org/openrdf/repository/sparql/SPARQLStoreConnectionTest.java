@@ -27,6 +27,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
@@ -55,8 +56,9 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 			server.stop();
 			throw e;
 		}
-		
-		// overwrite bnode test values as SPARQL endpoints do not generally work well with bnodes
+
+		// overwrite bnode test values as SPARQL endpoints do not generally work
+		// well with bnodes
 		bob = testRepository.getValueFactory().createURI("urn:x-local:bob");
 		alice = testRepository.getValueFactory().createURI("urn:x-local:alice");
 		alexander = testRepository.getValueFactory().createURI("urn:x-local:alexander");
@@ -76,7 +78,6 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 				Protocol.getStatementsLocation(HTTPMemServer.REPOSITORY_URL));
 	}
 
-
 	@Override
 	@Ignore
 	public void testSizeRollback()
@@ -84,7 +85,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testSizeRollback() for SPARQLRepository");
 	}
-	
+
 	@Override
 	@Ignore
 	public void testAutoCommit()
@@ -92,7 +93,15 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testAutoCommit() for SPARQLRepository");
 	}
-	
+
+	@Override
+	@Ignore
+	public void testRollback()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testRollback() for SPARQLRepository");
+	}
+
 	@Override
 	@Ignore
 	public void testEmptyRollback()
@@ -103,13 +112,235 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
 	@Override
 	@Ignore
+	public void testEmptyCommit()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testEmptyCommit() for SPARQLRepository");
+	}
+
+	@Override
+	@Ignore
 	public void testPrepareSeRQLQuery()
 		throws Exception
 	{
 		System.err.println("disabled testPrepareSeRQLQuery() for SPARQLRepository");
 	}
-	
 
+	@Override
+	@Ignore
+	public void testLiteralSerialization()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testLiteralSerialization() for SPARQLRepository");
+	}
+
+	@Override
+	@Ignore
+	public void testSizeCommit()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testSizeCommit() for SPARQLRepository");
+	}
+
+	@Override
+	@Ignore
+	public void testGetStatementsInMultipleContexts()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testGetStatementsInMultipleContexts() for SPARQLRepository: implementation of statement context using SPARQL not yet complete");
+		// TODO see SES-1776
+	}
+
+	@Override
+	@Ignore
+	public void testGetStatementsInSingleContext()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testGetStatementsInSingleContext() for SPARQLRepository: implementation of statement context using SPARQL not yet complete");
+		// TODO see SES-1776
+	}
+
+	@Ignore
+	@Override
+	public void testOrderByQueriesAreInterruptable()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for SPARQLRepository");
+	}
+
+	@Override
+	public void testPreparedTupleQuery()
+		throws Exception
+	{
+		testCon.add(alice, name, nameAlice, context2);
+		testCon.add(alice, mbox, mboxAlice, context2);
+		testCon.add(context2, publisher, nameAlice);
+
+		testCon.add(bob, name, nameBob, context1);
+		testCon.add(bob, mbox, mboxBob, context1);
+		testCon.add(context1, publisher, nameBob);
+
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + "> ");
+		queryBuilder.append(" SELECT ?name ?mbox");
+		queryBuilder.append(" WHERE { [] foaf:name ?name;");
+		queryBuilder.append("            foaf:mbox ?mbox. }");
+
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+		query.setBinding("name", nameBob);
+
+		TupleQueryResult result = query.evaluate();
+
+		try {
+			assertTrue(result != null);
+			assertTrue(result.hasNext());
+
+			while (result.hasNext()) {
+				BindingSet solution = result.next();
+				assertTrue(solution.hasBinding("name"));
+				assertTrue(solution.hasBinding("mbox"));
+
+				Value nameResult = solution.getValue("name");
+				Value mboxResult = solution.getValue("mbox");
+
+				assertEquals("unexpected value for name: " + nameResult, nameBob, nameResult);
+				assertEquals("unexpected value for mbox: " + mboxResult, mboxBob, mboxResult);
+			}
+		}
+		finally {
+			result.close();
+		}
+	}
+	
+	@Override
+	@Ignore
+	public void testGetNamespaces()
+			throws Exception {
+		System.err.println("disabled testGetNamespaces() as namespace retrieval is not supported by SPARQL");
+	}
+
+	@Override
+	@Ignore
+	public void testTransactionIsolation()
+			throws Exception {
+		System.err.println("temporarily disabled testTransactionIsolation() for SPARQLRepository");
+	}
+	@Override
+	public void testPreparedTupleQuery2()
+		throws Exception
+	{
+		testCon.add(alice, name, nameAlice, context2);
+		testCon.add(alice, mbox, mboxAlice, context2);
+		testCon.add(context2, publisher, nameAlice);
+
+		testCon.add(bob, name, nameBob, context1);
+		testCon.add(bob, mbox, mboxBob, context1);
+		testCon.add(context1, publisher, nameBob);
+
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
+		queryBuilder.append(" SELECT ?name ?mbox");
+		queryBuilder.append(" WHERE {?p  foaf:name ?name ;");
+		queryBuilder.append("            foaf:mbox ?mbox .");
+		queryBuilder.append(" FILTER (?p = ?VAR) } ");
+
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+		query.setBinding("VAR", bob);
+
+		TupleQueryResult result = query.evaluate();
+
+		try {
+			assertTrue(result != null);
+			assertTrue(result.hasNext());
+
+			while (result.hasNext()) {
+				BindingSet solution = result.next();
+				assertTrue(solution.hasBinding("name"));
+				assertTrue(solution.hasBinding("mbox"));
+
+				Value nameResult = solution.getValue("name");
+				Value mboxResult = solution.getValue("mbox");
+
+				assertEquals("unexpected value for name: " + nameResult, nameBob, nameResult);
+				assertEquals("unexpected value for mbox: " + mboxResult, mboxBob, mboxResult);
+			}
+		}
+		finally {
+			result.close();
+		}
+	}
+	
+	@Override
+	public void testPreparedTupleQueryUnicode()
+			throws Exception
+		{
+			testCon.add(alexander, name, Александър);
+
+			StringBuilder queryBuilder = new StringBuilder();
+			queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + "> ");
+			queryBuilder.append(" SELECT ?person");
+			queryBuilder.append(" WHERE {?person foaf:name ?name . }");
+
+			TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString());
+			query.setBinding("name", Александър);
+
+			TupleQueryResult result = query.evaluate();
+
+			try {
+				assertTrue(result != null);
+				assertTrue(result.hasNext());
+
+				while (result.hasNext()) {
+					BindingSet solution = result.next();
+					assertTrue(solution.hasBinding("person"));
+					assertEquals(alexander, solution.getValue("person"));
+				}
+			}
+			finally {
+				result.close();
+			}
+		}
+	
+	@Override
+	public void testSimpleGraphQuery()
+			throws Exception
+		{
+			testCon.add(alice, name, nameAlice, context2);
+			testCon.add(alice, mbox, mboxAlice, context2);
+			testCon.add(context2, publisher, nameAlice);
+
+			testCon.add(bob, name, nameBob, context1);
+			testCon.add(bob, mbox, mboxBob, context1);
+			testCon.add(context1, publisher, nameBob);
+
+			StringBuilder queryBuilder = new StringBuilder();
+			queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
+			queryBuilder.append(" CONSTRUCT ");
+			queryBuilder.append(" WHERE { [] foaf:name ?name; ");
+			queryBuilder.append("            foaf:mbox ?mbox. }");
+
+			GraphQueryResult result = testCon.prepareGraphQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
+
+			try {
+				assertTrue(result != null);
+				assertTrue(result.hasNext());
+
+				while (result.hasNext()) {
+					Statement st = result.next();
+					if (name.equals(st.getPredicate())) {
+						assertTrue(nameAlice.equals(st.getObject()) || nameBob.equals(st.getObject()));
+					}
+					else {
+						assertTrue(mbox.equals(st.getPredicate()));
+						assertTrue(mboxAlice.equals(st.getObject()) || mboxBob.equals(st.getObject()));
+					}
+				}
+			}
+			finally {
+				result.close();
+			}
+		}
+	
 	@Override
 	public void testPreparedGraphQuery()
 		throws Exception
@@ -123,7 +354,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		testCon.add(context1, publisher, nameBob);
 
 		StringBuilder queryBuilder = new StringBuilder();
-		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS +"> ");
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + "> ");
 		queryBuilder.append(" CONSTRUCT ");
 		queryBuilder.append(" WHERE { [] foaf:name ?name ;");
 		queryBuilder.append("            foaf:mbox ?mbox . ");
@@ -155,83 +386,84 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 			result.close();
 		}
 	}
-	
+
 	@Override
 	public void testSimpleTupleQuery()
-			throws Exception
-		{
-			testCon.add(alice, name, nameAlice, context2);
-			testCon.add(alice, mbox, mboxAlice, context2);
-			testCon.add(context2, publisher, nameAlice);
+		throws Exception
+	{
+		testCon.add(alice, name, nameAlice, context2);
+		testCon.add(alice, mbox, mboxAlice, context2);
+		testCon.add(context2, publisher, nameAlice);
 
-			testCon.add(bob, name, nameBob, context1);
-			testCon.add(bob, mbox, mboxBob, context1);
-			testCon.add(context1, publisher, nameBob);
+		testCon.add(bob, name, nameBob, context1);
+		testCon.add(bob, mbox, mboxBob, context1);
+		testCon.add(context1, publisher, nameBob);
 
-			StringBuilder queryBuilder = new StringBuilder();
-			queryBuilder.append(" PREFIX foaf: <" + FOAF_NS +"> ");
-			queryBuilder.append(" SELECT ?name ?mbox");
-			queryBuilder.append(" WHERE { [] foaf:name ?name ;");
-			queryBuilder.append("            foaf:mbox ?mbox . ");
-			queryBuilder.append(" } ");
-			TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + "> ");
+		queryBuilder.append(" SELECT ?name ?mbox");
+		queryBuilder.append(" WHERE { [] foaf:name ?name ;");
+		queryBuilder.append("            foaf:mbox ?mbox . ");
+		queryBuilder.append(" } ");
+		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
 
-			try {
-				assertTrue(result != null);
-				assertTrue(result.hasNext());
+		try {
+			assertTrue(result != null);
+			assertTrue(result.hasNext());
 
-				while (result.hasNext()) {
-					BindingSet solution = result.next();
-					assertTrue(solution.hasBinding("name"));
-					assertTrue(solution.hasBinding("mbox"));
+			while (result.hasNext()) {
+				BindingSet solution = result.next();
+				assertTrue(solution.hasBinding("name"));
+				assertTrue(solution.hasBinding("mbox"));
 
-					Value nameResult = solution.getValue("name");
-					Value mboxResult = solution.getValue("mbox");
+				Value nameResult = solution.getValue("name");
+				Value mboxResult = solution.getValue("mbox");
 
-					assertTrue((nameAlice.equals(nameResult) || nameBob.equals(nameResult)));
-					assertTrue((mboxAlice.equals(mboxResult) || mboxBob.equals(mboxResult)));
-				}
-			}
-			finally {
-				result.close();
+				assertTrue((nameAlice.equals(nameResult) || nameBob.equals(nameResult)));
+				assertTrue((mboxAlice.equals(mboxResult) || mboxBob.equals(mboxResult)));
 			}
 		}
-	
+		finally {
+			result.close();
+		}
+	}
+
 	@Override
 	public void testSimpleTupleQueryUnicode()
-			throws Exception
-		{
-			testCon.add(alexander, name, Александър);
+		throws Exception
+	{
+		testCon.add(alexander, name, Александър);
 
-			StringBuilder queryBuilder = new StringBuilder();
-			queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
-			queryBuilder.append(" SELECT ?person");
-			queryBuilder.append(" WHERE { ?person foaf:name \"").append(Александър.getLabel()).append("\" . } ");
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append(" PREFIX foaf: <" + FOAF_NS + ">");
+		queryBuilder.append(" SELECT ?person");
+		queryBuilder.append(" WHERE { ?person foaf:name \"").append(Александър.getLabel()).append("\" . } ");
 
-			TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
+		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
 
-			try {
-				assertTrue(result != null);
-				assertTrue(result.hasNext());
+		try {
+			assertTrue(result != null);
+			assertTrue(result.hasNext());
 
-				while (result.hasNext()) {
-					BindingSet solution = result.next();
-					assertTrue(solution.hasBinding("person"));
-					assertEquals(alexander, solution.getValue("person"));
-				}
-			}
-			finally {
-				result.close();
+			while (result.hasNext()) {
+				BindingSet solution = result.next();
+				assertTrue(solution.hasBinding("person"));
+				assertEquals(alexander, solution.getValue("person"));
 			}
 		}
-	
+		finally {
+			result.close();
+		}
+	}
+
 	@Override
 	@Ignore
 	public void testBNodeSerialization()
-			throws Exception {
+		throws Exception
+	{
 		System.err.println("temporarily disabled testBNodeSerialization() for SPARQLRepository");
 	}
-	
+
 	@Test
 	public void testUpdateExecution()
 		throws Exception

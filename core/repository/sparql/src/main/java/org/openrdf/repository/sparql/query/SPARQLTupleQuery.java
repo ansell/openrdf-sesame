@@ -33,25 +33,27 @@ import org.openrdf.repository.RepositoryException;
  * Parses tuple results in the background.
  * 
  * @author James Leigh
- * 
  */
 public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
-	// TODO there was some magic going on in SparqlOperation to get baseURI directly replaced within the query using BASE
+	// TODO there was some magic going on in SparqlOperation to get baseURI
+	// directly replaced within the query using BASE
 
-	public SPARQLTupleQuery(HTTPClient httpClient, String baseUri,
-			String queryString) {
+	public SPARQLTupleQuery(HTTPClient httpClient, String baseUri, String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseUri);
 	}
-	
 
-	public TupleQueryResult evaluate() throws QueryEvaluationException {
-		
+	public TupleQueryResult evaluate()
+		throws QueryEvaluationException
+	{
+
 		HTTPClient client = getHttpClient();
 		try {
-			// TODO getQueryString() already inserts bindings, use emptybindingset as last argument?
-			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false, maxQueryTime, getBindingsArray());
-		} 
+			// TODO getQueryString() already inserts bindings, use emptybindingset
+			// as last argument?
+			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false,
+					maxQueryTime, getBindingsArray());
+		}
 		catch (IOException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
@@ -64,8 +66,9 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)
-			throws QueryEvaluationException, TupleQueryResultHandlerException {
-		
+		throws QueryEvaluationException, TupleQueryResultHandlerException
+	{
+
 		HTTPClient client = getHttpClient();
 		try {
 			client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false, maxQueryTime,
@@ -81,7 +84,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
-	
+
 	private String getQueryString() {
 		return QueryStringUtil.getQueryString(queryString, getBindings());
 	}

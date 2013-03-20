@@ -1501,20 +1501,14 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals(0, Iterations.asList(testCon.getContextIDs()).size());
 
 		// load data
-		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		assertEquals(Arrays.asList(context1), Iterations.asList(testCon.getContextIDs()));
 
 		testCon.remove(bob, name, nameBob, context1);
 		assertEquals(0, Iterations.asList(testCon.getContextIDs()).size());
-		testCon.commit();
 
-		assertEquals(0, Iterations.asList(testCon.getContextIDs()).size());
-
-		testCon.begin();
 		testCon.add(bob, name, nameBob, context2);
 		assertEquals(Arrays.asList(context2), Iterations.asList(testCon.getContextIDs()));
-		testCon.commit();
 	}
 
 	public void testXmlCalendarZ()
