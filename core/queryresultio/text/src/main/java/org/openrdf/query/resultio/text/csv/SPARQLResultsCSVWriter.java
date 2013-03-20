@@ -34,6 +34,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 
@@ -43,7 +44,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * @see http://www.w3.org/TR/sparql11-results-csv-tsv/#csv
  * @author Jeen Broekstra
  */
-public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
+public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements TupleQueryResultWriter {
 
 	private Writer writer;
 
@@ -248,4 +249,12 @@ public class SPARQLResultsCSVWriter implements TupleQueryResultWriter {
 	{
 		throw new UnsupportedOperationException("Cannot handle boolean results");
 	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLResultsCSVWriter
+	}
+
 }

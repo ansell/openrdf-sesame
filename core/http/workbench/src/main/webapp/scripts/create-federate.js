@@ -8,15 +8,26 @@ function respondToFormState() {
 	} else {
 		$('#create-feedback').show();
 	}
-	var validID = /.+/.test($('#id').val());
+	var fedID = $('#id').val();
+	var validID = /.+/.test(fedID);
 	var disable = !(validID && enoughMembers);
-	$('input#create').prop('disabled', disable);
-	var sparql = $("input[name='federation-type']:checked").val() == 'sparql';
-	var readonly = $("input[name='readonly']");
-	if (sparql) {
-		readonly.prop('checked', true);
+	var matchExisting = false;
+
+	// test that fedID not equal any existing id
+	$('input.memberID').each(function() {
+		if (fedID == $(this).attr('value')) {
+			disable = true;
+			matchExisting = true;
+			return false;
+		}
+	});
+	var recurseMessage = $('#recurse-message');
+	if (matchExisting) {
+		recurseMessage.show();
+	} else {
+		recurseMessage.hide();
 	}
-	readonly.prop('disabled', sparql);
+	$('input#create').prop('disabled', disable);
 }
 
 /**

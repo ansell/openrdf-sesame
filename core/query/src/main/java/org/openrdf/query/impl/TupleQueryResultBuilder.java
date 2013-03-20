@@ -25,7 +25,8 @@ import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
 /**
- * A TupleQueryResultHandler that can be used to create a TupleQueryResult object.
+ * A TupleQueryResultHandler that can be used to create a TupleQueryResult
+ * object.
  */
 public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
 
@@ -33,10 +34,10 @@ public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private List<String>	bindingNames;
-	
-	private List<BindingSet> bindingSetList;
-	
+	private List<String> bindingNames;
+
+	private List<BindingSet> bindingSetList = new ArrayList<BindingSet>();
+
 	/*---------*
 	 * Methods *
 	 *---------*/

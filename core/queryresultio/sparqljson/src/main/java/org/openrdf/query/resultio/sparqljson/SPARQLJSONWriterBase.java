@@ -22,8 +22,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import info.aduna.io.IndentingWriter;
 import info.aduna.text.StringUtil;
@@ -36,7 +39,11 @@ import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.QueryResultWriter;
+import org.openrdf.query.resultio.QueryResultWriterBase;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -44,7 +51,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
  * 
  * @author Peter Ansell
  */
-abstract class SPARQLJSONWriterBase implements QueryResultWriter {
+abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *
@@ -55,6 +62,8 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	protected boolean firstTupleWritten = false;
 
 	protected boolean documentOpen = false;
+
+	protected boolean headerOpen = false;
 
 	protected boolean headerComplete = false;
 
@@ -72,24 +81,26 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void endHeader()
 		throws QueryResultHandlerException
 	{
-		try {
-			closeBraces();
+		if (!headerComplete) {
+			try {
+				closeBraces();
 
-			writeComma();
+				writeComma();
 
-			if (tupleVariablesFound) {
-				// Write results
-				writeKey("results");
-				openBraces();
+				if (tupleVariablesFound) {
+					// Write results
+					writeKey("results");
+					openBraces();
 
-				writeKey("bindings");
-				openArray();
+					writeKey("bindings");
+					openArray();
+				}
+
+				headerComplete = true;
 			}
-
-			headerComplete = true;
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -100,6 +111,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+
+			if (!headerOpen) {
 				startHeader();
 			}
 
@@ -131,6 +145,14 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -172,6 +194,14 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		throws TupleQueryResultHandlerException
 	{
 		try {
+			if (!documentOpen) {
+				startDocument();
+			}
+
+			if (!headerOpen) {
+				startHeader();
+			}
+
 			if (!headerComplete) {
 				endHeader();
 			}
@@ -194,13 +224,32 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void startDocument()
 		throws QueryResultHandlerException
 	{
-		documentOpen = true;
-		headerComplete = false;
-		try {
-			openBraces();
-		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+		if (!documentOpen) {
+			documentOpen = true;
+			headerOpen = false;
+			headerComplete = false;
+
+			try {
+				if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
+					// SES-1019 : Write the callbackfunction name as a wrapper for
+					// the results here
+					String callbackName = getWriterConfig().get(BasicQueryWriterSettings.JSONP_CALLBACK);
+
+					writer.write(callbackName);
+					writer.write("(");
+				}
+
+				if (!getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
+					// Set the indentation string to the empty string if pretty
+					// printing is disabled
+					writer.setIndentationString("");
+				}
+
+				openBraces();
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -215,13 +264,21 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	public void startHeader()
 		throws QueryResultHandlerException
 	{
-		try {
-			// Write header
-			writeKey("head");
-			openBraces();
+		if (!documentOpen) {
+			startDocument();
 		}
-		catch (IOException e) {
-			throw new QueryResultHandlerException(e);
+
+		if (!headerOpen) {
+			try {
+				// Write header
+				writeKey("head");
+				openBraces();
+
+				headerOpen = true;
+			}
+			catch (IOException e) {
+				throw new QueryResultHandlerException(e);
+			}
 		}
 	}
 
@@ -232,6 +289,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		try {
 			if (!documentOpen) {
 				startDocument();
+			}
+
+			if (!headerOpen) {
 				startHeader();
 			}
 
@@ -273,10 +333,14 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		else if (value instanceof Literal) {
 			Literal lit = (Literal)value;
 
+			// TODO: Implement support for
+			// BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL here
 			if (lit.getLanguage() != null) {
 				writeKeyValue("xml:lang", lit.getLanguage());
 				writer.write(", ");
 			}
+			// TODO: Implement support for
+			// BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL here
 			if (lit.getDatatype() != null) {
 				writeKeyValue("datatype", lit.getDatatype().toString());
 				writer.write(", ");
@@ -300,6 +364,9 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 	{
 		if (!documentOpen) {
 			startDocument();
+		}
+
+		if (!headerOpen) {
 			startHeader();
 		}
 
@@ -322,10 +389,34 @@ abstract class SPARQLJSONWriterBase implements QueryResultWriter {
 		}
 	}
 
+	@Override
+	public final Collection<RioSetting<?>> getSupportedSettings() {
+		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+
+		result.add(BasicQueryWriterSettings.JSONP_CALLBACK);
+		result.add(BasicWriterSettings.PRETTY_PRINT);
+		// TODO: Add implementation for this
+		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+		// TODO: Add implementation for this
+		result.add(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
+
+		return result;
+	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Ignored by SPARQLJSONWriterBase
+	}
+
 	protected void endDocument()
 		throws IOException
 	{
 		closeBraces(); // root braces
+		if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
+			writer.write(");");
+		}
 		writer.flush();
 		documentOpen = false;
 		headerComplete = false;

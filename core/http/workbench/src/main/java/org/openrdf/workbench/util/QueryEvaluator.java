@@ -18,8 +18,10 @@ package org.openrdf.workbench.util;
 
 import static org.openrdf.rio.RDFWriterRegistry.getInstance;
 
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +35,7 @@ import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
@@ -70,6 +73,10 @@ public final class QueryEvaluator {
 	 *        style sheet path
 	 * @param con
 	 *        connection to repository
+	 * @param queryText
+	 *        the query text, having been pulled using
+	 *        {@link org.openrdf.workbench.commands.QueryServlet} from one of
+	 *        three request parameters: "query", "queryhash" or "saved"
 	 * @param req
 	 *        the request object
 	 * @param cookies
@@ -81,12 +88,11 @@ public final class QueryEvaluator {
 	 *         if there's a problem preparing the query
 	 */
 	public void extractQueryAndEvaluate(final TupleResultBuilder builder, final HttpServletResponse resp,
-			final PrintWriter out, final String xslPath, final RepositoryConnection con,
+			final OutputStream out, final String xslPath, final RepositoryConnection con, String queryText,
 			final WorkbenchRequest req, final CookieHandler cookies)
 		throws BadRequestException, OpenRDFException
 	{
 		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
-		String queryText = req.getParameter("query");
 		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
 			final int know_total = req.getInt("know_total");
@@ -101,8 +107,7 @@ public final class QueryEvaluator {
 			final int limit = req.getInt("limit");
 			final int offset = req.getInt("offset");
 			final PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
-			queryText = pagedQuery.toString();
-			query = QueryFactory.prepareQuery(con, queryLn, queryText);
+			query = QueryFactory.prepareQuery(con, queryLn, pagedQuery.toString());
 		}
 		if (req.isParameterPresent("infer")) {
 			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
@@ -119,15 +124,16 @@ public final class QueryEvaluator {
 	 *        client
 	 * @param query
 	 *        the query to be evaluated
+	 * @throws QueryResultHandlerException
 	 */
 	public void evaluateTupleQuery(final TupleResultBuilder builder, final TupleQuery query)
-		throws QueryEvaluationException
+		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final TupleQueryResult result = query.evaluate();
 		try {
 			final String[] names = result.getBindingNames().toArray(new String[0]);
 			builder.variables(names);
-			builder.link(INFO);
+			builder.link(Arrays.asList(INFO));
 			final List<Object> values = new ArrayList<Object>();
 			while (result.hasNext()) {
 				final BindingSet set = result.next();
@@ -151,14 +157,15 @@ public final class QueryEvaluator {
 	 *        client
 	 * @param query
 	 *        the query to be evaluated
+	 * @throws QueryResultHandlerException
 	 */
 	private void evaluateGraphQuery(final TupleResultBuilder builder, final GraphQuery query)
-		throws QueryEvaluationException
+		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final GraphQueryResult result = query.evaluate();
 		try {
 			builder.variables("subject", "predicate", "object");
-			builder.link(INFO);
+			builder.link(Arrays.asList(INFO));
 			while (result.hasNext()) {
 				final Statement statement = result.next();
 				builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
@@ -213,14 +220,14 @@ public final class QueryEvaluator {
 	}
 
 	private void evaluateBooleanQuery(final TupleResultBuilder builder, final BooleanQuery query)
-		throws QueryEvaluationException
+		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final boolean result = query.evaluate();
-		builder.link(INFO);
+		builder.link(Arrays.asList(INFO));
 		builder.bool(result);
 	}
 
-	private void evaluate(final TupleResultBuilder builder, final PrintWriter out, final String xslPath,
+	private void evaluate(final TupleResultBuilder builder, final OutputStream out, final String xslPath,
 			final WorkbenchRequest req, final Query query)
 		throws OpenRDFException, BadRequestException
 	{

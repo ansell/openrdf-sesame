@@ -1,4 +1,4 @@
-package org.openrdf.repository.manager;
+package org.openrdf.repository.sail.config;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;

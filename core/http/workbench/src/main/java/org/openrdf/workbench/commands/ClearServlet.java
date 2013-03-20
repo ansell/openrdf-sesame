@@ -18,9 +18,11 @@ package org.openrdf.workbench.commands;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -36,7 +38,7 @@ public class ClearServlet extends TransformationServlet {
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
-		throws IOException, RepositoryException
+		throws IOException, RepositoryException, QueryResultHandlerException
 	{
 		try {
 			RepositoryConnection con = repository.getConnection();
@@ -58,25 +60,23 @@ public class ClearServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			resp.setContentType("application/xml");
-			PrintWriter out = resp.getWriter();
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "clear.xsl");
 			builder.start("error-message", CONTEXT);
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			builder.result(exc.getMessage(), req.getParameter(CONTEXT));
 			builder.end();
 		}
 	}
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-		throws RepositoryException
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryResultHandlerException
 	{
-		TupleResultBuilder builder = new TupleResultBuilder(out);
+		// TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "clear.xsl");
 		builder.start();
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		builder.end();
 	}
 

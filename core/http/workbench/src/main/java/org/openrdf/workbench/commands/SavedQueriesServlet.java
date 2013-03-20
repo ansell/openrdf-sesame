@@ -18,6 +18,7 @@ package org.openrdf.workbench.commands;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -67,12 +68,10 @@ public class SavedQueriesServlet extends TransformationServlet {
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
 		throws IOException, OpenRDFException, BadRequestException
 	{
-		resp.setContentType("application/xml");
-		final PrintWriter out = resp.getWriter();
-		final TupleResultBuilder builder = new TupleResultBuilder(out);
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		builder.transform(xslPath, "saved-queries.xsl");
 		builder.start();
-		builder.link(INFO);
+		builder.link(Arrays.asList(INFO));
 		this.getSavedQueries(req, builder);
 		builder.end();
 	}

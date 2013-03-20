@@ -447,6 +447,43 @@ public class QueryResultIO {
 	}
 
 	/**
+	 * Convenience methods for creating QueryResultWriter objects. This method
+	 * uses the registry returned by
+	 * {@link TupleQueryResultWriterRegistry#getInstance()} to get a factory for
+	 * the specified format and uses this factory to create the appropriate
+	 * writer.
+	 * 
+	 * @throws UnsupportedQueryResultFormatException
+	 *         If no writer is available for the specified tuple query result
+	 *         format.
+	 * @since 2.7.0
+	 */
+	public static QueryResultWriter createWriter(QueryResultFormat format, OutputStream out)
+		throws UnsupportedQueryResultFormatException
+	{
+		if (format instanceof TupleQueryResultFormat) {
+
+			TupleQueryResultWriterFactory factory = TupleQueryResultWriterRegistry.getInstance().get(
+					(TupleQueryResultFormat)format);
+
+			if (factory != null) {
+				return factory.getWriter(out);
+			}
+		}
+		else if (format instanceof BooleanQueryResultFormat) {
+			BooleanQueryResultWriterFactory factory = BooleanQueryResultWriterRegistry.getInstance().get(
+					(BooleanQueryResultFormat)format);
+
+			if (factory != null) {
+				return factory.getWriter(out);
+			}
+		}
+
+		throw new UnsupportedQueryResultFormatException("No writer factory available for query result format "
+				+ format);
+	}
+
+	/**
 	 * Parses a query result document, reporting the parsed solutions to the
 	 * supplied TupleQueryResultHandler.
 	 * 

@@ -16,12 +16,15 @@
  */
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Constants for the standard <a href="http://www.w3.org/TR/xmlschema-2/">XML Schema datatypes</a>.
+ * Constants for the standard <a href="http://www.w3.org/TR/xmlschema-2/">XML
+ * Schema datatypes</a>.
  * 
  * @see http://www.w3.org/TR/xmlschema-2/
  */
@@ -33,12 +36,17 @@ public class XMLSchema {
 
 	/** The XML Schema namespace (<tt>http://www.w3.org/2001/XMLSchema#</tt>). */
 	public static final String NAMESPACE = "http://www.w3.org/2001/XMLSchema#";
-	
-	/** 
+
+	/**
 	 * Recommended prefix for XML Schema datatypes: "xsd"
 	 */
 	public static final String PREFIX = "xsd";
-	
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the XML Schema
+	 * namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
 
 	/*
 	 * Primitive datatypes
@@ -52,7 +60,7 @@ public class XMLSchema {
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#dayTimeDuration</tt> */
 	public static final URI DAYTIMEDURATION;
-	
+
 	/** <tt>http://www.w3.org/2001/XMLSchema#time</tt> */
 	public final static URI TIME;
 
@@ -185,13 +193,13 @@ public class XMLSchema {
 
 	static {
 		ValueFactory factory = new ValueFactoryImpl();
-		
+
 		DURATION = factory.createURI(XMLSchema.NAMESPACE, "duration");
 
 		DATETIME = factory.createURI(XMLSchema.NAMESPACE, "dateTime");
 
 		DAYTIMEDURATION = factory.createURI(NAMESPACE, "dayTimeDuration");
-		
+
 		TIME = factory.createURI(XMLSchema.NAMESPACE, "time");
 
 		DATE = factory.createURI(XMLSchema.NAMESPACE, "date");

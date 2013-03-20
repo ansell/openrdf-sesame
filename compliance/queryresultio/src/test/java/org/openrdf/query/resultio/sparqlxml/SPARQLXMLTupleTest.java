@@ -20,8 +20,6 @@ import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
- * 
- *
  * @author Peter Ansell
  */
 public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {

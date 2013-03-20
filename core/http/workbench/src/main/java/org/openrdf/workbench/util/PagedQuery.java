@@ -44,11 +44,17 @@ public class PagedQuery {
 	private static final Pattern SERQL_NAMESPACE = Pattern.compile("\\busing namespace\\b", FLAGS);
 
 	private final String modifiedQuery;
-	
+
 	/***
-	 * Add or modify the limit and offset clauses of the query to be executed so
-	 * that only those results to be displayed are requested from the query
-	 * engine.
+	 * <p>
+	 * Creates an object that adds or modifies the limit and offset clauses of
+	 * the query to be executed so that only those results to be displayed are
+	 * requested from the query engine.
+	 * </p>
+	 * <p>
+	 * Implementation note: The new object contains the user's query with
+	 * appended or modified LIMIT and OFFSET clauses.
+	 * </p>
 	 * 
 	 * @param query
 	 *        as it was specified by the user
@@ -59,8 +65,6 @@ public class PagedQuery {
 	 *        parameters or cookies
 	 * @param requestOffset
 	 *        which result to start at when populating the result set
-	 * @returns the user's query with appended or modified LIMIT and OFFSET
-	 *          clauses
 	 */
 	public PagedQuery(final String query, final QueryLanguage language, final int requestLimit,
 			final int requestOffset)
@@ -105,19 +109,12 @@ public class PagedQuery {
 
 		this.modifiedQuery = rval;
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.modifiedQuery;
 	}
 
-	/**
-	 * @param queryLimit
-	 * @param queryOffset
-	 * @param queryLimitExists
-	 * @param queryOffsetExists
-	 * @return
-	 */
 	private static int getMaxQueryResultCount(final int queryLimit, final int queryOffset,
 			final boolean queryLimitExists, final boolean queryOffsetExists)
 	{
@@ -126,14 +123,6 @@ public class PagedQuery {
 		return maxQueryCount;
 	}
 
-	/**
-	 * @param language
-	 * @param offset
-	 * @param query
-	 * @param queryOffset
-	 * @param queryOffsetExists
-	 * @return
-	 */
 	private static String modifyOffset(final QueryLanguage language, final int offset, final String query,
 			final int queryOffset, final boolean queryOffsetExists)
 	{
@@ -167,35 +156,21 @@ public class PagedQuery {
 		return rval;
 	}
 
-	/**
-	 * @param original
-	 * @param append
-	 * @return
-	 */
 	private static String ensureNewlineAndAppend(final String original, final String append) {
 		final StringBuffer buffer = new StringBuffer(original.length() + append.length() + 1);
 		buffer.append(original);
-		if (buffer.charAt(buffer.length()-1) != '\n') {
+		if (buffer.charAt(buffer.length() - 1) != '\n') {
 			buffer.append('\n');
 		}
 
 		return buffer.append(append).toString();
 	}
 
-	/**
-	 * @param language
-	 * @param query
-	 * @param queryLimit
-	 * @param queryLimitExists
-	 * @param queryOffsetExists
-	 * @param limitSubstitute
-	 * @return
-	 */
 	private static String modifyLimit(final QueryLanguage language, final String query, final int queryLimit,
 			final boolean queryLimitExists, final boolean queryOffsetExists, final int limitSubstitute)
 	{
 		String rval = query;
-		
+
 		/* In SPARQL, LIMIT and/or OFFSET can occur at the end, in 
 		 * either order. In SeRQL, LIMIT and/or OFFSET must be 
 		 * immediately prior to the *optional* namespace declaration 

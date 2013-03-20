@@ -8,29 +8,53 @@
  * button.)
  */
 function setQueryTextIfPresent() {
+	var query = getParameterFromUrlOrCookie('query');
+	if (query) {
+		var ref = getParameterFromUrlOrCookie('ref');
+		if (ref == 'id' || ref == 'hash') {
+			getQueryTextFromServer(query, ref);
+		} else {
+			$('#query').val(query);
+		}
+	}
+}
+
+function getQueryTextFromServer(queryParam, refParam) {
+	$.getJSON('query', {
+		action : "get",
+		query : queryParam,
+		ref : refParam
+	}, function(response) {
+		if (response.queryText) {
+			$('#query').val(response.queryText);
+		}
+	});
+}
+
+/**
+ * Gets a parameter from the URL or the cookies, preferentially in that order.
+ * 
+ * @param param
+ *            the name of the parameter
+ * @returns the value of the given parameter, or something that evaluates as
+ *          false, if the parameter was not found
+ */
+function getParameterFromUrlOrCookie(param) {
 	var href = document.location.href;
 	var elements = href.substring(href.indexOf('?') + 1).substring(
 			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
-	var param = 'query';
-	var query = document.getElementById(param);
-	var setFromHref = false;
+	var result = false;
 	for ( var i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
 		if (pair[0] == param) {
-			if (!query.value) {
-				query.value = value;
-				setFromHref = true;
-			}
+			result = value;
 		}
 	}
-
-	if (!setFromHref) {
-		var cookie = getCookie(param);
-		if (cookie) {
-			query.value = cookie;
-		}
+	if (!result) {
+		result = getCookie(param);
 	}
+	return result;
 }
 
 /**
@@ -203,63 +227,75 @@ function createXMLHttpRequest() {
 }
 
 /**
- * Send a background HTTP request, and handle the response asynchronously.
+ * Send a background HTTP request to save the query, and handle the response
+ * asynchronously.
  * 
- * @param url
- *            the URL to send the request to
+ * @param overwrite
+ *            if true, add a URL parameter that tells the server we wish to
+ *            overwrite any already saved query
  */
-function ajaxSave(url) {
-	var request = createXMLHttpRequest();
-	var requestTimer = setTimeout(
-			function() {
-				request.abort();
-				feedback.className = 'error';
-				feedback.innerHTML = 'Timed out waiting for response. Uncertain if save occured.';
-			}, 5000);
-	request.onreadystatechange = function() {
-		if (request.readyState == 4) {
-			clearTimeout(requestTimer);
-			var feedback = document.getElementById('save-feedback');
-			if (request.status == 200) {
-				var response = JSON.parse(request.responseText);
-				if (response.accessible) {
-					if (response.written) {
-						feedback.className = 'success';
-						feedback.innerHTML = 'Query saved.';
-					} else {
-						if (response.existed) {
-							if (confirm('Query name exists. Click OK to overwrite.')) {
-								ajaxSave(url + 'overwrite=true&');
-							} else {
-								feedback.className = 'error';
-								feedback.innerHTML = 'Cancelled overwriting existing query.';
-							}
-						}
-					}
-				} else {
-					feedback.className = 'error';
-					feedback.innerHTML = 'Repository was not accessible (check your permissions).';
-				}
+function ajaxSave(overwrite) {
+	var feedback = $('#save-feedback');
+	var handleSuccess = function(response) {
+		if (response.accessible) {
+			if (response.written) {
+				feedback.removeClass().addClass('success');
+				feedback.text('Query saved.');
 			} else {
-				feedback.className = 'error';
-				feedback.innerHTML = 'Failure: Response Status = '
-						+ request.status;
+				if (response.existed) {
+					if (confirm('Query name exists. Click OK to overwrite.')) {
+						ajaxSave(true);
+					} else {
+						feedback.removeClass().addClass('error');
+						feedback.text('Cancelled overwriting existing query.');
+					}
+				}
 			}
+		} else {
+			feedback.removeClass().addClass('error');
+			feedback
+					.text('Repository was not accessible (check your permissions).');
 		}
 	};
-	request.open("post", url, true); // true => async handling
-	request.send(); // noarg => all data in URL
+	var handleError = function(jqXHR, textStatus, errorThrown) {
+		feedback.removeClass().addClass('error');
+		if (textStatus == 'timeout') {
+			feedback
+					.text('Timed out waiting for response. Uncertain if save occured.');
+		} else {
+			feedback.text('Save Request Failed: Error Type = ' + textStatus
+					+ ', HTTP Status Text = "' + errorThrown + '"');
+		}
+	};
+	var url = [];
+	url[url.length] = 'query';
+	if (overwrite) {
+		if (document.all) {
+			url[url.length] = ';';
+		} else {
+			url[url.length] = '?';
+		}
+		url[url.length] = 'overwrite=true&'
+	}
+	var href = url.join('');
+	var form = $('form[action="query"]');
+	$.ajax({
+		url : href,
+		type : 'POST',
+		dataType : 'json',
+		data : form.serialize(),
+		timeout : 5000,
+		error : handleError,
+		success : handleSuccess
+	});
 }
 
-/**
- * Handle form submission. Note: MSIE6 does not like XSLT w/ this query string,
- * so we use URL parameters.
- */
 function doSubmit() {
-	if (document.getElementById('query').value.length >= 1000) {
-		// some functionality will not work as expected on result pages
-		return true;
-	} else { // safe to use in request-URI
+	var allowPageToSubmitForm = false;
+	var save = ($('#action').val() == 'save');
+	if (save) {
+		ajaxSave(false);
+	} else {
 		var url = [];
 		url[url.length] = 'query';
 		if (document.all) {
@@ -267,23 +303,31 @@ function doSubmit() {
 		} else {
 			url[url.length] = '?';
 		}
-
 		addParam(url, 'action');
-		var save = (document.getElementById('action').value == 'save');
-		if (save) {
-			addParam(url, 'query-name');
-			addParam(url, 'save-private');
-		}
 		addParam(url, 'queryLn');
 		addParam(url, 'query');
 		addParam(url, 'limit');
 		addParam(url, 'infer');
 		var href = url.join('');
-		if (save) {
-			ajaxSave(href);
+		var loc = document.location;
+		var currentBaseLength = loc.href.length - loc.pathname.length
+				- loc.search.length;
+		var pathLength = href.length;
+		var urlLength = pathLength + currentBaseLength;
+
+		// Published Internet Explorer restrictions on URL length, which are the
+		// most restrictive of the major browsers.
+		if (pathLength > 2048 || urlLength > 2083) {
+			alert("Due to its length, your query will be posted in the request body. "
+					+ "It won't be possible to use a bookmark for the results page.");
+			allowPageToSubmitForm = true;
 		} else {
+			// GET using the constructed URL, method exits here
 			document.location.href = href;
 		}
-		return false;
 	}
+
+	// Value returned to form submit event. If not true, prevents normal form
+	// submission.
+	return allowPageToSubmitForm;
 }

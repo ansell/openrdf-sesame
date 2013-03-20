@@ -19,6 +19,7 @@ package org.openrdf.workbench.commands;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Resource;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.base.TupleServlet;
@@ -32,7 +33,8 @@ public class ContextsServlet extends TupleServlet {
 
 	@Override
 	protected void service(TupleResultBuilder builder, RepositoryConnection con)
-			throws RepositoryException {
+		throws RepositoryException, QueryResultHandlerException
+	{
 		for (Resource ctx : Iterations.asList(con.getContextIDs())) {
 			builder.result(ctx);
 		}

@@ -28,6 +28,8 @@
 				select="normalize-space(sparql:binding[@name='rowsPerPage'])" />
 			<xsl:variable name="query"
 				select="normalize-space(sparql:binding[@name='query'])" />
+			<xsl:variable name="queryHREF"
+				select="concat('query?action=exec&amp;queryLn=', $queryLn, '&amp;query=', $query-url-encoded, '&amp;infer=', $infer, '&amp;limit=', $rowsPerPage)" />
 			<xsl:variable name="user"
 				select="normalize-space(sparql:binding[@name='user'])" />
 			<xsl:variable name="previousUser"
@@ -42,11 +44,33 @@
 			<div id="{$query}-div">
 				<table>
 					<tr>
-						<td style="vertical-align:middle;width:24em">
-							<a
-								href="query?action=exec&amp;queryLn={$queryLn}&amp;query={$query-url-encoded}&amp;infer={$infer}&amp;limit={$rowsPerPage}">
-								<xsl:value-of select="$queryName" />
-							</a>
+						<th style="vertical-align:middle;width:24em">
+							<xsl:value-of select="$queryName" />
+						</th>
+						<td style="vertical-align:middle">
+							<form method="post" name="exec-query" action="query">
+								<input type="hidden" name="action" value="exec" />
+								<input type="hidden" name="queryLn" value="{$queryLn}" />
+								<input type="hidden" name="query" value="{$queryName}" />
+								<input type="hidden" name="ref" value="id" />
+								<input type="hidden" name="infer" value="{$infer}" />
+								<input type="hidden" name="limit" value="{$rowsPerPage}" />
+								<input type="submit" value="Execute" />
+							</form>
+						</td>
+						<td style="vertical-align:middle">
+							<!-- the path may only be up to 2048 characters long in Internet Explorer -->
+							<xsl:choose>
+								<xsl:when test="string-length($queryHREF) &lt; 2049">
+									<a href="{$queryHREF}">
+										<img src="../../images/bookmark.png" alt="Bookmarkable link" />
+									</a>
+								</xsl:when>
+								<xsl:otherwise>
+									<img src="../../images/cancel.png"
+										alt="Can't produce bookmarkable link...query too long." />
+								</xsl:otherwise>
+							</xsl:choose>
 						</td>
 						<td style="vertical-align:middle">
 							<input type="button" id="{$query}-toggle" value="Show"
@@ -56,7 +80,8 @@
 							<form method="post" name="edit-query" action="query">
 								<input type="hidden" name="action" value="edit" />
 								<input type="hidden" name="queryLn" value="{$queryLn}" />
-								<input type="hidden" name="query" value="{$queryText}" />
+								<input type="hidden" name="query" value="{$queryName}" />
+								<input type="hidden" name="ref" value="id" />
 								<input type="hidden" name="infer" value="{$infer}" />
 								<input type="hidden" name="limit" value="{$rowsPerPage}" />
 								<input type="submit" value="Edit" />

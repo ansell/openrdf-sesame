@@ -53,6 +53,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
+import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 
@@ -62,7 +63,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * 
  * @author Arjohn Kampman
  */
-public class BinaryQueryResultWriter implements TupleQueryResultWriter {
+public class BinaryQueryResultWriter extends QueryResultWriterBase implements TupleQueryResultWriter {
 
 	/*-----------*
 	 * Variables *
@@ -222,6 +223,13 @@ public class BinaryQueryResultWriter implements TupleQueryResultWriter {
 		throws IOException
 	{
 		out.writeByte(EMPTY_ROW_RECORD_MARKER);
+	}
+
+	@Override
+	public void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException
+	{
+		// Binary format does not support explicit setting of namespace prefixes.
 	}
 
 	private void writeQName(URI uri)

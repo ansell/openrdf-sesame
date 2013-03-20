@@ -16,8 +16,10 @@
  */
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -33,7 +35,13 @@ public class RDFS {
 
 	/** Recommended prefix for the RDF Schema namespace: "rdfs" */
 	public static final String PREFIX = "rdfs";
-	
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the RDFS
+	 * namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+
 	/** http://www.w3.org/2000/01/rdf-schema#Resource */
 	public final static URI RESOURCE;
 

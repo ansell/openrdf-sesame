@@ -36,6 +36,8 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigUtil;
+import org.openrdf.repository.sail.config.ProxyRepositorySchema;
+import org.openrdf.repository.sail.config.RepositoryResolver;
 
 /**
  * A manager for {@link Repository}s. Every <tt>RepositoryManager</tt> has one
@@ -47,7 +49,7 @@ import org.openrdf.repository.config.RepositoryConfigUtil;
  * 
  * @author Arjohn Kampman
  */
-public abstract class RepositoryManager {
+public abstract class RepositoryManager implements RepositoryResolver {
 
 	/*-----------*
 	 * Constants *
@@ -77,6 +79,20 @@ public abstract class RepositoryManager {
 	 *---------*/
 
 	/**
+	 * Indicates if this RepositoryManager has been initialized. Note that the
+	 * initialization status may change if the Repository is shut down.
+	 * 
+	 * @return true iff the repository manager has been initialized.
+	 * @since 2.7.0
+	 */
+	public boolean isInitialized() {
+		synchronized (initializedRepositories) {
+			Repository repo = initializedRepositories.get(SystemRepository.ID);
+			return repo != null && repo.isInitialized();
+		}
+	}
+
+	/**
 	 * Initializes the repository manager.
 	 * 
 	 * @throws RepositoryException
@@ -99,6 +115,8 @@ public abstract class RepositoryManager {
 	 * Gets the SYSTEM repository.
 	 */
 	public Repository getSystemRepository() {
+		if (!isInitialized())
+			throw new IllegalStateException("Repository Manager is not initialized");
 		synchronized (initializedRepositories) {
 			return initializedRepositories.get(SystemRepository.ID);
 		}
@@ -238,7 +256,7 @@ public abstract class RepositoryManager {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
 				Repository repository = initializedRepositories.remove(repositoryID);
 
-				if (repository != null) {
+				if (repository != null && repository.isInitialized()) {
 					repository.shutDown();
 				}
 
@@ -253,6 +271,29 @@ public abstract class RepositoryManager {
 		}
 
 		return isRemoved;
+	}
+
+	/**
+	 * Checks on whether the given repository is referred to by a
+	 * {@link org.openrdf.repository.sail.ProxyRepository} configuration.
+	 * 
+	 * @param repositoryID
+	 *        id to check
+	 * @return true if there is no existing proxy reference to the given id,
+	 *         false otherwise
+	 * @throws RepositoryException
+	 */
+	public boolean isSafeToRemove(String repositoryID)
+		throws RepositoryException
+	{
+		RepositoryConnection connection = this.getSystemRepository().getConnection();
+		try {
+			return !connection.hasStatement(null, ProxyRepositorySchema.PROXIED_ID,
+					connection.getValueFactory().createLiteral(repositoryID), false);
+		}
+		finally {
+			connection.close();
+		}
 	}
 
 	/**
@@ -287,7 +328,7 @@ public abstract class RepositoryManager {
 				logger.debug("Shutdown repository {} after removal of configuration.", repositoryID);
 				Repository repository = initializedRepositories.remove(repositoryID);
 
-				if (repository != null) {
+				if (repository != null && repository.isInitialized()) {
 					repository.shutDown();
 				}
 
@@ -307,7 +348,7 @@ public abstract class RepositoryManager {
 	/**
 	 * Gets the repository that is known by the specified ID from this manager.
 	 * 
-	 * @param id
+	 * @param identity
 	 *        A repository ID.
 	 * @return An initialized Repository object, or <tt>null</tt> if no
 	 *         repository was known for the specified ID.
@@ -315,11 +356,12 @@ public abstract class RepositoryManager {
 	 *         If no repository could be created due to invalid or incomplete
 	 *         configuration data.
 	 */
-	public Repository getRepository(String id)
+	@Override
+	public Repository getRepository(String identity)
 		throws RepositoryConfigException, RepositoryException
 	{
 		synchronized (initializedRepositories) {
-			Repository result = initializedRepositories.get(id);
+			Repository result = initializedRepositories.get(identity);
 
 			if (result != null && !result.isInitialized()) {
 				// repository exists but has been shut down. throw away the old
@@ -331,10 +373,10 @@ public abstract class RepositoryManager {
 			if (result == null) {
 				// First call (or old object thrown away), create and initialize the
 				// repository.
-				result = createRepository(id);
+				result = createRepository(identity);
 
 				if (result != null) {
-					initializedRepositories.put(id, result);
+					initializedRepositories.put(identity, result);
 				}
 			}
 
@@ -351,6 +393,7 @@ public abstract class RepositoryManager {
 	 */
 	public Set<String> getInitializedRepositoryIDs() {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return new HashSet<String>(initializedRepositories.keySet());
 		}
 	}
@@ -364,19 +407,33 @@ public abstract class RepositoryManager {
 	 */
 	public Collection<Repository> getInitializedRepositories() {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return new ArrayList<Repository>(initializedRepositories.values());
 		}
 	}
 
 	Repository getInitializedRepository(String repositoryID) {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return initializedRepositories.get(repositoryID);
 		}
 	}
 
 	Repository removeInitializedRepository(String repositoryID) {
 		synchronized (initializedRepositories) {
+			updateInitializedRepositories();
 			return initializedRepositories.remove(repositoryID);
+		}
+	}
+
+	private void updateInitializedRepositories() {
+		synchronized (initializedRepositories) {
+			Iterator<Repository> iter = initializedRepositories.values().iterator();
+			while (iter.hasNext()) {
+				if (!iter.next().isInitialized()) {
+					iter.remove();
+				}
+			}
 		}
 	}
 
@@ -497,7 +554,9 @@ public abstract class RepositoryManager {
 		synchronized (initializedRepositories) {
 			for (Repository repository : initializedRepositories.values()) {
 				try {
-					repository.shutDown();
+					if (repository.isInitialized()) {
+						repository.shutDown();
+					}
 				}
 				catch (RepositoryException e) {
 					logger.error("Repository shut down failed", e);
@@ -511,7 +570,9 @@ public abstract class RepositoryManager {
 	void refreshRepository(RepositoryConnection con, String repositoryID, Repository repository) {
 		logger.debug("Refreshing repository {}...", repositoryID);
 		try {
-			repository.shutDown();
+			if (repository.isInitialized()) {
+				repository.shutDown();
+			}
 		}
 		catch (RepositoryException e) {
 			logger.error("Failed to shut down repository", e);

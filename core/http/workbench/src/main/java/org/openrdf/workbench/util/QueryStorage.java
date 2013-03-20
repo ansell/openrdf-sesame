@@ -30,6 +30,7 @@ import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UpdateExecutionException;
@@ -46,7 +47,7 @@ import org.openrdf.workbench.exceptions.BadRequestException;
  * 
  * @author Dale Visser
  */
-public final class QueryStorage {
+public class QueryStorage {
 
 	private static final Object LOCK = new Object();
 
@@ -97,6 +98,9 @@ public final class QueryStorage {
 	private static final String SELECT_URI = PRE
 			+ "SELECT ?query { ?query :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> . } ";
 
+	private static final String SELECT_TEXT = PRE
+			+ "SELECT ?queryText { [] :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> ; :query ?queryText . } ";
+
 	private static final String SELECT = PRE
 			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?infer ?rowsPerPage "
 			+ "{ ?query :repository $<repository> ; :userName ?user ; :queryName ?queryName ; :shared ?shared ; "
@@ -122,7 +126,7 @@ public final class QueryStorage {
 	 *         if there is an issue creating the object to access the repository
 	 * @throws IOException
 	 */
-	private QueryStorage(final AppConfiguration appConfig)
+	protected QueryStorage(final AppConfiguration appConfig)
 		throws RepositoryException, IOException
 	{
 		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
@@ -303,18 +307,20 @@ public final class QueryStorage {
 	 * @param userName
 	 *        that is requesting the saved queries
 	 * @param builder
-	 * @return a query result listing all the saved queries against the given
-	 *         repository and accessible to the given user
+	 *        receives a list of all the saved queries against the given
+	 *        repository and accessible to the given user
 	 * @throws RepositoryException
 	 *         if there's a problem connecting to the saved queries repository
 	 * @throws MalformedQueryException
 	 *         if the query is not legal SPARQL
 	 * @throws QueryEvaluationException
 	 *         if there is a problem while attempting to evaluate the query
+	 * @throws QueryResultHandlerException
 	 */
 	public void selectSavedQueries(final HTTPRepository repository, final String userName,
 			final TupleResultBuilder builder)
-		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException,
+		QueryResultHandlerException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT);
 		select.replaceQuote(USER_NAME, userName);
@@ -342,6 +348,29 @@ public final class QueryStorage {
 			final TupleQueryResult result = query.evaluate();
 			if (result.hasNext()) {
 				return (URI)(result.next().getValue("query"));
+			}
+			else {
+				throw new BadRequestException("Could not find query entry in storage.");
+			}
+		}
+		finally {
+			connection.close();
+		}
+	}
+
+	public String getQueryText(final HTTPRepository repository, final String userName, final String queryName)
+		throws OpenRDFException, BadRequestException
+	{
+		final QueryStringBuilder select = new QueryStringBuilder(SELECT_TEXT);
+		select.replaceQuote(QueryStorage.USER_NAME, userName);
+		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
+		select.replaceQuote(QUERY_NAME, queryName);
+		final RepositoryConnection connection = this.queries.getConnection();
+		final TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, select.toString());
+		try {
+			final TupleQueryResult result = query.evaluate();
+			if (result.hasNext()) {
+				return result.next().getValue("queryText").stringValue();
 			}
 			else {
 				throw new BadRequestException("Could not find query entry in storage.");

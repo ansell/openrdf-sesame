@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.cli.AlreadySelectedException;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
@@ -97,62 +97,114 @@ public class Console implements ConsoleState, ConsoleParameters {
 		throws IOException
 	{
 		final Console console = new Console();
-
-		// Parse command line options
-		final Options options = new Options();
 		final Option helpOption = new Option("h", "help", false, "print this help");
 		final Option versionOption = new Option("v", "version", false, "print version information");
 		final Option serverURLOption = new Option("s", "serverURL", true,
 				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
 		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
-		options.addOption(helpOption);
-		final OptionGroup connectGroup = new OptionGroup();
-		connectGroup.addOption(serverURLOption);
-		connectGroup.addOption(dirOption);
-		options.addOptionGroup(connectGroup);
-		final CommandLineParser argsParser = new PosixParser();
+		Option echoOption = new Option("e", "echo", false,
+				"echoes input back to stdout, useful for logging script sessions");
+		Option quietOption = new Option("q", "quiet", false, "suppresses prompts, useful for scripting");
+		Option forceOption = new Option("f", "force", false,
+				"always answer yes to (suppressed) confirmation prompts");
+		Option cautiousOption = new Option("c", "cautious", false,
+				"always answer no to (suppressed) confirmation prompts");
+		final Options options = new Options();
+		OptionGroup cautionGroup = new OptionGroup().addOption(cautiousOption).addOption(forceOption);
+		OptionGroup locationGroup = new OptionGroup().addOption(serverURLOption).addOption(dirOption);
+		options.addOptionGroup(locationGroup).addOptionGroup(cautionGroup);
+		options.addOption(helpOption).addOption(versionOption).addOption(echoOption).addOption(quietOption);
+		CommandLine commandLine = parseCommandLine(args, console, options);
+		handleInfoOptions(console, helpOption, versionOption, options, commandLine);
+		console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
+		console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
+		String location = handleOptionGroups(console, serverURLOption, dirOption, forceOption, cautiousOption,
+				options, cautionGroup, locationGroup, commandLine);
+		final String[] otherArgs = commandLine.getArgs();
+		if (otherArgs.length > 1) {
+			printUsage(console.consoleIO, options);
+			System.exit(1);
+		}
+		connectAndOpen(console, locationGroup.getSelected(), location, otherArgs);
+		console.start();
+	}
+
+	private static String handleOptionGroups(final Console console, final Option serverURLOption,
+			final Option dirOption, Option forceOption, Option cautiousOption, final Options options,
+			OptionGroup cautionGroup, OptionGroup locationGroup, CommandLine commandLine)
+	{
+		String location = null;
 		try {
-			final CommandLine commandLine = argsParser.parse(options, args);
-			if (commandLine.hasOption(helpOption.getOpt())) {
-				printUsage(console.consoleIO, options);
-				System.exit(0);
+			if (commandLine.hasOption(forceOption.getOpt())) {
+				cautionGroup.setSelected(forceOption);
+				console.consoleIO.setForce();
 			}
-			if (commandLine.hasOption(versionOption.getOpt())) {
-				console.consoleIO.writeln(console.appConfig.getFullName());
-				System.exit(0);
+			if (commandLine.hasOption(cautiousOption.getOpt())) {
+				cautionGroup.setSelected(cautiousOption);
+				console.consoleIO.setCautious();
 			}
-			final String dir = commandLine.getOptionValue(dirOption.getOpt());
-			final String serverURL = commandLine.getOptionValue(serverURLOption.getOpt());
-			final String[] otherArgs = commandLine.getArgs();
+			if (commandLine.hasOption(dirOption.getOpt())) {
+				locationGroup.setSelected(dirOption);
+				location = commandLine.getOptionValue(dirOption.getOpt());
+			}
+			if (commandLine.hasOption(serverURLOption.getOpt())) {
+				locationGroup.setSelected(serverURLOption);
+				location = commandLine.getOptionValue(serverURLOption.getOpt());
+			}
+		}
+		catch (AlreadySelectedException e) {
+			printUsage(console.consoleIO, options);
+			System.exit(3);
+		}
+		return location;
+	}
 
-			if (otherArgs.length > 1) {
-				printUsage(console.consoleIO, options);
-				System.exit(1);
-			}
-
-			boolean connected = false;
-			if (dir == null) {
-				connected = (serverURL == null) ? console.connect.connectDefault()
-						: console.connect.connectRemote(serverURL);
-			}
-			else {
-				connected = console.connect.connectLocal(dir);
-			}
-
-			if (!connected) {
-				System.exit(2);
-			}
-
-			if (otherArgs.length > 0) {
-				console.open.openRepository(otherArgs[0]);
-			}
+	private static CommandLine parseCommandLine(final String[] args, final Console console,
+			final Options options)
+	{
+		CommandLine commandLine = null;
+		try {
+			commandLine = new PosixParser().parse(options, args);
 		}
 		catch (ParseException e) {
 			console.consoleIO.writeError(e.getMessage());
 			System.exit(1);
 		}
+		return commandLine;
+	}
 
-		console.start();
+	private static void handleInfoOptions(final Console console, final Option helpOption,
+			final Option versionOption, final Options options, final CommandLine commandLine)
+	{
+		if (commandLine.hasOption(helpOption.getOpt())) {
+			printUsage(console.consoleIO, options);
+			System.exit(0);
+		}
+		if (commandLine.hasOption(versionOption.getOpt())) {
+			console.consoleIO.writeln(console.appConfig.getFullName());
+			System.exit(0);
+		}
+	}
+
+	private static void connectAndOpen(Console console, String selectedLocationOption, String location,
+			String[] otherArgs)
+	{
+		boolean connected;
+		if ("s".equals(selectedLocationOption)) {
+			connected = console.connect.connectRemote(location);
+		}
+		else if ("d".equals(selectedLocationOption)) {
+			connected = console.connect.connectLocal(location);
+		}
+		else {
+			connected = console.connect.connectDefault();
+		}
+		if (!connected) {
+			System.exit(2);
+		}
+		if (otherArgs.length > 0) {
+			console.open.openRepository(otherArgs[0]);
+		}
 	}
 
 	private static void printUsage(ConsoleIO cio, Options options) {
@@ -178,7 +230,8 @@ public class Console implements ConsoleState, ConsoleParameters {
 		throws IOException
 	{
 		appConfig.init();
-		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, this);
+		consoleIO = new ConsoleIO(new BufferedReader(new InputStreamReader(System.in)), System.out, System.err,
+				this);
 		commandMap.put("federate", new Federate(consoleIO, this));
 		this.queryEvaluator = new QueryEvaluator(consoleIO, this, this);
 		LockRemover lockRemover = new LockRemover(consoleIO);
@@ -227,21 +280,21 @@ public class Console implements ConsoleState, ConsoleParameters {
 	private boolean executeCommand(final String command)
 		throws IOException
 	{
-		boolean exit = false;
-		if (0 < command.length()) {
+		boolean exit = (0 == command.length());
+		if (!exit) {
 			final String[] tokens = parse(command);
 			final String operation = tokens[0].toLowerCase(Locale.ENGLISH);
-			if ("quit".equals(operation) || "exit".equals(operation)) {
-				exit = true;
-			}
-			else if (commandMap.containsKey(operation)) {
-				commandMap.get(operation).execute(tokens);
-			}
-			else if ("disconnect".equals(operation)) {
-				disconnect.execute(true);
-			}
-			else {
-				queryEvaluator.executeQuery(command, operation);
+			exit = "quit".equals(operation) || "exit".equals(operation);
+			if (!exit) {
+				if (commandMap.containsKey(operation)) {
+					commandMap.get(operation).execute(tokens);
+				}
+				else if ("disconnect".equals(operation)) {
+					disconnect.execute(true);
+				}
+				else {
+					queryEvaluator.executeQuery(command, operation);
+				}
 			}
 		}
 

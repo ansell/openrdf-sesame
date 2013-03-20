@@ -53,8 +53,9 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	/**
 	 * SPARQL Query Results JSON Format.
 	 */
-	public static final TupleQueryResultFormat JSON = new TupleQueryResultFormat("SPARQL/JSON",
-			"application/sparql-results+json", Charset.forName("UTF-8"), "srj");
+	public static final TupleQueryResultFormat JSON = new TupleQueryResultFormat("SPARQL/JSON", Arrays.asList(
+			"application/sparql-results+json", "application/json"), Charset.forName("UTF-8"), Arrays.asList(
+			"srj", "json"));
 
 	/**
 	 * SPARQL Query Result CSV Format.

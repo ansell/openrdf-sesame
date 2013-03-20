@@ -81,6 +81,21 @@ public class RDFParseException extends OpenRDFException {
 	 * ParseException will inherit its message from the supplied source
 	 * exception.
 	 * 
+	 * @param msg
+	 *        An error message.
+	 * @param t
+	 *        The source exception.
+	 * @since 2.7.0
+	 */
+	public RDFParseException(String msg, Throwable t) {
+		this(msg, t, -1, -1);
+	}
+
+	/**
+	 * Creates a new ParseException wrapping another exception. The
+	 * ParseException will inherit its message from the supplied source
+	 * exception.
+	 * 
 	 * @param t
 	 *        The source exception.
 	 * @param lineNo
@@ -90,6 +105,25 @@ public class RDFParseException extends OpenRDFException {
 	 */
 	public RDFParseException(Throwable t, int lineNo, int columnNo) {
 		super(t.getMessage() + getLocationString(lineNo, columnNo), t);
+		this.lineNo = lineNo;
+		this.columnNo = columnNo;
+	}
+
+	/**
+	 * Creates a new ParseException wrapping another exception. The
+	 * ParseException will inherit its message from the supplied source
+	 * exception.
+	 * 
+	 * @param t
+	 *        The source exception.
+	 * @param lineNo
+	 *        A line number associated with the message.
+	 * @param columnNo
+	 *        A column number associated with the message.
+	 * @since 2.7.0
+	 */
+	public RDFParseException(String msg, Throwable t, int lineNo, int columnNo) {
+		super(msg + getLocationString(lineNo, columnNo), t);
 		this.lineNo = lineNo;
 		this.columnNo = columnNo;
 	}

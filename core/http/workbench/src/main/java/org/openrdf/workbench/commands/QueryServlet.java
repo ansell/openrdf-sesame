@@ -18,11 +18,17 @@ package org.openrdf.workbench.commands;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONException;
@@ -38,6 +44,10 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
+import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
@@ -52,11 +62,19 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class QueryServlet extends TransformationServlet {
 
-	private static final String ACCEPT = "Accept";
-	
-	private static final String QUERY = "query";
+	protected static final String REF = "ref";
 
-	private static final String[] EDIT_PARAMS = new String[] { "queryLn", QUERY, "infer", "limit" };
+	private static final String LIMIT = "limit";
+
+	private static final String QUERY_LN = "queryLn";
+
+	private static final String INFER = "infer";
+
+	private static final String ACCEPT = "Accept";
+
+	protected static final String QUERY = "query";
+
+	private static final String[] EDIT_PARAMS = new String[] { QUERY_LN, QUERY, INFER, LIMIT };
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
 
@@ -64,13 +82,40 @@ public class QueryServlet extends TransformationServlet {
 
 	private QueryStorage storage;
 
+	protected boolean writeQueryCookie;
+
+	// Poor Man's Cache: At the very least, garbage collection can clean up keys
+	// followed by values whenever the JVM faces memory pressure.
+	private static Map<String, String> queryCache = Collections.synchronizedMap(new WeakHashMap<String, String>());
+
+	/**
+	 * For testing purposes only.
+	 * 
+	 * @param testQueryCache
+	 *        cache to use instead of the production cache instance
+	 */
+	protected static void substituteQueryCache(Map<String, String> testQueryCache) {
+		queryCache = testQueryCache;
+	}
+
+	protected void substituteQueryStorage(QueryStorage storage) {
+		this.storage = storage;
+	}
+
 	/**
 	 * @return the names of the cookies that will be retrieved from the request,
 	 *         and returned in the response
 	 */
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { QUERY, "limit", "queryLn", "infer", "total_result_count", "show-datatypes" };
+		String[] result;
+		if (writeQueryCookie) {
+			result = new String[] { QUERY, REF, LIMIT, QUERY_LN, INFER, "total_result_count", "show-datatypes" };
+		}
+		else {
+			result = new String[] { REF, LIMIT, QUERY_LN, INFER, "total_result_count", "show-datatypes" };
+		}
+		return result;
 	}
 
 	/**
@@ -95,27 +140,85 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
+	/**
+	 * Long query strings could blow past the Tomcat default 8k HTTP header limit
+	 * if stuffed into a cookie. In this case, we need to set a flag to avoid
+	 * this happening before
+	 * {@link TransformationServlet#service(HttpServletRequest, HttpServletResponse)}
+	 * is called. A much lower limit on the size of the query text is used to
+	 * stay well below the Tomcat limitation.
+	 */
+	@Override
+	public final void service(final HttpServletRequest req, final HttpServletResponse resp)
+		throws ServletException, IOException
+	{
+		this.writeQueryCookie = shouldWriteQueryCookie(req.getParameter(QUERY));
+		super.service(req, resp);
+	}
+
+	/**
+	 * <p>
+	 * Determines if the servlet should write out the query text into a cookie as
+	 * received, or write it's hash instead.
+	 * </p>
+	 * <p>
+	 * Note: This is a separate method for testing purposes.
+	 * </p>
+	 * 
+	 * @param queryText
+	 *        the text received as the value for the parameter 'query'
+	 */
+	protected boolean shouldWriteQueryCookie(String queryText) {
+		return (null == queryText || queryText.length() <= 2048);
+	}
+
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException, OpenRDFException
+		throws IOException, OpenRDFException, BadRequestException, JSONException
+	{
+		if (!writeQueryCookie) {
+			// If we suppressed putting the query text into the cookies before.
+			cookies.addCookie(req, resp, REF, "hash");
+			String queryValue = req.getParameter(QUERY);
+			String hash = String.valueOf(queryValue.hashCode());
+			queryCache.put(hash, queryValue);
+			cookies.addCookie(req, resp, QUERY, hash);
+		}
+		if ("get".equals(req.getParameter("action"))) {
+			JSONObject json = new JSONObject();
+			json.put("queryText", getQueryText(req));
+			PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
+			try {
+				writer.write(json.toString());
+			}
+			finally {
+				writer.flush();
+			}
+		}
+		else {
+			handleStandardBrowserRequest(req, resp, xslPath);
+		}
+	}
+
+	private void handleStandardBrowserRequest(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
+		throws IOException, OpenRDFException, QueryResultHandlerException
 	{
 		setContentType(req, resp);
-		final PrintWriter out = resp.getWriter();
+		OutputStream out = resp.getOutputStream();
 		try {
-			final PrintWriter writer = new PrintWriter(new BufferedWriter(out));
-			service(req, resp, writer, xslPath);
-			writer.flush();
+			service(req, resp, out, xslPath);
 		}
 		catch (BadRequestException exc) {
 			LOGGER.warn(exc.toString(), exc);
-			resp.setContentType("application/xml");
-			final TupleResultBuilder builder = new TupleResultBuilder(out);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, out);
 			builder.transform(xslPath, "query.xsl");
 			builder.start("error-message");
-			builder.link(INFO);
-			builder.link("namespaces");
+			builder.link(Arrays.asList(INFO, "namespaces"));
 			builder.result(exc.getMessage());
 			builder.end();
+		}
+		finally {
+			out.flush();
 		}
 	}
 
@@ -128,12 +231,10 @@ public class QueryServlet extends TransformationServlet {
 			saveQuery(req, resp);
 		}
 		else if ("edit".equals(action)) {
-			resp.setContentType("application/xml");
-			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "query.xsl");
 			builder.start(EDIT_PARAMS);
-			builder.link(INFO);
-			builder.link("namespaces");
+			builder.link(Arrays.asList(INFO, "namespaces"));
 			final String queryLn = req.getParameter(EDIT_PARAMS[0]);
 			final String query = req.getParameter(EDIT_PARAMS[1]);
 			final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
@@ -142,8 +243,11 @@ public class QueryServlet extends TransformationServlet {
 			builder.result(queryLn, query, infer, limit);
 			builder.end();
 		}
+		else if ("exec".equals(action)) {
+			service(req, resp, xslPath);
+		}
 		else {
-			throw new BadRequestException("Query doPost() is only for 'action=save' or 'action=edit'.");
+			throw new BadRequestException("POST with unexpected action parameter value: " + action);
 		}
 	}
 
@@ -152,24 +256,21 @@ public class QueryServlet extends TransformationServlet {
 	{
 		resp.setContentType("application/json");
 		final JSONObject json = new JSONObject();
-		final boolean accessible = storage.checkAccess((HTTPRepository)this.repository);
+		final HTTPRepository http = (HTTPRepository)repository;
+		final boolean accessible = storage.checkAccess(http);
 		json.put("accessible", accessible);
 		if (accessible) {
-			final HTTPRepository http = (HTTPRepository)repository;
 			final String queryName = req.getParameter("query-name");
-			String userName = req.getParameter(SERVER_USER);
-			if (null == userName) {
-				userName = "";
-			}
+			String userName = getUserName(req);
 			final boolean existed = storage.askExists(http, queryName, userName);
 			json.put("existed", existed);
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
-			final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
-			final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter("queryLn"));
-			final String queryText = req.getParameter(QUERY);
-			final boolean infer = Boolean.valueOf(req.getParameter("infer"));
-			final int rowsPerPage = Integer.valueOf(req.getParameter("limit"));
 			if (written) {
+				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
+				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
+				final String queryText = req.getParameter(QUERY);
+				final boolean infer = Boolean.valueOf(req.getParameter(INFER));
+				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
@@ -186,35 +287,69 @@ public class QueryServlet extends TransformationServlet {
 		writer.flush();
 	}
 
+	private String getUserName(final WorkbenchRequest req) {
+		String userName = req.getParameter(SERVER_USER);
+		if (null == userName) {
+			userName = "";
+		}
+		return userName;
+	}
+
 	private void setContentType(final WorkbenchRequest req, final HttpServletResponse resp) {
+		String result = "application/xml";
+		String ext = "xml";
 		if (req.isParameterPresent(ACCEPT)) {
 			final String accept = req.getParameter(ACCEPT);
 			final RDFFormat format = RDFFormat.forMIMEType(accept);
 			if (format != null) {
-				resp.setContentType(accept);
-				final String ext = format.getDefaultFileExtension();
-				final String attachment = "attachment; filename=query." + ext;
-				resp.setHeader("Content-disposition", attachment);
+				result = format.getDefaultMIMEType();
+				ext = format.getDefaultFileExtension();
+			}
+			else {
+				final TupleQueryResultFormat tupleFormat = TupleQueryResultFormat.forMIMEType(accept);
+
+				if (tupleFormat != null) {
+					result = tupleFormat.getDefaultMIMEType();
+					ext = tupleFormat.getDefaultFileExtension();
+				}
+				else {
+					final BooleanQueryResultFormat booleanFormat = BooleanQueryResultFormat.forMIMEType(accept);
+
+					if (booleanFormat != null) {
+						result = booleanFormat.getDefaultMIMEType();
+						ext = booleanFormat.getDefaultFileExtension();
+					}
+				}
 			}
 		}
-		else {
-			resp.setContentType("application/xml");
+
+		resp.setContentType(result);
+		if (!result.equals("application/xml")) {
+			final String attachment = "attachment; filename=query." + ext;
+			resp.setHeader("Content-disposition", attachment);
 		}
 	}
 
-	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final PrintWriter out,
+	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final OutputStream out,
 			final String xslPath)
-		throws BadRequestException, OpenRDFException
+		throws BadRequestException, OpenRDFException, UnsupportedQueryResultFormatException, IOException
 	{
 		final RepositoryConnection con = repository.getConnection();
 		try {
-			final TupleResultBuilder builder = new TupleResultBuilder(out);
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());
 			}
-			if (req.isParameterPresent(QUERY)) {
+			String query = getQueryText(req);
+			if (query.isEmpty()) {
+				builder.transform(xslPath, "query.xsl");
+				builder.start();
+				builder.link(Arrays.asList(INFO, "namespaces"));
+				builder.end();
+			}
+			else {
 				try {
-					EVAL.extractQueryAndEvaluate(builder, resp, out, xslPath, con, req, this.cookies);
+					EVAL.extractQueryAndEvaluate(builder, resp, out, xslPath, con, query, req, this.cookies);
 				}
 				catch (MalformedQueryException exc) {
 					throw new BadRequestException(exc.getMessage(), exc);
@@ -226,16 +361,54 @@ public class QueryServlet extends TransformationServlet {
 					throw exc;
 				}
 			}
-			else {
-				builder.transform(xslPath, "query.xsl");
-				builder.start();
-				builder.link(INFO);
-				builder.link("namespaces");
-				builder.end();
-			}
 		}
 		finally {
 			con.close();
 		}
+	}
+
+	/**
+	 * @param req
+	 *        for looking at the request parameters
+	 * @return the query text, if it can somehow be retrieved from request
+	 *         parameters, otherwise an empty string
+	 * @throws BadRequestException
+	 *         if a problem occurs grabbing the request from storage
+	 * @throws OpenRDFException
+	 *         if a problem occurs grabbing the request from storage
+	 */
+	protected String getQueryText(WorkbenchRequest req)
+		throws BadRequestException, OpenRDFException
+	{
+		String result;
+		if (req.isParameterPresent(QUERY)) {
+			String query = req.getParameter(QUERY);
+			if (req.isParameterPresent(REF)) {
+				String ref = req.getParameter(REF);
+				if ("text".equals(ref)) {
+					result = query;
+				}
+				else if ("hash".equals(ref)) {
+					result = queryCache.get(query);
+					if (null == result) {
+						result = "";
+					}
+				}
+				else if ("id".equals(ref)) {
+					result = storage.getQueryText((HTTPRepository)repository, getUserName(req), query);
+				}
+				else {
+					// if ref not recognized assume request meant "text"
+					result = query;
+				}
+			}
+			else {
+				result = query;
+			}
+		}
+		else {
+			result = "";
+		}
+		return result;
 	}
 }

@@ -26,6 +26,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
@@ -33,7 +34,7 @@ import org.openrdf.rio.RDFWriter;
  * href="http://www.w3.org/TR/rdf-testcases/#ntriples">this section</a> of the
  * RDF Test Cases document.
  */
-public class NTriplesWriter implements RDFWriter {
+public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 
 	/*-----------*
 	 * Variables *
