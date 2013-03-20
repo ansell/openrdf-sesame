@@ -60,7 +60,7 @@ public class QueryStringUtil {
 			String replacement = getReplacement(bindings.getValue(name));
 			if (replacement != null) {
 				String pattern = "[\\?\\$]" + name + "(?=\\W)";
-				select = select.replaceAll(pattern, "");
+				select = select.replaceAll(pattern, "(" + Matcher.quoteReplacement(replacement) + " as ?" + name + ")");
 				
 				// we use Matcher.quoteReplacement to make sure things like newlines in literal values 
 				// are preserved
