@@ -523,6 +523,10 @@ public class LiteralUtil {
 			boolean throwExceptionOnFailure)
 		throws LiteralUtilException
 	{
+		if (object == null) {
+			throw new NullPointerException("Cannot create a literal from a null");
+		}
+
 		if (object instanceof Boolean) {
 			return valueFactory.createLiteral(((Boolean)object).booleanValue());
 		}
@@ -560,4 +564,31 @@ public class LiteralUtil {
 			return valueFactory.createLiteral(object.toString(), XMLSchema.STRING);
 		}
 	}
+
+	/**
+	 * Helper method for determining whether a literal could be created from an
+	 * object using a {@link ValueFactory}.
+	 * 
+	 * @param object
+	 * @return True if a literal could be created from the given object, based
+	 *         solely on its type and the methods available on the
+	 *         {@link ValueFactory} interface.
+	 * @since 2.7.0
+	 */
+	public static boolean canCreateLiteral(Object object) {
+		if (object == null) {
+			throw new NullPointerException("Cannot create a literal from a null");
+		}
+
+		if (object instanceof Boolean || object instanceof Byte || object instanceof Double
+				|| object instanceof Float || object instanceof Integer || object instanceof Long
+				|| object instanceof Short || object instanceof XMLGregorianCalendar || object instanceof Date
+				|| object instanceof String)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 }
