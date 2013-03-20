@@ -16,6 +16,9 @@
  */
 package org.openrdf.repository.sparql.query;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -58,7 +61,10 @@ public class QueryStringUtil {
 			if (replacement != null) {
 				String pattern = "[\\?\\$]" + name + "(?=\\W)";
 				select = select.replaceAll(pattern, "");
-				where = where.replaceAll(pattern, replacement);
+				
+				// we use Matcher.quoteReplacement to make sure things like newlines in literal values 
+				// are preserved
+				where = where.replaceAll(pattern, Matcher.quoteReplacement(replacement));
 			}
 		}
 		return select + where;
