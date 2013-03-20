@@ -7,5 +7,5 @@
    rdfs:label "SPARQL" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SPARQLRepository" ;
-      sparql:endpoint <http://localhost:8080/openrdf-sesame/repositories/sparql>
+      sparql:query-endpoint <http://localhost:8080/openrdf-sesame/repositories/sparql>
    ].
