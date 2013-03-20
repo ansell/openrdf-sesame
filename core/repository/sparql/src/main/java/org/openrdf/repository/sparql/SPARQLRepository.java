@@ -47,18 +47,39 @@ public class SPARQLRepository extends RepositoryBase {
 	 */
 	private final HTTPClient httpClient;
 
-	public SPARQLRepository(String queryEndpointUrl) {
-		this(queryEndpointUrl, null);
+	/**
+	 * Create a new SPARQLRepository using the supplied endpoint URL for queries
+	 * and updates.
+	 * 
+	 * @param endpointUrl
+	 *        a SPARQL endpoint URL. May not be null.
+	 */
+	public SPARQLRepository(String endpointUrl) {
+		this(endpointUrl, endpointUrl);
 	}
 
+	/**
+	 * Create a new SPARQLREpository using the supplied query endpoint URL for
+	 * queries, and the supplied update endpoint URL for updates.
+	 * 
+	 * @param queryEndpointUrl
+	 *        a SPARQL endpoint URL for queries. May not be null.
+	 * @param updateEndpointUrl
+	 *        a SPARQL endpoint URL for updates. May not be null.
+	 * @throws IllegalArgumentException
+	 *         if one of the supplied endpoint URLs is null.
+	 */
 	public SPARQLRepository(String queryEndpointUrl, String updateEndpointUrl) {
+		if (queryEndpointUrl == null || updateEndpointUrl == null) {
+			throw new IllegalArgumentException("endpoint URL may not be null.");
+		}
+
 		// initialize HTTP client
 		httpClient = createHTTPClient();
 		httpClient.setValueFactory(new ValueFactoryImpl());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
 		httpClient.setUpdateURL(updateEndpointUrl);
-
 	}
 
 	/**
@@ -70,7 +91,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected HTTPClient createHTTPClient() {
 		return new HTTPClient();
 	}
-	
+
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
