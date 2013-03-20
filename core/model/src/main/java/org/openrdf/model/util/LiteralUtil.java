@@ -23,7 +23,6 @@ import java.util.Locale;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -490,7 +489,7 @@ public class LiteralUtil {
 	 * @since 2.7.0
 	 */
 	public static Literal createLiteralOrFail(ValueFactory valueFactory, Object object)
-		throws OpenRDFException
+		throws LiteralUtilException
 	{
 		return createLiteral(valueFactory, object, true);
 	}
