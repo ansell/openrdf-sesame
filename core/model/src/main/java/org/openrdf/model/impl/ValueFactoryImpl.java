@@ -45,34 +45,42 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public URI createURI(String uri) {
 		return new URIImpl(uri);
 	}
 
+	@Override
 	public URI createURI(String namespace, String localName) {
 		return createURI(namespace + localName);
 	}
 
+	@Override
 	public BNode createBNode(String nodeID) {
 		return new BNodeImpl(nodeID);
 	}
 
+	@Override
 	public Literal createLiteral(String value) {
 		return new LiteralImpl(value);
 	}
 
+	@Override
 	public Literal createLiteral(String value, String language) {
 		return new LiteralImpl(value, language);
 	}
 
+	@Override
 	public Literal createLiteral(String value, URI datatype) {
 		return new LiteralImpl(value, datatype);
 	}
 
+	@Override
 	public Statement createStatement(Resource subject, URI predicate, Value object) {
 		return new StatementImpl(subject, predicate, object);
 	}
 
+	@Override
 	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
 		return new ContextStatementImpl(subject, predicate, object, context);
 	}

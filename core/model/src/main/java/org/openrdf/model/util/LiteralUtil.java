@@ -18,14 +18,17 @@ package org.openrdf.model.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.language.LanguageTag;
 import org.openrdf.model.util.language.LanguageTagSyntaxException;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * Various utility methods related to {@link Literal}.
@@ -441,5 +444,85 @@ public class LiteralUtil {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Creates a typed {@link Literal} out of the supplied object, mapping the
+	 * runtime type of the object to the appropriate XML Schema type. If no
+	 * mapping is available, the method returns a literal with the string
+	 * representation of the supplied object as the value, and
+	 * {@link XMLSchema#STRING} as the datatype. Recognized types are
+	 * {@link Boolean}, {@link Byte}, {@link Double}, {@link Float},
+	 * {@link Integer}, {@link Long}, {@link Short}, {@link XMLGregorianCalendar }
+	 * , and {@link Date}.
+	 * 
+	 * @param valueFactory
+	 * @param object
+	 *        an object to be converted to a typed literal.
+	 * @return a typed literal representation of the supplied object.
+	 * @since 2.7.0
+	 */
+	public static Literal createLiteral(ValueFactory valueFactory, Object object) {
+		return createLiteral(valueFactory, object, false);
+	}
+
+	/**
+	 * Creates a typed {@link Literal} out of the supplied object, mapping the
+	 * runtime type of the object to the appropriate XML Schema type. If no
+	 * mapping is available, the method throws an exception if the boolean
+	 * parameter is true, or if it is false it returns a literal with the string
+	 * representation of the supplied object as the value, and
+	 * {@link XMLSchema#STRING} as the datatype. Recognized types are
+	 * {@link Boolean}, {@link Byte}, {@link Double}, {@link Float},
+	 * {@link Integer}, {@link Long}, {@link Short}, {@link XMLGregorianCalendar }
+	 * , and {@link Date}.
+	 * 
+	 * @param valueFactory
+	 *        The {@link ValueFactory} to use when creating the result.
+	 * @param object
+	 *        an object to be converted to a typed literal.
+	 * @param throwExceptionOnFailure
+	 *        If true throws a {@link RuntimeException} when the object is not
+	 *        recognised. If false it returns a string typed literal based on the
+	 *        objects toString method.
+	 * @return a typed literal representation of the supplied object.
+	 * @since 2.7.0
+	 */
+	public static Literal createLiteral(ValueFactory valueFactory, Object object,
+			boolean throwExceptionOnFailure)
+	{
+		if (object instanceof Boolean) {
+			return valueFactory.createLiteral(((Boolean)object).booleanValue());
+		}
+		else if (object instanceof Byte) {
+			return valueFactory.createLiteral(((Byte)object).byteValue());
+		}
+		else if (object instanceof Double) {
+			return valueFactory.createLiteral(((Double)object).doubleValue());
+		}
+		else if (object instanceof Float) {
+			return valueFactory.createLiteral(((Float)object).floatValue());
+		}
+		else if (object instanceof Integer) {
+			return valueFactory.createLiteral(((Integer)object).intValue());
+		}
+		else if (object instanceof Long) {
+			return valueFactory.createLiteral(((Long)object).longValue());
+		}
+		else if (object instanceof Short) {
+			return valueFactory.createLiteral(((Short)object).shortValue());
+		}
+		else if (object instanceof XMLGregorianCalendar) {
+			return valueFactory.createLiteral((XMLGregorianCalendar)object);
+		}
+		else if (object instanceof Date) {
+			return valueFactory.createLiteral((Date)object);
+		}
+		else {
+			if (throwExceptionOnFailure) {
+				throw new RuntimeException("Did not recognise object when creating literal");
+			}
+			return valueFactory.createLiteral(object.toString(), XMLSchema.STRING);
+		}
 	}
 }

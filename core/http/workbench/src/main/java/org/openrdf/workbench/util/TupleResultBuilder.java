@@ -25,6 +25,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.util.LiteralUtil;
 import org.openrdf.query.Binding;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -115,17 +116,11 @@ public class TupleResultBuilder {
 		if (result instanceof Boolean) {
 			nextValue = vf.createLiteral(((Boolean)result).booleanValue());
 		}
-		else if (result instanceof URI) {
-			nextValue = (URI)result;
-		}
-		else if (result instanceof BNode) {
-			nextValue = (BNode)result;
-		}
-		else if (result instanceof Literal) {
-			nextValue = (Literal)result;
+		else if (result instanceof Value) {
+			nextValue = (Value)result;
 		}
 		else {
-			nextValue = vf.createLiteral(result);
+			nextValue = LiteralUtil.createLiteral(vf, result);
 		}
 		return new BindingImpl(name, nextValue);
 	}
