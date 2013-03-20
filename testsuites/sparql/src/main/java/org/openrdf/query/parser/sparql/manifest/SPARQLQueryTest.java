@@ -86,7 +86,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 * Constants *
 	 *-----------*/
 
-	static final Logger logger = LoggerFactory.getLogger(SPARQLQueryTest.class);
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	protected final String testURI;
 
