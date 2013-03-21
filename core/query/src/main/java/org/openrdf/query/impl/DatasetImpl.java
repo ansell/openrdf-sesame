@@ -69,7 +69,7 @@ public class DatasetImpl implements Dataset {
 	}
 
 	/**
-	 * @param defaultUpdateGraph
+	 * @param defaultInsertGraph
 	 *        The default insert graph to used.
 	 */
 	public void setDefaultInsertGraph(URI defaultInsertGraph) {
