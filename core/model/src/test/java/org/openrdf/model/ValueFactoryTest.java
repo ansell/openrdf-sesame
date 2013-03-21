@@ -180,23 +180,4 @@ public class ValueFactoryTest {
 		
 	}
 
-	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(java.lang.Object)}.
-	 */
-	@Test
-	public void testCreateLiteralObject() {
-		
-		Object obj = new Integer(4);
-		
-		Literal l = f.createLiteral(obj);
-		assertNotNull(l);
-		assertEquals(l.getDatatype(), XMLSchema.INT);
-		
-		obj = "some string";
-		l = f.createLiteral(obj);
-		assertNotNull(l);
-		assertEquals(l.getDatatype(), XMLSchema.STRING);
-		
-	}
-
 }

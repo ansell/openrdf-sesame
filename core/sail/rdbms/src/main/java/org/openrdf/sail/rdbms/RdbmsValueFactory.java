@@ -115,6 +115,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		}
 	}
 
+	@Override
 	public RdbmsBNode createBNode(String nodeID) {
 		RdbmsBNode resource = bnodes.findInCache(nodeID);
 		if (resource == null) {
@@ -130,26 +131,31 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return resource;
 	}
 
+	@Override
 	public RdbmsLiteral createLiteral(String label) {
 		return asRdbmsLiteral(vf.createLiteral(label));
 	}
 
+	@Override
 	public RdbmsLiteral createLiteral(String label, String language) {
 		if (LiteralTable.ONLY_INSERT_LABEL)
 			return createLiteral(label);
 		return asRdbmsLiteral(vf.createLiteral(label, language));
 	}
 
+	@Override
 	public RdbmsLiteral createLiteral(String label, URI datatype) {
 		if (LiteralTable.ONLY_INSERT_LABEL)
 			return createLiteral(label);
 		return asRdbmsLiteral(vf.createLiteral(label, datatype));
 	}
 
+	@Override
 	public RdbmsStatement createStatement(Resource subject, URI predicate, Value object) {
 		return createStatement(subject, predicate, object, null);
 	}
 
+	@Override
 	public RdbmsStatement createStatement(Resource subject, URI predicate, Value object, Resource context) {
 		RdbmsResource subj = asRdbmsResource(subject);
 		RdbmsURI pred = asRdbmsURI(predicate);
@@ -158,6 +164,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return new RdbmsStatement(subj, pred, obj, ctx);
 	}
 
+	@Override
 	public RdbmsURI createURI(String uri) {
 		RdbmsURI resource = uris.findInCache(uri);
 		if (resource == null) {
@@ -173,6 +180,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return resource;
 	}
 
+	@Override
 	public RdbmsURI createURI(String namespace, String localName) {
 		return createURI(namespace + localName);
 	}

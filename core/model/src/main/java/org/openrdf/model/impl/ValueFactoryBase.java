@@ -87,6 +87,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 		nextBNodeID = 1;
 	}
 
+	@Override
 	public synchronized BNode createBNode() {
 		int id = nextBNodeID++;
 
@@ -105,6 +106,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * String-value of the supplied value and {@link XMLSchema#BOOLEAN} as
 	 * parameters.
 	 */
+	@Override
 	public Literal createLiteral(boolean b) {
 		return createLiteral(Boolean.toString(b), XMLSchema.BOOLEAN);
 	}
@@ -113,6 +115,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
 	 * and {@link XMLSchema#BYTE} as parameters.
 	 */
+	@Override
 	public Literal createLiteral(byte value) {
 		return createIntegerLiteral(value, XMLSchema.BYTE);
 	}
@@ -121,6 +124,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
 	 * and {@link XMLSchema#SHORT} as parameters.
 	 */
+	@Override
 	public Literal createLiteral(short value) {
 		return createIntegerLiteral(value, XMLSchema.SHORT);
 	}
@@ -129,6 +133,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
 	 * and {@link XMLSchema#INT} as parameters.
 	 */
+	@Override
 	public Literal createLiteral(int value) {
 		return createIntegerLiteral(value, XMLSchema.INT);
 	}
@@ -137,6 +142,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
 	 * and {@link XMLSchema#LONG} as parameters.
 	 */
+	@Override
 	public Literal createLiteral(long value) {
 		return createIntegerLiteral(value, XMLSchema.LONG);
 	}
@@ -153,6 +159,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * Calls {@link #createFPLiteral(Number, URI)} with the supplied value and
 	 * {@link XMLSchema#FLOAT} as parameters.
 	 */
+	@Override
 	public Literal createLiteral(float value) {
 		return createFPLiteral(value, XMLSchema.FLOAT);
 	}
@@ -161,6 +168,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * Calls {@link #createFPLiteral(Number, URI)} with the supplied value and
 	 * {@link XMLSchema#DOUBLE} as parameters.
 	 */
+	@Override
 	public Literal createLiteral(double value) {
 		return createFPLiteral(value, XMLSchema.DOUBLE);
 	}
@@ -191,6 +199,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * @see XMLGregorianCalendar#getXMLSchemaType()
 	 * @see XMLDatatypeUtil#qnameToURI(javax.xml.namespace.QName)
 	 */
+	@Override
 	public Literal createLiteral(XMLGregorianCalendar calendar) {
 		return createLiteral(calendar.toXMLFormat(), XMLDatatypeUtil.qnameToURI(calendar.getXMLSchemaType()));
 	}
@@ -201,6 +210,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	 * 
 	 * @since 2.7.0
 	 */
+	@Override
 	public Literal createLiteral(Date date) {
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(date);
@@ -210,53 +220,6 @@ public abstract class ValueFactoryBase implements ValueFactory {
 		}
 		catch (DatatypeConfigurationException e) {
 			throw new RuntimeException("Could not instantiate javax.xml.datatype.DatatypeFactory", e);
-		}
-	}
-
-	/**
-	 * Creates a typed {@link Literal} out of the supplied object, mapping the runtime
-	 * type of the object to the appropriate XML Schema type. If no mapping
-	 * is available, the method returns a literal with the string representation
-	 * of the supplied object as the value, and {@link XMLSchema#STRING} as the
-	 * datatype. Recognized types are {@link Boolean}, {@link Byte},
-	 * {@link Double}, {@link Float}, {@link Integer}, {@link Long},
-	 * {@link Short}, {@link XMLGregorianCalendar }, and {@link Date}.
-	 * 
-	 * @since 2.7.0
-	 * @param object
-	 *        an object to be converted to a typed literal.
-	 * @return a typed literal representation of the supplied object.
-	 */
-	public Literal createLiteral(Object object) {
-		if (object instanceof Boolean) {
-			return createLiteral(((Boolean)object).booleanValue());
-		}
-		else if (object instanceof Byte) {
-			return createLiteral(((Byte)object).byteValue());
-		}
-		else if (object instanceof Double) {
-			return createLiteral(((Double)object).doubleValue());
-		}
-		else if (object instanceof Float) {
-			return createLiteral(((Float)object).floatValue());
-		}
-		else if (object instanceof Integer) {
-			return createLiteral(((Integer)object).intValue());
-		}
-		else if (object instanceof Long) {
-			return createLiteral(((Long)object).longValue());
-		}
-		else if (object instanceof Short) {
-			return createLiteral(((Short)object).shortValue());
-		}
-		else if (object instanceof XMLGregorianCalendar) {
-			return createLiteral((XMLGregorianCalendar)object);
-		}
-		else if (object instanceof Date) {
-			return createLiteral((Date)object);
-		}
-		else {
-			return createLiteral(object.toString(), XMLSchema.STRING);
 		}
 	}
 }
