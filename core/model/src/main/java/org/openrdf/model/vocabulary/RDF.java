@@ -25,7 +25,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 /**
  * Constants for RDF primitives and for the RDF namespace.
  * 
- * @see http://www.w3.org/TR/REC-rdf-syntax/
+ * @see <a href="http://www.w3.org/TR/REC-rdf-syntax/">RDF/XML Syntax
+ *      Specification (Revised)</a>
  */
 public class RDF {
 

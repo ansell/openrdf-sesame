@@ -27,14 +27,16 @@ public enum RDFaVersion {
 	/**
 	 * The initial RDFa 1.0 version (2008)
 	 * 
-	 * @see http://www.w3.org/TR/2008/REC-rdfa-syntax-20081014/
+	 * @see <a href="http://www.w3.org/TR/2008/REC-rdfa-syntax-20081014/">RDFa in
+	 *      XHTML: Syntax and Processing</a>
 	 */
 	RDFA_1_0("RDFa 1.0", "http://www.w3.org/TR/2008/REC-rdfa-syntax-20081014/"),
 
 	/**
 	 * The modified RDFa 1.1 version (2012)
 	 * 
-	 * @see http://www.w3.org/TR/2012/REC-rdfa-core-20120607/
+	 * @see <a href="http://www.w3.org/TR/2012/REC-rdfa-core-20120607/">RDFa Core
+	 *      1.1</a>
 	 */
 	RDFA_1_1("RDFa 1.1", "http://www.w3.org/TR/2012/REC-rdfa-core-20120607/"),
 

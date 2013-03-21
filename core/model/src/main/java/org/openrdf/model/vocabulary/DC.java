@@ -9,7 +9,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 /**
  * Vocabulary constants for the Dublin Core Metadata Element Set, version 1.1
  * 
- * @see http://dublincore.org/documents/dces/
+ * @see <a href="http://dublincore.org/documents/dces/">Dublin Core Metadata
+ *      Element Set, Version 1.1</a>
  * @author Jeen Broekstra
  */
 public class DC {

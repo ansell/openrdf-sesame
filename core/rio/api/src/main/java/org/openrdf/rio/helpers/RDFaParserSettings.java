@@ -44,7 +44,9 @@ public class RDFaParserSettings {
 	 * <p>
 	 * Defaults to false
 	 * 
-	 * @see http://www.w3.org/TR/2012/REC-rdfa-core-20120607/#s_vocab_expansion
+	 * @see <a
+	 *      href="http://www.w3.org/TR/2012/REC-rdfa-core-20120607/#s_vocab_expansion">RDFa
+	 *      Vocabulary Expansion</a>
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> VOCAB_EXPANSION_ENABLED = new RioSettingImpl<Boolean>(

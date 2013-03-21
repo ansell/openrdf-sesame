@@ -33,7 +33,8 @@ import org.openrdf.util.iterators.Iterators;
 /**
  * Utility methods for working with {@link Graph} objects. Note that since
  * release 2.7.0, most of the functionality here is also available (in more
- * convenient form) in the {@link Model} interface, which extends {@link Graph}.
+ * convenient form) in the {@link org.openrdf.model.Model} interface, which
+ * extends {@link Graph}.
  * 
  * @author Arjohn Kampman
  */

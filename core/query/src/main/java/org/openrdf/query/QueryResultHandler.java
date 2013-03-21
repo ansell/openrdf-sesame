@@ -68,7 +68,8 @@ public interface QueryResultHandler {
 	 * <p>
 	 * An accumulating handler should accumulate these links.
 	 * 
-	 * @see http://www.w3.org/TR/sparql11-results-json/#select-link
+	 * @see <a
+	 *      href="http://www.w3.org/TR/sparql11-results-json/#select-link">"link"</a>
 	 * @param linkUrls
 	 *        The URLs of the links to handle.
 	 * @throws QueryResultHandlerException

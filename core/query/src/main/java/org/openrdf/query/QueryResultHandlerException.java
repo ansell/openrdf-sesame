@@ -42,7 +42,7 @@ public class QueryResultHandlerException extends OpenRDFException {
 	/**
 	 * Creates a new QueryResultHandlerException wrapping another exception.
 	 * 
-	 * @param cause
+	 * @param t
 	 *        The cause of the exception.
 	 */
 	public QueryResultHandlerException(Throwable t) {
@@ -54,7 +54,7 @@ public class QueryResultHandlerException extends OpenRDFException {
 	 * 
 	 * @param msg
 	 *        An error message.
-	 * @param cause
+	 * @param t
 	 *        The cause of the exception.
 	 */
 	public QueryResultHandlerException(String msg, Throwable t) {

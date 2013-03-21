@@ -17,8 +17,8 @@
 package org.openrdf.query;
 
 /**
- * An update operation on a {@link org.openrdf.repository.Repository} that can
- * be formulated in one of the supported query languages (for example SPARQL).
+ * An update operation on a repository that can be formulated in one of the
+ * supported query languages (for example SPARQL).
  * 
  * @author Jeen
  */

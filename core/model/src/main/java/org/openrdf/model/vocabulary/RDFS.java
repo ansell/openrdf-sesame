@@ -26,7 +26,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * Constants for the <a href="http://www.w3.org/TR/rdf-schema/">RDF Vocabulary
  * Description Language 1.0: RDF Schema</a> (RDFS)
  * 
- * @see http://www.w3.org/TR/rdf-schema/
+ * @see <a href="http://www.w3.org/TR/rdf-schema/">RDF Vocabulary Description
+ *      Language 1.0: RDF Schema (RDFS)</a>
  */
 public class RDFS {
 

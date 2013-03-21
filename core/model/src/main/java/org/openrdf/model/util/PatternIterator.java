@@ -29,15 +29,20 @@ import org.openrdf.model.Value;
 public class PatternIterator<S extends Statement> implements Iterator<S> {
 
 	private final Iterator<S> filteredIter;
+
 	private final Value subj;
+
 	private final Value pred;
+
 	private final Value obj;
+
 	private final Value[] contexts;
+
 	private S nextElement;
+
 	private boolean nextCalled;
 
-	public PatternIterator(Iterator<S> iter, Value subj, Value pred,
-			Value obj, Value... contexts) {
+	public PatternIterator(Iterator<S> iter, Value subj, Value pred, Value obj, Value... contexts) {
 		this.filteredIter = iter;
 		this.subj = subj;
 		this.pred = pred;
@@ -83,12 +88,12 @@ public class PatternIterator<S extends Statement> implements Iterator<S> {
 	}
 
 	/**
-	 * Tests whether or not the specified object should be returned by this
+	 * Tests whether or not the specified statement should be returned by this
 	 * iterator. All objects from the wrapped iterator pass through this method
 	 * in the same order as they are coming from the wrapped iterator.
 	 * 
-	 * @param object
-	 *        The object to be tested.
+	 * @param st
+	 *        The statement to be tested.
 	 * @return <tt>true</tt> if the object should be returned, <tt>false</tt>
 	 *         otherwise.
 	 * @throws X
@@ -107,7 +112,8 @@ public class PatternIterator<S extends Statement> implements Iterator<S> {
 		if (contexts != null && contexts.length == 0) {
 			// Any context matches
 			return true;
-		} else {
+		}
+		else {
 			// Accept if one of the contexts from the pattern matches
 			for (Value context : notNull(contexts)) {
 				if (context == null && stContext == null) {

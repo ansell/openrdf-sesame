@@ -18,14 +18,12 @@ package org.openrdf.query;
 
 
 /**
- * A query on a {@link org.openrdf.repository.Repository} that can be formulated
- * in one of the supported query languages (for example SeRQL or SPARQL). It
- * allows one to predefine bindings in the query to be able to reuse the same
- * query with different bindings.
+ * A query on a repository that can be formulated in one of the supported query
+ * languages (for example SeRQL or SPARQL). It allows one to predefine bindings
+ * in the query to be able to reuse the same query with different bindings.
  * 
  * @author Arjohn Kampman
  * @author jeen
- * @see org.openrdf.repository.RepositoryConnection
  */
 public interface Query extends Operation {
 

@@ -23,9 +23,10 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Vocabulary constants for the Dublin Core Terms
+ * Vocabulary constants for the Dublin Core Metadata Initiative Metadata Terms.
  * 
- * @see http://dublincore.org/documents/dcmi-terms/
+ * @see <a href="http://dublincore.org/documents/dcmi-terms/">DCMI Metadata
+ *      Terms</a>
  * @author Peter Ansell
  * @since 2.7.0
  */
