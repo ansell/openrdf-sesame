@@ -28,7 +28,8 @@ import org.openrdf.rio.RioSetting;
  * 
  * @author Michael Grove
  * @see XMLConstants
- * @see http://xerces.apache.org/xerces-j/features.html
+ * @see <a href="http://xerces.apache.org/xerces-j/features.html">Apache XML
+ *      Project - Features</a>
  * @since 2.7.0
  */
 public class XMLParserSettings {
@@ -39,9 +40,9 @@ public class XMLParserSettings {
 	 * <p>
 	 * Defaults to true
 	 * 
-	 * @see http 
-	 *      ://docs.oracle.com/javase/1.5.0/docs/api/javax/xml/XMLConstants.html
-	 *      #FEATURE_SECURE_PROCESSING
+	 * @see <a
+	 *      href="http://docs.oracle.com/javase/6/docs/api/javax/xml/XMLConstants.html#FEATURE_SECURE_PROCESSING">
+	 *      XMLConstants.FEATURE_SECURE_PROCESSING</a>
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> SECURE_PROCESSING = new RioSettingImpl<Boolean>(
@@ -51,12 +52,14 @@ public class XMLParserSettings {
 	 * Parser setting specifying whether external DTDs should be loaded.
 	 * <p>
 	 * Defaults to true.
-	 * @see http://xerces.apache.org/xerces-j/features.html
+	 * 
+	 * @see <a href="http://xerces.apache.org/xerces-j/features.html">Apache XML
+	 *      Project - Features</a>
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> LOAD_EXTERNAL_DTD = new RioSettingImpl<Boolean>(
 			"http://apache.org/xml/features/nonvalidating/load-external-dtd", "Load External DTD", true);
-	
+
 	/**
 	 * Parser setting to customise the XMLReader that is used by an XML based Rio
 	 * parser.

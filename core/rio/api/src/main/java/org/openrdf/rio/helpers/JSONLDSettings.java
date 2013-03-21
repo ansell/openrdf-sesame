@@ -22,7 +22,9 @@ import org.openrdf.rio.RioSetting;
  * Settings that can be passed to JSONLD Parsers and Writers.
  * 
  * @author Peter Ansell
- * @see http://json-ld.org/spec/latest/json-ld-api/#data-structures
+ * @see <a
+ *      href="http://json-ld.org/spec/latest/json-ld-api/#data-structures">JSONLD
+ *      Data Structures</a>
  */
 public class JSONLDSettings {
 
@@ -34,7 +36,9 @@ public class JSONLDSettings {
 	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
-	 * @see http://json-ld.org/spec/latest/json-ld-api/#data-structures
+	 * @see <a
+	 *      href="http://json-ld.org/spec/latest/json-ld-api/#data-structures">JSONLD
+	 *      Data Structures</a>
 	 */
 	public static final RioSetting<Boolean> COMPACT_ARRAYS = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.jsonld.compactarrays", "Compact arrays", Boolean.TRUE);
@@ -48,7 +52,9 @@ public class JSONLDSettings {
 	 * Defaults to false.
 	 * 
 	 * @since 2.7.0
-	 * @see http://json-ld.org/spec/latest/json-ld-api/#data-structures
+	 * @see <a
+	 *      href="http://json-ld.org/spec/latest/json-ld-api/#data-structures">JSONLD
+	 *      Data Structures</a>
 	 */
 	public static final RioSetting<Boolean> OPTIMIZE = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.jsonld.optimize", "Optimize output", Boolean.FALSE);
@@ -63,7 +69,9 @@ public class JSONLDSettings {
 	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
-	 * @see http://json-ld.org/spec/latest/json-ld-api/#data-structures
+	 * @see <a
+	 *      href="http://json-ld.org/spec/latest/json-ld-api/#data-structures">JSONLD
+	 *      Data Structures</a>
 	 */
 	public static final RioSetting<Boolean> USE_NATIVE_TYPES = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.jsonld.usenativetypes", "Use Native JSON Types", Boolean.TRUE);
@@ -75,7 +83,9 @@ public class JSONLDSettings {
 	 * Defaults to false.
 	 * 
 	 * @since 2.7.0
-	 * @see http://json-ld.org/spec/latest/json-ld-api/#data-structures
+	 * @see <a
+	 *      href="http://json-ld.org/spec/latest/json-ld-api/#data-structures">JSONLD
+	 *      Data Structures</a>
 	 */
 	public static final RioSetting<Boolean> USE_RDF_TYPE = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.jsonld.userdftype", "Use RDF Type", Boolean.FALSE);
@@ -88,7 +98,8 @@ public class JSONLDSettings {
 	 * compatibility.
 	 * 
 	 * @since 2.7.0
-	 * @see http://json-ld.org/spec/latest/json-ld-api/#features
+	 * @see <a href="http://json-ld.org/spec/latest/json-ld-api/#features">JSONLD
+	 *      Features</a>
 	 */
 	public static final RioSetting<JSONLDMode> JSONLD_MODE = new RioSettingImpl<JSONLDMode>(
 			"org.openrdf.rio.jsonld.mode", "JSONLD Mode", JSONLDMode.EXPAND);

@@ -21,7 +21,8 @@ package org.openrdf.rio.helpers;
  * documents.
  * 
  * @author Peter Ansell
- * @see http://json-ld.org/spec/latest/json-ld-api/#features
+ * @see <a href="http://json-ld.org/spec/latest/json-ld-api/#features">JSONLD
+ *      Features</a>
  */
 public enum JSONLDMode {
 
@@ -34,8 +35,9 @@ public enum JSONLDMode {
 	;
 
 	private final String label;
+
 	private final String reference;
-	
+
 	JSONLDMode(String label, String reference) {
 		this.label = label;
 		this.reference = reference;

@@ -87,7 +87,8 @@ public class RDFFormat extends FileFormat {
 	 * is also accepted. The character encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/TR/rdf-syntax-grammar/
+	 * @see <a href="http://www.w3.org/TR/rdf-syntax-grammar/">RDF/XML Syntax
+	 *      Specification (Revised)</a>
 	 */
 	public static final RDFFormat RDFXML = new RDFFormat("RDF/XML", Arrays.asList("application/rdf+xml",
 			"application/xml"), Charset.forName("UTF-8"), Arrays.asList("rdf", "rdfs", "owl", "xml"),
@@ -102,7 +103,7 @@ public class RDFFormat extends FileFormat {
 	 * US-ASCII.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/TR/rdf-testcases/#ntriples
+	 * @see <a href="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</a>
 	 */
 	public static final RDFFormat NTRIPLES = new RDFFormat("N-Triples", "text/plain",
 			Charset.forName("US-ASCII"), "nt", NO_NAMESPACES, NO_CONTEXTS);
@@ -117,7 +118,8 @@ public class RDFFormat extends FileFormat {
 	 * UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/TeamSubmission/turtle/
+	 * @see <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle - Terse RDF
+	 *      Triple Language</a>
 	 */
 	public static final RDFFormat TURTLE = new RDFFormat("Turtle", Arrays.asList("text/turtle",
 			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"), SUPPORTS_NAMESPACES,
@@ -132,7 +134,8 @@ public class RDFFormat extends FileFormat {
 	 * accepted. Character encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/TeamSubmission/n3/
+	 * @see <a href="http://www.w3.org/TeamSubmission/n3/">Notation3 (N3): A
+	 *      readable RDF syntax</a>
 	 */
 	public static final RDFFormat N3 = new RDFFormat("N3", Arrays.asList("text/n3", "text/rdf+n3"),
 			Charset.forName("UTF-8"), Arrays.asList("n3"), SUPPORTS_NAMESPACES, NO_CONTEXTS);
@@ -147,7 +150,7 @@ public class RDFFormat extends FileFormat {
 	 * <code>application/trix</code> and the encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://swdev.nokia.com/trix/
+	 * @see <a href="http://swdev.nokia.com/trix/">TriX: RDF Triples in XML</a>
 	 */
 	public static final RDFFormat TRIX = new RDFFormat("TriX", "application/trix", Charset.forName("UTF-8"),
 			Arrays.asList("xml", "trix"), SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
@@ -162,7 +165,8 @@ public class RDFFormat extends FileFormat {
 	 * media type is <code>application/x-trig</code> and the encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/
+	 * @see <a href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">The
+	 *      TriG Syntax</a>
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", "application/x-trig", Charset.forName("UTF-8"),
 			"trig", SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
@@ -174,7 +178,9 @@ public class RDFFormat extends FileFormat {
 	 * documents. The media type is <code>application/x-binary-rdf</code>.
 	 * </p>
 	 * 
-	 * @see http://rivuli-development.com/2011/11/binary-rdf-in-sesame/
+	 * @see <a
+	 *      href="http://rivuli-development.com/2011/11/binary-rdf-in-sesame/">Binary
+	 *      RDF in Sesame</a>
 	 */
 	public static final RDFFormat BINARY = new RDFFormat("BinaryRDF", "application/x-binary-rdf", null, "brf",
 			SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
@@ -188,7 +194,8 @@ public class RDFFormat extends FileFormat {
 	 * US-ASCII.
 	 * </p>
 	 * 
-	 * @see http://sw.deri.org/2008/07/n-quads/
+	 * @see <a href="http://sw.deri.org/2008/07/n-quads/">N-Quads: Extending
+	 *      N-Triples with Context</a>
 	 * @since 2.6.6
 	 */
 	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", "text/x-nquads",
@@ -204,7 +211,8 @@ public class RDFFormat extends FileFormat {
 	 * encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://json-ld.org/spec/latest/json-ld-syntax/
+	 * @see <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD
+	 *      1.0</a>
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", "application/ld+json",
@@ -221,7 +229,9 @@ public class RDFFormat extends FileFormat {
 	 * UTF-8.
 	 * </p>
 	 * 
-	 * @see http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html
+	 * @see <a
+	 *      href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html">RDF
+	 *      1.1 JSON Serialisation (RDF/JSON)</a>
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", "application/rdf+json",
@@ -236,7 +246,7 @@ public class RDFFormat extends FileFormat {
 	 * encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see http://www.w3.org/TR/xhtml-rdfa/
+	 * @see <a href="http://www.w3.org/TR/xhtml-rdfa/">XHTML+RDFa 1.1</a>
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat RDFA = new RDFFormat("RDFa", Arrays.asList("application/xhtml+xml",
