@@ -63,7 +63,7 @@ import org.openrdf.rio.RDFParseException;
  */
 public abstract class ComplexSPARQLQueryTest {
 
-	static final Logger logger = LoggerFactory.getLogger(ComplexSPARQLQueryTest.class);
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private Repository rep;
 

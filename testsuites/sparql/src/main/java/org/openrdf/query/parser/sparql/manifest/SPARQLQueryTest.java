@@ -86,8 +86,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 * Constants *
 	 *-----------*/
 
-	static final Logger logger = LoggerFactory.getLogger(SPARQLQueryTest.class);
+	// Logger for non-static tests, so these results can be isolated based on where they are run
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	// Logger for static methods which are not overridden
+	private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLQueryTest.class);
+	
 	protected final String testURI;
 
 	protected final String queryFileURL;
@@ -156,7 +160,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	protected Repository createRepository()
+	protected final Repository createRepository()
 		throws Exception
 	{
 		Repository repo = newRepository();
@@ -236,7 +240,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private void compareTupleQueryResults(TupleQueryResult queryResult, TupleQueryResult expectedResult)
+	protected final void compareTupleQueryResults(TupleQueryResult queryResult, TupleQueryResult expectedResult)
 		throws Exception
 	{
 		// Create MutableTupleQueryResult to be able to re-iterate over the
@@ -392,7 +396,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		*/
 	}
 
-	private void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)
+	protected final void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)
 		throws Exception
 	{
 		if (!ModelUtil.equals(expectedResult, queryResult)) {
@@ -445,7 +449,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private void uploadDataset(Dataset dataset)
+	protected final void uploadDataset(Dataset dataset)
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
@@ -496,13 +500,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 			if (con.isActive()) {
 				con.rollback();
 			}
+			throw e;
 		}
 		finally {
 			con.close();
 		}
 	}
 
-	private String readQueryString()
+	protected final String readQueryString()
 		throws IOException
 	{
 		InputStream stream = new URL(queryFileURL).openStream();
@@ -514,7 +519,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private TupleQueryResult readExpectedTupleQueryResult()
+	protected final TupleQueryResult readExpectedTupleQueryResult()
 		throws Exception
 	{
 		TupleQueryResultFormat tqrFormat = QueryResultIO.getParserFormatForFileName(resultFileURL);
@@ -541,7 +546,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private boolean readExpectedBooleanQueryResult()
+	protected final boolean readExpectedBooleanQueryResult()
 		throws Exception
 	{
 		BooleanQueryResultFormat bqrFormat = BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(
@@ -562,7 +567,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private Set<Statement> readExpectedGraphQueryResult()
+	protected final Set<Statement> readExpectedGraphQueryResult()
 		throws Exception
 	{
 		RDFFormat rdfFormat = Rio.getParserFormatForFileName(resultFileURL);
@@ -609,7 +614,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	public static TestSuite suite(String manifestFileURL, Factory factory, boolean approvedOnly)
 		throws Exception
 	{
-		logger.info("Building test suite for {}", manifestFileURL);
+		LOGGER.info("Building test suite for {}", manifestFileURL);
 
 		TestSuite suite = new TestSuite(factory.getClass().getName());
 
@@ -668,7 +673,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		query.append(" USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>");
 		TupleQuery laxCardinalityQuery = con.prepareTupleQuery(QueryLanguage.SERQL, query.toString());
 
-		logger.debug("evaluating query..");
+		LOGGER.debug("evaluating query..");
 		TupleQueryResult testCases = testCaseQuery.evaluate();
 		while (testCases.hasNext()) {
 			BindingSet bindingSet = testCases.next();
@@ -681,7 +686,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			Value action = bindingSet.getValue("action");
 			Value ordered = bindingSet.getValue("ordered");
 
-			logger.debug("found test case : {}", testName);
+			LOGGER.debug("found test case : {}", testName);
 
 			// Query named graphs
 			namedGraphsQuery.setBinding("action", action);
@@ -699,7 +704,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 				while (namedGraphs.hasNext()) {
 					BindingSet graphBindings = namedGraphs.next();
 					URI namedGraphURI = (URI)graphBindings.getValue("graph");
-					logger.debug(" adding named graph : {}", namedGraphURI);
+					LOGGER.debug(" adding named graph : {}", namedGraphURI);
 					dataset.addNamedGraph(namedGraphURI);
 				}
 			}
@@ -744,7 +749,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		con.close();
 
 		manifestRep.shutDown();
-		logger.info("Created test suite with " + suite.countTestCases() + " test cases.");
+		LOGGER.info("Created test suite with " + suite.countTestCases() + " test cases.");
 		return suite;
 	}
 
