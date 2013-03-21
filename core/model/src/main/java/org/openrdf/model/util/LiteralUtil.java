@@ -524,7 +524,7 @@ public class LiteralUtil {
 	 *         If the object was null.
 	 * @since 2.7.0
 	 */
-	public static Literal createLiteral(ValueFactory valueFactory, Object object,
+	private static Literal createLiteral(ValueFactory valueFactory, Object object,
 			boolean throwExceptionOnFailure)
 		throws LiteralUtilException
 	{
