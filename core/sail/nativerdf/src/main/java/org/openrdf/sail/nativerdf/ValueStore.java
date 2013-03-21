@@ -627,34 +627,42 @@ public class ValueStore extends ValueFactoryBase {
 	 * Methods from interface ValueFactory *
 	 *-------------------------------------*/
 
+	@Override
 	public NativeURI createURI(String uri) {
 		return new NativeURI(revision, uri);
 	}
 
+	@Override
 	public NativeURI createURI(String namespace, String localName) {
 		return new NativeURI(revision, namespace, localName);
 	}
 
+	@Override
 	public NativeBNode createBNode(String nodeID) {
 		return new NativeBNode(revision, nodeID);
 	}
 
+	@Override
 	public NativeLiteral createLiteral(String value) {
 		return new NativeLiteral(revision, value);
 	}
 
+	@Override
 	public NativeLiteral createLiteral(String value, String language) {
 		return new NativeLiteral(revision, value, language);
 	}
 
+	@Override
 	public NativeLiteral createLiteral(String value, URI datatype) {
 		return new NativeLiteral(revision, value, datatype);
 	}
 
+	@Override
 	public Statement createStatement(Resource subject, URI predicate, Value object) {
 		return new StatementImpl(subject, predicate, object);
 	}
 
+	@Override
 	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
 		return new ContextStatementImpl(subject, predicate, object, context);
 	}

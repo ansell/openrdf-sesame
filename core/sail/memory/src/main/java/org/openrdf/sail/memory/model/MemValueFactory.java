@@ -352,11 +352,13 @@ public class MemValueFactory extends ValueFactoryBase {
 		return memLiteral;
 	}
 
+	@Override
 	public synchronized URI createURI(String uri) {
 		URI tempURI = new URIImpl(uri);
 		return getOrCreateMemURI(tempURI);
 	}
 
+	@Override
 	public synchronized URI createURI(String namespace, String localName) {
 		URI tempURI = null;
 
@@ -375,21 +377,25 @@ public class MemValueFactory extends ValueFactoryBase {
 		return getOrCreateMemURI(tempURI);
 	}
 
+	@Override
 	public synchronized BNode createBNode(String nodeID) {
 		BNode tempBNode = new BNodeImpl(nodeID);
 		return getOrCreateMemBNode(tempBNode);
 	}
 
+	@Override
 	public synchronized Literal createLiteral(String value) {
 		Literal tempLiteral = new LiteralImpl(value);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
+	@Override
 	public synchronized Literal createLiteral(String value, String language) {
 		Literal tempLiteral = new LiteralImpl(value, language);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
+	@Override
 	public synchronized Literal createLiteral(String value, URI datatype) {
 		Literal tempLiteral = new LiteralImpl(value, datatype);
 		return getOrCreateMemLiteral(tempLiteral);
@@ -431,10 +437,12 @@ public class MemValueFactory extends ValueFactoryBase {
 		return sharedLiteral;
 	}
 
+	@Override
 	public Statement createStatement(Resource subject, URI predicate, Value object) {
 		return new StatementImpl(subject, predicate, object);
 	}
 
+	@Override
 	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
 		if (context == null) {
 			return new StatementImpl(subject, predicate, object);
