@@ -300,7 +300,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectNull() {
 
 		Object obj = null;
-
 		try {
 			LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 			fail("Did not find expected exception");
@@ -319,7 +318,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectBoolean() {
 
 		Object obj = Boolean.TRUE;
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BOOLEAN);
@@ -336,7 +334,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectByte() {
 
 		Object obj = new Integer(42).byteValue();
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BYTE);
@@ -353,7 +350,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectDouble() {
 
 		Object obj = new Double(42);
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DOUBLE);
@@ -370,7 +366,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectFloat() {
 
 		Object obj = new Float(42);
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.FLOAT);
@@ -387,7 +382,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectInteger() {
 
 		Object obj = new Integer(4);
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.INT);
@@ -404,7 +398,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectLong() {
 
 		Object obj = new Long(42);
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.LONG);
@@ -421,7 +414,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectShort() {
 
 		Object obj = Short.parseShort("42");
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.SHORT);
@@ -462,7 +454,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectDate() {
 
 		Object obj = new Date();
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DATETIME);
@@ -478,7 +469,6 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectString() {
 
 		Object obj = "random unique string";
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
@@ -495,10 +485,157 @@ public class LiteralUtilTest {
 	public void testCreateLiteralObjectObject() {
 
 		Object obj = new Object();
-
 		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectNull() {
+
+		Object obj = null;
+		assertFalse(LiteralUtil.canCreateLiteral(obj));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectBoolean() {
+
+		Object obj = Boolean.TRUE;
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectByte() {
+
+		Object obj = new Integer(42).byteValue();
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectDouble() {
+
+		Object obj = new Double(42);
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectFloat() {
+
+		Object obj = new Float(42);
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectInteger() {
+
+		Object obj = new Integer(4);
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectLong() {
+
+		Object obj = new Long(42);
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectShort() {
+
+		Object obj = Short.parseShort("42");
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectXMLGregorianCalendar()
+		throws Exception
+	{
+
+		GregorianCalendar c = new GregorianCalendar();
+		c.setTime(new Date());
+		Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectDate() {
+
+		Object obj = new Date();
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectString() {
+
+		Object obj = "random unique string";
+		assertTrue(LiteralUtil.canCreateLiteral(obj));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 */
+	@Test
+	public void testCanCreateLiteralObjectObject() {
+
+		Object obj = new Object();
+		assertFalse(LiteralUtil.canCreateLiteral(obj));
 
 	}
 
