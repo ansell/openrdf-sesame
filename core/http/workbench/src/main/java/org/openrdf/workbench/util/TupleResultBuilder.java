@@ -26,6 +26,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtil;
+import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.query.Binding;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -113,14 +114,16 @@ public class TupleResultBuilder {
 		throws QueryResultHandlerException
 	{
 		final Value nextValue;
-		if (result instanceof Boolean) {
-			nextValue = vf.createLiteral(((Boolean)result).booleanValue());
-		}
-		else if (result instanceof Value) {
+		if (result instanceof Value) {
 			nextValue = (Value)result;
 		}
 		else {
-			nextValue = LiteralUtil.createLiteral(vf, result);
+			try {
+				nextValue = LiteralUtil.createLiteralOrFail(vf, result);
+			}
+			catch (LiteralUtilException e) {
+				throw new QueryResultHandlerException("Could not convert an object to a Value", e);
+			}
 		}
 		return new BindingImpl(name, nextValue);
 	}
