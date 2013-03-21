@@ -29,7 +29,7 @@ import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.util.LiteralUtil;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
@@ -209,16 +209,16 @@ public class RemoteRepositoryManager extends RepositoryManager {
 					BindingSet bindingSet = responseFromServer.next();
 					RepositoryInfo repInfo = new RepositoryInfo();
 
-					String id = LiteralUtil.getLabel(bindingSet.getValue("id"), null);
+					String id = Literals.getLabel(bindingSet.getValue("id"), null);
 
 					if (skipSystemRepo && id.equals(SystemRepository.ID)) {
 						continue;
 					}
 
 					Value uri = bindingSet.getValue("uri");
-					String description = LiteralUtil.getLabel(bindingSet.getValue("title"), null);
-					boolean readable = LiteralUtil.getBooleanValue(bindingSet.getValue("readable"), false);
-					boolean writable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+					String description = Literals.getLabel(bindingSet.getValue("title"), null);
+					boolean readable = Literals.getBooleanValue(bindingSet.getValue("readable"), false);
+					boolean writable = Literals.getBooleanValue(bindingSet.getValue("writable"), false);
 
 					if (uri instanceof URI) {
 						try {

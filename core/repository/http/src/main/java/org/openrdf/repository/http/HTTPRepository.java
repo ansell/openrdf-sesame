@@ -23,7 +23,7 @@ import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.LiteralUtil;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
@@ -118,7 +118,7 @@ public class HTTPRepository extends RepositoryBase {
 					final Value uri = bindingSet.getValue("uri");
 
 					if (uri != null && uri.stringValue().equals(repositoryURL)) {
-						isWritable = LiteralUtil.getBooleanValue(bindingSet.getValue("writable"), false);
+						isWritable = Literals.getBooleanValue(bindingSet.getValue("writable"), false);
 						break;
 					}
 				}

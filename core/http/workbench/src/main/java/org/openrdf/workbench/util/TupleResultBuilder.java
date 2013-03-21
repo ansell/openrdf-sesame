@@ -25,7 +25,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.LiteralUtil;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.query.Binding;
 import org.openrdf.query.QueryResultHandlerException;
@@ -119,7 +119,7 @@ public class TupleResultBuilder {
 		}
 		else {
 			try {
-				nextValue = LiteralUtil.createLiteralOrFail(vf, result);
+				nextValue = Literals.createLiteralOrFail(vf, result);
 			}
 			catch (LiteralUtilException e) {
 				throw new QueryResultHandlerException("Could not convert an object to a Value", e);

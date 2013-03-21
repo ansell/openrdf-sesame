@@ -19,7 +19,7 @@ package org.openrdf.model.util;
 import org.openrdf.OpenRDFException;
 
 /**
- * An exception thrown by {@link LiteralUtil} when specific conditions are not
+ * An exception thrown by {@link Literals} when specific conditions are not
  * met.
  * 
  * @author Peter Ansell

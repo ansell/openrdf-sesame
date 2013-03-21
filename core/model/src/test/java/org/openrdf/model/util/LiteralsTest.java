@@ -32,15 +32,15 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * Tests for {@link LiteralUtil}.
+ * Tests for {@link Literals}.
  * 
  * @author Peter Ansell
  */
-public class LiteralUtilTest {
+public class LiteralsTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getLabel(org.openrdf.model.Literal, java.lang.String)}
+	 * {@link org.openrdf.model.util.Literals#getLabel(org.openrdf.model.Literal, java.lang.String)}
 	 * .
 	 */
 	@Ignore
@@ -53,7 +53,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getLabel(org.openrdf.model.Value, java.lang.String)}
+	 * {@link org.openrdf.model.util.Literals#getLabel(org.openrdf.model.Value, java.lang.String)}
 	 * .
 	 */
 	@Ignore
@@ -66,7 +66,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getByteValue(org.openrdf.model.Literal, byte)}
+	 * {@link org.openrdf.model.util.Literals#getByteValue(org.openrdf.model.Literal, byte)}
 	 * .
 	 */
 	@Ignore
@@ -79,7 +79,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getByteValue(org.openrdf.model.Value, byte)}
+	 * {@link org.openrdf.model.util.Literals#getByteValue(org.openrdf.model.Value, byte)}
 	 * .
 	 */
 	@Ignore
@@ -92,7 +92,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getShortValue(org.openrdf.model.Literal, short)}
+	 * {@link org.openrdf.model.util.Literals#getShortValue(org.openrdf.model.Literal, short)}
 	 * .
 	 */
 	@Ignore
@@ -105,7 +105,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getShortValue(org.openrdf.model.Value, short)}
+	 * {@link org.openrdf.model.util.Literals#getShortValue(org.openrdf.model.Value, short)}
 	 * .
 	 */
 	@Ignore
@@ -118,7 +118,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getIntValue(org.openrdf.model.Literal, int)}
+	 * {@link org.openrdf.model.util.Literals#getIntValue(org.openrdf.model.Literal, int)}
 	 * .
 	 */
 	@Ignore
@@ -131,7 +131,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getIntValue(org.openrdf.model.Value, int)}
+	 * {@link org.openrdf.model.util.Literals#getIntValue(org.openrdf.model.Value, int)}
 	 * .
 	 */
 	@Ignore
@@ -144,7 +144,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getLongValue(org.openrdf.model.Literal, long)}
+	 * {@link org.openrdf.model.util.Literals#getLongValue(org.openrdf.model.Literal, long)}
 	 * .
 	 */
 	@Ignore
@@ -157,7 +157,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getLongValue(org.openrdf.model.Value, long)}
+	 * {@link org.openrdf.model.util.Literals#getLongValue(org.openrdf.model.Value, long)}
 	 * .
 	 */
 	@Ignore
@@ -170,7 +170,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getIntegerValue(org.openrdf.model.Literal, java.math.BigInteger)}
+	 * {@link org.openrdf.model.util.Literals#getIntegerValue(org.openrdf.model.Literal, java.math.BigInteger)}
 	 * .
 	 */
 	@Ignore
@@ -183,7 +183,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getIntegerValue(org.openrdf.model.Value, java.math.BigInteger)}
+	 * {@link org.openrdf.model.util.Literals#getIntegerValue(org.openrdf.model.Value, java.math.BigInteger)}
 	 * .
 	 */
 	@Ignore
@@ -196,7 +196,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getDecimalValue(org.openrdf.model.Literal, java.math.BigDecimal)}
+	 * {@link org.openrdf.model.util.Literals#getDecimalValue(org.openrdf.model.Literal, java.math.BigDecimal)}
 	 * .
 	 */
 	@Ignore
@@ -209,7 +209,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getDecimalValue(org.openrdf.model.Value, java.math.BigDecimal)}
+	 * {@link org.openrdf.model.util.Literals#getDecimalValue(org.openrdf.model.Value, java.math.BigDecimal)}
 	 * .
 	 */
 	@Ignore
@@ -222,7 +222,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getFloatValue(org.openrdf.model.Literal, float)}
+	 * {@link org.openrdf.model.util.Literals#getFloatValue(org.openrdf.model.Literal, float)}
 	 * .
 	 */
 	@Ignore
@@ -235,7 +235,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getFloatValue(org.openrdf.model.Value, float)}
+	 * {@link org.openrdf.model.util.Literals#getFloatValue(org.openrdf.model.Value, float)}
 	 * .
 	 */
 	@Ignore
@@ -248,7 +248,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getDoubleValue(org.openrdf.model.Literal, double)}
+	 * {@link org.openrdf.model.util.Literals#getDoubleValue(org.openrdf.model.Literal, double)}
 	 * .
 	 */
 	@Ignore
@@ -261,7 +261,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getDoubleValue(org.openrdf.model.Value, double)}
+	 * {@link org.openrdf.model.util.Literals#getDoubleValue(org.openrdf.model.Value, double)}
 	 * .
 	 */
 	@Ignore
@@ -274,7 +274,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getBooleanValue(org.openrdf.model.Literal, boolean)}
+	 * {@link org.openrdf.model.util.Literals#getBooleanValue(org.openrdf.model.Literal, boolean)}
 	 * .
 	 */
 	@Ignore
@@ -287,7 +287,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getBooleanValue(org.openrdf.model.Value, boolean)}
+	 * {@link org.openrdf.model.util.Literals#getBooleanValue(org.openrdf.model.Value, boolean)}
 	 * .
 	 */
 	@Ignore
@@ -300,7 +300,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getCalendarValue(org.openrdf.model.Literal, javax.xml.datatype.XMLGregorianCalendar)}
+	 * {@link org.openrdf.model.util.Literals#getCalendarValue(org.openrdf.model.Literal, javax.xml.datatype.XMLGregorianCalendar)}
 	 * .
 	 */
 	@Ignore
@@ -313,7 +313,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getCalendarValue(org.openrdf.model.Value, javax.xml.datatype.XMLGregorianCalendar)}
+	 * {@link org.openrdf.model.util.Literals#getCalendarValue(org.openrdf.model.Value, javax.xml.datatype.XMLGregorianCalendar)}
 	 * .
 	 */
 	@Ignore
@@ -326,7 +326,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#getLocale(org.openrdf.model.Literal, java.util.Locale)}
+	 * {@link org.openrdf.model.util.Literals#getLocale(org.openrdf.model.Literal, java.util.Locale)}
 	 * .
 	 */
 	@Ignore
@@ -339,7 +339,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -349,7 +349,7 @@ public class LiteralUtilTest {
 
 		Object obj = null;
 		try {
-			LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+			Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 			fail("Did not find expected exception");
 		}
 		catch (NullPointerException npe) {
@@ -359,7 +359,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -368,7 +368,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = Boolean.TRUE;
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BOOLEAN);
 		assertTrue(l.booleanValue());
@@ -377,7 +377,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -386,7 +386,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Integer(42).byteValue();
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BYTE);
 		assertEquals(l.getLabel(), "42");
@@ -395,7 +395,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -404,7 +404,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Double(42);
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DOUBLE);
 		assertEquals(l.getLabel(), "42.0");
@@ -413,7 +413,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -422,7 +422,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Float(42);
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.FLOAT);
 		assertEquals(l.getLabel(), "42.0");
@@ -431,7 +431,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -440,7 +440,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Integer(4);
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.INT);
 		assertEquals(l.getLabel(), "4");
@@ -449,7 +449,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -458,7 +458,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Long(42);
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.LONG);
 		assertEquals(l.getLabel(), "42");
@@ -467,7 +467,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -476,7 +476,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = Short.parseShort("42");
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.SHORT);
 		assertEquals("42", l.getLabel());
@@ -485,7 +485,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -497,7 +497,7 @@ public class LiteralUtilTest {
 		c.setTime(new Date());
 		try {
 			Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+			Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 			assertNotNull(l);
 			assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 			// TODO check lexical value?
@@ -511,7 +511,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -520,7 +520,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Date();
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 
@@ -528,7 +528,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -537,7 +537,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = "random unique string";
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 		assertEquals(l.getLabel(), "random unique string");
@@ -546,7 +546,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -555,7 +555,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Object();
-		Literal l = LiteralUtil.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 
@@ -563,7 +563,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -573,7 +573,7 @@ public class LiteralUtilTest {
 
 		Object obj = null;
 		try {
-			LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+			Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 			fail("Did not find expected exception");
 		}
 		catch (NullPointerException npe) {
@@ -583,7 +583,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -592,7 +592,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = Boolean.TRUE;
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BOOLEAN);
 		assertTrue(l.booleanValue());
@@ -601,7 +601,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -610,7 +610,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Integer(42).byteValue();
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BYTE);
 		assertEquals(l.getLabel(), "42");
@@ -619,7 +619,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -628,7 +628,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Double(42);
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DOUBLE);
 		assertEquals(l.getLabel(), "42.0");
@@ -637,7 +637,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -646,7 +646,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Float(42);
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.FLOAT);
 		assertEquals(l.getLabel(), "42.0");
@@ -655,7 +655,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -664,7 +664,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Integer(4);
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.INT);
 		assertEquals(l.getLabel(), "4");
@@ -673,7 +673,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -682,7 +682,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Long(42);
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.LONG);
 		assertEquals(l.getLabel(), "42");
@@ -691,7 +691,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -700,7 +700,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = Short.parseShort("42");
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.SHORT);
 		assertEquals("42", l.getLabel());
@@ -709,7 +709,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -721,7 +721,7 @@ public class LiteralUtilTest {
 		c.setTime(new Date());
 		try {
 			Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+			Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 			assertNotNull(l);
 			assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 			// TODO check lexical value?
@@ -735,7 +735,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -744,7 +744,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Date();
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 
@@ -752,7 +752,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -761,7 +761,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = "random unique string";
-		Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 		assertEquals(l.getLabel(), "random unique string");
@@ -770,7 +770,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteralOrFail(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -780,7 +780,7 @@ public class LiteralUtilTest {
 
 		Object obj = new Object();
 		try {
-			Literal l = LiteralUtil.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+			Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
 			fail("Did not receive expected exception");
 		}
 		catch (LiteralUtilException e) {
@@ -790,7 +790,7 @@ public class LiteralUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
+	 * {@link org.openrdf.model.util.Literals#createLiteral(org.openrdf.model.ValueFactory, java.lang.Object)}
 	 * .
 	 */
 	@Test
@@ -799,12 +799,12 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = null;
-		assertFalse(LiteralUtil.canCreateLiteral(obj));
+		assertFalse(Literals.canCreateLiteral(obj));
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectBoolean()
@@ -812,13 +812,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = Boolean.TRUE;
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectByte()
@@ -826,13 +826,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Integer(42).byteValue();
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectDouble()
@@ -840,13 +840,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Double(42);
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectFloat()
@@ -854,13 +854,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Float(42);
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectInteger()
@@ -868,13 +868,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Integer(4);
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectLong()
@@ -882,13 +882,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Long(42);
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectShort()
@@ -896,13 +896,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = Short.parseShort("42");
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectXMLGregorianCalendar()
@@ -912,13 +912,13 @@ public class LiteralUtilTest {
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(new Date());
 		Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectDate()
@@ -926,13 +926,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Date();
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectString()
@@ -940,13 +940,13 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = "random unique string";
-		assertTrue(LiteralUtil.canCreateLiteral(obj));
+		assertTrue(Literals.canCreateLiteral(obj));
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.util.LiteralUtil#canCreateLiteral(Object)} .
+	 * {@link org.openrdf.model.util.Literals#canCreateLiteral(Object)} .
 	 */
 	@Test
 	public void testCanCreateLiteralObjectObject()
@@ -954,7 +954,7 @@ public class LiteralUtilTest {
 	{
 
 		Object obj = new Object();
-		assertFalse(LiteralUtil.canCreateLiteral(obj));
+		assertFalse(Literals.canCreateLiteral(obj));
 
 	}
 
