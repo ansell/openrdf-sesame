@@ -25,7 +25,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 /**
  * Constants for OWL primitives and for the OWL namespace.
  * 
- * @see http://www.w3.org/TR/owl-ref/
+ * @see <a href="http://www.w3.org/TR/owl-ref/">OWL Web Ontology Language
+ *      Reference</a>
  */
 public class OWL {
 

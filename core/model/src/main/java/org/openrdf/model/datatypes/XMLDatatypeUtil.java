@@ -454,7 +454,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:date string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidDate(String value) {
 
@@ -472,7 +472,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:time string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidTime(String value) {
 
@@ -490,7 +490,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:gDay string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidGDay(String value) {
 
@@ -508,7 +508,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:gMonth string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidGMonth(String value) {
 
@@ -526,7 +526,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:gMonthDay string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidGMonthDay(String value) {
 
@@ -544,7 +544,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:gYear string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidGYear(String value) {
 
@@ -562,7 +562,7 @@ public class XMLDatatypeUtil {
 	 * Determines if the supplied value is a valid xsd:gYearMonth string.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidGYearMonth(String value) {
 
@@ -583,7 +583,7 @@ public class XMLDatatypeUtil {
 	 * prefix.
 	 * 
 	 * @param value
-	 * @return
+	 * @return <tt>true</tt> if valid, <tt>false</tt> otherwise
 	 */
 	public static boolean isValidQName(String value) {
 

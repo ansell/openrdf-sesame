@@ -37,16 +37,14 @@ import org.openrdf.model.ValueFactory;
 /**
  * Basic implementation of Graph.
  * 
- * @deprecated since release 2.7.0. Use a {@link Model} implementation (e.g.
- *             {@link TreeModel} or {@link LinkedHashModel} instead.
+ * @deprecated since release 2.7.0. Use a {@link org.openrdf.model.Model}
+ *             implementation (e.g. {@link TreeModel} or {@link LinkedHashModel}
+ *             instead.
  * @author Arjohn Kampman
  */
 @Deprecated
 public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5307095904382050478L;
 
 	protected LinkedList<Statement> statements;

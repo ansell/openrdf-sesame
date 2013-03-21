@@ -26,7 +26,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * Constants for the standard <a href="http://www.w3.org/TR/xmlschema-2/">XML
  * Schema datatypes</a>.
  * 
- * @see http://www.w3.org/TR/xmlschema-2/
+ * @see <a href="http://www.w3.org/TR/xmlschema-2/">XML Schema Part 2: Datatypes
+ *      Second Edition</a>
  */
 public class XMLSchema {
 

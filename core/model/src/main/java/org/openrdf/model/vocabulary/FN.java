@@ -26,7 +26,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  * Defines constants for the standard <a
  * href="http://www.w3.org/TR/xpath-functions/">XPath functions</a>.
  * 
- * @see http://www.w3.org/TR/xpath-functions/
+ * @see <a href="http://www.w3.org/TR/xpath-functions/">XPath functions</a>
  * @author Jeen Broekstra
  */
 public class FN {
