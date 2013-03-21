@@ -460,6 +460,8 @@ public class LiteralUtil {
 	 * @param object
 	 *        an object to be converted to a typed literal.
 	 * @return a typed literal representation of the supplied object.
+	 * @throws NullPointerException
+	 *         If the object was null.
 	 * @since 2.7.0
 	 */
 	public static Literal createLiteral(ValueFactory valueFactory, Object object) {
@@ -486,6 +488,8 @@ public class LiteralUtil {
 	 * @return a typed literal representation of the supplied object.
 	 * @throws LiteralUtilException
 	 *         If the literal could not be created.
+	 * @throws NullPointerException
+	 *         If the object was null.
 	 * @since 2.7.0
 	 */
 	public static Literal createLiteralOrFail(ValueFactory valueFactory, Object object)
@@ -516,6 +520,8 @@ public class LiteralUtil {
 	 * @return a typed literal representation of the supplied object.
 	 * @throws LiteralUtilException
 	 *         If the literal could not be created.
+	 * @throws NullPointerException
+	 *         If the object was null.
 	 * @since 2.7.0
 	 */
 	public static Literal createLiteral(ValueFactory valueFactory, Object object,
