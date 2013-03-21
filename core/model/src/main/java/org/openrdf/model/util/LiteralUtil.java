@@ -575,9 +575,12 @@ public class LiteralUtil {
 	 * object using a {@link ValueFactory}.
 	 * 
 	 * @param object
+	 *        an object to check for the possibility of being converted to a
+	 *        typed literal.
 	 * @return True if a literal could be created from the given object, based
 	 *         solely on its type and the methods available on the
-	 *         {@link ValueFactory} interface.
+	 *         {@link ValueFactory} interface and false otherwise. Returns false
+	 *         if the object is null.
 	 * @since 2.7.0
 	 */
 	public static boolean canCreateLiteral(Object object) {
