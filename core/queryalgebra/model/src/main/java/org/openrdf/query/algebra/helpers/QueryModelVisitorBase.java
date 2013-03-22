@@ -635,8 +635,8 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 
 	/**
 	 * Method called by all <tt>meet</tt> methods with a
-	 * {@link NaryValueOperator} node as argument. Forwards the call to
-	 * {@link #meetNode} by default.
+	 * {@link org.openrdf.query.algebra.NAryValueOperator} node as argument.
+	 * Forwards the call to {@link #meetNode} by default.
 	 * 
 	 * @param node
 	 *        The node that is being visited.
