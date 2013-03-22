@@ -21,9 +21,8 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Defines constants for the SailRepository schema which is used by
- * {@link org.openrdf.repository.sail.config.SailRepositoryFactory}s to
- * initialize {@link org.openrdf.repository.sail.SailRepository}s.
+ * Defines constants for the Sail repository schema which are used to initialize
+ * repositories.
  * 
  * @author Arjohn Kampman
  */
