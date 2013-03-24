@@ -24,7 +24,8 @@ import info.aduna.text.StringUtil;
 /**
  * Utility methods for Turtle encoding/decoding.
  * 
- * @see http://www.w3.org/TR/turtle/
+ * @see <a href="http://www.w3.org/TR/turtle/">Turtle: Terse RDF Triple
+ *      Language</a>
  */
 public class TurtleUtil {
 
@@ -49,7 +50,7 @@ public class TurtleUtil {
 			'#',
 			'@',
 			'%' };
-	
+
 	static {
 		// sorting array to allow simple binary search for char lookup.
 		Arrays.sort(LOCAL_ESCAPED_CHARS);

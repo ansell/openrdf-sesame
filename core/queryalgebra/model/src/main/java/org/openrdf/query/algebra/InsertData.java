@@ -64,8 +64,8 @@ public class InsertData extends QueryModelNodeBase implements UpdateExpr {
 	 * @param insertExpr
 	 *        The insertExpr to set.
 	 */
-	public void setInsertExpr(TupleExpr deleteExpr) {
-		this.insertExpr = deleteExpr;
+	public void setInsertExpr(TupleExpr insertExpr) {
+		this.insertExpr = insertExpr;
 	}
 
 	/**
@@ -76,7 +76,6 @@ public class InsertData extends QueryModelNodeBase implements UpdateExpr {
 	}
 
 	public boolean isSilent() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

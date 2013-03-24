@@ -26,7 +26,8 @@ import java.io.Writer;
 import java.io.IOException;
 
 /**
- * RDFWriter implementation for the {@link RDFFormat#NQUADS N-Quads} RDF format.
+ * RDFWriter implementation for the {@link org.openrdf.rio.RDFFormat#NQUADS
+ * N-Quads} RDF format.
  * 
  * @since 2.7.0
  * @author Joshua Shinavier

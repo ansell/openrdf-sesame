@@ -20,10 +20,9 @@ import org.openrdf.sail.Sail;
 
 /**
  * A SailFactory takes care of creating and initializing a specific type of
- * {@link Sail}s based on RDF configuration data. SailFactory's are used by the
- * {@link org.openrdf.repository.sail.config.SailRepositoryFactory} to create
- * specific Sails and to initialize them based on the configuration data that
- * iis supplied to it, for example in a server environment.
+ * {@link Sail} based on RDF configuration data. SailFactory's are used to
+ * create specific Sails and to initialize them based on the configuration data
+ * that is supplied to it, for example in a server environment.
  * 
  * @author Arjohn Kampman
  */

@@ -139,7 +139,7 @@ public class Service extends UnaryTupleOperator {
 	 * projectionVars empty => ASK query return preparedAskQueryString
 	 * 
 	 * @param projectionVars
-	 * @return
+	 * @return the query string, utilizing the given projection variables
 	 */
 	public String getQueryString(Set<String> projectionVars) {
 		if (projectionVars.size() == 0)
@@ -206,7 +206,7 @@ public class Service extends UnaryTupleOperator {
 	 * Compute the variable names occurring in the service expression using tree
 	 * traversal, since these are necessary for building the SPARQL query.
 	 * 
-	 * @return
+	 * @return the set of variable names in the given service expression
 	 */
 	private Set<String> computeServiceVars(TupleExpr serviceExpression) {
 		final Set<String> res = new HashSet<String>();
@@ -226,11 +226,12 @@ public class Service extends UnaryTupleOperator {
 		return res;
 	}
 
-	private static Pattern subselectPattern = Pattern.compile("SELECT.*", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-	
+	private static Pattern subselectPattern = Pattern.compile("SELECT.*", Pattern.CASE_INSENSITIVE
+			| Pattern.DOTALL);
+
 	private void initPreparedQueryString() {
-		
-		serviceExpressionString = serviceExpressionString.trim();		
+
+		serviceExpressionString = serviceExpressionString.trim();
 		String prefixString = computePrefixString(prefixDeclarations);
 
 		// build the raw SELECT query string
@@ -238,7 +239,8 @@ public class Service extends UnaryTupleOperator {
 		sb.append(prefixString);
 		if (subselectPattern.matcher(serviceExpressionString).matches()) {
 			sb.append(serviceExpressionString);
-		} else {
+		}
+		else {
 			sb.append("SELECT %PROJECTION_VARS% WHERE { ");
 			sb.append(serviceExpressionString);
 			sb.append(" }");
@@ -274,12 +276,12 @@ public class Service extends UnaryTupleOperator {
 	}
 
 	/**
-	 * Parses a service expression to just have the inner expresion, e.g. from
-	 * something like "SERVICE <url> { ... }" becomes " ... ", also applies
-	 * trim() to remove leading/tailing space
+	 * Parses a service expression to just have the inner expression, e.g. from
+	 * something like "SERVICE &lt;url&gt; { ... }" becomes " ... ", also applies
+	 * {@link String#trim()} to remove leading/tailing space
 	 * 
 	 * @param serviceExpression
-	 * @return
+	 * @return the inner expression of the given service expression
 	 */
 	private String parseServiceExpression(String serviceExpression) {
 

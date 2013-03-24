@@ -46,8 +46,6 @@ public class ExclusiveLockManager {
 	/**
 	 * Creates an ExclusiveLockManager.
 	 * 
-	 * @param name
-	 *        Common name used for debugging
 	 * @param trackLocks
 	 *        If create stack traces should be logged
 	 */
