@@ -18,20 +18,15 @@ package org.openrdf.rio.turtle;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -40,9 +35,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -77,6 +70,10 @@ public abstract class TurtleParserTestCase {
 	 */
 	private static String TEST_AFS_MANIFEST_URL = "/testcases/turtle/tests-ttl/manifest.ttl";
 
+	private static String TEST_AFS_MANIFEST_URI_BASE = "https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-ttl/manifest.ttl#";
+
+	private static String TEST_AFS_TEST_URI_BASE = "https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-ttl/";
+
 	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
 
 	private static String NTRIPLES_TEST_FILE = "/testcases/ntriples/test.nt";
@@ -93,6 +90,10 @@ public abstract class TurtleParserTestCase {
 	 */
 	private static String TURTLE_NTRIPLES_MANIFEST_URL = "/testcases/turtle/tests-nt/manifest.ttl";
 
+	private static String TURTLE_NTRIPLES_MANIFEST_URI_BASE = "https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-nt/manifest.ttl#";
+
+	private static String TURTLE_NTRIPLES_TEST_URI_BASE = "https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-nt/";
+
 	/*--------------------*
 	 * Static initializer *
 	 *--------------------*/
@@ -104,11 +105,14 @@ public abstract class TurtleParserTestCase {
 		TestSuite suite = new TestSuite(TurtleParserTestCase.class.getName());
 
 		// Add the N-Triples test
-		String testName = "N-Triples tests";
+		URI testUri = ValueFactoryImpl.getInstance().createURI(
+				"http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt");
+		String testName = "original-N-Triples-tests-using-Turtle-Parser";
 		String inputURL = NTRIPLES_TEST_FILE;
 		String outputURL = inputURL;
 		String baseURL = NTRIPLES_TEST_URL;
-		suite.addTest(new PositiveParserTest(testName, inputURL, outputURL, baseURL, createTurtleParser()));
+		suite.addTest(new TurtlePositiveParserTest(testUri, testName, inputURL, outputURL, baseURL,
+				createTurtleParser(), createNTriplesParser()));
 
 		// Add the manifest for AFS test cases to a repository and query it
 		Repository afsRepository = new SailRepository(new MemoryStore());
@@ -116,35 +120,42 @@ public abstract class TurtleParserTestCase {
 		RepositoryConnection afsCon = afsRepository.getConnection();
 
 		InputStream inputStream = this.getClass().getResourceAsStream(TEST_AFS_MANIFEST_URL);
-		afsCon.add(inputStream, TESTS_AFS_BASE_URL, RDFFormat.TURTLE);
+		afsCon.add(inputStream, TEST_AFS_MANIFEST_URI_BASE, RDFFormat.TURTLE);
 
-		parsePositiveTurtleSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
-		parseNegativeTurtleSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
-		parsePositiveTurtleEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
-		parseNegativeTurtleEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL, afsCon);
+		parsePositiveTurtleSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+				TEST_AFS_TEST_URI_BASE, afsCon);
+		parseNegativeTurtleSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+				TEST_AFS_TEST_URI_BASE, afsCon);
+		parsePositiveTurtleEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+				TEST_AFS_TEST_URI_BASE, afsCon);
+		parseNegativeTurtleEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+				TEST_AFS_TEST_URI_BASE, afsCon);
 
 		afsCon.close();
 		afsRepository.shutDown();
 
-		// Add the manifest for coverage test cases to a repository and query it
+		// Add the manifest for ntriples test cases using ntriples parser to a
+		// repository and query it
 		Repository coverageRepository = new SailRepository(new MemoryStore());
 		coverageRepository.initialize();
-		RepositoryConnection coverageCon = coverageRepository.getConnection();
+		RepositoryConnection ntriplesCon = coverageRepository.getConnection();
 
 		InputStream coverageInputStream = this.getClass().getResourceAsStream(TURTLE_NTRIPLES_MANIFEST_URL);
-		coverageCon.add(coverageInputStream, TESTS_AFS_BASE_URL, RDFFormat.TURTLE);
+		ntriplesCon.add(coverageInputStream, TURTLE_NTRIPLES_MANIFEST_URI_BASE, RDFFormat.TURTLE);
 
-		parsePositiveNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL, coverageCon);
-		parseNegativeNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL, coverageCon);
+		parsePositiveNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
+		parseNegativeNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
 
-		coverageCon.close();
+		ntriplesCon.close();
 		coverageRepository.shutDown();
 
 		return suite;
 	}
 
-	private void parsePositiveTurtleSyntaxTests(TestSuite suite, String fileBasePath, String baseUrl,
-			RepositoryConnection con)
+	private void parsePositiveTurtleSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String testLocationBaseUri, RepositoryConnection con)
 		throws Exception
 	{
 		StringBuilder positiveQuery = new StringBuilder();
@@ -163,22 +174,24 @@ public abstract class TurtleParserTestCase {
 		// Add all positive parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(),
+					testLocationBaseUri);
 			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = baseUrl + nextTestFile;
+			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, null, nextBaseUrl,
-					createTurtleParser()));
+			suite.addTest(new TurtlePositiveParserTest(nextTestUri, nextTestName, nextInputURL, null,
+					nextBaseUrl, createTurtleParser(), createNTriplesParser()));
 		}
 
 		queryResult.close();
 
 	}
 
-	private void parseNegativeTurtleSyntaxTests(TestSuite suite, String fileBasePath, String baseUrl,
-			RepositoryConnection con)
+	private void parseNegativeTurtleSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
 		throws Exception
 	{
 		StringBuilder negativeQuery = new StringBuilder();
@@ -197,21 +210,23 @@ public abstract class TurtleParserTestCase {
 		// Add all negative parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = baseUrl + nextTestFile;
+			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl, createTurtleParser()));
+			suite.addTest(new TurtleNegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createTurtleParser()));
 		}
 
 		queryResult.close();
 
 	}
 
-	private void parsePositiveTurtleEvalTests(TestSuite suite, String fileBasePath, String baseUrl,
-			RepositoryConnection con)
+	private void parsePositiveTurtleEvalTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
 		throws Exception
 	{
 		StringBuilder positiveEvalQuery = new StringBuilder();
@@ -231,23 +246,24 @@ public abstract class TurtleParserTestCase {
 		// Add all positive eval tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 			String nextOutputURL = fileBasePath
-					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString(), baseUrl);
+					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString(), manifestBaseUrl);
 
-			String nextBaseUrl = baseUrl + nextTestFile;
+			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, nextOutputURL, nextBaseUrl,
-					createTurtleParser()));
+			suite.addTest(new TurtlePositiveParserTest(nextTestUri, nextTestName, nextInputURL, nextOutputURL,
+					nextBaseUrl, createTurtleParser(), createNTriplesParser()));
 		}
 
 		queryResult.close();
 	}
 
-	private void parseNegativeTurtleEvalTests(TestSuite suite, String fileBasePath, String baseUrl,
-			RepositoryConnection con)
+	private void parseNegativeTurtleEvalTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
 		throws Exception
 	{
 		StringBuilder negativeEvalQuery = new StringBuilder();
@@ -266,20 +282,22 @@ public abstract class TurtleParserTestCase {
 		// Add all negative eval tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = baseUrl + nextTestFile;
+			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl, createTurtleParser()));
+			suite.addTest(new TurtleNegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createTurtleParser()));
 		}
 
 		queryResult.close();
 	}
 
-	private void parsePositiveNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String baseUrl,
-			RepositoryConnection con)
+	private void parsePositiveNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
 		throws Exception
 	{
 		StringBuilder positiveQuery = new StringBuilder();
@@ -298,24 +316,23 @@ public abstract class TurtleParserTestCase {
 		// Add all positive parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			System.out.println("NTriples inputURL: " + bindingSet.getValue("inputURL").toString());
-			System.out.println("NTriples baseUrl: " + baseUrl);
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = baseUrl + nextTestFile;
+			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, null, nextBaseUrl,
-					createNTriplesParser()));
+			suite.addTest(new TurtlePositiveParserTest(nextTestUri, nextTestName, nextInputURL, null,
+					nextBaseUrl, createNTriplesParser(), createNTriplesParser()));
 		}
 
 		queryResult.close();
 
 	}
 
-	private void parseNegativeNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String baseUrl,
-			RepositoryConnection con)
+	private void parseNegativeNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
 		throws Exception
 	{
 		StringBuilder negativeQuery = new StringBuilder();
@@ -334,13 +351,15 @@ public abstract class TurtleParserTestCase {
 		// Add all negative parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), baseUrl);
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
-			String nextBaseUrl = baseUrl + nextTestFile;
+			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new NegativeParserTest(nextTestName, nextInputURL, nextBaseUrl, createNTriplesParser()));
+			suite.addTest(new TurtleNegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createNTriplesParser()));
 		}
 
 		queryResult.close();
@@ -358,149 +377,6 @@ public abstract class TurtleParserTestCase {
 	 *         the Turtle Test Suite N-Triples tests.
 	 */
 	protected abstract RDFParser createNTriplesParser();
-
-	/*--------------------------------*
-	 * Inner class PositiveParserTest *
-	 *--------------------------------*/
-
-	private class PositiveParserTest extends TestCase {
-
-		/*-----------*
-		 * Variables *
-		 *-----------*/
-
-		private String inputURL;
-
-		private String outputURL;
-
-		private String baseURL;
-
-		private RDFParser targetParser;
-
-		/*--------------*
-		 * Constructors *
-		 *--------------*/
-
-		public PositiveParserTest(String testName, String inputURL, String outputURL, String baseURL,
-				RDFParser targetParser)
-			throws MalformedURLException
-		{
-			super(testName);
-			this.inputURL = inputURL;
-			if (outputURL != null) {
-				this.outputURL = outputURL;
-			}
-			this.baseURL = baseURL;
-			this.targetParser = targetParser;
-		}
-
-		/*---------*
-		 * Methods *
-		 *---------*/
-
-		@Override
-		protected void runTest()
-			throws Exception
-		{
-			// Parse input data
-			// targetParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
-			StatementCollector inputCollector = new StatementCollector(inputCollection);
-			targetParser.setRDFHandler(inputCollector);
-
-			InputStream in = this.getClass().getResourceAsStream(inputURL);
-			assertNotNull("Test resource was not found: inputURL=" + inputURL, in);
-			targetParser.parse(in, baseURL);
-			in.close();
-
-			if (outputURL != null) {
-				// Parse expected output data
-				RDFParser ntriplesParser = createNTriplesParser();
-				ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-				Set<Statement> outputCollection = new LinkedHashSet<Statement>();
-				StatementCollector outputCollector = new StatementCollector(outputCollection);
-				ntriplesParser.setRDFHandler(outputCollector);
-
-				in = this.getClass().getResourceAsStream(outputURL);
-				ntriplesParser.parse(in, baseURL);
-				in.close();
-
-				// Check equality of the two models
-				if (!ModelUtil.equals(inputCollection, outputCollection)) {
-					System.err.println("===models not equal===");
-					System.err.println("Expected: " + outputCollection);
-					System.err.println("Actual  : " + inputCollection);
-					System.err.println("======================");
-
-					fail("models not equal");
-				}
-			}
-		}
-
-	} // end inner class PositiveParserTest
-
-	/*--------------------------------*
-	 * Inner class NegativeParserTest *
-	 *--------------------------------*/
-
-	private class NegativeParserTest extends TestCase {
-
-		/*-----------*
-		 * Variables *
-		 *-----------*/
-
-		private String inputURL;
-
-		private String baseURL;
-
-		private RDFParser targetParser;
-
-		/*--------------*
-		 * Constructors *
-		 *--------------*/
-
-		public NegativeParserTest(String caseURI, String inputURL, String baseURL, RDFParser targetParser)
-			throws MalformedURLException
-		{
-			super(caseURI);
-			this.inputURL = inputURL;
-			this.baseURL = baseURL;
-			this.targetParser = targetParser;
-		}
-
-		/*---------*
-		 * Methods *
-		 *---------*/
-
-		@Override
-		protected void runTest() {
-			try {
-				// Try parsing the input; this should result in an error being
-				// reported.
-				// targetParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-				targetParser.setRDFHandler(new StatementCollector());
-
-				InputStream in = this.getClass().getResourceAsStream(inputURL);
-				assertNotNull("Test resource was not found: inputURL=" + inputURL, in);
-				targetParser.parse(in, baseURL);
-				in.close();
-
-				// System.err.println("Ignoring Turtle Negative Parser Test that does not report an expected error: "
-				// + inputURL);
-				fail("Parser parses erroneous data without reporting errors");
-			}
-			catch (RDFParseException e) {
-				// This is expected as the input file is incorrect RDF
-			}
-			catch (Exception e) {
-				fail("Error: " + e.getMessage());
-			}
-		}
-
-	} // end inner class NegativeParserTest
 
 	/**
 	 * @param baseUrl
