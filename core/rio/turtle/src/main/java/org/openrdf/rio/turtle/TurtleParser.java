@@ -931,6 +931,10 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 
+			if (c == ' ') {
+				reportError("IRI included an unencoded space: '" + c + "'");
+			}
+
 			uriBuf.append((char)c);
 
 			if (c == '\\') {
@@ -940,7 +944,7 @@ public class TurtleParser extends RDFParserBase {
 					throwEOFException();
 				}
 				if (c != 'u' && c != 'U') {
-					reportError("IRI must not use string escapes: '\\" + c + "'");
+					reportError("IRI includes string escapes: '\\" + c + "'");
 				}
 				uriBuf.append((char)c);
 			}
