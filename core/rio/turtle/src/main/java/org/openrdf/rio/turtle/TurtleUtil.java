@@ -149,6 +149,10 @@ public class TurtleUtil {
 			if (!isPrefixChar(prefix.charAt(i))) {
 				return false;
 			}
+
+			if (prefix.charAt(i) == '%' && i == (prefix.length() - 1)) {
+				return false;
+			}
 		}
 
 		if (prefix.charAt(prefix.length() - 1) == '.') {
@@ -168,6 +172,10 @@ public class TurtleUtil {
 
 		for (int i = 1; i < name.length(); i++) {
 			if (!isNameChar(name.charAt(i))) {
+				return false;
+			}
+
+			if (name.charAt(i) == '%' && i == (name.length() - 1)) {
 				return false;
 			}
 		}
