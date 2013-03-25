@@ -1013,6 +1013,10 @@ public class TurtleParser extends RDFParserBase {
 
 			verifyCharacter(c, ":");
 
+			if (!TurtleUtil.isPN_PREFIX(prefix.toString())) {
+				reportError("Prefix was not valid");
+			}
+
 			namespace = getNamespace(prefix.toString());
 		}
 
@@ -1041,6 +1045,10 @@ public class TurtleParser extends RDFParserBase {
 
 		if (c == '.') {
 			reportError("Blank node identifier must not end in a '.'");
+		}
+
+		if (!TurtleUtil.isLegalName(localName.toString())) {
+			reportError("Local name was not valid");
 		}
 
 		// Unread last character
