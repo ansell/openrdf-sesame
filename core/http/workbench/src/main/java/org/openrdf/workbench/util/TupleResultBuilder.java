@@ -16,6 +16,7 @@
  */
 package org.openrdf.workbench.util;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -116,6 +117,8 @@ public class TupleResultBuilder {
 		final Value nextValue;
 		if (result instanceof Value) {
 			nextValue = (Value)result;
+		} else if (result instanceof URL) {
+			nextValue = vf.createURI(result.toString());
 		}
 		else {
 			try {
