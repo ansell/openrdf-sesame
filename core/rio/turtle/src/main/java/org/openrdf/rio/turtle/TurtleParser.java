@@ -961,8 +961,15 @@ public class TurtleParser extends RDFParserBase {
 				if (c == -1) {
 					throwEOFException();
 				}
+				if (c != 'u' && c != 'U') {
+					reportError("IRI must not use string escapes: '\\" + c + "'");
+				}
 				uriBuf.append((char)c);
 			}
+		}
+
+		if (c == '.') {
+			reportError("IRI must not end in a '.'");
 		}
 
 		String uri = uriBuf.toString();
@@ -1049,6 +1056,10 @@ public class TurtleParser extends RDFParserBase {
 				}
 				c = read();
 			}
+		}
+
+		if (c == '.') {
+			reportError("Blank node identifier must not end in a '.'");
 		}
 
 		// Unread last character
