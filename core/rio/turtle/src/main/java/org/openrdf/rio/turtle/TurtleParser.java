@@ -24,6 +24,9 @@ import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import info.aduna.text.ASCIIUtil;
 
@@ -40,7 +43,9 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.TurtleParserSettings;
 
 /**
  * RDF parser for <a href="http://www.dajobe.org/2004/01/turtle/">Turtle</a>
@@ -109,6 +114,13 @@ public class TurtleParser extends RDFParserBase {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TURTLE;
+	}
+
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+		result.add(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES);
+		return result;
 	}
 
 	/**
@@ -248,10 +260,32 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
+		// HACK: W3C are refusing to change the specification to include
+		// case-insensitive support for the old directives, even after this
+		// support is there for the SPARQL directives that will never practically
+		// be used
 		if (directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("@prefix")) {
+			// Specifically fail if we are in compliance mode for this aspect
+			if (!directive.equalsIgnoreCase("prefix")) {
+				if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)
+						&& !directive.equals("@prefix"))
+				{
+					reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
+				}
+			}
+
 			parsePrefixID();
 		}
 		else if (directive.equalsIgnoreCase("base") || directive.equalsIgnoreCase("@base")) {
+			// Specifically fail if we are in compliance mode for this aspect
+			if (!directive.equalsIgnoreCase("base")) {
+				if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)
+						&& !directive.equals("@base"))
+				{
+					reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
+				}
+			}
+
 			parseBase();
 		}
 		else if (directive.length() == 0) {
@@ -380,7 +414,7 @@ public class TurtleParser extends RDFParserBase {
 				// empty predicateObjectList, skip to next
 				continue;
 			}
-			
+
 			predicate = parsePredicate();
 
 			skipWSC();

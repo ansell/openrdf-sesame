@@ -19,6 +19,7 @@ package org.openrdf.rio.turtle;
 import junit.framework.Test;
 
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.TurtleParserSettings;
 import org.openrdf.rio.ntriples.NTriplesParser;
 
 /**
@@ -35,9 +36,13 @@ public class TurtleParserTest extends TurtleParserTestCase {
 
 	@Override
 	protected RDFParser createTurtleParser() {
-		return new TurtleParser();
+		RDFParser result = new TurtleParser();
+		// Unset support for case-insensitive directives to make compliance test
+		// pass
+		result.getParserConfig().set(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES, false);
+		return result;
 	}
-	
+
 	@Override
 	protected RDFParser createNTriplesParser() {
 		return new NTriplesParser();
