@@ -51,8 +51,8 @@ public class TurtlePositiveParserTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
-	public TurtlePositiveParserTest(URI testUri, String testName, String inputURL, String outputURL, String baseURL,
-			RDFParser targetParser, RDFParser ntriplesParser)
+	public TurtlePositiveParserTest(URI testUri, String testName, String inputURL, String outputURL,
+			String baseURL, RDFParser targetParser, RDFParser ntriplesParser)
 		throws MalformedURLException
 	{
 		super(testName);
@@ -83,6 +83,9 @@ public class TurtlePositiveParserTest extends TestCase {
 
 		InputStream in = this.getClass().getResourceAsStream(inputURL);
 		assertNotNull("Test resource was not found: inputURL=" + inputURL, in);
+
+		System.err.println("test: " + inputURL);
+
 		targetParser.parse(in, baseURL);
 		in.close();
 
