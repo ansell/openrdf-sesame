@@ -32,11 +32,12 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.model.vocabulary.DOAP;
+import org.openrdf.model.vocabulary.EARL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.parser.sparql.DC;
-import org.openrdf.query.parser.sparql.DOAP;
-import org.openrdf.query.parser.sparql.EARL;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11SyntaxTest;
 import org.openrdf.query.parser.sparql.manifest.SPARQLQueryTest;
 import org.openrdf.query.parser.sparql.manifest.SPARQLUpdateConformanceTest;
@@ -79,7 +80,7 @@ public class EarlReport {
 		con.setNamespace("xsd", XMLSchema.NAMESPACE);
 		con.setNamespace("doap", DOAP.NAMESPACE);
 		con.setNamespace("earl", EARL.NAMESPACE);
-		con.setNamespace("dc", DC.NAMESPACE);
+		con.setNamespace("dcterms", DCTERMS.NAMESPACE);
 
 		projectNode = vf.createBNode();
 		BNode releaseNode = vf.createBNode();
