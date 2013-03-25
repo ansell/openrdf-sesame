@@ -145,12 +145,16 @@ public class TurtleUtil {
 			return false;
 		}
 
-		// FIXME: Last character cannot be an unescaped period '.' character
 		for (int i = 1; i < prefix.length(); i++) {
 			if (!isPrefixChar(prefix.charAt(i))) {
 				return false;
 			}
 		}
+
+		if (prefix.charAt(prefix.length() - 1) == '.') {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -162,11 +166,14 @@ public class TurtleUtil {
 			return false;
 		}
 
-		// FIXME: Last character cannot be an unescaped period '.' character
 		for (int i = 1; i < name.length(); i++) {
 			if (!isNameChar(name.charAt(i))) {
 				return false;
 			}
+		}
+
+		if (name.charAt(name.length() - 1) == '.') {
+			return false;
 		}
 
 		return true;
