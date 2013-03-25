@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;

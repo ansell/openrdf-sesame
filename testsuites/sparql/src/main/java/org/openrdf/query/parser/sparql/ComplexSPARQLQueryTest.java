@@ -40,9 +40,9 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -743,10 +743,10 @@ public abstract class ComplexSPARQLQueryTest {
 				assertTrue(bs.hasBinding("parent"));
 			}
 			assertEquals(7, count);
-			
+
 			// execute again, but this time setting a binding
 			tq.setBinding("parent", OWL.THING);
-			
+
 			result = tq.evaluate();
 			assertNotNull(result);
 
@@ -765,7 +765,7 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
-	
+
 	@Test
 	/**
 	 * @see http://www.openrdf.org/issues/browse/SES-1091
@@ -775,7 +775,7 @@ public abstract class ComplexSPARQLQueryTest {
 		throws Exception
 	{
 		loadTestData("/testdata-query/alp-testdata.ttl");
-		
+
 		// query without initializing ?child first.
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
@@ -809,10 +809,10 @@ public abstract class ComplexSPARQLQueryTest {
 				assertTrue(bs.hasBinding("parent"));
 			}
 			assertEquals(7, count);
-			
+
 			// execute again, but this time setting a binding
 			tq.setBinding("parent", OWL.THING);
-			
+
 			result = tq.evaluate();
 			assertNotNull(result);
 
@@ -831,7 +831,7 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
-	
+
 	@Test
 	/**
 	 * @see http://www.openrdf.org/issues/browse/SES-1091
@@ -841,7 +841,7 @@ public abstract class ComplexSPARQLQueryTest {
 		throws Exception
 	{
 		loadTestData("/testdata-query/alp-testdata.ttl");
-		
+
 		// binding on child instead of parent.
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
@@ -875,10 +875,10 @@ public abstract class ComplexSPARQLQueryTest {
 				assertTrue(bs.hasBinding("parent"));
 			}
 			assertEquals(7, count);
-			
+
 			// execute again, but this time setting a binding
 			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
-			
+
 			result = tq.evaluate();
 			assertNotNull(result);
 
@@ -945,7 +945,6 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
-	
 
 	@Test
 	/**
@@ -994,7 +993,7 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
-	
+
 	@Test
 	/**
 	 * @see http://www.openrdf.org/issues/browse/SES-1091
@@ -1042,7 +1041,7 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 
 	}
-	
+
 	/* private / protected methods */
 
 	private int countCharOccurrences(String string, char ch) {
@@ -1062,7 +1061,7 @@ public abstract class ComplexSPARQLQueryTest {
 	 */
 	protected String getNamespaceDeclarations() {
 		StringBuilder declarations = new StringBuilder();
-		declarations.append("PREFIX dc: <" + DC.NAMESPACE + "> \n");
+		declarations.append("PREFIX dc: <" + DCTERMS.NAMESPACE + "> \n");
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
 		declarations.append("PREFIX sesame: <" + SESAME.NAMESPACE + "> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
