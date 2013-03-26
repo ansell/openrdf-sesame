@@ -18,9 +18,10 @@ package org.openrdf.model.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -40,22 +41,27 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public Map<String, String> getNamespaces() {
-		return Collections.unmodifiableMap(model.getNamespaces());
+	public Set<Namespace> getNamespaces() {
+		return Collections.unmodifiableSet(model.getNamespaces());
 	}
 
 	@Override
-	public String getNamespace(String prefix) {
+	public Namespace getNamespace(String prefix) {
 		return model.getNamespace(prefix);
 	}
 
 	@Override
-	public String setNamespace(String prefix, String name) {
+	public Namespace setNamespace(String prefix, String name) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public String removeNamespace(String prefix) {
+	public void setNamespace(Namespace name) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Namespace removeNamespace(String prefix) {
 		throw new UnsupportedOperationException();
 	}
 

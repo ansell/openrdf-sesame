@@ -18,6 +18,7 @@ package org.openrdf.workbench.commands;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,6 +30,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -42,7 +44,7 @@ public class RemoveServlet extends TransformationServlet {
 
 	@Override
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
-		throws IOException, RepositoryException
+		throws IOException, RepositoryException, QueryResultHandlerException
 	{
 		String objectParameter = req.getParameter("obj");
 		try {
@@ -71,14 +73,12 @@ public class RemoveServlet extends TransformationServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			resp.setContentType("application/xml");
-			PrintWriter out = resp.getWriter();
-			TupleResultBuilder builder = new TupleResultBuilder(out);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "remove.xsl");
 			builder.start("error-message", "subj", "pred", "obj", CONTEXT);
-			builder.link("info");
-			builder.result(exc.getMessage(), req.getParameter("subj"), req.getParameter("pred"), objectParameter,
-					req.getParameter(CONTEXT));
+			builder.link(Arrays.asList(INFO));
+			builder.result(exc.getMessage(), req.getParameter("subj"), req.getParameter("pred"),
+					objectParameter, req.getParameter(CONTEXT));
 			builder.end();
 		}
 	}
@@ -105,13 +105,12 @@ public class RemoveServlet extends TransformationServlet {
 	}
 
 	@Override
-	public void service(PrintWriter out, String xslPath)
-		throws RepositoryException
+	public void service(TupleResultBuilder builder, String xslPath)
+		throws RepositoryException, QueryResultHandlerException
 	{
-		TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "remove.xsl");
 		builder.start();
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		builder.end();
 	}
 

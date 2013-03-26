@@ -16,14 +16,14 @@
  */
 package org.openrdf.rio.helpers;
 
-import org.openrdf.rio.ParserSetting;
+import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
  * A class encapsulating the basic parser settings that most parsers may
  * support.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public class BasicParserSettings {
@@ -32,7 +32,7 @@ public class BasicParserSettings {
 	 * Boolean setting for parser to determine whether data values are verified. <br>
 	 * Defaults to true.
 	 */
-	public static final ParserSetting<Boolean> VERIFY_DATA = new ParserSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> VERIFY_DATA = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.verifydata", "Verify data", Boolean.TRUE);
 
 	/**
@@ -41,7 +41,7 @@ public class BasicParserSettings {
 	 * continue after an error it will still fail regardless of this setting.<br>
 	 * Defaults to true.
 	 */
-	public static final ParserSetting<Boolean> STOP_AT_FIRST_ERROR = new ParserSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> STOP_AT_FIRST_ERROR = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.stopatfirsterror", "Stop at first error", Boolean.TRUE);
 
 	/**
@@ -50,7 +50,7 @@ public class BasicParserSettings {
 	 * identifier in the document a new identifier will be generated for it.<br>
 	 * Defaults to false.
 	 */
-	public static final ParserSetting<Boolean> PRESERVE_BNODE_IDS = new ParserSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> PRESERVE_BNODE_IDS = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.preservebnodeids", "Preserve blank node identifiers", Boolean.FALSE);
 
 	/**
@@ -58,7 +58,7 @@ public class BasicParserSettings {
 	 * parser.<br>
 	 * Defaults to {@link DatatypeHandling#VERIFY}.
 	 */
-	public static final ParserSetting<DatatypeHandling> DATATYPE_HANDLING = new ParserSettingImpl<DatatypeHandling>(
+	public static final RioSetting<DatatypeHandling> DATATYPE_HANDLING = new RioSettingImpl<DatatypeHandling>(
 			"org.openrdf.rio.datatypehandling", "Datatype handling", DatatypeHandling.VERIFY);
 
 	/**

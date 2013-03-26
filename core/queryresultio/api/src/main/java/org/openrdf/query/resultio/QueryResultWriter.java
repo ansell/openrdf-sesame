@@ -16,15 +16,17 @@
  */
 package org.openrdf.query.resultio;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.WriterConfig;
 
 /**
  * The base interface for writers of query results sets and boolean results.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public interface QueryResultWriter extends QueryResultHandler {
@@ -35,6 +37,24 @@ public interface QueryResultWriter extends QueryResultHandler {
 	 * @since 2.7.0
 	 */
 	QueryResultFormat getQueryResultFormat();
+
+	/**
+	 * Handles a namespace prefix declaration. If this is called, it should be
+	 * called before {@link #startDocument()} to ensure that it has a document
+	 * wide effect.
+	 * <p>
+	 * NOTE: If the format does not support namespaces, it must silently ignore
+	 * calls to this method.
+	 * 
+	 * @param prefix
+	 *        The prefix to use for the namespace
+	 * @param uri
+	 *        The full URI that is to be represented by the prefix.
+	 * @throws QueryResultHandlerException
+	 * @since 2.7.0
+	 */
+	void handleNamespace(String prefix, String uri)
+		throws QueryResultHandlerException;
 
 	/**
 	 * Indicates the start of the document.
@@ -75,23 +95,6 @@ public interface QueryResultWriter extends QueryResultHandler {
 		throws QueryResultHandlerException;
 
 	/**
-	 * Handles the insertion of links elements into the header.
-	 * <p>
-	 * NOTE: If the format does not support links, it must silently ignore a call
-	 * to this method.
-	 * 
-	 * @see http://www.w3.org/TR/sparql11-results-json/#select-link
-	 * @param linkUrls
-	 *        The URLs of the links to insert into the header.
-	 * @throws QueryResultHandlerException
-	 *         If there was an error handling the set of link URLs. This error is
-	 *         not thrown in cases where links are not supported.
-	 * @since 2.7.0
-	 */
-	void handleLinks(List<String> linkUrls)
-		throws QueryResultHandlerException;
-
-	/**
 	 * Indicates the end of the header. This must be called after
 	 * {@link #startHeader} and before any calls to {@link #handleSolution}.
 	 * 
@@ -101,5 +104,30 @@ public interface QueryResultWriter extends QueryResultHandler {
 	 */
 	void endHeader()
 		throws QueryResultHandlerException;
+
+	/**
+	 * Sets all supplied writer configuration options.
+	 * 
+	 * @param config
+	 *        a writer configuration object.
+	 * @since 2.7.0
+	 */
+	public void setWriterConfig(WriterConfig config);
+
+	/**
+	 * Retrieves the current writer configuration as a single object.
+	 * 
+	 * @return a writer configuration object representing the current
+	 *         configuration of the writer.
+	 * @since 2.7.0
+	 */
+	public WriterConfig getWriterConfig();
+
+	/**
+	 * @return A collection of {@link RioSetting}s that are supported by this
+	 *         {@link QueryResultWriter}.
+	 * @since 2.7.0
+	 */
+	public Collection<RioSetting<?>> getSupportedSettings();
 
 }

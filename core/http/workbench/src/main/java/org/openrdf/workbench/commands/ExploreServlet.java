@@ -16,23 +16,22 @@
  */
 package org.openrdf.workbench.commands;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.workbench.base.TupleServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -48,7 +47,7 @@ public class ExploreServlet extends TupleServlet {
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "total_result_count" };
+		return new String[] { "limit", "total_result_count", "show-datatypes" };
 	}
 
 	@Override
@@ -60,10 +59,10 @@ public class ExploreServlet extends TupleServlet {
 		}
 		catch (BadRequestException exc) {
 			logger.warn(exc.toString(), exc);
-			final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
+			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			builder.transform(xslPath, "explore.xsl");
 			builder.start("error-message");
-			builder.link("info");
+			builder.link(Arrays.asList(INFO));
 			builder.result(exc.getMessage());
 			builder.end();
 		}
@@ -81,9 +80,9 @@ public class ExploreServlet extends TupleServlet {
 		// reporting of count in page.
 		int count = req.getInt("know_total");
 		if (count == 0) {
-			count = this.processResource(con, builder, value, 0, Integer.MAX_VALUE, false);
+			count = this.processResource(con, builder, value, 0, Integer.MAX_VALUE, false).getTotalResultCount();
 		}
-		this.cookies.addTotalResultCountCookie(req, resp, count);
+		this.cookies.addTotalResultCountCookie(req, resp, (int)count);
 		final int offset = req.getInt("offset");
 		int limit = req.getInt("limit");
 		if (limit == 0) {
@@ -110,14 +109,15 @@ public class ExploreServlet extends TupleServlet {
 	 *        If false, suppresses output to the HTTP response.
 	 * @throws OpenRDFException
 	 *         if there is an issue iterating through results
-	 * @returns The count of all triples in the repository using the given value.
+	 * @return The count of all triples in the repository using the given value.
 	 */
-	protected int processResource(final RepositoryConnection con, final TupleResultBuilder builder,
+	protected ResultCursor processResource(final RepositoryConnection con, final TupleResultBuilder builder,
 			final Value value, final int offset, final int limit, final boolean render)
 		throws OpenRDFException
 	{
 		final ResultCursor cursor = new ResultCursor(offset, limit, render);
-		if (value instanceof Resource) {
+		boolean resource = value instanceof Resource;
+		if (resource) {
 			export(con, builder, cursor, (Resource)value, null, null);
 			logger.debug("After subject, total = {}", cursor.getTotalResultCount());
 		}
@@ -129,16 +129,26 @@ public class ExploreServlet extends TupleServlet {
 			export(con, builder, cursor, null, null, value);
 			logger.debug("After object, total = {}", cursor.getTotalResultCount());
 		}
-		if (value instanceof Resource) {
+		if (resource) {
 			export(con, builder, cursor, null, null, null, (Resource)value);
 			logger.debug("After context, total = {}", cursor.getTotalResultCount());
 		}
-		return cursor.getTotalResultCount();
+		return cursor;
 	}
 
 	/**
+	 * <p>
 	 * Render statements in the repository matching the given pattern to the HTTP
-	 * response.
+	 * response. It is an implicit assumption when this calls
+	 * {@link #isFirstTimeSeen} that {@link #processResource} 's calls into here
+	 * have been made in the following order:
+	 * </p>
+	 * <ol>
+	 * <li>export(*, subject, null, null, null)</li>
+	 * <li>export(*, null, predicate, null, null)</li>
+	 * <li>export(*, null, null, object, null)</li>
+	 * <li>export(*, null, null, null, context)</li>
+	 * </ol>
 	 * 
 	 * @param con
 	 *        the connection to the repository
@@ -159,27 +169,17 @@ public class ExploreServlet extends TupleServlet {
 			Resource subj, URI pred, Value obj, Resource... context)
 		throws OpenRDFException, MalformedQueryException, QueryEvaluationException
 	{
-		boolean contextQuery = (null == subj && null == pred && null == obj && 1 == context.length);
-		CloseableIteration<Statement, ? extends OpenRDFException> result;
-		if (contextQuery) {
-			GraphQuery query = con.prepareGraphQuery(QueryLanguage.SPARQL,
-					"construct {?s ?p ?o } where { graph ?c { ?s ?p ?o . "
-							+ "minus { ?s ?p ?o . filter (?s = ?c || ?p = ?c || ?o = ?c) } } } ");
-			query.setBinding("c", context[0]);
-			result = query.evaluate();
-		}
-		else {
-			result = con.getStatements(subj, pred, obj, true, context);
-		}
+		RepositoryResult<Statement> result = con.getStatements(subj, pred, obj, true, context);
 		try {
 			while (result.hasNext()) {
-				final Statement statement = result.next();
-				if (cursor.mayRender()) {
-					builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
-							contextQuery ? context[0] : statement.getContext());
+				Statement statement = result.next();
+				if (isFirstTimeSeen(statement, pred, obj, context)) {
+					if (cursor.mayRender()) {
+						builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
+								statement.getContext());
+					}
+					cursor.advance();
 				}
-
-				cursor.advance();
 			}
 		}
 		finally {
@@ -188,12 +188,55 @@ public class ExploreServlet extends TupleServlet {
 	}
 
 	/**
+	 * Gets whether this is the first time the result quad has been seen.
+	 * 
+	 * @param patternPredicate
+	 *        the predicate asked for, or null if another quad element was asked
+	 *        for
+	 * @param patternObject
+	 *        the object asked for, or null if another quad element was asked for
+	 * @param result
+	 *        the result statement to determine if we've already seen
+	 * @param patternContext
+	 *        the context asked for, or null if another quad element was asked
+	 *        for
+	 * @return true, if this is the first time the quad has been seen, false
+	 *         otherwise
+	 */
+	private boolean isFirstTimeSeen(Statement result, URI patternPredicate, Value patternObject,
+			Resource... patternContext)
+	{
+		Resource resultSubject = result.getSubject();
+		URI resultPredicate = result.getPredicate();
+		Value resultObject = result.getObject();
+		boolean firstTimeSeen;
+		if (1 == patternContext.length) {
+			// I.e., when context matches explore value.
+			Resource ctx = patternContext[0];
+			firstTimeSeen = !(ctx.equals(resultSubject) || ctx.equals(resultPredicate) || ctx.equals(resultObject));
+		}
+		else if (null != patternObject) {
+			// I.e., when object matches explore value.
+			firstTimeSeen = !(resultObject.equals(resultSubject) || resultObject.equals(resultPredicate));
+		}
+		else if (null != patternPredicate) {
+			// I.e., when predicate matches explore value.
+			firstTimeSeen = !(resultPredicate.equals(resultSubject));
+		}
+		else {
+			// I.e., when subject matches explore value.
+			firstTimeSeen = true;
+		}
+		return firstTimeSeen;
+	}
+
+	/**
 	 * Class for keeping track of location within the result set, relative to
 	 * offset and limit.
 	 * 
 	 * @author Dale Visser
 	 */
-	private class ResultCursor {
+	protected class ResultCursor {
 
 		private int untilFirst;
 
@@ -223,24 +266,28 @@ public class ExploreServlet extends TupleServlet {
 		 * Gets the total number of results. Only meant to be called after
 		 * advance() has been called for all results in the set.
 		 * 
-		 * @returns the number of times advance() has been called
+		 * @return the number of times advance() has been called
 		 */
 		public int getTotalResultCount() {
 			return this.totalResults;
 		}
 
 		/**
-		 * @returns whether the rendering limit has been reached yet.
+		 * Gets the number of results that were actually rendered. Only meant to
+		 * be called after advance() has been called for all results in the set.
+		 * 
+		 * @return the number of times advance() has been called when
+		 *          this.mayRender() evaluated to true
 		 */
-		public boolean hasMore() {
-			return this.renderedResults < this.limit;
+		public int getRenderedResultCount() {
+			return this.renderedResults;
 		}
 
 		/**
-		 * @returns whether it is allowed to render the next result
+		 * @return whether it is allowed to render the next result
 		 */
 		public boolean mayRender() {
-			return this.render && (this.untilFirst == 0 && this.hasMore());
+			return this.render && (this.untilFirst == 0 && this.renderedResults < this.limit);
 		}
 
 		/**

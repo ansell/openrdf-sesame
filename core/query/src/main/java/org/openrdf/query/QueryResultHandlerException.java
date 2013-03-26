@@ -22,7 +22,7 @@ import org.openrdf.OpenRDFException;
  * The super class of exceptions originating from {@link QueryResultHandler}
  * implementations.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public class QueryResultHandlerException extends OpenRDFException {

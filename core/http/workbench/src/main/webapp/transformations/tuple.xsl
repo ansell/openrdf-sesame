@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
-    
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
+
 	<xsl:include href="../locale/messages.xsl" />
 
 	<xsl:variable name="title">
@@ -13,7 +11,7 @@
 		<xsl:value-of select="count(//sparql:result)" />
 		<xsl:text>)</xsl:text>
 	</xsl:variable>
-	
+
 	<xsl:variable name="nextX.label">
 		<xsl:value-of select="$next.label" />
 		<xsl:text> </xsl:text>
@@ -31,8 +29,46 @@
 	<xsl:include href="table.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/paging.js" type="text/javascript">  </script>
-		<script src="../../scripts/tuple.js" type="text/javascript">  </script>
+		<script src="../../scripts/jquery-1.9.0.min.js" type="text/javascript">
+		</script>
+		<script src="../../scripts/paging.js" type="text/javascript">
+		</script>
+		<script src="../../scripts/tuple.js" type="text/javascript">
+		</script>
+		<form>
+			<table class="dataentry">
+				<tbody>
+					<tr>
+						<th>
+							<xsl:value-of
+								select="$download-format.label" />
+						</th>
+						<td>
+							<select id="Accept" name="Accept">
+								<xsl:for-each
+									select="$info//sparql:binding[@name='tuple-download-format']">
+									<option
+										value="{substring-before(sparql:literal, ' ')}">
+										<xsl:if
+											test="$info//sparql:binding[@name='default-Accept']/sparql:literal = substring-before(sparql:literal, ' ')">
+											<xsl:attribute
+												name="selected">true</xsl:attribute>
+										</xsl:if>
+										<xsl:value-of
+											select="substring-after(sparql:literal, ' ')" />
+									</option>
+								</xsl:for-each>
+							</select>
+						</td>
+						<td>
+							<input type="submit"
+								onclick="addGraphParam('Accept');return false"
+								value="{$download.label}" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
 		<form>
 			<table class="dataentry">
 				<tbody>
@@ -42,28 +78,37 @@
 						</th>
 						<td>
 							<xsl:call-template name="limit-select">
-								<xsl:with-param name="onchange">addLimit();</xsl:with-param>
+								<xsl:with-param name="onchange">
+									addLimit();
+								</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td id="result-limited">
 							<xsl:if
 								test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
-								<xsl:value-of
-									select="$result-limited.desc" />
+								<xsl:value-of select="$result-limited.desc" />
 							</xsl:if>
 						</td>
 					</tr>
 					<tr>
-					    <th>
+						<th>
 							<xsl:value-of select="$result-offset.label" />
-				        </th>
+						</th>
 						<td>
-							<input id="previousX" type="button"
-								value="{$previousX.label}" onclick="previousOffset();" />
+							<input id="previousX" type="button" value="{$previousX.label}"
+								onclick="previousOffset();" />
 						</td>
 						<td>
-							<input id="nextX" type="button"
-								value="{$nextX.label}" onclick="nextOffset();" />
+							<input id="nextX" type="button" value="{$nextX.label}"
+								onclick="nextOffset();" />
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$show-datatypes.label" />
+						</th>
+						<td>
+							<input type="checkbox" name="show-datatypes" value="show-dataypes" checked="checked" />
 						</td>
 					</tr>
 				</tbody>

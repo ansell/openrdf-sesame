@@ -18,6 +18,7 @@ package org.openrdf.rio;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Collection;
 
 /**
  * An interface for RDF document writers. To allow RDF document writers to be
@@ -31,4 +32,30 @@ public interface RDFWriter extends RDFHandler {
 	 * Gets the RDF format that this RDFWriter uses.
 	 */
 	public RDFFormat getRDFFormat();
+
+	/**
+	 * Sets all supplied writer configuration options.
+	 * 
+	 * @param config
+	 *        a writer configuration object.
+	 * @since 2.7.0
+	 */
+	public void setWriterConfig(WriterConfig config);
+
+	/**
+	 * Retrieves the current writer configuration as a single object.
+	 * 
+	 * @return a writer configuration object representing the current
+	 *         configuration of the writer.
+	 * @since 2.7.0
+	 */
+	public WriterConfig getWriterConfig();
+
+	/**
+	 * @return A collection of {@link RioSetting}s that are supported by this
+	 *         RDFWriter.
+	 * @since 2.7.0
+	 */
+	public Collection<RioSetting<?>> getSupportedSettings();
+
 }

@@ -22,7 +22,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 /**
  * 
  *
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public class SPARQLTSVTupleTest extends AbstractQueryResultIOTupleTest {
 

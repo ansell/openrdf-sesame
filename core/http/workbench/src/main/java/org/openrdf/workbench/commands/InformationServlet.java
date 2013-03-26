@@ -16,8 +16,9 @@
  */
 package org.openrdf.workbench.commands;
 
-import java.io.PrintWriter;
+import java.util.Arrays;
 
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -25,13 +26,13 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 public class InformationServlet extends TransformationServlet {
 
 	@Override
-	public void service(final PrintWriter out, final String xslPath)
-		throws RepositoryException
+	public void service(final TupleResultBuilder builder, final String xslPath)
+		throws RepositoryException, QueryResultHandlerException
 	{
-		final TupleResultBuilder builder = new TupleResultBuilder(out);
+		// final TupleResultBuilder builder = getTupleResultBuilder(req, resp);
 		builder.transform(xslPath, "information.xsl");
 		builder.start("version", "os", "jvm", "user", "memory-used", "maximum-memory");
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		final String version = this.appConfig.getVersion().toString();
 		final String osName = getOsName();
 		final String jvm = getJvmName();

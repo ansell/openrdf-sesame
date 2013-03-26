@@ -37,7 +37,7 @@ import java.util.List;
  * failure when the relevant methods are called.
  * 
  * @since 2.7.0
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public interface QueryResultHandler {
 
@@ -57,6 +57,26 @@ public interface QueryResultHandler {
 	 * @since 2.7.0
 	 */
 	void handleBoolean(boolean value)
+		throws QueryResultHandlerException;
+
+	/**
+	 * Handles the links elements which are present in SPARQL Results JSON and
+	 * SPARQL Results XML documents in the header.
+	 * <p>
+	 * NOTE: If the format does not support links, it must silently ignore a call
+	 * to this method.
+	 * <p>
+	 * An accumulating handler should accumulate these links.
+	 * 
+	 * @see http://www.w3.org/TR/sparql11-results-json/#select-link
+	 * @param linkUrls
+	 *        The URLs of the links to handle.
+	 * @throws QueryResultHandlerException
+	 *         If there was an error handling the set of link URLs. This error is
+	 *         not thrown in cases where links are not supported.
+	 * @since 2.7.0
+	 */
+	void handleLinks(List<String> linkUrls)
 		throws QueryResultHandlerException;
 
 	/**

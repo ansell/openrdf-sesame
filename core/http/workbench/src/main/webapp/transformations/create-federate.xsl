@@ -40,7 +40,11 @@
 							<input type="text" id="id" name="Local repository ID" size="16"
 								value="fed" />
 						</td>
-						<td></td>
+						<td>
+							<span id="recurse-message" class="error" style="display: none;">
+								Federation ID may not match an existing ID.
+							</span>
+						</td>
 					</tr>
 					<tr>
 						<th>
@@ -59,18 +63,10 @@
 						<td>
 							<xsl:apply-templates select="*" />
 						</td>
-					</tr>
-					<tr>
-						<th>
-							<xsl:value-of select="$federation-type.label" />
-						</th>
 						<td>
-							<input type="radio" name="federation-type" value="http" checked="true" />
-							HTTP Repository
-						</td>
-						<td>
-							<input type="radio" name="federation-type" value="sparql" />
-							SPARQL Endpoint
+							<span class="error" id="create-feedback">Select at least two federation
+								members.
+							</span>
 						</td>
 					</tr>
 					<tr>
@@ -78,7 +74,7 @@
 							<xsl:value-of select="$distinct.label" />
 						</th>
 						<td>
-							<input type="checkbox" name="distinct" value="distinct" />
+							<input type="checkbox" name="distinct" value="true" />
 						</td>
 					</tr>
 					<tr>
@@ -86,7 +82,7 @@
 							<xsl:value-of select="$read-only.label" />
 						</th>
 						<td>
-							<input type="checkbox" name="readonly" value="readonly"
+							<input type="checkbox" name="readonly" value="true"
 								checked="true" />
 						</td>
 					</tr>
@@ -96,9 +92,6 @@
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
 							<input id="create" type="submit" value="{$create.label}" />
-							<span class="error" id="create-feedback">Select at least two federation
-								members.
-							</span>
 						</td>
 					</tr>
 				</tbody>

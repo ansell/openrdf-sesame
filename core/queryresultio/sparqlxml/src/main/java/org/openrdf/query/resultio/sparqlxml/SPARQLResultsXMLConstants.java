@@ -64,4 +64,6 @@ interface SPARQLResultsXMLConstants {
 	public static final String LITERAL_DATATYPE_ATT = "datatype";
 
 	public static final String UNBOUND_TAG = "unbound";
+	
+	public static final String QNAME = "q:qname";
 }

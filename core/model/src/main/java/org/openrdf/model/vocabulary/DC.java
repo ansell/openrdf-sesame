@@ -1,7 +1,9 @@
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -22,8 +24,14 @@ public class DC {
 	 */
 	public static final String PREFIX = "dc";
 
-	/** 
-	 * dc:title 
+	/**
+	 * An immutable {@link Namespace} constant that represents the Dublin Core
+	 * namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+
+	/**
+	 * dc:title
 	 */
 	public static final URI TITLE;
 
@@ -42,7 +50,7 @@ public class DC {
 	 */
 	public static final URI COVERAGE;
 
-	/** 
+	/**
 	 * dc:creator
 	 */
 	public static final URI CREATOR;
@@ -87,7 +95,7 @@ public class DC {
 	 */
 	public static final URI RIGHTS;
 
-	/** 
+	/**
 	 * dc:subject
 	 */
 	public static final URI SUBJECT;

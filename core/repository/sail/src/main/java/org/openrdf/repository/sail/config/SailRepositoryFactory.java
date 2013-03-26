@@ -30,12 +30,12 @@ import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.config.SailRegistry;
 
 /**
- * A {@link RepositoryFactory} that creates {@link SailRepository}s based on
- * RDF configuration data.
+ * A {@link RepositoryFactory} that creates {@link SailRepository}s based on RDF
+ * configuration data.
  * 
  * @author Arjohn Kampman
  */
-public class SailRepositoryFactory implements RepositoryFactory {
+public class SailRepositoryFactory implements RepositoryFactory, RepositoryResolverClient {
 
 	/*-----------*
 	 * Constants *
@@ -47,6 +47,8 @@ public class SailRepositoryFactory implements RepositoryFactory {
 	 * @see RepositoryFactory#getRepositoryType()
 	 */
 	public static final String REPOSITORY_TYPE = "openrdf:SailRepository";
+
+	private RepositoryResolver resolver;
 
 	/*---------*
 	 * Methods *
@@ -100,7 +102,9 @@ public class SailRepositoryFactory implements RepositoryFactory {
 		throws RepositoryConfigException, SailConfigException
 	{
 		SailFactory sailFactory = SailRegistry.getInstance().get(config.getType());
-
+		if (sailFactory instanceof RepositoryResolverClient) {
+			((RepositoryResolverClient)sailFactory).setRepositoryResolver(resolver);
+		}
 		if (sailFactory != null) {
 			return sailFactory.getSail(config);
 		}
@@ -120,5 +124,10 @@ public class SailRepositoryFactory implements RepositoryFactory {
 			throw new RepositoryConfigException("Delegate configured but " + sail.getClass()
 					+ " is not a StackableSail");
 		}
+	}
+
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		this.resolver = resolver;
 	}
 }

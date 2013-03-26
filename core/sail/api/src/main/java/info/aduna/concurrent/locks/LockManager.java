@@ -131,6 +131,7 @@ public class LockManager {
 	public void waitForActiveLocks()
 		throws InterruptedException
 	{
+		long now = -1;
 		while (true) {
 			boolean nochange;
 			Set<WeakLockReference> before;
@@ -138,13 +139,18 @@ public class LockManager {
 				if (activeLocks.isEmpty())
 					return;
 				before = new HashSet<WeakLockReference>(activeLocks);
+				if (now < 0) {
+					now = System.currentTimeMillis();
+				}
 				activeLocks.wait(waitToCollect);
 				if (activeLocks.isEmpty())
 					return;
 				nochange = before.equals(activeLocks);
 			}
-			if (nochange) {
+			// guard against so-called spurious wakeup
+			if (nochange && System.currentTimeMillis() - now >= waitToCollect / 2) {
 				releaseAbandoned();
+				now = -1;
 			}
 		}
 	}

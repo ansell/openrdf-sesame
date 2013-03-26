@@ -16,8 +16,10 @@
  */
 package org.openrdf.model.vocabulary;
 
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -28,14 +30,18 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 public class RDF {
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns# */
-	public static final String NAMESPACE =
-			"http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	public static final String NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
-	/** 
+	/**
 	 * Recommended prefix for the RDF namespace: "rdf"
 	 */
 	public static final String PREFIX = "rdf";
-	
+
+	/**
+	 * An immutable {@link Namespace} constant that represents the RDF namespace.
+	 */
+	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#type */
 	public final static URI TYPE;
 
@@ -83,11 +89,11 @@ public class RDF {
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#nil */
 	public final static URI NIL;
-	
+
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#langString */
 	public static final URI LANGSTRING;
-	
-	static{
+
+	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		TYPE = factory.createURI(RDF.NAMESPACE, "type");
 		PROPERTY = factory.createURI(RDF.NAMESPACE, "Property");

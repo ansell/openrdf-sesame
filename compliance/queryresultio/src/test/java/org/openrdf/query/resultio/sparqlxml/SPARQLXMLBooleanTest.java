@@ -20,7 +20,7 @@ import org.openrdf.query.resultio.AbstractQueryResultIOBooleanTest;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 
 /**
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public class SPARQLXMLBooleanTest extends AbstractQueryResultIOBooleanTest {
 

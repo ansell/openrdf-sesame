@@ -16,15 +16,15 @@
  */
 package org.openrdf.rio.helpers;
 
-import org.openrdf.rio.ParserSetting;
+import org.openrdf.rio.RioSetting;
 
 /**
- * Basic implementation of {@link ParserSetting} interface.
+ * Basic implementation of {@link RioSetting} interface.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
-public final class ParserSettingImpl<T> implements ParserSetting<T> {
+public final class RioSettingImpl<T> implements RioSetting<T> {
 
 	/**
 	 * @since 2.7.0
@@ -32,29 +32,40 @@ public final class ParserSettingImpl<T> implements ParserSetting<T> {
 	private static final long serialVersionUID = 270L;
 
 	/**
-	 * A unique key for this parser setting.
+	 * A unique key for this setting.
 	 */
 	private final String key;
 
 	/**
-	 * A human-readable description for this parser setting
+	 * A human-readable description for this setting
 	 */
 	private final String description;
 
 	/**
-	 * The default value for this parser setting. <br>
+	 * The default value for this setting. <br>
 	 * NOTE: This value must be immutable.
 	 */
 	private final T defaultValue;
 
-	public ParserSettingImpl(String key, String description, T defaultValue) {
+	/**
+	 * Create a new setting object that will be used to reference the given
+	 * setting.
+	 * 
+	 * @param key
+	 *        A unique key to use for this setting.
+	 * @param description
+	 *        A short human-readable description for this setting.
+	 * @param defaultValue
+	 *        An immutable value specifying the default for this setting.
+	 */
+	public RioSettingImpl(String key, String description, T defaultValue) {
 
 		if (key == null) {
-			throw new NullPointerException("Parser Setting key cannot be null");
+			throw new NullPointerException("Setting key cannot be null");
 		}
 
 		if (description == null) {
-			throw new NullPointerException("Parser Setting description cannot be null");
+			throw new NullPointerException("Setting description cannot be null");
 		}
 
 		this.key = key;
@@ -62,14 +73,17 @@ public final class ParserSettingImpl<T> implements ParserSetting<T> {
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
 
+	@Override
 	public T getDefaultValue() {
 		return defaultValue;
 	}

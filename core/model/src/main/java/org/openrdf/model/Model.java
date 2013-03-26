@@ -17,17 +17,16 @@
 package org.openrdf.model;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.model.util.ModelException;
 
 /**
- * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s with predictable
- * iteration order. Model is a feature-rich extension of the basic {@link Graph} interface.
+ * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s
+ * with predictable iteration order. Model is a feature-rich extension of the
+ * basic {@link Graph} interface.
  * 
  * @since 2.7.0
- * 
  * @author James Leigh
  */
 public interface Model extends Graph, Set<Statement>, Serializable {
@@ -49,7 +48,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return Map of prefix to namespace
 	 */
-	public Map<String, String> getNamespaces();
+	public Set<Namespace> getNamespaces();
 
 	/**
 	 * Gets the namespace that is associated with the specified prefix, if any.
@@ -59,7 +58,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @return The namespace name that is associated with the specified prefix,
 	 *         or <tt>null</tt> if there is no such namespace.
 	 */
-	public String getNamespace(String prefix);
+	public Namespace getNamespace(String prefix);
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -68,8 +67,17 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        The new prefix.
 	 * @param name
 	 *        The namespace name that the prefix maps to.
+	 * @return The {@link Namespace} object for the given namespace.
 	 */
-	public String setNamespace(String prefix, String name);
+	public Namespace setNamespace(String prefix, String name);
+
+	/**
+	 * Sets the prefix for a namespace.
+	 * 
+	 * @param namespace
+	 *        A {@link Namespace} object to use in this Model.
+	 */
+	public void setNamespace(Namespace namespace);
 
 	/**
 	 * Removes a namespace declaration by removing the association between a
@@ -80,7 +88,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        is to be removed.
 	 * @return the previous namespace bound to the prefix or null
 	 */
-	public String removeNamespace(String prefix);
+	public Namespace removeNamespace(String prefix);
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object and

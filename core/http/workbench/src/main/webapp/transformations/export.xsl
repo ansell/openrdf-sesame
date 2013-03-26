@@ -27,7 +27,7 @@
 						<td>
 							<select id="Accept" name="Accept">
 								<xsl:for-each
-									select="$info//sparql:binding[@name='download-format']">
+									select="$info//sparql:binding[@name='graph-download-format']">
 									<option
 										value="{substring-before(sparql:literal, ' ')}">
 										<xsl:if

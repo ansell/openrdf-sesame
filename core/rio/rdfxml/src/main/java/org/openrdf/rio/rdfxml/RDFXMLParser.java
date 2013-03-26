@@ -19,17 +19,23 @@ package org.openrdf.rio.rdfxml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.sax.SAXResult;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
@@ -49,7 +55,9 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.XMLParserSettings;
 
 /**
  * A parser for XML-serialized RDF. This parser operates directly on the SAX
@@ -162,7 +170,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * Methods *
 	 *---------*/
 
-	// implements RDFParser.getRDFFormat()
+	@Override
 	public final RDFFormat getRDFFormat() {
 		return RDFFormat.RDFXML;
 	}
@@ -207,6 +215,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * @throws IllegalArgumentException
 	 *         If the supplied input stream or base URI is <tt>null</tt>.
 	 */
+	@Override
 	public synchronized void parse(InputStream in, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -242,6 +251,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * @throws IllegalArgumentException
 	 *         If the supplied reader or base URI is <tt>null</tt>.
 	 */
+	@Override
 	public synchronized void parse(Reader reader, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -267,13 +277,79 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			// saxFilter.clear();
 			saxFilter.setDocumentURI(documentURI);
 
-			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+			XMLReader xmlReader;
+
+			if (getParserConfig().isSet(XMLParserSettings.CUSTOM_XML_READER)) {
+				xmlReader = getParserConfig().get(XMLParserSettings.CUSTOM_XML_READER);
+			}
+			else {
+				xmlReader = XMLReaderFactory.createXMLReader();
+			}
+
 			xmlReader.setContentHandler(saxFilter);
 			xmlReader.setErrorHandler(this);
 
-			// rdfHandler.startRDF();
+			// Set all compulsory feature settings, using the defaults if they are
+			// not explicitly set
+			for (RioSetting<Boolean> aSetting : getCompulsoryXmlFeatureSettings()) {
+				try {
+					xmlReader.setFeature(aSetting.getKey(), getParserConfig().get(aSetting));
+				}
+				catch (SAXNotRecognizedException e) {
+					reportWarning(String.format("%s is not a recognized SAX feature.", aSetting.getKey()));
+				}
+				catch (SAXNotSupportedException e) {
+					reportWarning(String.format("%s is not a supportd SAX feature.", aSetting.getKey()));
+				}
+			}
+
+			// Set all compulsory property settings, using the defaults if they are
+			// not explicitly set
+			for (RioSetting<?> aSetting : getCompulsoryXmlPropertySettings()) {
+				try {
+					xmlReader.setProperty(aSetting.getKey(), getParserConfig().get(aSetting));
+				}
+				catch (SAXNotRecognizedException e) {
+					reportWarning(String.format("%s is not a recognized SAX property.", aSetting.getKey()));
+				}
+				catch (SAXNotSupportedException e) {
+					reportWarning(String.format("%s is not a supportd SAX property.", aSetting.getKey()));
+				}
+			}
+
+			// Check for any optional feature settings that are explicitly set in
+			// the parser config
+			for (RioSetting<Boolean> aSetting : getOptionalXmlFeatureSettings()) {
+				try {
+					if (getParserConfig().isSet(aSetting)) {
+						xmlReader.setFeature(aSetting.getKey(), getParserConfig().get(aSetting));
+					}
+				}
+				catch (SAXNotRecognizedException e) {
+					reportWarning(String.format("%s is not a recognized SAX feature.", aSetting.getKey()));
+				}
+				catch (SAXNotSupportedException e) {
+					reportWarning(String.format("%s is not a supportd SAX feature.", aSetting.getKey()));
+				}
+			}
+
+			// Check for any optional property settings that are explicitly set in
+			// the parser config
+			for (RioSetting<?> aSetting : getOptionalXmlPropertySettings()) {
+				try {
+					if (getParserConfig().isSet(aSetting)) {
+						xmlReader.setProperty(aSetting.getKey(), getParserConfig().get(aSetting));
+					}
+				}
+				catch (SAXNotRecognizedException e) {
+					reportWarning(String.format("%s is not a recognized SAX property.", aSetting.getKey()));
+				}
+				catch (SAXNotSupportedException e) {
+					reportWarning(String.format("%s is not a supportd SAX property.", aSetting.getKey()));
+				}
+			}
+
 			xmlReader.parse(inputSource);
-			// rdfHandler.endRDF();
 		}
 		catch (SAXParseException e) {
 			Exception wrappedExc = e.getException();
@@ -309,6 +385,83 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			usedIDs.clear();
 			clear();
 		}
+	}
+
+	/**
+	 * Returns a collection of settings that will always be set as XML parser
+	 * properties using {@link XMLReader#setProperty(String, Object)}
+	 * <p>
+	 * Subclasses can override this to specify more supported settings.
+	 * 
+	 * @return A collection of {@link RioSetting}s that indicate which properties
+	 *         will always be setup using
+	 *         {@link XMLReader#setProperty(String, Object)}.
+	 */
+	public Collection<RioSetting<?>> getCompulsoryXmlPropertySettings() {
+		return Collections.<RioSetting<?>> emptyList();
+	}
+
+	/**
+	 * Returns a collection of settings that will always be set as XML parser
+	 * features using {@link XMLReader#setFeature(String, boolean)}.
+	 * <p>
+	 * Subclasses can override this to specify more supported settings.
+	 * 
+	 * @return A collection of {@link RioSetting}s that indicate which boolean
+	 *         settings will always be setup using
+	 *         {@link XMLReader#setFeature(String, boolean)}.
+	 */
+	public Collection<RioSetting<Boolean>> getCompulsoryXmlFeatureSettings() {
+		Set<RioSetting<Boolean>> results = new HashSet<RioSetting<Boolean>>();
+		results.add(XMLParserSettings.SECURE_PROCESSING);
+		return results;
+	}
+
+	/**
+	 * Returns a collection of settings that will be used, if set in
+	 * {@link #getParserConfig()}, as XML parser properties using
+	 * {@link XMLReader#setProperty(String, Object)}
+	 * <p>
+	 * Subclasses can override this to specify more supported settings.
+	 * 
+	 * @return A collection of {@link RioSetting}s that indicate which properties
+	 *         can be setup using {@link XMLReader#setProperty(String, Object)}.
+	 */
+	public Collection<RioSetting<?>> getOptionalXmlPropertySettings() {
+		return Collections.<RioSetting<?>> emptyList();
+	}
+
+	/**
+	 * Returns a collection of settings that will be used, if set in
+	 * {@link #getParserConfig()}, as XML parser features using
+	 * {@link XMLReader#setFeature(String, boolean)}.
+	 * <p>
+	 * Subclasses can override this to specify more supported settings.
+	 * 
+	 * @return A collection of {@link RioSetting}s that indicate which boolean
+	 *         settings can be setup using
+	 *         {@link XMLReader#setFeature(String, boolean)}.
+	 */
+	public Collection<RioSetting<Boolean>> getOptionalXmlFeatureSettings() {
+		Set<RioSetting<Boolean>> results = new HashSet<RioSetting<Boolean>>();
+		results.add(XMLParserSettings.LOAD_EXTERNAL_DTD);
+		return results;
+	}
+
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		// Override to add RDF/XML specific supported settings
+		Set<RioSetting<?>> results = new HashSet<RioSetting<?>>();
+
+		results.addAll(super.getSupportedSettings());
+		results.addAll(getCompulsoryXmlPropertySettings());
+		results.addAll(getCompulsoryXmlFeatureSettings());
+		results.addAll(getOptionalXmlPropertySettings());
+		results.addAll(getOptionalXmlFeatureSettings());
+
+		results.add(XMLParserSettings.CUSTOM_XML_READER);
+
+		return results;
 	}
 
 	public SAXResult getSAXResult(String baseURI) {
@@ -861,7 +1014,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		return uri;
 	}
 
-	// Overrides RDFParserBase._createBNode(...)
+	@Override
 	protected BNode createBNode(String nodeID)
 		throws RDFParseException
 	{
@@ -1051,6 +1204,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * Overrides {@link RDFParserBase#reportWarning(String)}, adding line- and
 	 * column number information to the error.
 	 */
+	@Override
 	protected void reportWarning(String msg) {
 		Locator locator = saxFilter.getLocator();
 		if (locator != null) {
@@ -1065,6 +1219,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * Overrides {@link RDFParserBase#reportError(String)}, adding line- and
 	 * column number information to the error.
 	 */
+	@Override
 	protected void reportError(String msg)
 		throws RDFParseException
 	{
@@ -1081,6 +1236,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * Overrides {@link RDFParserBase#reportFatalError(String)}, adding line- and
 	 * column number information to the error.
 	 */
+	@Override
 	protected void reportFatalError(String msg)
 		throws RDFParseException
 	{
@@ -1097,6 +1253,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * Overrides {@link RDFParserBase#reportFatalError(Exception)}, adding line-
 	 * and column number information to the error.
 	 */
+	@Override
 	protected void reportFatalError(Exception e)
 		throws RDFParseException
 	{
@@ -1212,6 +1369,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	/**
 	 * Implementation of SAX ErrorHandler.warning
 	 */
+	@Override
 	public void warning(SAXParseException exception)
 		throws SAXException
 	{
@@ -1221,6 +1379,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	/**
 	 * Implementation of SAX ErrorHandler.error
 	 */
+	@Override
 	public void error(SAXParseException exception)
 		throws SAXException
 	{
@@ -1235,6 +1394,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	/**
 	 * Implementation of SAX ErrorHandler.fatalError
 	 */
+	@Override
 	public void fatalError(SAXParseException exception)
 		throws SAXException
 	{

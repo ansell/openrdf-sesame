@@ -25,7 +25,7 @@ import info.aduna.lang.FileFormat;
  * The base class of all file formats that represent the results of queries.
  * Currently this includes tuple and boolean queries.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  * @since 2.7.0
  */
 public class QueryResultFormat extends FileFormat {

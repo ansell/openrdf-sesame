@@ -22,7 +22,7 @@ import java.io.Serializable;
  * A namespace, consisting of a namespace name and a prefix that has been
  * assigned to it.
  */
-public interface Namespace extends Serializable {
+public interface Namespace extends Serializable, Comparable<Namespace> {
 
 	/**
 	 * Gets the name of the current namespace (i.e. it's URI).

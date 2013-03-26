@@ -27,7 +27,7 @@ import org.openrdf.rio.helpers.BasicParserSettings;
  * Test for ParserConfig to verify that the core operations succeed and are
  * consistent.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public class ParserConfigTest {
 

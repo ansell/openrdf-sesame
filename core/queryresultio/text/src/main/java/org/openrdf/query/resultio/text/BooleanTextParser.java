@@ -24,7 +24,6 @@ import java.nio.charset.Charset;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -37,8 +36,6 @@ import org.openrdf.query.resultio.QueryResultParserBase;
  * Reader for the plain text boolean result format.
  */
 public class BooleanTextParser extends QueryResultParserBase implements BooleanQueryResultParser {
-
-	private QueryResultHandler handler;
 
 	/*--------------*
 	 * Constructors *

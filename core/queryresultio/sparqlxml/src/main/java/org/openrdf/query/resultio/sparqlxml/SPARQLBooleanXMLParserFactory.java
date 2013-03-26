@@ -19,11 +19,9 @@ package org.openrdf.query.resultio.sparqlxml;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserFactory;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.query.resultio.TupleQueryResultParserFactory;
 
 /**
- * A {@link TupleQueryResultParserFactory} for parsers of SPARQL/XML boolean
+ * A {@link BooleanQueryResultParserFactory} for parsers of SPARQL/XML boolean
  * query results.
  * 
  * @author Arjohn Kampman
@@ -31,7 +29,7 @@ import org.openrdf.query.resultio.TupleQueryResultParserFactory;
 public class SPARQLBooleanXMLParserFactory implements BooleanQueryResultParserFactory {
 
 	/**
-	 * Returns {@link TupleQueryResultFormat#SPARQL}.
+	 * Returns {@link BooleanQueryResultFormat#SPARQL}.
 	 */
 	public BooleanQueryResultFormat getBooleanQueryResultFormat() {
 		return BooleanQueryResultFormat.SPARQL;

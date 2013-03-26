@@ -34,7 +34,7 @@ import org.openrdf.query.resultio.QueryResultParserBase;
 /**
  * Abstract base class for SPARQL Results XML Parsers.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 

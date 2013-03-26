@@ -23,12 +23,14 @@ import java.io.OutputStream;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -445,6 +447,43 @@ public class QueryResultIO {
 	}
 
 	/**
+	 * Convenience methods for creating QueryResultWriter objects. This method
+	 * uses the registry returned by
+	 * {@link TupleQueryResultWriterRegistry#getInstance()} to get a factory for
+	 * the specified format and uses this factory to create the appropriate
+	 * writer.
+	 * 
+	 * @throws UnsupportedQueryResultFormatException
+	 *         If no writer is available for the specified tuple query result
+	 *         format.
+	 * @since 2.7.0
+	 */
+	public static QueryResultWriter createWriter(QueryResultFormat format, OutputStream out)
+		throws UnsupportedQueryResultFormatException
+	{
+		if (format instanceof TupleQueryResultFormat) {
+
+			TupleQueryResultWriterFactory factory = TupleQueryResultWriterRegistry.getInstance().get(
+					(TupleQueryResultFormat)format);
+
+			if (factory != null) {
+				return factory.getWriter(out);
+			}
+		}
+		else if (format instanceof BooleanQueryResultFormat) {
+			BooleanQueryResultWriterFactory factory = BooleanQueryResultWriterRegistry.getInstance().get(
+					(BooleanQueryResultFormat)format);
+
+			if (factory != null) {
+				return factory.getWriter(out);
+			}
+		}
+
+		throw new UnsupportedQueryResultFormatException("No writer factory available for query result format "
+				+ format);
+	}
+
+	/**
 	 * Parses a query result document, reporting the parsed solutions to the
 	 * supplied TupleQueryResultHandler.
 	 * 
@@ -547,7 +586,22 @@ public class QueryResultIO {
 		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException
 	{
 		BooleanQueryResultParser parser = createParser(format);
-		return parser.parse(in);
+		try {
+
+			QueryResultCollector handler = new QueryResultCollector();
+			parser.setQueryResultHandler(handler);
+			parser.parseQueryResult(in);
+
+			if (handler.getHandledBoolean()) {
+				return handler.getBoolean();
+			}
+			else {
+				throw new QueryResultParseException("Did not find a boolean result");
+			}
+		}
+		catch (QueryResultHandlerException e) {
+			throw new QueryResultParseException(e);
+		}
 	}
 
 	/**

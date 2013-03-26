@@ -33,16 +33,15 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
-import org.openrdf.repository.http.config.HTTPRepositoryFactory;
 import org.openrdf.repository.manager.RepositoryInfo;
 import org.openrdf.repository.manager.SystemRepository;
-import org.openrdf.repository.sparql.config.SPARQLRepositoryFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -57,11 +56,13 @@ public class CreateServlet extends TransformationServlet {
 	private RepositoryManagerFederator rmf;
 
 	@Override
-	public void init(final ServletConfig config) throws ServletException{
+	public void init(final ServletConfig config)
+		throws ServletException
+	{
 		super.init(config);
 		this.rmf = new RepositoryManagerFederator(manager);
 	}
-	
+
 	/**
 	 * POST requests to this servlet come from the various specific create-* form
 	 * submissions.
@@ -83,29 +84,30 @@ public class CreateServlet extends TransformationServlet {
 	 * create.xsl form submissions.
 	 * 
 	 * @throws RepositoryException
+	 * @throws QueryResultHandlerException 
 	 */
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
-		throws IOException, RepositoryException
+		throws IOException, RepositoryException, QueryResultHandlerException
 	{
-		resp.setContentType("application/xml");
-		final TupleResultBuilder builder = new TupleResultBuilder(resp.getWriter());
-		boolean federate = false;
+		final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
+		boolean federate;
 		if (req.isParameterPresent("type")) {
 			final String type = req.getTypeParameter();
 			federate = "federate".equals(type);
 			builder.transform(xslPath, "create-" + type + ".xsl");
 		}
 		else {
+			federate = false;
 			builder.transform(xslPath, "create.xsl");
 		}
 		builder.start(federate ? new String[] { "id", "description", "location" } : new String[] {});
-		builder.link("info");
+		builder.link(Arrays.asList(INFO));
 		if (federate) {
 			for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
 				String identity = info.getId();
 				if (!SystemRepository.ID.equals(identity)) {
-					builder.result(info.getId(), info.getDescription(), info.getLocation());
+					builder.result(identity, info.getDescription(), info.getLocation());
 				}
 			}
 		}
@@ -115,18 +117,17 @@ public class CreateServlet extends TransformationServlet {
 	private String createRepositoryConfig(final WorkbenchRequest req)
 		throws IOException, OpenRDFException
 	{
-		final String type = req.getTypeParameter();
+		String type = req.getTypeParameter();
 		String newID;
 		if ("federate".equals(type)) {
 			newID = req.getParameter("Local repository ID");
-			rmf.addFed("http".equals(req.getParameter("federation-type")) ? HTTPRepositoryFactory.REPOSITORY_TYPE
-					: SPARQLRepositoryFactory.REPOSITORY_TYPE, newID, req.getParameter("Repository title"),
-					Arrays.asList(req.getParameterValues("memberID")));
+			rmf.addFed(newID, req.getParameter("Repository title"),
+					Arrays.asList(req.getParameterValues("memberID")),
+					Boolean.parseBoolean(req.getParameter("readonly")),
+					Boolean.parseBoolean(req.getParameter("distinct")));
 		}
 		else {
-			final String configString = getConfigTemplate(type).render(req.getSingleParameterMap());
-			final RepositoryConfig repConfig = updateRepositoryConfig(configString);
-			newID = repConfig.getID();
+			newID = updateRepositoryConfig(getConfigTemplate(type).render(req.getSingleParameterMap())).getID();
 		}
 		return newID;
 	}

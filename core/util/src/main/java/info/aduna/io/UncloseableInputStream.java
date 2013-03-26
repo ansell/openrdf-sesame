@@ -25,7 +25,7 @@ import java.io.InputStream;
  * streams unexpectedly using the {@link #close()} method. Instead, they must be
  * closed by the creator using {@link #doClose()}.
  * 
- * @author Peter Ansell p_ansell@yahoo.com
+ * @author Peter Ansell
  */
 public class UncloseableInputStream extends FilterInputStream {
 
