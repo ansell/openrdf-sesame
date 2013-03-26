@@ -20,7 +20,6 @@ package org.openrdf.sail.memory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.LockingIteration;
@@ -88,16 +87,16 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	private volatile Lock txnLock;
 
 	/**
+	 * Indicates if the current connection has already acquired an exclusive transaction lock.
+	 */
+	private volatile boolean txnLockAcquired;
+	
+	/**
 	 * A statement list read lock held by this connection during transactions.
 	 * Keeping this lock prevents statements from being removed from the main
 	 * statement list during transactions.
 	 */
 	private volatile Lock txnStLock;
-
-	/**
-	 * flag indicating the current transaction has initiated the exclusive lock.
-	 */
-	private volatile boolean txnLockInitialized;
 
 	/*--------------*
 	 * Constructors *
@@ -348,49 +347,36 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
-		txnStLock = store.getStatementsReadLock();
-		txnLockInitialized = false;
-
-		/*
-		boolean releaseLocks = true;
-
-		try {
-			// Prevent concurrent transactions by acquiring an exclusive txn lock
-			txnLock = store.getTransactionLock();
-
-			try {
-				store.startTransaction();
-				releaseLocks = false;
-			}
-			finally {
-				if (releaseLocks) {
-					txnLock.release();
-				}
-			}
-		}
-		finally {
-			if (releaseLocks) {
-				txnStLock.release();
-			}
-		}
-		*/
+		txnLockAcquired = false;
+		
+		// actual starting of transaction locking is handled on first modification
+		// operation. this allows concurrent reads while no changes have been
+		// made.
 	}
 
-	private synchronized void initializeTransactionExclusiveLock()
+	private synchronized void acquireExclusiveTransactionLock()
 		throws SailException
 	{
-		if (!txnLockInitialized) {
-			txnLock = store.getTransactionLock();
+		if (!txnLockAcquired) {
+			txnStLock = store.getStatementsReadLock();
+
 			boolean releaseLocks = true;
 			try {
-				store.startTransaction();
-				releaseLocks = false;
-				txnLockInitialized = true;
+				txnLock = store.getTransactionLock();
+				try {
+					store.startTransaction();
+					releaseLocks = false;
+					txnLockAcquired = true;
+				}
+				finally {
+					if (releaseLocks) {
+						txnLock.release();
+					}
+				}
 			}
 			finally {
 				if (releaseLocks) {
-					txnLock.release();
-					txnLockInitialized = false;
+					txnStLock.release();
 				}
 			}
 		}
@@ -400,12 +386,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		if (txnLockInitialized) {
-			store.commit();
-			if (txnLock != null) {
-				txnLock.release();
-				txnLockInitialized = false;
-			}
+		store.commit();
+		if (txnLock != null) {
+			txnLock.release();
+			txnLockAcquired = false;
 		}
 		txnStLock.release();
 	}
@@ -415,14 +399,12 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		try {
-			if (txnLockInitialized) {
-				store.rollback();
-			}
+			store.rollback();
 		}
 		finally {
 			if (txnLock != null) {
 				txnLock.release();
-				txnLockInitialized = false;
+				txnLockAcquired = false;
 			}
 			txnStLock.release();
 		}
@@ -465,7 +447,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 
 		assert txnStLock.isActive();
 		assert txnLock.isActive();
@@ -584,7 +566,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			boolean explicit)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 
 		boolean statementsRemoved = false;
 
@@ -610,7 +592,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void setNamespaceInternal(String prefix, String name)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		try {
@@ -625,7 +607,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void removeNamespaceInternal(String prefix)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().removeNamespace(prefix);
 	}
