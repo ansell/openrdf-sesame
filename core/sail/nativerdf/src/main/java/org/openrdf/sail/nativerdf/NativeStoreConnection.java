@@ -85,7 +85,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 */
 	private volatile Lock txnLock;
 
-	private volatile boolean transactionInitialized;
+	private volatile boolean txnLockAcquired;
 
 	/*--------------*
 	 * Constructors *
@@ -295,17 +295,17 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		// we do nothing, but delay obtaining transaction locks until the first write operation.
 	}
 	
-	private void initializeTransactionExclusiveLock()
+	private void acquireExclusiveTransactionLock()
 		throws SailException
 	{
-		if (!transactionInitialized) {
+		if (!txnLockAcquired) {
 			txnLock = nativeStore.getTransactionLock();
 			boolean releaseLock = true;
 
 			try {
 				nativeStore.getTripleStore().startTransaction();
 				releaseLock = false;
-				transactionInitialized = true;
+				txnLockAcquired = true;
 			}
 			catch (IOException e) {
 				throw new SailException(e);
@@ -313,7 +313,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			finally {
 				if (releaseLock) {
 					txnLock.release();
-					transactionInitialized = false;
+					txnLockAcquired = false;
 				}
 			}
 		}
@@ -328,10 +328,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			nativeStore.getNamespaceStore().sync();
 			nativeStore.getTripleStore().commit();
 
-			if (transactionInitialized) {
+			if (txnLockAcquired) {
 				txnLock.release();
 			}
-			transactionInitialized = false;
+			txnLockAcquired = false;
 		}
 		catch (IOException e) {
 			throw new SailException(e);
@@ -363,10 +363,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			throw e;
 		}
 		finally {
-			if (transactionInitialized) { 
+			if (txnLockAcquired) { 
 				txnLock.release();
 			}
-			transactionInitialized = false;
+			txnLockAcquired = false;
 		}
 	}
 
@@ -401,7 +401,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 		
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -489,7 +489,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 		
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -613,7 +613,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void setNamespaceInternal(String prefix, String name)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().setNamespace(prefix, name);
 	}
 
@@ -621,7 +621,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void removeNamespaceInternal(String prefix)
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().removeNamespace(prefix);
 	}
 
@@ -629,7 +629,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void clearNamespacesInternal()
 		throws SailException
 	{
-		initializeTransactionExclusiveLock();
+		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().clear();
 	}
 }
