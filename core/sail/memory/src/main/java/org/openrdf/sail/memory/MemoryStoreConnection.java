@@ -87,10 +87,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	private volatile Lock txnLock;
 
 	/**
-	 * Indicates if the current connection has already acquired an exclusive transaction lock.
+	 * Indicates if the current connection has already acquired an exclusive
+	 * transaction lock.
 	 */
 	private volatile boolean txnLockAcquired;
-	
+
 	/**
 	 * A statement list read lock held by this connection during transactions.
 	 * Keeping this lock prevents statements from being removed from the main
@@ -348,13 +349,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		txnLockAcquired = false;
-		
+
 		// actual starting of transaction locking is handled on first modification
 		// operation. this allows concurrent reads while no changes have been
 		// made.
 	}
 
-	private synchronized void acquireExclusiveTransactionLock()
+	private void acquireExclusiveTransactionLock()
 		throws SailException
 	{
 		if (!txnLockAcquired) {
@@ -386,27 +387,31 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		store.commit();
-		if (txnLock != null) {
-			txnLock.release();
-			txnLockAcquired = false;
+		if (txnLockAcquired) {
+			store.commit();
+			if (txnLock != null) {
+				txnLock.release();
+				txnLockAcquired = false;
+			}
+			txnStLock.release();
 		}
-		txnStLock.release();
 	}
 
 	@Override
 	protected void rollbackInternal()
 		throws SailException
 	{
-		try {
-			store.rollback();
-		}
-		finally {
-			if (txnLock != null) {
-				txnLock.release();
-				txnLockAcquired = false;
+		if (txnLockAcquired) {
+			try {
+				store.rollback();
 			}
-			txnStLock.release();
+			finally {
+				if (txnLock != null) {
+					txnLock.release();
+					txnLockAcquired = false;
+				}
+				txnStLock.release();
+			}
 		}
 	}
 
