@@ -27,8 +27,7 @@ import org.openrdf.query.impl.AbstractQuery;
 
 
 /**
- * Base class for any {@link Query} operation of the HTTP Repository
- * and SPARQL Repository.
+ * Base class for any {@link Query} operation over HTTP.
  * 
  * @author Andreas Schwarte
  */

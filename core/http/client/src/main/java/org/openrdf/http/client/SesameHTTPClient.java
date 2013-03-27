@@ -70,7 +70,7 @@ import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * An {@link HTTPClient} subclass which bundles special functionality 
- * for Sesame remote repositories
+ * for Sesame remote repositories.
  *
  * @author Andreas Schwarte
  */

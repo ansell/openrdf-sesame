@@ -28,11 +28,11 @@ import org.openrdf.query.resultio.TupleQueryResultParser;
  * Provides concurrent access to tuple results as they are being parsed.
  * 
  * @author James Leigh
- * @deprecated use {@link org.openrdf.http.client.BackgroundTupleResult} instead
+ * @deprecated since 2.7.0. use
+ *             {@link org.openrdf.http.client.BackgroundTupleResult} instead
  * @see org.openrdf.http.client.BackgroundTupleResult
  */
 public class BackgroundTupleResult extends org.openrdf.http.client.BackgroundTupleResult {
-
 
 	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
 			HttpMethod connection)
@@ -42,5 +42,5 @@ public class BackgroundTupleResult extends org.openrdf.http.client.BackgroundTup
 
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
 		super(parser, in, connection);
-	}	
+	}
 }

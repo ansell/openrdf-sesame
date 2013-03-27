@@ -29,7 +29,8 @@ import org.openrdf.rio.RDFParser;
  * Provides concurrent access to statements as they are being parsed.
  * 
  * @author James Leigh
- * @deprecated use {@link org.openrdf.http.client.BackgroundGraphResult} instead
+ * @deprecated Since 2.7.0. Use
+ *             {@link org.openrdf.http.client.BackgroundGraphResult} instead
  * @see org.openrdf.http.client.BackgroundGraphResult
  */
 public class BackgroundGraphResult extends org.openrdf.http.client.BackgroundGraphResult {
