@@ -85,6 +85,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 */
 	private volatile Lock txnLock;
 
+	private volatile boolean txnLockAcquired;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -136,7 +138,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			new DisjunctiveConstraintOptimizer().optimize(tupleExpr, dataset, bindings);
 			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
-//			new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			// new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
 			new QueryJoinOptimizer(new NativeEvaluationStatistics(nativeStore)).optimize(tupleExpr, dataset,
 					bindings);
 			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
@@ -288,22 +290,31 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void startTransactionInternal()
+	protected void startTransactionInternal() throws SailException
+	{
+		// we do nothing, but delay obtaining transaction locks until the first write operation.
+	}
+	
+	private void acquireExclusiveTransactionLock()
 		throws SailException
 	{
-		txnLock = nativeStore.getTransactionLock();
-		boolean relaseLock = true;
+		if (!txnLockAcquired) {
+			txnLock = nativeStore.getTransactionLock();
+			boolean releaseLock = true;
 
-		try {
-			nativeStore.getTripleStore().startTransaction();
-			relaseLock = false;
-		}
-		catch (IOException e) {
-			throw new SailException(e);
-		}
-		finally {
-			if (relaseLock) {
-				txnLock.release();
+			try {
+				nativeStore.getTripleStore().startTransaction();
+				releaseLock = false;
+				txnLockAcquired = true;
+			}
+			catch (IOException e) {
+				throw new SailException(e);
+			}
+			finally {
+				if (releaseLock) {
+					txnLock.release();
+					txnLockAcquired = false;
+				}
 			}
 		}
 	}
@@ -317,7 +328,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			nativeStore.getNamespaceStore().sync();
 			nativeStore.getTripleStore().commit();
 
-			txnLock.release();
+			if (txnLockAcquired) {
+				txnLock.release();
+			}
+			txnLockAcquired = false;
 		}
 		catch (IOException e) {
 			throw new SailException(e);
@@ -349,7 +363,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			throw e;
 		}
 		finally {
-			txnLock.release();
+			if (txnLockAcquired) { 
+				txnLock.release();
+			}
+			txnLockAcquired = false;
 		}
 	}
 
@@ -384,6 +401,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
+		
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		boolean result = false;
@@ -470,6 +489,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
+		
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
@@ -592,6 +613,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void setNamespaceInternal(String prefix, String name)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().setNamespace(prefix, name);
 	}
 
@@ -599,6 +621,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void removeNamespaceInternal(String prefix)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().removeNamespace(prefix);
 	}
 
@@ -606,6 +629,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void clearNamespacesInternal()
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().clear();
 	}
 }

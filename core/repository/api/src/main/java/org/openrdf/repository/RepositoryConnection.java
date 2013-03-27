@@ -555,8 +555,7 @@ public interface RepositoryConnection {
 	 * be called to end the transaction.
 	 * 
 	 * @throws RepositoryException
-	 *         If the connection could not start a transaction, or if it already
-	 *         has an active transaction.
+	 *         If the connection could not start a transaction.
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()

@@ -153,8 +153,7 @@ public interface SailConnection {
 	 * 
 	 * @since 2.7.0
 	 * @throws SailException
-	 *         If the connection could not start a transaction, or if it already
-	 *         has an active transaction.
+	 *         If the connection could not start a transaction.
 	 */
 	public void begin()
 		throws SailException;

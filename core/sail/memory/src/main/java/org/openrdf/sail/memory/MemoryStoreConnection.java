@@ -87,6 +87,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	private volatile Lock txnLock;
 
 	/**
+	 * Indicates if the current connection has already acquired an exclusive transaction lock.
+	 */
+	private volatile boolean txnLockAcquired;
+	
+	/**
 	 * A statement list read lock held by this connection during transactions.
 	 * Keeping this lock prevents statements from being removed from the main
 	 * statement list during transactions.
@@ -145,7 +150,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
 			new QueryJoinOptimizer(new MemEvaluationStatistics()).optimize(tupleExpr, dataset, bindings);
-//			new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			// new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
 			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
 			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
 			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
@@ -342,26 +347,37 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
-		txnStLock = store.getStatementsReadLock();
-		boolean releaseLocks = true;
+		txnLockAcquired = false;
+		
+		// actual starting of transaction locking is handled on first modification
+		// operation. this allows concurrent reads while no changes have been
+		// made.
+	}
 
-		try {
-			// Prevent concurrent transactions by acquiring an exclusive txn lock
-			txnLock = store.getTransactionLock();
+	private synchronized void acquireExclusiveTransactionLock()
+		throws SailException
+	{
+		if (!txnLockAcquired) {
+			txnStLock = store.getStatementsReadLock();
 
+			boolean releaseLocks = true;
 			try {
-				store.startTransaction();
-				releaseLocks = false;
+				txnLock = store.getTransactionLock();
+				try {
+					store.startTransaction();
+					releaseLocks = false;
+					txnLockAcquired = true;
+				}
+				finally {
+					if (releaseLocks) {
+						txnLock.release();
+					}
+				}
 			}
 			finally {
 				if (releaseLocks) {
-					txnLock.release();
+					txnStLock.release();
 				}
-			}
-		}
-		finally {
-			if (releaseLocks) {
-				txnStLock.release();
 			}
 		}
 	}
@@ -371,7 +387,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		store.commit();
-		txnLock.release();
+		if (txnLock != null) {
+			txnLock.release();
+			txnLockAcquired = false;
+		}
 		txnStLock.release();
 	}
 
@@ -383,7 +402,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			store.rollback();
 		}
 		finally {
-			txnLock.release();
+			if (txnLock != null) {
+				txnLock.release();
+				txnLockAcquired = false;
+			}
 			txnStLock.release();
 		}
 	}
@@ -425,6 +447,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
+
 		assert txnStLock.isActive();
 		assert txnLock.isActive();
 
@@ -542,6 +566,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			boolean explicit)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
+
 		boolean statementsRemoved = false;
 
 		try {
@@ -566,6 +592,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void setNamespaceInternal(String prefix, String name)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
+
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		try {
 			store.getNamespaceStore().setNamespace(prefix, name);
@@ -579,6 +607,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void removeNamespaceInternal(String prefix)
 		throws SailException
 	{
+		acquireExclusiveTransactionLock();
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().removeNamespace(prefix);
 	}
@@ -587,6 +616,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void clearNamespacesInternal()
 		throws SailException
 	{
+
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().clear();
 	}
@@ -647,23 +677,27 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			@Override
 			public double getCardinality(StatementPattern sp) {
-				
+
 				Value subj = getConstantValue(sp.getSubjectVar());
 				if (!(subj instanceof Resource)) {
-					// can happen when a previous optimizer has inlined a comparison operator. 
-					// this can cause, for example, the subject variable to be equated to a literal value. 
+					// can happen when a previous optimizer has inlined a comparison
+					// operator.
+					// this can cause, for example, the subject variable to be
+					// equated to a literal value.
 					// See SES-970 / SES-998
 					subj = null;
 				}
 				Value pred = getConstantValue(sp.getPredicateVar());
 				if (!(pred instanceof URI)) {
-					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					// can happen when a previous optimizer has inlined a comparison
+					// operator. See SES-970 / SES-998
 					pred = null;
 				}
 				Value obj = getConstantValue(sp.getObjectVar());
 				Value context = getConstantValue(sp.getContextVar());
 				if (!(context instanceof Resource)) {
-					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 / SES-998
+					// can happen when a previous optimizer has inlined a comparison
+					// operator. See SES-970 / SES-998
 					context = null;
 				}
 
