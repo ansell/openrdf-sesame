@@ -87,9 +87,19 @@ public class BasicParserSettings {
 			"org.openrdf.rio.largeliterals", "Large literals handling", LiteralHandling.PRESERVE);
 
 	/**
-	 * If {@link #LARGE_LITERALS_HANDLING} is set to true, then the value of this
-	 * setting corresponds to the maximum number of bytes for a literal before
-	 * the statement it is a part of is dropped silently by the parser.
+	 * If {@link #LARGE_LITERALS_HANDLING} is set to
+	 * {@link LiteralHandling#PRESERVE}, which it is by default, then the value
+	 * of this setting is not used.
+	 * <p>
+	 * If {@link #LARGE_LITERALS_HANDLING} is set to {@link LiteralHandling#DROP}
+	 * , then the value of this setting corresponds to the maximum number of
+	 * bytes for a literal before the statement it is a part of is dropped
+	 * silently by the parser.
+	 * <p>
+	 * If {@link #LARGE_LITERALS_HANDLING} is set to
+	 * {@link LiteralHandling#TRUNCATE} , then the value of this setting
+	 * corresponds to the maximum number of bytes for a literal before the value
+	 * is truncated.
 	 * <p>
 	 * Defaults to 1048576 bytes, which is equivalent to 1 megabyte.
 	 * 
