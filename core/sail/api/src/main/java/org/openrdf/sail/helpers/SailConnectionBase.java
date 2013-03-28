@@ -180,6 +180,9 @@ public abstract class SailConnectionBase implements SailConnection {
 
 			updateLock.lock();
 			try {
+				if (isActive()) {
+					throw new SailException("a transaction is already active on this connection.");
+				}
 				startTransactionInternal();
 				txnActive = true;
 			}

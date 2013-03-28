@@ -153,7 +153,8 @@ public interface SailConnection {
 	 * 
 	 * @since 2.7.0
 	 * @throws SailException
-	 *         If the connection could not start a transaction.
+	 *         If the connection could not start a transaction or if a
+	 *         transaction is already active on this connection.
 	 */
 	public void begin()
 		throws SailException;
@@ -331,8 +332,8 @@ public interface SailConnection {
 	 * operation.
 	 * 
 	 * @param op
-	 *        operation properties of the {@link UpdateExpr} operation removing these
-	 *        statements.
+	 *        operation properties of the {@link UpdateExpr} operation removing
+	 *        these statements.
 	 * @param subj
 	 *        The subject of the statement that should be removed.
 	 * @param pred
@@ -350,8 +351,7 @@ public interface SailConnection {
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
-	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**

@@ -700,6 +700,9 @@ public abstract class RDFStoreTest extends TestCase {
 				assertTrue(sharedCon != null);
 
 				try {
+					while (sharedCon.isActive()) {
+						Thread.sleep(10);
+					}
 					sharedCon.begin();
 					sharedCon.addStatement(painter, RDF.TYPE, RDFS.CLASS);
 					sharedCon.commit();
@@ -758,6 +761,9 @@ public abstract class RDFStoreTest extends TestCase {
 		newThread.start();
 
 		try {
+			while (con.isActive()) {
+				Thread.sleep(10);
+			}
 			con.begin();
 			con.addStatement(picasso, RDF.TYPE, painter);
 			con.commit();
