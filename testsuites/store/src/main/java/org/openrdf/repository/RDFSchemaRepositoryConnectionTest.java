@@ -16,6 +16,11 @@
  */
 package org.openrdf.repository;
 
+import static org.junit.Assert.*;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
@@ -33,10 +38,6 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 
 	private URI man;
 
-	public RDFSchemaRepositoryConnectionTest(String name) {
-		super(name);
-	}
-
 	@Override
 	public void setUp()
 		throws Exception
@@ -48,6 +49,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		man = vf.createURI("http://example.org/Man");
 	}
 
+	@Test
 	public void testDomainInference()
 		throws Exception
 	{
@@ -59,6 +61,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertTrue(testCon.hasStatement(bob, RDF.TYPE, person, true));
 	}
 
+	@Test
 	public void testSubClassInference()
 		throws Exception
 	{
@@ -71,6 +74,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
 	}
 
+	@Test
 	public void testMakeExplicit()
 		throws Exception
 	{
@@ -88,6 +92,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertTrue(testCon.hasStatement(alice, RDF.TYPE, person, true));
 	}
 
+	@Test
 	public void testExplicitFlag()
 		throws Exception
 	{
@@ -108,6 +113,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		}
 	}
 
+	@Test
 	public void testInferencerUpdates()
 		throws Exception
 	{
@@ -121,6 +127,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertFalse(testCon.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
 
+	@Test
 	public void testInferencerQueryDuringTransaction()
 		throws Exception
 	{
@@ -132,6 +139,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		testCon.commit();
 	}
 
+	@Test
 	public void testInferencerTransactionIsolation()
 		throws Exception
 	{
@@ -147,6 +155,8 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		assertTrue(testCon2.hasStatement(bob, RDF.TYPE, RDFS.RESOURCE, true));
 	}
 
+	@Ignore
+	@Test
 	@Override
 	public void testDefaultContext()
 		throws Exception
@@ -154,6 +164,8 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		// ignore
 	}
 
+	@Ignore
+	@Test
 	@Override
 	public void testDefaultInsertContext()
 		throws Exception
@@ -161,6 +173,8 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 		// ignore
 	}
 
+	@Ignore
+	@Test
 	@Override
 	public void testExclusiveNullContext()
 		throws Exception

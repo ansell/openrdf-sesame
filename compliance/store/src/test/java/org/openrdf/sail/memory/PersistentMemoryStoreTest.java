@@ -34,10 +34,6 @@ public class PersistentMemoryStoreTest extends RDFNotifyingStoreTest {
 
 	private volatile File dataDir;
 
-	public PersistentMemoryStoreTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected NotifyingSail createSail()
 		throws SailException
@@ -54,7 +50,7 @@ public class PersistentMemoryStoreTest extends RDFNotifyingStoreTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

@@ -16,6 +16,9 @@
  */
 package org.openrdf.repository.http;
 
+import static org.junit.Assert.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.URI;
@@ -27,10 +30,6 @@ import org.openrdf.repository.RepositoryConnectionTest;
 public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 	private HTTPMemServer server;
-
-	public HTTPStoreConnectionTest(String name) {
-		super(name);
-	}
 
 	@Override
 	public void setUp()
@@ -60,6 +59,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testTransactionIsolation()
 		throws Exception
@@ -67,6 +68,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testTransactionIsolation() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testAutoCommit()
 		throws Exception
@@ -74,6 +77,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testAutoCommit() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testRollback()
 		throws Exception
@@ -81,6 +86,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testRollback() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testEmptyCommit()
 		throws Exception
@@ -88,6 +95,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testEmptyCommit() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testEmptyRollback()
 		throws Exception
@@ -95,6 +104,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testEmptyRollback() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testSizeCommit()
 		throws Exception
@@ -102,6 +113,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testSizeCommit() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testSizeRollback()
 		throws Exception
@@ -109,6 +122,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testSizeRollback() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testGetContextIDs()
 		throws Exception
@@ -116,6 +131,8 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testGetContextIDs() for HTTPRepository");
 	}
 
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
 	@Override
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");

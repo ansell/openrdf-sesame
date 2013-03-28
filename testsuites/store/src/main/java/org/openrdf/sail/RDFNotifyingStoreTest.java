@@ -16,6 +16,10 @@
  */
 package org.openrdf.sail;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -35,14 +39,6 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 
 	private int addEventCount;
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public RDFNotifyingStoreTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -55,11 +51,12 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 	 * @throws SailException
 	 *         If the initialization of the repository failed.
 	 */
+	@Override
 	protected abstract NotifyingSail createSail()
 		throws SailException;
 
 	@Override
-	protected void setUp()
+	public void setUp()
 		throws Exception
 	{
 		super.setUp();
@@ -69,6 +66,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 
 	}
 
+	@Test
 	public void testNotifyingRemoveAndClear()
 		throws Exception
 	{
@@ -113,6 +111,7 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 		assertEquals("There should have been 3 events in which statements were removed", 3, removeEventCount);
 	}
 
+	@Override
 	public void sailChanged(SailChangedEvent event) {
 		if (event.statementsAdded()) {
 			addEventCount++;

@@ -24,10 +24,6 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class RDFSchemaMemoryRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
 
-	public RDFSchemaMemoryRepositoryConnectionTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository createRepository() {
 		return new SailRepository(new ForwardChainingRDFSInferencer(new MemoryStore()));

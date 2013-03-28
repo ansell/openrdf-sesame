@@ -23,8 +23,8 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,6 +48,12 @@ import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import junit.framework.TestCase;
 
@@ -88,7 +94,13 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
 
-public abstract class RepositoryConnectionTest extends TestCase {
+public abstract class RepositoryConnectionTest {
+
+	/**
+	 * Timeout all individual tests after 1 minute.
+	 */
+	@Rule
+	public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
@@ -170,12 +182,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 	protected Literal Александър;
 
-	public RepositoryConnectionTest(String name) {
-		super(name);
-	}
-
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		testRepository = createRepository();
@@ -211,8 +219,8 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		context2 = vf.createURI("urn:x-local:graph2");
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		testCon2.close();
@@ -228,6 +236,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 	protected abstract Repository createRepository()
 		throws Exception;
 
+	@Test
 	public void testAddStatement()
 		throws Exception
 	{
@@ -253,6 +262,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		tempRep.shutDown();
 	}
 
+	@Test
 	public void testAddLiteralWithNewline()
 		throws Exception
 	{
@@ -262,6 +272,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue(NEWLY_ADDED, testCon.hasStatement(bob, RDFS.LABEL, test, false));
 	}
 
+	@Test
 	public void testTransactionIsolation()
 		throws Exception
 	{
@@ -274,6 +285,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon2.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
 	}
 
+	@Test
 	public void testAddReader()
 		throws Exception
 	{
@@ -310,6 +322,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				testCon.hasStatement(null, name, nameBob, false, context1));
 	}
 
+	@Test
 	public void testAddInputStream()
 		throws Exception
 	{
@@ -342,6 +355,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				testCon.hasStatement(null, name, nameBob, false, context1));
 	}
 
+	@Test
 	public void testAddGzipInputStream()
 		throws Exception
 	{
@@ -360,6 +374,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 
 	}
 
+	@Test
 	public void testAddZipFile()
 		throws Exception
 	{
@@ -371,6 +386,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
 	}
 
+	@Test
 	public void testAutoCommit()
 		throws Exception
 	{
@@ -386,6 +402,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				testCon.hasStatement(alice, name, nameAlice, false));
 	}
 
+	@Test
 	public void testRollback()
 		throws Exception
 	{
@@ -401,6 +418,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				testCon.hasStatement(alice, name, nameAlice, false));
 	}
 
+	@Test
 	public void testSimpleTupleQuery()
 		throws Exception
 	{
@@ -434,6 +452,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPrepareSeRQLQuery()
 		throws Exception
 	{
@@ -471,6 +490,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPrepareSPARQLQuery()
 		throws Exception
 	{
@@ -509,6 +529,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimpleTupleQueryUnicode()
 		throws Exception
 	{
@@ -532,6 +553,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPreparedTupleQuery()
 		throws Exception
 	{
@@ -567,6 +589,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPreparedTupleQuery2()
 		throws Exception
 	{
@@ -603,6 +626,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPreparedTupleQueryUnicode()
 		throws Exception
 	{
@@ -633,6 +657,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimpleGraphQuery()
 		throws Exception
 	{
@@ -672,6 +697,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPreparedGraphQuery()
 		throws Exception
 	{
@@ -711,6 +737,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testSimpleBooleanQuery()
 		throws Exception
 	{
@@ -732,6 +759,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(exists, is(equalTo(true)));
 	}
 
+	@Test
 	public void testPreparedBooleanQuery()
 		throws Exception
 	{
@@ -754,6 +782,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(query.evaluate(), is(equalTo(true)));
 	}
 
+	@Test
 	public void testDataset()
 		throws Exception
 	{
@@ -809,6 +838,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(query.evaluate(), is(equalTo(true)));
 	}
 
+	@Test
 	public void testGetStatements()
 		throws Exception
 	{
@@ -839,6 +869,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
+	@Test
 	public void testGetStatementsInSingleContext()
 		throws Exception
 	{
@@ -899,6 +930,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
+	@Test
 	public void testGetStatementsInMultipleContexts()
 		throws Exception
 	{
@@ -1016,6 +1048,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDuplicateFilter()
 		throws Exception
 	{
@@ -1036,6 +1069,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(count, is(equalTo(1)));
 	}
 
+	@Test
 	public void testRemoveStatements()
 		throws Exception
 	{
@@ -1057,6 +1091,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 	}
 
+	@Test
 	public void testRemoveStatementCollection()
 		throws Exception
 	{
@@ -1077,6 +1112,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(alice, name, nameAlice, false), is(equalTo(false)));
 	}
 
+	@Test
 	public void testRemoveStatementIteration()
 		throws Exception
 	{
@@ -1102,6 +1138,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(alice, name, nameAlice, false), is(equalTo(false)));
 	}
 
+	@Test
 	public void testGetNamespace()
 		throws RDFParseException, RepositoryException, IOException
 	{
@@ -1112,6 +1149,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.getNamespace("undefined"), is(nullValue()));
 	}
 
+	@Test
 	public void testGetNamespaces()
 		throws Exception
 	{
@@ -1136,6 +1174,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 				vf.createLiteral("Main Node"));
 	}
 
+	@Test
 	public void testClear()
 		throws Exception
 	{
@@ -1145,6 +1184,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(null, name, nameBob, false), is(equalTo(false)));
 	}
 
+	@Test
 	public void testRecoverFromParseError()
 		throws RepositoryException, IOException
 	{
@@ -1169,6 +1209,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertEquals("Repository contains incorrect number of statements", 1, testCon.size());
 	}
 
+	@Test
 	public void testStatementSerialization()
 		throws Exception
 	{
@@ -1199,6 +1240,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(deserialized, true), is(equalTo(true)));
 	}
 
+	@Test
 	public void testBNodeSerialization()
 		throws Exception
 	{
@@ -1231,6 +1273,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(deserializedBNode, name, nameBob, true), is(equalTo(true)));
 	}
 
+	@Test
 	public void testURISerialization()
 		throws Exception
 	{
@@ -1263,6 +1306,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(bob, deserializedURI, nameBob, true), is(equalTo(true)));
 	}
 
+	@Test
 	public void testLiteralSerialization()
 		throws Exception
 	{
@@ -1295,6 +1339,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.hasStatement(bob, name, deserialized, true), is(equalTo(true)));
 	}
 
+	@Test
 	public void testGraphSerialization()
 		throws Exception
 	{
@@ -1328,6 +1373,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEmptyRollback()
 		throws Exception
 	{
@@ -1342,6 +1388,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 	}
 
+	@Test
 	public void testEmptyCommit()
 		throws Exception
 	{
@@ -1356,6 +1403,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon2.isEmpty(), is(equalTo(false)));
 	}
 
+	@Test
 	public void testOpen()
 		throws Exception
 	{
@@ -1366,6 +1414,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon2.isOpen(), is(equalTo(true)));
 	}
 
+	@Test
 	public void testSizeRollback()
 		throws Exception
 	{
@@ -1383,6 +1432,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon2.size(), is(equalTo(0L)));
 	}
 
+	@Test
 	public void testSizeCommit()
 		throws Exception
 	{
@@ -1400,6 +1450,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon2.size(), is(equalTo(2L)));
 	}
 
+	@Test
 	public void testAddRemove()
 		throws Exception
 	{
@@ -1424,6 +1475,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		});
 	}
 
+	@Test
 	public void testInferredStatementCount()
 		throws Exception
 	{
@@ -1439,6 +1491,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(getTotalStatementCount(testCon), is(equalTo(inferred)));
 	}
 
+	@Test
 	public void testGetContextIDs()
 		throws Exception
 	{
@@ -1461,6 +1514,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		testCon.commit();
 	}
 
+	@Test
 	public void testXmlCalendarZ()
 		throws Exception
 	{
@@ -1499,6 +1553,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(list.size(), is(equalTo(7)));
 	}
 
+	@Test
 	public void testOptionalFilter()
 		throws Exception
 	{
@@ -1525,6 +1580,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(set, hasItem(Arrays.asList(v3, null)));
 	}
 
+	@Test
 	public void testOrPredicate()
 		throws Exception
 	{
@@ -1548,6 +1604,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(list, hasItem(p2));
 	}
 
+	@Test
 	public void testSES713()
 		throws Exception
 	{
@@ -1563,6 +1620,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOrderByQueriesAreInterruptable()
 		throws Exception
 	{
@@ -1591,17 +1649,18 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testQueryDefaultGraph()
 		throws Exception
 	{
 		URI graph = vf.createURI("urn:test:default");
 		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
 		assertThat(size(graph), is(equalTo(0)));
-		testCon.add(vf.createURI("urn:test:s2"), vf.createURI(URN_TEST_P2), vf.createURI("urn:test:o2"),
-				graph);
+		testCon.add(vf.createURI("urn:test:s2"), vf.createURI(URN_TEST_P2), vf.createURI("urn:test:o2"), graph);
 		assertThat(size(graph), is(equalTo(1)));
 	}
 
+	@Test
 	public void testQueryBaseURI()
 		throws Exception
 	{
@@ -1616,6 +1675,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUpdateBaseURI()
 		throws Exception
 	{
@@ -1623,6 +1683,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(testCon.size(), is(equalTo(1L)));
 	}
 
+	@Test
 	public void testDeleteDefaultGraph()
 		throws Exception
 	{
@@ -1640,6 +1701,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(size(g2), is(equalTo(1)));
 	}
 
+	@Test
 	public void testDefaultContext()
 		throws Exception
 	{
@@ -1668,6 +1730,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(1)));
 	}
 
+	@Test
 	public void testDefaultInsertContext()
 		throws Exception
 	{
@@ -1695,6 +1758,7 @@ public abstract class RepositoryConnectionTest extends TestCase {
 		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(0)));
 	}
 
+	@Test
 	public void testExclusiveNullContext()
 		throws Exception
 	{

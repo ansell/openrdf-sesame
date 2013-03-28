@@ -30,11 +30,10 @@ public class FederationTest extends RDFStoreTest {
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
-
-	public FederationTest(String name) {
-		super(name);
+	public FederationTest() {
+		super();
 	}
-
+	
 	/*---------*
 	 * Methods *
 	 *---------*/
