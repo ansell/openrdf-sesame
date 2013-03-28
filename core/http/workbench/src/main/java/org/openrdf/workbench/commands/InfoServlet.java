@@ -53,7 +53,7 @@ public class InfoServlet extends TransformationServlet {
 		// if the repository has been deleted. Client-side code using InfoServlet
 		// for repository existential checks expects an error response when the id 
 		// no longer exists. 
-		if (!manager.hasRepositoryConfig(id)){
+		if (null != id && !manager.hasRepositoryConfig(id)){
 			throw new RepositoryConfigException(id + " does not exist.");
 		}
 		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
