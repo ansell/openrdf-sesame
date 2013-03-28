@@ -48,3 +48,6 @@ Parts of this product use software developed by JSON.org
 Parts of this product use software developed by the Mockito project
 (https://code.google.com/p/mockito/). 
 License: https://github.com/mockito/mockito/blob/master/LICENSE
+
+Parts of this product use software developed by FasterXML, LLC
+(https://fasterxml.com). License: http://www.apache.org/licenses/LICENSE-2.0
