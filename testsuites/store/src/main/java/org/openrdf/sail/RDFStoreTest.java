@@ -16,13 +16,19 @@
  */
 package org.openrdf.sail;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
@@ -58,7 +64,13 @@ import org.openrdf.query.parser.QueryParserUtil;
  * inferencing or whatsoever is performed. This is an abstract class that should
  * be extended for specific Sail implementations.
  */
-public abstract class RDFStoreTest extends TestCase {
+public abstract class RDFStoreTest {
+
+	/**
+	 * Timeout all individual tests after 1 minute.
+	 */
+	@Rule
+	public Timeout to = new Timeout(60000);
 
 	/*-----------*
 	 * Constants *
@@ -116,8 +128,7 @@ public abstract class RDFStoreTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
-	public RDFStoreTest(String name) {
-		super(name);
+	public RDFStoreTest() {
 	}
 
 	/*---------*
@@ -135,8 +146,8 @@ public abstract class RDFStoreTest extends TestCase {
 	protected abstract Sail createSail()
 		throws SailException;
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		sail = createSail();
@@ -159,8 +170,8 @@ public abstract class RDFStoreTest extends TestCase {
 
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		try {
@@ -175,6 +186,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEmptyRepository()
 		throws Exception
 	{
@@ -190,6 +202,7 @@ public abstract class RDFStoreTest extends TestCase {
 				countQueryResults("select * from {S} P {O}"));
 	}
 
+	@Test
 	public void testValueRoundTrip1()
 		throws Exception
 	{
@@ -200,6 +213,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testValueRoundTrip2()
 		throws Exception
 	{
@@ -210,6 +224,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testValueRoundTrip3()
 		throws Exception
 	{
@@ -220,6 +235,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testValueRoundTrip4()
 		throws Exception
 	{
@@ -230,6 +246,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testValueRoundTrip5()
 		throws Exception
 	{
@@ -240,6 +257,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testDecimalRoundTrip()
 		throws Exception
 	{
@@ -250,6 +268,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testTimeZoneRoundTrip()
 		throws Exception
 	{
@@ -261,11 +280,12 @@ public abstract class RDFStoreTest extends TestCase {
 		con.begin();
 		con.removeStatements(null, null, null);
 		con.commit();
-		
+
 		obj = new LiteralImpl("2006-08-23", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testLongURIRoundTrip()
 		throws Exception
 	{
@@ -280,6 +300,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testLongLiteralRoundTrip()
 		throws Exception
 	{
@@ -294,6 +315,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testReallyLongLiteralRoundTrip()
 		throws Exception
 	{
@@ -308,6 +330,7 @@ public abstract class RDFStoreTest extends TestCase {
 		testValueRoundTrip(subj, pred, obj);
 	}
 
+	@Test
 	public void testLongLangRoundTrip()
 		throws Exception
 	{
@@ -365,6 +388,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCreateURI1()
 		throws Exception
 	{
@@ -378,6 +402,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size());
 	}
 
+	@Test
 	public void testCreateURI2()
 		throws Exception
 	{
@@ -391,6 +416,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("createURI(Sring) and createURI(String, String) should create equal URIs", 1, con.size());
 	}
 
+	@Test
 	public void testInvalidDateTime()
 		throws Exception
 	{
@@ -400,6 +426,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(date1, date2);
 	}
 
+	@Test
 	public void testSize()
 		throws Exception
 	{
@@ -426,6 +453,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("Size of named context (defined as URIImpl) should be 3", 3, con.size(uriImplContext1));
 	}
 
+	@Test
 	public void testAddData()
 		throws Exception
 	{
@@ -478,6 +506,7 @@ public abstract class RDFStoreTest extends TestCase {
 				countQueryResults("select * from {S} P {rdf:type}"));
 	}
 
+	@Test
 	public void testAddWhileQuerying()
 		throws Exception
 	{
@@ -497,7 +526,7 @@ public abstract class RDFStoreTest extends TestCase {
 		iter = con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false);
 
 		con.begin();
-		
+
 		while (iter.hasNext()) {
 			BindingSet bindings = iter.next();
 			Value c = bindings.getValue("C");
@@ -527,6 +556,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(2, countElements(con.getStatements(null, RDF.TYPE, RDF.PROPERTY, false)));
 	}
 
+	@Test
 	public void testRemoveAndClear()
 		throws Exception
 	{
@@ -566,6 +596,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("Repository should no longer contain any statements", 0, countAllElements());
 	}
 
+	@Test
 	public void testClose() {
 		try {
 			con.close();
@@ -580,6 +611,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testContexts()
 		throws Exception
 	{
@@ -601,11 +633,11 @@ public abstract class RDFStoreTest extends TestCase {
 		con.commit();
 
 		assertEquals("context1 should contain 3 statements", 3, countContext1Elements());
-		assertEquals("context2 should contain 3 statements", 3, countElements(con.getStatements(null, null,
-				null, false, context2)));
+		assertEquals("context2 should contain 3 statements", 3,
+				countElements(con.getStatements(null, null, null, false, context2)));
 		assertEquals("Repository should contain 8 statements", 8, countAllElements());
-		assertEquals("statements without context should equal 2", 2, countElements(con.getStatements(null,
-				null, null, false, (Resource)null)));
+		assertEquals("statements without context should equal 2", 2,
+				countElements(con.getStatements(null, null, null, false, (Resource)null)));
 
 		assertEquals("Statements without context and statements in context 1 together should total 5", 5,
 				countElements(con.getStatements(null, null, null, false, null, context1)));
@@ -635,6 +667,7 @@ public abstract class RDFStoreTest extends TestCase {
 				countElements(con.getStatements(null, null, null, false, context1, context2)));
 	}
 
+	@Test
 	public void testQueryBindings()
 		throws Exception
 	{
@@ -690,6 +723,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals("Wrong number of query results", 1, resultCount);
 	}
 
+	@Test
 	public void testMultiThreadedAccess() {
 
 		Runnable runnable = new Runnable() {
@@ -774,6 +808,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testStatementEquals()
 		throws Exception
 	{
@@ -782,6 +817,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context2));
 	}
 
+	@Test
 	public void testStatementSerialization()
 		throws Exception
 	{
@@ -800,6 +836,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertTrue(st.equals(deserializedStatement));
 	}
 
+	@Test
 	public void testGetNamespaces()
 		throws Exception
 	{
@@ -820,6 +857,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGetNamespace()
 		throws Exception
 	{
@@ -829,6 +867,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertEquals(RDF.NAMESPACE, con.getNamespace("rdf"));
 	}
 
+	@Test
 	public void testClearNamespaces()
 		throws Exception
 	{
@@ -840,6 +879,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertTrue(!con.getNamespaces().hasNext());
 	}
 
+	@Test
 	public void testRemoveNamespaces()
 		throws Exception
 	{
@@ -850,6 +890,7 @@ public abstract class RDFStoreTest extends TestCase {
 		assertNull(con.getNamespace("rdf"));
 	}
 
+	@Test
 	public void testNullNamespaceDisallowed()
 		throws Exception
 	{
@@ -862,6 +903,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testNullPrefixDisallowed()
 		throws Exception
 	{
@@ -888,6 +930,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGetContextIDs()
 		throws Exception
 	{
@@ -912,6 +955,7 @@ public abstract class RDFStoreTest extends TestCase {
 		con.commit();
 	}
 
+	@Test
 	public void testOldURI()
 		throws Exception
 	{
@@ -924,17 +968,18 @@ public abstract class RDFStoreTest extends TestCase {
 		con.addStatement(picasso, paints, guernica, context1);
 		assertEquals(5, countAllElements());
 		con.commit();
-		
+
 		con.begin();
 		con.clear();
 		con.commit();
-		
+
 		con.begin();
 		con.addStatement(picasso, paints, guernica, context1);
 		con.commit();
 		assertEquals(1, countAllElements());
 	}
 
+	@Test
 	public void testDualConnections()
 		throws Exception
 	{
@@ -979,6 +1024,7 @@ public abstract class RDFStoreTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBNodeReuse()
 		throws Exception
 	{

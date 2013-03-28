@@ -16,7 +16,11 @@
  */
 package org.openrdf.sail.nativerdf;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
+
+import org.junit.Test;
 
 import info.aduna.io.FileUtil;
 
@@ -36,20 +40,12 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 
 	private File dataDir;
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public NativeStoreTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	@Override
-	protected void setUp()
+	public void setUp()
 		throws Exception
 	{
 		dataDir = FileUtil.createTempDir("nativestore");
@@ -57,7 +53,7 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {
@@ -78,6 +74,7 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 	}
 
 	// Test for SES-542
+	@Test()
 	public void testGetNamespacePersistence()
 		throws Exception
 	{

@@ -27,14 +27,6 @@ import org.openrdf.sail.SailException;
  */
 public class MemoryStoreTest extends RDFNotifyingStoreTest {
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public MemoryStoreTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/

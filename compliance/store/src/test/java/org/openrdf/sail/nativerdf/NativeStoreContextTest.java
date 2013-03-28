@@ -35,20 +35,12 @@ public class NativeStoreContextTest extends RDFNotifyingStoreTest {
 
 	private File dataDir;
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public NativeStoreContextTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	@Override
-	protected void setUp()
+	public void setUp()
 		throws Exception
 	{
 		dataDir = FileUtil.createTempDir("nativestore");
@@ -56,7 +48,7 @@ public class NativeStoreContextTest extends RDFNotifyingStoreTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {
