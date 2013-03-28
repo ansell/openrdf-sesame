@@ -169,7 +169,8 @@
 						</goals>
 						<configuration>
 							<skipTests>false</skipTests>
-							<forkMode>always</forkMode>
+							<forkCount>1</forkCount>
+							<reuseForks>false</reuseForks>
 							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
 							<excludes>
 								<exclude>**/DataStorePerfTest.java</exclude>
