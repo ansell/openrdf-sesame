@@ -21,11 +21,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
-import info.aduna.io.IOUtil;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -34,6 +35,7 @@ import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.QueryResultParserBase;
+import org.openrdf.rio.RDFParseException;
 
 /**
  * Abstract base class for SPARQL Results JSON Parsers. Provides a common
@@ -42,6 +44,19 @@ import org.openrdf.query.resultio.QueryResultParserBase;
  * @author Peter Ansell
  */
 public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
+
+	private static final JsonFactory JSON_FACTORY = new JsonFactory();
+
+	static {
+		// Disable features that may work for most JSON where the field names are
+		// in limited supply,
+		// but does not work for RDF/JSON where a wide range of URIs are used for
+		// subjects and
+		// predicates
+		JSON_FACTORY.disable(JsonFactory.Feature.INTERN_FIELD_NAMES);
+		JSON_FACTORY.disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES);
+		JSON_FACTORY.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+	}
 
 	public static final String HEAD = "head";
 
@@ -95,137 +110,222 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	protected boolean parseQueryResultInternal(InputStream in)
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
-		try {
-			String json = IOUtil.readString(in);
+		JsonParser jp = JSON_FACTORY.createJsonParser(in);
+		boolean result = false;
 
-			boolean result = false;
+		if (jp.nextToken() != JsonToken.START_OBJECT) {
+			throw new QueryResultParseException("Expected SPARQL Results JSON document to start with an Object",
+					jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+		}
+
+		while (jp.nextToken() != JsonToken.END_OBJECT) {
+
+			final String subjStr = jp.getCurrentName();
+
+			// try {
+			// String json = IOUtil.readString(in);
 
 			// "This object has a "head" member and either a "results" member or a "boolean" member, depending on the query form"
 			// - http://www.w3.org/TR/sparql11-results-json/#json-result-object
-			JSONObject jsonObject = new JSONObject(json);
+			// JSONObject jsonObject = new JSONObject(json);
 
-			if (!jsonObject.has(HEAD)) {
-				throw new QueryResultParseException("Did not find head");
-			}
-
-			JSONObject head = jsonObject.getJSONObject(HEAD);
-
-			// Both Boolean and Tuple results can have headers with link elements.
-			if (head.has(LINK)) {
-				// FIXME: Extend QueryResultHandler interface to support link's
-			}
-
-			// check if we are handling a boolean first
-			if (jsonObject.has(BOOLEAN)) {
-				result = jsonObject.getBoolean(BOOLEAN);
-
-				if (this.handler != null) {
-					handler.handleBoolean(result);
-				}
-			}
-			// we must be handling tuple solutions if it was not a boolean
-			else {
-				List<String> varsList = new ArrayList<String>();
-
-				if (!head.has(VARS)) {
-					throw new QueryResultParseException("Head object did not contain vars");
+			// if (!jsonObject.has(HEAD)) {
+			// throw new QueryResultParseException("Did not find head");
+			// }
+			// Both head and results should be objects
+			if (subjStr.equals(HEAD)) {
+				if (jp.nextToken() != JsonToken.START_OBJECT) {
+					throw new QueryResultParseException("Did not find object under " + subjStr + " field",
+							jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 				}
 
-				JSONArray vars = head.getJSONArray(VARS);
+				while (jp.nextToken() != JsonToken.END_OBJECT) {
+					final String headStr = jp.getCurrentName();
 
-				if (vars.length() == 0) {
-					throw new QueryResultParseException("Vars array was empty");
-				}
-
-				for (int i = 0; i < vars.length(); i++) {
-					varsList.add(vars.getString(i));
-				}
-
-				if (this.handler != null) {
-					handler.startQueryResult(varsList);
-				}
-
-				if (!jsonObject.has(RESULTS)) {
-					throw new QueryResultParseException("Did not find results");
-				}
-
-				JSONObject resultsObject = jsonObject.getJSONObject(RESULTS);
-
-				if (!resultsObject.has(BINDINGS)) {
-					throw new QueryResultParseException("Results object did not contain a bindings object");
-				}
-
-				JSONArray bindings = resultsObject.getJSONArray(BINDINGS);
-
-				for (int i = 0; i < bindings.length(); i++) {
-
-					JSONObject nextBindingObject = bindings.getJSONObject(i);
-
-					MapBindingSet nextBindingSet = new MapBindingSet();
-
-					for (String nextVar : varsList) {
-						if (nextBindingObject.has(nextVar)) {
-							JSONObject nextVarBinding = nextBindingObject.getJSONObject(nextVar);
-
-							if (!nextVarBinding.has(TYPE)) {
-								throw new QueryResultParseException("Binding did not contain a type: " + nextVar);
-							}
-
-							String type = nextVarBinding.getString(TYPE);
-
-							if (!nextVarBinding.has(VALUE)) {
-								throw new QueryResultParseException("Binding did not contain a value: " + nextVar);
-							}
-
-							String value = nextVarBinding.getString(VALUE);
-
-							String language = null;
-							String datatype = null;
-
-							if (type.equals(LITERAL)) {
-								// only check this if the type is literal
-								if (nextVarBinding.has(XMLLANG)) {
-									language = nextVarBinding.getString(XMLLANG);
-								}
-							}
-
-							// provide some backwards compatibility with 2007 SPARQL
-							// Query Results in JSON W3C Working Group Note by
-							// supporting typed-literal here as well as literal
-							// http://www.w3.org/TR/2007/NOTE-rdf-sparql-json-res-20070618/
-							if (type.equals(LITERAL) || type.equals(TYPED_LITERAL)) {
-								if (nextVarBinding.has(DATATYPE)) {
-									datatype = nextVarBinding.getString(DATATYPE);
-								}
-							}
-
-							Value nextValue = parseValue(type, value, language, datatype);
-
-							nextBindingSet.addBinding(new BindingImpl(nextVar, nextValue));
+					if (headStr.equals(VARS)) {
+						List<String> varsList = new ArrayList<String>();
+						if (jp.nextToken() != JsonToken.START_ARRAY) {
+							throw new QueryResultParseException("Expected variable labels to be an array",
+									jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 						}
-					}
 
-					if (nextBindingSet.size() == 0) {
-						throw new QueryResultParseException("Binding did not contain any variables");
-					}
+						while (jp.nextToken() != JsonToken.END_ARRAY) {
+							varsList.add(jp.getCurrentName());
+						}
 
-					if (this.handler != null) {
-						handler.handleSolution(nextBindingSet);
+						if (this.handler != null) {
+							handler.startQueryResult(varsList);
+						}
+
 					}
-				}
-				if (this.handler != null) {
-					handler.endQueryResult();
+					else if (headStr.equals(LINK)) {
+						List<String> linksList = new ArrayList<String>();
+						if (jp.nextToken() != JsonToken.START_ARRAY) {
+							throw new QueryResultParseException("Expected links to be an array",
+									jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						}
+
+						while (jp.nextToken() != JsonToken.END_ARRAY) {
+							linksList.add(jp.getCurrentName());
+						}
+
+						if (this.handler != null) {
+							handler.handleLinks(linksList);
+						}
+
+					}
+					else {
+						throw new QueryResultParseException("Found unexpected object in head field: " + headStr,
+								jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+					}
 				}
 			}
+			else if (subjStr.equals(RESULTS)) {
+				JsonToken nextToken = jp.nextToken();
 
-			return result;
+				if (nextToken != JsonToken.FIELD_NAME) {
+					throw new QueryResultParseException("Found unexpected token in results field: "
+							+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
+							jp.getCurrentLocation().getColumnNr());
+				}
+
+				if (jp.getCurrentName().equals(BINDINGS)) {
+
+				}
+			}
+			else if (subjStr.equals(BOOLEAN)) {
+
+			}
+			else {
+				throw new QueryResultParseException("Found unexpected object in top level " + subjStr + " field",
+						jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+			}
 		}
-		catch (JSONException e) {
-			throw new QueryResultParseException("Failed to parse JSON object", e);
-		}
-		finally {
-			in.close();
-		}
+
+		return result;
+		// JSONObject head = jsonObject.getJSONObject(HEAD);
+
+		// Both Boolean and Tuple results can have headers with link elements.
+		// if (head.has(LINK)) {
+		// FIXME: Extend QueryResultHandler interface to support link's
+		// }
+
+		// check if we are handling a boolean first
+		// if (jsonObject.has(BOOLEAN)) {
+		// result = jsonObject.getBoolean(BOOLEAN);
+		//
+		// if (this.handler != null) {
+		// handler.handleBoolean(result);
+		// }
+		// }
+		// // we must be handling tuple solutions if it was not a boolean
+		// else {
+		// List<String> varsList = new ArrayList<String>();
+		//
+		// if (!head.has(VARS)) {
+		// throw new
+		// QueryResultParseException("Head object did not contain vars");
+		// }
+		//
+		// JSONArray vars = head.getJSONArray(VARS);
+		//
+		// if (vars.length() == 0) {
+		// throw new QueryResultParseException("Vars array was empty");
+		// }
+		//
+		// for (int i = 0; i < vars.length(); i++) {
+		// varsList.add(vars.getString(i));
+		// }
+		//
+		// if (this.handler != null) {
+		// handler.startQueryResult(varsList);
+		// }
+		//
+		// if (!jsonObject.has(RESULTS)) {
+		// throw new QueryResultParseException("Did not find results");
+		// }
+		//
+		// JSONObject resultsObject = jsonObject.getJSONObject(RESULTS);
+		//
+		// if (!resultsObject.has(BINDINGS)) {
+		// throw new
+		// QueryResultParseException("Results object did not contain a bindings object");
+		// }
+		//
+		// JSONArray bindings = resultsObject.getJSONArray(BINDINGS);
+		//
+		// for (int i = 0; i < bindings.length(); i++) {
+		//
+		// JSONObject nextBindingObject = bindings.getJSONObject(i);
+		//
+		// MapBindingSet nextBindingSet = new MapBindingSet();
+		//
+		// for (String nextVar : varsList) {
+		// if (nextBindingObject.has(nextVar)) {
+		// JSONObject nextVarBinding = nextBindingObject.getJSONObject(nextVar);
+		//
+		// if (!nextVarBinding.has(TYPE)) {
+		// throw new QueryResultParseException("Binding did not contain a type: "
+		// + nextVar);
+		// }
+		//
+		// String type = nextVarBinding.getString(TYPE);
+		//
+		// if (!nextVarBinding.has(VALUE)) {
+		// throw new QueryResultParseException("Binding did not contain a value: "
+		// + nextVar);
+		// }
+		//
+		// String value = nextVarBinding.getString(VALUE);
+		//
+		// String language = null;
+		// String datatype = null;
+		//
+		// if (type.equals(LITERAL)) {
+		// // only check this if the type is literal
+		// if (nextVarBinding.has(XMLLANG)) {
+		// language = nextVarBinding.getString(XMLLANG);
+		// }
+		// }
+		//
+		// // provide some backwards compatibility with 2007 SPARQL
+		// // Query Results in JSON W3C Working Group Note by
+		// // supporting typed-literal here as well as literal
+		// // http://www.w3.org/TR/2007/NOTE-rdf-sparql-json-res-20070618/
+		// if (type.equals(LITERAL) || type.equals(TYPED_LITERAL)) {
+		// if (nextVarBinding.has(DATATYPE)) {
+		// datatype = nextVarBinding.getString(DATATYPE);
+		// }
+		// }
+		//
+		// Value nextValue = parseValue(type, value, language, datatype);
+		//
+		// nextBindingSet.addBinding(new BindingImpl(nextVar, nextValue));
+		// }
+		// }
+		//
+		// if (nextBindingSet.size() == 0) {
+		// throw new
+		// QueryResultParseException("Binding did not contain any variables");
+		// }
+		//
+		// if (this.handler != null) {
+		// handler.handleSolution(nextBindingSet);
+		// }
+		// }
+		// if (this.handler != null) {
+		// handler.endQueryResult();
+		// }
+		// }
+		//
+		// return result;
+		// }
+		// catch (JSONException e) {
+		// throw new QueryResultParseException("Failed to parse JSON object", e);
+		// }
+		// finally {
+		// in.close();
+		// }
 	}
 
 	/**
