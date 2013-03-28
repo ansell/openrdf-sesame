@@ -23,10 +23,6 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class MemoryStoreConnectionTest extends RepositoryConnectionTest {
 
-	public MemoryStoreConnectionTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository createRepository() {
 		return new SailRepository(new MemoryStore());

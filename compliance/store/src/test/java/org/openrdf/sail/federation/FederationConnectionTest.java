@@ -25,10 +25,6 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class FederationConnectionTest extends RepositoryConnectionTest {
 
-	public FederationConnectionTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository createRepository()
 		throws IOException

@@ -31,10 +31,6 @@ public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepository
 
 	private File dataDir;
 
-	public RDFSchemaNativeRepositoryConnectionTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository createRepository()
 		throws IOException
@@ -44,7 +40,7 @@ public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepository
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

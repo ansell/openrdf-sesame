@@ -16,8 +16,12 @@
  */
 package org.openrdf.repository.sail.nativerdf;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
+
+import org.junit.Test;
 
 import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
@@ -33,10 +37,6 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 
 	private File dataDir;
 
-	public NativeStoreConnectionTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected Repository createRepository()
 		throws IOException
@@ -46,7 +46,7 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {
@@ -57,6 +57,7 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 		}
 	}
 
+	@Test
 	public void testSES715()
 		throws Exception
 	{
