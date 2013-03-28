@@ -35,9 +35,8 @@ public class RepositoriesServlet extends TransformationServlet {
 		builder.link(Arrays.asList(INFO));
 		for (RepositoryInfo info : manager.getAllRepositoryInfos()) {
 			builder.result(info.isReadable(), info.isWritable(), info.getId(), info.getDescription(),
-					info.getLocation());
+					info.getLocation().toString());
 		}
 		builder.end();
 	}
-
 }
