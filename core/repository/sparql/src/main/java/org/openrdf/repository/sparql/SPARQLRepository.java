@@ -133,7 +133,16 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		getHTTPClient().shutDown();
+		// httpclient shutdown moved to finalize method, to avoid problems with
+		// shutdown followed by re-initialization. See SES-1059.
+	}
+	
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		httpClient.shutDown();
+		super.finalize();
 	}
 
 	@Override

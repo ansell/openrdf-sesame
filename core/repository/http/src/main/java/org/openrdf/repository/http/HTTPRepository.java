@@ -223,7 +223,6 @@ public class HTTPRepository extends RepositoryBase {
 	{
 		// httpclient shutdown moved to finalize method, to avoid problems with
 		// shutdown followed by re-initialization. See SES-1059.
-		 httpClient.shutDown();	// TODO maybe remove again
 	}
 
 	@Override
