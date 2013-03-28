@@ -21,9 +21,10 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.URI;
@@ -35,26 +36,17 @@ import org.openrdf.sail.nativerdf.NativeStore;
 
 public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	private File dataDir;
 
 	@Override
 	protected Repository createRepository()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder();
 		return new SailRepository(new NativeStore(dataDir, "spoc"));
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 	@Test

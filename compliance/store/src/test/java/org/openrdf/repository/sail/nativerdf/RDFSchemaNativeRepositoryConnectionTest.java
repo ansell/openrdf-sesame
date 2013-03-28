@@ -19,7 +19,8 @@ package org.openrdf.repository.sail.nativerdf;
 import java.io.File;
 import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.repository.RDFSchemaRepositoryConnectionTest;
 import org.openrdf.repository.Repository;
@@ -29,25 +30,17 @@ import org.openrdf.sail.nativerdf.NativeStore;
 
 public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	private File dataDir;
 
 	@Override
 	protected Repository createRepository()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore");
 		return new SailRepository(new ForwardChainingRDFSInferencer(new NativeStore(dataDir, "spoc")));
 	}
 
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
-	}
 }

@@ -20,7 +20,8 @@ package org.openrdf.sail.memory;
 import java.io.File;
 import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
@@ -32,6 +33,9 @@ import org.openrdf.sail.SailException;
  */
 public class PersistentMemoryStoreTest extends RDFNotifyingStoreTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	private volatile File dataDir;
 
 	@Override
@@ -39,7 +43,7 @@ public class PersistentMemoryStoreTest extends RDFNotifyingStoreTest {
 		throws SailException
 	{
 		try {
-			dataDir = FileUtil.createTempDir(PersistentMemoryStoreTest.class.getSimpleName());
+			dataDir = tempDir.newFolder(PersistentMemoryStoreTest.class.getSimpleName());
 			NotifyingSail sail = new MemoryStore(dataDir);
 			sail.initialize();
 			return sail;
@@ -49,15 +53,4 @@ public class PersistentMemoryStoreTest extends RDFNotifyingStoreTest {
 		}
 	}
 
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
-	}
 }

@@ -16,11 +16,15 @@
  */
 package org.openrdf.repository;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -28,7 +32,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 
-public abstract class TupleQueryResultTest extends TestCase {
+public abstract class TupleQueryResultTest {
 
 	private Repository rep;
 
@@ -40,7 +44,8 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 	private String multipleResultQuery;
 
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		rep = createRepository();
@@ -50,8 +55,8 @@ public abstract class TupleQueryResultTest extends TestCase {
 		addData();
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		con.close();
@@ -59,8 +64,6 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 		rep.shutDown();
 		rep = null;
-
-		super.tearDown();
 	}
 
 	protected Repository createRepository()
@@ -121,6 +124,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGetBindingNames()
 		throws Exception
 	{
@@ -169,6 +173,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	}
 	*/
 
+	@Test
 	public void testIterator()
 		throws Exception
 	{
@@ -190,6 +195,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIsEmpty()
 		throws Exception
 	{
