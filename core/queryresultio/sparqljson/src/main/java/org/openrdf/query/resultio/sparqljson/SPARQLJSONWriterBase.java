@@ -16,11 +16,9 @@
  */
 package org.openrdf.query.resultio.sparqljson;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,11 +29,8 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
-import info.aduna.text.StringUtil;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
@@ -103,19 +98,12 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		if (!headerComplete) {
 			try {
 				jg.writeEndObject();
-				// closeBraces();
-
-				// writeComma();
 
 				if (tupleVariablesFound) {
 					// Write results
 					jg.writeObjectFieldStart("results");
-					// writeKey("results");
-					// openBraces();
 
 					jg.writeArrayFieldStart("bindings");
-					// writeKey("bindings");
-					// openArray();
 				}
 
 				headerComplete = true;
@@ -139,22 +127,12 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 				startHeader();
 			}
 
-			// if (linksFound) {
-			// writeComma();
-			// }
-
 			tupleVariablesFound = true;
 			jg.writeArrayFieldStart("vars");
 			for (String nextColumn : columnHeaders) {
 				jg.writeString(nextColumn);
 			}
 			jg.writeEndArray();
-			// try {
-			// writeKeyValue("vars", columnHeaders);
-			// }
-			// catch (IOException e) {
-			// throw new TupleQueryResultHandlerException(e);
-			// }
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -183,31 +161,18 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (!headerComplete) {
 				endHeader();
 			}
-			// if (firstTupleWritten) {
-			// writeComma();
-			// }
 			firstTupleWritten = true;
 
 			jg.writeStartObject();
-			// openBraces(); // start of new solution
 
 			Iterator<Binding> bindingIter = bindingSet.iterator();
 			while (bindingIter.hasNext()) {
 				Binding binding = bindingIter.next();
 				jg.writeFieldName(binding.getName());
-				// jg.writeStringField(binding.getName(), binding.getValue());
 				writeValue(binding.getValue());
-				// writeKeyValue(binding.getName(), binding.getValue());
-
-				// if (bindingIter.hasNext()) {
-				// writeComma();
-				// }
 			}
 
 			jg.writeEndObject();
-			// closeBraces(); // end solution
-
-			// writer.flush();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -236,10 +201,10 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (!headerComplete) {
 				endHeader();
 			}
+			// bindings array
 			jg.writeEndArray();
-			// closeArray(); // bindings array
+			// results braces
 			jg.writeEndObject();
-			// closeBraces(); // results braces
 			endDocument();
 		}
 		catch (IOException e) {
@@ -276,11 +241,8 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 					String callbackName = getWriterConfig().get(BasicQueryWriterSettings.JSONP_CALLBACK);
 					jg.writeRaw(callbackName);
 					jg.writeRaw("(");
-					// writer.write(callbackName);
-					// writer.write("(");
 				}
 				jg.writeStartObject();
-				// openBraces();
 			}
 			catch (IOException e) {
 				throw new QueryResultHandlerException(e);
@@ -307,8 +269,6 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			try {
 				// Write header
 				jg.writeObjectFieldStart("head");
-				// writeKey("head");
-				// openBraces();
 
 				headerOpen = true;
 			}
@@ -331,50 +291,29 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 				startHeader();
 			}
 
-			// if (tupleVariablesFound) {
-			// writeComma();
-			// }
-
-			// linksFound = true;
-
 			jg.writeArrayFieldStart("link");
 			for (String nextLink : linkUrls) {
 				jg.writeString(nextLink);
 			}
 			jg.writeEndArray();
-			// writeKeyValue("link", linkUrls);
 		}
 		catch (IOException e) {
 			throw new QueryResultHandlerException(e);
 		}
 	}
 
-	// protected void writeKeyValue(String key, Value value)
-	// throws IOException, QueryResultHandlerException
-	// {
-	// writeKey(key);
-	// writeValue(value);
-	// }
-
 	protected void writeValue(Value value)
 		throws IOException, QueryResultHandlerException
 	{
 		jg.writeStartObject();
-		// writer.write("{ ");
 
 		if (value instanceof URI) {
 			jg.writeStringField("type", "uri");
-			// writeKeyValue("type", "uri");
-			// writer.write(", ");
 			jg.writeStringField("value", ((URI)value).toString());
-			// writeKeyValue("value", ((URI)value).toString());
 		}
 		else if (value instanceof BNode) {
 			jg.writeStringField("type", "bnode");
-			// writeKeyValue("type", "bnode");
-			// writer.write(", ");
 			jg.writeStringField("value", ((BNode)value).getID());
-			// writeKeyValue("value", ((BNode)value).getID());
 		}
 		else if (value instanceof Literal) {
 			Literal lit = (Literal)value;
@@ -383,29 +322,21 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			// BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL here
 			if (lit.getLanguage() != null) {
 				jg.writeObjectField("xml:lang", lit.getLanguage());
-				// writeKeyValue("xml:lang", lit.getLanguage());
-				// writer.write(", ");
 			}
 			// TODO: Implement support for
 			// BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL here
 			if (lit.getDatatype() != null) {
 				jg.writeObjectField("datatype", lit.getDatatype().stringValue());
-				// writeKeyValue("datatype", lit.getDatatype().toString());
-				// writer.write(", ");
 			}
 
 			jg.writeObjectField("type", "literal");
-			// writeKeyValue("type", "literal");
 
-			// writer.write(", ");
 			jg.writeObjectField("value", lit.getLabel());
-			// writeKeyValue("value", lit.getLabel());
 		}
 		else {
 			throw new TupleQueryResultHandlerException("Unknown Value object type: " + value.getClass());
 		}
 		jg.writeEndObject();
-		// writer.write(" }");
 	}
 
 	@Override
@@ -427,11 +358,9 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		try {
 			if (value) {
 				jg.writeObjectField("boolean", "true");
-				// writeKeyValue("boolean", "true");
 			}
 			else {
 				jg.writeObjectField("boolean", "false");
-				// writeKeyValue("boolean", "false");
 			}
 
 			endDocument();
@@ -466,12 +395,10 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		throws IOException
 	{
 		jg.writeEndObject();
-		// closeBraces(); // root braces
 		if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
 			jg.writeRaw(");");
 		}
 		jg.flush();
-		// writer.flush();
 		documentOpen = false;
 		headerComplete = false;
 	}
