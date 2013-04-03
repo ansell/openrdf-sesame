@@ -19,23 +19,25 @@ package org.openrdf.query.resultio.sparqljson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
-import org.w3c.dom.stylesheets.LinkStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.QueryResultParserBase;
-import org.openrdf.rio.RDFParseException;
 
 /**
  * Abstract base class for SPARQL Results JSON Parsers. Provides a common
@@ -45,14 +47,11 @@ import org.openrdf.rio.RDFParseException;
  */
 public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
 	static {
-		// Disable features that may work for most JSON where the field names are
-		// in limited supply,
-		// but does not work for RDF/JSON where a wide range of URIs are used for
-		// subjects and
-		// predicates
 		JSON_FACTORY.disable(JsonFactory.Feature.INTERN_FIELD_NAMES);
 		JSON_FACTORY.disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES);
 		JSON_FACTORY.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
@@ -120,6 +119,7 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 
 		List<String> varsList = new ArrayList<String>();
 		boolean varsFound = false;
+		Set<BindingSet> bindings = new HashSet<BindingSet>();
 
 		while (jp.nextToken() != JsonToken.END_OBJECT) {
 
@@ -160,6 +160,14 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 						}
 
 						varsFound = true;
+
+						if (!bindings.isEmpty()) {
+							for (BindingSet nextBinding : bindings) {
+								handler.handleSolution(nextBinding);
+								handler.endQueryResult();
+							}
+						}
+
 					}
 					else if (headStr.equals(LINK)) {
 						List<String> linksList = new ArrayList<String>();
@@ -203,16 +211,9 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 								jp.getCurrentLocation().getColumnNr());
 					}
 
-					MapBindingSet nextBindingSet = new MapBindingSet();
-
 					while (jp.nextToken() != JsonToken.END_ARRAY) {
-						// TODO: Parse each binding
 
-						if (!varsFound) {
-							// TODO: Buffer the bindings to fit with the
-							// QueryResultHandler contract so that startQueryResults is
-							// always called before handleSolution
-						}
+						MapBindingSet nextBindingSet = new MapBindingSet();
 
 						if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
 							throw new QueryResultParseException("Did not find object in bindings array: "
@@ -247,7 +248,7 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 											jp.getCurrentLocation().getColumnNr());
 								}
 								String fieldName = jp.getCurrentName();
-								
+
 								// move to the value token
 								jp.nextToken();
 
@@ -276,11 +277,17 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 						// parsing of solution finished, report result return to
 						// bindings state
 
-						if (handler != null) {
+						if (!varsFound) {
+							// Buffer the bindings to fit with the
+							// QueryResultHandler contract so that startQueryResults is
+							// always called before handleSolution
+							bindings.add(nextBindingSet);
+						}
+						else if (handler != null) {
 							handler.handleSolution(nextBindingSet);
 						}
 					}
-
+					handler.endQueryResult();
 				}
 				else {
 					throw new QueryResultParseException("Found unexpected field in results: "
@@ -441,6 +448,11 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	 * @return the value corresponding to the given parameters
 	 */
 	private Value parseValue(String type, String value, String language, String datatype) {
+		logger.info("type: {}", type);
+		logger.info("value: {}", value);
+		logger.info("language: {}", language);
+		logger.info("datatype: {}", datatype);
+
 		Value result = null;
 
 		if (type.equals(LITERAL) || type.equals(TYPED_LITERAL)) {
@@ -460,6 +472,8 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 		else if (type.equals(URI)) {
 			result = valueFactory.createURI(value);
 		}
+
+		logger.info("result value: {}", result);
 
 		return result;
 	}
