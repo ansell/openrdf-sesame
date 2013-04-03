@@ -20,10 +20,11 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.LookAheadIteration;
 
+import org.openrdf.http.client.QueueCursor;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.repository.sparql.query.QueueCursor;
+
 
 /**
  * Base class for any join parallel join executor. Note that this class extends

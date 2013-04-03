@@ -19,6 +19,7 @@ package org.openrdf.repository.http;
 import java.io.IOException;
 
 import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -37,27 +38,35 @@ import org.openrdf.repository.RepositoryException;
  * @author Arjohn Kampman
  * @author Herko ter Horst
  */
-public class HTTPTupleQuery extends HTTPQuery implements TupleQuery {
+public class HTTPTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
 	public HTTPTupleQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con, ql, queryString, baseURI);
+		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
 	}
 
+	// TODO  maybe even make this shared code for SPARQL and REMOTE repository
 	public TupleQueryResult evaluate()
 		throws QueryEvaluationException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
-
-		HTTPTupleQueryResult result = new HTTPTupleQueryResult(client, queryLanguage, queryString, baseURI,
-				dataset, includeInferred, getBindingsArray());
-		execute(result);
-		return result;
+		HTTPClient client = getHttpClient();
+		try {
+			return client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, getBindingsArray());
+		} 
+		catch (IOException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)
 		throws QueryEvaluationException, TupleQueryResultHandlerException
 	{
-		HTTPClient client = httpCon.getRepository().getHTTPClient();
+		HTTPClient client = getHttpClient();
 		try {
 			client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
 					handler, getBindingsArray());

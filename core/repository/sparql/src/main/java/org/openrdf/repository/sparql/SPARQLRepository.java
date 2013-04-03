@@ -19,59 +19,77 @@ package org.openrdf.repository.sparql;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-
 import info.aduna.io.MavenUtil;
 
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryBase;
 
 /**
- * A proxy class to access any SPARQL endpoint. 
- * 
- * The instance must be initialized prior to using it.
+ * A proxy class to access any SPARQL endpoint. The instance must be initialized
+ * prior to using it.
  * 
  * @author James Leigh
  */
 public class SPARQLRepository extends RepositoryBase {
 
-
 	private static final String APP_NAME = "OpenRDF.org SPARQLConnection";
 
 	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
 			"sesame-repository-sparql", "devel");
-	
+
 	/**
-	 * The key under which the (optional) HTTP header are stored in the
-	 * HttpClientParams
+	 * The HTTP client that takes care of the client-server communication.
 	 */
-	public static String ADDITIONAL_HEADER_NAME = "additionalHTTPHeaders";
-	
-	private String queryEndpointUrl;
+	private final HTTPClient httpClient;
 
-	private String updateEndpointUrl;
-
-	private Map<String, String> additionalHttpHeaders;
-
-	private HttpClient client;
-	
-	private MultiThreadedHttpConnectionManager manager;
-	
-	public SPARQLRepository(String queryEndpointUrl) {
-		this.queryEndpointUrl = queryEndpointUrl;
+	/**
+	 * Create a new SPARQLRepository using the supplied endpoint URL for queries
+	 * and updates.
+	 * 
+	 * @param endpointUrl
+	 *        a SPARQL endpoint URL. May not be null.
+	 */
+	public SPARQLRepository(String endpointUrl) {
+		this(endpointUrl, endpointUrl);
 	}
 
+	/**
+	 * Create a new SPARQLREpository using the supplied query endpoint URL for
+	 * queries, and the supplied update endpoint URL for updates.
+	 * 
+	 * @param queryEndpointUrl
+	 *        a SPARQL endpoint URL for queries. May not be null.
+	 * @param updateEndpointUrl
+	 *        a SPARQL endpoint URL for updates. May not be null.
+	 * @throws IllegalArgumentException
+	 *         if one of the supplied endpoint URLs is null.
+	 */
 	public SPARQLRepository(String queryEndpointUrl, String updateEndpointUrl) {
-		this.queryEndpointUrl = queryEndpointUrl;
-		this.updateEndpointUrl = updateEndpointUrl;
+		if (queryEndpointUrl == null || updateEndpointUrl == null) {
+			throw new IllegalArgumentException("endpoint URL may not be null.");
+		}
+
+		// initialize HTTP client
+		httpClient = createHTTPClient();
+		httpClient.setValueFactory(new ValueFactoryImpl());
+		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
+		httpClient.setQueryURL(queryEndpointUrl);
+		httpClient.setUpdateURL(updateEndpointUrl);
+	}
+
+	/**
+	 * Creates a new HTTPClient object. Subclasses may override to return a more
+	 * specific HTTPClient subtype.
+	 * 
+	 * @return a HTTPClient object.
+	 */
+	protected HTTPClient createHTTPClient() {
+		return new HTTPClient();
 	}
 
 	public RepositoryConnection getConnection()
@@ -79,7 +97,7 @@ public class SPARQLRepository extends RepositoryBase {
 	{
 		if (!isInitialized())
 			throw new RepositoryException("SPARQLRepository not initialized.");
-		return new SPARQLConnection(this, queryEndpointUrl, updateEndpointUrl);
+		return new SPARQLConnection(this);
 	}
 
 	public File getDataDir() {
@@ -94,22 +112,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
-			// HttpClient
-			manager = new MultiThreadedHttpConnectionManager();
-
-			// Allow 20 concurrent connections to the same host (default is 2)
-			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-			params.setDefaultMaxConnectionsPerHost(20);
-			manager.setParams(params);
-
-			HttpClientParams clientParams = new HttpClientParams();
-			clientParams.setParameter(HttpMethodParams.USER_AGENT,
-					APP_NAME + "/" + VERSION + " " + clientParams.getParameter(HttpMethodParams.USER_AGENT));
-			// set additional HTTP headers, if desired by the user
-			if (getAdditionalHttpHeaders() != null)
-				clientParams.setParameter(ADDITIONAL_HEADER_NAME, getAdditionalHttpHeaders());
-			client = new HttpClient(clientParams, manager);
+		// no-op
 	}
 
 	public boolean isWritable()
@@ -121,29 +124,37 @@ public class SPARQLRepository extends RepositoryBase {
 	public void setDataDir(File dataDir) {
 		// no-op
 	}
-	
-	public HttpClient getHttpClient() {
-		return client;
+
+	protected HTTPClient getHTTPClient() {
+		return httpClient;
 	}
 
 	@Override
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (manager!=null)
-			manager.shutdown();
+		// httpclient shutdown moved to finalize method, to avoid problems with
+		// shutdown followed by re-initialization. See SES-1059.
+	}
+	
+	@Override
+	protected void finalize()
+		throws Throwable
+	{
+		httpClient.shutDown();
+		super.finalize();
 	}
 
 	@Override
 	public String toString() {
-		return queryEndpointUrl;
+		return getHTTPClient().getQueryURL();
 	}
 
 	/**
 	 * @return Returns the additionalHttpHeaders.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders;
+		return getHTTPClient().getAdditionalHttpHeaders();
 	}
 
 	/**
@@ -151,6 +162,6 @@ public class SPARQLRepository extends RepositoryBase {
 	 *        The additionalHttpHeaders to set as key value pairs.
 	 */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		this.additionalHttpHeaders = additionalHttpHeaders;
+		getHTTPClient().setAdditionalHttpHeaders(additionalHttpHeaders);
 	}
 }

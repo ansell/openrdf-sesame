@@ -17,91 +17,75 @@
 package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
+import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.query.AbstractHTTPQuery;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.TupleQueryResultImpl;
-import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLParser;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Parses tuple results in the background.
  * 
  * @author James Leigh
- * 
  */
-public class SPARQLTupleQuery extends SPARQLQuery implements TupleQuery {
-	private SPARQLResultsXMLParser parser = new SPARQLResultsXMLParser();
+public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
-	public SPARQLTupleQuery(HttpClient client, String url, String base,
-			String query) {
-		super(client, url, base, query);
+	// TODO there was some magic going on in SparqlOperation to get baseURI
+	// directly replaced within the query using BASE
+
+	public SPARQLTupleQuery(HTTPClient httpClient, String baseUri, String queryString) {
+		super(httpClient, QueryLanguage.SPARQL, queryString, baseUri);
 	}
 
-	public TupleQueryResult evaluate() throws QueryEvaluationException {
+	public TupleQueryResult evaluate()
+		throws QueryEvaluationException
+	{
+
+		HTTPClient client = getHttpClient();
 		try {
-			BackgroundTupleResult result = null;
-			HttpMethod response = getResponse();
-			try {
-				InputStream in = response.getResponseBodyAsStream();
-				result = new BackgroundTupleResult(parser, in, response);
-				execute(result);
-				InsertBindingSetCursor cursor = new InsertBindingSetCursor(
-						result, getBindings());
-				List<String> list = new ArrayList<String>(
-						result.getBindingNames());
-				list.addAll(getBindingNames());
-				return new TupleQueryResultImpl(list, cursor);
-			} catch (HttpException e) {
-				throw new QueryEvaluationException(e);
-			} finally {
-				if (result == null) {
-					response.abort();
-					response.releaseConnection();
-				}
-			}
-		} catch (IOException e) {
-			throw new QueryEvaluationException(e);
+			// TODO getQueryString() already inserts bindings, use emptybindingset
+			// as last argument?
+			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false,
+					maxQueryTime, getBindingsArray());
+		}
+		catch (IOException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
 
 	public void evaluate(TupleQueryResultHandler handler)
-			throws QueryEvaluationException, TupleQueryResultHandlerException {
+		throws QueryEvaluationException, TupleQueryResultHandlerException
+	{
+
+		HTTPClient client = getHttpClient();
 		try {
-			boolean complete = false;
-			HttpMethod response = getResponse();
-			try {
-				parser.setQueryResultHandler(handler);
-				parser.parseQueryResult(response.getResponseBodyAsStream());
-				complete = true;
-			} catch (HttpException e) {
-				throw new QueryEvaluationException(e);
-			} catch (QueryResultParseException e) {
-				throw new QueryEvaluationException(e);
-			} catch (QueryResultHandlerException e) {
-				throw new QueryEvaluationException(e);
-			} finally {
-				if (!complete) {
-					response.abort();
-				}
-			}
-		} catch (IOException e) {
-			throw new QueryEvaluationException(e);
+			client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false, maxQueryTime,
+					handler, getBindingsArray());
+		}
+		catch (IOException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
 
-	@Override
-	protected String getAccept() {
-		return parser.getQueryResultFormat().getDefaultMIMEType();
+	private String getQueryString() {
+		return QueryStringUtil.getQueryString(queryString, getBindings());
 	}
 }

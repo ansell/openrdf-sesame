@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.http;
+package org.openrdf.http.client;
 
 import info.aduna.iteration.LookAheadIteration;
 

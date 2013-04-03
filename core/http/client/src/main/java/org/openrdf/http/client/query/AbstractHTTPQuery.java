@@ -14,28 +14,27 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.http;
+package org.openrdf.http.client.query;
 
 import java.util.Iterator;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.AbstractQuery;
 
+
 /**
- * A query to be evaluated over a HTTP connection with a remote repository.
+ * Base class for any {@link Query} operation over HTTP.
  * 
- * @author Jeen Broekstra
- * @author Arjohn Kampman
+ * @author Andreas Schwarte
  */
-public abstract class HTTPQuery extends AbstractQuery {
+public abstract class AbstractHTTPQuery extends AbstractQuery {
 
-	private static Executor executor = Executors.newFixedThreadPool(20);
-
-	protected final HTTPRepositoryConnection httpCon;
+	
+	private final HTTPClient httpClient;
 
 	protected final QueryLanguage queryLanguage;
 
@@ -43,14 +42,33 @@ public abstract class HTTPQuery extends AbstractQuery {
 
 	protected final String baseURI;
 
-	public HTTPQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		this.httpCon = con;
-		this.queryLanguage = ql;
+	
+	/**
+	 * @param httpClient
+	 * @param queryLanguage
+	 * @param queryString
+	 * @param baseURI
+	 */
+	public AbstractHTTPQuery(HTTPClient httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
+		super();
+		this.httpClient = httpClient;
+		this.queryLanguage = queryLanguage;
 		this.queryString = queryString;
-		this.baseURI = baseURI;
+		// TODO think about the following
+		// for legacy reasons we should support the empty string for baseURI
+		// this is used in the SPARQL repository in several places, e.g. in getStatements
+		this.baseURI = baseURI!=null && baseURI.length()>0 ? baseURI : null;
 	}
-
-	protected Binding[] getBindingsArray() {
+	
+	/**
+	 * Return the {@link HTTPClient} to be used for all HTTP based interaction
+	 * @return
+	 */
+	protected HTTPClient getHttpClient() {
+		return httpClient;
+	}
+		
+	public Binding[] getBindingsArray() {
 		BindingSet bindings = this.getBindings();
 
 		Binding[] bindingsArray = new Binding[bindings.size()];
@@ -62,17 +80,13 @@ public abstract class HTTPQuery extends AbstractQuery {
 
 		return bindingsArray;
 	}
-
-	protected void execute(Runnable command) {
-		executor.execute(command);
-	}
-
+	
 	@Override
 	public void setMaxQueryTime(int maxQueryTime) {
 		super.setMaxQueryTime(maxQueryTime);
-		this.httpCon.getRepository().getHTTPClient().setConnectionTimeout(1000L * this.maxQueryTime);
+		this.httpClient.setConnectionTimeout(1000L * this.maxQueryTime);
 	}
-
+	
 	@Override
 	public String toString() {
 		return queryString;

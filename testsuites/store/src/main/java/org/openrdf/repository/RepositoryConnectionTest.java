@@ -154,11 +154,11 @@ public abstract class RepositoryConnectionTest {
 
 	protected ValueFactory vf;
 
-	protected BNode bob;
+	protected Resource bob;
 
-	protected BNode alice;
+	protected Resource alice;
 
-	protected BNode alexander;
+	protected Resource alexander;
 
 	protected URI name;
 
@@ -1498,20 +1498,14 @@ public abstract class RepositoryConnectionTest {
 		assertThat(Iterations.asList(testCon.getContextIDs()).size(), is(equalTo(0)));
 
 		// load data
-		testCon.begin();
 		testCon.add(bob, name, nameBob, context1);
 		assertThat(Iterations.asList(testCon.getContextIDs()), is(equalTo(Arrays.asList((Resource)context1))));
 
 		testCon.remove(bob, name, nameBob, context1);
 		assertThat(Iterations.asList(testCon.getContextIDs()).size(), is(equalTo(0)));
-		testCon.commit();
 
-		assertThat(Iterations.asList(testCon.getContextIDs()).size(), is(equalTo(0)));
-
-		testCon.begin();
 		testCon.add(bob, name, nameBob, context2);
 		assertThat(Iterations.asList(testCon.getContextIDs()), is(equalTo(Arrays.asList((Resource)context2))));
-		testCon.commit();
 	}
 
 	@Test
@@ -1775,7 +1769,8 @@ public abstract class RepositoryConnectionTest {
 		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
 				(Resource)null);
 		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
-				vf.createURI(URN_TEST_OTHER));
+
+		vf.createURI(URN_TEST_OTHER));
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(3)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(4)));
 		assertThat(size(defaultGraph), is(equalTo(3)));

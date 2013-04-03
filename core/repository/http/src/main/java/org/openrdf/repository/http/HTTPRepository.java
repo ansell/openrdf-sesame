@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -63,19 +64,18 @@ public class HTTPRepository extends RepositoryBase {
 
 	private HTTPRepository() {
 		super();
-		httpClient = new HTTPClient();
+		httpClient = new SesameHTTPClient();
 		httpClient.setValueFactory(new ValueFactoryImpl());
 	}
 
 	public HTTPRepository(final String serverURL, final String repositoryID) {
 		this();
-		httpClient.setServerURL(serverURL);
-		httpClient.setRepositoryID(repositoryID);
+		getHTTPClient().setRepository(serverURL, repositoryID);
 	}
 
 	public HTTPRepository(final String repositoryURL) {
 		this();
-		httpClient.setRepositoryURL(repositoryURL);
+		getHTTPClient().setRepository(repositoryURL);
 	}
 
 	/* ---------------*
@@ -108,10 +108,10 @@ public class HTTPRepository extends RepositoryBase {
 		}
 
 		boolean isWritable = false;
-		final String repositoryURL = httpClient.getRepositoryURL();
+		final String repositoryURL = getHTTPClient().getRepositoryURL();
 
 		try {
-			final TupleQueryResult repositoryList = httpClient.getRepositoryList();
+			final TupleQueryResult repositoryList = getHTTPClient().getRepositoryList();
 			try {
 				while (repositoryList.hasNext()) {
 					final BindingSet bindingSet = repositoryList.next();
@@ -204,7 +204,7 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	public String getRepositoryURL() {
-		return this.httpClient.getRepositoryURL();
+		return getHTTPClient().getRepositoryURL();
 	}
 
 	/* -------------------*
@@ -223,7 +223,6 @@ public class HTTPRepository extends RepositoryBase {
 	{
 		// httpclient shutdown moved to finalize method, to avoid problems with
 		// shutdown followed by re-initialization. See SES-1059.
-		// httpClient.shutDown();
 	}
 
 	@Override
@@ -235,7 +234,7 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	// httpClient is shared with HTTPConnection
-	HTTPClient getHTTPClient() {
-		return httpClient;
+	SesameHTTPClient getHTTPClient() {
+		return (SesameHTTPClient)httpClient;
 	}
 }

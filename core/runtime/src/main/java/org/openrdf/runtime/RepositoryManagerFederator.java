@@ -175,7 +175,7 @@ public class RepositoryManagerFederator {
 	private URI getLocationPredicate(String memberRepoType) {
 		URI predicate;
 		if (SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
-			predicate = SPARQLRepositoryConfig.ENDPOINT;
+			predicate = SPARQLRepositoryConfig.QUERY_ENDPOINT;
 		}
 		else if (HTTPRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
 			predicate = HTTPRepositorySchema.REPOSITORYURL;
@@ -194,7 +194,7 @@ public class RepositoryManagerFederator {
 			locator = valueFactory.createURI(((HTTPRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getURL());
 		}
 		else if (SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
-			locator = valueFactory.createURI(((SPARQLRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getURL());
+			locator = valueFactory.createURI(((SPARQLRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getQueryEndpointUrl());
 		}
 		else {
 			locator = valueFactory.createLiteral(identifier);

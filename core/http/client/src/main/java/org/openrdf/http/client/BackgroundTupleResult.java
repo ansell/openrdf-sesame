@@ -14,84 +14,76 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.http;
+package org.openrdf.http.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.openrdf.http.client.HTTPClient;
-import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.query.Binding;
+import org.apache.commons.httpclient.HttpMethod;
+
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultImpl;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.query.resultio.QueryResultParseException;
+import org.openrdf.query.resultio.TupleQueryResultParser;
 
 /**
- * Provides concurrent access to TupleQueryResults as they are being parsed.
+ * Provides concurrent access to tuple results as they are being parsed.
  * 
  * @author James Leigh
- * @author Jeen Broekstra
  */
-public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult extends TupleQueryResultImpl implements Runnable, TupleQueryResultHandler {
 
 	private volatile boolean closed;
 
 	private volatile Thread parserThread;
 
-	private HTTPClient httpClient;
+	private TupleQueryResultParser parser;
+
+	private InputStream in;
+
+	private HttpMethod method;
 
 	private QueueCursor<BindingSet> queue;
 
 	private List<String> bindingNames;
 
-	/**
-	 * countdown that indicates when binding names have been processed in the
-	 * query result
-	 */
+	private List<String> links;
+
 	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
 
-	private QueryLanguage queryLanguage;
+	private CountDownLatch linksReady = new CountDownLatch(1);
 
-	private String queryString;
-
-	private Dataset dataset;
-
-	private boolean includeInferred;
-
-	private Binding[] bindings;
-
-	private String baseURI;
-
-	public HTTPTupleQueryResult(HTTPClient httpClient, QueryLanguage ql, String queryString, String baseURI,
-			Dataset dataset, boolean includeInferred, Binding... bindings)
-	{
-		this(new QueueCursor<BindingSet>(10), httpClient, ql, queryString, baseURI, dataset, includeInferred,
-				bindings);
+	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
+		this(new QueueCursor<BindingSet>(10), parser, in, connection);
 	}
 
-	public HTTPTupleQueryResult(QueueCursor<BindingSet> queue, HTTPClient httpClient, QueryLanguage ql,
-			String queryString, String baseURI, Dataset dataset, boolean includeInferred, Binding... bindings)
+	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
+			HttpMethod connection)
 	{
-		super(Collections.<String> emptyList(), queue);
+		super(Collections.<String>emptyList(), queue);
 		this.queue = queue;
-		this.httpClient = httpClient;
-		this.queryLanguage = ql;
-		this.queryString = queryString;
-		this.baseURI = baseURI;
-		this.dataset = dataset;
-		this.includeInferred = includeInferred;
-		this.bindings = bindings;
+		this.parser = parser;
+		this.in = in;
+		this.method = connection;
+	}
+
+	@Override
+	protected synchronized void handleClose()
+		throws QueryEvaluationException
+	{
+		closed = true;
+		if (parserThread != null) {
+			parserThread.interrupt();
+		}
+		super.handleClose();
 	}
 
 	@Override
@@ -111,34 +103,32 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 
 	@Override
 	public void run() {
+		boolean completed = false;
 		parserThread = Thread.currentThread();
 		try {
-			// TODO set max query time?
-			httpClient.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, 0, this,
-					bindings);
+			parser.setQueryResultHandler(this);
+			parser.parseQueryResult(in);
+			// release connection back into pool if all results have been read
+			method.releaseConnection();
+			completed = true;
 		}
-		catch (TupleQueryResultHandlerException e) {
+		catch (QueryResultHandlerException e) {
 			// parsing cancelled or interrupted
 		}
+		catch (QueryResultParseException e) {
+			queue.toss(e);
+		}
 		catch (IOException e) {
-			queue.toss(e);
-		}
-		catch (UnauthorizedException e) {
-			queue.toss(e);
-		}
-		catch (QueryInterruptedException e) {
-			queue.toss(e);
-		}
-		catch (RepositoryException e) {
-			queue.toss(e);
-		}
-		catch (MalformedQueryException e) {
 			queue.toss(e);
 		}
 		finally {
 			parserThread = null;
 			queue.done();
 			bindingNamesReady.countDown();
+			if (!completed) {
+				method.abort();
+				method.releaseConnection();
+			}
 		}
 	}
 
@@ -172,17 +162,6 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 	}
 
 	@Override
-	protected synchronized void handleClose()
-		throws QueryEvaluationException
-	{
-		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
-		}
-		super.handleClose();
-	}
-
-	@Override
 	public void handleBoolean(boolean value)
 		throws QueryResultHandlerException
 	{
@@ -193,6 +172,7 @@ public class HTTPTupleQueryResult extends TupleQueryResultImpl implements Runnab
 	public void handleLinks(List<String> linkUrls)
 		throws QueryResultHandlerException
 	{
-		// no-op
+		this.links = linkUrls;
+		linksReady.countDown();
 	}
 }

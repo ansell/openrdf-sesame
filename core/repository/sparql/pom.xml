@@ -32,6 +32,11 @@ The SPARQL Repository provides a Sesame Repository interface to any SPARQL end-p
 			<artifactId>sesame-queryparser-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+				<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryparser-sparql</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryresultio-sparqlxml</artifactId>

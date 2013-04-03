@@ -24,7 +24,7 @@ import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
@@ -85,7 +85,7 @@ public class Connect implements Command {
 		boolean result = false;
 		try {
 			// Ping server
-			final HTTPClient httpClient = new HTTPClient();
+			final SesameHTTPClient httpClient = new SesameHTTPClient();
 			try {
 				httpClient.setServerURL(url);
 

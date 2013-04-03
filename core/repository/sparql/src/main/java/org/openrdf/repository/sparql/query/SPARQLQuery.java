@@ -17,8 +17,6 @@
 package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -26,22 +24,26 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 
+import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.model.URI;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.sparql.SPARQLRepository;
 
 /**
  * Provides an execution thread for background result parsing and inlines
  * binding in a SPARQL query.
  * 
  * @author James Leigh
- * 
+ * @deprecated replaced by {@link AbstractHTTPQuery}
+ * @see AbstractHTTPQuery
  */
+@Deprecated
 public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 	
-	private int maxQueryTime = 0;
+	// TODO maybe delete this class
+	
+	protected int maxQueryTime = 0;
 
 	/**
 	 * @param client
@@ -84,12 +86,12 @@ public abstract class SPARQLQuery extends SPARQLOperation implements Query {
 				}
 			}
 			post.addRequestHeader("Accept", getAccept());
-			Map<String, String> additionalHeaders = (Map<String, String>)client.getParams().getParameter(
-					SPARQLRepository.ADDITIONAL_HEADER_NAME);
-			if (additionalHeaders != null) {
-				for (Entry<String, String> additionalHeader : additionalHeaders.entrySet())
-					post.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
-			}
+//			Map<String, String> additionalHeaders = (Map<String, String>)client.getParams().getParameter(
+//					SPARQLRepository.ADDITIONAL_HEADER_NAME);
+//			if (additionalHeaders != null) {
+//				for (Entry<String, String> additionalHeader : additionalHeaders.entrySet())
+//					post.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
+//			}
 			boolean completed = false;
 			try {
 				if (client.executeMethod(post) >= 400) {
