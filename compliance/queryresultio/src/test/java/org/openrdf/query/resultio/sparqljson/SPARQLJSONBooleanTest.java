@@ -27,6 +27,7 @@ import org.openrdf.query.resultio.helpers.QueryResultCollector;
 
 /**
  * @author Peter Ansell
+ * @author Sebastian Schaffert
  */
 public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 
