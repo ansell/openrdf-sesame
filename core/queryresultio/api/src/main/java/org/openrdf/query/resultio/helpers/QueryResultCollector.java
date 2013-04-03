@@ -18,12 +18,9 @@ package org.openrdf.query.resultio.helpers;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -149,7 +146,7 @@ public class QueryResultCollector implements QueryResultHandler {
 	}
 
 	/**
-	 * @return An immutable set of {@link BindingSet}s that were collected as
+	 * @return An immutable list of {@link BindingSet}s that were collected as
 	 *         the tuple results.
 	 * @throws QueryResultHandlerException
 	 *         If the tuple results set was not successfully collected, as
