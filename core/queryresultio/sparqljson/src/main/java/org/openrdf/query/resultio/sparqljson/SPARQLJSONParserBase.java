@@ -141,7 +141,7 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 						}
 
 						while (jp.nextToken() != JsonToken.END_ARRAY) {
-							varsList.add(jp.getCurrentName());
+							varsList.add(jp.getText());
 						}
 
 						if (this.handler != null) {
@@ -169,7 +169,7 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 						}
 
 						while (jp.nextToken() != JsonToken.END_ARRAY) {
-							linksList.add(jp.getCurrentName());
+							linksList.add(jp.getText());
 						}
 
 						if (this.handler != null) {
