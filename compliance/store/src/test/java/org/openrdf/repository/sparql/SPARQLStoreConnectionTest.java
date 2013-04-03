@@ -16,10 +16,12 @@
  */
 package org.openrdf.repository.sparql;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Statement;
@@ -215,6 +217,14 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		System.err.println("disabled testGetNamespaces() as namespace retrieval is not supported by SPARQL");
+	}
+
+	@Override
+	@Ignore
+	public void testGetNamespace()
+		throws Exception
+	{
+		System.err.println("disabled testGetNamespace() as namespace retrieval is not supported by SPARQL");
 	}
 
 	@Override

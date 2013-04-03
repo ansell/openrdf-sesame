@@ -1140,7 +1140,7 @@ public abstract class RepositoryConnectionTest {
 
 	@Test
 	public void testGetNamespace()
-		throws RDFParseException, RepositoryException, IOException
+		throws Exception
 	{
 		setupNamespaces();
 		assertThat(testCon.getNamespace(EXAMPLE), is(equalTo(EXAMPLE_NS)));
