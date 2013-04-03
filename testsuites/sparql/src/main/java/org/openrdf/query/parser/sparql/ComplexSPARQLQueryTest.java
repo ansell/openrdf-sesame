@@ -25,7 +25,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
+import org.hamcrest.core.Is;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +39,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -45,6 +48,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
@@ -340,6 +344,71 @@ public abstract class ComplexSPARQLQueryTest {
 
 	}
 
+	@Test
+	public void testSES1121VarNamesInOptionals() throws Exception
+	{
+		// Verifying that variable names have no influence on order of optionals in query. See SES-1121.
+		
+		loadTestData("/testdata-query/dataset-ses1121.trig");
+		
+		StringBuilder query1 = new StringBuilder();
+		query1.append(getNamespaceDeclarations());
+		query1.append(" SELECT DISTINCT *\n");
+		query1.append(" WHERE { GRAPH ?g { \n");
+		query1.append("          OPTIONAL { ?var35 ex:p ?b . } \n ");
+		query1.append("          OPTIONAL { ?b ex:q ?c . } \n ");
+		query1.append("       } \n");
+		query1.append(" } \n");
+		
+		StringBuilder query2 = new StringBuilder();
+		query2.append(getNamespaceDeclarations());
+		query2.append(" SELECT DISTINCT *\n");
+		query2.append(" WHERE { GRAPH ?g { \n");
+		query2.append("          OPTIONAL { ?var35 ex:p ?b . } \n ");
+		query2.append("          OPTIONAL { ?b ex:q ?var2 . } \n ");
+		query2.append("       } \n");
+		query2.append(" } \n");
+		
+		TupleQuery tq1 = null;
+		TupleQuery tq2 = null;
+		try {
+			tq1 = conn.prepareTupleQuery(QueryLanguage.SPARQL, query1.toString());
+			tq2 = conn.prepareTupleQuery(QueryLanguage.SPARQL, query2.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		try {
+			TupleQueryResult result1 = tq1.evaluate();
+			assertNotNull(result1);
+			
+			TupleQueryResult result2 = tq2.evaluate();
+			assertNotNull(result2);
+
+			List<BindingSet> qr1 = QueryResults.asList(result1);
+			List<BindingSet> qr2 = QueryResults.asList(result2);
+
+//			System.out.println(qr1);
+//			System.out.println(qr2);
+
+			// if optionals are not kept in same order, query results will be different size.
+			assertEquals(qr1.size(), qr2.size());
+			
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		
+	}
+	
 	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception
