@@ -194,7 +194,10 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 				}
 			}
 			else if (subjStr.equals(BOOLEAN)) {
+				JsonToken nextToken = jp.nextToken();
 
+				result = Boolean.parseBoolean(jp.getText());
+				handler.handleBoolean(result);
 			}
 			else {
 				throw new QueryResultParseException("Found unexpected object in top level " + subjStr + " field",
