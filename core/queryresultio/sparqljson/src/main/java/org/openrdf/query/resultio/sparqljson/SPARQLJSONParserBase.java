@@ -44,6 +44,7 @@ import org.openrdf.query.resultio.QueryResultParserBase;
  * implementation of both boolean and tuple parsing.
  * 
  * @author Peter Ansell
+ * @author Sebastian Schaffert
  */
 public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 
