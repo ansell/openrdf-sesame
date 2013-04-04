@@ -38,14 +38,17 @@ public class TestTupleResultBuilder {
 	private TupleResultBuilder builder;
 
 	@Before
-	public void setUp() {
+	public void setUp()
+		throws Exception
+	{
 		builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(new ByteArrayOutputStream()),
 				ValueFactoryImpl.getInstance());
+		builder.start("test");
 	}
 
 	@After
 	public void tearDown()
-		throws QueryResultHandlerException
+		throws Exception
 	{
 		builder.end();
 	}
