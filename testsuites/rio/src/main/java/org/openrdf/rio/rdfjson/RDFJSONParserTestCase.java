@@ -128,6 +128,36 @@ public abstract class RDFJSONParserTestCase {
 
 		queryResult.close();
 
+		StringBuilder positiveEvalQuery = new StringBuilder();
+		positiveEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveEvalQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveEvalQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveEvalQuery.append(" WHERE { \n");
+		positiveEvalQuery.append("     ?test a rdft:TestRDFJSONEval . ");
+		positiveEvalQuery.append("     ?test mf:name ?testName . ");
+		positiveEvalQuery.append("     ?test mf:action ?inputURL . ");
+		positiveEvalQuery.append("     ?test mf:result ?outputURL . ");
+		positiveEvalQuery.append(" }");
+
+		queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveEvalQuery.toString()).evaluate();
+
+		// Add all positive eval tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
+			String nextOutputURL = TEST_FILE_BASE_PATH
+					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString());
+
+			String nextBaseUrl = BASE_URL + nextTestFile;
+
+			suite.addTest(new PositiveParserTest(nextTestName, nextInputURL, nextOutputURL, nextBaseUrl));
+		}
+
+		queryResult.close();
+		
 		con.close();
 		repository.shutDown();
 

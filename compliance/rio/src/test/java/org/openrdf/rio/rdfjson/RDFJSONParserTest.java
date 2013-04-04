@@ -21,8 +21,7 @@ import junit.framework.Test;
 import org.openrdf.rio.RDFParser;
 
 /**
- * JUnit test for the Turtle parser that uses the tests that are available <a
- * href="http://cvs.ilrt.org/cvsweb/redland/raptor/tests/turtle/">online</a>.
+ * JUnit test for the RDF/JSON parser.
  */
 public class RDFJSONParserTest extends RDFJSONParserTestCase {
 
