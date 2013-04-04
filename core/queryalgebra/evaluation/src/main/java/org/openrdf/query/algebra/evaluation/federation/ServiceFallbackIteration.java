@@ -19,6 +19,7 @@ package org.openrdf.query.algebra.evaluation.federation;
 import java.util.Collection;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -67,10 +68,30 @@ public class ServiceFallbackIteration extends JoinExecutorBase<BindingSet> {
 		// handle each prepared query individually and add the result to this
 		// iteration
 		for (BindingSet b : bindings) {
-			CloseableIteration<BindingSet, QueryEvaluationException> result = federatedService.evaluate(
-					preparedQuery, b, service.getBaseURI(), QueryType.SELECT, service);
-			result = service.isSilent() ? new SilentIteration(result) : result;
-			addResult(result);
+			try {
+				CloseableIteration<BindingSet, QueryEvaluationException> result = federatedService.evaluate(
+						preparedQuery, b, service.getBaseURI(), QueryType.SELECT, service);
+				result = service.isSilent() ? new SilentIteration(result) : result;
+				addResult(result);
+			} 
+			catch (QueryEvaluationException e) {
+				// suppress exceptions if silent
+				if (service.isSilent()) {
+					addResult(new SingletonIteration<BindingSet, QueryEvaluationException>(b));
+				} else {
+					throw e;
+				}
+			}			
+			catch (RuntimeException e) {
+				// suppress special exceptions (e.g. UndeclaredThrowable with wrapped
+				// QueryEval) if silent
+				if (service.isSilent()) {
+					addResult(new SingletonIteration<BindingSet, QueryEvaluationException>(b));
+				}
+				else {
+					throw e;
+				}
+			}
 		}
 
 	}
