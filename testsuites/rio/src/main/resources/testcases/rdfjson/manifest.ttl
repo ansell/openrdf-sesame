@@ -18,6 +18,30 @@
    mf:action    <rdfjson-syntax-file-01.rj> ;
    .
 
+<#rdfjson-syntax-file-02> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-02" ;
+   rdfs:comment "Plain literal" ;
+   mf:action    <rdfjson-syntax-file-02.rj> ;
+   .
+
+<#rdfjson-syntax-file-03> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-03" ;
+   rdfs:comment "Language literal" ;
+   mf:action    <rdfjson-syntax-file-03.rj> ;
+   .
+
+<#rdfjson-syntax-file-04> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-04" ;
+   rdfs:comment "XML Schema String typed literal" ;
+   mf:action    <rdfjson-syntax-file-04.rj> ;
+   .
+
+<#rdfjson-syntax-file-05> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-05" ;
+   rdfs:comment "RDF XML Literal typed literal" ;
+   mf:action    <rdfjson-syntax-file-05.rj> ;
+   .
+
 <#rdfjson-syntax-bad-01> rdf:type rdft:TestRDFJSONNegativeSyntax ;
    mf:name    "rdfjson-syntax-bad-01" ;
    rdfs:comment "No object in file" ;
@@ -27,6 +51,7 @@
 <#rdfjson-eval-file-01> rdf:type rdft:TestRDFJSONEval ;
    mf:name    "rdfjson-eval-file-01" ;
    rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-01> ;
    mf:action    <rdfjson-eval-file-01.rj> ;
    mf:result    <rdfjson-eval-file-01.nt> ;
    .
