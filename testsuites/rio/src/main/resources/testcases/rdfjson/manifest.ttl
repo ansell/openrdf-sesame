@@ -9,7 +9,16 @@
     mf:entries
     (
     <#rdfjson-syntax-file-01>
-    <#rdfjson-eval-bad-01>
+    <#rdfjson-syntax-file-02>
+    <#rdfjson-syntax-file-03>
+    <#rdfjson-syntax-file-04>
+    <#rdfjson-syntax-file-05>
+    <#rdfjson-syntax-file-06>
+    <#rdfjson-syntax-file-07>
+    <#rdfjson-syntax-file-08>
+    <#rdfjson-syntax-file-09>
+    <#rdfjson-syntax-bad-01>
+    <#rdfjson-eval-file-01>
     ) .
 
 <#rdfjson-syntax-file-01> rdf:type rdft:TestRDFJSONPositiveSyntax ;
