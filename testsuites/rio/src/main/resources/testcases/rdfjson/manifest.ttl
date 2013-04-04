@@ -1,0 +1,27 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> .
+@prefix rdft:   <http://www.w3.org/ns/rdftest#> .
+
+<>  rdf:type mf:Manifest ;
+    rdfs:comment "RDF/JSON tests" ;
+    mf:entries
+    (
+    <#rdfjson-syntax-file-01>
+    <#rdfjson-eval-bad-01>
+    ) .
+
+<#rdfjson-syntax-file-01> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-01" ;
+   rdfs:comment "Empty file" ;
+   mf:action    <rdfjson-syntax-file-01.rj> ;
+   .
+
+<#rdfjson-syntax-bad-01> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-01" ;
+   rdfs:comment "No object in file" ;
+   mf:action    <rdfjson-syntax-bad-01.rj> ;
+   .
+
+

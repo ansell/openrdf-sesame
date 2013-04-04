@@ -75,6 +75,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-rio-rdfjson</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>xml-security</groupId>
 			<artifactId>xmlsec</artifactId>
 			<version>1.3.0</version>
