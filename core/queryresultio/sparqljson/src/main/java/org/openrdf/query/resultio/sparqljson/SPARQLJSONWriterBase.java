@@ -201,6 +201,12 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (!headerComplete) {
 				endHeader();
 			}
+
+			if (!tupleVariablesFound) {
+				throw new TupleQueryResultHandlerException(
+						"Could not end query result as startQueryResult was not called first.");
+			}
+
 			// bindings array
 			jg.writeEndArray();
 			// results braces
@@ -357,10 +363,10 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 		try {
 			if (value) {
-				jg.writeObjectField("boolean", "true");
+				jg.writeBooleanField("boolean", Boolean.TRUE);
 			}
 			else {
-				jg.writeObjectField("boolean", "false");
+				jg.writeBooleanField("boolean", Boolean.FALSE);
 			}
 
 			endDocument();
@@ -401,6 +407,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		jg.flush();
 		documentOpen = false;
 		headerComplete = false;
+		tupleVariablesFound = false;
 	}
 
 }
