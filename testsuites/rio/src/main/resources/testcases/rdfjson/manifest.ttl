@@ -42,6 +42,30 @@
    mf:action    <rdfjson-syntax-file-05.rj> ;
    .
 
+<#rdfjson-syntax-file-06> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-06" ;
+   rdfs:comment "Blank node subject with URI object" ;
+   mf:action    <rdfjson-syntax-file-06.rj> ;
+   .
+
+<#rdfjson-syntax-file-07> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-07" ;
+   rdfs:comment "Blank node subject with Blank node object" ;
+   mf:action    <rdfjson-syntax-file-07.rj> ;
+   .
+
+<#rdfjson-syntax-file-08> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-08" ;
+   rdfs:comment "URI subject with URI object" ;
+   mf:action    <rdfjson-syntax-file-08.rj> ;
+   .
+
+<#rdfjson-syntax-file-09> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-09" ;
+   rdfs:comment "URI subject with Blank node object" ;
+   mf:action    <rdfjson-syntax-file-09.rj> ;
+   .
+
 <#rdfjson-syntax-bad-01> rdf:type rdft:TestRDFJSONNegativeSyntax ;
    mf:name    "rdfjson-syntax-bad-01" ;
    rdfs:comment "No object in file" ;
