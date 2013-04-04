@@ -20,6 +20,7 @@
 		<module>n3</module>
 		<module>nquads</module>
 		<module>ntriples</module>
+		<module>rdfjson</module>
 		<module>rdfxml</module>
 		<module>trix</module>
 		<module>turtle</module>
