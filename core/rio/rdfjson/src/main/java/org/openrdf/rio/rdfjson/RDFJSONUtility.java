@@ -407,9 +407,25 @@ public class RDFJSONUtility {
 						}
 					}
 					else if (BNODE.equals(nextType)) {
+						if(nextLanguage != null) {
+							throw new RDFParseException("Language was attached to a blank node object: subject=" + subjStr + " predicate="
+									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						}
+						if(nextDatatype != null) {
+							throw new RDFParseException("Datatype was attached to a blank node object: subject=" + subjStr + " predicate="
+									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						}
 						object = vf.createBNode(nextValue.substring(2));
 					}
 					else if (URI.equals(nextType)) {
+						if(nextLanguage != null) {
+							throw new RDFParseException("Language was attached to a uri object: subject=" + subjStr + " predicate="
+									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						}
+						if(nextDatatype != null) {
+							throw new RDFParseException("Datatype was attached to a uri object: subject=" + subjStr + " predicate="
+									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						}
 						object = vf.createURI(nextValue);
 					}
 
