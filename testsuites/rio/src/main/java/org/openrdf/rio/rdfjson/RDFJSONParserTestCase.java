@@ -43,6 +43,7 @@ import org.openrdf.sail.memory.MemoryStore;
 
 /**
  * JUnit test for the RDFJSON Parser.
+ * @author Peter Ansell
  */
 public abstract class RDFJSONParserTestCase {
 

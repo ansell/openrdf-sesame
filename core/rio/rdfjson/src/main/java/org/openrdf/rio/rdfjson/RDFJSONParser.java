@@ -30,6 +30,7 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * {@link RDFParser} implementation for the RDF/JSON format
  * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
 public class RDFJSONParser extends RDFParserBase implements RDFParser {
 

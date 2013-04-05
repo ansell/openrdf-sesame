@@ -22,6 +22,7 @@ import org.openrdf.rio.RDFParser;
 
 /**
  * JUnit test for the RDF/JSON parser.
+ * @author Peter Ansell
  */
 public class RDFJSONParserTest extends RDFJSONParserTestCase {
 

@@ -51,6 +51,7 @@ import com.fasterxml.jackson.core.JsonToken;
  * Jackson.
  * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
 public class RDFJSONUtility {
 
@@ -96,6 +97,7 @@ public class RDFJSONUtility {
 	 *        The output stream to use.
 	 * @throws IOException
 	 * @throws JsonGenerationException
+	 * @since 2.7.0
 	 */
 	public static void modelToRdfJson(final Model graph, final OutputStream writer)
 		throws JsonGenerationException, IOException
@@ -115,6 +117,7 @@ public class RDFJSONUtility {
 	 *        The {@link WriterConfig} to use for accessing specific settings.
 	 * @throws IOException
 	 * @throws JsonGenerationException
+	 * @since 2.7.0
 	 */
 	public static void modelToRdfJson(final Model graph, final OutputStream writer,
 			final WriterConfig writerConfig)
@@ -136,6 +139,7 @@ public class RDFJSONUtility {
 	 *        The output writer to use.
 	 * @throws IOException
 	 * @throws JsonGenerationException
+	 * @since 2.7.0
 	 */
 	public static void modelToRdfJson(final Model graph, final Writer writer)
 		throws JsonGenerationException, IOException
@@ -155,6 +159,7 @@ public class RDFJSONUtility {
 	 *        The {@link WriterConfig} to use for accessing specific settings.
 	 * @throws IOException
 	 * @throws JsonGenerationException
+	 * @since 2.7.0
 	 */
 	public static void modelToRdfJson(final Model graph, final Writer writer, final WriterConfig writerConfig)
 		throws JsonGenerationException, IOException
@@ -202,6 +207,7 @@ public class RDFJSONUtility {
 	 * @param handler
 	 *        The {@link RDFHandler} to handle the resulting triples.
 	 * @throws RDFHandlerException
+	 * @since 2.7.0
 	 */
 	public static void rdfJsonToHandler(final InputStream json, final RDFHandler handler, final ValueFactory vf)
 		throws RDFParseException, RDFHandlerException
@@ -242,6 +248,7 @@ public class RDFJSONUtility {
 	 * @param handler
 	 *        The {@link RDFHandler} to handle the resulting triples.
 	 * @throws RDFHandlerException
+	 * @since 2.7.0
 	 */
 	public static void rdfJsonToHandler(final Reader json, final RDFHandler handler, final ValueFactory vf)
 		throws RDFParseException, RDFHandlerException
@@ -407,24 +414,28 @@ public class RDFJSONUtility {
 						}
 					}
 					else if (BNODE.equals(nextType)) {
-						if(nextLanguage != null) {
-							throw new RDFParseException("Language was attached to a blank node object: subject=" + subjStr + " predicate="
-									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						if (nextLanguage != null) {
+							throw new RDFParseException("Language was attached to a blank node object: subject="
+									+ subjStr + " predicate=" + predStr, jp.getCurrentLocation().getLineNr(),
+									jp.getCurrentLocation().getColumnNr());
 						}
-						if(nextDatatype != null) {
-							throw new RDFParseException("Datatype was attached to a blank node object: subject=" + subjStr + " predicate="
-									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						if (nextDatatype != null) {
+							throw new RDFParseException("Datatype was attached to a blank node object: subject="
+									+ subjStr + " predicate=" + predStr, jp.getCurrentLocation().getLineNr(),
+									jp.getCurrentLocation().getColumnNr());
 						}
 						object = vf.createBNode(nextValue.substring(2));
 					}
 					else if (URI.equals(nextType)) {
-						if(nextLanguage != null) {
-							throw new RDFParseException("Language was attached to a uri object: subject=" + subjStr + " predicate="
-									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						if (nextLanguage != null) {
+							throw new RDFParseException("Language was attached to a uri object: subject=" + subjStr
+									+ " predicate=" + predStr, jp.getCurrentLocation().getLineNr(),
+									jp.getCurrentLocation().getColumnNr());
 						}
-						if(nextDatatype != null) {
-							throw new RDFParseException("Datatype was attached to a uri object: subject=" + subjStr + " predicate="
-									+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+						if (nextDatatype != null) {
+							throw new RDFParseException("Datatype was attached to a uri object: subject=" + subjStr
+									+ " predicate=" + predStr, jp.getCurrentLocation().getLineNr(),
+									jp.getCurrentLocation().getColumnNr());
 						}
 						object = vf.createURI(nextValue);
 					}

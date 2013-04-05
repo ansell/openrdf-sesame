@@ -37,6 +37,7 @@ import org.openrdf.rio.helpers.RDFWriterBase;
  * {@link RDFWriter} implementation for the RDF/JSON format
  * 
  * @author Peter Ansell p_ansell@yahoo.com
+ * @since 2.7.0
  */
 public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 
