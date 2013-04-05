@@ -293,6 +293,7 @@ public class RDFJSONUtility {
 						jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 			}
 
+			boolean foundPredicate = false;
 			while (jp.nextToken() != JsonToken.END_OBJECT) {
 				final String predStr = jp.getCurrentName();
 
@@ -301,6 +302,8 @@ public class RDFJSONUtility {
 					throw new RDFParseException("Expected predicate value to start with an array",
 							jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 				}
+
+				foundPredicate = true;
 
 				while (jp.nextToken() != JsonToken.END_ARRAY) {
 					if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
@@ -419,6 +422,11 @@ public class RDFJSONUtility {
 						handler.handleStatement(vf.createStatement(subject, predicate, object));
 					}
 				}
+			}
+
+			if (!foundPredicate) {
+				throw new RDFParseException("No predicate for object: subject=" + subjStr,
+						jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 			}
 		}
 	}
