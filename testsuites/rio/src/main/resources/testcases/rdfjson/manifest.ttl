@@ -24,6 +24,14 @@
     <#rdfjson-syntax-file-14>
     <#rdfjson-syntax-file-15>
     <#rdfjson-syntax-bad-01>
+    <#rdfjson-syntax-bad-02>
+    <#rdfjson-syntax-bad-03>
+    <#rdfjson-syntax-bad-04>
+    <#rdfjson-syntax-bad-05>
+    <#rdfjson-syntax-bad-06>
+    <#rdfjson-syntax-bad-07>
+    <#rdfjson-syntax-bad-08>
+    <#rdfjson-syntax-bad-09>
     <#rdfjson-eval-file-01>
     ) .
 
@@ -133,6 +141,42 @@
    mf:name    "rdfjson-syntax-bad-03" ;
    rdfs:comment "Subject with predicate and no objects" ;
    mf:action    <rdfjson-syntax-bad-03.rj> ;
+   .
+
+<#rdfjson-syntax-bad-04> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-04" ;
+   rdfs:comment "Object value without type" ;
+   mf:action    <rdfjson-syntax-bad-04.rj> ;
+   .
+
+<#rdfjson-syntax-bad-05> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-05" ;
+   rdfs:comment "Object value and language without type" ;
+   mf:action    <rdfjson-syntax-bad-05.rj> ;
+   .
+
+<#rdfjson-syntax-bad-06> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-06" ;
+   rdfs:comment "Object value and datatype without type" ;
+   mf:action    <rdfjson-syntax-bad-06.rj> ;
+   .
+
+<#rdfjson-syntax-bad-07> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-07" ;
+   rdfs:comment "Object literal without value" ;
+   mf:action    <rdfjson-syntax-bad-07.rj> ;
+   .
+
+<#rdfjson-syntax-bad-08> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-08" ;
+   rdfs:comment "Object literal and language without value" ;
+   mf:action    <rdfjson-syntax-bad-08.rj> ;
+   .
+
+<#rdfjson-syntax-bad-09> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-09" ;
+   rdfs:comment "Object literal and datatype without value" ;
+   mf:action    <rdfjson-syntax-bad-09.rj> ;
    .
 
 <#rdfjson-eval-file-01> rdf:type rdft:TestRDFJSONEval ;
