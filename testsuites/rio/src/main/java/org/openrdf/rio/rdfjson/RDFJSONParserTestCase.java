@@ -39,10 +39,12 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesParser;
+import org.openrdf.rio.ntriples.NTriplesWriter;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
  * JUnit test for the RDFJSON Parser.
+ * 
  * @author Peter Ansell
  */
 public abstract class RDFJSONParserTestCase {
@@ -158,7 +160,7 @@ public abstract class RDFJSONParserTestCase {
 		}
 
 		queryResult.close();
-		
+
 		con.close();
 		repository.shutDown();
 
@@ -227,6 +229,15 @@ public abstract class RDFJSONParserTestCase {
 			ntriplesParser.setRDFHandler(outputCollector);
 
 			if (outputURL != null) {
+				// System.out.println(this.outputURL);
+				//
+				// NTriplesWriter nTriplesWriter = new NTriplesWriter(System.out);
+				// nTriplesWriter.startRDF();
+				// for(Statement nextStatment : inputCollection) {
+				// nTriplesWriter.handleStatement(nextStatment);
+				// }
+				// nTriplesWriter.endRDF();
+
 				in = this.getClass().getResourceAsStream(outputURL);
 				ntriplesParser.parse(in, baseURL);
 				in.close();

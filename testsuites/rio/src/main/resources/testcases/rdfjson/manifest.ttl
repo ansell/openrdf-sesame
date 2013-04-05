@@ -45,6 +45,20 @@
     <#rdfjson-syntax-bad-20>
     <#rdfjson-syntax-bad-21>
     <#rdfjson-eval-file-01>
+    <#rdfjson-eval-file-02>
+    <#rdfjson-eval-file-03>
+    <#rdfjson-eval-file-04>
+    <#rdfjson-eval-file-05>
+    <#rdfjson-eval-file-06>
+    <#rdfjson-eval-file-07>
+    <#rdfjson-eval-file-08>
+    <#rdfjson-eval-file-09>
+    <#rdfjson-eval-file-10>
+    <#rdfjson-eval-file-11>
+    <#rdfjson-eval-file-12>
+    <#rdfjson-eval-file-13>
+    <#rdfjson-eval-file-14>
+    <#rdfjson-eval-file-15>
     ) .
 
 <#rdfjson-syntax-file-01> rdf:type rdft:TestRDFJSONPositiveSyntax ;
@@ -267,8 +281,120 @@
    mf:name    "rdfjson-eval-file-01" ;
    rdfs:comment "Empty file" ;
    rdfs:seeAlso <#rdfjson-syntax-file-01> ;
-   mf:action    <rdfjson-eval-file-01.rj> ;
+   mf:action    <rdfjson-syntax-file-01.rj> ;
    mf:result    <rdfjson-eval-file-01.nt> ;
+   .
+
+<#rdfjson-eval-file-02> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-02" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-02> ;
+   mf:action    <rdfjson-syntax-file-02.rj> ;
+   mf:result    <rdfjson-eval-file-02.nt> ;
+   .
+
+<#rdfjson-eval-file-03> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-03" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-03> ;
+   mf:action    <rdfjson-syntax-file-03.rj> ;
+   mf:result    <rdfjson-eval-file-03.nt> ;
+   .
+
+<#rdfjson-eval-file-04> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-04" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-04> ;
+   mf:action    <rdfjson-syntax-file-04.rj> ;
+   mf:result    <rdfjson-eval-file-04.nt> ;
+   .
+
+<#rdfjson-eval-file-05> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-05" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-05> ;
+   mf:action    <rdfjson-syntax-file-05.rj> ;
+   mf:result    <rdfjson-eval-file-05.nt> ;
+   .
+
+<#rdfjson-eval-file-06> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-06" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-06> ;
+   mf:action    <rdfjson-syntax-file-06.rj> ;
+   mf:result    <rdfjson-eval-file-06.nt> ;
+   .
+
+<#rdfjson-eval-file-07> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-07" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-07> ;
+   mf:action    <rdfjson-syntax-file-07.rj> ;
+   mf:result    <rdfjson-eval-file-07.nt> ;
+   .
+
+<#rdfjson-eval-file-08> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-08" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-08> ;
+   mf:action    <rdfjson-syntax-file-08.rj> ;
+   mf:result    <rdfjson-eval-file-08.nt> ;
+   .
+
+<#rdfjson-eval-file-09> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-09" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-09> ;
+   mf:action    <rdfjson-syntax-file-09.rj> ;
+   mf:result    <rdfjson-eval-file-09.nt> ;
+   .
+
+<#rdfjson-eval-file-10> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-10" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-10> ;
+   mf:action    <rdfjson-syntax-file-10.rj> ;
+   mf:result    <rdfjson-eval-file-10.nt> ;
+   .
+
+<#rdfjson-eval-file-11> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-11" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-11> ;
+   mf:action    <rdfjson-syntax-file-11.rj> ;
+   mf:result    <rdfjson-eval-file-11.nt> ;
+   .
+
+<#rdfjson-eval-file-12> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-12" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-12> ;
+   mf:action    <rdfjson-syntax-file-12.rj> ;
+   mf:result    <rdfjson-eval-file-12.nt> ;
+   .
+
+<#rdfjson-eval-file-13> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-13" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-13> ;
+   mf:action    <rdfjson-syntax-file-13.rj> ;
+   mf:result    <rdfjson-eval-file-13.nt> ;
+   .
+
+<#rdfjson-eval-file-14> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-14" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-14> ;
+   mf:action    <rdfjson-syntax-file-14.rj> ;
+   mf:result    <rdfjson-eval-file-14.nt> ;
+   .
+
+<#rdfjson-eval-file-15> rdf:type rdft:TestRDFJSONEval ;
+   mf:name    "rdfjson-eval-file-15" ;
+   rdfs:comment "Empty file" ;
+   rdfs:seeAlso <#rdfjson-syntax-file-15> ;
+   mf:action    <rdfjson-syntax-file-15.rj> ;
+   mf:result    <rdfjson-eval-file-15.nt> ;
    .
 
 
