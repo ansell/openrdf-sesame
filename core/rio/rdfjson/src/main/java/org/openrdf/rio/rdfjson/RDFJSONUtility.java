@@ -304,6 +304,7 @@ public class RDFJSONUtility {
 				}
 
 				foundPredicate = true;
+				boolean foundObject = false;
 
 				while (jp.nextToken() != JsonToken.END_ARRAY) {
 					if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
@@ -421,6 +422,12 @@ public class RDFJSONUtility {
 					else {
 						handler.handleStatement(vf.createStatement(subject, predicate, object));
 					}
+
+					foundObject = true;
+				}
+				if (!foundObject) {
+					throw new RDFParseException("No object for predicate: subject=" + subjStr + " predicate="
+							+ predStr, jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 				}
 			}
 

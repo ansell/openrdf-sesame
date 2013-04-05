@@ -119,14 +119,20 @@
 
 <#rdfjson-syntax-bad-01> rdf:type rdft:TestRDFJSONNegativeSyntax ;
    mf:name    "rdfjson-syntax-bad-01" ;
-   rdfs:comment "No object in file" ;
+   rdfs:comment "No subject in file" ;
    mf:action    <rdfjson-syntax-bad-01.rj> ;
    .
 
 <#rdfjson-syntax-bad-02> rdf:type rdft:TestRDFJSONNegativeSyntax ;
    mf:name    "rdfjson-syntax-bad-02" ;
-   rdfs:comment "Object with no predicate" ;
+   rdfs:comment "Subject with no predicate" ;
    mf:action    <rdfjson-syntax-bad-02.rj> ;
+   .
+
+<#rdfjson-syntax-bad-03> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-03" ;
+   rdfs:comment "Subject with predicate and no objects" ;
+   mf:action    <rdfjson-syntax-bad-03.rj> ;
    .
 
 <#rdfjson-eval-file-01> rdf:type rdft:TestRDFJSONEval ;
