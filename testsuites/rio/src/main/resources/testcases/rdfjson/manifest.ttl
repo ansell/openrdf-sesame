@@ -17,6 +17,12 @@
     <#rdfjson-syntax-file-07>
     <#rdfjson-syntax-file-08>
     <#rdfjson-syntax-file-09>
+    <#rdfjson-syntax-file-10>
+    <#rdfjson-syntax-file-11>
+    <#rdfjson-syntax-file-12>
+    <#rdfjson-syntax-file-13>
+    <#rdfjson-syntax-file-14>
+    <#rdfjson-syntax-file-15>
     <#rdfjson-syntax-bad-01>
     <#rdfjson-eval-file-01>
     ) .
@@ -73,6 +79,42 @@
    mf:name    "rdfjson-syntax-file-09" ;
    rdfs:comment "URI subject with Blank node object" ;
    mf:action    <rdfjson-syntax-file-09.rj> ;
+   .
+
+<#rdfjson-syntax-file-10> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-10" ;
+   rdfs:comment "Multiple subject URIs" ;
+   mf:action    <rdfjson-syntax-file-10.rj> ;
+   .
+
+<#rdfjson-syntax-file-11> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-11" ;
+   rdfs:comment "Multiple subject Blank Nodes" ;
+   mf:action    <rdfjson-syntax-file-11.rj> ;
+   .
+
+<#rdfjson-syntax-file-12> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-12" ;
+   rdfs:comment "Single subject multiple predicates" ;
+   mf:action    <rdfjson-syntax-file-12.rj> ;
+   .
+
+<#rdfjson-syntax-file-13> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-13" ;
+   rdfs:comment "Multiple subject multiple predicates" ;
+   mf:action    <rdfjson-syntax-file-13.rj> ;
+   .
+
+<#rdfjson-syntax-file-14> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-14" ;
+   rdfs:comment "Single subject single predicate multiple objects" ;
+   mf:action    <rdfjson-syntax-file-14.rj> ;
+   .
+
+<#rdfjson-syntax-file-15> rdf:type rdft:TestRDFJSONPositiveSyntax ;
+   mf:name    "rdfjson-syntax-file-15" ;
+   rdfs:comment "Single subject multiple predicates multiple objects" ;
+   mf:action    <rdfjson-syntax-file-15.rj> ;
    .
 
 <#rdfjson-syntax-bad-01> rdf:type rdft:TestRDFJSONNegativeSyntax ;
