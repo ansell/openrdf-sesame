@@ -38,6 +38,12 @@
     <#rdfjson-syntax-bad-13>
     <#rdfjson-syntax-bad-14>
     <#rdfjson-syntax-bad-15>
+    <#rdfjson-syntax-bad-16>
+    <#rdfjson-syntax-bad-17>
+    <#rdfjson-syntax-bad-18>
+    <#rdfjson-syntax-bad-19>
+    <#rdfjson-syntax-bad-20>
+    <#rdfjson-syntax-bad-21>
     <#rdfjson-eval-file-01>
     ) .
 
@@ -219,6 +225,42 @@
    mf:name    "rdfjson-syntax-bad-15" ;
    rdfs:comment "Object uri with datatype without value" ;
    mf:action    <rdfjson-syntax-bad-15.rj> ;
+   .
+
+<#rdfjson-syntax-bad-16> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-16" ;
+   rdfs:comment "Object uri with value and language" ;
+   mf:action    <rdfjson-syntax-bad-16.rj> ;
+   .
+
+<#rdfjson-syntax-bad-17> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-17" ;
+   rdfs:comment "Object uri with value and datatype" ;
+   mf:action    <rdfjson-syntax-bad-17.rj> ;
+   .
+
+<#rdfjson-syntax-bad-18> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-18" ;
+   rdfs:comment "Object uri with value and datatype and language" ;
+   mf:action    <rdfjson-syntax-bad-18.rj> ;
+   .
+
+<#rdfjson-syntax-bad-19> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-19" ;
+   rdfs:comment "Object bnode with value and language" ;
+   mf:action    <rdfjson-syntax-bad-19.rj> ;
+   .
+
+<#rdfjson-syntax-bad-20> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-20" ;
+   rdfs:comment "Object bnode with value and datatype" ;
+   mf:action    <rdfjson-syntax-bad-20.rj> ;
+   .
+
+<#rdfjson-syntax-bad-21> rdf:type rdft:TestRDFJSONNegativeSyntax ;
+   mf:name    "rdfjson-syntax-bad-21" ;
+   rdfs:comment "Object bnode with value and datatype and language" ;
+   mf:action    <rdfjson-syntax-bad-21.rj> ;
    .
 
 <#rdfjson-eval-file-01> rdf:type rdft:TestRDFJSONEval ;
