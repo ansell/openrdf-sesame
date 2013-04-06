@@ -21,9 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.Literals;
@@ -34,6 +31,12 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.resultio.QueryResultWriter;
 
+/**
+ * A small wrapper around {@link QueryResultWriter} to make it easier to
+ * generate results in servlets.
+ * 
+ * @author peter
+ */
 public class TupleResultBuilder {
 
 	private final QueryResultWriter out;
@@ -60,6 +63,14 @@ public class TupleResultBuilder {
 		return this;
 	}
 
+	/**
+	 * This must be called before calling {@link #namedResult(String, Object)} or
+	 * {@link #result(Object...)}.
+	 * 
+	 * @param variables
+	 * @return
+	 * @throws QueryResultHandlerException
+	 */
 	public TupleResultBuilder start(String... variables)
 		throws QueryResultHandlerException
 	{
@@ -89,6 +100,13 @@ public class TupleResultBuilder {
 		return this;
 	}
 
+	/**
+	 * {@link #start(String...)} must be called before using this method.
+	 * 
+	 * @param result
+	 * @return
+	 * @throws QueryResultHandlerException
+	 */
 	public TupleResultBuilder result(Object... result)
 		throws QueryResultHandlerException
 	{
@@ -102,6 +120,14 @@ public class TupleResultBuilder {
 		return this;
 	}
 
+	/**
+	 * {@link #start(String...)} must be called before using this method.
+	 * 
+	 * @param name
+	 * @param result
+	 * @return
+	 * @throws QueryResultHandlerException
+	 */
 	public TupleResultBuilder namedResult(String name, Object result)
 		throws QueryResultHandlerException
 	{
@@ -117,7 +143,8 @@ public class TupleResultBuilder {
 		final Value nextValue;
 		if (result instanceof Value) {
 			nextValue = (Value)result;
-		} else if (result instanceof URL) {
+		}
+		else if (result instanceof URL) {
 			nextValue = vf.createURI(result.toString());
 		}
 		else {
@@ -131,6 +158,17 @@ public class TupleResultBuilder {
 		return new BindingImpl(name, nextValue);
 	}
 
+	/**
+	 * This must be called if {@link #start(String...)} is used, after all
+	 * results are generated using either {@link #namedResult(String, Object)} or
+	 * {@link #result(Object...)}.
+	 * <p>
+	 * This must not be called if {@link #bool(boolean)} or {@link #endBoolean()}
+	 * have been called.
+	 * 
+	 * @return This object, for chaining with other calls.
+	 * @throws QueryResultHandlerException
+	 */
 	public TupleResultBuilder end()
 		throws QueryResultHandlerException
 	{
