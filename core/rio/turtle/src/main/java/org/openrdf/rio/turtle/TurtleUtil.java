@@ -155,20 +155,72 @@ public class TurtleUtil {
 	}
 
 	public static boolean isPrefixStartChar(int c) {
-		return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >= 0x00D8 && c <= 0x00F6 || c >= 0x00F8
-				&& c <= 0x02FF || c >= 0x0370 && c <= 0x037D || c >= 0x037F && c <= 0x1FFF || c >= 0x200C
-				&& c <= 0x200D || c >= 0x2070 && c <= 0x218F || c >= 0x2C00 && c <= 0x2FEF || c >= 0x3001
-				&& c <= 0xD7FF || c >= 0xF900 && c <= 0xFDCF || c >= 0xFDF0 && c <= 0xFFFD || c >= 0x10000
-				&& c <= 0xEFFFF;
+		return isPN_CHARS_BASE(c);
+		// return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >=
+		// 0x00D8 && c <= 0x00F6 || c >= 0x00F8
+		// && c <= 0x02FF || c >= 0x0370 && c <= 0x037D || c >= 0x037F && c <=
+		// 0x1FFF || c >= 0x200C
+		// && c <= 0x200D || c >= 0x2070 && c <= 0x218F || c >= 0x2C00 && c <=
+		// 0x2FEF || c >= 0x3001
+		// && c <= 0xD7FF || c >= 0xF900 && c <= 0xFDCF || c >= 0xFDF0 && c <=
+		// 0xFFFD || c >= 0x10000
+		// && c <= 0xEFFFF;
+	}
+
+	public static boolean isPN_LOCAL_FirstChar(int c) {
+		return isPN_CHARS_U(c) || c == ':' || ASCIIUtil.isNumber(c) || c == '%' || c == '\\';
+		// FIXME: Need to test more than one character at this point
+		// || isPLX_INTERNAL(c);
+	}
+
+	public static boolean isPN_LOCAL_InnerChar(int c) {
+		return isPN_CHARS(c) || c == '.' || c == ':' || c == '%' || c == '\\';
+		// FIXME: Need to test more than one character at this point
+		// || isPLX_INTERNAL(c);
+	}
+
+	/**
+	 * After slashes are removed isLocalEscapedChar can return true for a valid
+	 * character.
+	 * 
+	 * @param c
+	 * @return
+	 */
+	public static boolean isPN_LOCAL_InnerCharAfterSlashesRemoved(int c) {
+		return isPN_CHARS(c) || c == '.' || c == ':' || c == '%' || c == '\\' || isLocalEscapedChar(c);
+		// FIXME: Need to test more than one character at this point
+		// || isPLX_INTERNAL(c);
+	}
+
+	public static boolean isPN_LOCAL_LastChar(int c) {
+		return isPN_CHARS(c) || c == ':' || c == '%' || c == '\\';
+		// FIXME: Need to test more than one character at this point
+		// || isPLX_INTERNAL(c);
+	}
+
+	public static boolean isBLANK_NODE_LABEL_FirstChar(int c) {
+		return isPN_CHARS_U(c) || ASCIIUtil.isNumber(c);
+	}
+
+	public static boolean isBLANK_NODE_LABEL_InnerChar(int c) {
+		return isPN_CHARS(c) || c == '.';
+	}
+
+	public static boolean isBLANK_NODE_LABEL_LastChar(int c) {
+		return isPN_CHARS(c);
 	}
 
 	public static boolean isNameStartChar(int c) {
-		return c == '\\' || c == '_' || c == ':' || c == '%' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
+		return isPN_LOCAL_FirstChar(c);
+		// return c == '\\' || c == '_' || c == ':' || c == '%' ||
+		// ASCIIUtil.isNumber(c) || isPrefixStartChar(c);
 	}
 
 	public static boolean isNameChar(int c) {
-		return isNameStartChar(c) || ASCIIUtil.isNumber(c) || c == '-' || c == 0x00B7 || c >= 0x0300
-				&& c <= 0x036F || c >= 0x203F && c <= 0x2040;
+		return isPN_LOCAL_InnerChar(c);
+		// return isNameStartChar(c) || ASCIIUtil.isNumber(c) || c == '-' || c ==
+		// 0x00B7 || c >= 0x0300
+		// && c <= 0x036F || c >= 0x203F && c <= 0x2040;
 	}
 
 	public static boolean isLocalEscapedChar(int c) {
@@ -176,8 +228,10 @@ public class TurtleUtil {
 	}
 
 	public static boolean isPrefixChar(int c) {
-		return c == '_' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c) || c == '-' || c == 0x00B7
-				|| c >= 0x0300 && c <= 0x036F || c >= 0x203F && c <= 0x2040;
+		return isPN_CHARS(c);
+		// return c == '_' || ASCIIUtil.isNumber(c) || isPrefixStartChar(c) || c
+		// == '-' || c == 0x00B7
+		// || c >= 0x0300 && c <= 0x036F || c >= 0x203F && c <= 0x2040;
 	}
 
 	public static boolean isLanguageStartChar(int c) {
@@ -221,34 +275,37 @@ public class TurtleUtil {
 	}
 
 	public static boolean isLegalPrefix(String prefix) {
-		// Empty prefixes are not legal, they should always have a colon
-		if (prefix.length() == 0) {
-			System.err.println("prefix was not valid (empty)");
-			return false;
-		}
-		if (!isPrefixStartChar(prefix.charAt(0))) {
-			System.err.println("prefix was not valid (start character invalid) i=" + 0 + " nextchar="
-					+ prefix.charAt(0) + " prefix=" + prefix);
-			return false;
-		}
+		return isPN_PREFIX(prefix);
+		/*
+				// Empty prefixes are not legal, they should always have a colon
+				if (prefix.length() == 0) {
+					System.err.println("prefix was not valid (empty)");
+					return false;
+				}
+				if (!isPrefixStartChar(prefix.charAt(0))) {
+					System.err.println("prefix was not valid (start character invalid) i=" + 0 + " nextchar="
+							+ prefix.charAt(0) + " prefix=" + prefix);
+					return false;
+				}
 
-		for (int i = 1; i < prefix.length(); i++) {
-			if (!isPrefixChar(prefix.charAt(i))) {
-				System.err.println("prefix was not valid (intermediate character invalid) i=" + i + " nextchar="
-						+ prefix.charAt(i) + " prefix=" + prefix);
-				return false;
-			}
+				for (int i = 1; i < prefix.length(); i++) {
+					if (!isPrefixChar(prefix.charAt(i))) {
+						System.err.println("prefix was not valid (intermediate character invalid) i=" + i + " nextchar="
+								+ prefix.charAt(i) + " prefix=" + prefix);
+						return false;
+					}
 
-			// Check if the percent encoding was less than two characters from the
-			// end of the prefix, in which case it is invalid
-			if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
-				System.err.println("prefix was not valid i=" + i + " nextchar=" + prefix.charAt(i) + " prefix="
-						+ prefix);
-				return false;
-			}
-		}
+					// Check if the percent encoding was less than two characters from the
+					// end of the prefix, in which case it is invalid
+					if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
+						System.err.println("prefix was not valid i=" + i + " nextchar=" + prefix.charAt(i) + " prefix="
+								+ prefix);
+						return false;
+					}
+				}
 
-		return true;
+				return true;
+		*/
 	}
 
 	public static boolean isPLX_START(String name) {
@@ -320,64 +377,135 @@ public class TurtleUtil {
 		if (!isPN_CHARS_U(name.charAt(0)) && name.charAt(0) != ':' && !ASCIIUtil.isNumber(name.charAt(0))
 				&& !isPLX_START(name))
 		{
+			System.err.println("");
 			System.err.println("PN_LOCAL was not valid (start characters invalid) i=" + 0 + " nextchar="
 					+ name.charAt(0) + " name=" + name);
 			return false;
 		}
 
-		if (!isNameStartChar(name.charAt(0))) {
-			System.err.println("name was not valid (start character invalid) i=" + 0 + " nextchar="
-					+ name.charAt(0) + " name=" + name);
-			return false;
-		}
+		// if (!isNameStartChar(name.charAt(0))) {
+		// System.err.println("name was not valid (start character invalid) i=" +
+		// 0 + " nextchar="
+		// + name.charAt(0) + " name=" + name);
+		// return false;
+		// }
 
 		for (int i = 1; i < name.length(); i++) {
-			if (!isNameChar(name.charAt(i))) {
+			if (!isPN_LOCAL_InnerChar(name.charAt(i))) {
+				System.err.println("");
 				System.err.println("name was not valid (intermediate character invalid) i=" + i + " nextchar="
 						+ name.charAt(i) + " name=" + name);
+				System.err.println(Character.digit(name.charAt(i), 16));
 				return false;
 			}
 
 			// Check if the percent encoding was less than two characters from the
 			// end of the prefix, in which case it is invalid
 			if (name.charAt(i) == '%' && (name.length() - i) < 3) {
+				System.err.println("");
 				System.err.println("name was not valid (short percent escape) i=" + i + " nextchar="
 						+ name.charAt(i) + " name=" + name);
 				return false;
 			}
+		}
+
+		if (!isPN_LOCAL_LastChar(name.charAt(name.length() - 1))) {
+			System.err.println("");
+			System.err.println("name was not valid (last character invalid) i=" + (name.length() - 1)
+					+ " nextchar=" + name.charAt(name.length() - 1) + " name=" + name);
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isLegalNameAfterSlashesRemoved(String name) {
+		// Empty names are legal
+		if (name.length() == 0) {
+			return true;
+		}
+
+		if (!isPN_CHARS_U(name.charAt(0)) && name.charAt(0) != ':' && !ASCIIUtil.isNumber(name.charAt(0))
+				&& !isPLX_START(name))
+		{
+			System.err.println("");
+			System.err.println("PN_LOCAL was not valid (start characters invalid) i=" + 0 + " nextchar="
+					+ name.charAt(0) + " name=" + name);
+			return false;
+		}
+
+		// if (!isNameStartChar(name.charAt(0))) {
+		// System.err.println("name was not valid (start character invalid) i=" +
+		// 0 + " nextchar="
+		// + name.charAt(0) + " name=" + name);
+		// return false;
+		// }
+
+		for (int i = 1; i < name.length(); i++) {
+			// Check if the percent encoding was less than two characters from the
+			// end of the prefix, in which case it is invalid
+			if (name.charAt(i) == '%' && (name.length() - i) < 3) {
+				System.err.println("");
+				System.err.println("name was not valid (short percent escape) i=" + i + " nextchar="
+						+ name.charAt(i) + " name=" + name);
+				return false;
+			}
+			else if (name.charAt(i) == '%' && TurtleUtil.isPERCENT(name.substring(i, i + 3))) {
+				System.out.println("Found valid percent escape: " + name.substring(i, i + 3));
+				i = i + 3;
+				continue;
+			}
+			else if (!isPN_LOCAL_InnerCharAfterSlashesRemoved(name.charAt(i))) {
+				System.err.println("");
+				System.err.println("name was not valid (intermediate character invalid) i=" + i + " nextchar="
+						+ name.charAt(i) + " name=" + name);
+				System.err.println(Character.digit(name.charAt(i), 16));
+				return false;
+			}
+
+		}
+
+		if (!isPN_LOCAL_LastChar(name.charAt(name.length() - 1))) {
+			System.err.println("");
+			System.err.println("name was not valid (last character invalid) i=" + (name.length() - 1)
+					+ " nextchar=" + name.charAt(name.length() - 1) + " name=" + name);
+			return false;
 		}
 
 		return true;
 	}
 
 	public static boolean isLegalName(String name) {
-		// Empty names are legal
-		if (name.length() == 0) {
-			return true;
-		}
-		if (!isNameStartChar(name.charAt(0))) {
-			System.err.println("name was not valid (start character invalid) i=" + 0 + " nextchar="
-					+ name.charAt(0) + " name=" + name);
-			return false;
-		}
+		return isPN_LOCAL(name);
+		/*
+				// Empty names are legal
+				if (name.length() == 0) {
+					return true;
+				}
+				if (!isNameStartChar(name.charAt(0))) {
+					System.err.println("name was not valid (start character invalid) i=" + 0 + " nextchar="
+							+ name.charAt(0) + " name=" + name);
+					return false;
+				}
 
-		for (int i = 1; i < name.length(); i++) {
-			if (!isNameChar(name.charAt(i))) {
-				System.err.println("name was not valid (intermediate character invalid) i=" + i + " nextchar="
-						+ name.charAt(i) + " name=" + name);
-				return false;
-			}
+				for (int i = 1; i < name.length(); i++) {
+					if (!isNameChar(name.charAt(i))) {
+						System.err.println("name was not valid (intermediate character invalid) i=" + i + " nextchar="
+								+ name.charAt(i) + " name=" + name);
+						return false;
+					}
 
-			// Check if the percent encoding was less than two characters from the
-			// end of the prefix, in which case it is invalid
-			if (name.charAt(i) == '%' && (name.length() - i) < 3) {
-				System.err.println("name was not valid (short percent escape) i=" + i + " nextchar="
-						+ name.charAt(i) + " name=" + name);
-				return false;
-			}
-		}
+					// Check if the percent encoding was less than two characters from the
+					// end of the prefix, in which case it is invalid
+					if (name.charAt(i) == '%' && (name.length() - i) < 3) {
+						System.err.println("name was not valid (short percent escape) i=" + i + " nextchar="
+								+ name.charAt(i) + " name=" + name);
+						return false;
+					}
+				}
 
-		return true;
+				return true;
+		*/
 	}
 
 	/**

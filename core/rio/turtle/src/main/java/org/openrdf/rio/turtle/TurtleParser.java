@@ -1047,8 +1047,8 @@ public class TurtleParser extends RDFParserBase {
 			reportError("Blank node identifier must not end in a '.'");
 		}
 
-		if (!TurtleUtil.isLegalName(localName.toString())) {
-			reportError("Local name was not valid");
+		if (!TurtleUtil.isLegalNameAfterSlashesRemoved(localName.toString())) {
+			reportError("Local name was not valid: " + localName.toString());
 		}
 
 		// Unread last character
@@ -1087,7 +1087,7 @@ public class TurtleParser extends RDFParserBase {
 		if (c == -1) {
 			throwEOFException();
 		}
-		else if (!TurtleUtil.isNameStartChar(c)) {
+		else if (!TurtleUtil.isBLANK_NODE_LABEL_FirstChar(c)) {
 			reportError("Expected a letter, found '" + (char)c + "'");
 		}
 
@@ -1096,12 +1096,16 @@ public class TurtleParser extends RDFParserBase {
 
 		// Read all following letter and numbers, they are part of the name
 		c = read();
-		while (TurtleUtil.isNameChar(c)) {
+		while (TurtleUtil.isBLANK_NODE_LABEL_InnerChar(c)) {
 			name.append((char)c);
 			c = read();
 		}
 
 		unread(c);
+
+		if (!TurtleUtil.isBLANK_NODE_LABEL_LastChar(name.charAt(name.length() - 1))) {
+			reportError("Blank node label ended in an illegal character: '" + name.charAt(name.length() - 1));
+		}
 
 		return createBNode(name.toString());
 	}
@@ -1199,7 +1203,9 @@ public class TurtleParser extends RDFParserBase {
 	protected int read()
 		throws IOException
 	{
-		return reader.read();
+		int result = reader.read();
+		System.out.print(result + " ");
+		return result;
 	}
 
 	protected void unread(int c)

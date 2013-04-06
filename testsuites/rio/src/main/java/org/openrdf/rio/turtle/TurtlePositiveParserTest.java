@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.util.ModelUtil;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.StatementCollector;
 
@@ -81,13 +82,26 @@ public class TurtlePositiveParserTest extends TestCase {
 		StatementCollector inputCollector = new StatementCollector(inputCollection);
 		targetParser.setRDFHandler(inputCollector);
 
+		if (!this.getName().equals("reserved_escaped_localName")) {
+			return;
+		}
+
+		System.out.println("test: " + inputURL);
+
 		InputStream in = this.getClass().getResourceAsStream(inputURL);
 		assertNotNull("Test resource was not found: inputURL=" + inputURL, in);
 
-		System.err.println("test: " + inputURL);
-
-		targetParser.parse(in, baseURL);
-		in.close();
+		try {
+			targetParser.parse(in, baseURL);
+		}
+		catch (RDFParseException rdfpe) {
+			System.out.println("");
+			System.out.println(rdfpe.getMessage());
+			throw rdfpe;
+		}
+		finally {
+			in.close();
+		}
 
 		if (outputURL != null) {
 			// Parse expected output data
@@ -106,6 +120,7 @@ public class TurtlePositiveParserTest extends TestCase {
 				System.err.println("===models not equal===");
 				System.err.println("Expected: " + outputCollection);
 				System.err.println("Actual  : " + inputCollection);
+				System.err.println("outputURL=" + outputURL);
 				System.err.println("======================");
 
 				fail("models not equal");
