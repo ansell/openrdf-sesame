@@ -161,6 +161,11 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (!headerComplete) {
 				endHeader();
 			}
+
+			if (!tupleVariablesFound) {
+				throw new IllegalStateException("Must call startQueryResult before handleSolution");
+			}
+
 			firstTupleWritten = true;
 
 			jg.writeStartObject();
@@ -203,7 +208,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			}
 
 			if (!tupleVariablesFound) {
-				throw new TupleQueryResultHandlerException(
+				throw new IllegalStateException(
 						"Could not end query result as startQueryResult was not called first.");
 			}
 
@@ -228,17 +233,20 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	public void startDocument()
 		throws QueryResultHandlerException
 	{
-		if (getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
-			// By default Jackson does not pretty print, so enable this unless
-			// PRETTY_PRINT setting
-			// is disabled
-			jg.useDefaultPrettyPrinter();
-		}
-
 		if (!documentOpen) {
 			documentOpen = true;
 			headerOpen = false;
 			headerComplete = false;
+			tupleVariablesFound = false;
+			firstTupleWritten = false;
+			linksFound = false;
+
+			if (getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
+				// By default Jackson does not pretty print, so enable this unless
+				// PRETTY_PRINT setting
+				// is disabled
+				jg.useDefaultPrettyPrinter();
+			}
 
 			try {
 				if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
@@ -406,8 +414,11 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		}
 		jg.flush();
 		documentOpen = false;
+		headerOpen = false;
 		headerComplete = false;
 		tupleVariablesFound = false;
+		firstTupleWritten = false;
+		linksFound = false;
 	}
 
 }

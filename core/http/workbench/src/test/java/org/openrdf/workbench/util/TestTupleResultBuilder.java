@@ -16,6 +16,8 @@
  */
 package org.openrdf.workbench.util;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 
@@ -38,5 +40,20 @@ public class TestTupleResultBuilder {
 		builder.start("test");
 		builder.namedResult("test", new URL("http://www.foo.org/bar#"));
 		builder.end();
+	}
+
+	@Test
+	public final void testSES1726regression()
+		throws Exception
+	{
+		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(
+				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
+		try {
+			builder.namedResult("test", new URL("http://www.foo.org/bar#"));
+			fail("Did not receive expected exception for calling namedResult before start");
+		}
+		catch (IllegalStateException ise) {
+			// Expected exception
+		}
 	}
 }

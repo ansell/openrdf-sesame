@@ -141,6 +141,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 		xmlWriter.endDocument();
 
+		tupleVariablesFound = false;
+		headerOpen = false;
 		headerComplete = false;
 		documentOpen = false;
 	}
@@ -184,6 +186,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			documentOpen = true;
 			headerOpen = false;
 			headerComplete = false;
+			tupleVariablesFound = false;
 
 			try {
 				xmlWriter.setPrettyPrint(getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT));
@@ -346,6 +349,12 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			if (!headerComplete) {
 				endHeader();
 			}
+
+			if (!tupleVariablesFound) {
+				throw new IllegalStateException(
+						"Could not end query result as startQueryResult was not called first.");
+			}
+
 			xmlWriter.endTag(RESULT_SET_TAG);
 			endDocument();
 		}
@@ -375,6 +384,10 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 			if (!headerComplete) {
 				endHeader();
+			}
+
+			if (!tupleVariablesFound) {
+				throw new IllegalStateException("Must call startQueryResult before handleSolution");
 			}
 
 			xmlWriter.startTag(RESULT_TAG);

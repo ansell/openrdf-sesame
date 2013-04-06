@@ -90,6 +90,8 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 
 	private boolean documentStarted = false;
 
+	protected boolean tupleVariablesFound = false;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -130,6 +132,8 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
+		tupleVariablesFound = true;
+
 		if (!documentStarted) {
 			startDocument();
 		}
@@ -158,6 +162,11 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
+		if (!tupleVariablesFound) {
+			throw new IllegalStateException(
+					"Could not end query result as startQueryResult was not called first.");
+		}
+
 		try {
 			out.writeByte(TABLE_END_RECORD_MARKER);
 			endDocument();
@@ -171,6 +180,10 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if (!tupleVariablesFound) {
+			throw new IllegalStateException("Must call startQueryResult before handleSolution");
+		}
+
 		try {
 			if (bindingSet.size() == 0) {
 				writeEmptyRow();
