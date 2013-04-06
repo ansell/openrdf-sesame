@@ -82,10 +82,10 @@ public class TurtlePositiveParserTest extends TestCase {
 		StatementCollector inputCollector = new StatementCollector(inputCollection);
 		targetParser.setRDFHandler(inputCollector);
 
-		if (!this.getName().equals("reserved_escaped_localName")) {
-			return;
-		}
-
+//		if (!this.getName().equals("reserved_escaped_localName")) {
+//			return;
+//		}
+		System.out.println("");
 		System.out.println("test: " + inputURL);
 
 		InputStream in = this.getClass().getResourceAsStream(inputURL);

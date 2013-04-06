@@ -44,7 +44,8 @@ public class TurtleNegativeParserTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
-	public TurtleNegativeParserTest(URI testUri, String caseURI, String inputURL, String baseURL, RDFParser targetParser)
+	public TurtleNegativeParserTest(URI testUri, String caseURI, String inputURL, String baseURL,
+			RDFParser targetParser)
 		throws MalformedURLException
 	{
 		super(caseURI);
@@ -65,10 +66,10 @@ public class TurtleNegativeParserTest extends TestCase {
 			// reported.
 			// targetParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
-			if(!"DISABLED".equals(this.getName())) {
-				return;
-			}
-			
+			// if(!"DISABLED".equals(this.getName())) {
+			// return;
+			// }
+
 			targetParser.setRDFHandler(new StatementCollector());
 
 			InputStream in = this.getClass().getResourceAsStream(inputURL);
