@@ -16,12 +16,18 @@
  */
 package org.openrdf.query.resultio.sparqljson;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.AbstractQueryResultIOBooleanTest;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
 
 /**
- * 
  * @author Peter Ansell
+ * @author Sebastian Schaffert
  */
 public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 
@@ -35,4 +41,55 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 		return BooleanQueryResultFormat.JSON;
 	}
 
+	@Test
+	public void testBoolean1()
+		throws Exception
+	{
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		parser.parseQueryResult(this.getClass().getResourceAsStream("/sparqljson/boolean1.srj"));
+
+		assertTrue(handler.getBoolean());
+	}
+
+	@Test
+	public void testBoolean2()
+		throws Exception
+	{
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		parser.parseQueryResult(this.getClass().getResourceAsStream("/sparqljson/boolean2.srj"));
+
+		assertTrue(handler.getBoolean());
+	}
+
+	@Test
+	public void testBoolean3()
+		throws Exception
+	{
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		parser.parseQueryResult(this.getClass().getResourceAsStream("/sparqljson/boolean3.srj"));
+
+		assertFalse(handler.getBoolean());
+	}
+
+	@Test
+	public void testBoolean4()
+		throws Exception
+	{
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		parser.parseQueryResult(this.getClass().getResourceAsStream("/sparqljson/boolean4.srj"));
+
+		assertFalse(handler.getBoolean());
+	}
 }

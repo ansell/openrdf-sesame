@@ -51,6 +51,8 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 
 	private List<String> bindingNames;
 
+	protected boolean tupleVariablesFound = false;
+
 	/**
 	 * @param out
 	 */
@@ -63,6 +65,8 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	public void startQueryResult(List<String> bindingNames)
 		throws TupleQueryResultHandlerException
 	{
+		tupleVariablesFound = true;
+
 		this.bindingNames = bindingNames;
 
 		try {
@@ -84,6 +88,11 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
+		if (!tupleVariablesFound) {
+			throw new IllegalStateException(
+					"Could not end query result as startQueryResult was not called first.");
+		}
+
 		try {
 			writer.flush();
 		}
@@ -97,6 +106,10 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if (!tupleVariablesFound) {
+			throw new IllegalStateException("Must call startQueryResult before handleSolution");
+		}
+
 		try {
 			for (int i = 0; i < bindingNames.size(); i++) {
 				String name = bindingNames.get(i);

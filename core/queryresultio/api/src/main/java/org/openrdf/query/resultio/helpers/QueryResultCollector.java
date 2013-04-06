@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;

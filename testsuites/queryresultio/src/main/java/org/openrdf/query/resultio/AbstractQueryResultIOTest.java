@@ -16,10 +16,7 @@
  */
 package org.openrdf.query.resultio;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
 import org.junit.Test;
 
@@ -399,6 +395,36 @@ public abstract class AbstractQueryResultIOTest {
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
 		assertTrue(QueryResults.equals(expected, output));
+	}
+
+	protected void doTupleMissingStartQueryResult(TupleQueryResultFormat format, TupleQueryResult input,
+			TupleQueryResult expected, List<String> links, String stylesheetUrl)
+		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		// Test for handling when startDocument and startHeader are not called
+		writer.startDocument();
+		writer.handleStylesheet(stylesheetUrl);
+		writer.startHeader();
+		writer.handleLinks(links);
+		writer.endHeader();
+		try {
+			while (input.hasNext()) {
+				BindingSet bindingSet = input.next();
+				writer.handleSolution(bindingSet);
+			}
+			writer.endQueryResult();
+			fail("Expected exception when calling handleSolution without startQueryResult");
+		}
+		catch (IllegalStateException ise) {
+			// Expected exception
+		}
+		finally {
+			input.close();
+		}
+
 	}
 
 	protected void doBooleanNoLinks(BooleanQueryResultFormat format, boolean input)

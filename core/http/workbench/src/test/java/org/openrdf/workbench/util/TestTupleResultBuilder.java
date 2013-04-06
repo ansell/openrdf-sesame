@@ -16,18 +16,14 @@
  */
 package org.openrdf.workbench.util;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 
 /**
@@ -35,30 +31,29 @@ import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
  */
 public class TestTupleResultBuilder {
 
-	private TupleResultBuilder builder;
-
-	@Before
-	public void setUp() {
-		builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(new ByteArrayOutputStream()),
-				ValueFactoryImpl.getInstance());
-	}
-
-	@After
-	public void tearDown()
-		throws QueryResultHandlerException
+	@Test
+	public final void testSES1780regression()
+		throws Exception
 	{
+		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(
+				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
+		builder.start("test");
+		builder.namedResult("test", new URL("http://www.foo.org/bar#"));
 		builder.end();
 	}
 
 	@Test
-	public final void testSES1780regression()
-		throws MalformedURLException
+	public final void testSES1726regression()
+		throws Exception
 	{
+		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(
+				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
 		try {
 			builder.namedResult("test", new URL("http://www.foo.org/bar#"));
+			fail("Did not receive expected exception for calling namedResult before start");
 		}
-		catch (QueryResultHandlerException e) {
-			fail(e.getMessage());
+		catch (IllegalStateException ise) {
+			// Expected exception
 		}
 	}
 }

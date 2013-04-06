@@ -118,7 +118,8 @@ public interface QueryResultHandler {
 	 *         If this method is not supported
 	 * @throws IllegalStateException
 	 *         If the {@link #endQueryResult()} was previously called for this
-	 *         handler.
+	 *         handler or {@link #startQueryResult(List)} was NOT called before
+	 *         this method.
 	 */
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException;
@@ -140,7 +141,8 @@ public interface QueryResultHandler {
 	 *         If this method is not supported
 	 * @throws IllegalStateException
 	 *         If the {@link #endQueryResult()} method was called before this
-	 *         method.
+	 *         method or {@link #startQueryResult(List)} was NOT called before
+	 *         this method.
 	 */
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException;

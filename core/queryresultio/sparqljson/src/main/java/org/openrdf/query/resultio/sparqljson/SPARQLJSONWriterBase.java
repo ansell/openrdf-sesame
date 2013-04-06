@@ -16,11 +16,9 @@
  */
 package org.openrdf.query.resultio.sparqljson;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,8 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import info.aduna.io.IndentingWriter;
-import info.aduna.text.StringUtil;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -53,11 +51,22 @@ import org.openrdf.rio.helpers.BasicWriterSettings;
  */
 abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements QueryResultWriter {
 
+	private static final JsonFactory JSON_FACTORY = new JsonFactory();
+
+	static {
+		// Disable features that may work for most JSON where the field names are
+		// in limited supply,
+		// but does not work for RDF/JSON where a wide range of URIs are used for
+		// subjects and
+		// predicates
+		JSON_FACTORY.disable(JsonFactory.Feature.INTERN_FIELD_NAMES);
+		JSON_FACTORY.disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES);
+		JSON_FACTORY.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+	}
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	protected IndentingWriter writer;
 
 	protected boolean firstTupleWritten = false;
 
@@ -71,10 +80,15 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 	protected boolean linksFound = false;
 
+	private final JsonGenerator jg;
+
 	public SPARQLJSONWriterBase(OutputStream out) {
-		Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
-		w = new BufferedWriter(w, 1024);
-		writer = new IndentingWriter(w);
+		try {
+			jg = JSON_FACTORY.createJsonGenerator(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+		}
+		catch (IOException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	@Override
@@ -83,17 +97,13 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	{
 		if (!headerComplete) {
 			try {
-				closeBraces();
-
-				writeComma();
+				jg.writeEndObject();
 
 				if (tupleVariablesFound) {
 					// Write results
-					writeKey("results");
-					openBraces();
+					jg.writeObjectFieldStart("results");
 
-					writeKey("bindings");
-					openArray();
+					jg.writeArrayFieldStart("bindings");
 				}
 
 				headerComplete = true;
@@ -117,17 +127,12 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 				startHeader();
 			}
 
-			if (linksFound) {
-				writeComma();
-			}
-
 			tupleVariablesFound = true;
-			try {
-				writeKeyValue("vars", columnHeaders);
+			jg.writeArrayFieldStart("vars");
+			for (String nextColumn : columnHeaders) {
+				jg.writeString(nextColumn);
 			}
-			catch (IOException e) {
-				throw new TupleQueryResultHandlerException(e);
-			}
+			jg.writeEndArray();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -156,27 +161,23 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (!headerComplete) {
 				endHeader();
 			}
-			if (firstTupleWritten) {
-				writeComma();
+
+			if (!tupleVariablesFound) {
+				throw new IllegalStateException("Must call startQueryResult before handleSolution");
 			}
+
 			firstTupleWritten = true;
 
-			openBraces(); // start of new solution
+			jg.writeStartObject();
 
 			Iterator<Binding> bindingIter = bindingSet.iterator();
 			while (bindingIter.hasNext()) {
 				Binding binding = bindingIter.next();
-
-				writeKeyValue(binding.getName(), binding.getValue());
-
-				if (bindingIter.hasNext()) {
-					writeComma();
-				}
+				jg.writeFieldName(binding.getName());
+				writeValue(binding.getValue());
 			}
 
-			closeBraces(); // end solution
-
-			writer.flush();
+			jg.writeEndObject();
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -205,8 +206,16 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (!headerComplete) {
 				endHeader();
 			}
-			closeArray(); // bindings array
-			closeBraces(); // results braces
+
+			if (!tupleVariablesFound) {
+				throw new IllegalStateException(
+						"Could not end query result as startQueryResult was not called first.");
+			}
+
+			// bindings array
+			jg.writeEndArray();
+			// results braces
+			jg.writeEndObject();
 			endDocument();
 		}
 		catch (IOException e) {
@@ -228,24 +237,26 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			documentOpen = true;
 			headerOpen = false;
 			headerComplete = false;
+			tupleVariablesFound = false;
+			firstTupleWritten = false;
+			linksFound = false;
+
+			if (getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
+				// By default Jackson does not pretty print, so enable this unless
+				// PRETTY_PRINT setting
+				// is disabled
+				jg.useDefaultPrettyPrinter();
+			}
 
 			try {
 				if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
 					// SES-1019 : Write the callbackfunction name as a wrapper for
 					// the results here
 					String callbackName = getWriterConfig().get(BasicQueryWriterSettings.JSONP_CALLBACK);
-
-					writer.write(callbackName);
-					writer.write("(");
+					jg.writeRaw(callbackName);
+					jg.writeRaw("(");
 				}
-
-				if (!getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
-					// Set the indentation string to the empty string if pretty
-					// printing is disabled
-					writer.setIndentationString("");
-				}
-
-				openBraces();
+				jg.writeStartObject();
 			}
 			catch (IOException e) {
 				throw new QueryResultHandlerException(e);
@@ -271,8 +282,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		if (!headerOpen) {
 			try {
 				// Write header
-				writeKey("head");
-				openBraces();
+				jg.writeObjectFieldStart("head");
 
 				headerOpen = true;
 			}
@@ -295,40 +305,29 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 				startHeader();
 			}
 
-			if (tupleVariablesFound) {
-				writeComma();
+			jg.writeArrayFieldStart("link");
+			for (String nextLink : linkUrls) {
+				jg.writeString(nextLink);
 			}
-
-			linksFound = true;
-
-			writeKeyValue("link", linkUrls);
+			jg.writeEndArray();
 		}
 		catch (IOException e) {
 			throw new QueryResultHandlerException(e);
 		}
 	}
 
-	protected void writeKeyValue(String key, Value value)
-		throws IOException, QueryResultHandlerException
-	{
-		writeKey(key);
-		writeValue(value);
-	}
-
 	protected void writeValue(Value value)
 		throws IOException, QueryResultHandlerException
 	{
-		writer.write("{ ");
+		jg.writeStartObject();
 
 		if (value instanceof URI) {
-			writeKeyValue("type", "uri");
-			writer.write(", ");
-			writeKeyValue("value", ((URI)value).toString());
+			jg.writeStringField("type", "uri");
+			jg.writeStringField("value", ((URI)value).toString());
 		}
 		else if (value instanceof BNode) {
-			writeKeyValue("type", "bnode");
-			writer.write(", ");
-			writeKeyValue("value", ((BNode)value).getID());
+			jg.writeStringField("type", "bnode");
+			jg.writeStringField("value", ((BNode)value).getID());
 		}
 		else if (value instanceof Literal) {
 			Literal lit = (Literal)value;
@@ -336,26 +335,22 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			// TODO: Implement support for
 			// BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL here
 			if (lit.getLanguage() != null) {
-				writeKeyValue("xml:lang", lit.getLanguage());
-				writer.write(", ");
+				jg.writeObjectField("xml:lang", lit.getLanguage());
 			}
 			// TODO: Implement support for
 			// BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL here
 			if (lit.getDatatype() != null) {
-				writeKeyValue("datatype", lit.getDatatype().toString());
-				writer.write(", ");
+				jg.writeObjectField("datatype", lit.getDatatype().stringValue());
 			}
 
-			writeKeyValue("type", "literal");
+			jg.writeObjectField("type", "literal");
 
-			writer.write(", ");
-			writeKeyValue("value", lit.getLabel());
+			jg.writeObjectField("value", lit.getLabel());
 		}
 		else {
 			throw new TupleQueryResultHandlerException("Unknown Value object type: " + value.getClass());
 		}
-
-		writer.write(" }");
+		jg.writeEndObject();
 	}
 
 	@Override
@@ -376,10 +371,10 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 		try {
 			if (value) {
-				writeKeyValue("boolean", "true");
+				jg.writeBooleanField("boolean", Boolean.TRUE);
 			}
 			else {
-				writeKeyValue("boolean", "false");
+				jg.writeBooleanField("boolean", Boolean.FALSE);
 			}
 
 			endDocument();
@@ -413,107 +408,17 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	protected void endDocument()
 		throws IOException
 	{
-		closeBraces(); // root braces
+		jg.writeEndObject();
 		if (getWriterConfig().isSet(BasicQueryWriterSettings.JSONP_CALLBACK)) {
-			writer.write(");");
+			jg.writeRaw(");");
 		}
-		writer.flush();
+		jg.flush();
 		documentOpen = false;
+		headerOpen = false;
 		headerComplete = false;
+		tupleVariablesFound = false;
+		firstTupleWritten = false;
+		linksFound = false;
 	}
 
-	protected void writeKeyValue(String key, String value)
-		throws IOException
-	{
-		writeKey(key);
-		writeString(value);
-	}
-
-	protected void writeKeyValue(String key, Iterable<String> array)
-		throws IOException
-	{
-		writeKey(key);
-		writeArray(array);
-	}
-
-	protected void writeKey(String key)
-		throws IOException
-	{
-		writeString(key);
-		writer.write(": ");
-	}
-
-	protected void writeString(String value)
-		throws IOException
-	{
-		// Escape special characters
-		value = StringUtil.gsub("\\", "\\\\", value);
-		value = StringUtil.gsub("\"", "\\\"", value);
-		value = StringUtil.gsub("/", "\\/", value);
-		value = StringUtil.gsub("\b", "\\b", value);
-		value = StringUtil.gsub("\f", "\\f", value);
-		value = StringUtil.gsub("\n", "\\n", value);
-		value = StringUtil.gsub("\r", "\\r", value);
-		value = StringUtil.gsub("\t", "\\t", value);
-
-		writer.write("\"");
-		writer.write(value);
-		writer.write("\"");
-	}
-
-	protected void writeArray(Iterable<String> array)
-		throws IOException
-	{
-		openArray();
-		Iterator<String> iter = array.iterator();
-		while (iter.hasNext()) {
-			String value = iter.next();
-
-			writeString(value);
-
-			if (iter.hasNext()) {
-				writer.write(", ");
-			}
-		}
-		closeArray();
-	}
-
-	protected void openArray()
-		throws IOException
-	{
-		writer.write("[");
-		writer.writeEOL();
-		writer.increaseIndentation();
-	}
-
-	protected void closeArray()
-		throws IOException
-	{
-		writer.writeEOL();
-		writer.decreaseIndentation();
-		writer.write("]");
-	}
-
-	protected void openBraces()
-		throws IOException
-	{
-		writer.write("{");
-		writer.writeEOL();
-		writer.increaseIndentation();
-	}
-
-	protected void closeBraces()
-		throws IOException
-	{
-		writer.writeEOL();
-		writer.decreaseIndentation();
-		writer.write("}");
-	}
-
-	protected void writeComma()
-		throws IOException
-	{
-		writer.write(", ");
-		writer.writeEOL();
-	}
 }

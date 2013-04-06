@@ -191,4 +191,20 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 		doTupleJSONPCallback(getTupleFormat(), createTupleNoBindingSets(), createTupleNoBindingSets());
 	}
 
+	@Test
+	public final void testNoResultsExceptionHandleSolutionBeforeStartQueryResult()
+		throws Exception
+	{
+		doTupleMissingStartQueryResult(getTupleFormat(), createTupleNoBindingSets(),
+				createTupleNoBindingSets(), Arrays.asList("info", "alternate", "other", "another"), "test.xsl");
+	}
+
+	@Test
+	public final void testMultipleExceptionHandleSolutionBeforeStartQueryResult()
+		throws Exception
+	{
+		doTupleMissingStartQueryResult(getTupleFormat(), createTupleMultipleBindingSets(),
+				createTupleMultipleBindingSets(), Arrays.asList("info", "alternate", "other", "another"),
+				"test.xsl");
+	}
 }
