@@ -62,10 +62,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<slf4j.version>1.6.1</slf4j.version>
-		<logback.version>0.9.28</logback.version>
-		<spring.version>2.5.6</spring.version>
+		<slf4j.version>1.7.4</slf4j.version>
+		<logback.version>1.0.11</logback.version>
+		<spring.version>3.2.2.RELEASE</spring.version>
 	</properties>
+	
+	<prerequisites>
+		<maven>2.2.1</maven>
+	</prerequisites>
 
 	<dependencyManagement>
 		<dependencies>
@@ -369,6 +373,11 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.14</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>2.1.1</version>
 				</plugin>
@@ -423,8 +432,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 					<encoding>utf8</encoding>
 				</configuration>
 			</plugin>
@@ -443,7 +452,7 @@
 				<configuration>
 					<signature>
 						<groupId>org.codehaus.mojo.signature</groupId>
-						<artifactId>java16</artifactId>
+						<artifactId>java17</artifactId>
 						<version>1.0</version>
 					</signature>
 				</configuration>
