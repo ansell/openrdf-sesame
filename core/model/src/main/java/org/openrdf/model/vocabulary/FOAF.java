@@ -14,35 +14,38 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.parser.sparql;
+package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Constants for DOAP primitives and for the DOAP namespace.
+ * Constants for FOAF primitives and for the FOAF namespace.
+ * 
+ * TODO: Currently only a minimal set. Needs expanding.
  */
-public class DOAP {
+public class FOAF {
 
-	public static final String NAMESPACE = "http://usefulinc.com/ns/doap#";
+	public static final String NAMESPACE = "http://xmlns.com/foaf/0.1/";
 
-	public final static URI PROJECT;
+	public final static URI PERSON;
 
 	public final static URI NAME;
-
-	public final static URI RELEASE;
-
-	public final static URI VERSION;
-
-	public final static URI CREATED;
-
+	
+	public final static URI KNOWS;
+	
+	public static final URI MBOX;
+	
+	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
-		PROJECT = factory.createURI(DOAP.NAMESPACE, "Project");
-		NAME = factory.createURI(DOAP.NAMESPACE, "name");
-		RELEASE = factory.createURI(DOAP.NAMESPACE, "release");
-		VERSION = factory.createURI(DOAP.NAMESPACE, "Version");
-		CREATED = factory.createURI(DOAP.NAMESPACE, "created");
+		PERSON = factory.createURI(FOAF.NAMESPACE, "Person");
+		
+		NAME = factory.createURI(FOAF.NAMESPACE, "name");
+	
+		KNOWS = factory.createURI(FOAF.NAMESPACE, "knows");
+		
+		MBOX = factory.createURI(FOAF.NAMESPACE, "mbox");
 	}
 }
