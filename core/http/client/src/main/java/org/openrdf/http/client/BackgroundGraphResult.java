@@ -25,7 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 
 import info.aduna.iteration.IterationWrapper;
 
@@ -64,16 +65,16 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 
 	private QueueCursor<Statement> queue;
 
-	private HttpMethod method;
+	private HttpRequestBase method;
 
 	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI,
-			HttpMethod method)
+			HttpRequestBase method)
 	{
 		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI, method);
 	}
 
 	public BackgroundGraphResult(QueueCursor<Statement> queue, RDFParser parser, InputStream in,
-			Charset charset, String baseURI, HttpMethod method)
+			Charset charset, String baseURI, HttpRequestBase method)
 	{
 		super(queue);
 		this.queue = queue;
@@ -131,7 +132,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 			else {
 				parser.parse(new InputStreamReader(in, charset), baseURI);
 			}
-			method.releaseConnection();
+			method.reset();
 			completed = true;
 		}
 		catch (RDFHandlerException e) {
@@ -148,7 +149,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 			queue.done();
 			if (!completed) {
 				method.abort();
-				method.releaseConnection();
+				method.reset();
 			}
 		}
 	}

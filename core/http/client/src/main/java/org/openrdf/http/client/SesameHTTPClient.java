@@ -28,17 +28,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.HttpException;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.BasicNameValuePair;
+
+//import org.apache.commons.httpclient.HttpException;
+//import org.apache.commons.httpclient.HttpMethod;
+//import org.apache.commons.httpclient.NameValuePair;
+//import org.apache.commons.httpclient.methods.DeleteMethod;
+//import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+//import org.apache.commons.httpclient.methods.GetMethod;
+//import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+//import org.apache.commons.httpclient.methods.PostMethod;
+//import org.apache.commons.httpclient.methods.PutMethod;
+//import org.apache.commons.httpclient.methods.RequestEntity;
+//import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 import info.aduna.io.IOUtil;
 
@@ -157,7 +163,7 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkServerURL();
 
-		GetMethod method = new GetMethod(Protocol.getRepositoriesLocation(serverURL));
+		HttpGet method = new HttpGet(Protocol.getRepositoriesLocation(serverURL));
 		setDoAuthentication(method);
 
 		try {
@@ -479,18 +485,18 @@ public class SesameHTTPClient extends HTTPClient {
 
 		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
 		if (subj != null) {
-			params.add(new NameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
+			params.add(new BasicNameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
 		}
 		if (pred != null) {
-			params.add(new NameValuePair(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred)));
+			params.add(new BasicNameValuePair(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred)));
 		}
 		if (obj != null) {
-			params.add(new NameValuePair(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj)));
+			params.add(new BasicNameValuePair(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj)));
 		}
 		for (String encodedContext : Protocol.encodeContexts(contexts)) {
-			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
+			params.add(new BasicNameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
 		}
-		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
+		params.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
 
 		method.setQueryString(params.toArray(new NameValuePair[params.size()]));
 
@@ -511,11 +517,11 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		PostMethod method = new PostMethod(Protocol.getStatementsLocation(getQueryURL()));
+		HttpPost method = new HttpPost(Protocol.getStatementsLocation(getQueryURL()));
 		setDoAuthentication(method);
 
 		// Create a RequestEntity for the transaction data
-		method.setRequestEntity(new RequestEntity() {
+		method.setEntity(new RequestEntity() {
 
 			public long getContentLength() {
 				return -1; // don't know
@@ -618,11 +624,11 @@ public class SesameHTTPClient extends HTTPClient {
 		// Set relevant query parameters
 		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
 		for (String encodedContext : Protocol.encodeContexts(contexts)) {
-			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
+			params.add(new BasicNameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
 		}
 		if (baseURI != null && baseURI.trim().length() != 0) {
 			String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
-			params.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, encodedBaseURI));
+			params.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, encodedBaseURI));
 		}
 		method.setQueryString(params.toArray(new NameValuePair[params.size()]));
 

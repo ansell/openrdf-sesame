@@ -32,19 +32,25 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.ProxyHost;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+//import org.apache.commons.httpclient.Header;
+//import org.apache.commons.httpclient.HeaderElement;
+//import org.apache.commons.httpclient.HttpClient;
+//import org.apache.commons.httpclient.HttpException;
+//import org.apache.commons.httpclient.HttpMethod;
+//import org.apache.commons.httpclient.HttpMethodBase;
+//import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+//import org.apache.commons.httpclient.NameValuePair;
+//import org.apache.commons.httpclient.ProxyHost;
+//import org.apache.commons.httpclient.UsernamePasswordCredentials;
+//import org.apache.commons.httpclient.auth.AuthScope;
+//import org.apache.commons.httpclient.methods.PostMethod;
+//import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.http.HttpRequest;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -447,7 +453,7 @@ public class HTTPClient {
 		// functionality to provide custom http headers as required by the applications
 		if (this.additionalHttpHeaders != null) {
 			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
-				queryParams.add( new NameValuePair(additionalHeader.getKey(), additionalHeader.getValue()));
+				queryParams.add( new BasicNameValuePair(additionalHeader.getKey(), additionalHeader.getValue()));
 		}
 
 		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
@@ -469,7 +475,7 @@ public class HTTPClient {
 		// functionality to provide custom http headers as required by the applications
 		if (this.additionalHttpHeaders != null) {
 			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
-				queryParams.add( new NameValuePair(additionalHeader.getKey(), additionalHeader.getValue()));
+				queryParams.add( new BasicNameValuePair(additionalHeader.getKey(), additionalHeader.getValue()));
 		}
 
 		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
@@ -483,31 +489,31 @@ public class HTTPClient {
 		// TODO there is a bunch of HttpRepository specific parameters here
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
-		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
-		queryParams.add(new NameValuePair(Protocol.QUERY_PARAM_NAME, query));
+		queryParams.add(new BasicNameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
+		queryParams.add(new BasicNameValuePair(Protocol.QUERY_PARAM_NAME, query));
 		if (baseURI != null) {
-			queryParams.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
+			queryParams.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
 		}
-		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
+		queryParams.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
 				Boolean.toString(includeInferred)));
 		if (maxQueryTime > 0) {
-			queryParams.add(new NameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
+			queryParams.add(new BasicNameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
 		}
 
 		if (dataset != null) {
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
 						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
+				queryParams.add(new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
 			}
 		}
 
 		for (int i = 0; i < bindings.length; i++) {
 			String paramName = Protocol.BINDING_PREFIX + bindings[i].getName();
 			String paramValue = Protocol.encodeValue(bindings[i].getValue());
-			queryParams.add(new NameValuePair(paramName, paramValue));
+			queryParams.add(new BasicNameValuePair(paramName, paramValue));
 		}
 
 		return queryParams;
@@ -518,28 +524,28 @@ public class HTTPClient {
 	{
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
-		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
-		queryParams.add(new NameValuePair(Protocol.UPDATE_PARAM_NAME, update));
+		queryParams.add(new BasicNameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
+		queryParams.add(new BasicNameValuePair(Protocol.UPDATE_PARAM_NAME, update));
 		if (baseURI != null) {
-			queryParams.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
+			queryParams.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
 		}
-		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
+		queryParams.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
 				Boolean.toString(includeInferred)));
 
 		if (dataset != null) {
 			for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
+				queryParams.add(new BasicNameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
 			}
 			if (dataset.getDefaultInsertGraph() != null) {
-				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
 						String.valueOf(dataset.getDefaultInsertGraph())));
 			}
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
 						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
 						String.valueOf(namedGraphURI)));
 			}
 		}
@@ -547,7 +553,7 @@ public class HTTPClient {
 		for (int i = 0; i < bindings.length; i++) {
 			String paramName = Protocol.BINDING_PREFIX + bindings[i].getName();
 			String paramValue = Protocol.encodeValue(bindings[i].getValue());
-			queryParams.add(new NameValuePair(paramName, paramValue));
+			queryParams.add(new BasicNameValuePair(paramName, paramValue));
 		}
 
 		return queryParams;
@@ -980,7 +986,7 @@ public class HTTPClient {
 		}
 	}
 
-	protected final void setDoAuthentication(HttpMethod method) {
+	protected final void setDoAuthentication(HttpRequest method) {
 		if (authScope != null && httpClient.getState().getCredentials(authScope) != null) {
 			method.setDoAuthentication(true);
 		}
