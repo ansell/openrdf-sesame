@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.app.AppConfiguration;
 import info.aduna.app.AppVersion;
 import info.aduna.io.MavenUtil;
+import info.aduna.platform.Platform;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.QueryResultHandlerException;
@@ -118,6 +119,11 @@ public abstract class BaseServlet implements Servlet {
 		this.appConfig = new AppConfiguration("openrdf-workbench", "OpenRDF Sesame Workbench",
 				AppVersion.parse(MavenUtil.loadVersion("org.openrdf.sesame", "sesame-http-workbench", "dev")));
 		try {
+			Object configuredDataDir = this.config.getServletContext().getAttribute(
+					Platform.APPDATA_BASEDIR_PROPERTY);
+			if (configuredDataDir != null) {
+				this.appConfig.setDataDirName((String)configuredDataDir);
+			}
 			// Suppress loading of log configuration.
 			this.appConfig.init(false);
 		}
