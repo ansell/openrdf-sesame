@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.app.config.Configuration;
 import info.aduna.app.logging.LogConfiguration;
 import info.aduna.app.net.ProxySettings;
@@ -31,6 +34,8 @@ import info.aduna.platform.PlatformFactory;
  */
 public class AppConfiguration implements Configuration {
 
+	private static final Logger logger = LoggerFactory.getLogger(AppConfiguration.class);
+	
 	/*-----------*
 	 * Constants *
 	 *-----------*/
@@ -309,6 +314,7 @@ public class AppConfiguration implements Configuration {
 		}
 		if (dataDir == null) {
 			dataDir = PlatformFactory.getPlatform().getApplicationDataDir(applicationId);
+			logger.warn("Data directory not configured, using default data directory: {}", dataDir.getAbsolutePath());
 		}
 	}
 
