@@ -62,13 +62,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<slf4j.version>1.7.4</slf4j.version>
+		<slf4j.version>1.7.5</slf4j.version>
 		<logback.version>1.0.11</logback.version>
 		<spring.version>3.2.2.RELEASE</spring.version>
 	</properties>
 	
 	<prerequisites>
-		<maven>2.2.1</maven>
+		<maven>3.0.4</maven>
 	</prerequisites>
 
 	<dependencyManagement>
