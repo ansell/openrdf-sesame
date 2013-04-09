@@ -76,11 +76,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private final BindingSet parentBindings;
 
 	private final Group group;
-	
+
 	private boolean initialized = false;
 
 	private final Object lock = new Object();
-	
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -98,9 +98,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 *---------*/
 
 	@Override
-	public boolean hasNext() throws QueryEvaluationException {
+	public boolean hasNext()
+		throws QueryEvaluationException
+	{
 		if (!initialized) {
-			synchronized(lock) {
+			synchronized (lock) {
 				if (!initialized) {
 					super.setIterator(createIterator());
 					initialized = true;
@@ -111,9 +113,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	@Override
-	public BindingSet next() throws QueryEvaluationException {
+	public BindingSet next()
+		throws QueryEvaluationException
+	{
 		if (!initialized) {
-			synchronized(lock) {
+			synchronized (lock) {
 				if (!initialized) {
 					super.setIterator(createIterator());
 					initialized = true;
@@ -122,7 +126,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 		return super.next();
 	}
-	
+
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{
@@ -154,10 +158,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private Collection<Entry> buildEntries()
 		throws QueryEvaluationException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> iter;
-		iter = strategy.evaluate(group.getArg(), parentBindings);
 
-		try {
+		try (CloseableIteration<BindingSet, QueryEvaluationException> iter = strategy.evaluate(group.getArg(),
+				parentBindings);) {
 			Map<Key, Entry> entries = new LinkedHashMap<Key, Entry>();
 
 			if (!iter.hasNext()) {
@@ -186,9 +189,6 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 
 			return entries.values();
-		}
-		finally {
-			iter.close();
 		}
 
 	}
@@ -571,6 +571,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private class SampleAggregate extends Aggregate {
 
 		private Value sample = null;
+
 		private Random random;
 
 		public SampleAggregate(Sample operator) {
@@ -582,7 +583,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void processAggregate(BindingSet s)
 			throws QueryEvaluationException
 		{
-			// we flip a coin to determine if we keep the current value or set a new value to report.
+			// we flip a coin to determine if we keep the current value or set a
+			// new value to report.
 			if (sample == null || random.nextFloat() < 0.5f) {
 				sample = evaluate(s);
 			}
