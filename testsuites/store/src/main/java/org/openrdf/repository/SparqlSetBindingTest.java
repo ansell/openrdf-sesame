@@ -73,10 +73,14 @@ public abstract class SparqlSetBindingTest {
 	public void tearDown()
 		throws Exception
 	{
-		conn.close();
+		if (conn != null) {
+			conn.close();
+		}
 		conn = null;
 
-		repository.shutDown();
+		if (repository != null) {
+			repository.shutDown();
+		}
 		repository = null;
 	}
 

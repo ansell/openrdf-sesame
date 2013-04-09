@@ -121,6 +121,7 @@ public abstract class BaseServlet implements Servlet {
 		try {
 			Object configuredDataDir = this.config.getServletContext().getAttribute(
 					Platform.APPDATA_BASEDIR_PROPERTY);
+			log.info("Configured data directory from servlet context: {}", configuredDataDir);
 			if (configuredDataDir != null) {
 				this.appConfig.setDataDirName((String)configuredDataDir);
 			}

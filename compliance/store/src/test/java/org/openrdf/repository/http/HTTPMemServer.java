@@ -61,7 +61,7 @@ public class HTTPMemServer {
 
 	private final String inferenceRepositoryUrl;
 
-	public HTTPMemServer() {
+	public HTTPMemServer(File dataDir) {
 		System.clearProperty("DEBUG");
 
 		port = getFreePort();
@@ -70,6 +70,8 @@ public class HTTPMemServer {
 		inferenceRepositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_INFERENCE_REPO_ID);
 		jetty = new Server();
 
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		
 		Connector conn = new BlockingChannelConnector();
 		conn.setHost(HOST);
 		conn.setPort(port);
@@ -120,14 +122,13 @@ public class HTTPMemServer {
 		return -1;
 	}
 
-	public void start(File dataDir)
+	public void start()
 		throws Exception
 	{
 		// System.setProperty("info.aduna.platform.appdata.basedir",
 		// dataDir.getAbsolutePath());
-		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 
-		System.out.println("about to start server at: " + serverUrl + " dataDir=" + dataDir.getAbsolutePath());
+		System.out.println("about to start server at: " + serverUrl);
 		jetty.start();
 		System.out.println("server started at: " + serverUrl);
 
@@ -139,14 +140,18 @@ public class HTTPMemServer {
 	{
 		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
 				SystemRepository.ID));
-		RepositoryConnection con = systemRepo.getConnection();
-		try {
-			con.clear();
+		if(systemRepo != null) {
+			RepositoryConnection con = systemRepo.getConnection();
+			if (con != null) {
+				try {
+					con.clear();
+				}
+				finally {
+					con.close();
+				}
+			}
 		}
-		finally {
-			con.close();
-		}
-
+		
 		jetty.stop();
 		System.clearProperty("org.mortbay.log.class");
 	}
@@ -158,10 +163,10 @@ public class HTTPMemServer {
 				Protocol.getRepositoryLocation(serverUrl, SystemRepository.ID));
 
 		// create a (non-inferencing) memory store
-		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
+		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig(true);
 		SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
 		RepositoryConfig repConfig = new RepositoryConfig(TEST_REPO_ID, sailRepConfig);
-
+		
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
 
 		// create an inferencing memory store

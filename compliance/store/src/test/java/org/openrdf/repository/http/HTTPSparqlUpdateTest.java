@@ -35,12 +35,12 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 	public void setUp()
 		throws Exception
 	{
-		server = new HTTPMemServer();
+		File testFolder = tempDir.newFolder("sesame-http-sparql-update-datadir");
+		testFolder.mkdirs();
+		server = new HTTPMemServer(testFolder);
 
 		try {
-			File testFolder = tempDir.newFolder("sesame-http-sparql-update-datadir");
-			testFolder.mkdirs();
-			server.start(testFolder);
+			server.start();
 			super.setUp();
 		}
 		catch (Exception e) {

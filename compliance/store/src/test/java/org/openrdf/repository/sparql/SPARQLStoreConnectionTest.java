@@ -48,11 +48,11 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	public void setUp()
 		throws Exception
 	{
-		server = new HTTPMemServer();
+		File testFolder = tempDir.newFolder("sesame-sparql-store-connection-datadir");
+		testFolder.mkdirs();
+		server = new HTTPMemServer(testFolder);
 		try {
-			File testFolder = tempDir.newFolder("sesame-sparql-store-connection-datadir");
-			testFolder.mkdirs();
-			server.start(testFolder);
+			server.start();
 			super.setUp();
 		}
 		catch (Exception e) {

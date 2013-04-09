@@ -32,11 +32,11 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	public void setUp()
 		throws Exception
 	{
-		server = new HTTPMemServer();
+		File testFolder = tempDir.newFolder("sesame-rdfs-http-connection-datadir");
+		testFolder.mkdirs();
+		server = new HTTPMemServer(testFolder);
 		try {
-			File testFolder = tempDir.newFolder("sesame-rdfs-http-connection-datadir");
-			testFolder.mkdirs();
-			server.start(testFolder);
+			server.start();
 			super.setUp();
 		}
 		catch (Exception e) {
