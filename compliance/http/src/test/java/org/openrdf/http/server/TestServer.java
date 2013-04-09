@@ -122,7 +122,8 @@ public class TestServer {
 	public void start(File dataDir)
 		throws Exception
 	{
-		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		//System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 
 		jetty.start();
 		System.out.println("server started at: " + serverUrl);

@@ -17,6 +17,9 @@
 package org.openrdf.repository.http;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
 
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
@@ -42,47 +45,91 @@ public class HTTPMemServer {
 
 	private static final String HOST = "localhost";
 
-	private static final int PORT = 18080;
-
 	private static final String TEST_REPO_ID = "Test";
 
 	private static final String TEST_INFERENCE_REPO_ID = "Test-RDFS";
 
 	private static final String OPENRDF_CONTEXT = "/openrdf";
 
-	private static final String SERVER_URL = "http://" + HOST + ":" + PORT + OPENRDF_CONTEXT;
+	private final int port;
 
-	public static final String REPOSITORY_URL = Protocol.getRepositoryLocation(SERVER_URL, TEST_REPO_ID);
+	private final String serverUrl;
 
-	public static String INFERENCE_REPOSITORY_URL = Protocol.getRepositoryLocation(SERVER_URL,
-			TEST_INFERENCE_REPO_ID);
+	private final String repositoryUrl;
 
 	private final Server jetty;
+
+	private final String inferenceRepositoryUrl;
 
 	public HTTPMemServer() {
 		System.clearProperty("DEBUG");
 
+		port = getFreePort();
+		serverUrl = "http://" + HOST + ":" + port + OPENRDF_CONTEXT;
+		repositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_REPO_ID);
+		inferenceRepositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_INFERENCE_REPO_ID);
 		jetty = new Server();
 
 		Connector conn = new BlockingChannelConnector();
 		conn.setHost(HOST);
-		conn.setPort(PORT);
+		conn.setPort(port);
 		jetty.addConnector(conn);
 
 		WebAppContext webapp = new WebAppContext();
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
-		webapp.setWar("./target/openrdf-sesame");
-		jetty.addHandler(webapp);	}
+		webapp.setWar("./target/openrdf-sesame.war");
+		jetty.addHandler(webapp);
+	}
 
-	public void start()
+	/**
+	 * Checks to see if a specific port is available.
+	 * 
+	 * @param port
+	 *        the port to check for availability
+	 */
+	private static int getFreePort() {
+		ServerSocket ss = null;
+		DatagramSocket ds = null;
+		try {
+			int result = 0;
+			ss = new ServerSocket(0);
+			ss.setReuseAddress(true);
+			result = ss.getLocalPort();
+			ds = new DatagramSocket(result);
+			ds.setReuseAddress(true);
+			return result;
+		}
+		catch (IOException e) {
+		}
+		finally {
+			if (ds != null) {
+				ds.close();
+			}
+
+			if (ss != null) {
+				try {
+					ss.close();
+				}
+				catch (IOException e) {
+					/* should not be thrown */
+				}
+			}
+		}
+
+		return -1;
+	}
+
+	public void start(File dataDir)
 		throws Exception
 	{
-		File dataDir = new File(System.getProperty("user.dir") + "/target/datadir");
-		dataDir.mkdirs();
-		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		// System.setProperty("info.aduna.platform.appdata.basedir",
+		// dataDir.getAbsolutePath());
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 
+		System.out.println("about to start server at: " + serverUrl + " dataDir=" + dataDir.getAbsolutePath());
 		jetty.start();
+		System.out.println("server started at: " + serverUrl);
 
 		createTestRepositories();
 	}
@@ -90,7 +137,7 @@ public class HTTPMemServer {
 	public void stop()
 		throws Exception
 	{
-		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
+		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
 				SystemRepository.ID));
 		RepositoryConnection con = systemRepo.getConnection();
 		try {
@@ -107,8 +154,8 @@ public class HTTPMemServer {
 	private void createTestRepositories()
 		throws RepositoryException, RepositoryConfigException
 	{
-		Repository systemRep = new HTTPRepository(Protocol.getRepositoryLocation(SERVER_URL,
-				SystemRepository.ID));
+		Repository systemRep = new HTTPRepository(
+				Protocol.getRepositoryLocation(serverUrl, SystemRepository.ID));
 
 		// create a (non-inferencing) memory store
 		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
@@ -124,5 +171,19 @@ public class HTTPMemServer {
 		repConfig = new RepositoryConfig(TEST_INFERENCE_REPO_ID, sailRepConfig);
 
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
+	}
+
+	/**
+	 * @return Returns the repositoryUrl.
+	 */
+	public String getRepositoryUrl() {
+		return repositoryUrl;
+	}
+
+	/**
+	 * @return Returns the inferenceRepositoryUrl.
+	 */
+	public String getInferenceRepositoryUrl() {
+		return inferenceRepositoryUrl;
 	}
 }
