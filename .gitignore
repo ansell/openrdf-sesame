@@ -16,6 +16,7 @@ bin
 # Maven generated stuff
 target/
 */target/
+pom.xml.versionsBackup
 
 # GEdit generated stuff
 *.*~
