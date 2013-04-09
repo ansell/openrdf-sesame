@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -127,7 +128,7 @@
 			<artifactId>sesame-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-federation</artifactId>
@@ -195,34 +196,49 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
-					<webappDirectory>${project.build.directory}/openrdf-sesame</webappDirectory>
+					<warName>openrdf-sesame</warName>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<skipTests>true</skipTests>
+					<skip>true</skip>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>surefire-it</id>
+						<id>integration-tests</id>
 						<phase>integration-test</phase>
 						<goals>
-							<goal>test</goal>
+							<goal>integration-test</goal>
 						</goals>
 						<configuration>
+							<forkCount>1</forkCount>
+							<reuseForks>false</reuseForks>
+							<includes>
+								<include>**/*Test.java</include>
+							</includes>
+							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
 							<excludes>
 								<!-- We temporarily exclude SPARQL W3C tests during integration phase 
 									to allow project to deploy despite test failures. This needs to be removed 
-									as soon as Sesame SPARQL 1.1 engine is fully conformant and/or the Working Group gets
-									the test suite right (some tests fail because they are incorrect tests) -->
+									as soon as Sesame SPARQL 1.1 engine is fully conformant and/or the Working 
+									Group gets the test suite right (some tests fail because they are incorrect 
+									tests) -->
 								<exclude>**/W3CApprovedSPARQL11QueryTest.java</exclude>
 							</excludes>
-							<skipTests>false</skipTests>
-							<forkMode>always</forkMode>
-							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
 						</configuration>
+					</execution>
+					<execution>
+						<id>verify-integration-tests</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>verify</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
