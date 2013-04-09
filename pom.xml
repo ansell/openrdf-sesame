@@ -498,7 +498,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.7</version>
 				<configuration>
-					<source>1.6</source>
+					<source>1.7</source>
 					<encoding>utf8</encoding>
 					<quiet>true</quiet>
 				</configuration>
