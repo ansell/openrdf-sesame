@@ -17,10 +17,6 @@
 
 package info.aduna.iteration;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 /**
  * An {@link Iteration} that can be closed to free resources that it is holding.
  * CloseableIterations automatically free their resources when exhausted. If not
@@ -41,7 +37,7 @@ import java.util.Set;
  * }
  * </pre>
  */
-public interface CloseableIteration<E, X extends Exception> extends Iteration<E, X> {
+public interface CloseableIteration<E, X extends Exception> extends Iteration<E, X>, java.lang.AutoCloseable {
 
 	/**
 	 * Closes this iteration, freeing any resources that it is holding. If the
@@ -49,6 +45,5 @@ public interface CloseableIteration<E, X extends Exception> extends Iteration<E,
 	 */
 	public void close()
 		throws X;
-	
 
 }
