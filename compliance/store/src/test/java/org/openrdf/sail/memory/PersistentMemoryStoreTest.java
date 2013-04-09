@@ -39,25 +39,13 @@ public class PersistentMemoryStoreTest extends RDFNotifyingStoreTest {
 		throws SailException
 	{
 		try {
-			dataDir = FileUtil.createTempDir(PersistentMemoryStoreTest.class.getSimpleName());
+			dataDir = tempDir.newFolder(PersistentMemoryStoreTest.class.getSimpleName());
 			NotifyingSail sail = new MemoryStore(dataDir);
 			sail.initialize();
 			return sail;
 		}
 		catch (IOException e) {
 			throw new SailException(e);
-		}
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
 		}
 	}
 }
