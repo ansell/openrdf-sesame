@@ -156,7 +156,9 @@
 							<goal>integration-test</goal>
 						</goals>
 						<configuration>
-							<forkCount>7</forkCount>
+							<parallel>classes</parallel>
+							<threadCount>2</threadCount>
+							<forkCount>4</forkCount>
 							<reuseForks>true</reuseForks>
 							<includes>
 								<include>**/*Test.java</include>

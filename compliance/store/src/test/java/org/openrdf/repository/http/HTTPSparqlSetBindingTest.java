@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import java.io.File;
+
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.SparqlSetBindingTest;
 
@@ -30,7 +32,9 @@ public class HTTPSparqlSetBindingTest extends SparqlSetBindingTest {
 		server = new HTTPMemServer();
 		
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-http-sparql-set-binding-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 			super.setUp();
 		}
 		catch (Exception e) {
@@ -48,6 +52,6 @@ public class HTTPSparqlSetBindingTest extends SparqlSetBindingTest {
 	}
 
 	protected Repository newRepository() {
-		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+		return new HTTPRepository(server.getRepositoryUrl());
 	}
 }

@@ -18,6 +18,8 @@ package org.openrdf.repository.http;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -37,7 +39,9 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		server = new HTTPMemServer();
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-http-store-connection-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 			super.setUp();
 		}
 		catch (Exception e) {
@@ -56,7 +60,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 	@Override
 	protected Repository createRepository() {
-		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+		return new HTTPRepository(server.getRepositoryUrl());
 	}
 
 	@Ignore("temporarily disabled for HTTPRepository")

@@ -22,12 +22,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +64,9 @@ import org.openrdf.sail.memory.MemoryStore;
  */
 public class SPARQLServiceEvaluationTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+
 	static final Logger logger = LoggerFactory.getLogger(SPARQLServiceEvaluationTest.class);
 
 	private HTTPMemServer server;
@@ -89,9 +95,11 @@ public class SPARQLServiceEvaluationTest {
 		server = new HTTPMemServer();
 
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-sparql-service-evaluation-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 
-			remoteRepository = new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+			remoteRepository = new HTTPRepository(server.getRepositoryUrl());
 			remoteRepository.initialize();
 			loadDataSet(remoteRepository, "/testdata-query/graph1.ttl");
 			loadDataSet(remoteRepository, "/testdata-query/graph2.ttl");
@@ -153,7 +161,7 @@ public class SPARQLServiceEvaluationTest {
 		StringBuilder qb = new StringBuilder();
 		qb.append(" SELECT * \n"); 
 		qb.append(" WHERE { \n");
-		qb.append("     SERVICE <" + HTTPMemServer.REPOSITORY_URL + "> { \n");
+		qb.append("     SERVICE <" + server.getRepositoryUrl() + "> { \n");
 		qb.append("             ?X <"	+ FOAF.NAME + "> ?Y \n ");
 		qb.append("     } \n ");
 		qb.append("     ?X a <" + FOAF.PERSON + "> . \n");

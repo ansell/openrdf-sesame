@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import java.io.File;
+
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.SparqlDatasetTest;
 
@@ -30,7 +32,9 @@ public class HTTPSparqlDatasetTest extends SparqlDatasetTest {
 		server = new HTTPMemServer();
 		
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-http-compliance-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 			super.setUp();
 		}
 		catch (Exception e) {
@@ -48,6 +52,6 @@ public class HTTPSparqlDatasetTest extends SparqlDatasetTest {
 	}
 
 	protected Repository newRepository() {
-		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+		return new HTTPRepository(server.getRepositoryUrl());
 	}
 }

@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import java.io.File;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -32,7 +34,9 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	{
 		server = new HTTPMemServer();
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-rdfs-http-connection-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 			super.setUp();
 		}
 		catch (Exception e) {
@@ -51,7 +55,7 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 
 	@Override
 	protected Repository createRepository() {
-		return new HTTPRepository(HTTPMemServer.INFERENCE_REPOSITORY_URL);
+		return new HTTPRepository(server.getInferenceRepositoryUrl());
 	}
 
 	@Ignore("temporarily disabled for HTTPRepository")

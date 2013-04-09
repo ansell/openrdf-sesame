@@ -16,7 +16,13 @@
  */
 package org.openrdf.repository;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -26,14 +32,16 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class SparqlSetBindingTest extends TestCase {
+public abstract class SparqlSetBindingTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	public String queryBinding = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
-			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
-			 + " } ";
+			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n" + " } ";
 
-	public String queryBindingSubselect = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
-			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
+	public String queryBindingSubselect = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+			+ "SELECT ?name ?mbox\n" + " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
 			+ "        { SELECT ?x WHERE { ?x a foaf:Person } } } ";
 
 	private Repository repository;
@@ -45,7 +53,34 @@ public abstract class SparqlSetBindingTest extends TestCase {
 	private Literal ringo;
 
 	private URI ringoRes;
-	
+
+	@Before
+	public void setUp()
+		throws Exception
+	{
+		repository = createRepository();
+		vf = repository.getValueFactory();
+		ringo = vf.createLiteral("Ringo Starr");
+		ringoRes = vf.createURI("http://example.org/ns#", "ringo");
+
+		createUser("john", "John Lennon", "john@example.org");
+		createUser("paul", "Paul McCartney", "paul@example.org");
+		createUser("ringo", "Ringo Starr", "ringo@example.org");
+		conn = repository.getConnection();
+	}
+
+	@After
+	public void tearDown()
+		throws Exception
+	{
+		conn.close();
+		conn = null;
+
+		repository.shutDown();
+		repository = null;
+	}
+
+	@Test
 	public void testBinding()
 		throws Exception
 	{
@@ -57,6 +92,7 @@ public abstract class SparqlSetBindingTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testBindingSubselect()
 		throws Exception
 	{
@@ -66,21 +102,6 @@ public abstract class SparqlSetBindingTest extends TestCase {
 		assertEquals(ringo, result.next().getValue("name"));
 		assertFalse(result.hasNext());
 		result.close();
-	}
-
-	@Override
-	protected void setUp()
-		throws Exception
-	{
-		repository = createRepository();
-		vf = repository.getValueFactory();
-		ringo = vf.createLiteral("Ringo Starr");
-		ringoRes = vf.createURI("http://example.org/ns#", "ringo");
-		
-		createUser("john", "John Lennon", "john@example.org");
-		createUser("paul", "Paul McCartney", "paul@example.org");
-		createUser("ringo", "Ringo Starr", "ringo@example.org");
-		conn = repository.getConnection();
 	}
 
 	protected Repository createRepository()
@@ -102,17 +123,6 @@ public abstract class SparqlSetBindingTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		conn.close();
-		conn = null;
-
-		repository.shutDown();
-		repository = null;
-	}
-
 	private void createUser(String id, String name, String email)
 		throws RepositoryException
 	{
@@ -120,7 +130,7 @@ public abstract class SparqlSetBindingTest extends TestCase {
 		URI subj = vf.createURI("http://example.org/ns#", id);
 		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");
 		URI foafMbox = vf.createURI("http://xmlns.com/foaf/0.1/", "mbox");
-		
+
 		conn.add(subj, RDF.TYPE, vf.createURI("http://xmlns.com/foaf/0.1/", "Person"));
 		conn.add(subj, foafName, vf.createLiteral(name));
 		conn.add(subj, foafMbox, vf.createURI("mailto:", email));

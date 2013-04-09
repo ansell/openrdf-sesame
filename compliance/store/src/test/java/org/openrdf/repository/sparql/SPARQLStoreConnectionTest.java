@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -48,10 +50,13 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		server = new HTTPMemServer();
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-sparql-store-connection-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 			super.setUp();
 		}
 		catch (Exception e) {
+			logger.error("Could not setup server", e);
 			server.stop();
 			throw e;
 		}
@@ -68,13 +73,15 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		super.tearDown();
-		server.stop();
+		if(server != null) {
+			server.stop();
+		}
 	}
 
 	@Override
 	protected Repository createRepository() {
-		return new SPARQLRepository(HTTPMemServer.REPOSITORY_URL,
-				Protocol.getStatementsLocation(HTTPMemServer.REPOSITORY_URL));
+		return new SPARQLRepository(server.getRepositoryUrl(),
+				Protocol.getStatementsLocation(server.getRepositoryUrl()));
 	}
 
 	@Override

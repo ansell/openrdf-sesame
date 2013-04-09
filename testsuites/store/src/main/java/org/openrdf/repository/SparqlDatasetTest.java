@@ -16,9 +16,13 @@
  */
 package org.openrdf.repository;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -33,7 +37,10 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.DatasetImpl;
 
-public abstract class SparqlDatasetTest extends TestCase {
+public abstract class SparqlDatasetTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	public String queryNoFrom = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
 			+ "SELECT (COUNT(DISTINCT ?name) as ?c) \n" + " WHERE { ?x foaf:name  ?name . } ";
@@ -59,6 +66,37 @@ public abstract class SparqlDatasetTest extends TestCase {
 	private URI john;
 
 	private URI ringo;
+
+	@Before
+	public void setUp()
+		throws Exception
+	{
+		repository = createRepository();
+		vf = repository.getValueFactory();
+		john = createUser("john", "John Lennon", "john@example.org");
+		paul = createUser("paul", "Paul McCartney", "paul@example.org");
+		george = createUser("george", "George Harrison", "george@example.org", graph1);
+		ringo = createUser("ringo", "Ringo Starr", "ringo@example.org", graph1);
+		conn = repository.getConnection();
+
+		dataset = new DatasetImpl();
+		dataset.addDefaultGraph(graph1);
+	}
+
+	@After
+	public void tearDown()
+		throws Exception
+	{
+		if (conn != null) {
+			conn.close();
+		}
+		conn = null;
+
+		if (repository != null) {
+			repository.shutDown();
+		}
+		repository = null;
+	}
 
 	@Test
 	public void testNoFrom()
@@ -92,54 +130,38 @@ public abstract class SparqlDatasetTest extends TestCase {
 		}
 		result.close();
 	}
-	
+
 	@Test
 	public void testWithFrom()
-			throws Exception
-		{
-			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryWithFrom);
-			TupleQueryResult result = query.evaluate();
-
-			assertTrue(result.hasNext());
-
-			if (result.hasNext()) {
-				BindingSet bs = result.next();
-				assertFalse(result.hasNext());
-
-				Literal count = (Literal)bs.getValue("c");
-				assertEquals(2, count.intValue());
-			}
-			result.close();
-
-			query.setDataset(dataset);
-			result = query.evaluate();
-
-			assertTrue(result.hasNext());
-
-			if (result.hasNext()) {
-				BindingSet bs = result.next();
-				assertFalse(result.hasNext());
-
-				Literal count = (Literal)bs.getValue("c");
-				assertEquals(2, count.intValue());
-			}
-			result.close();
-		}
-
-	@Override
-	protected void setUp()
 		throws Exception
 	{
-		repository = createRepository();
-		vf = repository.getValueFactory();
-		john = createUser("john", "John Lennon", "john@example.org");
-		paul = createUser("paul", "Paul McCartney", "paul@example.org");
-		george = createUser("george", "George Harrison", "george@example.org", graph1);
-		ringo = createUser("ringo", "Ringo Starr", "ringo@example.org", graph1);
-		conn = repository.getConnection();
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryWithFrom);
+		TupleQueryResult result = query.evaluate();
 
-		dataset = new DatasetImpl();
-		dataset.addDefaultGraph(graph1);
+		assertTrue(result.hasNext());
+
+		if (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertFalse(result.hasNext());
+
+			Literal count = (Literal)bs.getValue("c");
+			assertEquals(2, count.intValue());
+		}
+		result.close();
+
+		query.setDataset(dataset);
+		result = query.evaluate();
+
+		assertTrue(result.hasNext());
+
+		if (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertFalse(result.hasNext());
+
+			Literal count = (Literal)bs.getValue("c");
+			assertEquals(2, count.intValue());
+		}
+		result.close();
 	}
 
 	protected Repository createRepository()
@@ -160,17 +182,6 @@ public abstract class SparqlDatasetTest extends TestCase {
 
 	protected abstract Repository newRepository()
 		throws Exception;
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		conn.close();
-		conn = null;
-
-		repository.shutDown();
-		repository = null;
-	}
 
 	private URI createUser(String id, String name, String email, Resource... context)
 		throws RepositoryException

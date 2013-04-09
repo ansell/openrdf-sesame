@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import java.io.File;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -36,7 +38,9 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 		server = new HTTPMemServer();
 
 		try {
-			server.start();
+			File testFolder = tempDir.newFolder("sesame-http-sparql-update-datadir");
+			testFolder.mkdirs();
+			server.start(testFolder);
 			super.setUp();
 		}
 		catch (Exception e) {
@@ -57,7 +61,7 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 	protected Repository newRepository()
 		throws Exception
 	{
-		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+		return new HTTPRepository(server.getRepositoryUrl());
 	}
 
 	@Ignore

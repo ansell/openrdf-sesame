@@ -27,7 +27,9 @@ import java.io.InputStream;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +63,9 @@ import org.openrdf.rio.RDFParseException;
  * @author Jeen Broekstra
  */
 public abstract class SPARQLUpdateTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	static final Logger logger = LoggerFactory.getLogger(SPARQLUpdateTest.class);
 
@@ -112,10 +117,14 @@ public abstract class SPARQLUpdateTest {
 		throws Exception
 	{
 		logger.debug("tearing down...");
-		con.close();
+		if(con != null) {
+			con.close();
+		}
 		con = null;
 
-		rep.shutDown();
+		if(rep != null) {
+			rep.shutDown();
+		}
 		rep = null;
 
 		logger.debug("tearDown complete.");

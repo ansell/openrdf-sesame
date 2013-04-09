@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 
 import info.aduna.iteration.CloseableIteration;
@@ -66,6 +67,9 @@ import org.openrdf.query.parser.QueryParserUtil;
  */
 public abstract class RDFStoreTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */

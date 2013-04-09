@@ -53,9 +53,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
-
-import junit.framework.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
@@ -95,6 +96,9 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class RepositoryConnectionTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	/**
 	 * Timeout all individual tests after 1 minute.
@@ -146,6 +150,8 @@ public abstract class RepositoryConnectionTest {
 
 	public static final String TEST_DIR_PREFIX = "/testcases/";
 
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	protected Repository testRepository;
 
 	protected RepositoryConnection testCon;
@@ -223,9 +229,15 @@ public abstract class RepositoryConnectionTest {
 	public void tearDown()
 		throws Exception
 	{
-		testCon2.close();
-		testCon.close();
-		testRepository.shutDown();
+		if (testCon2 != null) {
+			testCon2.close();
+		}
+		if (testCon != null) {
+			testCon.close();
+		}
+		if (testRepository != null) {
+			testRepository.shutDown();
+		}
 	}
 
 	/**
