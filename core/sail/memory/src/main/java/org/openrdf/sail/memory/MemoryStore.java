@@ -545,11 +545,9 @@ public class MemoryStore extends NotifyingSailBase {
 		{
 			// All values are used in at least one statement. Possibly, the
 			// statement is already present. Check this.
-			CloseableIteration<MemStatement, SailException> stIter = createStatementIterator(
+			try (CloseableIteration<MemStatement, SailException> stIter = createStatementIterator(
 					SailException.class, memSubj, memPred, memObj, false, currentSnapshot + 1, ReadMode.RAW,
-					memContext);
-
-			try {
+					memContext);){
 				if (stIter.hasNext()) {
 					// statement is already present, update its transaction
 					// status if appropriate
@@ -600,9 +598,6 @@ public class MemoryStore extends NotifyingSailBase {
 
 					return null;
 				}
-			}
-			finally {
-				stIter.close();
 			}
 		}
 
