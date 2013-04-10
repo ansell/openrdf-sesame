@@ -33,6 +33,7 @@ import java.io.IOException;
  * @author Joshua Shinavier
  */
 public class NQuadsWriter extends NTriplesWriter {
+
 	public NQuadsWriter(OutputStream outputStream) {
 		super(outputStream);
 	}
@@ -42,10 +43,11 @@ public class NQuadsWriter extends NTriplesWriter {
 	}
 
 	@Override
-	public void handleStatement(Statement st) throws RDFHandlerException {
+	public void handleStatement(Statement st)
+		throws RDFHandlerException
+	{
 		if (!writingStarted) {
-			throw new RuntimeException(
-					"Document writing has not yet been started");
+			throw new RuntimeException("Document writing has not yet been started");
 		}
 
 		try {
@@ -66,7 +68,8 @@ public class NQuadsWriter extends NTriplesWriter {
 			}
 
 			writer.write(" .\n");
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
 	}
