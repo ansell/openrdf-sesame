@@ -76,10 +76,11 @@ public class HTTPMemServer {
 		jetty = new Server();
 
 		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		
+
 		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
 		conn.setPort(port);
+		conn.setSoLingerTime(0);
 		jetty.addConnector(conn);
 
 		WebAppContext webapp = new WebAppContext();
@@ -88,7 +89,7 @@ public class HTTPMemServer {
 		webapp.setWar("./target/openrdf-sesame.war");
 		jetty.setHandler(webapp);
 		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		
+
 	}
 
 	/**
@@ -98,24 +99,26 @@ public class HTTPMemServer {
 	 *        the port to check for availability
 	 */
 	private static int getFreePort() {
+		int result = -1;
 		ServerSocket ss = null;
 		DatagramSocket ds = null;
 		try {
-			int result = 0;
 			ss = new ServerSocket(0);
 			ss.setReuseAddress(true);
 			result = ss.getLocalPort();
-			ds = new DatagramSocket(result);
-			ds.setReuseAddress(true);
-			return result;
+			try {
+				ds = new DatagramSocket(result);
+				ds.setReuseAddress(true);
+			}
+			finally {
+				if (ds != null) {
+					ds.close();
+				}
+			}
 		}
 		catch (IOException e) {
 		}
 		finally {
-			if (ds != null) {
-				ds.close();
-			}
-
 			if (ss != null) {
 				try {
 					ss.close();
@@ -126,7 +129,7 @@ public class HTTPMemServer {
 			}
 		}
 
-		return -1;
+		return result;
 	}
 
 	public void start()
@@ -145,21 +148,34 @@ public class HTTPMemServer {
 	public void stop()
 		throws Exception
 	{
-		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
-				SystemRepository.ID));
-		if(systemRepo != null) {
-			RepositoryConnection con = systemRepo.getConnection();
-			if (con != null) {
+		try {
+			Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
+					SystemRepository.ID));
+			if (systemRepo != null) {
 				try {
-					con.clear();
+					RepositoryConnection con = systemRepo.getConnection();
+					if (con != null) {
+						try {
+							con.clear();
+						}
+						finally {
+							if (con.isActive()) {
+								con.rollback();
+							}
+							if (con.isOpen()) {
+								con.close();
+							}
+						}
+					}
 				}
 				finally {
-					con.close();
+					systemRepo.shutDown();
 				}
 			}
 		}
-		
-		jetty.stop();
+		finally {
+			jetty.stop();
+		}
 		System.clearProperty("org.mortbay.log.class");
 	}
 
@@ -170,10 +186,10 @@ public class HTTPMemServer {
 				Protocol.getRepositoryLocation(serverUrl, SystemRepository.ID));
 
 		// create a (non-inferencing) memory store
-		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig(true);
+		MemoryStoreConfig memStoreConfig = new MemoryStoreConfig();
 		SailRepositoryConfig sailRepConfig = new SailRepositoryConfig(memStoreConfig);
 		RepositoryConfig repConfig = new RepositoryConfig(TEST_REPO_ID, sailRepConfig);
-		
+
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRep, repConfig);
 
 		// create an inferencing memory store

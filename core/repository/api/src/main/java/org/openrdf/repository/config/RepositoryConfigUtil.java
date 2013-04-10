@@ -143,13 +143,22 @@ public class RepositoryConfigUtil {
 	public static void updateRepositoryConfigs(Repository repository, RepositoryConfig... configs)
 		throws RepositoryException, RepositoryConfigException
 	{
-		RepositoryConnection con = repository.getConnection();
+		RepositoryConnection con = null;
 
 		try {
+			con = repository.getConnection();
+
 			updateRepositoryConfigs(con, configs);
 		}
 		finally {
-			con.close();
+			if (con != null) {
+				if (con.isActive()) {
+					con.rollback();
+				}
+				if (con.isOpen()) {
+					con.close();
+				}
+			}
 		}
 	}
 
@@ -157,7 +166,6 @@ public class RepositoryConfigUtil {
 	 * Update the specified RepositoryConnection with the specified set of
 	 * RepositoryConfigs. This will overwrite all existing configurations in the
 	 * Repository that have a Repository ID occurring in these RepositoryConfigs.
-	 * 
 	 * Note: this method does NOT commit the updates on the connection.
 	 * 
 	 * @param con
@@ -167,7 +175,6 @@ public class RepositoryConfigUtil {
 	 *        Repository. The RepositoryConfig's ID may already occur in the
 	 *        Repository, in which case all previous configuration data for that
 	 *        Repository will be cleared before the RepositoryConfig is added.
-	 * 
 	 * @throws RepositoryException
 	 * @throws RepositoryConfigException
 	 */
@@ -257,7 +264,8 @@ public class RepositoryConfigUtil {
 		throws RepositoryException, RepositoryConfigException
 	{
 		Literal idLiteral = con.getRepository().getValueFactory().createLiteral(repositoryID);
-		List<Statement> idStatementList = Iterations.asList(con.getStatements(null, REPOSITORYID, idLiteral, true));
+		List<Statement> idStatementList = Iterations.asList(con.getStatements(null, REPOSITORYID, idLiteral,
+				true));
 
 		if (idStatementList.size() == 1) {
 			return idStatementList.get(0);

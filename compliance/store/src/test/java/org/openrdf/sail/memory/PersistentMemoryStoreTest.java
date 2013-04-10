@@ -20,8 +20,6 @@ package org.openrdf.sail.memory;
 import java.io.File;
 import java.io.IOException;
 
-import info.aduna.io.FileUtil;
-
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.RDFNotifyingStoreTest;
 import org.openrdf.sail.SailException;

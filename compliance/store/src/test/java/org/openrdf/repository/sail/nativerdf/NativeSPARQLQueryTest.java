@@ -22,6 +22,7 @@ import java.io.IOException;
 import junit.framework.Test;
 
 import info.aduna.io.FileUtil;
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.query.Dataset;
 import org.openrdf.query.parser.sparql.manifest.ManifestTest;
@@ -66,7 +67,7 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 	protected Repository newRepository()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = new File(Java7FileUtil.createTempDir("nativestore"));
 		return new DatasetRepository(new SailRepository(new NativeStore(dataDir, "spoc")));
 	}
 

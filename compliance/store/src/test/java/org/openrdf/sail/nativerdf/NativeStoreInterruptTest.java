@@ -41,32 +41,16 @@ public class NativeStoreInterruptTest extends SailInterruptTest {
 	 * Constructors *
 	 *--------------*/
 
-	public NativeStoreInterruptTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	@Override
-	protected void setUp()
+	public void setUp()
 		throws Exception
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore");
 		super.setUp();
-	}
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 	@Override

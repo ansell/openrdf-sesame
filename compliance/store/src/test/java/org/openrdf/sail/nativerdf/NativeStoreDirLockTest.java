@@ -16,44 +16,52 @@
  */
 package org.openrdf.sail.nativerdf;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 
-import junit.framework.TestCase;
-
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.sail.SailLockedException;
 
-public class NativeStoreDirLockTest extends TestCase {
+public class NativeStoreDirLockTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+
+	@Test
 	public void testLocking()
 		throws Exception
 	{
-		File dataDir = FileUtil.createTempDir("nativestore");
+		File dataDir = tempDir.newFolder("nativestore-dir-lock-test");
+		NativeStore sail = null;
+
 		try {
-			NativeStore sail = new NativeStore(dataDir, "spoc,posc");
+			sail = new NativeStore(dataDir, "spoc,posc");
 			sail.initialize();
 
+			NativeStore sail2 = null;
 			try {
-				NativeStore sail2 = new NativeStore(dataDir, "spoc,posc");
+				sail2 = new NativeStore(dataDir, "spoc,posc");
 				sail2.initialize();
-				try {
-					fail("initialized a second native store with same dataDir");
-				}
-				finally {
+				fail("initialized a second native store with same dataDir");
+			}
+			finally {
+				if (sail2 != null) {
 					sail2.shutDown();
 				}
 			}
-			catch (SailLockedException e) {
-				// Expected: should not be able to open two native stores with the
-				// same dataDir
-			}
-			finally {
-				sail.shutDown();
-			}
+		}
+		catch (SailLockedException e) {
+			// Expected: should not be able to open two native stores with the
+			// same dataDir
 		}
 		finally {
-			FileUtil.deleteDir(dataDir);
+			if (sail != null) {
+				sail.shutDown();
+			}
 		}
 	}
 }

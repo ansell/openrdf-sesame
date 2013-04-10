@@ -37,9 +37,9 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 	 * Variables *
 	 *-----------*/
 
-	private AtomicInteger removeEventCount;
+	private AtomicInteger removeEventCount = new AtomicInteger(0);
 
-	private AtomicInteger addEventCount;
+	private AtomicInteger addEventCount = new AtomicInteger(0);
 
 	/*---------*
 	 * Methods *
@@ -108,9 +108,9 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 		assertEquals("Repository should no longer contain any statements", 0, countAllElements());
 
 		// test if event listener works properly.
-		assertEquals("There should have been 1 event in which statements were added", 1, addEventCount);
+		assertEquals("There should have been 1 event in which statements were added", 1, addEventCount.get());
 
-		assertEquals("There should have been 3 events in which statements were removed", 3, removeEventCount);
+		assertEquals("There should have been 3 events in which statements were removed", 3, removeEventCount.get());
 	}
 
 	@Override

@@ -104,24 +104,26 @@ public class TestServer {
 	 *        the port to check for availability
 	 */
 	private static int getFreePort() {
+		int result = -1;
 		ServerSocket ss = null;
 		DatagramSocket ds = null;
 		try {
-			int result = 0;
 			ss = new ServerSocket(0);
 			ss.setReuseAddress(true);
 			result = ss.getLocalPort();
-			ds = new DatagramSocket(result);
-			ds.setReuseAddress(true);
-			return result;
+			try {
+				ds = new DatagramSocket(result);
+				ds.setReuseAddress(true);
+			}
+			finally {
+				if (ds != null) {
+					ds.close();
+				}
+			}
 		}
 		catch (IOException e) {
 		}
 		finally {
-			if (ds != null) {
-				ds.close();
-			}
-
 			if (ss != null) {
 				try {
 					ss.close();
@@ -132,7 +134,7 @@ public class TestServer {
 			}
 		}
 
-		return -1;
+		return result;
 	}
 
 	public void start()

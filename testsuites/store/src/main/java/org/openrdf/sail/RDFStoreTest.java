@@ -69,7 +69,7 @@ public abstract class RDFStoreTest {
 
 	@Rule
 	public TemporaryFolder tempDir = new TemporaryFolder();
-	
+
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
@@ -179,13 +179,17 @@ public abstract class RDFStoreTest {
 		throws Exception
 	{
 		try {
-			if (con.isOpen()) {
+			if (con != null && con.isActive()) {
 				con.rollback();
+			}
+			if (con != null && con.isOpen()) {
 				con.close();
 			}
 		}
 		finally {
-			sail.shutDown();
+			if (sail != null) {
+				sail.shutDown();
+			}
 			sail = null;
 		}
 	}
