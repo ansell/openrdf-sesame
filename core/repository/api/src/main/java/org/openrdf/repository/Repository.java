@@ -17,6 +17,7 @@
 package org.openrdf.repository;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.model.ValueFactory;
 
@@ -42,14 +43,14 @@ public interface Repository {
 	 * @param dataDir
 	 *        the directory where data for this repository is stored
 	 */
-	public void setDataDir(File dataDir);
+	public void setDataDir(Path dataDir);
 
 	/**
 	 * Get the directory where data and logging for this repository is stored.
 	 * 
 	 * @return the directory where data for this repository is stored.
 	 */
-	public File getDataDir();
+	public Path getDataDir();
 
 	/**
 	 * Initializes this repository. A repository needs to be initialized before

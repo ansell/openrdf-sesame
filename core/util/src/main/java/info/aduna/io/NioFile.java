@@ -48,7 +48,7 @@ public final class NioFile {
 
 	private final OpenOption[] mode;
 
-	private volatile AsynchronousFileChannel raf;
+	private volatile FileChannel raf;
 
 	private volatile boolean explictlyClosed;
 
@@ -75,7 +75,9 @@ public final class NioFile {
 	private void open()
 		throws IOException
 	{
-		raf = AsynchronousFileChannel.open(file, mode);
+		raf = FileChannel.open(file, mode);
+		// file.newByteChannel();
+		// raf = AsynchronousFileChannel.open(file, mode);
 	}
 
 	private synchronized void reopen(ClosedChannelException e)
@@ -102,7 +104,7 @@ public final class NioFile {
 		return explictlyClosed;
 	}
 
-	public Path getFile() {
+	public Path getPath() {
 		return file;
 	}
 
@@ -187,26 +189,23 @@ public final class NioFile {
 	public long transferTo(long position, long count, WritableByteChannel target)
 		throws IOException
 	{
-		throw new UnsupportedOperationException("TODO: Migrate this method to Java-7");
-//		while (true) {
-//			try {
-//				//raf.read(new ByteBuffer(), position);
-//				//raf.read(target, position)
-//				//return fc.transferTo(position, count, target);
-//			}
-//			catch (ClosedByInterruptException e) {
-//				throw e;
-//			}
-//			catch (ClosedChannelException e) {
-//				reopen(e);
-//			}
-//		}
+		while (true) {
+			try {
+				return raf.transferTo(position, count, target);
+			}
+			catch (ClosedByInterruptException e) {
+				throw e;
+			}
+			catch (ClosedChannelException e) {
+				reopen(e);
+			}
+		}
 	}
 
 	/**
 	 * Performs a protected {@link FileChannel#write(ByteBuffer, long)} call.
 	 */
-	public Future<Integer> write(ByteBuffer buf, long offset)
+	public int write(ByteBuffer buf, long offset)
 		throws IOException
 	{
 		return raf.write(buf, offset);
@@ -215,7 +214,7 @@ public final class NioFile {
 	/**
 	 * Performs a protected {@link FileChannel#read(ByteBuffer, long)} call.
 	 */
-	public Future<Integer> read(ByteBuffer buf, long offset)
+	public int read(ByteBuffer buf, long offset)
 		throws IOException
 	{
 		return raf.read(buf, offset);

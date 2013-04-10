@@ -16,19 +16,23 @@
  */
 package org.openrdf.sail.nativerdf.btree;
 
-import java.io.File;
+import static org.junit.Assert.*;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.Java7FileUtil;
 
 /**
  * @author Arjohn Kampman
  */
-public class BTreeTest extends TestCase {
+public class BTreeTest {
 
 	/*-----------*
 	 * Constants *
@@ -53,7 +57,7 @@ public class BTreeTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	private File dir;
+	private Path dir;
 
 	private BTree btree;
 
@@ -61,28 +65,23 @@ public class BTreeTest extends TestCase {
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
-		super.setUp();
-		dir = FileUtil.createTempDir("btree");
+		dir = Java7FileUtil.createTempDir("btree");
 		btree = new BTree(dir, "test", 85, 1);
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
-		try {
-			btree.delete();
-			FileUtil.deleteDir(dir);
-		}
-		finally {
-			super.tearDown();
-		}
+		btree.delete();
+		Java7FileUtil.deleteDir(dir);
 	}
 
+	@Test
 	public void testAddAscending()
 		throws Exception
 	{
@@ -91,6 +90,7 @@ public class BTreeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAddDescending()
 		throws Exception
 	{
@@ -99,6 +99,7 @@ public class BTreeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAddRandom()
 		throws Exception
 	{
@@ -107,6 +108,7 @@ public class BTreeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRemoveAscending()
 		throws Exception
 	{
@@ -117,6 +119,7 @@ public class BTreeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRemoveDescending()
 		throws Exception
 	{
@@ -127,6 +130,7 @@ public class BTreeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRemoveRandom()
 		throws Exception
 	{
@@ -137,6 +141,7 @@ public class BTreeTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testConcurrentAccess()
 		throws Exception
 	{
@@ -161,6 +166,7 @@ public class BTreeTest extends TestCase {
 		iter1.close();
 	}
 
+	@Test
 	public void testNewAndClear()
 		throws Exception
 	{
@@ -168,6 +174,7 @@ public class BTreeTest extends TestCase {
 	}
 
 	/* Test for SES-527
+	@Test
 		public void testRootNodeSplit()
 			throws Exception
 		{

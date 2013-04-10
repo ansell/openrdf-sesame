@@ -18,6 +18,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.openrdf.sail.nativerdf.btree.BTree;
 import org.openrdf.sail.nativerdf.btree.RecordComparator;
@@ -41,13 +42,13 @@ final class SortedRecordCache extends RecordCache {
 	 * Constructors *
 	 *--------------*/
 
-	public SortedRecordCache(File cacheDir, int recordSize, RecordComparator comparator)
+	public SortedRecordCache(Path cacheDir, int recordSize, RecordComparator comparator)
 		throws IOException
 	{
 		this(cacheDir, recordSize, Long.MAX_VALUE, comparator);
 	}
 
-	public SortedRecordCache(File cacheDir, int recordSize, long maxRecords, RecordComparator comparator)
+	public SortedRecordCache(Path cacheDir, int recordSize, long maxRecords, RecordComparator comparator)
 		throws IOException
 	{
 		super(maxRecords);

@@ -30,6 +30,9 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -164,10 +167,10 @@ class FileIO {
 		}
 	}
 
-	public synchronized void read(File dataFile)
+	public synchronized void read(Path dataFile)
 		throws IOException
 	{
-		InputStream in = new FileInputStream(dataFile);
+		InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ);
 		try {
 			byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
 			if (!Arrays.equals(magicNumber, MAGIC_NUMBER)) {

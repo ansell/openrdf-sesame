@@ -16,8 +16,8 @@
  */
 package org.openrdf.sail.nativerdf.btree;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -83,7 +83,7 @@ class AllocatedNodesList {
 	/**
 	 * Creates a new AllocatedNodelist for the specified BTree.
 	 */
-	public AllocatedNodesList(File allocNodesFile, BTree btree)
+	public AllocatedNodesList(Path allocNodesFile, BTree btree)
 		throws IOException
 	{
 		if (allocNodesFile == null) {
@@ -104,8 +104,8 @@ class AllocatedNodesList {
 	/**
 	 * Gets the allocated nodes file.
 	 */
-	public File getFile() {
-		return nioFile.getFile();
+	public Path getFile() {
+		return nioFile.getPath();
 	}
 
 	public synchronized void close()
@@ -119,11 +119,11 @@ class AllocatedNodesList {
 	 * 
 	 * @return <tt>true</tt> if the file was deleted.
 	 */
-	public synchronized boolean delete()
+	public synchronized void delete()
 		throws IOException
 	{
 		close(false);
-		return nioFile.delete();
+		nioFile.delete();
 	}
 
 	public synchronized void close(boolean syncChanges)

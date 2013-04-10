@@ -19,6 +19,8 @@ package org.openrdf.sail.nativerdf;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import info.aduna.io.NioFile;
 
@@ -75,11 +77,11 @@ class TxnStatusFile {
 	 * @throws IOException
 	 *         If the file did not yet exist and could not be written to.
 	 */
-	public TxnStatusFile(File dataDir)
+	public TxnStatusFile(Path dataDir)
 		throws IOException
 	{
-		File statusFile = new File(dataDir, FILE_NAME);
-		nioFile = new NioFile(statusFile, "rwd");
+		Path statusFile = dataDir.resolve(FILE_NAME);
+		nioFile = new NioFile(statusFile, StandardOpenOption.READ, StandardOpenOption.WRITE);
 
 		if (nioFile.size() == 0) {
 			setTxnStatus(TxnStatus.NONE);

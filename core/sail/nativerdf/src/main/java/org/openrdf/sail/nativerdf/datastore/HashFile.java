@@ -20,7 +20,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -97,13 +101,13 @@ public class HashFile {
 	 * Constructors *
 	 *--------------*/
 
-	public HashFile(File file)
+	public HashFile(Path file)
 		throws IOException
 	{
 		this(file, false);
 	}
 
-	public HashFile(File file, boolean forceSync)
+	public HashFile(Path file, boolean forceSync)
 		throws IOException
 	{
 		this.nioFile = new NioFile(file);
@@ -164,8 +168,8 @@ public class HashFile {
 	 * Methods *
 	 *---------*/
 
-	public File getFile() {
-		return nioFile.getFile();
+	public Path getPath() {
+		return nioFile.getPath();
 	}
 
 	public int getItemCount() {
@@ -298,20 +302,18 @@ public class HashFile {
 	 * Utility methods *
 	 *-----------------*/
 
-	private RandomAccessFile createEmptyFile(File file)
+	private FileChannel createEmptyFile(Path file)
 		throws IOException
 	{
 		// Make sure the file exists
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file " + file);
-			}
+		if (!Files.exists(file)) {
+			file = Files.createFile(file);
 		}
 
 		// Open the file in read-write mode and make sure the file is empty
-		RandomAccessFile raf = new RandomAccessFile(file, "rw");
-		raf.setLength(0L);
+		// RandomAccessFile raf = new RandomAccessFile(file, "rw");
+		FileChannel raf = FileChannel.open(file, StandardOpenOption.READ, StandardOpenOption.WRITE);
+		raf.truncate(0);
 
 		return raf;
 	}
@@ -396,9 +398,9 @@ public class HashFile {
 		long oldFileSize = nioFile.size(); // includes overflow buckets
 
 		// Move any overflow buckets out of the way to a temporary file
-		File tmpFile = new File(getFile().getParentFile(), "rehash_" + getFile().getName());
-		RandomAccessFile tmpRaf = createEmptyFile(tmpFile);
-		FileChannel tmpChannel = tmpRaf.getChannel();
+		Path tmpFile = getPath().getParent().resolve("rehash_" + getPath().getFileName());
+		FileChannel tmpChannel = createEmptyFile(tmpFile);
+		// FileChannel tmpChannel = tmpRaf.getChannel();
 
 		// Transfer the overflow buckets to the temp file
 		// FIXME: work around java bug 6431344:
@@ -416,13 +418,15 @@ public class HashFile {
 		ByteBuffer newBucket = ByteBuffer.allocate(recordSize);
 
 		// Rehash items in non-overflow buckets, half of these will move to a
-		// new location, but none of them will trigger the creation of new overflow
+		// new location, but none of them will trigger the creation of new
+		// overflow
 		// buckets. Any (now deprecated) references to overflow buckets are
 		// removed too.
 
 		// All items that are moved to a new location end up in one and the same
 		// new and empty bucket. All items are divided between the old and the
-		// new bucket and the changes to the buckets are written to disk only once.
+		// new bucket and the changes to the buckets are written to disk only
+		// once.
 		for (long bucketOffset = HEADER_LENGTH; bucketOffset < oldTableSize; bucketOffset += recordSize) {
 			nioFile.read(bucket, bucketOffset);
 
@@ -500,8 +504,8 @@ public class HashFile {
 		}
 
 		// Discard the temp file
-		tmpRaf.close();
-		tmpFile.delete();
+		tmpChannel.close();
+		Files.delete(tmpFile);
 	}
 
 	/*------------------------*

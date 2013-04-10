@@ -16,28 +16,36 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
-import java.io.FileInputStream;
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-import info.aduna.io.FileUtil;
+import info.aduna.io.Java7FileUtil;
 
-public class DefaultIndexTest extends TestCase {
+public class DefaultIndexTest {
 
-	public void testDefaultIndex() throws Exception {
-		File dir = FileUtil.createTempDir("nativerdf");
+	@Test
+	public void testDefaultIndex()
+		throws Exception
+	{
+		Path dir = Java7FileUtil.createTempDir("nativerdf");
 		TripleStore store = new TripleStore(dir, null);
 		store.close();
 		// check that the triple store used the default index
 		assertEquals("spoc,posc", findIndex(dir));
-		FileUtil.deleteDir(dir);
+		Java7FileUtil.deleteDir(dir);
 	}
 
-	public void testExistingIndex() throws Exception {
-		File dir = FileUtil.createTempDir("nativerdf");
+	@Test
+	public void testExistingIndex()
+		throws Exception
+	{
+		Path dir = Java7FileUtil.createTempDir("nativerdf");
 		// set a non-default index
 		TripleStore store = new TripleStore(dir, "spoc,opsc");
 		store.close();
@@ -46,19 +54,20 @@ public class DefaultIndexTest extends TestCase {
 		store = new TripleStore(dir, null);
 		store.close();
 		assertEquals(before, findIndex(dir));
-		FileUtil.deleteDir(dir);
+		Java7FileUtil.deleteDir(dir);
 	}
 
-	private String findIndex(File dir) throws Exception {
+	private String findIndex(Path dir)
+		throws Exception
+	{
 		Properties properties = new Properties();
-		InputStream in = new FileInputStream(new File(dir, "triples.prop"));
-		try {
+
+		try (InputStream in = Files.newInputStream(dir.resolve("triples.prop"));) {
 			properties.clear();
 			properties.load(in);
-		} finally {
-			in.close();
 		}
-		return (String) properties.get("triple-indexes");
+
+		return (String)properties.get("triple-indexes");
 	}
 
 }

@@ -19,6 +19,8 @@ package org.openrdf.sail.nativerdf;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.NoSuchElementException;
 
 import info.aduna.io.NioFile;
@@ -60,19 +62,19 @@ final class SequentialRecordCache extends RecordCache {
 	 * Constructors *
 	 *--------------*/
 
-	public SequentialRecordCache(File cacheDir, int recordSize)
+	public SequentialRecordCache(Path cacheDir, int recordSize)
 		throws IOException
 	{
 		this(cacheDir, recordSize, Long.MAX_VALUE);
 	}
 
-	public SequentialRecordCache(File cacheDir, int recordSize, long maxRecords)
+	public SequentialRecordCache(Path cacheDir, int recordSize, long maxRecords)
 		throws IOException
 	{
 		super(maxRecords);
 		this.recordSize = recordSize;
 
-		File cacheFile = File.createTempFile("txncache", ".dat", cacheDir);
+		Path cacheFile = Files.createTempFile(cacheDir, "txncache", ".dat");
 		nioFile = new NioFile(cacheFile);
 
 		// Write file header

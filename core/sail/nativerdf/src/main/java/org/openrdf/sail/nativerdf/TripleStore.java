@@ -22,6 +22,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -145,7 +148,7 @@ class TripleStore {
 	/**
 	 * The directory that is used to store the index files.
 	 */
-	private final File dir;
+	private final Path dir;
 
 	/**
 	 * Object containing meta-data for the triple store. This includes
@@ -167,22 +170,22 @@ class TripleStore {
 	 * Constructors *
 	 *--------------*/
 
-	public TripleStore(File dir, String indexSpecStr)
+	public TripleStore(Path dir, String indexSpecStr)
 		throws IOException, SailException
 	{
 		this(dir, indexSpecStr, false);
 	}
 
-	public TripleStore(File dir, String indexSpecStr, boolean forceSync)
+	public TripleStore(Path dir, String indexSpecStr, boolean forceSync)
 		throws IOException, SailException
 	{
 		this.dir = dir;
 		this.forceSync = forceSync;
 		this.txnStatusFile = new TxnStatusFile(dir);
 
-		File propFile = new File(dir, PROPERTIES_FILE);
+		Path propFile = dir.resolve(PROPERTIES_FILE);
 
-		if (!propFile.exists()) {
+		if (!Files.exists(propFile)) {
 			// newly created native store
 			properties = new Properties();
 
@@ -452,10 +455,11 @@ class TripleStore {
 		for (TripleIndex index : indexes) {
 			index.getBTree().close();
 		}
-		
+
 		txnStatusFile.close();
-		
-		// Should have been removed upon commit() or rollback(), but just to be sure
+
+		// Should have been removed upon commit() or rollback(), but just to be
+		// sure
 		if (updatedTriplesCache != null) {
 			updatedTriplesCache.discard();
 			updatedTriplesCache = null;
@@ -1062,10 +1066,10 @@ class TripleStore {
 		return maxValue;
 	}
 
-	private Properties loadProperties(File propFile)
+	private Properties loadProperties(Path propFile)
 		throws IOException
 	{
-		InputStream in = new FileInputStream(propFile);
+		InputStream in = Files.newInputStream(propFile);
 		try {
 			Properties properties = new Properties();
 			properties.load(in);
@@ -1076,10 +1080,11 @@ class TripleStore {
 		}
 	}
 
-	private void storeProperties(File propFile)
+	private void storeProperties(Path propFile)
 		throws IOException
 	{
-		OutputStream out = new FileOutputStream(propFile);
+		OutputStream out = Files.newOutputStream(propFile, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE_NEW);
 		try {
 			properties.store(out, "triple indexes meta-data, DO NOT EDIT!");
 		}

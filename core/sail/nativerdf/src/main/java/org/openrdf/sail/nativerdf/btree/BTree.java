@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -231,7 +235,7 @@ public class BTree {
 	 *         In case the initialization of the B-Tree file failed.
 	 * @see DefaultRecordComparator
 	 */
-	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize)
+	public BTree(Path dataDir, String filenamePrefix, int blockSize, int valueSize)
 		throws IOException
 	{
 		this(dataDir, filenamePrefix, blockSize, valueSize, false);
@@ -259,7 +263,7 @@ public class BTree {
 	 *         In case the initialization of the B-Tree file failed.
 	 * @see DefaultRecordComparator
 	 */
-	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize, boolean forceSync)
+	public BTree(Path dataDir, String filenamePrefix, int blockSize, int valueSize, boolean forceSync)
 		throws IOException
 	{
 		this(dataDir, filenamePrefix, blockSize, valueSize, new DefaultRecordComparator(), forceSync);
@@ -285,7 +289,7 @@ public class BTree {
 	 * @throws IOException
 	 *         In case the initialization of the B-Tree file failed.
 	 */
-	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize, RecordComparator comparator)
+	public BTree(Path dataDir, String filenamePrefix, int blockSize, int valueSize, RecordComparator comparator)
 		throws IOException
 	{
 		this(dataDir, filenamePrefix, blockSize, valueSize, comparator, false);
@@ -315,7 +319,7 @@ public class BTree {
 	 * @throws IOException
 	 *         In case the initialization of the B-Tree file failed.
 	 */
-	public BTree(File dataDir, String filenamePrefix, int blockSize, int valueSize,
+	public BTree(Path dataDir, String filenamePrefix, int blockSize, int valueSize,
 			RecordComparator comparator, boolean forceSync)
 		throws IOException
 	{
@@ -339,12 +343,12 @@ public class BTree {
 			throw new IllegalArgumentException("comparator muts not be null");
 		}
 
-		File file = new File(dataDir, filenamePrefix + ".dat");
+		Path file = dataDir.resolve(filenamePrefix + ".dat");
 		this.nioFile = new NioFile(file);
 		this.comparator = comparator;
 		this.forceSync = forceSync;
 
-		File allocFile = new File(dataDir, filenamePrefix + ".alloc");
+		Path allocFile = dataDir.resolve(filenamePrefix + ".alloc");
 		allocatedNodesList = new AllocatedNodesList(allocFile, this);
 
 		if (nioFile.size() == 0L) {
@@ -377,15 +381,17 @@ public class BTree {
 					throw new IOException("Unable to read BTree file " + file + "; it uses a newer file format");
 				}
 				else if (version != FILE_FORMAT_VERSION) {
-					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: "
+							+ version);
 				}
 			}
 			else if (Arrays.equals(OLD_MAGIC_NUMBER, magicNumber)) {
 				if (version != 1) {
-					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: "
+							+ version);
 				}
 				// Write new magic number to file
-				logger.info("Updating file header for btree file '{}'", file.getAbsolutePath());
+				logger.info("Updating file header for btree file '{}'", file.toString());
 				writeFileHeader();
 			}
 			else {
@@ -421,8 +427,8 @@ public class BTree {
 	/**
 	 * Gets the file that this BTree operates on.
 	 */
-	public File getFile() {
-		return nioFile.getFile();
+	public Path getPath() {
+		return nioFile.getPath();
 	}
 
 	/**
@@ -435,9 +441,9 @@ public class BTree {
 	{
 		close(false);
 
-		boolean success = allocatedNodesList.delete();
-		success &= nioFile.delete();
-		return success;
+		allocatedNodesList.delete();
+		nioFile.delete();
+		return true;
 	}
 
 	/**
@@ -1092,7 +1098,8 @@ public class BTree {
 
 		if (node.isLeaf()) {
 			if (node.isEmpty()) {
-				throw new IllegalArgumentException("Trying to remove largest value from an empty node in " + getFile());
+				throw new IllegalArgumentException("Trying to remove largest value from an empty node in "
+						+ getPath());
 			}
 			return node.removeValueRight(nodeValueCount - 1);
 		}
@@ -1213,7 +1220,7 @@ public class BTree {
 		throws IOException
 	{
 		if (id <= 0) {
-			throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getFile());
+			throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getPath());
 		}
 
 		// Check node cache
@@ -1358,7 +1365,7 @@ public class BTree {
 		 */
 		public Node(int id) {
 			if (id <= 0) {
-				throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getFile());
+				throw new IllegalArgumentException("id must be larger than 0, is: " + id + " in " + getPath());
 			}
 
 			this.id = id;
@@ -2189,7 +2196,8 @@ public class BTree {
 		{
 			btreeLock.readLock().lock();
 			try {
-				while (popStacks());
+				while (popStacks())
+					;
 
 				assert parentNodeStack.isEmpty();
 				assert parentIndexStack.isEmpty();
@@ -2198,7 +2206,7 @@ public class BTree {
 				btreeLock.readLock().unlock();
 			}
 		}
-		
+
 		private void pushStacks(Node newChildNode) {
 			newChildNode.register(this);
 			parentNodeStack.add(currentNode);
@@ -2301,7 +2309,7 @@ public class BTree {
 				for (int i = 0; i < parentNodeStack.size(); i++) {
 					Node stackNode = parentNodeStack.get(i);
 
-					if (stackNode == rightChildNode ) {
+					if (stackNode == rightChildNode) {
 						int stackIdx = parentIndexStack.get(i);
 
 						if (stackIdx == 0) {
@@ -2459,7 +2467,7 @@ public class BTree {
 	public static void runPerformanceTest(String[] args)
 		throws Exception
 	{
-		File dataDir = new File(args[0]);
+		Path dataDir = Paths.get(args[0]);
 		String filenamePrefix = args[1];
 		int valueCount = Integer.parseInt(args[2]);
 		RecordComparator comparator = new DefaultRecordComparator();
@@ -2510,7 +2518,7 @@ public class BTree {
 	public static void runDebugTest(String[] args)
 		throws Exception
 	{
-		File dataDir = new File(args[0]);
+		Path dataDir = Paths.get(args[0]);
 		String filenamePrefix = args[1];
 		BTree btree = new BTree(dataDir, filenamePrefix, 28, 1);
 

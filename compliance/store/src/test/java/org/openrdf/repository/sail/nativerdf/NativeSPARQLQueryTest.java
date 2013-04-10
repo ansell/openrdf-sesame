@@ -16,12 +16,11 @@
  */
 package org.openrdf.repository.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import junit.framework.Test;
 
-import info.aduna.io.FileUtil;
 import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.query.Dataset;
@@ -42,10 +41,10 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 			public NativeSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality)
 			{
-				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
-						laxCardinality, false);
+				return createSPARQLQueryTest(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality,
+						false);
 			}
-			
+
 			public NativeSPARQLQueryTest createSPARQLQueryTest(String testURI, String name, String queryFileURL,
 					String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 			{
@@ -55,7 +54,7 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 		});
 	}
 
-	private File dataDir;
+	private Path dataDir;
 
 	protected NativeSPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
 			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
@@ -67,7 +66,7 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 	protected Repository newRepository()
 		throws IOException
 	{
-		dataDir = new File(Java7FileUtil.createTempDir("nativestore"));
+		dataDir = Java7FileUtil.createTempDir("nativestore");
 		return new DatasetRepository(new SailRepository(new NativeStore(dataDir, "spoc")));
 	}
 
@@ -79,7 +78,7 @@ public class NativeSPARQLQueryTest extends SPARQLQueryTest {
 			super.tearDown();
 		}
 		finally {
-			FileUtil.deleteDir(dataDir);
+			Java7FileUtil.deleteDir(dataDir);
 		}
 	}
 }

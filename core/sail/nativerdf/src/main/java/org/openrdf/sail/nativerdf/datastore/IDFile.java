@@ -18,6 +18,7 @@ package org.openrdf.sail.nativerdf.datastore;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import info.aduna.io.NioFile;
@@ -69,13 +70,13 @@ public class IDFile {
 	 * Constructors *
 	 *--------------*/
 
-	public IDFile(File file)
+	public IDFile(Path file)
 		throws IOException
 	{
 		this(file, false);
 	}
 
-	public IDFile(File file, boolean forceSync)
+	public IDFile(Path file, boolean forceSync)
 		throws IOException
 	{
 		this.nioFile = new NioFile(file);
@@ -118,8 +119,8 @@ public class IDFile {
 	 * Methods *
 	 *---------*/
 
-	public final File getFile() {
-		return nioFile.getFile();
+	public final Path getPath() {
+		return nioFile.getPath();
 	}
 
 	/**

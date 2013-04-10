@@ -18,6 +18,8 @@ package org.openrdf.sail.memory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -119,12 +121,12 @@ public class MemoryStore extends NotifyingSailBase {
 	/**
 	 * The file used for data persistence, null if this is a volatile RDF store.
 	 */
-	private volatile File dataFile;
+	private volatile Path dataFile;
 
 	/**
 	 * The file used for serialising data, null if this is a volatile RDF store.
 	 */
-	private volatile File syncFile;
+	private volatile Path syncFile;
 
 	/**
 	 * The directory lock, null if this is read-only or a volatile RDF store.
@@ -266,16 +268,16 @@ public class MemoryStore extends NotifyingSailBase {
 		currentSnapshot = 1;
 
 		if (persist) {
-			File dataDir = getDataDir();
+			Path dataDir = getDataDir();
 			DirectoryLockManager locker = new DirectoryLockManager(dataDir);
-			dataFile = new File(dataDir, DATA_FILE_NAME);
-			syncFile = new File(dataDir, SYNC_FILE_NAME);
+			dataFile = dataDir.resolve(DATA_FILE_NAME);
+			syncFile = dataDir.resolve(SYNC_FILE_NAME);
 
-			if (dataFile.exists()) {
+			if (Files.exists(dataFile)) {
 				logger.debug("Reading data from {}...", dataFile);
 
 				// Initialize persistent store from file
-				if (!dataFile.canRead()) {
+				if (!Files.isReadable(dataFile)) {
 					logger.error("Data file is not readable: {}", dataFile);
 					throw new SailException("Can't read data file: " + dataFile);
 				}
@@ -286,7 +288,7 @@ public class MemoryStore extends NotifyingSailBase {
 				}
 				// Don't try to read empty files: this will result in an
 				// IOException, and the file doesn't contain any data anyway.
-				if (dataFile.length() == 0L) {
+				if (Files.size(dataFile) == 0L) {
 					logger.warn("Ignoring empty data file: {}", dataFile);
 				}
 				else {

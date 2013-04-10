@@ -18,17 +18,23 @@ package org.openrdf.sail.nativerdf.btree;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Random;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import junit.framework.TestCase;
 
 import info.aduna.io.ByteArrayUtil;
 import info.aduna.io.FileUtil;
+import info.aduna.io.Java7FileUtil;
 
 /**
  * @author Arjohn Kampman
  */
-public class BTreeBenchmark extends TestCase {
+public class BTreeBenchmark {
 
 	private static final int VALUE_COUNT = 100 * 1000;
 
@@ -36,7 +42,7 @@ public class BTreeBenchmark extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	private File dir;
+	private Path dir;
 
 	private BTree btree;
 
@@ -44,28 +50,23 @@ public class BTreeBenchmark extends TestCase {
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
-		super.setUp();
-		dir = FileUtil.createTempDir("btree");
+		dir = Java7FileUtil.createTempDir("btree");
 		btree = new BTree(dir, "test", 4096, 8);
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
-		try {
-			btree.delete();
-			FileUtil.deleteDir(dir);
-		}
-		finally {
-			super.tearDown();
-		}
+		btree.delete();
+		Java7FileUtil.deleteDir(dir);
 	}
 
+	@Test
 	public void testAddAscending()
 		throws Exception
 	{
@@ -79,6 +80,7 @@ public class BTreeBenchmark extends TestCase {
 		printTime(startTime, endTime, "testAddAscending");
 	}
 
+	@Test
 	public void testAddRandom()
 		throws Exception
 	{
@@ -92,6 +94,7 @@ public class BTreeBenchmark extends TestCase {
 		printTime(startTime, endTime, "testAddRandom");
 	}
 
+	@Test
 	public void testUpdate()
 		throws Exception
 	{
@@ -108,6 +111,7 @@ public class BTreeBenchmark extends TestCase {
 		printTime(startTime, endTime, "testUpdate");
 	}
 
+	@Test
 	public void testRemove()
 		throws Exception
 	{
@@ -124,6 +128,7 @@ public class BTreeBenchmark extends TestCase {
 		printTime(startTime, endTime, "testRemove");
 	}
 
+	@Test
 	public void testFullScan()
 		throws Exception
 	{
@@ -146,18 +151,21 @@ public class BTreeBenchmark extends TestCase {
 		printTime(startTime, endTime, "testFullScan");
 	}
 
+	@Test
 	public void testRangeScan4()
 		throws Exception
 	{
 		testRangeScan(4L);
 	}
 
+	@Test
 	public void testRangeScan20()
 		throws Exception
 	{
 		testRangeScan(20L);
 	}
 
+	@Test
 	public void testRangeScan1000()
 		throws Exception
 	{

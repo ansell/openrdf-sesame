@@ -19,6 +19,7 @@ package org.openrdf.sail.nativerdf.datastore;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 
@@ -246,7 +247,7 @@ public class DataStore {
 		}
 
 		System.out.println("Dumping DataStore contents...");
-		File dataDir = new File(args[0]);
+		Path dataDir = Paths.get(args[0]);
 		DataStore dataStore = new DataStore(dataDir, args[1]);
 
 		DataFile.DataIterator iter = dataStore.dataFile.iterator();
