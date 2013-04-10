@@ -101,7 +101,7 @@ public class DirectoryLockManager implements LockManager {
 
 		try {
 			Path directories = Files.createDirectories(lockDir);
-			System.out.println("Lock directory: " + directories);
+			// System.out.println("Lock directory: " + directories);
 			if (directories == null) {
 				return null;
 			}
@@ -109,8 +109,8 @@ public class DirectoryLockManager implements LockManager {
 			Path infoFile = Files.createFile(lockDir.resolve(INFO_FILE_NAME));
 			Path lockedFile = Files.createFile(lockDir.resolve(LOCK_FILE_NAME));
 
-			System.out.println("Info file: " + infoFile);
-			System.out.println("Lock file: " + lockedFile);
+			// System.out.println("Info file: " + infoFile);
+			// System.out.println("Lock file: " + lockedFile);
 			// RandomAccessFile raf = new RandomAccessFile(lockedFile, "rw");
 			AsynchronousFileChannel raf = AsynchronousFileChannel.open(lockedFile, StandardOpenOption.SYNC,
 					StandardOpenOption.WRITE);
@@ -118,7 +118,7 @@ public class DirectoryLockManager implements LockManager {
 				FileLock fileLock = raf.lock().get();
 				lock = createLock(raf, fileLock);
 				sign(infoFile);
-				System.out.println("Lock acquired");
+				// System.out.println("Lock acquired");
 			}
 			catch (IOException | InterruptedException e) {
 				if (lock != null) {
@@ -136,7 +136,7 @@ public class DirectoryLockManager implements LockManager {
 		}
 		catch (IOException e) {
 			logger.error(e.toString(), e);
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 		return lock;

@@ -180,7 +180,8 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 		throws IOException
 	{
 		synchronized (file) {
-			DataOutputStream out = new DataOutputStream(Files.newOutputStream(file, StandardOpenOption.WRITE));
+			DataOutputStream out = new DataOutputStream(Files.newOutputStream(file, StandardOpenOption.WRITE,
+					StandardOpenOption.CREATE));
 
 			try {
 				out.write(MAGIC_NUMBER);

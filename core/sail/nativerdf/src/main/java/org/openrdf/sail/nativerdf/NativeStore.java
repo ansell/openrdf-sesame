@@ -118,12 +118,13 @@ public class NativeStore extends NotifyingSailBase {
 	}
 
 	public NativeStore(File dataDir, String tripleIndexes) {
-		this(dataDir);
+		this(dataDir.toPath());
 		setTripleIndexes(tripleIndexes);
 	}
 
 	public NativeStore(Path dataDir, String tripleIndexes) {
-
+		this(dataDir);
+		setTripleIndexes(tripleIndexes);
 	}
 
 	/*---------*
