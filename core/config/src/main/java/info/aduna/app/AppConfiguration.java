@@ -20,13 +20,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import javax.servlet.ServletContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import info.aduna.app.config.Configuration;
 import info.aduna.app.logging.LogConfiguration;
 import info.aduna.app.net.ProxySettings;
 import info.aduna.app.util.ConfigurationUtil;
+import info.aduna.platform.Platform;
 import info.aduna.platform.PlatformFactory;
 
 /**
@@ -34,8 +38,11 @@ import info.aduna.platform.PlatformFactory;
  */
 public class AppConfiguration implements Configuration {
 
+	@Autowired
+	private ServletContext servletContext;
+
 	private static final Logger logger = LoggerFactory.getLogger(AppConfiguration.class);
-	
+
 	/*-----------*
 	 * Constants *
 	 *-----------*/
@@ -304,7 +311,7 @@ public class AppConfiguration implements Configuration {
 	private void configureDataDir() {
 		if (dataDirName != null) {
 			dataDirName = dataDirName.trim();
-			if (!("".equals(dataDirName))) {
+			if (!(dataDirName.isEmpty())) {
 				final File dataDirCandidate = new File(dataDirName);
 				dataDirCandidate.mkdirs();
 				// change data directory if the previous code was successful
@@ -312,9 +319,31 @@ public class AppConfiguration implements Configuration {
 						: dataDir;
 			}
 		}
+		if (dataDir == null && servletContext != null) {
+			String contextDataDir = (String)servletContext.getAttribute(Platform.APPDATA_BASEDIR_PROPERTY);
+			logger.warn("contextDataDir: {}", contextDataDir);
+			if (contextDataDir != null && !contextDataDir.trim().isEmpty()) {
+				dataDirName = contextDataDir.trim();
+				final File dataDirCandidate = new File(dataDirName);
+				dataDirCandidate.mkdirs();
+				// change data directory if the previous code was successful
+				dataDir = (dataDirCandidate.canRead() && dataDirCandidate.canWrite()) ? dataDirCandidate
+						: dataDir;
+			}
+		}
+		if (servletContext == null) {
+			logger.warn("Could not find servlet context");
+		}
 		if (dataDir == null) {
 			dataDir = PlatformFactory.getPlatform().getApplicationDataDir(applicationId);
-			logger.warn("Data directory not configured, using default data directory: {}", dataDir.getAbsolutePath());
+			logger.warn("Data directory not configured, using default data directory: {}",
+					dataDir.getAbsolutePath());
+			Throwable e = new RuntimeException();
+			logger.error("stack trace: ", e);
+		}
+
+		if (dataDir != null) {
+			logger.warn("Data directory was: {}", dataDir.getAbsolutePath());
 		}
 	}
 

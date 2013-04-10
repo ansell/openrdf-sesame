@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	<bean
+		class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
 
 	<!-- RESOURCES -->
 	<bean id="messageSource"
@@ -21,7 +25,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="major" value="2" />
 		<property name="minor" value="7" />
 		<property name="micro" value="0" />
-		<property name="modifier" value="beta2"/>
+		<property name="modifier" value="beta2" />
 	</bean>
 
 	<bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration"

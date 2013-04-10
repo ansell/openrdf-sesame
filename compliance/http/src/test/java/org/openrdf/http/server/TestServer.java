@@ -21,10 +21,15 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.nio.BlockingChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
+
+//import org.mortbay.jetty.Connector;
+//import org.mortbay.jetty.Server;
+//import org.mortbay.jetty.nio.BlockingChannelConnector;
+//import org.mortbay.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
@@ -60,25 +65,36 @@ public class TestServer {
 
 	private final Server jetty;
 
-	public TestServer() {
+	private WebAppContext webapp;
+
+	private File dataDir;
+
+	public TestServer(File dataDir) {
 		System.clearProperty("DEBUG");
+
+		this.dataDir = dataDir;
 
 		port = getFreePort();
 		serverUrl = "http://" + HOST + ":" + port + OPENRDF_CONTEXT;
 		repositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_REPO_ID);
 		jetty = new Server();
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 
-		Connector conn = new BlockingChannelConnector();
+		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
 		conn.setPort(port);
 		jetty.addConnector(conn);
 
-		WebAppContext webapp = new WebAppContext();
+		webapp = new WebAppContext();
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		System.out.println("setting webapp data dir attribute to: " + dataDir.getAbsolutePath());
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame.war");
-		jetty.addHandler(webapp);
-		
+		jetty.setHandler(webapp);
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+
 	}
 
 	/**
@@ -119,14 +135,16 @@ public class TestServer {
 		return -1;
 	}
 
-	public void start(File dataDir)
+	public void start()
 		throws Exception
 	{
-		//System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		// System.setProperty("info.aduna.platform.appdata.basedir",
+		// dataDir.getAbsolutePath());
 
 		jetty.start();
 		System.out.println("server started at: " + serverUrl);
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 
 		createTestRepositories();
 	}

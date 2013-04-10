@@ -52,10 +52,10 @@ public class ProtocolTest {
 	public void setUp()
 		throws Exception
 	{
-		server = new TestServer();
 		File testFolder = tempDir.newFolder("sesame-http-compliance-datadir");
 		testFolder.mkdirs();
-		server.start(testFolder);
+		server = new TestServer(testFolder);
+		server.start();
 	}
 
 	@After

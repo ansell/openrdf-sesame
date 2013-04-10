@@ -70,6 +70,12 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-http-server-spring</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-http-server</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
@@ -100,15 +106,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jetty</artifactId>
-			<version>6.1.9</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>${jetty.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jsp-2.1</artifactId>
-			<version>6.1.9</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-jsp</artifactId>
+			<version>${jetty.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -126,6 +132,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<version>${jetty.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -156,7 +167,7 @@
 							<goal>integration-test</goal>
 						</goals>
 						<configuration>
-							<parallel>classes</parallel>
+							<parallel>both</parallel>
 							<threadCount>2</threadCount>
 							<forkCount>4</forkCount>
 							<reuseForks>true</reuseForks>
