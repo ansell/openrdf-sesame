@@ -128,6 +128,19 @@ public class SPARQLRepository extends RepositoryBase {
 	protected HTTPClient getHTTPClient() {
 		return httpClient;
 	}
+	
+	/**
+	 * Set the username and password to use for authenticating with the remote
+	 * repository.
+	 * 
+	 * @param username
+	 *        the username. Setting this to null will disable authentication.
+	 * @param password
+	 *        the password. Setting this to null will disable authentication.
+	 */
+	public void setUsernameAndPassword(final String username, final String password) {
+		httpClient.setUsernameAndPassword(username, password);
+	}
 
 	@Override
 	protected void shutDownInternal()
