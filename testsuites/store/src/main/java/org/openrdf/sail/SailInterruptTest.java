@@ -27,6 +27,7 @@ import org.junit.rules.TemporaryFolder;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Literal;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
@@ -65,7 +66,7 @@ public abstract class SailInterruptTest {
 	public void testQueryInterrupt()
 		throws Exception
 	{
-		// System.out.println("Preparing data set for query interruption test");
+		System.out.println("Preparing data set for query interruption test");
 		final Random r = new Random(12345);
 		SailConnection con = store.getConnection();
 		try {
@@ -84,7 +85,7 @@ public abstract class SailInterruptTest {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
-						// System.out.println("query sail...");
+						System.out.println("query sail...");
 						iterateStatements();
 					}
 					catch (Throwable t) {
@@ -100,16 +101,16 @@ public abstract class SailInterruptTest {
 
 		queryThread.join(50);
 
-		// System.out.println("Interrupting query thread...");
+		System.out.println("Interrupting query thread...");
 		queryThread.interrupt();
 
-		// System.out.println("Waiting for query thread to finish...");
+		System.out.println("Waiting for query thread to finish...");
 		queryThread.join();
 
-		// System.out.println("Verifying that the sail can still be queried...");
+		System.out.println("Verifying that the sail can still be queried...");
 		iterateStatements();
 
-		// System.out.println("Done");
+		System.out.println("Done");
 	}
 
 	private void insertTestStatement(SailConnection connection, int seed)
@@ -129,7 +130,8 @@ public abstract class SailInterruptTest {
 			CloseableIteration<?, SailException> iter = con.getStatements(null, null, null, true);
 			try {
 				while (iter.hasNext()) {
-					iter.next();
+					Statement next = (Statement)iter.next();
+					System.out.println("next statement: " + next);
 				}
 			}
 			finally {
