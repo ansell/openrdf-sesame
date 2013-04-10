@@ -41,20 +41,8 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 	protected Repository createRepository()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore");
 		return new SailRepository(new NativeStore(dataDir, "spoc"));
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 	@Test

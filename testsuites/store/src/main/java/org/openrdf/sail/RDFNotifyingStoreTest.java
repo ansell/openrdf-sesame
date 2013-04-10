@@ -18,6 +18,8 @@ package org.openrdf.sail;
 
 import static org.junit.Assert.*;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
 
 import org.openrdf.model.vocabulary.RDF;
@@ -35,9 +37,9 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 	 * Variables *
 	 *-----------*/
 
-	private int removeEventCount;
+	private AtomicInteger removeEventCount;
 
-	private int addEventCount;
+	private AtomicInteger addEventCount;
 
 	/*---------*
 	 * Methods *
@@ -114,10 +116,10 @@ public abstract class RDFNotifyingStoreTest extends RDFStoreTest implements Sail
 	@Override
 	public void sailChanged(SailChangedEvent event) {
 		if (event.statementsAdded()) {
-			addEventCount++;
+			addEventCount.incrementAndGet();
 		}
 		if (event.statementsRemoved()) {
-			removeEventCount++;
+			removeEventCount.incrementAndGet();
 		}
 	}
 }

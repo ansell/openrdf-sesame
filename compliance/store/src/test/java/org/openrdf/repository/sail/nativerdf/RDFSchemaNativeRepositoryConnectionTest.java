@@ -35,19 +35,8 @@ public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepository
 	protected Repository createRepository()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore");
 		return new SailRepository(new ForwardChainingRDFSInferencer(new NativeStore(dataDir, "spoc")));
 	}
 
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
-	}
 }
