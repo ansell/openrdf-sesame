@@ -21,10 +21,15 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.nio.BlockingChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
+
+//import org.mortbay.jetty.Connector;
+//import org.mortbay.jetty.Server;
+//import org.mortbay.jetty.nio.BlockingChannelConnector;
+//import org.mortbay.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
@@ -72,7 +77,7 @@ public class HTTPMemServer {
 
 		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
 		
-		Connector conn = new BlockingChannelConnector();
+		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
 		conn.setPort(port);
 		jetty.addConnector(conn);
@@ -81,7 +86,9 @@ public class HTTPMemServer {
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame.war");
-		jetty.addHandler(webapp);
+		jetty.setHandler(webapp);
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		
 	}
 
 	/**
