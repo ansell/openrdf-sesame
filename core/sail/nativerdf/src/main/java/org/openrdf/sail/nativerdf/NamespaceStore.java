@@ -19,9 +19,6 @@ package org.openrdf.sail.nativerdf;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -180,10 +177,8 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 		throws IOException
 	{
 		synchronized (file) {
-			DataOutputStream out = new DataOutputStream(Files.newOutputStream(file, StandardOpenOption.WRITE,
-					StandardOpenOption.CREATE));
-
-			try {
+			try (DataOutputStream out = new DataOutputStream(Files.newOutputStream(file,
+					StandardOpenOption.WRITE, StandardOpenOption.CREATE));) {
 				out.write(MAGIC_NUMBER);
 				out.writeByte(FILE_FORMAT_VERSION);
 
@@ -192,9 +187,6 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 					out.writeUTF(ns.getPrefix());
 				}
 			}
-			finally {
-				out.close();
-			}
 		}
 	}
 
@@ -202,9 +194,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 		throws IOException
 	{
 		synchronized (file) {
-			DataInputStream in = new DataInputStream(Files.newInputStream(file, StandardOpenOption.READ));
-
-			try {
+			try (DataInputStream in = new DataInputStream(Files.newInputStream(file, StandardOpenOption.READ));) {
 				byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
 				if (!Arrays.equals(magicNumber, MAGIC_NUMBER)) {
 					throw new IOException("File doesn't contain compatible namespace data");
@@ -230,9 +220,6 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 						break;
 					}
 				}
-			}
-			finally {
-				in.close();
 			}
 		}
 	}
