@@ -14,29 +14,35 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
- 
+
 package info.aduna.platform;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class DefaultPlatform extends PlatformBase {
 
+	@Override
 	public String getName() {
 		return "Default";
 	}
 
-	public File getOSApplicationDataDir() {
-		return new File("Aduna");
+	@Override
+	public Path getOSApplicationDataDir() {
+		return Paths.get("Aduna");
 	}
 
+	@Override
 	public boolean dataDirPreserveCase() {
 		return false;
 	}
 
+	@Override
 	public boolean dataDirReplaceWhitespace() {
 		return false;
 	}
 
+	@Override
 	public boolean dataDirReplaceColon() {
 		return false;
 	}

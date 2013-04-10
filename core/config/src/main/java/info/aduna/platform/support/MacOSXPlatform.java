@@ -14,10 +14,11 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
- 
+
 package info.aduna.platform.support;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Platform implementation for Mac OS X platforms.
@@ -25,14 +26,15 @@ import java.io.File;
 public class MacOSXPlatform extends PosixPlatform {
 
 	public static final String APPLICATION_DATA = "Library/Application Support/Aduna";
-	
+
+	@Override
 	public String getName() {
 		return "Mac OS X";
 	}
-	
+
 	@Override
-	public File getOSApplicationDataDir() {
-		return new File(System.getProperty("user.home"), APPLICATION_DATA);
+	public Path getOSApplicationDataDir() {
+		return Paths.get(System.getProperty("user.home"), APPLICATION_DATA);
 	}
 
 	public boolean dataDirPreserveCase() {
@@ -41,5 +43,5 @@ public class MacOSXPlatform extends PosixPlatform {
 
 	public boolean dataDirReplaceWhitespace() {
 		return false;
-	}	
+	}
 }

@@ -16,7 +16,7 @@
  */
 package org.openrdf.repository.sparql;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
 import info.aduna.io.MavenUtil;
@@ -92,6 +92,7 @@ public class SPARQLRepository extends RepositoryBase {
 		return new HTTPClient();
 	}
 
+	@Override
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
@@ -100,10 +101,12 @@ public class SPARQLRepository extends RepositoryBase {
 		return new SPARQLConnection(this);
 	}
 
-	public File getDataDir() {
+	@Override
+	public Path getDataDir() {
 		return null;
 	}
 
+	@Override
 	public ValueFactory getValueFactory() {
 		return ValueFactoryImpl.getInstance();
 	}
@@ -115,13 +118,15 @@ public class SPARQLRepository extends RepositoryBase {
 		// no-op
 	}
 
+	@Override
 	public boolean isWritable()
 		throws RepositoryException
 	{
 		return false;
 	}
 
-	public void setDataDir(File dataDir) {
+	@Override
+	public void setDataDir(Path dataDir) {
 		// no-op
 	}
 

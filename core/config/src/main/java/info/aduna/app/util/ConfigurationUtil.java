@@ -19,6 +19,8 @@ package info.aduna.app.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import info.aduna.app.config.Configuration;
@@ -83,11 +85,11 @@ public class ConfigurationUtil {
 	 *         if the contents of the file could not be read due to an I/O
 	 *         problem
 	 */
-	public static Properties loadConfigurationProperties(File file, Properties defaults)
+	public static Properties loadConfigurationProperties(Path file, Properties defaults)
 		throws IOException
 	{
 		Properties result = null;
-		if (file.exists()) {
+		if (Files.exists(file)) {
 			result = IOUtil.readProperties(file, defaults);
 		}
 		else {
@@ -161,12 +163,14 @@ public class ConfigurationUtil {
 	 * @throws IOException
 	 *         if the settings could not be saved because of an I/O problem
 	 */
-	public static void saveConfigurationContents(String contents, File file)
+	public static void saveConfigurationContents(String contents, Path file)
 		throws IOException
 	{
-		if (file.getParentFile().mkdirs() || file.getParentFile().canWrite()) {
-			IOUtil.writeString(contents, file);
+		if (!Files.exists(file.getParent()) || !Files.isWritable(file.getParent())) {
+			Files.createDirectories(file.getParent());
 		}
+
+		Files.write(file, contents.getBytes());
 	}
 
 	/**
@@ -179,11 +183,13 @@ public class ConfigurationUtil {
 	 * @throws IOException
 	 *         if the settings could not be saved because of an I/O problem
 	 */
-	public static void saveConfigurationProperties(Properties props, File file, boolean includeDefaults)
+	public static void saveConfigurationProperties(Properties props, Path file, boolean includeDefaults)
 		throws IOException
 	{
-		if (file.getParentFile().mkdirs() || file.getParentFile().canWrite()) {
-			IOUtil.writeProperties(props, file, includeDefaults);
+		if (!Files.exists(file.getParent()) || !Files.isWritable(file.getParent())) {
+			Files.createDirectories(file.getParent());
 		}
+
+		IOUtil.writeProperties(props, file, includeDefaults);
 	}
 }

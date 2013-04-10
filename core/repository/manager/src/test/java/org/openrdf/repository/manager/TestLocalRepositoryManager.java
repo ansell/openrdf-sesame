@@ -22,14 +22,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-
-import info.aduna.io.FileUtil;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
@@ -44,9 +44,12 @@ import org.openrdf.sail.memory.config.MemoryStoreConfig;
  */
 public class TestLocalRepositoryManager {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+
 	private LocalRepositoryManager manager;
 
-	private File datadir;
+	private Path datadir;
 
 	private static final String TEST_REPO = "test";
 
@@ -59,7 +62,7 @@ public class TestLocalRepositoryManager {
 	public void setUp()
 		throws Exception
 	{
-		datadir = FileUtil.createTempDir("local-repositorymanager-test");
+		datadir = tempDir.newFolder("local-repositorymanager-test").toPath();
 		manager = new LocalRepositoryManager(datadir);
 		manager.initialize();
 
@@ -81,7 +84,6 @@ public class TestLocalRepositoryManager {
 		throws IOException
 	{
 		manager.shutDown();
-		FileUtil.deleteDir(datadir);
 	}
 
 	/**

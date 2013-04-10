@@ -17,6 +17,7 @@
 package org.openrdf.repository.base;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.DelegatingRepository;
@@ -49,54 +50,65 @@ public class RepositoryWrapper implements DelegatingRepository {
 		setDelegate(delegate);
 	}
 
+	@Override
 	public void setDelegate(Repository delegate) {
 		this.delegate = delegate;
 	}
 
+	@Override
 	public Repository getDelegate() {
 		return delegate;
 	}
 
-	public void setDataDir(File dataDir) {
+	@Override
+	public void setDataDir(Path dataDir) {
 		getDelegate().setDataDir(dataDir);
 	}
 
-	public File getDataDir() {
+	@Override
+	public Path getDataDir() {
 		return getDelegate().getDataDir();
 	}
 
+	@Override
 	public void initialize()
 		throws RepositoryException
 	{
 		getDelegate().initialize();
 	}
 
+	@Override
 	public void shutDown()
 		throws RepositoryException
 	{
 		getDelegate().shutDown();
 	}
 
+	@Override
 	public boolean isWritable()
 		throws RepositoryException
 	{
 		return getDelegate().isWritable();
 	}
 
+	@Override
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
 		return getDelegate().getConnection();
 	}
 
+	@Override
 	public ValueFactory getValueFactory() {
 		return getDelegate().getValueFactory();
 	}
 
+	@Override
 	public String toString() {
 		return getDelegate().toString();
 	}
 
+	@Override
 	public boolean isInitialized() {
 		return getDelegate().isInitialized();
 	}

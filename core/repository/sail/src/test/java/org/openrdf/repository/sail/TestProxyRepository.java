@@ -57,7 +57,7 @@ public class TestProxyRepository {
 		RepositoryResolver resolver = mock(RepositoryResolver.class);
 		when(resolver.getRepository("test")).thenReturn(proxied);
 		repository = new ProxyRepository(resolver, "test");
-		repository.setDataDir(dataDir.getRoot());
+		repository.setDataDir(dataDir.getRoot().toPath());
 	}
 
 	@After
@@ -78,7 +78,7 @@ public class TestProxyRepository {
 	public final void testProperInitialization()
 		throws RepositoryException
 	{
-		assertThat(repository.getDataDir(), is(dataDir.getRoot()));
+		assertThat(repository.getDataDir(), is(dataDir.getRoot().toPath()));
 		assertThat(repository.getProxiedIdentity(), is("test"));
 		assertThat(repository.isInitialized(), is(false));
 		assertThat(repository.isWritable(), is(proxied.isWritable()));

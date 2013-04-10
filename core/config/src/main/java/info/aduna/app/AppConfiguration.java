@@ -18,6 +18,9 @@ package info.aduna.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
@@ -69,7 +72,7 @@ public class AppConfiguration implements Configuration {
 
 	private String dataDirName;
 
-	private File dataDir;
+	private Path dataDir;
 
 	private LogConfiguration loggingConfiguration;
 
@@ -285,7 +288,7 @@ public class AppConfiguration implements Configuration {
 		this.commandLineArgs = (String[])args.clone();
 	}
 
-	public File getDataDir() {
+	public Path getDataDir() {
 		return dataDir;
 	}
 
@@ -312,11 +315,17 @@ public class AppConfiguration implements Configuration {
 		if (dataDirName != null) {
 			dataDirName = dataDirName.trim();
 			if (!(dataDirName.isEmpty())) {
-				final File dataDirCandidate = new File(dataDirName);
-				dataDirCandidate.mkdirs();
-				// change data directory if the previous code was successful
-				dataDir = (dataDirCandidate.canRead() && dataDirCandidate.canWrite()) ? dataDirCandidate
-						: dataDir;
+
+				final Path dataDirCandidate = Paths.get(dataDirName);
+				try {
+					Files.createDirectories(dataDirCandidate);
+					// change data directory if the previous code was successful
+					dataDir = (Files.isReadable(dataDirCandidate) && Files.isWritable(dataDirCandidate)) ? dataDirCandidate
+							: dataDir;
+				}
+				catch (IOException e) {
+					logger.error("Found exception while creating data directory", e);
+				}
 			}
 		}
 		if (dataDir == null && servletContext != null) {
@@ -324,11 +333,16 @@ public class AppConfiguration implements Configuration {
 			logger.warn("contextDataDir: {}", contextDataDir);
 			if (contextDataDir != null && !contextDataDir.trim().isEmpty()) {
 				dataDirName = contextDataDir.trim();
-				final File dataDirCandidate = new File(dataDirName);
-				dataDirCandidate.mkdirs();
-				// change data directory if the previous code was successful
-				dataDir = (dataDirCandidate.canRead() && dataDirCandidate.canWrite()) ? dataDirCandidate
-						: dataDir;
+				final Path dataDirCandidate = Paths.get(dataDirName);
+				try {
+					Files.createDirectories(dataDirCandidate);
+					// change data directory if the previous code was successful
+					dataDir = (Files.isReadable(dataDirCandidate) && Files.isWritable(dataDirCandidate)) ? dataDirCandidate
+							: dataDir;
+				}
+				catch (IOException e) {
+					logger.error("Found exception while creating data directory", e);
+				}
 			}
 		}
 		if (servletContext == null) {
@@ -337,13 +351,13 @@ public class AppConfiguration implements Configuration {
 		if (dataDir == null) {
 			dataDir = PlatformFactory.getPlatform().getApplicationDataDir(applicationId);
 			logger.warn("Data directory not configured, using default data directory: {}",
-					dataDir.getAbsolutePath());
+					dataDir.toAbsolutePath());
 			Throwable e = new RuntimeException();
 			logger.error("stack trace: ", e);
 		}
 
 		if (dataDir != null) {
-			logger.warn("Data directory was: {}", dataDir.getAbsolutePath());
+			logger.warn("Data directory was: {}", dataDir.toAbsolutePath());
 		}
 	}
 

@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,9 +138,9 @@ public class Connect implements Command {
 	}
 
 	protected boolean connectLocal(final String path) {
-		final File dir = new File(path);
+		final Path dir = Paths.get(path);
 		boolean result = false;
-		if (dir.exists() && dir.isDirectory()) {
+		if (Files.exists(dir) && Files.isDirectory(dir)) {
 			result = installNewManager(new LocalRepositoryManager(dir), dir.toString());
 		}
 		else {

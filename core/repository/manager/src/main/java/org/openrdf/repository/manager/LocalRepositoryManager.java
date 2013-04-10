@@ -23,6 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import info.aduna.io.FileUtil;
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -74,7 +78,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * The base dir to resolve any relative paths against.
 	 */
-	private final File baseDir;
+	private final Path baseDir;
 
 	/*--------------*
 	 * Constructors *
@@ -88,7 +92,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 *        The base directory where data for repositories can be stored, among
 	 *        other things.
 	 */
-	public LocalRepositoryManager(File baseDir) {
+	public LocalRepositoryManager(Path baseDir) {
 		super();
 
 		this.baseDir = baseDir;
@@ -102,7 +106,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	protected SystemRepository createSystemRepository()
 		throws RepositoryException
 	{
-		File systemDir = getRepositoryDir(SystemRepository.ID);
+		Path systemDir = getRepositoryDir(SystemRepository.ID);
 		SystemRepository systemRepos = new SystemRepository(systemDir);
 		systemRepos.initialize();
 
@@ -113,7 +117,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	/**
 	 * Gets the base dir against which to resolve relative paths.
 	 */
-	public File getBaseDir() {
+	public Path getBaseDir() {
 		return baseDir;
 	}
 
@@ -126,7 +130,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 	public URL getLocation()
 		throws MalformedURLException
 	{
-		return baseDir.toURI().toURL();
+		return baseDir.toUri().toURL();
 	}
 
 	/**
@@ -134,13 +138,13 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 * 
 	 * @see #getBaseDir
 	 */
-	public File resolvePath(String path) {
-		return new File(getBaseDir(), path);
+	public Path resolvePath(String path) {
+		return getBaseDir().resolve(path);
 	}
 
-	public File getRepositoryDir(String repositoryID) {
-		File repositoriesDir = resolvePath(REPOSITORIES_DIR);
-		return new File(repositoriesDir, repositoryID);
+	public Path getRepositoryDir(String repositoryID) {
+		Path repositoriesDir = resolvePath(REPOSITORIES_DIR);
+		return repositoriesDir.resolve(repositoryID);
 	}
 
 	@Override
@@ -232,7 +236,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 			repInfo.setId(id);
 			repInfo.setDescription(config.getTitle());
 			try {
-				repInfo.setLocation(getRepositoryDir(id).toURI().toURL());
+				repInfo.setLocation(getRepositoryDir(id).toUri().toURL());
 			}
 			catch (MalformedURLException mue) {
 				throw new RepositoryException("Location of repository does not resolve to a valid URL", mue);
@@ -427,11 +431,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 	protected void cleanUpRepository(String repositoryID)
 		throws IOException
 	{
-		File dataDir = getRepositoryDir(repositoryID);
+		Path dataDir = getRepositoryDir(repositoryID);
 
-		if (dataDir.isDirectory()) {
-			logger.debug("Cleaning up data dir {} for repository {}", dataDir.getAbsolutePath(), repositoryID);
-			FileUtil.deleteDir(dataDir);
+		if (Files.isDirectory(dataDir)) {
+			logger.debug("Cleaning up data dir {} for repository {}", dataDir.toAbsolutePath(), repositoryID);
+			Java7FileUtil.deleteDir(dataDir);
 		}
 	}
 }

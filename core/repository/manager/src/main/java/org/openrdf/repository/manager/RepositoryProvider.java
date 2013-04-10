@@ -19,6 +19,8 @@ package org.openrdf.repository.manager;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -119,24 +121,24 @@ public class RepositoryProvider {
 	 * shutdown when the JVM exits cleanly.
 	 */
 	public static LocalRepositoryManager getRepositoryManager(File dir)
-			throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, RepositoryException
 	{
 		String url = dir.toURI().toASCIIString();
-		return (LocalRepositoryManager) getRepositoryManager(url);
+		return (LocalRepositoryManager)getRepositoryManager(url);
 	}
 
 	/**
 	 * Returns the RepositoryManager that will be used for the given repository
 	 * URL. Creates a RepositoryManager, if not already created, that will be
 	 * shutdown when the JVM exits cleanly. The parameter must be a URL of the
-	 * form http://host:port/path/repositories/id or file:///path/repositories/id.
+	 * form http://host:port/path/repositories/id or
+	 * file:///path/repositories/id.
 	 */
 	public static RepositoryManager getRepositoryManagerOfRepository(String url)
-			throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, RepositoryException
 	{
 		if (!url.contains(REPOSITORIES)) {
-			throw new IllegalArgumentException("URL is not repository URL: "
-					+ url);
+			throw new IllegalArgumentException("URL is not repository URL: " + url);
 		}
 		int idx = url.lastIndexOf(REPOSITORIES);
 		String server = url.substring(0, idx);
@@ -150,15 +152,13 @@ public class RepositoryProvider {
 	}
 
 	/**
-	 * Returns the Repository ID that will be passed to a RepositoryManager for the given repository
-	 * URL. The parameter must be a URL of the
-	 * form http://host:port/path/repositories/id or file:///path/repositories/id.
+	 * Returns the Repository ID that will be passed to a RepositoryManager for
+	 * the given repository URL. The parameter must be a URL of the form
+	 * http://host:port/path/repositories/id or file:///path/repositories/id.
 	 */
-	public static String getRepositoryIdOfRepository(String url)
-	{
+	public static String getRepositoryIdOfRepository(String url) {
 		if (!url.contains(REPOSITORIES)) {
-			throw new IllegalArgumentException("URL is not repository URL: "
-					+ url);
+			throw new IllegalArgumentException("URL is not repository URL: " + url);
 		}
 		int idx = url.lastIndexOf(REPOSITORIES);
 		String id = url.substring(idx + REPOSITORIES.length());
@@ -172,7 +172,9 @@ public class RepositoryProvider {
 	 * Created a Repository, if not already created, that will be shutdown when
 	 * the JVM exits cleanly. The parameter must be a URL of the form
 	 * http://host:port/path/repositories/id or file:///path/repositories/id.
-	 * @return Repository from a RepositoryManager or null if repository is not defined
+	 * 
+	 * @return Repository from a RepositoryManager or null if repository is not
+	 *         defined
 	 */
 	public static Repository getRepository(String url)
 		throws RepositoryException, RepositoryConfigException
@@ -193,14 +195,16 @@ public class RepositoryProvider {
 		}
 	}
 
-	private static File asLocalFile(String url)
+	private static Path asLocalFile(String url)
 		throws RepositoryConfigException
 	{
 		URI uri = new File(".").toURI().resolve(url);
-		return new File(uri);
+		return Paths.get(uri);
 	}
 
-	private static String normalize(String url) throws IllegalArgumentException {
+	private static String normalize(String url)
+		throws IllegalArgumentException
+	{
 		try {
 			URI norm = URI.create(url);
 			if (!norm.isAbsolute()) {
@@ -208,8 +212,7 @@ public class RepositoryProvider {
 			}
 			norm = norm.normalize();
 			if (norm.isOpaque())
-				throw new IllegalArgumentException(
-						"Repository Manager URL must not be opaque: " + url);
+				throw new IllegalArgumentException("Repository Manager URL must not be opaque: " + url);
 			String sch = norm.getScheme();
 			String host = norm.getAuthority();
 			String path = norm.getPath();
@@ -233,7 +236,8 @@ public class RepositoryProvider {
 			}
 			sb.append(uri);
 			return sb.toString();
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}

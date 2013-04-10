@@ -17,6 +17,7 @@
 package org.openrdf.sail.federation;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,20 +50,24 @@ public class Federation implements Sail, Executor {
 	private PrefixHashSet localPropertySpace; // NOPMD
 	private boolean distinct;
 	private boolean readOnly;
-	private File dataDir;
+	private Path dataDir;
 
-	public File getDataDir() {
+    @Override
+	public Path getDataDir() {
 		return dataDir;
 	}
 
-	public void setDataDir(File dataDir) {
+    @Override
+	public void setDataDir(Path dataDir) {
 		this.dataDir = dataDir;
 	}
 
+    @Override
 	public ValueFactory getValueFactory() {
 		return ValueFactoryImpl.getInstance();
 	}
 
+    @Override
 	public boolean isWritable() throws SailException {
 		return !isReadOnly();
 	}
@@ -102,6 +107,7 @@ public class Federation implements Sail, Executor {
 		this.readOnly = readOnly;
 	}
 
+    @Override
 	public void initialize() throws SailException {
 		for (Repository member : members) {
 			try {
@@ -112,6 +118,7 @@ public class Federation implements Sail, Executor {
 		}
 	}
 
+    @Override
 	public void shutDown() throws SailException {
 		for (Repository member : members) {
 			try {
@@ -126,10 +133,12 @@ public class Federation implements Sail, Executor {
 	/**
 	 * Required by {@link java.util.concurrent.Executor Executor} interface.
 	 */
+    @Override
 	public void execute(Runnable command) {
 		executor.execute(command);
 	}
 
+    @Override
 	public SailConnection getConnection() throws SailException {
 		List<RepositoryConnection> connections = new ArrayList<RepositoryConnection>(
 				members.size());

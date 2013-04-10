@@ -16,7 +16,7 @@
  */
 package org.openrdf.repository.sail;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.ValueFactory;
@@ -50,7 +50,7 @@ import org.openrdf.repository.sail.config.RepositoryResolverClient;
  */
 public class ProxyRepository extends RepositoryBase implements RepositoryResolverClient {
 
-	private File dataDir;
+	private Path dataDir;
 
 	private Repository proxiedRepository;
 
@@ -110,12 +110,12 @@ public class ProxyRepository extends RepositoryBase implements RepositoryResolve
 	}
 
 	@Override
-	public void setDataDir(File dataDir) {
+	public void setDataDir(Path dataDir) {
 		this.dataDir = dataDir;
 	}
 
 	@Override
-	public File getDataDir() {
+	public Path getDataDir() {
 		return this.dataDir;
 	}
 

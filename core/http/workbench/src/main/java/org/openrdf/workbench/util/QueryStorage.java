@@ -129,7 +129,7 @@ public class QueryStorage {
 	protected QueryStorage(final AppConfiguration appConfig)
 		throws RepositoryException, IOException
 	{
-		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
+		queries = new SailRepository(new NativeStore(appConfig.getDataDir().resolve("queries")));
 		queries.initialize();
 	}
 

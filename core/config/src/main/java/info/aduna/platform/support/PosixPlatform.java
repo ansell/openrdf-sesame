@@ -14,12 +14,13 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
- 
+
 package info.aduna.platform.support;
 
 import info.aduna.platform.PlatformBase;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Platform implementation for *nix platforms.
@@ -30,8 +31,9 @@ public class PosixPlatform extends PlatformBase {
 		return "POSIX-compatible";
 	}
 
-	public File getOSApplicationDataDir() {
-		return new File(System.getProperty("user.home"), ".aduna");
+	@Override
+	public Path getOSApplicationDataDir() {
+		return Paths.get(System.getProperty("user.home"), ".aduna");
 	}
 
 	public boolean dataDirPreserveCase() {

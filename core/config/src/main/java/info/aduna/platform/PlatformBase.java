@@ -18,6 +18,8 @@
 package info.aduna.platform;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,21 +37,23 @@ public abstract class PlatformBase implements Platform {
 
 	protected String colonReplacement = "";
 
-	public File getUserHome() {
-		File result = null;
+	@Override
+	public Path getUserHome() {
+		Path result = null;
 
 		String userHome = System.getProperty("user.home");
-		result = new File(userHome);
+		result = Paths.get(userHome);
 
 		return result;
 	}
 
-	public final File getApplicationDataDir() {
-		File result;
+	@Override
+	public final Path getApplicationDataDir() {
+		Path result;
 		String sysProp;
 
 		if ((sysProp = System.getProperty(APPDATA_BASEDIR_PROPERTY)) != null) {
-			result = new File(sysProp);
+			result = Paths.get(sysProp);
 		}
 		else if ((sysProp = System.getProperty(OLD_DATADIR_PROPERTY)) != null) {
 			logger.info(
@@ -57,7 +61,7 @@ public abstract class PlatformBase implements Platform {
 							+ "Support for the old property may be removed in a future version of this application.",
 					OLD_DATADIR_PROPERTY, APPDATA_BASEDIR_PROPERTY);
 
-			result = new File(sysProp);
+			result = Paths.get(sysProp);
 		}
 		else {
 			result = getOSApplicationDataDir();
@@ -66,14 +70,17 @@ public abstract class PlatformBase implements Platform {
 		return result;
 	}
 
-	public final File getApplicationDataDir(String applicationName) {
-		return new File(getApplicationDataDir(), getRelativeApplicationDataDir(applicationName));
+	@Override
+	public final Path getApplicationDataDir(String applicationName) {
+		return getApplicationDataDir().resolve(getRelativeApplicationDataDir(applicationName));
 	}
 
-	public final File getOSApplicationDataDir(String applicationName) {
-		return new File(getOSApplicationDataDir(), getRelativeApplicationDataDir(applicationName));
+	@Override
+	public final Path getOSApplicationDataDir(String applicationName) {
+		return getOSApplicationDataDir().resolve(getRelativeApplicationDataDir(applicationName));
 	}
 
+	@Override
 	public String getRelativeApplicationDataDir(String applicationName) {
 		return getRelativeApplicationDataDir(applicationName, dataDirPreserveCase(),
 				dataDirReplaceWhitespace(), dataDirReplaceColon());

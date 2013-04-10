@@ -16,7 +16,7 @@
  */
 package org.openrdf.console;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -28,7 +28,7 @@ public interface ConsoleState {
 
 	String getApplicationName();
 
-	File getDataDirectory();
+	Path getDataDirectory();
 
 	String getManagerID();
 

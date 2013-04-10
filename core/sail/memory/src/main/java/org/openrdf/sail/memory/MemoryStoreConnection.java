@@ -346,9 +346,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		if (!store.isWritable()) {
 			logger.error("Unable to start transaction : data file is locked or read-only: {}",
-					store.getDataDir().getAbsolutePath());
+					store.getDataDir().toAbsolutePath().toString());
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only: "
-					+ store.getDataDir().getAbsolutePath());
+					+ store.getDataDir().toAbsolutePath().toString());
 		}
 
 		txnLockAcquired = false;

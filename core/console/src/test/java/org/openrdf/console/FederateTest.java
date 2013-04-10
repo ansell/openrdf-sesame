@@ -80,13 +80,13 @@ public class FederateTest extends AbstractCommandTest {
 	private Federate federate;
 
 	@Rule
-	public final TemporaryFolder LOCATION = new TemporaryFolder();
+	public final TemporaryFolder tempDir = new TemporaryFolder();
 
 	@Before
 	public void prepareManager()
 		throws UnsupportedEncodingException, IOException, OpenRDFException
 	{
-		manager = new LocalRepositoryManager(LOCATION.getRoot());
+		manager = new LocalRepositoryManager(tempDir.newFolder("sesame-console-federate-test").toPath());
 		manager.initialize();
 		addRepositories(MEMORY_MEMBER_ID1, MEMORY_MEMBER_ID2, HTTP_MEMBER_ID, HTTP2_MEMBER_ID,
 				SPARQL_MEMBER_ID, SPARQL2_MEMBER_ID);
@@ -95,7 +95,6 @@ public class FederateTest extends AbstractCommandTest {
 		when(streams.readln("Federation Description (optional):")).thenReturn(FED_DESCRIPTION);
 		federate = new Federate(streams, state);
 	}
-
 
 	@After
 	public void tearDown()

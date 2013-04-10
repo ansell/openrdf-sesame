@@ -17,6 +17,7 @@
 package org.openrdf.repository.event.base;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -68,8 +69,8 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	 *---------*/
 
 	/**
-	 * Registers a <tt>RepositoryInterceptor</tt> that will receive
-	 * notifications of operations that are performed on this repository.
+	 * Registers a <tt>RepositoryInterceptor</tt> that will receive notifications
+	 * of operations that are performed on this repository.
 	 */
 	public void addRepositoryInterceptor(RepositoryInterceptor interceptor) {
 		interceptors.add(interceptor);
@@ -77,8 +78,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	}
 
 	/**
-	 * Removes a registered <tt>RepositoryInterceptor</tt> from this
-	 * repository.
+	 * Removes a registered <tt>RepositoryInterceptor</tt> from this repository.
 	 */
 	public void removeRepositoryInterceptor(RepositoryInterceptor interceptor) {
 		interceptors.remove(interceptor);
@@ -149,7 +149,7 @@ public class InterceptingRepositoryWrapper extends RepositoryWrapper implements 
 	}
 
 	@Override
-	public void setDataDir(File dataDir) {
+	public void setDataDir(Path dataDir) {
 		boolean denied = false;
 		if (activated) {
 			for (RepositoryInterceptor interceptor : interceptors) {

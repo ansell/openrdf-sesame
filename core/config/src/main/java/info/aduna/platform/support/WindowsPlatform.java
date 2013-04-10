@@ -18,6 +18,9 @@
 package info.aduna.platform.support;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import info.aduna.platform.PlatformBase;
 import info.aduna.platform.ProcessLauncher;
@@ -42,6 +45,7 @@ public class WindowsPlatform extends PlatformBase {
 	/**
 	 * Returns the name of this windows platform.
 	 */
+	@Override
 	public String getName() {
 		if (isWin9x()) {
 			return "Windows 9x";
@@ -66,22 +70,23 @@ public class WindowsPlatform extends PlatformBase {
 		}
 	}
 
-	public File getUserHome() {
-		File result = super.getUserHome();
+	@Override
+	public Path getUserHome() {
+		Path result = super.getUserHome();
 
 		String homeDrive = System.getenv("HOMEDRIVE");
 		String homePath = System.getenv("HOMEPATH");
 		if (homeDrive != null && homePath != null) {
-			File homeDir = new File(homeDrive + homePath);
-			if (homeDir.isDirectory() && homeDir.canWrite()) {
+			Path homeDir = Paths.get(homeDrive, homePath);
+			if (Files.isDirectory(homeDir) && Files.isWritable(homeDir)) {
 				result = homeDir;
 			}
 		}
 		else {
 			String userProfile = System.getenv("USERPROFILE");
 			if (userProfile != null) {
-				File userProfileDir = new File(userProfile);
-				if (userProfileDir.isDirectory() && userProfileDir.canWrite()) {
+				Path userProfileDir = Paths.get(userProfile);
+				if (Files.isDirectory(userProfileDir) && Files.isWritable(userProfileDir)) {
 					result = userProfileDir;
 				}
 			}
@@ -94,19 +99,20 @@ public class WindowsPlatform extends PlatformBase {
 	 * Returns an application data directory in the "Application Data" userdir of
 	 * Windows.
 	 */
-	public File getOSApplicationDataDir() {
-		File result = new File(getUserHome(), APPLICATION_DATA);
+	@Override
+	public Path getOSApplicationDataDir() {
+		Path result = getUserHome().resolve(APPLICATION_DATA);
 
 		// check for the APPDATA environment variable
 		String appData = System.getenv("APPDATA");
 		if (appData != null) {
-			File appDataDir = new File(appData);
-			if (appDataDir.isDirectory() && appDataDir.canWrite()) {
+			Path appDataDir = Paths.get(appData);
+			if (Files.isDirectory(appDataDir) && Files.isWritable(appDataDir)) {
 				result = appDataDir;
 			}
 		}
 
-		return new File(result, ADUNA_APPLICATION_DATA);
+		return result.resolve(ADUNA_APPLICATION_DATA);
 	}
 
 	/**

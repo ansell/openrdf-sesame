@@ -17,6 +17,7 @@
 package org.openrdf.repository.event.base;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -82,8 +83,8 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	/**
-	 * Registers a <tt>RepositoryListener</tt> that will receive notifications
-	 * of operations that are performed on this repository.
+	 * Registers a <tt>RepositoryListener</tt> that will receive notifications of
+	 * operations that are performed on this repository.
 	 */
 	public void addRepositoryListener(RepositoryListener listener) {
 		listeners.add(listener);
@@ -126,8 +127,8 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 				listener.getConnection(getDelegate(), con);
 			}
 		}
-		NotifyingRepositoryConnection ncon = new NotifyingRepositoryConnectionWrapper(this,
-				con, getDefaultReportDeltas());
+		NotifyingRepositoryConnection ncon = new NotifyingRepositoryConnectionWrapper(this, con,
+				getDefaultReportDeltas());
 		for (RepositoryConnectionListener l : conListeners) {
 			ncon.addRepositoryConnectionListener(l);
 		}
@@ -149,8 +150,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 	}
 
 	@Override
-	public void setDataDir(File dataDir)
-	{
+	public void setDataDir(Path dataDir) {
 		super.setDataDir(dataDir);
 
 		if (activated) {

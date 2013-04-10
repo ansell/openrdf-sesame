@@ -14,10 +14,11 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
- 
+
 package info.aduna.platform;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * The Platform interface defines methods that are expected to differ slightly
@@ -27,10 +28,10 @@ import java.io.File;
 public interface Platform {
 
 	public static final String APPDATA_BASEDIR_PROPERTY = "info.aduna.platform.appdata.basedir";
-	
+
 	@Deprecated
 	public static final String OLD_DATADIR_PROPERTY = "aduna.platform.applicationdata.dir";
-	
+
 	/**
 	 * Get a descriptive name for this platform.
 	 */
@@ -39,21 +40,21 @@ public interface Platform {
 	/**
 	 * Returns the operating system dependend application data dir.
 	 */
-	public File getOSApplicationDataDir();
+	public Path getOSApplicationDataDir();
 
 	/**
 	 * Returns the operating system dependend application data dir. This will be
 	 * a sub-directory of the directory returned by the no-argument version of
 	 * this method.
 	 */
-	public File getOSApplicationDataDir(String applicationName);
+	public Path getOSApplicationDataDir(String applicationName);
 
 	/**
 	 * Returns the directory for the current user.
 	 * 
 	 * @return the current user home directory
 	 */
-	public File getUserHome();
+	public Path getUserHome();
 
 	/**
 	 * Returns the directory in which Aduna applications can store their
@@ -62,7 +63,7 @@ public interface Platform {
 	 * 
 	 * @return the Aduna-specific application data directory
 	 */
-	public File getApplicationDataDir();
+	public Path getApplicationDataDir();
 
 	/**
 	 * Returns the directory in which a specific application can store all its
@@ -72,21 +73,24 @@ public interface Platform {
 	 * 
 	 * @see #getApplicationDataDir()
 	 * @param applicationName
-	 *            the name of the application for which to determine the
-	 *            directory
+	 *        the name of the application for which to determine the directory
 	 * @return an application-specific data directory
 	 */
-	public File getApplicationDataDir(String applicationName);
-	
+	public Path getApplicationDataDir(String applicationName);
+
 	/**
-	 * Get the directory relative to getApplicationDataDir() for the specified application.
-	 * @param applicationName the name of the application
-	 * @return the directory relative to getApplicationDataDir() for the specified application
+	 * Get the directory relative to getApplicationDataDir() for the specified
+	 * application.
+	 * 
+	 * @param applicationName
+	 *        the name of the application
+	 * @return the directory relative to getApplicationDataDir() for the
+	 *         specified application
 	 */
 	public String getRelativeApplicationDataDir(String applicationName);
-	
+
 	public boolean dataDirPreserveCase();
-	
+
 	public boolean dataDirReplaceWhitespace();
 
 	public boolean dataDirReplaceColon();

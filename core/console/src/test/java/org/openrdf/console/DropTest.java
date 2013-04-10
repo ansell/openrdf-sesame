@@ -53,13 +53,13 @@ public class DropTest extends AbstractCommandTest {
 	private Drop drop;
 
 	@Rule
-	public final TemporaryFolder LOCATION = new TemporaryFolder();
+	public final TemporaryFolder tempDir = new TemporaryFolder();
 
 	@Before
 	public void prepareManager()
 		throws UnsupportedEncodingException, IOException, OpenRDFException
 	{
-		manager = new LocalRepositoryManager(LOCATION.getRoot());
+		manager = new LocalRepositoryManager(tempDir.newFolder("sesame-console-drop-test").toPath());
 		manager.initialize();
 		addRepositories(MEMORY_MEMBER_ID1);
 		manager.addRepositoryConfig(new RepositoryConfig(PROXY_ID, new ProxyRepositoryConfig(MEMORY_MEMBER_ID1)));
@@ -68,7 +68,9 @@ public class DropTest extends AbstractCommandTest {
 		drop = new Drop(streams, state, new Close(streams, state), new LockRemover(streams));
 	}
 
-	private void setUserDropConfirm(boolean confirm) throws IOException {
+	private void setUserDropConfirm(boolean confirm)
+		throws IOException
+	{
 		when(streams.askProceed(startsWith("WARNING: you are about to drop repository '"), anyBoolean())).thenReturn(
 				confirm);
 	}

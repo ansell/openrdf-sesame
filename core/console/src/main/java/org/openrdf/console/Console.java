@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -316,66 +317,82 @@ public class Console implements ConsoleState, ConsoleParameters {
 		return tokens.toArray(new String[tokens.size()]);
 	}
 
+	@Override
 	public String getApplicationName() {
 		return this.appConfig.getFullName();
 	}
 
-	public File getDataDirectory() {
+	@Override
+	public Path getDataDirectory() {
 		return this.appConfig.getDataDir();
 	}
 
+	@Override
 	public String getManagerID() {
 		return this.managerID;
 	}
 
+	@Override
 	public String getRepositoryID() {
 		return this.repositoryID;
 	}
 
+	@Override
 	public RepositoryManager getManager() {
 		return this.manager;
 	}
 
+	@Override
 	public void setManager(RepositoryManager manager) {
 		this.manager = manager;
 	}
 
+	@Override
 	public void setManagerID(String managerID) {
 		this.managerID = managerID;
 	}
 
+	@Override
 	public Repository getRepository() {
 		return this.repository;
 	}
 
+	@Override
 	public void setRepositoryID(String repositoryID) {
 		this.repositoryID = repositoryID;
 	}
 
+	@Override
 	public void setRepository(Repository repository) {
 		this.repository = repository;
 	}
 
+	@Override
 	public int getWidth() {
 		return this.consoleWidth;
 	}
 
+	@Override
 	public void setWidth(int width) {
 		this.consoleWidth = width;
 	}
 
+	@Override
 	public boolean isShowPrefix() {
 		return this.showPrefix;
 	}
 
+	@Override
 	public void setShowPrefix(boolean value) {
 		this.showPrefix = value;
 	}
 
+	@Override
 	public boolean isQueryPrefix() {
 		return this.queryPrefix;
 	}
 
+	@Override
 	public void setQueryPrefix(boolean value) {
 		this.queryPrefix = value;
 	}

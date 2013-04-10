@@ -197,7 +197,20 @@ public class MemoryStore extends NotifyingSailBase {
 	 * @param dataDir
 	 *        the data directory to be used for persistence.
 	 */
+	@Deprecated
 	public MemoryStore(File dataDir) {
+		this(dataDir.toPath());
+	}
+
+	/**
+	 * Creates a new persistent MemoryStore. If the specified data directory
+	 * contains an existing store, its contents will be restored upon
+	 * initialization.
+	 * 
+	 * @param dataDir
+	 *        the data directory to be used for persistence.
+	 */
+	public MemoryStore(Path dataDir) {
 		setDataDir(dataDir);
 		setPersist(true);
 	}
@@ -282,24 +295,36 @@ public class MemoryStore extends NotifyingSailBase {
 					throw new SailException("Can't read data file: " + dataFile);
 				}
 				// try to create a lock for later writing
-				dirLock = locker.tryLock();
+				try {
+					dirLock = locker.tryLock();
+				}
+				catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				if (dirLock == null) {
 					logger.warn("Failed to lock directory: {}", dataDir);
 				}
 				// Don't try to read empty files: this will result in an
 				// IOException, and the file doesn't contain any data anyway.
-				if (Files.size(dataFile) == 0L) {
-					logger.warn("Ignoring empty data file: {}", dataFile);
+				try {
+					if (Files.size(dataFile) == 0L) {
+						logger.warn("Ignoring empty data file: {}", dataFile);
+					}
+					else {
+						try {
+							new FileIO(this).read(dataFile);
+							logger.debug("Data file read successfully");
+						}
+						catch (IOException e) {
+							logger.error("Failed to read data file", e);
+							throw new SailException(e);
+						}
+					}
 				}
-				else {
-					try {
-						new FileIO(this).read(dataFile);
-						logger.debug("Data file read successfully");
-					}
-					catch (IOException e) {
-						logger.error("Failed to read data file", e);
-						throw new SailException(e);
-					}
+				catch (IOException e) {
+					logger.error("Found exception while checking file size", e);
+					throw new SailException(e);
 				}
 			}
 			else {

@@ -32,6 +32,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -170,7 +172,6 @@ public class IOUtil {
 	 * @param file
 	 *        The file to read.
 	 * @return A byte array containing all bytes from the specified file.
-	 * 
 	 * @throws IOException
 	 *         If an I/O error occurred while reading from the file.
 	 * @throws IllegalArgumentException
@@ -280,7 +281,7 @@ public class IOUtil {
 	 * @throws IOException
 	 *         when the file could not be read properly
 	 */
-	public static Properties readProperties(File propsFile)
+	public static Properties readProperties(Path propsFile)
 		throws IOException
 	{
 		return readProperties(propsFile, null);
@@ -297,10 +298,10 @@ public class IOUtil {
 	 * @throws IOException
 	 *         when the file could not be read properly
 	 */
-	public static Properties readProperties(File propsFile, Properties defaults)
+	public static Properties readProperties(Path propsFile, Properties defaults)
 		throws IOException
 	{
-		return readProperties(new FileInputStream(propsFile), defaults);
+		return readProperties(Files.newInputStream(propsFile), defaults);
 	}
 
 	/**
@@ -324,7 +325,8 @@ public class IOUtil {
 	 * 
 	 * @param in
 	 *        the stream to read from. The stream will be closed by this method.
-	 * @param defaults the default properties
+	 * @param defaults
+	 *        the default properties
 	 * @return Properties loaded from the specified stream. The stream will be
 	 *         closed by this method.
 	 * @throws IOException
@@ -353,10 +355,10 @@ public class IOUtil {
 	 * @throws IOException
 	 *         when the properties could not be written to the file properly
 	 */
-	public static void writeProperties(Properties props, File file, boolean includeDefaults)
+	public static void writeProperties(Properties props, Path file, boolean includeDefaults)
 		throws IOException
 	{
-		writeProperties(props, new FileOutputStream(file), includeDefaults);
+		writeProperties(props, Files.newOutputStream(file), includeDefaults);
 	}
 
 	/**

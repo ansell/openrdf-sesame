@@ -104,8 +104,9 @@ public class PlatformFactory {
 						platform = new PosixPlatform();
 					}
 				}
-				else if (osName.contains("mac os x") || osName.contains("macos") || osName.contains("darwin") ||
-						System.getProperty("mrj.version") != null) {
+				else if (osName.contains("mac os x") || osName.contains("macos") || osName.contains("darwin")
+						|| System.getProperty("mrj.version") != null)
+				{
 					logger.debug("Detected Mac OS X platform");
 					platform = new MacOSXPlatform();
 				}
@@ -188,6 +189,6 @@ public class PlatformFactory {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(getPlatform().getApplicationDataDir("My Application: Test").getAbsolutePath());
+		System.out.println(getPlatform().getApplicationDataDir("My Application: Test").toAbsolutePath());
 	}
 }

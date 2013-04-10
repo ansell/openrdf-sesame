@@ -22,6 +22,8 @@ import info.aduna.app.util.ConfigurationUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Properties;
@@ -42,44 +44,50 @@ public abstract class LogConfigurationBase implements LogConfiguration {
 
 	private static final String PACKAGES_JUL_KEY = "packages.jul";
 
-	private File baseDir;
-	
-	private File confDir;
+	private Path baseDir;
 
-	private File loggingDir;
+	private Path confDir;
+
+	private Path loggingDir;
 
 	private boolean debugLoggingEnabled;
 
 	private Set<String> packages;
-	
+
 	private AppConfiguration config;
 
 	protected LogConfigurationBase()
 		throws IOException
-	{		
+	{
 		debugLoggingEnabled = false;
 		packages = new LinkedHashSet<String>();
 		initBase();
 	}
-	
-	public void setBaseDir(File baseDir) throws IOException {
+
+	public void setBaseDir(Path baseDir)
+		throws IOException
+	{
 		this.baseDir = baseDir;
-		confDir = new File(baseDir, DIR);
-		loggingDir = new File(baseDir, LOGGING_DIR);
-		if (!loggingDir.mkdirs() && !loggingDir.canWrite()) {
-			throw new IOException("Unable to create logging directory " + loggingDir.getAbsolutePath());
+		confDir = baseDir.resolve(DIR);
+		loggingDir = baseDir.resolve(LOGGING_DIR);
+		Files.createDirectories(loggingDir);
+		if (!Files.exists(loggingDir) || !Files.isWritable(loggingDir)) {
+			throw new IOException("Unable to create logging directory " + loggingDir.toAbsolutePath());
 		}
 	}
-	
-	public File getBaseDir() {
+
+	@Override
+	public Path getBaseDir() {
 		return this.baseDir;
 	}
 
-	public File getConfDir() {
+	@Override
+	public Path getConfDir() {
 		return confDir;
 	}
 
-	public File getLoggingDir() {
+	@Override
+	public Path getLoggingDir() {
 		return loggingDir;
 	}
 
@@ -125,7 +133,7 @@ public abstract class LogConfigurationBase implements LogConfiguration {
 	protected Set<String> getPackages() {
 		return Collections.unmodifiableSet(packages);
 	}
-	
+
 	public AppConfiguration getAppConfiguration() {
 		return this.config;
 	}

@@ -16,8 +16,8 @@
  */
 package org.openrdf.repository.http;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.openrdf.http.client.HTTPClient;
 import org.openrdf.http.client.SesameHTTPClient;
@@ -56,7 +56,7 @@ public class HTTPRepository extends RepositoryBase {
 	 */
 	private final HTTPClient httpClient;
 
-	private File dataDir;
+	private Path dataDir;
 
 	/*--------------*
 	 * Constructors *
@@ -82,24 +82,29 @@ public class HTTPRepository extends RepositoryBase {
 	 * public methods *
 	 * ---------------*/
 
-	public void setDataDir(final File dataDir) {
+	@Override
+	public void setDataDir(final Path dataDir) {
 		this.dataDir = dataDir;
 	}
 
-	public File getDataDir() {
+	@Override
+	public Path getDataDir() {
 		return dataDir;
 	}
 
+	@Override
 	public ValueFactory getValueFactory() {
 		return httpClient.getValueFactory();
 	}
 
+	@Override
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
 		return new HTTPRepositoryConnection(this);
 	}
 
+	@Override
 	public boolean isWritable()
 		throws RepositoryException
 	{
@@ -218,6 +223,7 @@ public class HTTPRepository extends RepositoryBase {
 		// empty implementation of abstract superclass method
 	}
 
+	@Override
 	protected void shutDownInternal()
 		throws RepositoryException
 	{

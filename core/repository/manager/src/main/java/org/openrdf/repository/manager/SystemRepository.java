@@ -17,6 +17,7 @@
 package org.openrdf.repository.manager;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class SystemRepository extends NotifyingRepositoryWrapper {
 	 * Constructors *
 	 *--------------*/
 
-	public SystemRepository(File systemDir)
+	public SystemRepository(Path systemDir)
 		throws RepositoryException
 	{
 		super();

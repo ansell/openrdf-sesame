@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +90,8 @@ public class Create implements Command {
 		try {
 			// FIXME: remove assumption of .ttl extension
 			final String templateFileName = templateName + ".ttl";
-			final File templatesDir = new File(state.getDataDirectory(), TEMPLATES_DIR);
-			final File templateFile = new File(templatesDir, templateFileName);
+			final Path templatesDir = state.getDataDirectory().resolve(TEMPLATES_DIR);
+			final Path templateFile = templatesDir.resolve(templateFileName);
 			InputStream templateStream = createTemplateStream(templateName, templateFileName, templatesDir,
 					templateFile);
 			if (templateStream != null) {
@@ -188,13 +191,13 @@ public class Create implements Command {
 
 	@SuppressWarnings("resource")
 	private InputStream createTemplateStream(final String templateName, final String templateFileName,
-			final File templatesDir, final File templateFile)
-		throws FileNotFoundException
+			final Path templatesDir, final Path templateFile)
+		throws IOException
 	{
 		InputStream templateStream = null;
-		if (templateFile.exists()) {
-			if (templateFile.canRead()) {
-				templateStream = new FileInputStream(templateFile);
+		if (Files.exists(templateFile)) {
+			if (Files.isReadable(templateFile)) {
+				templateStream = Files.newInputStream(templateFile, StandardOpenOption.READ);
 			}
 			else {
 				consoleIO.writeError("Not allowed to read template file: " + templateFile);

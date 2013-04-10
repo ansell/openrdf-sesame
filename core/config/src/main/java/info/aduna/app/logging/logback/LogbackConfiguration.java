@@ -18,6 +18,8 @@ package info.aduna.app.logging.logback;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -40,7 +42,7 @@ public class LogbackConfiguration extends LogConfigurationBase {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private File configFile;
+	private Path configFile;
 
 	private LogConfigurator configurator = null;
 
@@ -60,7 +62,7 @@ public class LogbackConfiguration extends LogConfigurationBase {
 		load();
 
 		logger.info("Logback logging API implementation is configured.");
-		logger.debug("Log dir: {}", getLoggingDir().getAbsolutePath());
+		logger.debug("Log dir: {}", getLoggingDir().toAbsolutePath());
 
 		save();
 	}
@@ -70,7 +72,7 @@ public class LogbackConfiguration extends LogConfigurationBase {
 	{
 		try {
 			if (System.getProperty(LOGGING_DIR_PROPERTY) == null) {
-				System.setProperty(LOGGING_DIR_PROPERTY, getLoggingDir().getAbsolutePath());
+				System.setProperty(LOGGING_DIR_PROPERTY, getLoggingDir().toAbsolutePath().toString());
 			}
 		}
 		catch (SecurityException e) {
@@ -82,7 +84,7 @@ public class LogbackConfiguration extends LogConfigurationBase {
 			configurator = new LogConfigurator();
 			configurator.setContext(lc);
 			lc.reset();
-			configurator.doConfigure(configFile);
+			configurator.doConfigure(configFile.toFile());
 		}
 		catch (JoranException je) {
 			System.out.println("Logback configuration error");
@@ -104,22 +106,24 @@ public class LogbackConfiguration extends LogConfigurationBase {
 		lc.reset();
 	}
 
-	private File getConfigFile()
+	private Path getConfigFile()
 		throws IOException
 	{
-		File f = new File(getConfDir(), LOGBACK_CONFIG_FILE);
-		if (!f.exists() || !f.canRead()) {
+		Path f = getConfDir().resolve(LOGBACK_CONFIG_FILE);
+		if (!Files.exists(f) || !Files.isReadable(f)) {
 			String content = ConfigurationUtil.loadConfigurationContents(LOGBACK_CONFIG_FILE);
 			content = content.replace("${logging.main.file}", LOG_FILE);
 			content = content.replace("${logging.event.user.file}", USER_EVENT_LOG_FILE);
 			content = content.replace("${logging.event.admin.file}", ADMIN_EVENT_LOG_FILE);
 			content = content.replace("${logging.event.user.logger}", USER_EVENT_LOGGER_NAME);
 			content = content.replace("${logging.event.admin.logger}", ADMIN_EVENT_LOGGER_NAME);
-			if (!f.getParentFile().mkdirs() && !f.getParentFile().canWrite()) {
+			Files.createDirectories(f.getParent());
+
+			if (!Files.exists(f) || !Files.isWritable(f.getParent())) {
 				throw new IOException("Not allowed to write logging configuration file to " + f.getParent());
 			}
 			else {
-				IOUtil.writeString(content, f);
+				Files.write(f, content.getBytes());
 			}
 		}
 		return f;
@@ -134,6 +138,6 @@ public class LogbackConfiguration extends LogConfigurationBase {
 		if (logReader != null) {
 			return logReader;
 		}
-		return new FileLogReader(new File(getLoggingDir(), LOG_FILE));
+		return new FileLogReader(getLoggingDir().resolve(LOG_FILE).toFile());
 	}
 }

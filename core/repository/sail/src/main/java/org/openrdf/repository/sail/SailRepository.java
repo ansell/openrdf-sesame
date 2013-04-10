@@ -17,6 +17,7 @@
 package org.openrdf.repository.sail;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
@@ -81,11 +82,11 @@ public class SailRepository extends RepositoryBase {
 	 * Methods *
 	 *---------*/
 
-	public File getDataDir() {
+	public Path getDataDir() {
 		return sail.getDataDir();
 	}
 
-	public void setDataDir(File dataDir) {
+	public void setDataDir(Path dataDir) {
 		sail.setDataDir(dataDir);
 	}
 
