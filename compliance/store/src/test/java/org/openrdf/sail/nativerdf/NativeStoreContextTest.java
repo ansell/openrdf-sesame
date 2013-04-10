@@ -43,20 +43,8 @@ public class NativeStoreContextTest extends RDFNotifyingStoreTest {
 	public void setUp()
 		throws Exception
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore");
 		super.setUp();
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 	@Override
