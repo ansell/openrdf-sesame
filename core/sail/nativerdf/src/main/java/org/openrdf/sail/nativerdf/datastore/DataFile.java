@@ -19,6 +19,7 @@ package org.openrdf.sail.nativerdf.datastore;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
@@ -63,13 +64,13 @@ public class DataFile {
 	 * Constructors *
 	 *--------------*/
 
-	public DataFile(File file)
+	public DataFile(Path file)
 		throws IOException
 	{
 		this(file, false);
 	}
 
-	public DataFile(File file, boolean forceSync)
+	public DataFile(Path file, boolean forceSync)
 		throws IOException
 	{
 		this.nioFile = new NioFile(file);

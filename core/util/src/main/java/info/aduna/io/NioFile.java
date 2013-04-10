@@ -20,10 +20,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.Future;
 
 /**
  * File wrapper that protects against concurrent file closing events due to e.g.
@@ -37,33 +44,28 @@ import java.nio.channels.WritableByteChannel;
  */
 public final class NioFile {
 
-	private final File file;
+	private volatile Path file;
 
-	private final String mode;
+	private final OpenOption[] mode;
 
-	private volatile RandomAccessFile raf;
-
-	private volatile FileChannel fc;
+	private volatile AsynchronousFileChannel raf;
 
 	private volatile boolean explictlyClosed;
 
-	public NioFile(File file)
+	public NioFile(Path file)
 		throws IOException
 	{
-		this(file, "rw");
+		this(file, StandardOpenOption.READ, StandardOpenOption.WRITE);
 	}
 
-	public NioFile(File file, String mode)
+	public NioFile(Path file, OpenOption... mode)
 		throws IOException
 	{
 		this.file = file;
 		this.mode = mode;
 
-		if (!file.exists()) {
-			boolean created = file.createNewFile();
-			if (!created) {
-				throw new IOException("Failed to create file: " + file);
-			}
+		if (!Files.exists(file)) {
+			this.file = Files.createFile(file);
 		}
 
 		explictlyClosed = false;
@@ -73,8 +75,7 @@ public final class NioFile {
 	private void open()
 		throws IOException
 	{
-		raf = new RandomAccessFile(file, mode);
-		fc = raf.getChannel();
+		raf = AsynchronousFileChannel.open(file, mode);
 	}
 
 	private synchronized void reopen(ClosedChannelException e)
@@ -83,7 +84,7 @@ public final class NioFile {
 		if (explictlyClosed) {
 			throw e;
 		}
-		if (fc.isOpen()) {
+		if (raf.isOpen()) {
 			// file channel has been already reopened by another thread
 			return;
 		}
@@ -101,7 +102,7 @@ public final class NioFile {
 		return explictlyClosed;
 	}
 
-	public File getFile() {
+	public Path getFile() {
 		return file;
 	}
 
@@ -113,11 +114,11 @@ public final class NioFile {
 	 * @throws IOException
 	 *         If there was a problem closing the open file channel.
 	 */
-	public boolean delete()
+	public void delete()
 		throws IOException
 	{
 		close();
-		return file.delete();
+		Files.delete(file);
 	}
 
 	/**
@@ -128,7 +129,7 @@ public final class NioFile {
 	{
 		while (true) {
 			try {
-				fc.force(metaData);
+				raf.force(metaData);
 				return;
 			}
 			catch (ClosedByInterruptException e) {
@@ -148,7 +149,7 @@ public final class NioFile {
 	{
 		while (true) {
 			try {
-				fc.truncate(size);
+				raf.truncate(size);
 				return;
 			}
 			catch (ClosedByInterruptException e) {
@@ -168,7 +169,7 @@ public final class NioFile {
 	{
 		while (true) {
 			try {
-				return fc.size();
+				return raf.size();
 			}
 			catch (ClosedByInterruptException e) {
 				throw e;
@@ -186,55 +187,38 @@ public final class NioFile {
 	public long transferTo(long position, long count, WritableByteChannel target)
 		throws IOException
 	{
-		while (true) {
-			try {
-				return fc.transferTo(position, count, target);
-			}
-			catch (ClosedByInterruptException e) {
-				throw e;
-			}
-			catch (ClosedChannelException e) {
-				reopen(e);
-			}
-		}
+		throw new UnsupportedOperationException("TODO: Migrate this method to Java-7");
+//		while (true) {
+//			try {
+//				//raf.read(new ByteBuffer(), position);
+//				//raf.read(target, position)
+//				//return fc.transferTo(position, count, target);
+//			}
+//			catch (ClosedByInterruptException e) {
+//				throw e;
+//			}
+//			catch (ClosedChannelException e) {
+//				reopen(e);
+//			}
+//		}
 	}
 
 	/**
 	 * Performs a protected {@link FileChannel#write(ByteBuffer, long)} call.
 	 */
-	public int write(ByteBuffer buf, long offset)
+	public Future<Integer> write(ByteBuffer buf, long offset)
 		throws IOException
 	{
-		while (true) {
-			try {
-				return fc.write(buf, offset);
-			}
-			catch (ClosedByInterruptException e) {
-				throw e;
-			}
-			catch (ClosedChannelException e) {
-				reopen(e);
-			}
-		}
+		return raf.write(buf, offset);
 	}
 
 	/**
 	 * Performs a protected {@link FileChannel#read(ByteBuffer, long)} call.
 	 */
-	public int read(ByteBuffer buf, long offset)
+	public Future<Integer> read(ByteBuffer buf, long offset)
 		throws IOException
 	{
-		while (true) {
-			try {
-				return fc.read(buf, offset);
-			}
-			catch (ClosedByInterruptException e) {
-				throw e;
-			}
-			catch (ClosedChannelException e) {
-				reopen(e);
-			}
-		}
+		return raf.read(buf, offset);
 	}
 
 	public void writeBytes(byte[] value, long offset)

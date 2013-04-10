@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail;
 
+import java.util.concurrent.ExecutionException;
+
 import info.aduna.concurrent.locks.Lock;
 
 
@@ -41,8 +43,9 @@ public interface LockManager {
 	 * Creates a lock in a SAIL if it does not yet exist.
 	 * 
 	 * @return a newly acquired lock or null if the SAIL is already locked.
+	 * @throws InterruptedException 
 	 */
-	Lock tryLock();
+	Lock tryLock() throws InterruptedException;
 
 	/**
 	 * Creates a lock in a SAIL if it does not yet exist.

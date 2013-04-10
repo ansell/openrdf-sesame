@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.model.ValueFactory;
 
@@ -40,14 +40,14 @@ public interface Sail {
 	 *         If this method is called when the Sail has already been
 	 *         initialized.
 	 */
-	public void setDataDir(File dataDir);
+	public void setDataDir(Path dataDir);
 
 	/**
 	 * Gets the Sail's data directory.
 	 * 
-	 * @see #setDataDir(File)
+	 * @see #setDataDir(Path)
 	 */
-	public File getDataDir();
+	public Path getDataDir();
 
 	/**
 	 * Initializes the Sail. Care should be taken that required initialization

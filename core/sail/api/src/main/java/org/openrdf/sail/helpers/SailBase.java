@@ -17,6 +17,7 @@
 package org.openrdf.sail.helpers;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -74,7 +75,7 @@ public abstract class SailBase implements Sail {
 	/**
 	 * Directory to store information related to this sail in (if any).
 	 */
-	private volatile File dataDir;
+	private volatile Path dataDir;
 
 	/**
 	 * Flag indicating whether the Sail has been initialized. Sails are
@@ -109,15 +110,27 @@ public abstract class SailBase implements Sail {
 	 * Methods *
 	 *---------*/
 
+	/**
+	 * @param dataDir
+	 */
+	public void setDataDir(Path dataDir) {
+		if (isInitialized()) {
+			throw new IllegalStateException("sail has already been initialized");
+		}
+		
+		this.dataDir = dataDir;
+	}
+
+	@Deprecated
 	public void setDataDir(File dataDir) {
 		if (isInitialized()) {
 			throw new IllegalStateException("sail has already been initialized");
 		}
 
-		this.dataDir = dataDir;
+		setDataDir(dataDir.toPath());
 	}
 
-	public File getDataDir() {
+	public Path getDataDir() {
 		return dataDir;
 	}
 

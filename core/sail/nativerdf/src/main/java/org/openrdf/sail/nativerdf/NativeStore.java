@@ -18,6 +18,8 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -110,9 +112,18 @@ public class NativeStore extends NotifyingSailBase {
 		setDataDir(dataDir);
 	}
 
+	public NativeStore(Path dataDir) {
+		this();
+		setDataDir(dataDir);
+	}
+
 	public NativeStore(File dataDir, String tripleIndexes) {
 		this(dataDir);
 		setTripleIndexes(tripleIndexes);
+	}
+
+	public NativeStore(Path dataDir, String tripleIndexes) {
+
 	}
 
 	/*---------*
@@ -182,21 +193,22 @@ public class NativeStore extends NotifyingSailBase {
 		logger.debug("Initializing NativeStore...");
 
 		// Check initialization parameters
-		File dataDir = getDataDir();
+		Path dataDir = getDataDir();
 
 		if (dataDir == null) {
 			throw new SailException("Data dir has not been set");
 		}
-		else if (!dataDir.exists()) {
-			boolean success = dataDir.mkdirs();
-			if (!success) {
-				throw new SailException("Unable to create data directory: " + dataDir);
-			}
+		else if (!Files.exists(dataDir)) {
+			Path success = Files.createDirectories(dataDir);
+			// if (!success) {
+			// throw new SailException("Unable to create data directory: " +
+			// dataDir);
+			// }
 		}
-		else if (!dataDir.isDirectory()) {
+		else if (!Files.isDirectory(dataDir)) {
 			throw new SailException("The specified path does not denote a directory: " + dataDir);
 		}
-		else if (!dataDir.canRead()) {
+		else if (!Files.isReadable(dataDir)) {
 			throw new SailException("Not allowed to read from the specified directory: " + dataDir);
 		}
 

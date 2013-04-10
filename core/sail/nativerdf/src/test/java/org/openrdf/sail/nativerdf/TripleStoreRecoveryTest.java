@@ -16,11 +16,14 @@
  */
 package org.openrdf.sail.nativerdf;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 
-import junit.framework.TestCase;
-
-import info.aduna.io.FileUtil;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.sail.nativerdf.TxnStatusFile.TxnStatus;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
@@ -28,32 +31,21 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
 /**
  * An extension of RDFStoreTest for testing the class {@link NativeStore}.
  */
-public class TripleStoreRecoveryTest extends TestCase {
+public class TripleStoreRecoveryTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	private File dataDir;
 
-	public TripleStoreRecoveryTest(String name) {
-		super(name);
-	}
-
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
-		super.setUp();
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore");
 	}
 
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		FileUtil.deleteDir(dataDir);
-		dataDir = null;
-
-		super.tearDown();
-	}
-
+	@Test
 	public void testRollbackRecovery()
 		throws Exception
 	{
@@ -83,6 +75,7 @@ public class TripleStoreRecoveryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCommitRecovery()
 		throws Exception
 	{

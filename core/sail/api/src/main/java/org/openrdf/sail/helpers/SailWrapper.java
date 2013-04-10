@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.helpers;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
@@ -77,11 +77,11 @@ public class SailWrapper implements StackableSail {
 		}
 	}
 
-	public File getDataDir() {
+	public Path getDataDir() {
 		return baseSail.getDataDir();
 	}
 
-	public void setDataDir(File dataDir) {
+	public void setDataDir(Path dataDir) {
 		baseSail.setDataDir(dataDir);
 	}
 

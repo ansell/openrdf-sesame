@@ -23,6 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -73,7 +77,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	/**
 	 * The data file for this NamespaceStore.
 	 */
-	private final File file;
+	private final Path file;
 
 	/**
 	 * Map storing namespace information by their prefix.
@@ -90,14 +94,14 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	 * Constructors *
 	 *--------------*/
 
-	public NamespaceStore(File dataDir)
+	public NamespaceStore(Path dataDir)
 		throws IOException
 	{
-		file = new File(dataDir, FILE_NAME);
+		file = dataDir.resolve(FILE_NAME);
 
 		namespacesMap = new LinkedHashMap<String, NamespaceImpl>(16);
 
-		if (file.exists()) {
+		if (Files.exists(file)) {
 			readNamespacesFromFile();
 		}
 		else {
@@ -176,7 +180,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 		throws IOException
 	{
 		synchronized (file) {
-			DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
+			DataOutputStream out = new DataOutputStream(Files.newOutputStream(file, StandardOpenOption.WRITE));
 
 			try {
 				out.write(MAGIC_NUMBER);
@@ -197,7 +201,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 		throws IOException
 	{
 		synchronized (file) {
-			DataInputStream in = new DataInputStream(new FileInputStream(file));
+			DataInputStream in = new DataInputStream(Files.newInputStream(file, StandardOpenOption.READ));
 
 			try {
 				byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
@@ -239,7 +243,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	public static void main(String[] args)
 		throws Exception
 	{
-		NamespaceStore nsStore = new NamespaceStore(new File(args[0]));
+		NamespaceStore nsStore = new NamespaceStore(Paths.get(args[0]));
 
 		for (Namespace ns : nsStore) {
 			System.out.println(ns.getPrefix() + " = " + ns.getName());

@@ -18,6 +18,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
@@ -134,20 +135,20 @@ public class ValueStore extends ValueFactoryBase {
 	 * Constructors *
 	 *--------------*/
 
-	public ValueStore(File dataDir)
+	public ValueStore(Path dataDir)
 		throws IOException
 	{
 		this(dataDir, false);
 	}
 
-	public ValueStore(File dataDir, boolean forceSync)
+	public ValueStore(Path dataDir, boolean forceSync)
 		throws IOException
 	{
 		this(dataDir, forceSync, VALUE_CACHE_SIZE, VALUE_ID_CACHE_SIZE, NAMESPACE_CACHE_SIZE,
 				NAMESPACE_ID_CACHE_SIZE);
 	}
 
-	public ValueStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
+	public ValueStore(Path dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
 			int namespaceCacheSize, int namespaceIDCacheSize)
 		throws IOException
 	{

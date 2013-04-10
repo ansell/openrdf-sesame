@@ -51,6 +51,15 @@ public class SailLockedException extends SailException {
 	}
 
 	/**
+	 * @param requestedBy
+	 * @param e
+	 */
+	public SailLockedException(String requestedBy, InterruptedException e) {
+		this(requestedBy);
+		this.initCause(e);
+	}
+
+	/**
 	 * Returns the name representing the Java virtual machine that acquired the
 	 * lock.
 	 * 

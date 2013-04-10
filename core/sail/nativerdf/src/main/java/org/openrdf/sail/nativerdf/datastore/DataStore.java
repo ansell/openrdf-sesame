@@ -18,6 +18,7 @@ package org.openrdf.sail.nativerdf.datastore;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 
@@ -49,18 +50,18 @@ public class DataStore {
 	 * Constructors *
 	 *--------------*/
 
-	public DataStore(File dataDir, String filePrefix)
+	public DataStore(Path dataDir, String filePrefix)
 		throws IOException
 	{
 		this(dataDir, filePrefix, false);
 	}
 
-	public DataStore(File dataDir, String filePrefix, boolean forceSync)
+	public DataStore(Path dataDir, String filePrefix, boolean forceSync)
 		throws IOException
 	{
-		dataFile = new DataFile(new File(dataDir, filePrefix + ".dat"), forceSync);
-		idFile = new IDFile(new File(dataDir, filePrefix + ".id"), forceSync);
-		hashFile = new HashFile(new File(dataDir, filePrefix + ".hash"), forceSync);
+		dataFile = new DataFile(dataDir.resolve(filePrefix + ".dat"), forceSync);
+		idFile = new IDFile(dataDir.resolve(filePrefix + ".id"), forceSync);
+		hashFile = new HashFile(dataDir.resolve(filePrefix + ".hash"), forceSync);
 	}
 
 	/*---------*
