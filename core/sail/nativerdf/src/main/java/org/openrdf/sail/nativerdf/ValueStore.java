@@ -19,6 +19,7 @@ package org.openrdf.sail.nativerdf;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
@@ -759,7 +760,7 @@ public class ValueStore extends ValueFactoryBase {
 	public static void main(String[] args)
 		throws Exception
 	{
-		File dataDir = new File(args[0]);
+		Path dataDir = Paths.get(args[0]);
 		ValueStore valueStore = new ValueStore(dataDir);
 
 		int maxID = valueStore.dataStore.getMaxID();

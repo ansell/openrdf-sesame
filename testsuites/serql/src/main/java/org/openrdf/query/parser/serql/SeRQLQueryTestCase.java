@@ -25,6 +25,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
+import info.aduna.io.Java7FileUtil;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Literal;
@@ -87,6 +90,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	 *--------------*/
 
 	public interface Factory {
+
 		Test createTest(String name, String dataFile, List<String> graphNames, String queryFile,
 				String resultFile, String entailment);
 	}
@@ -124,7 +128,8 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		// add named graphs
 		for (String graphName : graphNames) {
-			dataCon.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new URIImpl(graphName));
+			dataCon.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName),
+					new URIImpl(graphName));
 		}
 
 		// Evaluate the query on the query data
@@ -144,8 +149,8 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		erCon.add(url(resultFile), base(resultFile), RDFFormat.forFileName(resultFile));
 
-		Collection<Statement> expectedStatements = Iterations.addAll(erCon.getStatements(null, null, null,
-				false), new ArrayList<Statement>(1));
+		Collection<Statement> expectedStatements = Iterations.addAll(
+				erCon.getStatements(null, null, null, false), new ArrayList<Statement>(1));
 
 		erCon.close();
 		expectedResultRep.shutDown();
@@ -196,11 +201,13 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	}
 
 	protected Repository createRepository(String entailment)
-			throws Exception {
+		throws Exception
+	{
 		Repository dataRep;
 		if ("RDF".equals(entailment)) {
 			dataRep = newRepository();
-		} else {
+		}
+		else {
 			dataRep = newRepository(entailment);
 		}
 		dataRep.initialize();
@@ -208,21 +215,28 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		try {
 			con.clear();
 			con.clearNamespaces();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		return dataRep;
 	}
 
-	protected Repository newRepository() throws Exception {
+	protected Repository newRepository()
+		throws Exception
+	{
 		return new SailRepository(newSail());
 	}
 
-	protected Repository newRepository(String entailment) throws Exception {
+	protected Repository newRepository(String entailment)
+		throws Exception
+	{
 		return new SailRepository(createSail(entailment));
 	}
 
-	protected NotifyingSail createSail(String entailment) throws Exception {
+	protected NotifyingSail createSail(String entailment)
+		throws Exception
+	{
 		NotifyingSail sail = newSail();
 
 		if ("RDF".equals(entailment)) {
@@ -242,18 +256,20 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		return sail;
 	}
 
-	protected abstract NotifyingSail newSail() throws Exception;
+	protected abstract NotifyingSail newSail()
+		throws Exception;
 
 	protected void discardRepository(Repository rep) {
-		File dataDir = rep.getDataDir();
-		if (dataDir != null && dataDir.isDirectory()) {
+		Path dataDir = rep.getDataDir();
+		if (dataDir != null && Files.isDirectory(dataDir)) {
 			try {
-				FileUtil.deleteDir(dataDir);
+				Java7FileUtil.deleteDir(dataDir);
 			}
 			catch (IOException e) {
 			}
 		}
 	}
+
 	private String readQuery()
 		throws IOException
 	{
@@ -331,7 +347,8 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 	}
 
 	private static URL url(String uri)
-			throws MalformedURLException {
+		throws MalformedURLException
+	{
 		if (!uri.startsWith("injar:"))
 			return new URL(uri);
 		int start = uri.indexOf(':') + 3;
@@ -340,7 +357,8 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -354,7 +372,8 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

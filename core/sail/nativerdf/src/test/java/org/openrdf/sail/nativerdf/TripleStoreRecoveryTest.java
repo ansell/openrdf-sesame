@@ -49,7 +49,7 @@ public class TripleStoreRecoveryTest {
 	public void testRollbackRecovery()
 		throws Exception
 	{
-		TripleStore tripleStore = new TripleStore(dataDir, "spoc");
+		TripleStore tripleStore = new TripleStore(dataDir.toPath(), "spoc");
 		try {
 			tripleStore.startTransaction();
 			tripleStore.storeTriple(1, 2, 3, 4);
@@ -60,7 +60,7 @@ public class TripleStoreRecoveryTest {
 		}
 
 		// Try to restore from the uncompleted transaction
-		tripleStore = new TripleStore(dataDir, "spoc");
+		tripleStore = new TripleStore(dataDir.toPath(), "spoc");
 		try {
 			RecordIterator iter = tripleStore.getTriples(-1, -1, -1, -1);
 			try {
@@ -79,7 +79,7 @@ public class TripleStoreRecoveryTest {
 	public void testCommitRecovery()
 		throws Exception
 	{
-		TripleStore tripleStore = new TripleStore(dataDir, "spoc");
+		TripleStore tripleStore = new TripleStore(dataDir.toPath(), "spoc");
 		try {
 			tripleStore.startTransaction();
 			tripleStore.storeTriple(1, 2, 3, 4);
@@ -90,7 +90,7 @@ public class TripleStoreRecoveryTest {
 		}
 
 		// Pretend that commit was called
-		TxnStatusFile txnStatusFile = new TxnStatusFile(dataDir);
+		TxnStatusFile txnStatusFile = new TxnStatusFile(dataDir.toPath());
 		try {
 			txnStatusFile.setTxnStatus(TxnStatus.COMMITTING);
 		}
@@ -99,7 +99,7 @@ public class TripleStoreRecoveryTest {
 		}
 
 		// Try to restore from the uncompleted transaction
-		tripleStore = new TripleStore(dataDir, "spoc");
+		tripleStore = new TripleStore(dataDir.toPath(), "spoc");
 		try {
 			RecordIterator iter = tripleStore.getTriples(-1, -1, -1, -1);
 			try {

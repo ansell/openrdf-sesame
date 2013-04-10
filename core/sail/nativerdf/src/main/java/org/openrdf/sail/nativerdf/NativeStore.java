@@ -199,7 +199,12 @@ public class NativeStore extends NotifyingSailBase {
 			throw new SailException("Data dir has not been set");
 		}
 		else if (!Files.exists(dataDir)) {
-			Path success = Files.createDirectories(dataDir);
+			try {
+				dataDir = Files.createDirectories(dataDir);
+			}
+			catch (IOException e) {
+				throw new SailException("Unable to create data directory: " + dataDir);
+			}
 			// if (!success) {
 			// throw new SailException("Unable to create data directory: " +
 			// dataDir);
@@ -269,7 +274,7 @@ public class NativeStore extends NotifyingSailBase {
 	}
 
 	public boolean isWritable() {
-		return getDataDir().canWrite();
+		return Files.isWritable(getDataDir());
 	}
 
 	@Override

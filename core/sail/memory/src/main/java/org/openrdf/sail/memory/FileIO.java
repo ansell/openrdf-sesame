@@ -30,8 +30,10 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
@@ -120,33 +122,19 @@ class FileIO {
 	 * Methods *
 	 *---------*/
 
-	public synchronized void write(File syncFile, File dataFile)
+	public synchronized void write(Path syncFile, Path dataFile)
 		throws IOException, SailException
 	{
 		write(syncFile);
 
 		// prefer atomic renameTo operations
-		boolean renamed = syncFile.renameTo(dataFile);
-
-		if (!renamed) {
-			// tolerate renameTo that does not work if destination exists
-			if (syncFile.exists() && dataFile.exists()) {
-				dataFile.delete();
-				renamed = syncFile.renameTo(dataFile);
-			}
-		}
-
-		if (!renamed) {
-			String path = syncFile.getAbsolutePath();
-			String name = dataFile.getName();
-			throw new IOException("Could not rename " + path + " to " + name);
-		}
+		Files.move(syncFile, dataFile, StandardCopyOption.ATOMIC_MOVE);
 	}
 
-	private void write(File dataFile)
+	private void write(Path dataFile)
 		throws IOException, SailException
 	{
-		OutputStream out = new FileOutputStream(dataFile);
+		OutputStream out = Files.newOutputStream(dataFile);
 		try {
 			// Write header
 			out.write(MAGIC_NUMBER);

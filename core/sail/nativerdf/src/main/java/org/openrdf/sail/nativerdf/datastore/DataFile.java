@@ -114,7 +114,7 @@ public class DataFile {
 	 * Methods *
 	 *---------*/
 
-	public File getFile() {
+	public Path getPath() {
 		return nioFile.getPath();
 	}
 

@@ -305,12 +305,15 @@ public class MemoryStore extends NotifyingSailBase {
 			else {
 				// file specified that does not exist yet, create it
 				try {
-					File dir = dataFile.getParentFile();
-					if (dir != null && !dir.exists()) {
+					Path dir = dataFile.getParent();
+					if (dir != null && !Files.exists(dir)) {
 						logger.debug("Creating directory for data file...");
-						if (!dir.mkdirs()) {
+						try {
+							dir = Files.createDirectories(dir);
+						}
+						catch (IOException e) {
 							logger.debug("Failed to create directory for data file: {}", dir);
-							throw new SailException("Failed to create directory for data file: " + dir);
+							throw new SailException("Failed to create directory for data file: " + dir, e);
 						}
 					}
 					// try to lock directory or fail
