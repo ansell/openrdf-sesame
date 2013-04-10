@@ -16,13 +16,27 @@
  */
 package org.openrdf.rio.ntriples;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
+import java.io.StringReader;
+
+import org.junit.Test;
 
 import junit.framework.TestCase;
 
+import org.openrdf.model.Model;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.sail.memory.MemoryStore;
 
 /**
  * JUnit test for the N-Triples parser.
@@ -43,22 +57,139 @@ public abstract class NTriplesParserTestCase extends TestCase {
 	 * Methods *
 	 *---------*/
 
+	@Test
 	public void testNTriplesFile()
 		throws Exception
 	{
-		RDFParser turtleParser = createRDFParser();
-		turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-		turtleParser.setRDFHandler(new RDFHandlerBase());
+		RDFParser ntriplesParser = createRDFParser();
+		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
 
 		InputStream in = NTriplesParser.class.getResourceAsStream(NTRIPLES_TEST_FILE);
 		try {
-			turtleParser.parse(in, NTRIPLES_TEST_URL);
+			ntriplesParser.parse(in, NTRIPLES_TEST_URL);
 		}
 		catch (RDFParseException e) {
 			fail("Failed to parse N-Triples test document: " + e.getMessage());
 		}
 		finally {
 			in.close();
+		}
+
+		assertEquals(30, model.size());
+		assertEquals(28, model.subjects().size());
+		assertEquals(1, model.predicates().size());
+		assertEquals(23, model.objects().size());
+	}
+
+	@Test
+	public void testExceptionHandlingWithDefaultSettings()
+		throws Exception
+	{
+		String data = "invalid nt";
+
+		RDFParser ntriplesParser = createRDFParser();
+		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
+
+		try {
+			ntriplesParser.parse(new StringReader(data), NTRIPLES_TEST_URL);
+			fail("expected RDFParseException due to invalid data");
+		}
+		catch (RDFParseException expected) {
+			assertEquals(expected.getLineNumber(), 1);
+		}
+	}
+
+	@Test
+	public void testExceptionHandlingWithStopAtFirstError()
+		throws Exception
+	{
+		String data = "invalid nt";
+
+		RDFParser ntriplesParser = createRDFParser();
+		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		ntriplesParser.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.TRUE);
+
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
+
+		try {
+			ntriplesParser.parse(new StringReader(data), NTRIPLES_TEST_URL);
+			fail("expected RDFParseException due to invalid data");
+		}
+		catch (RDFParseException expected) {
+			assertEquals(expected.getLineNumber(), 1);
+		}
+	}
+
+	@Test
+	public void testExceptionHandlingWithoutStopAtFirstError()
+		throws Exception
+	{
+		String data = "invalid nt";
+
+		RDFParser ntriplesParser = createRDFParser();
+		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		ntriplesParser.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.FALSE);
+
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
+
+		ntriplesParser.parse(new StringReader(data), NTRIPLES_TEST_URL);
+
+		assertEquals(0, model.size());
+		assertEquals(0, model.subjects().size());
+		assertEquals(0, model.predicates().size());
+		assertEquals(0, model.objects().size());
+	}
+
+	@Test
+	public void testExceptionHandlingParsingNTriplesIntoMemoryStore()
+		throws Exception
+	{
+		Repository repo = new SailRepository(new MemoryStore());
+		repo.initialize();
+		RepositoryConnection conn = repo.getConnection();
+		try {
+			// Force the connection to use stop at first error
+			conn.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.TRUE);
+
+			String data = "invalid nt";
+			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);
+			fail("expected RDFParseException due to invalid data");
+		}
+		catch (RDFParseException expected) {
+			;
+		}
+		finally {
+			conn.close();
+			repo.shutDown();
+		}
+	}
+
+	@Test
+	public void testExceptionHandlingParsingNTriplesIntoMemoryStoreWithoutStopAtFirstError()
+		throws Exception
+	{
+		Repository repo = new SailRepository(new MemoryStore());
+		repo.initialize();
+		RepositoryConnection conn = repo.getConnection();
+		try {
+			// Force the connection to not use stop at first error
+			conn.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.FALSE);
+
+			String data = "invalid nt";
+			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);
+
+			// verify that no triples were added after the successful parse
+			assertEquals(0, conn.size());
+		}
+		finally {
+			conn.close();
+			repo.shutDown();
 		}
 	}
 
