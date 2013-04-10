@@ -344,10 +344,10 @@ public class FileUtil {
 		}
 		
 		File resultDir = null;
-		int suffix = (int)System.currentTimeMillis();
+		long suffix = System.nanoTime();
 		int failureCount = 0;
 		do {
-			resultDir = new File(tmpDir, prefix + suffix % 10000);
+			resultDir = new File(tmpDir, prefix + suffix);
 			suffix++;
 			failureCount++;
 		}
