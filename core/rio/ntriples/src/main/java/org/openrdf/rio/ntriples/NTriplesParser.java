@@ -21,6 +21,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -32,6 +35,8 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
 /**
@@ -209,7 +214,9 @@ public class NTriplesParser extends RDFParserBase {
 	/**
 	 * Verifies that there is only whitespace until the end of the line.
 	 */
-	protected int assertLineTerminates(int c) throws IOException, RDFParseException {
+	protected int assertLineTerminates(int c)
+		throws IOException, RDFParseException
+	{
 		c = reader.read();
 
 		c = skipWhitespace(c);
@@ -219,8 +226,8 @@ public class NTriplesParser extends RDFParserBase {
 		}
 
 		return c;
-	}	
-	
+	}
+
 	/**
 	 * Reads characters from reader until the first EOL has been read. The first
 	 * character after the EOL is returned. In case the end of the character
@@ -262,8 +269,7 @@ public class NTriplesParser extends RDFParserBase {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		boolean ignoredAnError = false;
-		try
-		{
+		try {
 			c = parseSubject(c);
 
 			c = skipWhitespace(c);
@@ -285,22 +291,18 @@ public class NTriplesParser extends RDFParserBase {
 
 			c = assertLineTerminates(c);
 		}
-		catch(RDFParseException rdfpe)
-		{
-			if(stopAtFirstError())
-			{
+		catch (RDFParseException rdfpe) {
+			if (stopAtFirstError()) {
 				throw rdfpe;
 			}
-			else
-			{
+			else {
 				ignoredAnError = true;
 			}
 		}
 
 		c = skipLine(c);
 
-		if(!ignoredAnError)
-		{
+		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object);
 			rdfHandler.handleStatement(st);
 		}
@@ -658,6 +660,20 @@ public class NTriplesParser extends RDFParserBase {
 		languageTagBuffer.trimToSize();
 		datatypeUriBuffer.setLength(0);
 		datatypeUriBuffer.trimToSize();
+	}
+
+	/*
+	 * N-Triples parser supports these settings.
+	 */
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+
+		// Very few parsers support stop at first error, so it is not enabled in
+		// RDFParserBase
+		result.add(BasicParserSettings.STOP_AT_FIRST_ERROR);
+
+		return result;
 	}
 
 }
