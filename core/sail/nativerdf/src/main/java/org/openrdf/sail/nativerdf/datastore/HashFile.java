@@ -399,113 +399,117 @@ public class HashFile {
 
 		// Move any overflow buckets out of the way to a temporary file
 		Path tmpFile = getPath().getParent().resolve("rehash_" + getPath().getFileName());
-		FileChannel tmpChannel = createEmptyFile(tmpFile);
-		// FileChannel tmpChannel = tmpRaf.getChannel();
+		try (FileChannel tmpChannel = createEmptyFile(tmpFile);) {
 
-		// Transfer the overflow buckets to the temp file
-		// FIXME: work around java bug 6431344:
-		// "FileChannel.transferTo() doesn't work if address space runs out"
-		nioFile.transferTo(oldTableSize, oldFileSize - oldTableSize, tmpChannel);
+			// FileChannel tmpChannel = tmpRaf.getChannel();
 
-		// Increase hash table by factor 2
-		writeEmptyBuckets(oldTableSize, bucketCount);
-		bucketCount *= 2;
+			// Transfer the overflow buckets to the temp file
+			// FIXME: work around java bug 6431344:
+			// TODO: Apparently 6431344 is fixed in Java-7
+			// "FileChannel.transferTo() doesn't work if address space runs out"
+			nioFile.transferTo(oldTableSize, oldFileSize - oldTableSize, tmpChannel);
 
-		// Discard any remaining overflow buffers
-		nioFile.truncate(newTableSize);
+			// Increase hash table by factor 2
+			writeEmptyBuckets(oldTableSize, bucketCount);
+			bucketCount *= 2;
 
-		ByteBuffer bucket = ByteBuffer.allocate(recordSize);
-		ByteBuffer newBucket = ByteBuffer.allocate(recordSize);
+			// Discard any remaining overflow buffers
+			nioFile.truncate(newTableSize);
 
-		// Rehash items in non-overflow buckets, half of these will move to a
-		// new location, but none of them will trigger the creation of new
-		// overflow
-		// buckets. Any (now deprecated) references to overflow buckets are
-		// removed too.
+			ByteBuffer bucket = ByteBuffer.allocate(recordSize);
+			ByteBuffer newBucket = ByteBuffer.allocate(recordSize);
 
-		// All items that are moved to a new location end up in one and the same
-		// new and empty bucket. All items are divided between the old and the
-		// new bucket and the changes to the buckets are written to disk only
-		// once.
-		for (long bucketOffset = HEADER_LENGTH; bucketOffset < oldTableSize; bucketOffset += recordSize) {
-			nioFile.read(bucket, bucketOffset);
+			// Rehash items in non-overflow buckets, half of these will move to a
+			// new location, but none of them will trigger the creation of new
+			// overflow
+			// buckets. Any (now deprecated) references to overflow buckets are
+			// removed too.
 
-			boolean bucketChanged = false;
-			long newBucketOffset = 0L;
+			// All items that are moved to a new location end up in one and the
+			// same
+			// new and empty bucket. All items are divided between the old and the
+			// new bucket and the changes to the buckets are written to disk only
+			// once.
+			for (long bucketOffset = HEADER_LENGTH; bucketOffset < oldTableSize; bucketOffset += recordSize) {
+				nioFile.read(bucket, bucketOffset);
 
-			for (int slotNo = 0; slotNo < bucketSize; slotNo++) {
-				int id = bucket.getInt(ITEM_SIZE * slotNo + 4);
+				boolean bucketChanged = false;
+				long newBucketOffset = 0L;
 
-				if (id != 0) {
-					// Slot is not empty
-					int hash = bucket.getInt(ITEM_SIZE * slotNo);
-					long newOffset = getBucketOffset(hash);
+				for (int slotNo = 0; slotNo < bucketSize; slotNo++) {
+					int id = bucket.getInt(ITEM_SIZE * slotNo + 4);
 
-					if (newOffset != bucketOffset) {
-						// Move this item to new bucket...
-						newBucket.putInt(hash);
-						newBucket.putInt(id);
+					if (id != 0) {
+						// Slot is not empty
+						int hash = bucket.getInt(ITEM_SIZE * slotNo);
+						long newOffset = getBucketOffset(hash);
 
-						// ...and remove it from the current bucket
-						bucket.putInt(ITEM_SIZE * slotNo, 0);
-						bucket.putInt(ITEM_SIZE * slotNo + 4, 0);
+						if (newOffset != bucketOffset) {
+							// Move this item to new bucket...
+							newBucket.putInt(hash);
+							newBucket.putInt(id);
 
-						bucketChanged = true;
-						newBucketOffset = newOffset;
+							// ...and remove it from the current bucket
+							bucket.putInt(ITEM_SIZE * slotNo, 0);
+							bucket.putInt(ITEM_SIZE * slotNo + 4, 0);
+
+							bucketChanged = true;
+							newBucketOffset = newOffset;
+						}
 					}
 				}
-			}
 
-			if (bucketChanged) {
-				// Some of the items were moved to the new bucket, write it to
-				// the file
-				newBucket.flip();
-				nioFile.write(newBucket, newBucketOffset);
-				newBucket.clear();
-			}
-
-			// Reset overflow ID in the old bucket to 0 if necessary
-			if (bucket.getInt(ITEM_SIZE * bucketSize) != 0) {
-				bucket.putInt(ITEM_SIZE * bucketSize, 0);
-				bucketChanged = true;
-			}
-
-			if (bucketChanged) {
-				// Some of the items were moved to the new bucket or the
-				// overflow ID has been reset; write the bucket back to the file
-				bucket.rewind();
-				nioFile.write(bucket, bucketOffset);
-			}
-
-			bucket.clear();
-		}
-
-		// Rehash items in overflow buckets. This might trigger the creation of
-		// new overflow buckets so we can't optimize this in the same way as we
-		// rehash the normal buckets.
-		long tmpFileSize = tmpChannel.size();
-		for (long bucketOffset = 0L; bucketOffset < tmpFileSize; bucketOffset += recordSize) {
-			tmpChannel.read(bucket, bucketOffset);
-
-			for (int slotNo = 0; slotNo < bucketSize; slotNo++) {
-				int id = bucket.getInt(ITEM_SIZE * slotNo + 4);
-
-				if (id != 0) {
-					// Slot is not empty
-					int hash = bucket.getInt(ITEM_SIZE * slotNo);
-					long newBucketOffset = getBucketOffset(hash);
-
-					// Copy this item to its new location
-					storeID(newBucketOffset, hash, id);
+				if (bucketChanged) {
+					// Some of the items were moved to the new bucket, write it to
+					// the file
+					newBucket.flip();
+					nioFile.write(newBucket, newBucketOffset);
+					newBucket.clear();
 				}
+
+				// Reset overflow ID in the old bucket to 0 if necessary
+				if (bucket.getInt(ITEM_SIZE * bucketSize) != 0) {
+					bucket.putInt(ITEM_SIZE * bucketSize, 0);
+					bucketChanged = true;
+				}
+
+				if (bucketChanged) {
+					// Some of the items were moved to the new bucket or the
+					// overflow ID has been reset; write the bucket back to the file
+					bucket.rewind();
+					nioFile.write(bucket, bucketOffset);
+				}
+
+				bucket.clear();
 			}
 
-			bucket.clear();
-		}
+			// Rehash items in overflow buckets. This might trigger the creation of
+			// new overflow buckets so we can't optimize this in the same way as we
+			// rehash the normal buckets.
+			long tmpFileSize = tmpChannel.size();
+			for (long bucketOffset = 0L; bucketOffset < tmpFileSize; bucketOffset += recordSize) {
+				tmpChannel.read(bucket, bucketOffset);
 
-		// Discard the temp file
-		tmpChannel.close();
-		Files.delete(tmpFile);
+				for (int slotNo = 0; slotNo < bucketSize; slotNo++) {
+					int id = bucket.getInt(ITEM_SIZE * slotNo + 4);
+
+					if (id != 0) {
+						// Slot is not empty
+						int hash = bucket.getInt(ITEM_SIZE * slotNo);
+						long newBucketOffset = getBucketOffset(hash);
+
+						// Copy this item to its new location
+						storeID(newBucketOffset, hash, id);
+					}
+				}
+
+				bucket.clear();
+			}
+		}
+		finally {
+			// Discard the temp file
+			Files.delete(tmpFile);
+		}
 	}
 
 	/*------------------------*
