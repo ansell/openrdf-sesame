@@ -436,10 +436,17 @@ public class BTree implements java.lang.AutoCloseable {
 	public boolean delete()
 		throws IOException
 	{
-		close(false);
-
-		allocatedNodesList.delete();
-		nioFile.delete();
+		try {
+			close(false);
+		}
+		finally {
+			try {
+				allocatedNodesList.delete();
+			}
+			finally {
+				nioFile.delete();
+			}
+		}
 		return true;
 	}
 
