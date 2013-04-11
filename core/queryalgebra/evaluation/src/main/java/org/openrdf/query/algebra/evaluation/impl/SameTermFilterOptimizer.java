@@ -16,11 +16,14 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
@@ -82,6 +85,29 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 					// One or both var(s) are potentially unbound, inlining could
 					// invalidate the result e.g. in case of left joins
 					return;
+				}
+
+				if (leftArg instanceof Var || rightArg instanceof Var) {
+
+					BindingSetAssignmentCollector collector = new BindingSetAssignmentCollector();
+					filterArg.visit(collector);
+
+					for (BindingSetAssignment bsa : collector.getBindingSetAssignments()) {
+						// check if the VALUES clause / bindingsetassignment contains
+						// one of the arguments of the sameTerm.
+						// if so, we can not inline.
+						Set<String> names = bsa.getAssuredBindingNames();
+						if (leftArg instanceof Var) {
+							if (names.contains(((Var)leftArg).getName())) {
+								return;
+							}
+						}
+						if (rightArg instanceof Var) {
+							if (names.contains(((Var)rightArg).getName())) {
+								return;
+							}
+						}
+					}
 				}
 
 				Value leftValue = getValue(leftArg);
@@ -165,6 +191,20 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 			if (projElem.getSourceName().equals(oldName)) {
 				projElem.setSourceName(newName);
 			}
+		}
+	}
+
+	protected static class BindingSetAssignmentCollector extends QueryModelVisitorBase<RuntimeException> {
+
+		private List<BindingSetAssignment> assignments = new ArrayList<BindingSetAssignment>();
+
+		@Override
+		public void meet(BindingSetAssignment bsa) {
+			assignments.add(bsa);
+		}
+
+		public List<BindingSetAssignment> getBindingSetAssignments() {
+			return assignments;
 		}
 	}
 
