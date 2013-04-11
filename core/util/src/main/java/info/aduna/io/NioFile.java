@@ -217,7 +217,17 @@ public final class NioFile {
 	public int read(ByteBuffer buf, long offset)
 		throws IOException
 	{
-		return raf.read(buf, offset);
+		while (true) {
+			try {
+				return raf.read(buf, offset);
+			}
+			catch (ClosedByInterruptException e) {
+				throw e;
+			}
+			catch (ClosedChannelException e) {
+				reopen(e);
+			}
+		}
 	}
 
 	public void writeBytes(byte[] value, long offset)
