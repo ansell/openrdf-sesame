@@ -17,12 +17,15 @@
 package org.openrdf.query.parser.sparql;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
+import java.nio.file.Path;
 import java.util.List;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.nio.BlockingChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
@@ -46,33 +49,59 @@ public class SPARQLEmbeddedServer {
 
 	private static final String HOST = "localhost";
 
-	private static final int PORT = 18080;
-
 	private static final String OPENRDF_CONTEXT = "/openrdf";
+
+	private final int port;
 
 	private final List<String> repositoryIds;
 
 	private final Server jetty;
 
+	private final String serverUrl;
+
+	private WebAppContext webapp;
+
 	/**
 	 * @param repositoryIds
 	 */
-	public SPARQLEmbeddedServer(List<String> repositoryIds) {
+	public SPARQLEmbeddedServer(List<String> repositoryIds, Path testDir) {
 		this.repositoryIds = repositoryIds;
 		System.clearProperty("DEBUG");
 
+		port = getFreePort();
+		serverUrl = "http://" + HOST + ":" + port + OPENRDF_CONTEXT;
 		jetty = new Server();
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", testDir.toAbsolutePath().toString());
 
-		Connector conn = new BlockingChannelConnector();
+		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
-		conn.setPort(PORT);
+		conn.setPort(port);
+		// conn.setSoLingerTime(-1);
 		jetty.addConnector(conn);
 
-		WebAppContext webapp = new WebAppContext();
+		webapp = new WebAppContext();
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame.war");
-		jetty.addHandler(webapp);
+		jetty.setHandler(webapp);
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", testDir.toAbsolutePath().toString());
+
+	}
+
+	private static int getFreePort() {
+		int result = -1;
+		try (ServerSocket ss = new ServerSocket(0)) {
+			ss.setReuseAddress(true);
+			result = ss.getLocalPort();
+			try (DatagramSocket ds = new DatagramSocket(result);) {
+				ds.setReuseAddress(true);
+			}
+		}
+		catch (IOException e) {
+			result = -1;
+		}
+
+		return result;
 	}
 
 	/**
@@ -86,15 +115,17 @@ public class SPARQLEmbeddedServer {
 	 * @return the server url
 	 */
 	public String getServerUrl() {
-		return "http://" + HOST + ":" + PORT + OPENRDF_CONTEXT;
+		return serverUrl;
 	}
 
 	public void start()
 		throws Exception
 	{
-		File dataDir = new File(System.getProperty("user.dir") + "/target/datadir");
-		dataDir.mkdirs();
-		System.setProperty("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		// File dataDir = new File(System.getProperty("user.dir") +
+		// "/target/datadir");
+		// dataDir.mkdirs();
+		// System.setProperty("info.aduna.platform.appdata.basedir",
+		// dataDir.getAbsolutePath());
 
 		jetty.start();
 
@@ -104,18 +135,37 @@ public class SPARQLEmbeddedServer {
 	public void stop()
 		throws Exception
 	{
-		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(getServerUrl(),
-				SystemRepository.ID));
-		RepositoryConnection con = systemRepo.getConnection();
 		try {
-			con.clear();
+			Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(getServerUrl(),
+					SystemRepository.ID));
+			if (systemRepo != null) {
+				try (RepositoryConnection con = systemRepo.getConnection();) {
+					con.clear();
+				}
+				finally {
+					systemRepo.shutDown();
+				}
+			}
 		}
 		finally {
-			con.close();
-			systemRepo.shutDown();
+			try {
+				webapp.stop();
+			}
+			finally {
+				try {
+					webapp.destroy();
+				}
+				finally {
+					try {
+						jetty.stop();
+					}
+					finally {
+						jetty.destroy();
+					}
+				}
+			}
 		}
-
-		jetty.stop();
+		// System.out.println("server stopped at: " + serverUrl);
 		System.clearProperty("org.mortbay.log.class");
 	}
 
