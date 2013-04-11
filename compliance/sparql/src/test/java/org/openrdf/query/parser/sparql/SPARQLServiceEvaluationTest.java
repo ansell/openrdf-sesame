@@ -488,6 +488,12 @@ public class SPARQLServiceEvaluationTest {
 		RepositoryConnection conn = localRepository.getConnection();
 		String queryString = readQueryString(queryFile);
 
+		// System.out.println(queryString);
+		// Need to use the correct server URL, as it is otherwise hardcoded
+		queryString = queryString.replace("http://localhost:18080/openrdf", server.getServerUrl());
+		// System.out.println(server.getServerUrl());
+		// System.out.println(queryString);
+
 		try {
 			Query query = conn.prepareQuery(QueryLanguage.SPARQL, queryString);
 
