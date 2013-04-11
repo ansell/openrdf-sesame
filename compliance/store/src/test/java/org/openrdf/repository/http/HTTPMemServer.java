@@ -140,6 +140,7 @@ public class HTTPMemServer {
 		finally {
 			jetty.stop();
 		}
+		System.out.println("server stopped at: " + serverUrl);
 		System.clearProperty("org.mortbay.log.class");
 	}
 
