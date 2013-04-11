@@ -60,6 +60,8 @@ public class HTTPMemServer {
 
 	private final String inferenceRepositoryUrl;
 
+	private WebAppContext webapp;
+
 	public HTTPMemServer(Path testDir) {
 		System.clearProperty("DEBUG");
 
@@ -74,10 +76,10 @@ public class HTTPMemServer {
 		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
 		conn.setPort(port);
-		//conn.setSoLingerTime(-1);
+		// conn.setSoLingerTime(-1);
 		jetty.addConnector(conn);
 
-		WebAppContext webapp = new WebAppContext();
+		webapp = new WebAppContext();
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame.war");
@@ -108,9 +110,9 @@ public class HTTPMemServer {
 		// System.setProperty("info.aduna.platform.appdata.basedir",
 		// dataDir.getAbsolutePath());
 
-		//System.out.println("about to start server at: " + serverUrl);
+		// System.out.println("about to start server at: " + serverUrl);
 		jetty.start();
-		//System.out.println("server started at: " + serverUrl);
+		// System.out.println("server started at: " + serverUrl);
 
 		createTestRepositories();
 	}
@@ -131,16 +133,24 @@ public class HTTPMemServer {
 			}
 		}
 		finally {
-			try
-			{
-				jetty.stop();
+			try {
+				webapp.stop();
 			}
-			finally
-			{
-				jetty.destroy();
+			finally {
+				try {
+					webapp.destroy();
+				}
+				finally {
+					try {
+						jetty.stop();
+					}
+					finally {
+						jetty.destroy();
+					}
+				}
 			}
 		}
-		//System.out.println("server stopped at: " + serverUrl);
+		// System.out.println("server stopped at: " + serverUrl);
 		System.clearProperty("org.mortbay.log.class");
 	}
 
