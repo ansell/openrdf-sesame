@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.nativerdf.btree;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
@@ -31,8 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -58,7 +55,7 @@ import info.aduna.io.NioFile;
  * @author Arjohn Kampman
  * @author Enrico Minack
  */
-public class BTree {
+public class BTree implements java.lang.AutoCloseable {
 
 	/*-----------*
 	 * Constants *

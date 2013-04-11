@@ -47,7 +47,7 @@ import org.openrdf.model.impl.NamespaceImpl;
  * 
  * @author Arjohn Kampman
  */
-class NamespaceStore implements Iterable<NamespaceImpl> {
+class NamespaceStore implements Iterable<NamespaceImpl>, java.lang.AutoCloseable {
 
 	/*-----------*
 	 * Constants *

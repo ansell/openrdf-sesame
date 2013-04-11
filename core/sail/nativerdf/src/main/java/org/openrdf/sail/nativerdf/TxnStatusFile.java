@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -27,7 +26,7 @@ import info.aduna.io.NioFile;
 /**
  * Writes transaction statuses to a file.
  */
-class TxnStatusFile {
+class TxnStatusFile implements java.lang.AutoCloseable {
 
 	public static enum TxnStatus {
 

@@ -260,17 +260,28 @@ public class NativeStore extends NotifyingSailBase {
 		logger.debug("Shutting down NativeStore...");
 
 		try {
-			tripleStore.close();
-			valueStore.close();
-			namespaceStore.close();
-
-			logger.debug("NativeStore shut down");
+			try
+			{
+				tripleStore.close();
+			}
+			finally
+			{
+				try
+				{
+					valueStore.close();
+				}
+				finally
+				{
+					namespaceStore.close();
+				}
+			}
 		}
 		catch (IOException e) {
 			throw new SailException(e);
 		}
 		finally {
 			dirLock.release();
+			logger.debug("NativeStore shut down");
 		}
 	}
 

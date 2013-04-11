@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +47,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * 
  * @author Arjohn Kampman
  */
-public class ValueStore extends ValueFactoryBase {
+public class ValueStore extends ValueFactoryBase implements java.lang.AutoCloseable {
 
 	/*-----------*
 	 * Constants *
