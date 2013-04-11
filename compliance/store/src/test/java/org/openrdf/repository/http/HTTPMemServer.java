@@ -93,41 +93,17 @@ public class HTTPMemServer {
 
 	}
 
-	/**
-	 * Checks to see if a specific port is available.
-	 * 
-	 * @param port
-	 *        the port to check for availability
-	 */
 	private static int getFreePort() {
 		int result = -1;
-		ServerSocket ss = null;
-		DatagramSocket ds = null;
-		try {
-			ss = new ServerSocket(0);
+		try (ServerSocket ss = new ServerSocket(0)) {
 			ss.setReuseAddress(true);
 			result = ss.getLocalPort();
-			try {
-				ds = new DatagramSocket(result);
+			try (DatagramSocket ds = new DatagramSocket(result);) {
 				ds.setReuseAddress(true);
-			}
-			finally {
-				if (ds != null) {
-					ds.close();
-				}
 			}
 		}
 		catch (IOException e) {
-		}
-		finally {
-			if (ss != null) {
-				try {
-					ss.close();
-				}
-				catch (IOException e) {
-					/* should not be thrown */
-				}
-			}
+			result = -1;
 		}
 
 		return result;
