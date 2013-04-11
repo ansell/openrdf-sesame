@@ -153,21 +153,8 @@ public class HTTPMemServer {
 			Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
 					SystemRepository.ID));
 			if (systemRepo != null) {
-				try {
-					RepositoryConnection con = systemRepo.getConnection();
-					if (con != null) {
-						try {
-							con.clear();
-						}
-						finally {
-							if (con.isActive()) {
-								con.rollback();
-							}
-							if (con.isOpen()) {
-								con.close();
-							}
-						}
-					}
+				try (RepositoryConnection con = systemRepo.getConnection();) {
+					con.clear();
 				}
 				finally {
 					systemRepo.shutDown();
