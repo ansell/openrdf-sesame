@@ -1066,27 +1066,19 @@ class TripleStore implements java.lang.AutoCloseable {
 	private Properties loadProperties(Path propFile)
 		throws IOException
 	{
-		InputStream in = Files.newInputStream(propFile);
-		try {
+		try (InputStream in = Files.newInputStream(propFile);) {
 			Properties properties = new Properties();
 			properties.load(in);
 			return properties;
-		}
-		finally {
-			in.close();
 		}
 	}
 
 	private void storeProperties(Path propFile)
 		throws IOException
 	{
-		OutputStream out = Files.newOutputStream(propFile, StandardOpenOption.WRITE,
-				StandardOpenOption.CREATE_NEW);
-		try {
+		try (OutputStream out = Files.newOutputStream(propFile, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE_NEW);) {
 			properties.store(out, "triple indexes meta-data, DO NOT EDIT!");
-		}
-		finally {
-			out.close();
 		}
 	}
 
