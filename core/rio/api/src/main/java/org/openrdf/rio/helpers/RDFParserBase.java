@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -203,11 +204,10 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Override
 	public Collection<RioSetting<?>> getSupportedSettings() {
-		Collection<RioSetting<?>> result = new ArrayList<RioSetting<?>>(4);
+		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
 		result.add(BasicParserSettings.DATATYPE_HANDLING);
 		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
-		result.add(BasicParserSettings.STOP_AT_FIRST_ERROR);
 		result.add(BasicParserSettings.VERIFY_DATA);
 
 		return result;

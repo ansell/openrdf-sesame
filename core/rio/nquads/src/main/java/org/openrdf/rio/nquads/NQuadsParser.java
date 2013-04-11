@@ -1,18 +1,15 @@
-/* 
- * Licensed to Aduna under one or more contributor license agreements.  
- * See the NOTICE.txt file distributed with this work for additional 
- * information regarding copyright ownership. 
- *
- * Aduna licenses this file to you under the terms of the Aduna BSD 
- * License (the "License"); you may not use this file except in compliance 
- * with the License. See the LICENSE.txt file distributed with this work 
- * for the full License.
- *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
- * implied. See the License for the specific language governing permissions
- * and limitations under the License.
+/*
+ * Licensed to Aduna under one or more contributor license agreements. See the NOTICE.txt file
+ * distributed with this work for additional information regarding copyright ownership.
+ * 
+ * Aduna licenses this file to you under the terms of the Aduna BSD License (the "License"); you may
+ * not use this file except in compliance with the License. See the LICENSE.txt file distributed
+ * with this work for the full License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.openrdf.rio.nquads;
 
@@ -39,6 +36,7 @@ import java.io.UnsupportedEncodingException;
  * @author Joshua Shinavier
  */
 public class NQuadsParser extends NTriplesParser {
+
 	protected Resource context;
 
 	@Override
@@ -48,7 +46,8 @@ public class NQuadsParser extends NTriplesParser {
 
 	@Override
 	public synchronized void parse(final InputStream inputStream, final String baseURI)
-			throws IOException, RDFParseException, RDFHandlerException {
+		throws IOException, RDFParseException, RDFHandlerException
+	{
 		if (inputStream == null) {
 			throw new IllegalArgumentException("Input stream can not be 'null'");
 		}
@@ -56,7 +55,8 @@ public class NQuadsParser extends NTriplesParser {
 
 		try {
 			parse(new InputStreamReader(inputStream, "US-ASCII"), baseURI);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			// Every platform should support the US-ASCII encoding...
 			throw new RuntimeException(e);
 		}
@@ -64,7 +64,8 @@ public class NQuadsParser extends NTriplesParser {
 
 	@Override
 	public synchronized void parse(final Reader reader, final String baseURI)
-			throws IOException, RDFParseException, RDFHandlerException {
+		throws IOException, RDFParseException, RDFHandlerException
+	{
 		if (reader == null) {
 			throw new IllegalArgumentException("Reader can not be 'null'");
 		}
@@ -87,24 +88,28 @@ public class NQuadsParser extends NTriplesParser {
 				if (c == '#') {
 					// Comment, ignore
 					c = skipLine(c);
-				} else if (c == '\r' || c == '\n') {
+				}
+				else if (c == '\r' || c == '\n') {
 					// Empty line, ignore
 					c = skipLine(c);
-				} else {
+				}
+				else {
 					c = parseQuad(c);
 				}
 
 				c = skipWhitespace(c);
 			}
-		} finally {
+		}
+		finally {
 			clear();
 		}
 
 		rdfHandler.endRDF();
 	}
 
-	private int parseQuad(int c) throws IOException, RDFParseException,
-			RDFHandlerException {
+	private int parseQuad(int c)
+		throws IOException, RDFParseException, RDFHandlerException
+	{
 
 		boolean ignoredAnError = false;
 		try {
@@ -127,15 +132,18 @@ public class NQuadsParser extends NTriplesParser {
 			}
 			if (c == -1) {
 				throwEOFException();
-			} else if (c != '.') {
-				reportFatalError("Expected '.', found: " + (char) c);
+			}
+			else if (c != '.') {
+				reportFatalError("Expected '.', found: " + (char)c);
 			}
 
 			c = assertLineTerminates(c);
-		} catch (RDFParseException rdfpe) {
+		}
+		catch (RDFParseException rdfpe) {
 			if (stopAtFirstError()) {
 				throw rdfpe;
-			} else {
+			}
+			else {
 				ignoredAnError = true;
 			}
 		}
@@ -155,7 +163,9 @@ public class NQuadsParser extends NTriplesParser {
 		return c;
 	}
 
-	protected int parseContext(int c) throws IOException, RDFParseException {
+	protected int parseContext(int c)
+		throws IOException, RDFParseException
+	{
 		// FIXME: context (in N-Quads) can be a literal
 		StringBuilder sb = new StringBuilder(100);
 
@@ -164,16 +174,20 @@ public class NQuadsParser extends NTriplesParser {
 			// subject is an uriref
 			c = parseUriRef(c, sb);
 			context = createURI(sb.toString());
-		} else if (c == '_') {
+		}
+		else if (c == '_') {
 			// subject is a bNode
 			c = parseNodeID(c, sb);
 			context = createBNode(sb.toString());
-		} else if (c == -1) {
+		}
+		else if (c == -1) {
 			throwEOFException();
-		} else {
-			reportFatalError("Expected '<' or '_', found: " + (char) c);
+		}
+		else {
+			reportFatalError("Expected '<' or '_', found: " + (char)c);
 		}
 
 		return c;
 	}
+
 }
