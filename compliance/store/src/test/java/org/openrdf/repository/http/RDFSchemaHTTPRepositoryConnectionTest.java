@@ -16,10 +16,12 @@
  */
 package org.openrdf.repository.http;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.repository.RDFSchemaRepositoryConnectionTest;
 import org.openrdf.repository.Repository;
@@ -28,13 +30,14 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 
 	private HTTPMemServer server;
 
+	private Path testDir;
+
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-rdfs-http-connection-datadir");
-		testFolder.mkdirs();
-		server = new HTTPMemServer(testFolder);
+		testDir = tempDir.newFolder("sesame-rdfs-http-connection-datadir").toPath();
+		server = new HTTPMemServer(testDir);
 		try {
 			server.start();
 			super.setUp();
@@ -49,8 +52,17 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			try {
+				server.stop();
+			}
+			finally {
+				Java7FileUtil.deleteDir(testDir);
+			}
+		}
 	}
 
 	@Override

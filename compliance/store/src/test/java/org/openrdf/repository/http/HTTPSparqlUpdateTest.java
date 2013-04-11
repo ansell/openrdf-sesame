@@ -16,10 +16,13 @@
  */
 package org.openrdf.repository.http;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.query.parser.sparql.SPARQLUpdateTest;
 import org.openrdf.repository.Repository;
@@ -31,13 +34,14 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 
 	private HTTPMemServer server;
 
+	private Path testDir;
+
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-http-sparql-update-datadir");
-		testFolder.mkdirs();
-		server = new HTTPMemServer(testFolder);
+		testDir = tempDir.newFolder("sesame-http-sparql-update-datadir").toPath();
+		server = new HTTPMemServer(testDir);
 
 		try {
 			server.start();
@@ -53,8 +57,17 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			try {
+				server.stop();
+			}
+			finally {
+				Java7FileUtil.deleteDir(testDir);
+			}
+		}
 	}
 
 	@Override

@@ -22,9 +22,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -44,7 +46,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.parser.sparql.SPARQLUpdateTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -85,6 +86,8 @@ public class SPARQLServiceEvaluationTest {
 
 	protected static final String EX_NS = "http://example.org/";
 
+	private Path testDir;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -92,9 +95,8 @@ public class SPARQLServiceEvaluationTest {
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-sparql-service-evaluation-datadir");
-		testFolder.mkdirs();
-		server = new HTTPMemServer(testFolder);
+		testDir = tempDir.newFolder("sesame-sparql-service-evaluation-datadir").toPath();
+		server = new HTTPMemServer(testDir);
 
 		try {
 			server.start();
@@ -108,13 +110,13 @@ public class SPARQLServiceEvaluationTest {
 			localRepository.initialize();
 
 			loadDataSet(localRepository, "/testdata-query/defaultgraph.ttl");
-			
+
 			f = localRepository.getValueFactory();
 
 			bob = f.createURI(EX_NS, "bob");
 			alice = f.createURI(EX_NS, "alice");
 			william = f.createURI(EX_NS, "william");
-			
+
 		}
 		catch (Exception e) {
 			server.stop();
@@ -150,7 +152,12 @@ public class SPARQLServiceEvaluationTest {
 			localRepository.shutDown();
 		}
 		finally {
-			server.stop();
+			try {
+				server.stop();
+			}
+			finally {
+				Java7FileUtil.deleteDir(testDir);
+			}
 		}
 	}
 
@@ -159,10 +166,10 @@ public class SPARQLServiceEvaluationTest {
 		throws RepositoryException
 	{
 		StringBuilder qb = new StringBuilder();
-		qb.append(" SELECT * \n"); 
+		qb.append(" SELECT * \n");
 		qb.append(" WHERE { \n");
 		qb.append("     SERVICE <" + server.getRepositoryUrl() + "> { \n");
-		qb.append("             ?X <"	+ FOAF.NAME + "> ?Y \n ");
+		qb.append("             ?X <" + FOAF.NAME + "> ?Y \n ");
 		qb.append("     } \n ");
 		qb.append("     ?X a <" + FOAF.PERSON + "> . \n");
 		qb.append(" } \n");

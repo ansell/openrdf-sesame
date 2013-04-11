@@ -18,10 +18,13 @@ package org.openrdf.repository.http;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.model.URI;
 import org.openrdf.query.QueryLanguage;
@@ -33,14 +36,15 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 	private HTTPMemServer server;
 
+	private Path testDir;
+
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-http-store-connection-datadir");
-		testFolder.mkdirs();
-		server = new HTTPMemServer(testFolder);
-		
+		testDir = tempDir.newFolder("sesame-http-store-connection-datadir").toPath();
+		server = new HTTPMemServer(testDir);
+
 		try {
 			server.start();
 			super.setUp();
@@ -55,8 +59,17 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			try {
+				server.stop();
+			}
+			finally {
+				Java7FileUtil.deleteDir(testDir);
+			}
+		}
 	}
 
 	@Override
@@ -142,20 +155,22 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
 	}
-	
+
 	@Test
-	public void testUpdateExecution() throws Exception {
+	public void testUpdateExecution()
+		throws Exception
+	{
 
 		URI foobar = vf.createURI("foo:bar");
-		
+
 		String sparql = "INSERT DATA { <foo:bar> <foo:bar> <foo:bar> . } ";
-		
+
 		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, sparql);
 
 		update.execute();
-		
+
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
-		
+
 		testCon.clear();
 
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
@@ -163,13 +178,14 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		testCon.begin();
 		update.execute();
 
-		// NOTE this is only correct because HTTPconnection does not implement true transaction isolation.
+		// NOTE this is only correct because HTTPconnection does not implement
+		// true transaction isolation.
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
 
 		testCon.commit();
-		
+
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
-		
+
 	}
-	
+
 }

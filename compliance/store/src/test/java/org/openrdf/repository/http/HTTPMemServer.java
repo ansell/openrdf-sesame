@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.nio.file.Path;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -66,7 +67,7 @@ public class HTTPMemServer {
 
 	private final String inferenceRepositoryUrl;
 
-	public HTTPMemServer(File dataDir) {
+	public HTTPMemServer(Path testDir) {
 		System.clearProperty("DEBUG");
 
 		port = getFreePort();
@@ -75,7 +76,7 @@ public class HTTPMemServer {
 		inferenceRepositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_INFERENCE_REPO_ID);
 		jetty = new Server();
 
-		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", testDir.toAbsolutePath().toString());
 
 		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
@@ -88,7 +89,7 @@ public class HTTPMemServer {
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame.war");
 		jetty.setHandler(webapp);
-		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", testDir.toAbsolutePath().toString());
 
 	}
 

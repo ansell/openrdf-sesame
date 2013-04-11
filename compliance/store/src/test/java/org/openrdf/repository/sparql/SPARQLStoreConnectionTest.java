@@ -20,10 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Statement;
@@ -44,13 +46,14 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
 	private HTTPMemServer server;
 
+	private Path testDir;
+
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-sparql-store-connection-datadir");
-		testFolder.mkdirs();
-		server = new HTTPMemServer(testFolder);
+		testDir = tempDir.newFolder("sesame-sparql-store-connection-datadir").toPath();
+		server = new HTTPMemServer(testDir);
 		try {
 			server.start();
 			super.setUp();
@@ -72,9 +75,16 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		if(server != null) {
-			server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			try {
+				server.stop();
+			}
+			finally {
+				Java7FileUtil.deleteDir(testDir);
+			}
 		}
 	}
 
