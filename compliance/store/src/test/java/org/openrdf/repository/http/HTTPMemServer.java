@@ -16,21 +16,14 @@
  */
 package org.openrdf.repository.http;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.nio.file.Path;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
-
-//import org.mortbay.jetty.Connector;
-//import org.mortbay.jetty.Server;
-//import org.mortbay.jetty.nio.BlockingChannelConnector;
-//import org.mortbay.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
@@ -63,7 +56,7 @@ public class HTTPMemServer {
 
 	private final String repositoryUrl;
 
-	private final Server jetty;
+	private Server jetty;
 
 	private final String inferenceRepositoryUrl;
 
@@ -81,7 +74,7 @@ public class HTTPMemServer {
 		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
 		conn.setPort(port);
-		conn.setSoLingerTime(0);
+		//conn.setSoLingerTime(-1);
 		jetty.addConnector(conn);
 
 		WebAppContext webapp = new WebAppContext();
@@ -115,9 +108,9 @@ public class HTTPMemServer {
 		// System.setProperty("info.aduna.platform.appdata.basedir",
 		// dataDir.getAbsolutePath());
 
-		System.out.println("about to start server at: " + serverUrl);
+		//System.out.println("about to start server at: " + serverUrl);
 		jetty.start();
-		System.out.println("server started at: " + serverUrl);
+		//System.out.println("server started at: " + serverUrl);
 
 		createTestRepositories();
 	}
@@ -138,9 +131,16 @@ public class HTTPMemServer {
 			}
 		}
 		finally {
-			jetty.stop();
+			try
+			{
+				jetty.stop();
+			}
+			finally
+			{
+				jetty.destroy();
+			}
 		}
-		System.out.println("server stopped at: " + serverUrl);
+		//System.out.println("server stopped at: " + serverUrl);
 		System.clearProperty("org.mortbay.log.class");
 	}
 
