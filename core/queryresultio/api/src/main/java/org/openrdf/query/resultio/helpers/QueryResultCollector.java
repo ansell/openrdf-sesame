@@ -32,6 +32,7 @@ import org.openrdf.query.TupleQueryResultHandlerException;
  * The {@link List}s that are returned by this interface are immutable.
  * 
  * @author Peter Ansell
+ * @since 2.7.0
  */
 public class QueryResultCollector implements QueryResultHandler {
 
@@ -94,16 +95,28 @@ public class QueryResultCollector implements QueryResultHandler {
 	}
 
 	/**
-	 * @return True if there was a boolean handled by this set.
+	 * Determines whether {@link #handleBoolean(boolean)} was called for this
+	 * collector.
+	 * 
+	 * @return True if there was a boolean handled by this collector.
+	 * @since 2.7.0
 	 */
 	public boolean getHandledBoolean() {
 		return hasBooleanSet;
 	}
 
 	/**
+	 * If {@link #getHandledBoolean()} returns true this method returns the
+	 * boolean that was last found using {@link #handleBoolean(boolean)}
+	 * <p>
+	 * If {@link #getHandledBoolean()} returns false this method throws a
+	 * {@link QueryResultHandlerException} indicating that a response could not
+	 * be provided.
+	 * 
 	 * @return The boolean value that was collected.
 	 * @throws QueryResultHandlerException
 	 *         If there was no boolean value collected.
+	 * @since 2.7.0
 	 */
 	public boolean getBoolean()
 		throws QueryResultHandlerException
@@ -117,9 +130,14 @@ public class QueryResultCollector implements QueryResultHandler {
 	}
 
 	/**
+	 * Determines whether {@link #endQueryResult()} was called after the last
+	 * calls to {@link #startQueryResult(List)} and optionally calls to
+	 * {@link #handleSolution(BindingSet)}.
+	 * 
 	 * @return True if there was a call to {@link #endQueryResult()} after the
 	 *         last calls to {@link #startQueryResult(List)} and
 	 *         {@link #handleSolution(BindingSet)}.
+	 * @since 2.7.0
 	 */
 	public boolean getHandledTuple() {
 		return endQueryResultFound;
@@ -133,6 +151,7 @@ public class QueryResultCollector implements QueryResultHandler {
 	 * @throws QueryResultHandlerException
 	 *         If the tuple results set was not successfully collected, as
 	 *         signalled by a call to {@link #endQueryResult()}.
+	 * @since 2.7.0
 	 */
 	public List<String> getBindingNames()
 		throws QueryResultHandlerException
@@ -151,6 +170,7 @@ public class QueryResultCollector implements QueryResultHandler {
 	 * @throws QueryResultHandlerException
 	 *         If the tuple results set was not successfully collected, as
 	 *         signalled by a call to {@link #endQueryResult()}.
+	 * @since 2.7.0
 	 */
 	public List<BindingSet> getBindingSets()
 		throws QueryResultHandlerException
@@ -166,6 +186,7 @@ public class QueryResultCollector implements QueryResultHandler {
 	/**
 	 * @return A list of links accumulated from calls to
 	 *         {@link #handleLinks(List)}.
+	 * @since 2.7.0
 	 */
 	public List<String> getLinks() {
 		return Collections.unmodifiableList(links);

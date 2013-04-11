@@ -73,7 +73,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private final Repository repository;
 
-	private volatile ParserConfig parserConfig = new ParserConfig(true, false, false, DatatypeHandling.VERIFY);
+	private volatile ParserConfig parserConfig = new ParserConfig();
 
 	private volatile boolean isOpen;
 
