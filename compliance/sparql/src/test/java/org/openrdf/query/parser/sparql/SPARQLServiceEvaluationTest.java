@@ -23,6 +23,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -224,10 +225,17 @@ public class SPARQLServiceEvaluationTest {
 		if (dataset == null)
 			throw new IllegalArgumentException("Datasetfile " + datasetFile + " not found.");
 
+		String datasetString = IOUtil.readString(dataset);
+		// System.out.println(queryString);
+		// Need to use the correct server URL, as it is otherwise hardcoded
+		datasetString = datasetString.replace("http://localhost:18080/openrdf", server.getServerUrl());
+		// System.out.println(server.getServerUrl());
+		// System.out.println(queryString);
+
 		RepositoryConnection con = rep.getConnection();
 		try {
 			con.clear();
-			con.add(dataset, "", RDFFormat.forFileName(datasetFile));
+			con.add(new StringReader(datasetString), "", RDFFormat.forFileName(datasetFile));
 		}
 		finally {
 			dataset.close();
