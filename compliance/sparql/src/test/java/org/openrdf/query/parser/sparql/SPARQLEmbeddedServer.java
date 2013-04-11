@@ -71,7 +71,7 @@ public class SPARQLEmbeddedServer {
 		WebAppContext webapp = new WebAppContext();
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
-		webapp.setWar("./target/openrdf-sesame");
+		webapp.setWar("./target/openrdf-sesame.war");
 		jetty.addHandler(webapp);
 	}
 
