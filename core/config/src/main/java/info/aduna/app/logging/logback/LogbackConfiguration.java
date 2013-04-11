@@ -110,7 +110,7 @@ public class LogbackConfiguration extends LogConfigurationBase {
 		throws IOException
 	{
 		Path f = getConfDir().resolve(LOGBACK_CONFIG_FILE);
-		if (!Files.exists(f) || !Files.isReadable(f)) {
+		if (!Files.exists(f)) { // || !Files.isReadable(f)) {
 			String content = ConfigurationUtil.loadConfigurationContents(LOGBACK_CONFIG_FILE);
 			content = content.replace("${logging.main.file}", LOG_FILE);
 			content = content.replace("${logging.event.user.file}", USER_EVENT_LOG_FILE);
@@ -119,10 +119,12 @@ public class LogbackConfiguration extends LogConfigurationBase {
 			content = content.replace("${logging.event.admin.logger}", ADMIN_EVENT_LOGGER_NAME);
 			Files.createDirectories(f.getParent());
 
-			if (!Files.exists(f) || !Files.isWritable(f.getParent())) {
+			if (!Files.isWritable(f.getParent())) {
 				throw new IOException("Not allowed to write logging configuration file to " + f.getParent());
 			}
 			else {
+				f = Files.createFile(f);
+
 				Files.write(f, content.getBytes());
 			}
 		}
