@@ -167,7 +167,7 @@ public class HTTPClient {
 	public void initialize() {
 		if (httpClient == null) {
 			executor = Executors.newCachedThreadPool();
-			
+
 			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
 			// HttpClient
 			manager = new MultiThreadedHttpConnectionManager();
@@ -739,20 +739,28 @@ public class HTTPClient {
 				parser.setParserConfig(getParserConfig());
 				parser.setParseErrorListener(new ParseErrorLogger());
 
-				// TODO copied from SPARQLGraphQuery repository, is this required?
-				String charset_str = method.getResponseCharSet();
-				Charset charset;
-				try {
-					charset = Charset.forName(charset_str);
-				}
-				catch (IllegalCharsetNameException e) {
-					// work around for Joseki-3.2
-					// Content-Type: application/rdf+xml;
-					// charset=application/rdf+xml
-					charset = Charset.forName("UTF-8");
-				}
-				String baseURI = method.getURI().getURI();
+				Charset charset = null;
 
+				// SES-1793 : Do not attempt to check for a charset if the format is
+				// defined not to have a charset
+				// This prevents errors caused by people erroneously attaching a
+				// charset to a binary formatted document
+				if (format.hasCharset()) {
+					// TODO copied from SPARQLGraphQuery repository, is this
+					// required?
+					String charset_str = method.getResponseCharSet();
+					try {
+						charset = Charset.forName(charset_str);
+					}
+					catch (IllegalCharsetNameException e) {
+						// work around for Joseki-3.2
+						// Content-Type: application/rdf+xml;
+						// charset=application/rdf+xml
+						charset = Charset.forName("UTF-8");
+					}
+				}
+
+				String baseURI = method.getURI().getURI();
 				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, method.getResponseBodyAsStream(),
 						charset, baseURI, method);
 				execute(gRes);
