@@ -87,6 +87,16 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	public static final String URI = "uri";
 
 	/**
+	 * Backwards compatibility with very early version of original SPARQL spec.
+	 */
+	private static final String DISTINCT = "distinct";
+
+	/**
+	 * Backwards compatibility with very early version of original SPARQL spec.
+	 */
+	private static final String ORDERED = "ordered";
+
+	/**
 	 * 
 	 */
 	public SPARQLJSONParserBase() {
@@ -191,102 +201,105 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 							jp.getCurrentLocation().getColumnNr());
 				}
 
-				if (jp.nextToken() != JsonToken.FIELD_NAME) {
-					throw new QueryResultParseException("Found unexpected token in results object: "
-							+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
-							jp.getCurrentLocation().getColumnNr());
-				}
+				while (jp.nextToken() != JsonToken.END_OBJECT) {
 
-				if (jp.getCurrentName().equals(BINDINGS)) {
-					if (jp.nextToken() != JsonToken.START_ARRAY) {
-						throw new QueryResultParseException("Found unexpected token in bindings object: "
-								+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
-								jp.getCurrentLocation().getColumnNr());
-					}
-
-					while (jp.nextToken() != JsonToken.END_ARRAY) {
-
-						MapBindingSet nextBindingSet = new MapBindingSet();
-
-						if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
-							throw new QueryResultParseException("Did not find object in bindings array: "
-									+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
-									jp.getCurrentLocation().getColumnNr());
+					if (jp.getCurrentName().equals(BINDINGS)) {
+						if (jp.nextToken() != JsonToken.START_ARRAY) {
+							throw new QueryResultParseException("Found unexpected token in bindings object",
+									jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
 						}
 
-						while (jp.nextToken() != JsonToken.END_OBJECT) {
+						while (jp.nextToken() != JsonToken.END_ARRAY) {
 
-							if (jp.getCurrentToken() != JsonToken.FIELD_NAME) {
-								throw new QueryResultParseException("Did not find binding name",
-										jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+							MapBindingSet nextBindingSet = new MapBindingSet();
+
+							if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+								throw new QueryResultParseException("Did not find object in bindings array: "
+										+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
+										jp.getCurrentLocation().getColumnNr());
 							}
-
-							final String bindingStr = jp.getCurrentName();
-
-							if (jp.nextToken() != JsonToken.START_OBJECT) {
-								throw new QueryResultParseException("Did not find object for binding value",
-										jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
-							}
-
-							String lang = null;
-							String type = null;
-							String datatype = null;
-							String value = null;
 
 							while (jp.nextToken() != JsonToken.END_OBJECT) {
 
 								if (jp.getCurrentToken() != JsonToken.FIELD_NAME) {
-									throw new QueryResultParseException("Did not find value attribute under "
-											+ bindingStr + " field", jp.getCurrentLocation().getLineNr(),
-											jp.getCurrentLocation().getColumnNr());
-								}
-								String fieldName = jp.getCurrentName();
-
-								// move to the value token
-								jp.nextToken();
-
-								// set the appropriate state variable
-								if (TYPE.equals(fieldName)) {
-									type = jp.getText();
-								}
-								else if (XMLLANG.equals(fieldName)) {
-									lang = jp.getText();
-								}
-								else if (DATATYPE.equals(fieldName)) {
-									datatype = jp.getText();
-								}
-								else if (VALUE.equals(fieldName)) {
-									value = jp.getText();
-								}
-								else {
-									throw new QueryResultParseException("Unexpected field name: " + fieldName,
+									throw new QueryResultParseException("Did not find binding name",
 											jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
-
 								}
-							}
 
-							nextBindingSet.addBinding(bindingStr, parseValue(type, value, lang, datatype));
+								final String bindingStr = jp.getCurrentName();
+
+								if (jp.nextToken() != JsonToken.START_OBJECT) {
+									throw new QueryResultParseException("Did not find object for binding value",
+											jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
+								}
+
+								String lang = null;
+								String type = null;
+								String datatype = null;
+								String value = null;
+
+								while (jp.nextToken() != JsonToken.END_OBJECT) {
+
+									if (jp.getCurrentToken() != JsonToken.FIELD_NAME) {
+										throw new QueryResultParseException("Did not find value attribute under "
+												+ bindingStr + " field", jp.getCurrentLocation().getLineNr(),
+												jp.getCurrentLocation().getColumnNr());
+									}
+									String fieldName = jp.getCurrentName();
+
+									// move to the value token
+									jp.nextToken();
+
+									// set the appropriate state variable
+									if (TYPE.equals(fieldName)) {
+										type = jp.getText();
+									}
+									else if (XMLLANG.equals(fieldName)) {
+										lang = jp.getText();
+									}
+									else if (DATATYPE.equals(fieldName)) {
+										datatype = jp.getText();
+									}
+									else if (VALUE.equals(fieldName)) {
+										value = jp.getText();
+									}
+									else {
+										throw new QueryResultParseException("Unexpected field name: " + fieldName,
+												jp.getCurrentLocation().getLineNr(),
+												jp.getCurrentLocation().getColumnNr());
+
+									}
+								}
+
+								nextBindingSet.addBinding(bindingStr, parseValue(type, value, lang, datatype));
+							}
+							// parsing of solution finished, report result return to
+							// bindings state
+							if (!varsFound) {
+								// Buffer the bindings to fit with the
+								// QueryResultHandler contract so that startQueryResults
+								// is
+								// always called before handleSolution
+								bindings.add(nextBindingSet);
+							}
+							else if (handler != null) {
+								handler.handleSolution(nextBindingSet);
+							}
 						}
-						// parsing of solution finished, report result return to
-						// bindings state
-						if (!varsFound) {
-							// Buffer the bindings to fit with the
-							// QueryResultHandler contract so that startQueryResults is
-							// always called before handleSolution
-							bindings.add(nextBindingSet);
-						}
-						else if (handler != null) {
-							handler.handleSolution(nextBindingSet);
+						if (handler != null) {
+							handler.endQueryResult();
 						}
 					}
-					if (handler != null) {
-						handler.endQueryResult();
+					// Backwards compatibility with very old draft of the original
+					// SPARQL spec
+					else if (jp.getCurrentName().equals(DISTINCT) || jp.getCurrentName().equals(ORDERED)) {
+						jp.nextToken();
 					}
-				}
-				else {
-					throw new QueryResultParseException("Found unexpected field in results: "
-							+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
-							jp.getCurrentLocation().getColumnNr());
+					else {
+						throw new QueryResultParseException("Found unexpected field in results: "
+								+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
+								jp.getCurrentLocation().getColumnNr());
+					}
 				}
 			}
 			else if (baseStr.equals(BOOLEAN)) {
