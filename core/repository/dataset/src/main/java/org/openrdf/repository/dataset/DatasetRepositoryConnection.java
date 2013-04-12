@@ -84,10 +84,10 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 				return;
 			}
 			for (URI dataset : datasets.getDefaultGraphs()) {
-				repository.loadDataset(new URL(dataset.toString()), dataset);
+				repository.loadDataset(new URL(dataset.toString()), dataset, getParserConfig());
 			}
 			for (URI dataset : datasets.getNamedGraphs()) {
-				repository.loadDataset(new URL(dataset.toString()), dataset);
+				repository.loadDataset(new URL(dataset.toString()), dataset, getParserConfig());
 			}
 		}
 		catch (MalformedURLException e) {
