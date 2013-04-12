@@ -88,19 +88,15 @@ import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
- * The HTTP client provides low level HTTP methods for the HTTP communication 
- * of the SPARQL repository as well as the HTTP Repository. All methods are
- * compliant to the SPARQL 1.1 protocol. 
- * 
- * For both Tuple and Graph queries there is a variant which parses the result 
- * in the background, see {@link BackgroundTupleResult} and {@link BackgroundGraphResult}. 
- * For boolean queries the result is parsed in the current thread.
- * 
- * All methods in this class guarantee that HTTP connections are closed properly
- * and returned to the connection pool. 
- * 
- * Functionality specific to the Sesame HTTP protocol can be found in
- * {@link SesameHTTPClient} (which is used by Remote Repositories).
+ * The HTTP client provides low level HTTP methods for the HTTP communication of
+ * the SPARQL repository as well as the HTTP Repository. All methods are
+ * compliant to the SPARQL 1.1 protocol. For both Tuple and Graph queries there
+ * is a variant which parses the result in the background, see
+ * {@link BackgroundTupleResult} and {@link BackgroundGraphResult}. For boolean
+ * queries the result is parsed in the current thread. All methods in this class
+ * guarantee that HTTP connections are closed properly and returned to the
+ * connection pool. Functionality specific to the Sesame HTTP protocol can be
+ * found in {@link SesameHTTPClient} (which is used by Remote Repositories).
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
@@ -120,15 +116,16 @@ public class HTTPClient {
 	 *-----------*/
 
 	private ValueFactory valueFactory;
-	
-	private String queryURL;
-	private String updateURL;
-	
-	private final MultiThreadedHttpConnectionManager manager;
 
-	protected final HttpClient httpClient;
-	
-	private final ExecutorService executor = Executors.newCachedThreadPool();
+	private String queryURL;
+
+	private String updateURL;
+
+	private MultiThreadedHttpConnectionManager manager;
+
+	protected HttpClient httpClient;
+
+	private ExecutorService executor = null;
 
 	private AuthScope authScope;
 
@@ -148,20 +145,7 @@ public class HTTPClient {
 
 	public HTTPClient() {
 		valueFactory = ValueFactoryImpl.getInstance();
-
-		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
-		// HttpClient
-		manager = new MultiThreadedHttpConnectionManager();
-
-		// Allow 20 concurrent connections to the same host (default is 2)
-		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-		params.setDefaultMaxConnectionsPerHost(20);
-		manager.setParams(params);
-
-		
-		httpClient = new HttpClient(manager);
-
-		configureProxySettings(httpClient);
+		initialize();
 	}
 
 	/*-----------------*
@@ -169,8 +153,34 @@ public class HTTPClient {
 	 *-----------------*/
 
 	public void shutDown() {
+		manager.closeIdleConnections(0);
 		manager.shutdown();
 		executor.shutdown();
+		httpClient = null;
+	}
+
+	/**
+	 * (re)initializes the connection manager and HttpClient (if not already
+	 * done), for example after a shutdown has been invoked earlier. Invoking
+	 * this method multiple times will have no effect.
+	 */
+	public void initialize() {
+		if (httpClient == null) {
+			executor = Executors.newCachedThreadPool();
+			
+			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
+			// HttpClient
+			manager = new MultiThreadedHttpConnectionManager();
+
+			// Allow 20 concurrent connections to the same host (default is 2)
+			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+			params.setDefaultMaxConnectionsPerHost(20);
+			manager.setParams(params);
+
+			httpClient = new HttpClient(manager);
+
+			configureProxySettings(httpClient);
+		}
 	}
 
 	protected final HttpClient getHttpClient() {
@@ -184,14 +194,14 @@ public class HTTPClient {
 	public ValueFactory getValueFactory() {
 		return valueFactory;
 	}
-	
+
 	public void setQueryURL(String queryURL) {
 		if (queryURL == null) {
 			throw new IllegalArgumentException("queryURL must not be null");
 		}
 		this.queryURL = queryURL;
 	}
-	
+
 	public void setUpdateURL(String updateURL) {
 		if (updateURL == null) {
 			throw new IllegalArgumentException("updateURL must not be null");
@@ -278,7 +288,7 @@ public class HTTPClient {
 	 *        the password
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-//		checkServerURL();
+		// checkServerURL();
 
 		if (username != null && password != null) {
 			logger.debug("Setting username '{}' and password for server at {}.", username, queryURL);
@@ -299,7 +309,7 @@ public class HTTPClient {
 			httpClient.getParams().setAuthenticationPreemptive(false);
 		}
 	}
-	
+
 	/**
 	 * @param additionalHttpHeaders
 	 *        The additionalHttpHeaders to set as key value pairs.
@@ -307,18 +317,18 @@ public class HTTPClient {
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
 		this.additionalHttpHeaders = additionalHttpHeaders;
 	}
-	
+
 	/**
 	 * @return Returns the additionalHttpHeaders.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
 		return additionalHttpHeaders;
 	}
-	
+
 	protected void execute(Runnable command) {
 		executor.execute(command);
 	}
-	
+
 	public String getQueryURL() {
 		return queryURL;
 	}
@@ -348,7 +358,6 @@ public class HTTPClient {
 		return getBackgroundTupleQueryResult(method);
 	}
 
-
 	public void sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, TupleQueryResultHandler handler, Binding... bindings)
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
@@ -369,7 +378,7 @@ public class HTTPClient {
 			int httpCode = httpClient.executeMethod(method);
 
 			if (!is2xx(httpCode))
-				handleHTTPError(httpCode, method);			
+				handleHTTPError(httpCode, method);
 		}
 		finally {
 			releaseConnection(method);
@@ -390,7 +399,8 @@ public class HTTPClient {
 		QueryInterruptedException
 	{
 		try {
-			HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+			HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+					bindings);
 			return getRDFBackground(method, false);
 		}
 		catch (RDFHandlerException e) {
@@ -429,7 +439,8 @@ public class HTTPClient {
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
 		QueryInterruptedException
 	{
-		HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+				bindings);
 		return getBoolean(method);
 	}
 
@@ -443,8 +454,9 @@ public class HTTPClient {
 
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
-		
-		// functionality to provide custom http headers as required by the applications
+
+		// functionality to provide custom http headers as required by the
+		// applications
 		if (this.additionalHttpHeaders != null) {
 			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
 				method.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
@@ -465,8 +477,9 @@ public class HTTPClient {
 
 		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
 				includeInferred, bindings);
-		
-		// functionality to provide custom http headers as required by the applications
+
+		// functionality to provide custom http headers as required by the
+		// applications
 		if (this.additionalHttpHeaders != null) {
 			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
 				method.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
@@ -559,31 +572,33 @@ public class HTTPClient {
 
 	/**
 	 * Parse the response in a background thread. HTTP connections are dealt with
-	 * in the {@link BackgroundTupleResult} or (in the error-case) in this method.
+	 * in the {@link BackgroundTupleResult} or (in the error-case) in this
+	 * method.
 	 */
 	protected BackgroundTupleResult getBackgroundTupleQueryResult(HttpMethod method)
 		throws RepositoryException, QueryInterruptedException, HttpException, MalformedQueryException,
 		IOException
 	{
-	
+
 		boolean submitted = false;
 		try {
-			
+
 			// Specify which formats we support
 			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 			if (tqrFormats.isEmpty()) {
 				throw new RepositoryException("No tuple query result parsers have been registered");
 			}
-			
+
 			// send the tuple query
 			sendTupleQueryViaHttp(method, tqrFormats);
-			
+
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(method);
 			try {
 				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 				TupleQueryResultParser parser = QueryResultIO.createParser(format, getValueFactory());
-				BackgroundTupleResult tRes = new BackgroundTupleResult(parser, method.getResponseBodyAsStream(), method);
+				BackgroundTupleResult tRes = new BackgroundTupleResult(parser, method.getResponseBodyAsStream(),
+						method);
 				execute(tRes);
 				submitted = true;
 				return tRes;
@@ -591,32 +606,33 @@ public class HTTPClient {
 			catch (UnsupportedQueryResultFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
 			}
-		} finally {
+		}
+		finally {
 			if (!submitted)
 				releaseConnection(method);
 		}
 	}
-			
-	
+
 	/**
-	 * Parse the response in this thread using the provided {@link TupleQueryResultHandler}.
-	 * All HTTP connections are closed and released in this method
+	 * Parse the response in this thread using the provided
+	 * {@link TupleQueryResultHandler}. All HTTP connections are closed and
+	 * released in this method
 	 */
 	protected void getTupleQueryResult(HttpMethod method, TupleQueryResultHandler handler)
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
-	{		
+	{
 		try {
-			
+
 			// Specify which formats we support
 			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 			if (tqrFormats.isEmpty()) {
 				throw new RepositoryException("No tuple query result parsers have been registered");
 			}
-			
+
 			// send the tuple query
 			sendTupleQueryViaHttp(method, tqrFormats);
-			
+
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(method);
 			try {
@@ -638,19 +654,18 @@ public class HTTPClient {
 				else {
 					throw new TupleQueryResultHandlerException(e);
 				}
-			}			
-		} finally {
+			}
+		}
+		finally {
 			releaseConnection(method);
 		}
 	}
-	
+
 	/**
 	 * Send the tuple query via HTTP and throws an exception in case anything
-	 * goes wrong, i.e. only for HTTP 200 the method returns without
-	 * exception.
-	 * 
-	 * If HTTP status code is not equal to 200, the request is aborted,
-	 * however pooled connections are not released.
+	 * goes wrong, i.e. only for HTTP 200 the method returns without exception.
+	 * If HTTP status code is not equal to 200, the request is aborted, however
+	 * pooled connections are not released.
 	 * 
 	 * @param method
 	 * @throws RepositoryException
@@ -686,35 +701,36 @@ public class HTTPClient {
 
 		int httpCode = httpClient.executeMethod(method);
 
-		if (httpCode == HttpURLConnection.HTTP_OK) {			
+		if (httpCode == HttpURLConnection.HTTP_OK) {
 			return; // everything OK, control flow can continue
-		} 
-		
+		}
+
 		// error handling + http abort
 		handleHTTPError(httpCode, method);
 	}
-	
+
 	/**
 	 * Parse the response in a background thread. HTTP connections are dealt with
-	 * in the {@link BackgroundGraphResult} or (in the error-case) in this method.
+	 * in the {@link BackgroundGraphResult} or (in the error-case) in this
+	 * method.
 	 */
 	protected BackgroundGraphResult getRDFBackground(HttpMethodBase method, boolean requireContext)
-			throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-			UnauthorizedException, QueryInterruptedException
+		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+		UnauthorizedException, QueryInterruptedException
 	{
-		
+
 		boolean submitted = false;
 		try {
-			
+
 			// Specify which formats we support using Accept headers
 			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
 			if (rdfFormats.isEmpty()) {
 				throw new RepositoryException("No tuple RDF parsers have been registered");
 			}
-			
+
 			// send the tuple query
 			sendGraphQueryViaHttp(method, requireContext, rdfFormats);
-			
+
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(method);
 			try {
@@ -722,21 +738,23 @@ public class HTTPClient {
 				RDFParser parser = Rio.createParser(format, getValueFactory());
 				parser.setParserConfig(getParserConfig());
 				parser.setParseErrorListener(new ParseErrorLogger());
-				
+
 				// TODO copied from SPARQLGraphQuery repository, is this required?
 				String charset_str = method.getResponseCharSet();
 				Charset charset;
 				try {
 					charset = Charset.forName(charset_str);
-				} catch (IllegalCharsetNameException e) {
+				}
+				catch (IllegalCharsetNameException e) {
 					// work around for Joseki-3.2
 					// Content-Type: application/rdf+xml;
 					// charset=application/rdf+xml
 					charset = Charset.forName("UTF-8");
 				}
 				String baseURI = method.getURI().getURI();
-				
-				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, method.getResponseBodyAsStream(), charset, baseURI, method);
+
+				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, method.getResponseBodyAsStream(),
+						charset, baseURI, method);
 				execute(gRes);
 				submitted = true;
 				return gRes;
@@ -744,14 +762,14 @@ public class HTTPClient {
 			catch (UnsupportedQueryResultFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
 			}
-		} finally {
+		}
+		finally {
 			if (!submitted)
 				releaseConnection(method);
 		}
-		
-		
+
 	}
-	
+
 	/**
 	 * Parse the response in this thread using the provided {@link RDFHandler}.
 	 * All HTTP connections are closed and released in this method
@@ -760,16 +778,16 @@ public class HTTPClient {
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
-		try {	
+		try {
 			// Specify which formats we support using Accept headers
 			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
 			if (rdfFormats.isEmpty()) {
 				throw new RepositoryException("No tuple RDF parsers have been registered");
 			}
-	
+
 			// send the tuple query
 			sendGraphQueryViaHttp(method, requireContext, rdfFormats);
-					
+
 			String mimeType = getResponseMIMEType(method);
 			try {
 				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
@@ -785,34 +803,36 @@ public class HTTPClient {
 			catch (RDFParseException e) {
 				throw new RepositoryException("Malformed query result from server", e);
 			}
-		} finally {
+		}
+		finally {
 			releaseConnection(method);
 		}
 	}
 
 	private void sendGraphQueryViaHttp(HttpMethod method, boolean requireContext, Set<RDFFormat> rdfFormats)
-			throws RepositoryException, HttpException, IOException, QueryInterruptedException,
-			MalformedQueryException
+		throws RepositoryException, HttpException, IOException, QueryInterruptedException,
+		MalformedQueryException
 	{
-	
+
 		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, preferredRDFFormat);
 		for (String acceptParam : acceptParams) {
 			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
 		}
 
 		int httpCode = httpClient.executeMethod(method);
-		
-		if (httpCode == HttpURLConnection.HTTP_OK) {			
+
+		if (httpCode == HttpURLConnection.HTTP_OK) {
 			return; // everything OK, control flow can continue
-		} 
-		
+		}
+
 		// error handling + http abort
 		handleHTTPError(httpCode, method);
 	}
-	
+
 	/**
-	 * Parse the response in this thread using a suitable {@link BooleanQueryResultParser}.
-	 * All HTTP connections are closed and released in this method
+	 * Parse the response in this thread using a suitable
+	 * {@link BooleanQueryResultParser}. All HTTP connections are closed and
+	 * released in this method
 	 */
 	protected boolean getBoolean(HttpMethodBase method)
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
@@ -824,10 +844,10 @@ public class HTTPClient {
 			if (booleanFormats.isEmpty()) {
 				throw new RepositoryException("No boolean query result parsers have been registered");
 			}
-			
+
 			// send the tuple query
 			sendBooleanQueryViaHttp(method, booleanFormats);
-	
+
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(method);
 			try {
@@ -841,17 +861,18 @@ public class HTTPClient {
 			catch (QueryResultParseException e) {
 				throw new RepositoryException("Malformed query result from server", e);
 			}
-		} finally {
+		}
+		finally {
 			method.releaseConnection();
 		}
 
 	}
-	
+
 	private void sendBooleanQueryViaHttp(HttpMethod method, Set<BooleanQueryResultFormat> booleanFormats)
-			throws RepositoryException, HttpException, IOException, QueryInterruptedException,
-			MalformedQueryException
+		throws RepositoryException, HttpException, IOException, QueryInterruptedException,
+		MalformedQueryException
 	{
-		
+
 		for (BooleanQueryResultFormat format : booleanFormats) {
 			// Determine a q-value that reflects the user specified preference
 			int qValue = 10;
@@ -873,19 +894,18 @@ public class HTTPClient {
 		}
 
 		int httpCode = httpClient.executeMethod(method);
-		
-		if (httpCode == HttpURLConnection.HTTP_OK) {			
+
+		if (httpCode == HttpURLConnection.HTTP_OK) {
 			return; // everything OK, control flow can continue
 		}
-		
+
 		// error handling + http abort
 		handleHTTPError(httpCode, method);
 	}
-	
+
 	/**
-	 * Convenience method to deal with HTTP level errors of tuple,
-	 * graph and boolean queries in the same way. This method
-	 * aborts the HTTP connection.
+	 * Convenience method to deal with HTTP level errors of tuple, graph and
+	 * boolean queries in the same way. This method aborts the HTTP connection.
 	 * 
 	 * @param httpCode
 	 * @param method
@@ -896,7 +916,7 @@ public class HTTPClient {
 	private void handleHTTPError(int httpCode, HttpMethod method)
 		throws MalformedQueryException, QueryInterruptedException, RepositoryException
 	{
-	try {
+		try {
 			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new UnauthorizedException();
 			}
@@ -905,7 +925,7 @@ public class HTTPClient {
 			}
 			else {
 				ErrorInfo errInfo = getErrorInfo(method);
-	
+
 				// Throw appropriate exception
 				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
 					throw new MalformedQueryException(errInfo.getErrorMessage());
@@ -917,7 +937,8 @@ public class HTTPClient {
 					throw new RepositoryException(errInfo.toString());
 				}
 			}
-		} finally {
+		}
+		finally {
 			method.abort();
 		}
 	}

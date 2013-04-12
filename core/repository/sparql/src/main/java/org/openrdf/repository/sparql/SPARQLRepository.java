@@ -76,7 +76,7 @@ public class SPARQLRepository extends RepositoryBase {
 
 		// initialize HTTP client
 		httpClient = createHTTPClient();
-		httpClient.setValueFactory(new ValueFactoryImpl());
+		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
 		httpClient.setUpdateURL(updateEndpointUrl);
@@ -112,7 +112,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-		// no-op
+		httpClient.initialize();
 	}
 
 	public boolean isWritable()
@@ -146,18 +146,9 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		// httpclient shutdown moved to finalize method, to avoid problems with
-		// shutdown followed by re-initialization. See SES-1059.
+		httpClient.shutDown();
 	}
 	
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		httpClient.shutDown();
-		super.finalize();
-	}
-
 	@Override
 	public String toString() {
 		return getHTTPClient().getQueryURL();
