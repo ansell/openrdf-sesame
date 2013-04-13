@@ -17,7 +17,6 @@
 package org.openrdf.rio.helpers;
 
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
  * A class encapsulating the basic parser settings that most parsers may
@@ -29,26 +28,81 @@ import org.openrdf.rio.RDFParser.DatatypeHandling;
 public class BasicParserSettings {
 
 	/**
-	 * Boolean setting for parser to determine whether data values are verified.
+	 * Boolean setting for parser to determine whether recognised datatypes are
+	 * to be verified.
+	 * <p>
+	 * Verification is performed using registered DatatypeHandlers.
 	 * <p>
 	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> VERIFY_DATA = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.verifydata", "Verify data", Boolean.TRUE);
+	public static final RioSetting<Boolean> VERIFY_DATATYPE_VALUES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.verifydatatypevalues", "Verify recognised datatype values", Boolean.TRUE);
 
 	/**
-	 * Boolean setting for parser to determine whether parser should stop at
-	 * first error or continue if that is possible. If the parser is unable to
-	 * continue after an error it will still fail regardless of this setting.
+	 * Boolean setting for parser to determine whether to fail parsing if
+	 * datatypes are not recognised.
+	 * <p>
+	 * Datatypes are recognised based on matching one of the registered
+	 * DatatypeHandlers.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> FAIL_ON_UNKNOWN_DATATYPES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.failonunknowndatatypes", "Fail on unknown datatypes", Boolean.FALSE);
+
+	/**
+	 * Boolean setting for parser to determine whether recognised datatypes need
+	 * to have their values be normalized.
+	 * <p>
+	 * Normalization is performed using registered DatatypeHandlers.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> NORMALIZE_DATATYPE_VALUES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.normalizedatatypevalues", "Normalize recognised datatype values", Boolean.FALSE);
+
+	/**
+	 * Boolean setting for parser to determine whether languages are to be
+	 * verified based on a given set of definitions for valid languages.
+	 * <p>
+	 * Verification is performed using registered LanguageTagHandlers.
 	 * <p>
 	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> STOP_AT_FIRST_ERROR = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.stopatfirsterror", "Stop at first error", Boolean.TRUE);
+	public static final RioSetting<Boolean> VERIFY_LANGUAGE_TAGS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.verifylanguagevalues", "Verify language tags", Boolean.TRUE);
+
+	/**
+	 * Boolean setting for parser to determine whether languages need to be
+	 * normalized, and to which format they should be normalised.
+	 * <p>
+	 * Normalization is performed using registered LanguageTagHandlers.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> NORMALIZE_LANGUAGE_TAGS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.normalizedatatypevalues", "Normalize recognised datatype values", Boolean.FALSE);
+
+	/**
+	 * Boolean setting for parser to determine whether relative URIs are
+	 * verified.
+	 * <p>
+	 * Defaults to true.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> VERIFY_RELATIVE_URIS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.verifyrelativeuris", "Verify relative URIs", Boolean.TRUE);
 
 	/**
 	 * Boolean setting for parser to determine whether parser should attempt to
@@ -61,17 +115,6 @@ public class BasicParserSettings {
 	 */
 	public static final RioSetting<Boolean> PRESERVE_BNODE_IDS = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.preservebnodeids", "Preserve blank node identifiers", Boolean.FALSE);
-
-	/**
-	 * Determines which mode of {@link DatatypeHandling} will be used by the
-	 * parser.
-	 * <p>
-	 * Defaults to {@link DatatypeHandling#VERIFY}.
-	 * 
-	 * @since 2.7.0
-	 */
-	public static final RioSetting<DatatypeHandling> DATATYPE_HANDLING = new RioSettingImpl<DatatypeHandling>(
-			"org.openrdf.rio.datatypehandling", "Datatype handling", DatatypeHandling.VERIFY);
 
 	/**
 	 * Boolean setting for parser to determine whether parser should preserve,

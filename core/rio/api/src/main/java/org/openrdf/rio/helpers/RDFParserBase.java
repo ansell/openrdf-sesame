@@ -16,7 +16,6 @@
  */
 package org.openrdf.rio.helpers;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -206,20 +205,30 @@ public abstract class RDFParserBase implements RDFParser {
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
-		result.add(BasicParserSettings.DATATYPE_HANDLING);
-		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
-		result.add(BasicParserSettings.VERIFY_DATA);
+		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		result.add(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		result.add(BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
 
 		return result;
 	}
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		this.parserConfig.set(BasicParserSettings.VERIFY_DATA, verifyData);
+		if (verifyData) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
+		}
+		else {
+			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
+		}
 	}
 
+	/**
+	 * @deprecated Use specific settings instead.
+	 */
+	@Deprecated
 	public boolean verifyData() {
-		return this.parserConfig.get(BasicParserSettings.VERIFY_DATA);
+		return this.parserConfig.get(BasicParserSettings.VERIFY_RELATIVE_URIS);
 	}
 
 	@Override
@@ -233,20 +242,50 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		this.parserConfig.set(BasicParserSettings.STOP_AT_FIRST_ERROR, stopAtFirstError);
+		// TODO: What set should we setup here
 	}
 
+	/**
+	 * @deprecated Check specific settings instead.
+	 */
+	@Deprecated
 	public boolean stopAtFirstError() {
-		return this.parserConfig.get(BasicParserSettings.STOP_AT_FIRST_ERROR);
+		throw new RuntimeException("This setting is not supported anymore.");
 	}
 
 	@Override
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
-		this.parserConfig.set(BasicParserSettings.DATATYPE_HANDLING, datatypeHandling);
+		if (datatypeHandling == DatatypeHandling.VERIFY) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		}
+		else if (datatypeHandling == DatatypeHandling.NORMALIZE) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+			this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, true);
+		}
+		else {
+			// Only ignore if they have not explicitly set any of the relevant
+			// settings before this point
+			if (!this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)
+					&& !this.parserConfig.isSet(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)
+					&& !this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES))
+			{
+				this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
+				this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
+				this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, false);
+			}
+		}
 	}
 
+	/**
+	 * @deprecated Use {@link BasicParserSettings#VERIFY_DATATYPE_VALUES} and
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES} and
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
+	 */
+	@Deprecated
 	public DatatypeHandling datatypeHandling() {
-		return this.parserConfig.get(BasicParserSettings.DATATYPE_HANDLING);
+		throw new RuntimeException("This setting is not supported anymore.");
 	}
 
 	/**
@@ -288,7 +327,7 @@ public abstract class RDFParserBase implements RDFParser {
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
 		if (defaultPrefix.containsKey(prefix)) {
-			reportError(msg);
+			reportError(msg, RDFaParserSettings.ALLOW_RDFA_UNDEFINED_PREFIXES);
 			return defaultPrefix.get(prefix);
 		}
 		else if ("".equals(prefix)) {
@@ -336,7 +375,7 @@ public abstract class RDFParserBase implements RDFParser {
 			if (verifyData()) {
 				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
 					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-							+ baseURI + "'");
+							+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
 				}
 			}
 
@@ -421,14 +460,16 @@ public abstract class RDFParserBase implements RDFParser {
 								+ "' seems be a prefixed name, should be a full URI instead.");
 					}
 					else {
-						reportWarning("'" + datatype + "' is not recognized as a supported xsd datatype.");
+						reportError("'" + datatype + "' is not recognized as a supported xsd datatype.",
+								BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 					}
 				}
 			}
 
 			if (datatypeHandling() == DatatypeHandling.VERIFY) {
 				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype);
+					reportError("'" + label + "' is not a valid value for datatype " + datatype,
+							BasicParserSettings.VERIFY_DATATYPE_VALUES);
 				}
 			}
 			else if (datatypeHandling() == DatatypeHandling.NORMALIZE) {
@@ -436,8 +477,9 @@ public abstract class RDFParserBase implements RDFParser {
 					label = XMLDatatypeUtil.normalize(label, datatype);
 				}
 				catch (IllegalArgumentException e) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype + ": "
-							+ e.getMessage());
+					reportError(
+							"'" + label + "' is not a valid value for datatype " + datatype + ": " + e.getMessage(),
+							BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
 				}
 			}
 		}
@@ -449,7 +491,8 @@ public abstract class RDFParserBase implements RDFParser {
 			else if (lang != null) {
 				if (verifyData()) {
 					if (!isValidLanguageTag(lang)) {
-						reportError("'" + lang + "' is not a valid language tag ");
+						reportError("'" + lang + "' is not a valid language tag ",
+								BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 					}
 				}
 				return valueFactory.createLiteral(label, lang);
@@ -548,10 +591,10 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @see #setStopAtFirstError
 	 */
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
-		reportError(msg, -1, -1);
+		reportError(msg, -1, -1, relevantSetting);
 	}
 
 	/**
@@ -561,14 +604,17 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @see #setStopAtFirstError
 	 */
-	protected void reportError(String msg, int lineNo, int columnNo)
+	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
 		if (errListener != null) {
 			errListener.error(msg, lineNo, columnNo);
 		}
 
-		if (stopAtFirstError()) {
+		// FIXME: Determine how to have users specify which exceptions they regard
+		// as fatal, and which settings they merely want to be sent to the error
+		// listener.
+		if (true) {
 			throw new RDFParseException(msg, lineNo, columnNo);
 		}
 	}

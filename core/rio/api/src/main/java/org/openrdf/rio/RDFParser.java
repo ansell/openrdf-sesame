@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.util.Collection;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.rio.helpers.BasicParserSettings;
 
 /**
  * An interface for RDF parsers. All implementing classes should define a public
@@ -33,6 +34,14 @@ public interface RDFParser {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * @deprecated These settings are not recognised and will be removed in a
+	 *             future version. Use
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES}
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} and
+	 *             {@link BasicParserSettings#VERIFY_DATATYPE_VALUES} instead.
+	 */
+	@Deprecated
 	public enum DatatypeHandling {
 		/**
 		 * Indicates that datatype semantics should be ignored.
