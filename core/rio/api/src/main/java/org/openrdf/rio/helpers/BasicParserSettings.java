@@ -35,8 +35,8 @@ import org.openrdf.rio.RioSetting;
 public class BasicParserSettings {
 
 	/**
-	 * Boolean setting for parser to determine whether recognised datatypes are
-	 * to be verified.
+	 * Boolean setting for parser to determine whether values for recognised
+	 * datatypes are to be verified.
 	 * <p>
 	 * Verification is performed using registered DatatypeHandlers.
 	 * <p>
