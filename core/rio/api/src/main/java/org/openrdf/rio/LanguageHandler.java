@@ -35,6 +35,11 @@ import org.openrdf.model.util.LiteralUtilException;
 public interface LanguageHandler {
 
 	/**
+	 * 
+	 */
+	public static final String RFC3066 = "org.openrdf.rio.languages.RFC3066";
+
+	/**
 	 * Checks if the given language tag is recognised by this language handler,
 	 * including cases where the language tag is recognised, but is not yet
 	 * normalised.

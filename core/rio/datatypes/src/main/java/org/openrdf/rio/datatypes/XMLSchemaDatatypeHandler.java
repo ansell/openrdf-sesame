@@ -14,41 +14,59 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio;
+package org.openrdf.rio.datatypes;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.LiteralUtilException;
+import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.rio.DatatypeHandler;
 
 /**
- * An interface defining methods related to verification and normalisation of
- * typed literals and datatype URIs.
+ * An implementation of a datatype handler that can process {@link XMLSchema}
+ * datatypes.
+ * <p>
+ * Implemented using {@link XMLDatatypeUtil}.
  * 
  * @author Peter Ansell
  * @since 2.7.0
  */
-public interface DatatypeHandler {
+public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 
 	/**
-	 * 
+	 * Default constructor.
 	 */
-	public static final String XMLSCHEMA = "org.openrdf.rio.datatypes.xmlschema";
+	public XMLSchemaDatatypeHandler() {
+	}
 
-	public boolean isRecognisedDatatype(URI datatypeUri);
+	@Override
+	public boolean isRecognisedDatatype(URI datatypeUri) {
+		return XMLDatatypeUtil.isBuiltInDatatype(datatypeUri);
+	}
 
+	@Override
 	public boolean verifyDatatype(String literalValue, URI datatypeUri)
-		throws LiteralUtilException;
+		throws LiteralUtilException
+	{
+		return XMLDatatypeUtil.isValidValue(literalValue, datatypeUri);
+	}
 
+	@Override
 	public Literal normaliseDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
-		throws LiteralUtilException;
+		throws LiteralUtilException
+	{
+		try {
+			return valueFactory.createLiteral(XMLDatatypeUtil.normalize(literalValue, datatypeUri), datatypeUri);
+		}
+		catch (IllegalArgumentException e) {
+			throw new LiteralUtilException("Could not normalise XMLSchema literal", e);
+		}
+	}
 
-	/**
-	 * A unique key for this language handler to identify it in the
-	 * DatatypeHandlerRegistry.
-	 * 
-	 * @return A unique string key.
-	 */
-	public String getKey();
-
+	@Override
+	public String getKey() {
+		return DatatypeHandler.XMLSCHEMA;
+	}
 }
