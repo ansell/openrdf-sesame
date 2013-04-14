@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -33,7 +34,9 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
@@ -110,8 +113,8 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		String data = "invalid nt";
 
 		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-		ntriplesParser.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.TRUE);
+		ntriplesParser.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES,
+				Boolean.FALSE);
 
 		Model model = new LinkedHashModel();
 		ntriplesParser.setRDFHandler(new StatementCollector(model));
@@ -132,8 +135,9 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		String data = "invalid nt";
 
 		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-		ntriplesParser.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.FALSE);
+		ntriplesParser.getParserConfig().setNonFatalErrors(
+				Collections.<RioSetting<?>> singleton(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES));
+		ntriplesParser.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, Boolean.TRUE);
 
 		Model model = new LinkedHashModel();
 		ntriplesParser.setRDFHandler(new StatementCollector(model));
@@ -155,7 +159,7 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			// Force the connection to use stop at first error
-			conn.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.TRUE);
+			conn.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, Boolean.FALSE);
 
 			String data = "invalid nt";
 			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);
@@ -179,7 +183,9 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			// Force the connection to not use stop at first error
-			conn.getParserConfig().set(BasicParserSettings.STOP_AT_FIRST_ERROR, Boolean.FALSE);
+			conn.getParserConfig().setNonFatalErrors(
+					Collections.<RioSetting<?>> singleton(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES));
+			conn.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, Boolean.TRUE);
 
 			String data = "invalid nt";
 			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);

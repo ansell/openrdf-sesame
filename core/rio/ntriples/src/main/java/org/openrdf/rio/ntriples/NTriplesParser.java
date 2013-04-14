@@ -37,6 +37,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
 /**
@@ -286,7 +287,8 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '.') {
-				reportError("Expected '.', found: " + (char)c);
+				reportError("Expected '.', found: " + (char)c,
+						NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 			}
 
 			c = assertLineTerminates(c);
@@ -426,7 +428,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else if (c != ':') {
-			reportError("Expected ':', found: " + (char)c);
+			reportError("Expected ':', found: " + (char)c, NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 		}
 
 		c = reader.read();
@@ -434,7 +436,8 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else if (!NTriplesUtil.isLetter(c)) {
-			reportError("Expected a letter, found: " + (char)c);
+			reportError("Expected a letter, found: " + (char)c,
+					NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 		}
 		name.append((char)c);
 
@@ -493,7 +496,8 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '^') {
-				reportError("Expected '^', found: " + (char)c);
+				reportError("Expected '^', found: " + (char)c,
+						NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 			}
 
 			c = reader.read();
@@ -503,7 +507,8 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '<') {
-				reportError("Expected '<', found: " + (char)c);
+				reportError("Expected '<', found: " + (char)c,
+						NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 			}
 
 			c = parseUriRef(c, datatype);
@@ -520,7 +525,7 @@ public class NTriplesParser extends RDFParserBase {
 			uri = NTriplesUtil.unescapeString(uri);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage());
+			reportError(e.getMessage(), NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 		}
 
 		return super.createURI(uri);
@@ -533,7 +538,7 @@ public class NTriplesParser extends RDFParserBase {
 			label = NTriplesUtil.unescapeString(label);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage());
+			reportError(e.getMessage(), NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 		}
 
 		if (lang.length() == 0) {
@@ -566,10 +571,10 @@ public class NTriplesParser extends RDFParserBase {
 	 * information to the error.
 	 */
 	@Override
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<?> setting)
 		throws RDFParseException
 	{
-		reportError(msg, lineNo, -1);
+		reportError(msg, lineNo, -1, setting);
 	}
 
 	/**
@@ -671,7 +676,7 @@ public class NTriplesParser extends RDFParserBase {
 
 		// Very few parsers support stop at first error, so it is not enabled in
 		// RDFParserBase
-		result.add(BasicParserSettings.STOP_AT_FIRST_ERROR);
+		result.add(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
 
 		return result;
 	}

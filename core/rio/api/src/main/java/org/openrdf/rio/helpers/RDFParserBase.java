@@ -591,7 +591,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @see #setStopAtFirstError
 	 */
-	protected void reportError(String msg, RioSetting<Boolean> relevantSetting)
+	protected void reportError(String msg, RioSetting<?> relevantSetting)
 		throws RDFParseException
 	{
 		reportError(msg, -1, -1, relevantSetting);
@@ -604,17 +604,14 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @see #setStopAtFirstError
 	 */
-	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
+	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<?> relevantSetting)
 		throws RDFParseException
 	{
 		if (errListener != null) {
 			errListener.error(msg, lineNo, columnNo);
 		}
 
-		// FIXME: Determine how to have users specify which exceptions they regard
-		// as fatal, and which settings they merely want to be sent to the error
-		// listener.
-		if (true) {
+		if (!getParserConfig().isNonFatalError(relevantSetting)) {
 			throw new RDFParseException(msg, lineNo, columnNo);
 		}
 	}

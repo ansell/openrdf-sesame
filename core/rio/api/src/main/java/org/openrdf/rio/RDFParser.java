@@ -121,7 +121,13 @@ public interface RDFParser {
 	/**
 	 * Sets whether the parser should verify the data it parses (default value is
 	 * <tt>true</tt>).
+	 * 
+	 * @deprecated Use {@link #getParserConfig()} with
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES},
+	 *             {@link BasicParserSettings#VERIFY_DATATYPE_VALUES}, and/or
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
 	 */
+	@Deprecated
 	public void setVerifyData(boolean verifyData);
 
 	/**
@@ -133,7 +139,13 @@ public interface RDFParser {
 	/**
 	 * Sets whether the parser should stop immediately if it finds an error in
 	 * the data (default value is <tt>true</tt>).
+	 * 
+	 * @deprecated Use {@link #getParserConfig()} with
+	 *             {@link ParserConfig#setNonFatalErrors(java.util.Set)} to
+	 *             select which errors will not always fail the parse
+	 *             prematurely.
 	 */
+	@Deprecated
 	public void setStopAtFirstError(boolean stopAtFirstError);
 
 	/**
@@ -148,7 +160,12 @@ public interface RDFParser {
 	 * 
 	 * @param datatypeHandling
 	 *        A datatype handling option.
+	 * @deprecated Use {@link #getParserConfig()} with
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES},
+	 *             {@link BasicParserSettings#VERIFY_DATATYPE_VALUES}, and/or
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
 	 */
+	@Deprecated
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling);
 
 	/**

@@ -573,7 +573,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		throws RDFParseException, RDFHandlerException
 	{
 		if (!topIsProperty()) {
-			reportError("unexpected literal");
+			reportError("unexpected literal", XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 			return;
 		}
 
@@ -698,7 +698,8 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			}
 
 			if (definedAttsCount > 1) {
-				reportError("Only one of the attributes rdf:ID, rdf:about or rdf:nodeID can be used here");
+				reportError("Only one of the attributes rdf:ID, rdf:about or rdf:nodeID can be used here",
+						XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 			}
 		}
 
@@ -744,14 +745,15 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		throws RDFParseException, RDFHandlerException
 	{
 		if (verifyData()) {
-			checkPropertyEltName(namespaceURI, localName, qName);
+			checkPropertyEltName(namespaceURI, localName, qName,
+					XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 		}
 
 		// Get the URI of the property
 		URI propURI = null;
 		if (namespaceURI.equals("")) {
 			// no namespace URI
-			reportError("unqualified property element <" + qName + "> not allowed");
+			reportError("unqualified property element <" + qName + "> not allowed", XMLParserSettings.IGNORE_INVALID_QNAME);
 			// Use base URI as namespace:
 			propURI = buildResourceFromLocalName(localName);
 		}
@@ -931,7 +933,8 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			}
 
 			if (definedAttsCount > 1) {
-				reportError("Only one of the attributes rdf:resource or rdf:nodeID can be used here");
+				reportError("Only one of the attributes rdf:resource or rdf:nodeID can be used here",
+						XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 			}
 		}
 
@@ -995,7 +998,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		if (verifyData()) {
 			// Check if 'id' is a legal NCName
 			if (!XMLUtil.isNCName(id)) {
-				reportError("Not an XML Name: " + id);
+				reportError("Not an XML Name: " + id, XMLParserSettings.IGNORE_INVALID_NCNAME);
 			}
 		}
 
@@ -1006,8 +1009,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 
 			if (!usedIDs.add(uri)) {
 				// URI was not added because the set already contained an equal
-				// string
-				reportError("ID '" + id + "' has already been defined");
+				// strings
+				reportError("ID '" + id + "' has already been defined",
+						XMLParserSettings.FAIL_ON_DUPLICATE_RDF_ID);
 			}
 		}
 
@@ -1021,7 +1025,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		if (verifyData()) {
 			// Check if 'nodeID' is a legal NCName
 			if (!XMLUtil.isNCName(nodeID)) {
-				reportError("Not an XML Name: " + nodeID);
+				reportError("Not an XML Name: " + nodeID, XMLParserSettings.IGNORE_INVALID_NCNAME);
 			}
 		}
 
@@ -1062,12 +1066,14 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					|| localName.equals("about") || localName.equals("parseType") || localName.equals("resource")
 					|| localName.equals("nodeID") || localName.equals("datatype"))
 			{
-				reportError("<" + qName + "> not allowed as node element");
+				reportError("<" + qName + "> not allowed as node element",
+						XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 			}
 			else if (localName.equals("bagID") || localName.equals("aboutEach")
 					|| localName.equals("aboutEachPrefix"))
 			{
-				reportError(qName + " is no longer a valid RDF name");
+				reportError(qName + " is no longer a valid RDF name",
+						XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 			}
 			else {
 				reportWarning("unknown rdf element <" + qName + ">");
@@ -1082,8 +1088,11 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * and li), an error is generated. If the name is not defined in the RDF
 	 * namespace, but it claims that it is from this namespace, a warning is
 	 * generated.
+	 * 
+	 * @param setting
 	 */
-	private void checkPropertyEltName(String namespaceURI, String localName, String qName)
+	private void checkPropertyEltName(String namespaceURI, String localName, String qName,
+			RioSetting<?> setting)
 		throws RDFParseException
 	{
 		if (RDF.NAMESPACE.equals(namespaceURI)) {
@@ -1101,12 +1110,12 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					|| localName.equals("about") || localName.equals("parseType") || localName.equals("resource")
 					|| localName.equals("nodeID") || localName.equals("datatype"))
 			{
-				reportError("<" + qName + "> not allowed as property element");
+				reportError("<" + qName + "> not allowed as property element", setting);
 			}
 			else if (localName.equals("bagID") || localName.equals("aboutEach")
 					|| localName.equals("aboutEachPrefix"))
 			{
-				reportError(qName + " is no longer a valid RDF name");
+				reportError(qName + " is no longer a valid RDF name", setting);
 			}
 			else {
 				reportWarning("unknown rdf element <" + qName + ">");
@@ -1146,13 +1155,15 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 						|| localName.equals("resource") || localName.equals("nodeID")
 						|| localName.equals("datatype"))
 				{
-					reportError("'" + att.getQName() + "' not allowed as attribute name");
+					reportError("'" + att.getQName() + "' not allowed as attribute name",
+							XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 					iter.remove();
 				}
 				else if (localName.equals("bagID") || localName.equals("aboutEach")
 						|| localName.equals("aboutEachPrefix"))
 				{
-					reportError(att.getQName() + " is no longer a valid RDF name");
+					reportError(att.getQName() + " is no longer a valid RDF name",
+							XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 				}
 				else {
 					reportWarning("unknown rdf attribute '" + att.getQName() + "'");
@@ -1174,7 +1185,8 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			while (iter.hasNext()) {
 				Att att = iter.next();
 
-				reportError("unexpected attribute '" + att.getQName() + "'");
+				reportError("unexpected attribute '" + att.getQName() + "'",
+						XMLParserSettings.IGNORE_NON_STANDARD_ATTRIBUTES);
 				iter.remove();
 			}
 		}
@@ -1220,15 +1232,15 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * column number information to the error.
 	 */
 	@Override
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<?> setting)
 		throws RDFParseException
 	{
 		Locator locator = saxFilter.getLocator();
 		if (locator != null) {
-			reportError(msg, locator.getLineNumber(), locator.getColumnNumber());
+			reportError(msg, locator.getLineNumber(), locator.getColumnNumber(), setting);
 		}
 		else {
-			reportError(msg, -1, -1);
+			reportError(msg, -1, -1, setting);
 		}
 	}
 
@@ -1384,7 +1396,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		throws SAXException
 	{
 		try {
-			this.reportError(exception.getMessage());
+			this.reportError(exception.getMessage(), XMLParserSettings.IGNORE_SAX_NON_FATAL_ERRORS);
 		}
 		catch (RDFParseException rdfpe) {
 			throw new SAXException(rdfpe);

@@ -40,6 +40,8 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
 /**
@@ -234,14 +236,14 @@ public class TurtleParser extends RDFParserBase {
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
 			if (directive.startsWith("@")) {
-				verifyCharacter(read(), ".");
+				verifyCharacterOrFail(read(), ".");
 			}
 		}
 		else {
 			unread(directive);
 			parseTriples();
 			skipWSC();
-			verifyCharacter(read(), ".");
+			verifyCharacterOrFail(read(), ".");
 		}
 	}
 
@@ -289,7 +291,7 @@ public class TurtleParser extends RDFParserBase {
 
 		skipWSC();
 
-		verifyCharacter(read(), ":");
+		verifyCharacterOrFail(read(), ":");
 
 		skipWSC();
 
@@ -380,7 +382,7 @@ public class TurtleParser extends RDFParserBase {
 				// empty predicateObjectList, skip to next
 				continue;
 			}
-			
+
 			predicate = parsePredicate();
 
 			skipWSC();
@@ -478,7 +480,7 @@ public class TurtleParser extends RDFParserBase {
 	protected Resource parseCollection()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		verifyCharacter(read(), "(");
+		verifyCharacterOrFail(read(), "(");
 
 		int c = skipWSC();
 
@@ -534,7 +536,7 @@ public class TurtleParser extends RDFParserBase {
 	protected Resource parseImplicitBlank()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		verifyCharacter(read(), "[");
+		verifyCharacterOrFail(read(), "[");
 
 		BNode bNode = createBNode();
 
@@ -557,7 +559,7 @@ public class TurtleParser extends RDFParserBase {
 			skipWSC();
 
 			// Read closing bracket
-			verifyCharacter(read(), "]");
+			verifyCharacterOrFail(read(), "]");
 
 			// Restore previous subject and predicate
 			subject = oldSubject;
@@ -628,7 +630,8 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 			if (!TurtleUtil.isLanguageStartChar(c)) {
-				reportError("Expected a letter, found '" + (char)c + "'");
+				reportError("Expected a letter, found '" + (char)c + "'",
+						BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			}
 
 			lang.append((char)c);
@@ -647,7 +650,7 @@ public class TurtleParser extends RDFParserBase {
 			read();
 
 			// next character should be another '^'
-			verifyCharacter(read(), "^");
+			verifyCharacterOrFail(read(), "^");
 
 			// Read datatype
 			Value datatype = parseValue();
@@ -676,7 +679,7 @@ public class TurtleParser extends RDFParserBase {
 		int c1 = read();
 
 		// First character should be '"' or "'"
-		verifyCharacter(c1, "\"\'");
+		verifyCharacterOrFail(c1, "\"\'");
 
 		// Check for long-string, which starts and ends with three double quotes
 		int c2 = read();
@@ -699,7 +702,7 @@ public class TurtleParser extends RDFParserBase {
 			result = TurtleUtil.decodeString(result);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage());
+			reportError(e.getMessage(), BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		}
 
 		return result;
@@ -845,7 +848,7 @@ public class TurtleParser extends RDFParserBase {
 				}
 
 				if (!ASCIIUtil.isNumber(c)) {
-					reportError("Exponent value missing");
+					reportError("Exponent value missing", BasicParserSettings.VERIFY_DATATYPE_VALUES);
 				}
 
 				value.append((char)c);
@@ -884,7 +887,7 @@ public class TurtleParser extends RDFParserBase {
 
 		// First character should be '<'
 		int c = read();
-		verifyCharacter(c, "<");
+		verifyCharacterOrFail(c, "<");
 
 		// Read up to the next '>' character
 		while (true) {
@@ -918,7 +921,7 @@ public class TurtleParser extends RDFParserBase {
 			uri = TurtleUtil.decodeString(uri);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage());
+			reportError(e.getMessage(), BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		}
 
 		return super.resolveURI(uri);
@@ -937,7 +940,8 @@ public class TurtleParser extends RDFParserBase {
 			throwEOFException();
 		}
 		if (c != ':' && !TurtleUtil.isPrefixStartChar(c)) {
-			reportError("Expected a ':' or a letter, found '" + (char)c + "'");
+			reportError("Expected a ':' or a letter, found '" + (char)c + "'",
+					BasicParserSettings.VERIFY_RELATIVE_URIS);
 		}
 
 		String namespace = null;
@@ -966,7 +970,7 @@ public class TurtleParser extends RDFParserBase {
 				}
 			}
 
-			verifyCharacter(c, ":");
+			verifyCharacterOrFail(c, ":");
 
 			namespace = getNamespace(prefix.toString());
 		}
@@ -1022,8 +1026,8 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		// Node ID should start with "_:"
-		verifyCharacter(read(), "_");
-		verifyCharacter(read(), ":");
+		verifyCharacterOrFail(read(), "_");
+		verifyCharacterOrFail(read(), ":");
 
 		// Read the node ID
 		int c = read();
@@ -1031,7 +1035,7 @@ public class TurtleParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else if (!TurtleUtil.isNameStartChar(c)) {
-			reportError("Expected a letter, found '" + (char)c + "'");
+			reportError("Expected a letter, found '" + (char)c + "'", BasicParserSettings.PRESERVE_BNODE_IDS);
 		}
 
 		StringBuilder name = new StringBuilder(32);
@@ -1061,7 +1065,7 @@ public class TurtleParser extends RDFParserBase {
 	 * characters specified in <tt>expected</tt>. This method will throw a
 	 * <tt>ParseException</tt> if this is not the case.
 	 */
-	protected void verifyCharacter(int c, String expected)
+	protected void verifyCharacterOrFail(int c, String expected)
 		throws RDFParseException
 	{
 		if (c == -1) {
@@ -1082,7 +1086,7 @@ public class TurtleParser extends RDFParserBase {
 			msg.append((char)c);
 			msg.append("'");
 
-			reportError(msg.toString());
+			reportFatalError(msg.toString());
 		}
 	}
 
@@ -1187,10 +1191,10 @@ public class TurtleParser extends RDFParserBase {
 	 * information to the error.
 	 */
 	@Override
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<?> setting)
 		throws RDFParseException
 	{
-		reportError(msg, lineReader.getLineNumber(), -1);
+		reportError(msg, lineReader.getLineNumber(), -1, setting);
 	}
 
 	/**
