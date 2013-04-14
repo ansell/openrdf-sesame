@@ -508,22 +508,6 @@ public abstract class RDFParserBase implements RDFParser {
 			boolean recognisedDatatype = false;
 			DatatypeHandler recognisedDatatypeHandler = null;
 
-			// FIXME: Remove this and simply use the loop below after a datatype
-			// handler for RDF.XMLLITERAL is created
-			if (getParserConfig().get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)) {
-				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) {
-					// report a warning on all unrecognized datatypes
-					if (datatype.stringValue().startsWith("xsd")) {
-						reportWarning("datatype '" + datatype
-								+ "' seems be a prefixed name, should be a full URI instead.");
-					}
-					else {
-						reportError("'" + datatype + "' is not recognized as a supported xsd datatype.",
-								BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
-					}
-				}
-			}
-
 			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
 				for (DatatypeHandler nextHandler : getParserConfig().get(BasicParserSettings.DATATYPE_HANDLERS)) {
 					if (nextHandler.isRecognisedDatatype(datatype)) {
