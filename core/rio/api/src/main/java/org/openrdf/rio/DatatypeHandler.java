@@ -23,7 +23,7 @@ import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * An interface defining methods related to verification and normalisation of
+ * An interface defining methods related to verification and normalization of
  * typed literals and datatype URIs.
  * 
  * @author Peter Ansell
@@ -32,7 +32,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 public interface DatatypeHandler {
 
 	/**
-	 * Identfier for datatypes defined in the {@link XMLSchema} vocabulary.
+	 * Identifier for datatypes defined in the {@link XMLSchema} vocabulary.
 	 */
 	public static final String XMLSCHEMA = "org.openrdf.rio.datatypes.xmlschema";
 
@@ -42,7 +42,7 @@ public interface DatatypeHandler {
 	 */
 	public static final String RDFDATATYPES = "org.openrdf.rio.datatypes.rdf";
 
-	public boolean isRecognisedDatatype(URI datatypeUri);
+	public boolean isRecognizedDatatype(URI datatypeUri);
 
 	public boolean verifyDatatype(String literalValue, URI datatypeUri)
 		throws LiteralUtilException;

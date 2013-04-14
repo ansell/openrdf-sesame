@@ -42,7 +42,7 @@ public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 	}
 
 	@Override
-	public boolean isRecognisedDatatype(URI datatypeUri) {
+	public boolean isRecognizedDatatype(URI datatypeUri) {
 		return XMLDatatypeUtil.isBuiltInDatatype(datatypeUri);
 	}
 

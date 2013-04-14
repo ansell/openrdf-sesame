@@ -21,13 +21,13 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 
 /**
- * An interface defining methods related to verification and normalisation of
+ * An interface defining methods related to verification and normalization of
  * language tags.
  * <p>
- * The language handler may optionally provide normalisation and verification
+ * The language handler may optionally provide normalization and verification
  * services for string literals based on the language tags, including
- * translation, grammar and spelling checks. However, this behaviour is entirely
- * driven by the user
+ * translation, grammar and spelling checks. However, this behavior is entirely
+ * driven by the user.
  * 
  * @author Peter Ansell
  * @since 2.7.0
@@ -40,22 +40,24 @@ public interface LanguageHandler {
 	public static final String RFC3066 = "org.openrdf.rio.languages.RFC3066";
 
 	/**
-	 * Checks if the given language tag is recognised by this language handler,
-	 * including cases where the language tag is recognised, but is not yet
-	 * normalised.
+	 * Checks if the given language tag is recognized by this language handler,
+	 * including cases where the language tag is recognized, but is not yet
+	 * normalized.
 	 * 
 	 * @param languageTag
-	 * @return
+	 * @return True if the language tag is syntactically valid and could be used
+	 *         with {@link #verifyLanguage(String, String)} and
+	 *         {@link #normalizeLanguage(String, String, ValueFactory)}.
 	 * @since 2.7.0
 	 */
-	public boolean isRecognisedLanguage(String languageTag);
+	public boolean isRecognizedLanguage(String languageTag);
 
 	/**
 	 * Verifies that the language tag is valid, optionally including an automated
 	 * check on the literal value.
 	 * <p>
 	 * This method must only be called after verifying that
-	 * {@link #isRecognisedLanguage(String)} returns true for the given language
+	 * {@link #isRecognizedLanguage(String)} returns true for the given language
 	 * tag.
 	 * 
 	 * @param literalValue
@@ -63,37 +65,37 @@ public interface LanguageHandler {
 	 *        defined solely by the language tag.
 	 * @param languageTag
 	 *        A language tag that matched with
-	 * @return True if the language tag is recognised by this language handler,
+	 * @return True if the language tag is recognized by this language handler,
 	 *         and it is verified to be syntactically valid.
 	 * @since 2.7.0
 	 * @throws LiteralUtilException
-	 *         If the language tag was not recognised.
+	 *         If the language tag was not recognized.
 	 */
 	public boolean verifyLanguage(String literalValue, String languageTag)
 		throws LiteralUtilException;
 
 	/**
-	 * Normalise both the language tag and the language if appropriate, and use
+	 * Normalize both the language tag and the language if appropriate, and use
 	 * the given value factory to generate a literal matching an optional literal
 	 * value and language tag.
 	 * <p>
 	 * This method must only be called after verifying that
-	 * {@link #isRecognisedLanguage(String)} returns true for the given language
+	 * {@link #isRecognizedLanguage(String)} returns true for the given language
 	 * tag, and {@link #verifyLanguage(String, String)} also returns true for the
 	 * given language and (optionally) literal value.
 	 * 
 	 * @param literalValue
 	 *        Optional literal value. If the given literal value is null, then an
 	 *        empty string must be used for the resulting literal, and the user
-	 *        must only utilise {@link Literal#getLanguage()} on the resulting
-	 *        literal to derive the normalised language tag.
+	 *        must only utilize {@link Literal#getLanguage()} on the resulting
+	 *        literal to derive the normalized language tag.
 	 * @param languageTag
 	 * @param valueFactory
 	 * @return
 	 * @since 2.7.0
 	 * @throws LiteralUtilException
-	 *         If the language tag was not recognised or verified, or the literal
-	 *         value was not null and could not be normalised due to an
+	 *         If the language tag was not recognized or verified, or the literal
+	 *         value was not null and could not be normalized due to an
 	 *         exception.
 	 */
 	public Literal normalizeLanguage(String literalValue, String languageTag, ValueFactory valueFactory)

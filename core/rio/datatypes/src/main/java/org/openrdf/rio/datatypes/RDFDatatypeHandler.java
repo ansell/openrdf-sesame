@@ -40,7 +40,7 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 	}
 
 	@Override
-	public boolean isRecognisedDatatype(URI datatypeUri) {
+	public boolean isRecognizedDatatype(URI datatypeUri) {
 		return org.openrdf.model.vocabulary.RDF.LANGSTRING.equals(datatypeUri)
 				|| org.openrdf.model.vocabulary.RDF.XMLLITERAL.equals(datatypeUri);
 	}

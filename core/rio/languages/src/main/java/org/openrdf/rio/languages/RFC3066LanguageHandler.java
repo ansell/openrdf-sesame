@@ -47,7 +47,7 @@ public class RFC3066LanguageHandler implements LanguageHandler {
 	}
 
 	@Override
-	public boolean isRecognisedLanguage(String languageTag) {
+	public boolean isRecognizedLanguage(String languageTag) {
 		// language tag is RFC3066-conformant if it matches this regex:
 		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
 		boolean result = matcher.matcher(languageTag).matches();

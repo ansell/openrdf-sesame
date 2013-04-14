@@ -461,7 +461,7 @@ public abstract class RDFParserBase implements RDFParser {
 			LanguageHandler recognisedLanguageHandler = null;
 			if (getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
 				for (LanguageHandler nextHandler : getParserConfig().get(BasicParserSettings.LANGUAGE_HANDLERS)) {
-					if (nextHandler.isRecognisedLanguage(lang)) {
+					if (nextHandler.isRecognizedLanguage(lang)) {
 						recognisedLanguage = true;
 						recognisedLanguageHandler = nextHandler;
 						try {
@@ -510,7 +510,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
 				for (DatatypeHandler nextHandler : getParserConfig().get(BasicParserSettings.DATATYPE_HANDLERS)) {
-					if (nextHandler.isRecognisedDatatype(datatype)) {
+					if (nextHandler.isRecognizedDatatype(datatype)) {
 						recognisedDatatype = true;
 						recognisedDatatypeHandler = nextHandler;
 						try {
