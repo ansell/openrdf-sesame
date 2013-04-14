@@ -16,6 +16,13 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.openrdf.rio.DatatypeHandler;
+import org.openrdf.rio.DatatypeHandlerRegistry;
+import org.openrdf.rio.LanguageHandler;
+import org.openrdf.rio.LanguageHandlerRegistry;
 import org.openrdf.rio.RioSetting;
 
 /**
@@ -45,7 +52,7 @@ public class BasicParserSettings {
 	 * datatypes are not recognised.
 	 * <p>
 	 * Datatypes are recognised based on matching one of the registered
-	 * DatatypeHandlers.
+	 * {@link DatatypeHandler}s.
 	 * <p>
 	 * Defaults to false.
 	 * 
@@ -66,6 +73,31 @@ public class BasicParserSettings {
 	 */
 	public static final RioSetting<Boolean> NORMALIZE_DATATYPE_VALUES = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.normalizedatatypevalues", "Normalize recognised datatype values", Boolean.FALSE);
+
+	/**
+	 * Setting used to specify which {@link DatatypeHandler} implementations are
+	 * to be used for a given parser configuration.
+	 * <p>
+	 * Defaults to an XMLSchema DatatypeHandler implementation based on
+	 * {@link DatatypeHandler#XMLSCHEMA}.
+	 */
+	public static final RioSetting<List<DatatypeHandler>> DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>(
+			"org.openrdf.rio.datatypehandlers", "Datatype Handlers",
+			Arrays.asList(DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA)));
+
+	/**
+	 * Boolean setting for parser to determine whether to fail parsing if
+	 * languages are not recognised.
+	 * <p>
+	 * Languages are recognised based on matching one of the registered
+	 * {@link LanguageHandler}s.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> FAIL_ON_UNKNOWN_LANGUAGES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.failonunknownlanguages", "Fail on unknown languages", Boolean.FALSE);
 
 	/**
 	 * Boolean setting for parser to determine whether languages are to be
@@ -92,6 +124,17 @@ public class BasicParserSettings {
 	 */
 	public static final RioSetting<Boolean> NORMALIZE_LANGUAGE_TAGS = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.normalizedatatypevalues", "Normalize recognised datatype values", Boolean.FALSE);
+
+	/**
+	 * Setting used to specify which {@link LanguageHandler} implementations are
+	 * to be used for a given parser configuration.
+	 * <p>
+	 * Defaults to an RFC3066 LanguageHandler implementation based on
+	 * {@link LanguageHandler#RFC3066}.
+	 */
+	public static final RioSetting<List<LanguageHandler>> LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>(
+			"org.openrdf.rio.languagehandlers", "Language Handlers",
+			Arrays.asList(LanguageHandlerRegistry.getInstance().get(LanguageHandler.RFC3066)));
 
 	/**
 	 * Boolean setting for parser to determine whether relative URIs are
@@ -131,13 +174,13 @@ public class BasicParserSettings {
 
 	/**
 	 * If {@link #LARGE_LITERALS_HANDLING} is set to
-	 * {@link LargeLiteralHandling#PRESERVE}, which it is by default, then the value
-	 * of this setting is not used.
+	 * {@link LargeLiteralHandling#PRESERVE}, which it is by default, then the
+	 * value of this setting is not used.
 	 * <p>
-	 * If {@link #LARGE_LITERALS_HANDLING} is set to {@link LargeLiteralHandling#DROP}
-	 * , then the value of this setting corresponds to the maximum number of
-	 * bytes for a literal before the statement it is a part of is dropped
-	 * silently by the parser.
+	 * If {@link #LARGE_LITERALS_HANDLING} is set to
+	 * {@link LargeLiteralHandling#DROP} , then the value of this setting
+	 * corresponds to the maximum number of bytes for a literal before the
+	 * statement it is a part of is dropped silently by the parser.
 	 * <p>
 	 * If {@link #LARGE_LITERALS_HANDLING} is set to
 	 * {@link LargeLiteralHandling#TRUNCATE} , then the value of this setting
