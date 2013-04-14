@@ -82,8 +82,9 @@ public class BasicParserSettings {
 	 * {@link DatatypeHandler#XMLSCHEMA}.
 	 */
 	public static final RioSetting<List<DatatypeHandler>> DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>(
-			"org.openrdf.rio.datatypehandlers", "Datatype Handlers",
-			Arrays.asList(DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA)));
+			"org.openrdf.rio.datatypehandlers", "Datatype Handlers", Arrays.asList(
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA),
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.RDF)));
 
 	/**
 	 * Boolean setting for parser to determine whether to fail parsing if

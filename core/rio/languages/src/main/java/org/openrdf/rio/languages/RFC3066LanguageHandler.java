@@ -65,7 +65,7 @@ public class RFC3066LanguageHandler implements LanguageHandler {
 	}
 
 	@Override
-	public Literal normaliseLanguage(String literalValue, String languageTag, ValueFactory valueFactory)
+	public Literal normalizeLanguage(String literalValue, String languageTag, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
 		// TODO Implement normalisation more effectively than this

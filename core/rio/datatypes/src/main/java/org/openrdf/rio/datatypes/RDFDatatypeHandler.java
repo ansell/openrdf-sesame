@@ -14,48 +14,59 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio;
+package org.openrdf.rio.datatypes;
 
 import org.openrdf.model.Literal;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
-import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.rio.DatatypeHandler;
 
 /**
- * An interface defining methods related to verification and normalisation of
- * typed literals and datatype URIs.
+ * An implementation of a datatype handler that can process {@link RDF}
+ * datatypes.
  * 
  * @author Peter Ansell
  * @since 2.7.0
  */
-public interface DatatypeHandler {
+public class RDFDatatypeHandler implements DatatypeHandler {
 
 	/**
-	 * Identfier for datatypes defined in the {@link XMLSchema} vocabulary.
+	 * Default constructor.
 	 */
-	public static final String XMLSCHEMA = "org.openrdf.rio.datatypes.xmlschema";
+	public RDFDatatypeHandler() {
+	}
 
-	/**
-	 * Identifier for datatypes defined in the
-	 * {@link org.openrdf.model.vocabulary.RDF} vocabulary.
-	 */
-	public static final String RDF = "org.openrdf.rio.datatypes.rdf";
+	@Override
+	public boolean isRecognisedDatatype(URI datatypeUri) {
+		return org.openrdf.model.vocabulary.RDF.LANGSTRING.equals(datatypeUri)
+				|| org.openrdf.model.vocabulary.RDF.XMLLITERAL.equals(datatypeUri);
+	}
 
-	public boolean isRecognisedDatatype(URI datatypeUri);
-
+	@Override
 	public boolean verifyDatatype(String literalValue, URI datatypeUri)
-		throws LiteralUtilException;
+		throws LiteralUtilException
+	{
+		return true;
+	}
 
+	@Override
 	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
-		throws LiteralUtilException;
+		throws LiteralUtilException
+	{
+		// TODO: Implement normalisation
+		try {
+			return valueFactory.createLiteral(literalValue, datatypeUri);
+		}
+		catch (IllegalArgumentException e) {
+			throw new LiteralUtilException("Could not normalise RDF vocabulary defined literal", e);
+		}
+	}
 
-	/**
-	 * A unique key for this language handler to identify it in the
-	 * DatatypeHandlerRegistry.
-	 * 
-	 * @return A unique string key.
-	 */
-	public String getKey();
-
+	@Override
+	public String getKey() {
+		return DatatypeHandler.RDF;
+	}
 }

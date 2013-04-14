@@ -1,1 +1,2 @@
 org.openrdf.rio.datatypes.XMLSchemaDatatypeHandler
+org.openrdf.rio.datatypes.RDFDatatypeHandler

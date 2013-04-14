@@ -96,7 +96,7 @@ public interface LanguageHandler {
 	 *         value was not null and could not be normalised due to an
 	 *         exception.
 	 */
-	public Literal normaliseLanguage(String literalValue, String languageTag, ValueFactory valueFactory)
+	public Literal normalizeLanguage(String literalValue, String languageTag, ValueFactory valueFactory)
 		throws LiteralUtilException;
 
 	/**

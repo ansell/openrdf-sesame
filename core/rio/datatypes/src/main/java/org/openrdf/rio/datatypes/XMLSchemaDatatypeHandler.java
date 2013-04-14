@@ -54,7 +54,7 @@ public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 	}
 
 	@Override
-	public Literal normaliseDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
+	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
 		try {

@@ -493,7 +493,7 @@ public abstract class RDFParserBase implements RDFParser {
 				}
 				else {
 					try {
-						return recognisedLanguageHandler.normaliseLanguage(label, lang, valueFactory);
+						return recognisedLanguageHandler.normalizeLanguage(label, lang, valueFactory);
 					}
 					catch (LiteralUtilException e) {
 						reportError(
@@ -556,7 +556,7 @@ public abstract class RDFParserBase implements RDFParser {
 				}
 				else {
 					try {
-						return recognisedDatatypeHandler.normaliseDatatype(label, datatype, valueFactory);
+						return recognisedDatatypeHandler.normalizeDatatype(label, datatype, valueFactory);
 					}
 					catch (LiteralUtilException e) {
 						reportError(
