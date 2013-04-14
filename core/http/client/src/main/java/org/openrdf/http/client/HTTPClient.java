@@ -121,11 +121,11 @@ public class HTTPClient {
 
 	private String updateURL;
 
-	private final MultiThreadedHttpConnectionManager manager;
+	private MultiThreadedHttpConnectionManager manager;
 
-	protected final HttpClient httpClient;
+	protected HttpClient httpClient;
 
-	private final ExecutorService executor = Executors.newCachedThreadPool();
+	private ExecutorService executor = null;
 
 	private AuthScope authScope;
 
@@ -145,19 +145,7 @@ public class HTTPClient {
 
 	public HTTPClient() {
 		valueFactory = ValueFactoryImpl.getInstance();
-
-		// Use MultiThreadedHttpConnectionManager to allow concurrent access on
-		// HttpClient
-		manager = new MultiThreadedHttpConnectionManager();
-
-		// Allow 20 concurrent connections to the same host (default is 2)
-		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-		params.setDefaultMaxConnectionsPerHost(20);
-		manager.setParams(params);
-
-		httpClient = new HttpClient(manager);
-
-		configureProxySettings(httpClient);
+		initialize();
 	}
 
 	/*-----------------*
@@ -165,8 +153,34 @@ public class HTTPClient {
 	 *-----------------*/
 
 	public void shutDown() {
+		manager.closeIdleConnections(0);
 		manager.shutdown();
 		executor.shutdown();
+		httpClient = null;
+	}
+
+	/**
+	 * (re)initializes the connection manager and HttpClient (if not already
+	 * done), for example after a shutdown has been invoked earlier. Invoking
+	 * this method multiple times will have no effect.
+	 */
+	public void initialize() {
+		if (httpClient == null) {
+			executor = Executors.newCachedThreadPool();
+
+			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
+			// HttpClient
+			manager = new MultiThreadedHttpConnectionManager();
+
+			// Allow 20 concurrent connections to the same host (default is 2)
+			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+			params.setDefaultMaxConnectionsPerHost(20);
+			manager.setParams(params);
+
+			httpClient = new HttpClient(manager);
+
+			configureProxySettings(httpClient);
+		}
 	}
 
 	protected final HttpClient getHttpClient() {
