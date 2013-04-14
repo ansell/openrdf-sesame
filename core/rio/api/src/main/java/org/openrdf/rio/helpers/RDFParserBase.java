@@ -242,7 +242,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		// TODO: What set should we setup here
+		getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, !stopAtFirstError);
 	}
 
 	/**
@@ -253,6 +253,7 @@ public abstract class RDFParserBase implements RDFParser {
 		throw new RuntimeException("This setting is not supported anymore.");
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
 		if (datatypeHandling == DatatypeHandling.VERIFY) {
@@ -452,7 +453,8 @@ public abstract class RDFParserBase implements RDFParser {
 		throws RDFParseException
 	{
 		if (datatype != null) {
-			if (verifyData() && datatypeHandling() != DatatypeHandling.IGNORE) {
+			if (getParserConfig().get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)) {
+				// FIXME: Add RDF.LANGSTRING to the following
 				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) {
 					// report a warning on all unrecognized datatypes
 					if (datatype.stringValue().startsWith("xsd")) {
@@ -466,13 +468,14 @@ public abstract class RDFParserBase implements RDFParser {
 				}
 			}
 
-			if (datatypeHandling() == DatatypeHandling.VERIFY) {
+			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
 				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
 					reportError("'" + label + "' is not a valid value for datatype " + datatype,
 							BasicParserSettings.VERIFY_DATATYPE_VALUES);
 				}
 			}
-			else if (datatypeHandling() == DatatypeHandling.NORMALIZE) {
+
+			if (getParserConfig().get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
 				try {
 					label = XMLDatatypeUtil.normalize(label, datatype);
 				}

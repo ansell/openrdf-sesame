@@ -294,11 +294,13 @@ public class NTriplesParser extends RDFParserBase {
 			c = assertLineTerminates(c);
 		}
 		catch (RDFParseException rdfpe) {
-			if (stopAtFirstError()) {
-				throw rdfpe;
+			if (getParserConfig().get(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES)
+					&& getParserConfig().isNonFatalError(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES))
+			{
+				ignoredAnError = true;
 			}
 			else {
-				ignoredAnError = true;
+				throw rdfpe;
 			}
 		}
 
