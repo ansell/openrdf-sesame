@@ -492,11 +492,9 @@ public abstract class RDFParserBase implements RDFParser {
 				return valueFactory.createLiteral(label, datatype);
 			}
 			else if (lang != null) {
-				if (verifyData()) {
-					if (!isValidLanguageTag(lang)) {
-						reportError("'" + lang + "' is not a valid language tag ",
-								BasicParserSettings.VERIFY_LANGUAGE_TAGS);
-					}
+				if (!isValidLanguageTag(lang)) {
+					reportError("'" + lang + "' is not a valid language tag ",
+							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 				}
 				return valueFactory.createLiteral(label, lang);
 			}
