@@ -345,12 +345,14 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSES1121VarNamesInOptionals() throws Exception
+	public void testSES1121VarNamesInOptionals()
+		throws Exception
 	{
-		// Verifying that variable names have no influence on order of optionals in query. See SES-1121.
-		
+		// Verifying that variable names have no influence on order of optionals
+		// in query. See SES-1121.
+
 		loadTestData("/testdata-query/dataset-ses1121.trig");
-		
+
 		StringBuilder query1 = new StringBuilder();
 		query1.append(getNamespaceDeclarations());
 		query1.append(" SELECT DISTINCT *\n");
@@ -359,7 +361,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query1.append("          OPTIONAL { ?b ex:q ?c . } \n ");
 		query1.append("       } \n");
 		query1.append(" } \n");
-		
+
 		StringBuilder query2 = new StringBuilder();
 		query2.append(getNamespaceDeclarations());
 		query2.append(" SELECT DISTINCT *\n");
@@ -368,7 +370,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query2.append("          OPTIONAL { ?b ex:q ?var2 . } \n ");
 		query2.append("       } \n");
 		query2.append(" } \n");
-		
+
 		TupleQuery tq1 = null;
 		TupleQuery tq2 = null;
 		try {
@@ -383,32 +385,88 @@ public abstract class ComplexSPARQLQueryTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		
+
 		try {
 			TupleQueryResult result1 = tq1.evaluate();
 			assertNotNull(result1);
-			
+
 			TupleQueryResult result2 = tq2.evaluate();
 			assertNotNull(result2);
 
 			List<BindingSet> qr1 = QueryResults.asList(result1);
 			List<BindingSet> qr2 = QueryResults.asList(result2);
 
-//			System.out.println(qr1);
-//			System.out.println(qr2);
+			// System.out.println(qr1);
+			// System.out.println(qr2);
 
-			// if optionals are not kept in same order, query results will be different size.
+			// if optionals are not kept in same order, query results will be
+			// different size.
 			assertEquals(qr1.size(), qr2.size());
-			
+
 		}
 		catch (QueryEvaluationException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		
-		
+
 	}
-	
+
+	@Test
+	public void testSES1081SameTermWithValues()
+		throws Exception
+	{	
+		loadTestData("/testdata-query/dataset-ses1081.trig");
+		StringBuilder query = new StringBuilder();
+		query.append("PREFIX ex: <http://example.org/>\n");
+		query.append(" SELECT * \n");
+		query.append(" WHERE { \n ");
+		query.append("          ?s ex:p ?a . \n");
+		query.append("          FILTER sameTerm(?a, ?e) \n ");
+		query.append("          VALUES ?e { ex:b } \n ");
+		query.append(" } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+				count++;
+				assertNotNull(bs);
+				
+				Value s = bs.getValue("s");
+				Value a = bs.getValue("a");
+				
+				assertNotNull(s);
+				assertNotNull(a);
+				assertEquals(f.createURI("http://example.org/a"), s);
+				assertEquals(f.createURI("http://example.org/b"), a);
+			}
+			result.close();
+
+			assertEquals(1, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
 	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception
