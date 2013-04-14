@@ -23,7 +23,7 @@ package org.openrdf.rio.helpers;
  * @author Peter Ansell
  * @since 2.7.0
  */
-public enum LiteralHandling {
+public enum LargeLiteralHandling {
 
 	/**
 	 * Indicates that large literals should be preserved. This is the default

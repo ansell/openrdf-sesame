@@ -122,25 +122,25 @@ public class BasicParserSettings {
 	 * literals. The maximum length of literals if this setting is set to
 	 * truncate or drop is configured using {@link #LARGE_LITERALS_LIMIT}.
 	 * <p>
-	 * Defaults to {@link LiteralHandling#PRESERVE}.
+	 * Defaults to {@link LargeLiteralHandling#PRESERVE}.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<LiteralHandling> LARGE_LITERALS_HANDLING = new RioSettingImpl<LiteralHandling>(
-			"org.openrdf.rio.largeliterals", "Large literals handling", LiteralHandling.PRESERVE);
+	public static final RioSetting<LargeLiteralHandling> LARGE_LITERALS_HANDLING = new RioSettingImpl<LargeLiteralHandling>(
+			"org.openrdf.rio.largeliterals", "Large literals handling", LargeLiteralHandling.PRESERVE);
 
 	/**
 	 * If {@link #LARGE_LITERALS_HANDLING} is set to
-	 * {@link LiteralHandling#PRESERVE}, which it is by default, then the value
+	 * {@link LargeLiteralHandling#PRESERVE}, which it is by default, then the value
 	 * of this setting is not used.
 	 * <p>
-	 * If {@link #LARGE_LITERALS_HANDLING} is set to {@link LiteralHandling#DROP}
+	 * If {@link #LARGE_LITERALS_HANDLING} is set to {@link LargeLiteralHandling#DROP}
 	 * , then the value of this setting corresponds to the maximum number of
 	 * bytes for a literal before the statement it is a part of is dropped
 	 * silently by the parser.
 	 * <p>
 	 * If {@link #LARGE_LITERALS_HANDLING} is set to
-	 * {@link LiteralHandling#TRUNCATE} , then the value of this setting
+	 * {@link LargeLiteralHandling#TRUNCATE} , then the value of this setting
 	 * corresponds to the maximum number of bytes for a literal before the value
 	 * is truncated.
 	 * <p>
