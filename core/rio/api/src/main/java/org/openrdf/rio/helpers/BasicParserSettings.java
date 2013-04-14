@@ -79,12 +79,15 @@ public class BasicParserSettings {
 	 * to be used for a given parser configuration.
 	 * <p>
 	 * Defaults to an XMLSchema DatatypeHandler implementation based on
-	 * {@link DatatypeHandler#XMLSCHEMA}.
+	 * {@link DatatypeHandler#XMLSCHEMA} and an RDF DatatypeHandler
+	 * implementation based on {@link DatatypeHandler#RDFDATATYPES}.
+	 * 
+	 * @since 2.7.0
 	 */
 	public static final RioSetting<List<DatatypeHandler>> DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>(
 			"org.openrdf.rio.datatypehandlers", "Datatype Handlers", Arrays.asList(
 					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA),
-					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.RDF)));
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.RDFDATATYPES)));
 
 	/**
 	 * Boolean setting for parser to determine whether to fail parsing if
@@ -132,6 +135,8 @@ public class BasicParserSettings {
 	 * <p>
 	 * Defaults to an RFC3066 LanguageHandler implementation based on
 	 * {@link LanguageHandler#RFC3066}.
+	 * 
+	 * @since 2.7.0
 	 */
 	public static final RioSetting<List<LanguageHandler>> LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>(
 			"org.openrdf.rio.languagehandlers", "Language Handlers",

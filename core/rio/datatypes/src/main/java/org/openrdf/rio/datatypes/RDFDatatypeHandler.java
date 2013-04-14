@@ -67,6 +67,6 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 
 	@Override
 	public String getKey() {
-		return DatatypeHandler.RDF;
+		return DatatypeHandler.RDFDATATYPES;
 	}
 }

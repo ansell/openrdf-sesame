@@ -40,7 +40,7 @@ public interface DatatypeHandler {
 	 * Identifier for datatypes defined in the
 	 * {@link org.openrdf.model.vocabulary.RDF} vocabulary.
 	 */
-	public static final String RDF = "org.openrdf.rio.datatypes.rdf";
+	public static final String RDFDATATYPES = "org.openrdf.rio.datatypes.rdf";
 
 	public boolean isRecognisedDatatype(URI datatypeUri);
 
