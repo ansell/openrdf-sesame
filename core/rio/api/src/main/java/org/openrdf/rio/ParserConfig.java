@@ -124,6 +124,17 @@ public class ParserConfig extends RioConfig implements Serializable {
 	}
 
 	/**
+	 * Add a non-fatal error to the set used by parsers to determine whether they
+	 * should attempt to recover from a particular parsing error.
+	 * 
+	 * @param nextNonFatalError
+	 *        A non-fatal error that a parser should attempt to recover from.
+	 */
+	public void addNonFatalError(RioSetting<?> nextNonFatalError) {
+		this.nonFatalErrors.add(nextNonFatalError);
+	}
+
+	/**
 	 * This method is used by the parser to check whether they should throw an
 	 * exception or attempt to recover from a non-fatal error.
 	 * <p>
@@ -147,7 +158,16 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 * @since 2.7.0
 	 */
 	public boolean isNonFatalError(RioSetting<?> errorToCheck) {
-		return this.nonFatalErrors.contains(errorToCheck);
+		return nonFatalErrors.contains(errorToCheck);
+	}
+
+	/**
+	 * Get the current set of non-fatal errors.
+	 * 
+	 * @return An unmodifiable set containing the current non-fatal errors.
+	 */
+	public Set<RioSetting<?>> getNonFatalErrors() {
+		return Collections.unmodifiableSet(nonFatalErrors);
 	}
 
 	/**
@@ -194,5 +214,11 @@ public class ParserConfig extends RioConfig implements Serializable {
 	@Deprecated
 	public DatatypeHandling datatypeHandling() {
 		throw new RuntimeException("This method is not used anymore");
+	}
+
+	@Override
+	public void useDefaults() {
+		super.useDefaults();
+		this.nonFatalErrors.clear();
 	}
 }
