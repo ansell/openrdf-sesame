@@ -34,8 +34,11 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.RDF;
 
+import org.openrdf.rio.DatatypeHandler;
+import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
@@ -373,11 +376,9 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (verifyData()) {
-				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-							+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
-				}
+			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+						+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
 			}
 
 			uri = baseURI.resolve(uri);
@@ -452,9 +453,64 @@ public abstract class RDFParserBase implements RDFParser {
 	protected Literal createLiteral(String label, String lang, URI datatype)
 		throws RDFParseException
 	{
-		if (datatype != null) {
+		// In RDF-1.1 we must do lang check first as language literals will all
+		// have datatype RDF.LANGSTRING, but only language literals would have a
+		// non-null lang
+		if (lang != null) {
+			boolean recognisedLanguage = false;
+			LanguageHandler recognisedLanguageHandler = null;
+			if (getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
+				for (LanguageHandler nextHandler : getParserConfig().get(BasicParserSettings.LANGUAGE_HANDLERS)) {
+					if (nextHandler.isRecognisedLanguage(lang)) {
+						recognisedLanguage = true;
+						recognisedLanguageHandler = nextHandler;
+						try {
+							if (!nextHandler.verifyLanguage(label, lang)) {
+								reportError("'" + lang + "' is not a valid language tag ",
+										BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+							}
+						}
+						catch (LiteralUtilException e) {
+							reportError("'" + label
+									+ " could not be verified by a language handler that recognised it. language was "
+									+ lang, BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+						}
+					}
+				}
+				if (!recognisedLanguage) {
+					reportError(
+							"'"
+									+ label
+									+ "' was not recognised as a language literal, and could not be verified, with language "
+									+ lang, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+				}
+			}
+
+			if (getParserConfig().get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
+				if (!recognisedLanguage) {
+					reportError("'" + label + "' is not a valid value for language " + lang
+							+ " and could not be normalised.", BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+				}
+				else {
+					try {
+						return recognisedLanguageHandler.normaliseLanguage(label, lang, valueFactory);
+					}
+					catch (LiteralUtilException e) {
+						reportError(
+								"'" + label + "' did not have a valid value for language " + lang + ": "
+										+ e.getMessage() + " and could not be normalised",
+								BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+					}
+				}
+			}
+		}
+		else if (datatype != null) {
+			boolean recognisedDatatype = false;
+			DatatypeHandler recognisedDatatypeHandler = null;
+
+			// FIXME: Remove this and simply use the loop below after a datatype
+			// handler for RDF.XMLLITERAL is created
 			if (getParserConfig().get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)) {
-				// FIXME: Add RDF.LANGSTRING to the following
 				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) {
 					// report a warning on all unrecognized datatypes
 					if (datatype.stringValue().startsWith("xsd")) {
@@ -469,33 +525,56 @@ public abstract class RDFParserBase implements RDFParser {
 			}
 
 			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
-				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype,
-							BasicParserSettings.VERIFY_DATATYPE_VALUES);
+				for (DatatypeHandler nextHandler : getParserConfig().get(BasicParserSettings.DATATYPE_HANDLERS)) {
+					if (nextHandler.isRecognisedDatatype(datatype)) {
+						recognisedDatatype = true;
+						recognisedDatatypeHandler = nextHandler;
+						try {
+							if (!nextHandler.verifyDatatype(label, datatype)) {
+								reportError("'" + label + "' is not a valid value for datatype " + datatype,
+										BasicParserSettings.VERIFY_DATATYPE_VALUES);
+							}
+						}
+						catch (LiteralUtilException e) {
+							reportError("'" + label
+									+ " could not be verified by a datatype handler that recognised it. datatype was "
+									+ datatype, BasicParserSettings.VERIFY_DATATYPE_VALUES);
+						}
+					}
+				}
+
+				if (!recognisedDatatype) {
+					reportError("'" + label + "' was not recognised, and could not be verified, with datatype "
+							+ datatype, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 				}
 			}
 
 			if (getParserConfig().get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
-				try {
-					label = XMLDatatypeUtil.normalize(label, datatype);
+				if (!recognisedDatatype) {
+					reportError("'" + label + "' is not a valid value for datatype " + datatype
+							+ " and could not be normalised.", BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
 				}
-				catch (IllegalArgumentException e) {
-					reportError(
-							"'" + label + "' is not a valid value for datatype " + datatype + ": " + e.getMessage(),
-							BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+				else {
+					try {
+						return recognisedDatatypeHandler.normaliseDatatype(label, datatype, valueFactory);
+					}
+					catch (LiteralUtilException e) {
+						reportError(
+								"'" + label + "' is not a valid value for datatype " + datatype + ": "
+										+ e.getMessage() + " and could not be normalised",
+								BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+					}
 				}
 			}
 		}
 
 		try {
+			// Backup for unnormalised datatype literal creation
 			if (datatype != null) {
 				return valueFactory.createLiteral(label, datatype);
 			}
+			// Backup for unnormalised language literal creation
 			else if (lang != null) {
-				if (!isValidLanguageTag(lang)) {
-					reportError("'" + lang + "' is not a valid language tag ",
-							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
-				}
 				return valueFactory.createLiteral(label, lang);
 			}
 			else {
@@ -506,22 +585,6 @@ public abstract class RDFParserBase implements RDFParser {
 			reportFatalError(e);
 			return null; // required by compiler
 		}
-	}
-
-	/**
-	 * Checks that the supplied language tag conforms to lexical formatting as
-	 * specified in RFC-3066.
-	 * 
-	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
-	 * @param languageTag
-	 * @return true if the language tag is lexically valid, false otherwise.
-	 */
-	protected boolean isValidLanguageTag(String languageTag) {
-		// language tag is RFC3066-conformant if it matches this regex:
-		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
-		boolean result = Pattern.matches("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", languageTag);
-
-		return result;
 	}
 
 	/**
