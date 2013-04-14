@@ -157,7 +157,7 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 */
 	@Deprecated
 	public boolean verifyData() {
-		throw new RuntimeException("This method is not used anymore");
+		return true;
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 */
 	@Deprecated
 	public boolean stopAtFirstError() {
-		throw new RuntimeException("This method is not used anymore");
+		return true;
 	}
 
 	/**
