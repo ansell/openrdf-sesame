@@ -21,6 +21,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.Test;
+
 import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
 
@@ -61,6 +63,7 @@ public class LimitedSizeNativeStoreConnectionTest extends RepositoryConnectionTe
 		}
 	}
 
+	@Test
 	public void testSES715()
 		throws Exception
 	{
@@ -92,6 +95,7 @@ public class LimitedSizeNativeStoreConnectionTest extends RepositoryConnectionTe
 		testCon2.close();
 	}
 
+	@Test
 	public void testLimit()
 		throws Exception
 	{
@@ -118,6 +122,7 @@ public class LimitedSizeNativeStoreConnectionTest extends RepositoryConnectionTe
 		assertNull(shouldThrow);
 	}
 	
+	@Test
 	public void testOrderAndLimit()
 			throws Exception
 		{
