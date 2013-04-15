@@ -82,8 +82,8 @@ public interface DatatypeHandler {
 	 * and datatype URI.
 	 * <p>
 	 * This method must only be called after verifying that
-	 * {@link #isRecognizedLanguage(String)} returns true for the given datatype
-	 * URI, and {@link #verifyLanguage(String, String)} also returns true for the
+	 * {@link #isRecognizedDatatype(URI)} returns true for the given datatype
+	 * URI, and {@link #verifyDatatype(String, URI)} also returns true for the
 	 * given datatype URI and literal value.
 	 * 
 	 * @param literalValue
