@@ -48,6 +48,7 @@ import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -140,6 +141,7 @@ import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
+import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.RepositoryException;
 
 /**
@@ -297,6 +299,19 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Set<String> freeVars = new HashSet<String>(service.getServiceVars());
 			freeVars.removeAll(bindings.getBindingNames());
 
+			// Get bindings from values pre-bound into variables.
+			MapBindingSet allBindings = new MapBindingSet();
+			for (Binding binding : bindings) {
+				allBindings.addBinding(binding.getName(), binding.getValue());
+			}
+
+			Set<Var> boundVars = getBoundVariables(service);
+			for (Var boundVar : boundVars) {
+				freeVars.remove(boundVar.getName());
+				allBindings.addBinding(boundVar.getName(), boundVar.getValue());
+			}
+			bindings = allBindings;
+
 			String baseUri = service.getBaseURI();
 
 			// depending on freeVars.size: either SELECT or ASK query
@@ -346,6 +361,24 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 		}
 
+	}
+
+	private Set<Var> getBoundVariables(Service service) {
+		BoundVarVisitor visitor = new BoundVarVisitor();
+		visitor.meet(service);
+		return visitor.boundVars;
+	}
+
+	private static class BoundVarVisitor extends QueryModelVisitorBase<RuntimeException> {
+
+		private final Set<Var> boundVars = new HashSet<Var>();
+
+		@Override
+		public void meet(Var var) {
+			if (var.hasValue()) {
+				boundVars.add(var);
+			}
+		}
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
