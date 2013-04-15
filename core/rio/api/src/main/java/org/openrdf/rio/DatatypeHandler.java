@@ -42,19 +42,75 @@ public interface DatatypeHandler {
 	 */
 	public static final String RDFDATATYPES = "org.openrdf.rio.datatypes.rdf";
 
+	/**
+	 * Checks if the given datatype URI is recognized by this datatype handler.
+	 * 
+	 * @param datatypeUri
+	 *        The datatype URI to check.
+	 * @return True if the datatype is syntactically valid and could be used with
+	 *         {@link #verifyDatatype(String, URI)} and
+	 *         {@link #normalizeDatatype(String, URI, ValueFactory)}.
+	 * @since 2.7.0
+	 */
 	public boolean isRecognizedDatatype(URI datatypeUri);
 
+	/**
+	 * Verifies that the datatype URI is valid, optionally including an automated
+	 * check on the literal value.
+	 * <p>
+	 * This method must only be called after verifying that
+	 * {@link #isRecognizedDatatype(URI)} returns true for the given datatype
+	 * URI.
+	 * 
+	 * @param literalValue
+	 *        Optional literal value. If null, it must be ignored and the result
+	 *        defined solely by the datatype URI.
+	 * @param datatypeUri
+	 *        A datatype URI that matched with {@link #isRecognizedDatatype(URI)}
+	 * @return True if the datatype URI is recognized by this datatype handler,
+	 *         and it is verified to be syntactically valid.
+	 * @since 2.7.0
+	 * @throws LiteralUtilException
+	 *         If the datatype was not recognized.
+	 */
 	public boolean verifyDatatype(String literalValue, URI datatypeUri)
 		throws LiteralUtilException;
 
+	/**
+	 * Normalize both the datatype URI and the literal value if appropriate, and
+	 * use the given value factory to generate a literal matching a literal value
+	 * and datatype URI.
+	 * <p>
+	 * This method must only be called after verifying that
+	 * {@link #isRecognizedLanguage(String)} returns true for the given datatype
+	 * URI, and {@link #verifyLanguage(String, String)} also returns true for the
+	 * given datatype URI and literal value.
+	 * 
+	 * @param literalValue
+	 *        Required literal value to use in the normalization process and to
+	 *        provide the value for the resulting literal.
+	 * @param datatypeUri
+	 *        The datatype URI which is to be normalized. This URI is available
+	 *        in normalized form from the result using
+	 *        {@link Literal#getDatatype()}.
+	 * @param valueFactory
+	 *        The {@link ValueFactory} to use to create the result literal.
+	 * @return A {@link Literal} containing the normalized literal value and
+	 *         datatype URI.
+	 * @since 2.7.0
+	 * @throws LiteralUtilException
+	 *         If the datatype URI was not recognized or verified, or the literal
+	 *         value could not be normalized due to an error.
+	 */
 	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException;
 
 	/**
-	 * A unique key for this language handler to identify it in the
+	 * A unique key for this datatype handler to identify it in the
 	 * DatatypeHandlerRegistry.
 	 * 
 	 * @return A unique string key.
+	 * @since 2.7.0
 	 */
 	public String getKey();
 

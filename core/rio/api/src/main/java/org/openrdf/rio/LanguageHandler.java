@@ -35,7 +35,8 @@ import org.openrdf.model.util.LiteralUtilException;
 public interface LanguageHandler {
 
 	/**
-	 * 
+	 * Identifier for the language tag format defined by RFC3066, which is
+	 * referenced by the RDF specification.
 	 */
 	public static final String RFC3066 = "org.openrdf.rio.languages.RFC3066";
 
@@ -45,6 +46,7 @@ public interface LanguageHandler {
 	 * normalized.
 	 * 
 	 * @param languageTag
+	 *        The language tag to check.
 	 * @return True if the language tag is syntactically valid and could be used
 	 *         with {@link #verifyLanguage(String, String)} and
 	 *         {@link #normalizeLanguage(String, String, ValueFactory)}.
@@ -65,6 +67,7 @@ public interface LanguageHandler {
 	 *        defined solely by the language tag.
 	 * @param languageTag
 	 *        A language tag that matched with
+	 *        {@link #isRecognizedLanguage(String)}.
 	 * @return True if the language tag is recognized by this language handler,
 	 *         and it is verified to be syntactically valid.
 	 * @since 2.7.0
@@ -76,27 +79,29 @@ public interface LanguageHandler {
 
 	/**
 	 * Normalize both the language tag and the language if appropriate, and use
-	 * the given value factory to generate a literal matching an optional literal
-	 * value and language tag.
+	 * the given value factory to generate a literal matching the literal value
+	 * and language tag.
 	 * <p>
 	 * This method must only be called after verifying that
 	 * {@link #isRecognizedLanguage(String)} returns true for the given language
 	 * tag, and {@link #verifyLanguage(String, String)} also returns true for the
-	 * given language and (optionally) literal value.
+	 * given language and literal value.
 	 * 
 	 * @param literalValue
-	 *        Optional literal value. If the given literal value is null, then an
-	 *        empty string must be used for the resulting literal, and the user
-	 *        must only utilize {@link Literal#getLanguage()} on the resulting
-	 *        literal to derive the normalized language tag.
+	 *        Required literal value to use in the normalization process and to
+	 *        provide the value for the resulting literal.
 	 * @param languageTag
+	 *        The language tag which is to be normalized. This tag is available
+	 *        in normalized form from the result using
+	 *        {@link Literal#getLanguage()}.
 	 * @param valueFactory
-	 * @return
+	 *        The {@link ValueFactory} to use to create the result literal.
+	 * @return A {@link Literal} containing the normalized literal value and
+	 *         language tag.
 	 * @since 2.7.0
 	 * @throws LiteralUtilException
 	 *         If the language tag was not recognized or verified, or the literal
-	 *         value was not null and could not be normalized due to an
-	 *         exception.
+	 *         value could not be normalized due to an error.
 	 */
 	public Literal normalizeLanguage(String literalValue, String languageTag, ValueFactory valueFactory)
 		throws LiteralUtilException;
@@ -106,6 +111,7 @@ public interface LanguageHandler {
 	 * LanguageHandlerRegistry.
 	 * 
 	 * @return A unique string key.
+	 * @since 2.7.0
 	 */
 	public String getKey();
 
