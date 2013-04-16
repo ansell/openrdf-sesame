@@ -16,7 +16,6 @@
  */
 package org.openrdf.rio.helpers;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,8 +34,11 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.RDF;
 
+import org.openrdf.rio.DatatypeHandler;
+import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
@@ -206,20 +208,30 @@ public abstract class RDFParserBase implements RDFParser {
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
-		result.add(BasicParserSettings.DATATYPE_HANDLING);
-		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
-		result.add(BasicParserSettings.VERIFY_DATA);
+		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		result.add(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		result.add(BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
 
 		return result;
 	}
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		this.parserConfig.set(BasicParserSettings.VERIFY_DATA, verifyData);
+		if (verifyData) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
+		}
+		else {
+			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
+		}
 	}
 
+	/**
+	 * @deprecated Use specific settings instead.
+	 */
+	@Deprecated
 	public boolean verifyData() {
-		return this.parserConfig.get(BasicParserSettings.VERIFY_DATA);
+		return this.parserConfig.get(BasicParserSettings.VERIFY_RELATIVE_URIS);
 	}
 
 	@Override
@@ -233,20 +245,51 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		this.parserConfig.set(BasicParserSettings.STOP_AT_FIRST_ERROR, stopAtFirstError);
+		getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, !stopAtFirstError);
 	}
 
+	/**
+	 * @deprecated Check specific settings instead.
+	 */
+	@Deprecated
 	public boolean stopAtFirstError() {
-		return this.parserConfig.get(BasicParserSettings.STOP_AT_FIRST_ERROR);
+		throw new RuntimeException("This setting is not supported anymore.");
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
-		this.parserConfig.set(BasicParserSettings.DATATYPE_HANDLING, datatypeHandling);
+		if (datatypeHandling == DatatypeHandling.VERIFY) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		}
+		else if (datatypeHandling == DatatypeHandling.NORMALIZE) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+			this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, true);
+		}
+		else {
+			// Only ignore if they have not explicitly set any of the relevant
+			// settings before this point
+			if (!this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)
+					&& !this.parserConfig.isSet(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)
+					&& !this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES))
+			{
+				this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
+				this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
+				this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, false);
+			}
+		}
 	}
 
+	/**
+	 * @deprecated Use {@link BasicParserSettings#VERIFY_DATATYPE_VALUES} and
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES} and
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
+	 */
+	@Deprecated
 	public DatatypeHandling datatypeHandling() {
-		return this.parserConfig.get(BasicParserSettings.DATATYPE_HANDLING);
+		throw new RuntimeException("This setting is not supported anymore.");
 	}
 
 	/**
@@ -288,7 +331,7 @@ public abstract class RDFParserBase implements RDFParser {
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
 		if (defaultPrefix.containsKey(prefix)) {
-			reportError(msg);
+			reportError(msg, RDFaParserSettings.ALLOW_RDFA_UNDEFINED_PREFIXES);
 			return defaultPrefix.get(prefix);
 		}
 		else if ("".equals(prefix)) {
@@ -333,11 +376,9 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (verifyData()) {
-				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-							+ baseURI + "'");
-				}
+			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+						+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
 			}
 
 			uri = baseURI.resolve(uri);
@@ -412,46 +453,112 @@ public abstract class RDFParserBase implements RDFParser {
 	protected Literal createLiteral(String label, String lang, URI datatype)
 		throws RDFParseException
 	{
-		if (datatype != null) {
-			if (verifyData() && datatypeHandling() != DatatypeHandling.IGNORE) {
-				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) {
-					// report a warning on all unrecognized datatypes
-					if (datatype.stringValue().startsWith("xsd")) {
-						reportWarning("datatype '" + datatype
-								+ "' seems be a prefixed name, should be a full URI instead.");
+		// In RDF-1.1 we must do lang check first as language literals will all
+		// have datatype RDF.LANGSTRING, but only language literals would have a
+		// non-null lang
+		if (lang != null) {
+			boolean recognisedLanguage = false;
+			LanguageHandler recognisedLanguageHandler = null;
+			if (getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
+				for (LanguageHandler nextHandler : getParserConfig().get(BasicParserSettings.LANGUAGE_HANDLERS)) {
+					if (nextHandler.isRecognizedLanguage(lang)) {
+						recognisedLanguage = true;
+						recognisedLanguageHandler = nextHandler;
+						try {
+							if (!nextHandler.verifyLanguage(label, lang)) {
+								reportError("'" + lang + "' is not a valid language tag ",
+										BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+							}
+						}
+						catch (LiteralUtilException e) {
+							reportError("'" + label
+									+ " could not be verified by a language handler that recognised it. language was "
+									+ lang, BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+						}
 					}
-					else {
-						reportWarning("'" + datatype + "' is not recognized as a supported xsd datatype.");
-					}
+				}
+				if (!recognisedLanguage) {
+					reportError(
+							"'"
+									+ label
+									+ "' was not recognised as a language literal, and could not be verified, with language "
+									+ lang, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
 				}
 			}
 
-			if (datatypeHandling() == DatatypeHandling.VERIFY) {
-				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype);
+			if (getParserConfig().get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
+				if (!recognisedLanguage) {
+					reportError("'" + label + "' is not a valid value for language " + lang
+							+ " and could not be normalised.", BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+				}
+				else {
+					try {
+						return recognisedLanguageHandler.normalizeLanguage(label, lang, valueFactory);
+					}
+					catch (LiteralUtilException e) {
+						reportError(
+								"'" + label + "' did not have a valid value for language " + lang + ": "
+										+ e.getMessage() + " and could not be normalised",
+								BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+					}
 				}
 			}
-			else if (datatypeHandling() == DatatypeHandling.NORMALIZE) {
-				try {
-					label = XMLDatatypeUtil.normalize(label, datatype);
+		}
+		else if (datatype != null) {
+			boolean recognisedDatatype = false;
+			DatatypeHandler recognisedDatatypeHandler = null;
+
+			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
+				for (DatatypeHandler nextHandler : getParserConfig().get(BasicParserSettings.DATATYPE_HANDLERS)) {
+					if (nextHandler.isRecognizedDatatype(datatype)) {
+						recognisedDatatype = true;
+						recognisedDatatypeHandler = nextHandler;
+						try {
+							if (!nextHandler.verifyDatatype(label, datatype)) {
+								reportError("'" + label + "' is not a valid value for datatype " + datatype,
+										BasicParserSettings.VERIFY_DATATYPE_VALUES);
+							}
+						}
+						catch (LiteralUtilException e) {
+							reportError("'" + label
+									+ " could not be verified by a datatype handler that recognised it. datatype was "
+									+ datatype, BasicParserSettings.VERIFY_DATATYPE_VALUES);
+						}
+					}
 				}
-				catch (IllegalArgumentException e) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype + ": "
-							+ e.getMessage());
+
+				if (!recognisedDatatype) {
+					reportError("'" + label + "' was not recognised, and could not be verified, with datatype "
+							+ datatype, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+				}
+			}
+
+			if (getParserConfig().get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
+				if (!recognisedDatatype) {
+					reportError("'" + label + "' is not a valid value for datatype " + datatype
+							+ " and could not be normalised.", BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+				}
+				else {
+					try {
+						return recognisedDatatypeHandler.normalizeDatatype(label, datatype, valueFactory);
+					}
+					catch (LiteralUtilException e) {
+						reportError(
+								"'" + label + "' is not a valid value for datatype " + datatype + ": "
+										+ e.getMessage() + " and could not be normalised",
+								BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+					}
 				}
 			}
 		}
 
 		try {
+			// Backup for unnormalised datatype literal creation
 			if (datatype != null) {
 				return valueFactory.createLiteral(label, datatype);
 			}
+			// Backup for unnormalised language literal creation
 			else if (lang != null) {
-				if (verifyData()) {
-					if (!isValidLanguageTag(lang)) {
-						reportError("'" + lang + "' is not a valid language tag ");
-					}
-				}
 				return valueFactory.createLiteral(label, lang);
 			}
 			else {
@@ -462,22 +569,6 @@ public abstract class RDFParserBase implements RDFParser {
 			reportFatalError(e);
 			return null; // required by compiler
 		}
-	}
-
-	/**
-	 * Checks that the supplied language tag conforms to lexical formatting as
-	 * specified in RFC-3066.
-	 * 
-	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
-	 * @param languageTag
-	 * @return true if the language tag is lexically valid, false otherwise.
-	 */
-	protected boolean isValidLanguageTag(String languageTag) {
-		// language tag is RFC3066-conformant if it matches this regex:
-		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
-		boolean result = Pattern.matches("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", languageTag);
-
-		return result;
 	}
 
 	/**
@@ -548,10 +639,10 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @see #setStopAtFirstError
 	 */
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<?> relevantSetting)
 		throws RDFParseException
 	{
-		reportError(msg, -1, -1);
+		reportError(msg, -1, -1, relevantSetting);
 	}
 
 	/**
@@ -561,14 +652,14 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @see #setStopAtFirstError
 	 */
-	protected void reportError(String msg, int lineNo, int columnNo)
+	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<?> relevantSetting)
 		throws RDFParseException
 	{
 		if (errListener != null) {
 			errListener.error(msg, lineNo, columnNo);
 		}
 
-		if (stopAtFirstError()) {
+		if (!getParserConfig().isNonFatalError(relevantSetting)) {
 			throw new RDFParseException(msg, lineNo, columnNo);
 		}
 	}

@@ -35,7 +35,7 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 	 * Variables *
 	 *-----------*/
 
-	private final Iteration<? extends E, ? extends X> arg2;
+	protected final Iteration<? extends E, ? extends X> arg2;
 
 	private final boolean distinct;
 
@@ -100,23 +100,41 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 	{
 		if (!initialized) {
 			// Build set of elements-to-include from second argument
-			includeSet = Iterations.addAll(arg2, new HashSet<E>());
+			includeSet = addSecondSet(arg2, makeSet());
 			initialized = true;
 		}
 
-		if (includeSet.contains(object)) {
+		if (inIncludeSet(object)) {
 			// Element is part of the result
 
 			if (distinct) {
 				// Prevent duplicates from being returned by
 				// removing the element from the include set
-				includeSet.remove(object);
+				removeFromIncludeSet(object);
 			}
 
 			return true;
 		}
 
 		return false;
+	}
+
+	public Set<E> addSecondSet(Iteration<? extends E, ? extends X> arg2, Set<E> set)
+		throws X
+	{
+		return Iterations.addAll(arg2, makeSet());
+	}
+
+	protected boolean removeFromIncludeSet(E object) {
+		return includeSet.remove(object);
+	}
+
+	protected boolean inIncludeSet(E object) {
+		return includeSet.contains(object);
+	}
+
+	protected Set<E> makeSet() {
+		return new HashSet<E>();
 	}
 
 	@Override
@@ -126,4 +144,11 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 		super.handleClose();
 		Iterations.closeCloseable(arg2);
 	}
+	
+	protected long clearIncludeSet() {
+		long size = includeSet.size();
+		includeSet.clear();
+		return size;
+	}
+
 }

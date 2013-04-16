@@ -205,4 +205,70 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 
 	}
 
+	@Test
+	public void testNonStandardDistinct()
+		throws Exception
+	{
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		InputStream stream = this.getClass().getResourceAsStream("/sparqljson/non-standard-distinct.srj");
+		assertNotNull("Could not find test resource", stream);
+		parser.parseQueryResult(stream);
+
+		// there must be 1 variable
+		assertEquals(1, handler.getBindingNames().size());
+
+		// first must be called "Concept", etc.,
+		assertEquals("Concept", handler.getBindingNames().get(0));
+
+		// -1 results
+		assertEquals(100, handler.getBindingSets().size());
+	}
+
+	@Test
+	public void testNonStandardOrdered()
+		throws Exception
+	{
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		InputStream stream = this.getClass().getResourceAsStream("/sparqljson/non-standard-ordered.srj");
+		assertNotNull("Could not find test resource", stream);
+		parser.parseQueryResult(stream);
+
+		// there must be 1 variable
+		assertEquals(1, handler.getBindingNames().size());
+
+		// first must be called "Concept", etc.,
+		assertEquals("Concept", handler.getBindingNames().get(0));
+
+		// -1 results
+		assertEquals(100, handler.getBindingSets().size());
+	}
+
+	@Test
+	public void testNonStandardDistinctOrdered()
+		throws Exception
+	{
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		QueryResultCollector handler = new QueryResultCollector();
+		parser.setQueryResultHandler(handler);
+
+		InputStream stream = this.getClass().getResourceAsStream(
+				"/sparqljson/non-standard-distinct-ordered.srj");
+		assertNotNull("Could not find test resource", stream);
+		parser.parseQueryResult(stream);
+
+		// there must be 1 variable
+		assertEquals(1, handler.getBindingNames().size());
+
+		// first must be called "Concept", etc.,
+		assertEquals("Concept", handler.getBindingNames().get(0));
+
+		// -1 results
+		assertEquals(100, handler.getBindingSets().size());
+	}
 }

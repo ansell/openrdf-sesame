@@ -71,6 +71,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -86,12 +87,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 * Constants *
 	 *-----------*/
 
-	// Logger for non-static tests, so these results can be isolated based on where they are run
+	// Logger for non-static tests, so these results can be isolated based on
+	// where they are run
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	// Logger for static methods which are not overridden
 	private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLQueryTest.class);
-	
+
 	protected final String testURI;
 
 	protected final String queryFileURL;
@@ -194,6 +196,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
+		// Some SPARQL Tests have non-XSD datatypes that must pass for the test
+		// suite to complete successfully
+		con.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, Boolean.FALSE);
+		con.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, Boolean.FALSE);
 		try {
 			String queryString = readQueryString();
 			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);

@@ -18,6 +18,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.ntriples.NTriplesParser;
 
 import java.io.IOException;
@@ -140,11 +141,13 @@ public class NQuadsParser extends NTriplesParser {
 			c = assertLineTerminates(c);
 		}
 		catch (RDFParseException rdfpe) {
-			if (stopAtFirstError()) {
-				throw rdfpe;
+			if (getParserConfig().get(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES)
+					|| getParserConfig().isNonFatalError(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES))
+			{
+				ignoredAnError = true;
 			}
 			else {
-				ignoredAnError = true;
+				throw rdfpe;
 			}
 		}
 

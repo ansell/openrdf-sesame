@@ -14,34 +14,44 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio.helpers;
+package org.openrdf.sail.nativerdf;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailException;
 
 /**
- * An enumeration used to define constants used with the
- * {@link BasicParserSettings#LARGE_LITERALS_HANDLING} parser setting.
- * 
- * @author Peter Ansell
- * @since 2.7.0
+ * @author Jerven Bolleman, SIB Swiss Institute of Bioinformatics
  */
-public enum LiteralHandling {
+public class LimitedSizeNativeStore extends NativeStore {
 
 	/**
-	 * Indicates that large literals should be preserved. This is the default
-	 * behaviour.
+	 * @param dataDir
+	 * @param string
 	 */
-	PRESERVE,
+	public LimitedSizeNativeStore(File dataDir, String string) {
+		super(dataDir, string);
+	}
 
-	/**
-	 * Indicates that statements containing large literals should be dropped,
-	 * based on based on the {@link BasicParserSettings#LARGE_LITERALS_LIMIT}
-	 * setting.
-	 */
-	DROP,
+	public LimitedSizeNativeStore() {
+		super();
+	}
 
-	/**
-	 * Indicates that values of large literals should be truncated, based on the
-	 * {@link BasicParserSettings#LARGE_LITERALS_LIMIT} setting.
-	 */
-	TRUNCATE
+	public LimitedSizeNativeStore(File dataDir) {
+		super(dataDir);
+	}
 
+	@Override
+	protected NotifyingSailConnection getConnectionInternal()
+		throws SailException
+	{
+		try {
+			return new LimitedSizeNativeStoreConnection(this);
+		}
+		catch (IOException e) {
+			throw new SailException(e);
+		}
+	}
 }
