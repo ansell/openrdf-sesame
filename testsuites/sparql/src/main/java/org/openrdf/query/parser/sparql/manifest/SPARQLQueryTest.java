@@ -198,8 +198,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 		RepositoryConnection con = dataRep.getConnection();
 		// Some SPARQL Tests have non-XSD datatypes that must pass for the test
 		// suite to complete successfully
-		con.getParserConfig().set(BasicParserSettings.VERIFY_DATA, Boolean.FALSE);
-		con.getParserConfig().set(BasicParserSettings.DATATYPE_HANDLING, DatatypeHandling.IGNORE);
+		con.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, Boolean.FALSE);
+		con.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, Boolean.FALSE);
 		try {
 			String queryString = readQueryString();
 			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);

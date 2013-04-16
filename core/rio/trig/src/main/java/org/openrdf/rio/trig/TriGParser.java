@@ -80,8 +80,7 @@ public class TriGParser extends TurtleParser {
 	 *---------*/
 
 	@Override
-	public RDFFormat getRDFFormat()
-	{
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIG;
 	}
 
@@ -95,21 +94,24 @@ public class TriGParser extends TurtleParser {
 		// longest valid directive @prefix
 		do {
 			c = read();
-			if(c == -1 || TurtleUtil.isWhitespace(c)) {
+			if (c == -1 || TurtleUtil.isWhitespace(c)) {
 				unread(c);
 				break;
 			}
 			sb.append((char)c);
-		} while (sb.length() < 8);
-		
+		}
+		while (sb.length() < 8);
+
 		String directive = sb.toString();
-		
-		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("base")) {
+
+		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix")
+				|| directive.equalsIgnoreCase("base"))
+		{
 			parseDirective(directive);
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
-			if(directive.startsWith("@")) {
-				verifyCharacter(read(), ".");
+			if (directive.startsWith("@")) {
+				verifyCharacterOrFail(read(), ".");
 			}
 		}
 		else {
@@ -144,12 +146,12 @@ public class TriGParser extends TurtleParser {
 		}
 
 		if (c == ':') {
-			verifyCharacter(read(), "-");
+			verifyCharacterOrFail(read(), "-");
 			skipWSC();
 			c = read();
 		}
 
-		verifyCharacter(c, "{");
+		verifyCharacterOrFail(c, "{");
 
 		c = skipWSC();
 
@@ -172,7 +174,7 @@ public class TriGParser extends TurtleParser {
 				c = skipWSC();
 			}
 
-			verifyCharacter(c, "}");
+			verifyCharacterOrFail(c, "}");
 		}
 
 		read();

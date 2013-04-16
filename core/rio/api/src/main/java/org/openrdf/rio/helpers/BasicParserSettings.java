@@ -16,8 +16,14 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.openrdf.rio.DatatypeHandler;
+import org.openrdf.rio.DatatypeHandlerRegistry;
+import org.openrdf.rio.LanguageHandler;
+import org.openrdf.rio.LanguageHandlerRegistry;
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
  * A class encapsulating the basic parser settings that most parsers may
@@ -29,26 +35,123 @@ import org.openrdf.rio.RDFParser.DatatypeHandling;
 public class BasicParserSettings {
 
 	/**
-	 * Boolean setting for parser to determine whether data values are verified.
+	 * Boolean setting for parser to determine whether values for recognised
+	 * datatypes are to be verified.
+	 * <p>
+	 * Verification is performed using registered DatatypeHandlers.
 	 * <p>
 	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> VERIFY_DATA = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.verifydata", "Verify data", Boolean.TRUE);
+	public static final RioSetting<Boolean> VERIFY_DATATYPE_VALUES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.verifydatatypevalues", "Verify recognised datatype values", Boolean.TRUE);
 
 	/**
-	 * Boolean setting for parser to determine whether parser should stop at
-	 * first error or continue if that is possible. If the parser is unable to
-	 * continue after an error it will still fail regardless of this setting.
+	 * Boolean setting for parser to determine whether to fail parsing if
+	 * datatypes are not recognised.
+	 * <p>
+	 * Datatypes are recognised based on matching one of the registered
+	 * {@link DatatypeHandler}s.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> FAIL_ON_UNKNOWN_DATATYPES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.failonunknowndatatypes", "Fail on unknown datatypes", Boolean.FALSE);
+
+	/**
+	 * Boolean setting for parser to determine whether recognised datatypes need
+	 * to have their values be normalized.
+	 * <p>
+	 * Normalization is performed using registered DatatypeHandlers.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> NORMALIZE_DATATYPE_VALUES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.normalizedatatypevalues", "Normalize recognised datatype values", Boolean.FALSE);
+
+	/**
+	 * Setting used to specify which {@link DatatypeHandler} implementations are
+	 * to be used for a given parser configuration.
+	 * <p>
+	 * Defaults to an XMLSchema DatatypeHandler implementation based on
+	 * {@link DatatypeHandler#XMLSCHEMA} and an RDF DatatypeHandler
+	 * implementation based on {@link DatatypeHandler#RDFDATATYPES}.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<List<DatatypeHandler>> DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>(
+			"org.openrdf.rio.datatypehandlers", "Datatype Handlers", Arrays.asList(
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA),
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.RDFDATATYPES)));
+
+	/**
+	 * Boolean setting for parser to determine whether to fail parsing if
+	 * languages are not recognised.
+	 * <p>
+	 * Languages are recognised based on matching one of the registered
+	 * {@link LanguageHandler}s.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> FAIL_ON_UNKNOWN_LANGUAGES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.failonunknownlanguages", "Fail on unknown languages", Boolean.FALSE);
+
+	/**
+	 * Boolean setting for parser to determine whether languages are to be
+	 * verified based on a given set of definitions for valid languages.
+	 * <p>
+	 * Verification is performed using registered LanguageTagHandlers.
 	 * <p>
 	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> STOP_AT_FIRST_ERROR = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.stopatfirsterror", "Stop at first error", Boolean.TRUE);
+	public static final RioSetting<Boolean> VERIFY_LANGUAGE_TAGS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.verifylanguagevalues", "Verify language tags", Boolean.TRUE);
+
+	/**
+	 * Boolean setting for parser to determine whether languages need to be
+	 * normalized, and to which format they should be normalised.
+	 * <p>
+	 * Normalization is performed using registered LanguageTagHandlers.
+	 * <p>
+	 * Defaults to false.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> NORMALIZE_LANGUAGE_TAGS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.normalizedatatypevalues", "Normalize recognised datatype values", Boolean.FALSE);
+
+	/**
+	 * Setting used to specify which {@link LanguageHandler} implementations are
+	 * to be used for a given parser configuration.
+	 * <p>
+	 * Defaults to an RFC3066 LanguageHandler implementation based on
+	 * {@link LanguageHandler#RFC3066}.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<List<LanguageHandler>> LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>(
+			"org.openrdf.rio.languagehandlers", "Language Handlers",
+			Arrays.asList(LanguageHandlerRegistry.getInstance().get(LanguageHandler.RFC3066)));
+
+	/**
+	 * Boolean setting for parser to determine whether relative URIs are
+	 * verified.
+	 * <p>
+	 * Defaults to true.
+	 * 
+	 * @since 2.7.0
+	 */
+	public static final RioSetting<Boolean> VERIFY_RELATIVE_URIS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.verifyrelativeuris", "Verify relative URIs", Boolean.TRUE);
 
 	/**
 	 * Boolean setting for parser to determine whether parser should attempt to
@@ -63,41 +166,30 @@ public class BasicParserSettings {
 			"org.openrdf.rio.preservebnodeids", "Preserve blank node identifiers", Boolean.FALSE);
 
 	/**
-	 * Determines which mode of {@link DatatypeHandling} will be used by the
-	 * parser.
-	 * <p>
-	 * Defaults to {@link DatatypeHandling#VERIFY}.
-	 * 
-	 * @since 2.7.0
-	 */
-	public static final RioSetting<DatatypeHandling> DATATYPE_HANDLING = new RioSettingImpl<DatatypeHandling>(
-			"org.openrdf.rio.datatypehandling", "Datatype handling", DatatypeHandling.VERIFY);
-
-	/**
 	 * Boolean setting for parser to determine whether parser should preserve,
 	 * truncate, drop, or otherwise manipulate statements that contain long
 	 * literals. The maximum length of literals if this setting is set to
 	 * truncate or drop is configured using {@link #LARGE_LITERALS_LIMIT}.
 	 * <p>
-	 * Defaults to {@link LiteralHandling#PRESERVE}.
+	 * Defaults to {@link LargeLiteralHandling#PRESERVE}.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<LiteralHandling> LARGE_LITERALS_HANDLING = new RioSettingImpl<LiteralHandling>(
-			"org.openrdf.rio.largeliterals", "Large literals handling", LiteralHandling.PRESERVE);
+	public static final RioSetting<LargeLiteralHandling> LARGE_LITERALS_HANDLING = new RioSettingImpl<LargeLiteralHandling>(
+			"org.openrdf.rio.largeliterals", "Large literals handling", LargeLiteralHandling.PRESERVE);
 
 	/**
 	 * If {@link #LARGE_LITERALS_HANDLING} is set to
-	 * {@link LiteralHandling#PRESERVE}, which it is by default, then the value
-	 * of this setting is not used.
-	 * <p>
-	 * If {@link #LARGE_LITERALS_HANDLING} is set to {@link LiteralHandling#DROP}
-	 * , then the value of this setting corresponds to the maximum number of
-	 * bytes for a literal before the statement it is a part of is dropped
-	 * silently by the parser.
+	 * {@link LargeLiteralHandling#PRESERVE}, which it is by default, then the
+	 * value of this setting is not used.
 	 * <p>
 	 * If {@link #LARGE_LITERALS_HANDLING} is set to
-	 * {@link LiteralHandling#TRUNCATE} , then the value of this setting
+	 * {@link LargeLiteralHandling#DROP} , then the value of this setting
+	 * corresponds to the maximum number of bytes for a literal before the
+	 * statement it is a part of is dropped silently by the parser.
+	 * <p>
+	 * If {@link #LARGE_LITERALS_HANDLING} is set to
+	 * {@link LargeLiteralHandling#TRUNCATE} , then the value of this setting
 	 * corresponds to the maximum number of bytes for a literal before the value
 	 * is truncated.
 	 * <p>

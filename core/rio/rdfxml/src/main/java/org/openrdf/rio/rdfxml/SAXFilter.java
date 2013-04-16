@@ -35,6 +35,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.XMLParserSettings;
 
 /**
  * A filter on SAX events to make life easier on the RDF parser itself. This
@@ -506,10 +507,9 @@ class SAXFilter implements ContentHandler {
 					}
 				}
 
-				if (rdfParser.verifyData()) {
-					if ("".equals(namespace)) {
-						rdfParser.reportError("unqualified attribute '" + qName + "' not allowed");
-					}
+				if ("".equals(namespace)) {
+					rdfParser.reportError("unqualified attribute '" + qName + "' not allowed",
+							XMLParserSettings.IGNORE_INVALID_QNAME);
 				}
 
 				Att att = new Att(namespace, localName, qName, value);

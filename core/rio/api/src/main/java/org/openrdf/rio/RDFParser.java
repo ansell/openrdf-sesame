@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.util.Collection;
 
 import org.openrdf.model.ValueFactory;
+import org.openrdf.rio.helpers.BasicParserSettings;
 
 /**
  * An interface for RDF parsers. All implementing classes should define a public
@@ -33,6 +34,14 @@ public interface RDFParser {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * @deprecated These settings are not recognised and will be removed in a
+	 *             future version. Use
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES}
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} and
+	 *             {@link BasicParserSettings#VERIFY_DATATYPE_VALUES} instead.
+	 */
+	@Deprecated
 	public enum DatatypeHandling {
 		/**
 		 * Indicates that datatype semantics should be ignored.
@@ -112,7 +121,13 @@ public interface RDFParser {
 	/**
 	 * Sets whether the parser should verify the data it parses (default value is
 	 * <tt>true</tt>).
+	 * 
+	 * @deprecated Since 2.7.0. Use {@link #getParserConfig()} with
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES},
+	 *             {@link BasicParserSettings#VERIFY_DATATYPE_VALUES}, and/or
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
 	 */
+	@Deprecated
 	public void setVerifyData(boolean verifyData);
 
 	/**
@@ -124,7 +139,13 @@ public interface RDFParser {
 	/**
 	 * Sets whether the parser should stop immediately if it finds an error in
 	 * the data (default value is <tt>true</tt>).
+	 * 
+	 * @deprecated Since 2.7.0. Use {@link #getParserConfig()} with
+	 *             {@link ParserConfig#setNonFatalErrors(java.util.Set)} to
+	 *             select which errors will not always fail the parse
+	 *             prematurely.
 	 */
+	@Deprecated
 	public void setStopAtFirstError(boolean stopAtFirstError);
 
 	/**
@@ -139,7 +160,12 @@ public interface RDFParser {
 	 * 
 	 * @param datatypeHandling
 	 *        A datatype handling option.
+	 * @deprecated Since 2.7.0. Use {@link #getParserConfig()} with
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES},
+	 *             {@link BasicParserSettings#VERIFY_DATATYPE_VALUES}, and/or
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
 	 */
+	@Deprecated
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling);
 
 	/**

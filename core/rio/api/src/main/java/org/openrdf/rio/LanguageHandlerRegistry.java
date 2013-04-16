@@ -14,34 +14,39 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio.helpers;
+package org.openrdf.rio;
+
+import info.aduna.lang.service.ServiceRegistry;
 
 /**
- * An enumeration used to define constants used with the
- * {@link BasicParserSettings#LARGE_LITERALS_HANDLING} parser setting.
+ * Registry of {@link LanguageHandler}s.
  * 
  * @author Peter Ansell
- * @since 2.7.0
  */
-public enum LiteralHandling {
+public class LanguageHandlerRegistry extends ServiceRegistry<String, LanguageHandler> {
+
+	private static LanguageHandlerRegistry defaultRegistry;
 
 	/**
-	 * Indicates that large literals should be preserved. This is the default
-	 * behaviour.
+	 * Gets the default QueryParserRegistry.
+	 * 
+	 * @return The default registry.
 	 */
-	PRESERVE,
+	public static synchronized LanguageHandlerRegistry getInstance() {
+		if (defaultRegistry == null) {
+			defaultRegistry = new LanguageHandlerRegistry();
+		}
 
-	/**
-	 * Indicates that statements containing large literals should be dropped,
-	 * based on based on the {@link BasicParserSettings#LARGE_LITERALS_LIMIT}
-	 * setting.
-	 */
-	DROP,
+		return defaultRegistry;
+	}
 
-	/**
-	 * Indicates that values of large literals should be truncated, based on the
-	 * {@link BasicParserSettings#LARGE_LITERALS_LIMIT} setting.
-	 */
-	TRUNCATE
+	public LanguageHandlerRegistry() {
+		super(LanguageHandler.class);
+	}
+
+	@Override
+	protected String getKey(LanguageHandler handler) {
+		return handler.getKey();
+	}
 
 }

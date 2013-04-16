@@ -48,6 +48,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.TriXParserSettings;
 
 /**
  * A parser that can parse RDF files that are in the <a
@@ -183,7 +184,8 @@ public class TriXParser extends RDFParserBase {
 					String datatype = atts.get(DATATYPE_ATT);
 
 					if (datatype == null) {
-						reportError(DATATYPE_ATT + " attribute missing for typed literal");
+						reportError(DATATYPE_ATT + " attribute missing for typed literal",
+								TriXParserSettings.IGNORE_TRIX_MISSING_DATATYPE);
 						valueList.add(createLiteral(text, null, null));
 					}
 					else {
@@ -197,14 +199,16 @@ public class TriXParser extends RDFParserBase {
 							// First triple in a context, valueList can contain
 							// context information
 							if (valueList.size() > 1) {
-								reportError("At most 1 resource can be specified for the context");
+								reportError("At most 1 resource can be specified for the context",
+										TriXParserSettings.IGNORE_TRIX_INVALID_STATEMENT);
 							}
 							else if (valueList.size() == 1) {
 								try {
 									currentContext = (Resource)valueList.get(0);
 								}
 								catch (ClassCastException e) {
-									reportError("Context identifier should be a URI or blank node");
+									reportError("Context identifier should be a URI or blank node",
+											TriXParserSettings.IGNORE_TRIX_INVALID_STATEMENT);
 								}
 							}
 						}
@@ -248,7 +252,8 @@ public class TriXParser extends RDFParserBase {
 		{
 			try {
 				if (valueList.size() != 3) {
-					reportError("exactly 3 values are required for a triple");
+					reportError("exactly 3 values are required for a triple",
+							TriXParserSettings.IGNORE_TRIX_INVALID_STATEMENT);
 					return;
 				}
 
@@ -260,7 +265,8 @@ public class TriXParser extends RDFParserBase {
 					subj = (Resource)valueList.get(0);
 				}
 				catch (ClassCastException e) {
-					reportError("First value for a triple should be a URI or blank node");
+					reportError("First value for a triple should be a URI or blank node",
+							TriXParserSettings.IGNORE_TRIX_INVALID_STATEMENT);
 					return;
 				}
 
@@ -268,7 +274,8 @@ public class TriXParser extends RDFParserBase {
 					pred = (URI)valueList.get(1);
 				}
 				catch (ClassCastException e) {
-					reportError("Second value for a triple should be a URI");
+					reportError("Second value for a triple should be a URI",
+							TriXParserSettings.IGNORE_TRIX_INVALID_STATEMENT);
 					return;
 				}
 
