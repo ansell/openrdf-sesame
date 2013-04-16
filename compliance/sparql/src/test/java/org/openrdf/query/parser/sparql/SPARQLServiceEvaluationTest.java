@@ -20,10 +20,12 @@ import static org.junit.Assert.*;
 
 import org.junit.rules.TemporaryFolder;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -494,7 +496,7 @@ public class SPARQLServiceEvaluationTest {
 		throws Exception
 	{
 		RepositoryConnection conn = localRepository.getConnection();
-		String queryString = readQueryString(queryFile);
+		String queryString = readString(queryFile);
 
 		// System.out.println(queryString);
 		// Need to use the correct server URL, as it is otherwise hardcoded
@@ -543,7 +545,7 @@ public class SPARQLServiceEvaluationTest {
 	 * @throws RepositoryException
 	 * @throws IOException
 	 */
-	private String readQueryString(String queryResource)
+	private String readString(String queryResource)
 		throws RepositoryException, IOException
 	{
 		InputStream stream = SPARQLServiceEvaluationTest.class.getResourceAsStream(queryResource);
@@ -569,6 +571,13 @@ public class SPARQLServiceEvaluationTest {
 		TupleQueryResultFormat tqrFormat = QueryResultIO.getParserFormatForFileName(resultFile);
 
 		if (tqrFormat != null) {
+			String results = readString(resultFile);
+
+			// System.out.println(queryString);
+			// Need to use the correct server URL, as it is otherwise hardcoded
+			results = results.replace("http://localhost:18080/openrdf", server.getServerUrl());
+			// System.out.println(server.getServerUrl());
+			// System.out.println(queryString);
 			InputStream in = SPARQLServiceEvaluationTest.class.getResourceAsStream(resultFile);
 			try {
 				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
@@ -577,7 +586,7 @@ public class SPARQLServiceEvaluationTest {
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
 				parser.setQueryResultHandler(qrBuilder);
 
-				parser.parseQueryResult(in);
+				parser.parseQueryResult(new ByteArrayInputStream(results.getBytes(StandardCharsets.UTF_8)));
 				return qrBuilder.getQueryResult();
 			}
 			finally {
