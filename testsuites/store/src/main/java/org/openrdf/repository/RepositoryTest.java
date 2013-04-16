@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 
 import org.openrdf.model.Literal;
@@ -36,6 +37,9 @@ import org.openrdf.model.vocabulary.DC;
  * @author Jeen Broekstra
  */
 public abstract class RepositoryTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	/**
 	 * Timeout all individual tests after 1 minute.

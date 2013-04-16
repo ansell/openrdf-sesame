@@ -16,26 +16,29 @@
  */
 package org.openrdf.repository.sparql;
 
+import java.nio.file.Path;
+
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryTest;
 import org.openrdf.repository.http.HTTPMemServer;
 
-
 /**
- *
  * @author Jeen Broekstra
  */
 public class SPARQLRepositoryTest extends RepositoryTest {
 
-
 	private HTTPMemServer server;
+
+	private Path dataDir;
 
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		server = new HTTPMemServer();
+		dataDir = tempDir.newFolder("nativestore").toPath();
+
+		server = new HTTPMemServer(dataDir);
 		try {
 			server.start();
 			super.setUp();
@@ -56,16 +59,20 @@ public class SPARQLRepositoryTest extends RepositoryTest {
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			server.stop();
+		}
 	}
-	
+
 	@Override
 	protected Repository createRepository()
 		throws Exception
 	{
-		return new SPARQLRepository(HTTPMemServer.REPOSITORY_URL,
-				Protocol.getStatementsLocation(HTTPMemServer.REPOSITORY_URL));
+		return new SPARQLRepository(server.getRepositoryUrl(),
+				Protocol.getStatementsLocation(server.getRepositoryUrl()));
 
 	}
 

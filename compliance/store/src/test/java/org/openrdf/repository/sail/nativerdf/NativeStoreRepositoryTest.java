@@ -16,10 +16,8 @@
  */
 package org.openrdf.repository.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
-
-import info.aduna.io.FileUtil;
+import java.nio.file.Path;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryTest;
@@ -28,26 +26,14 @@ import org.openrdf.sail.nativerdf.NativeStore;
 
 public class NativeStoreRepositoryTest extends RepositoryTest {
 
-	private File dataDir;
+	private Path dataDir;
 
 	@Override
 	protected Repository createRepository()
 		throws IOException
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestore").toPath();
 		return new SailRepository(new NativeStore(dataDir, "spoc"));
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 }

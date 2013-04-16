@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import java.nio.file.Path;
+
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryTest;
 
@@ -23,11 +25,15 @@ public class HTTPRepositoryTest extends RepositoryTest {
 
 	private HTTPMemServer server;
 
+	private Path dataDir;
+
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		server = new HTTPMemServer();
+		dataDir = tempDir.newFolder("nativestore").toPath();
+
+		server = new HTTPMemServer(dataDir);
 		try {
 			server.start();
 			super.setUp();
@@ -42,13 +48,17 @@ public class HTTPRepositoryTest extends RepositoryTest {
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			server.stop();
+		}
 	}
 
 	@Override
 	protected Repository createRepository() {
-		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+		return new HTTPRepository(server.getRepositoryUrl());
 	}
 
 }
