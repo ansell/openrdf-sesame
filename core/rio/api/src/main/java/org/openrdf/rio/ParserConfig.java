@@ -41,7 +41,7 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 */
 	private static final long serialVersionUID = 270L;
 
-	private Set<RioSetting<?>> nonFatalErrors = Collections.emptySet();
+	private Set<RioSetting<?>> nonFatalErrors = new HashSet<RioSetting<?>>();
 
 	/**
 	 * Creates a ParserConfig object starting with default settings.
