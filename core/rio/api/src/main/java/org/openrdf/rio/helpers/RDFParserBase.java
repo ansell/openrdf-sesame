@@ -245,7 +245,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, !stopAtFirstError);
+		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, !stopAtFirstError);
 	}
 
 	/**
@@ -331,7 +331,7 @@ public abstract class RDFParserBase implements RDFParser {
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
 		if (defaultPrefix.containsKey(prefix)) {
-			reportError(msg, RDFaParserSettings.ALLOW_RDFA_UNDEFINED_PREFIXES);
+			reportError(msg, RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
 			return defaultPrefix.get(prefix);
 		}
 		else if ("".equals(prefix)) {

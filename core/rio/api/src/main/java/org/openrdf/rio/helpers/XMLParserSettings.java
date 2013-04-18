@@ -80,7 +80,7 @@ public class XMLParserSettings {
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_SAX_NON_FATAL_ERRORS = new RioSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> FAIL_ON_SAX_NON_FATAL_ERRORS = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.ignoresaxnonfatalerrors", "", false);
 
 	/**
@@ -91,7 +91,7 @@ public class XMLParserSettings {
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_NON_STANDARD_ATTRIBUTES = new RioSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> FAIL_ON_NON_STANDARD_ATTRIBUTES = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.ignorenonstandardattributes", "", false);
 
 	/**
@@ -102,7 +102,7 @@ public class XMLParserSettings {
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_INVALID_NCNAME = new RioSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> FAIL_ON_INVALID_NCNAME = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.ignoreinvalidncname", "", false);
 
 	/**
@@ -124,7 +124,7 @@ public class XMLParserSettings {
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_INVALID_QNAME = new RioSettingImpl<Boolean>(
+	public static final RioSetting<Boolean> FAIL_ON_INVALID_QNAME = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.ignoreinvalidqname", "", false);
 
 	/**

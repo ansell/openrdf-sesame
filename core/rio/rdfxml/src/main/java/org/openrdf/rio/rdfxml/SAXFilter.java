@@ -509,7 +509,7 @@ class SAXFilter implements ContentHandler {
 
 				if ("".equals(namespace)) {
 					rdfParser.reportError("unqualified attribute '" + qName + "' not allowed",
-							XMLParserSettings.IGNORE_INVALID_QNAME);
+							XMLParserSettings.FAIL_ON_INVALID_QNAME);
 				}
 
 				Att att = new Att(namespace, localName, qName, value);

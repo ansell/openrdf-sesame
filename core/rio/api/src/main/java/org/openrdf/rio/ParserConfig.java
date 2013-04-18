@@ -78,10 +78,10 @@ public class ParserConfig extends RioConfig implements Serializable {
 		// parser to attempt to recover.
 		if (!stopAtFirstError) {
 			Set<RioSetting<?>> nonFatalErrors = new HashSet<RioSetting<?>>();
-			nonFatalErrors.add(TriXParserSettings.IGNORE_TRIX_INVALID_STATEMENT);
-			nonFatalErrors.add(TriXParserSettings.IGNORE_TRIX_MISSING_DATATYPE);
-			nonFatalErrors.add(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
-			nonFatalErrors.add(RDFaParserSettings.ALLOW_RDFA_UNDEFINED_PREFIXES);
+			nonFatalErrors.add(TriXParserSettings.FAIL_ON_TRIX_INVALID_STATEMENT);
+			nonFatalErrors.add(TriXParserSettings.FAIL_ON_TRIX_MISSING_DATATYPE);
+			nonFatalErrors.add(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			nonFatalErrors.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
 			if (verifyData) {
 				nonFatalErrors.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
 				if (datatypeHandling == DatatypeHandling.IGNORE) {

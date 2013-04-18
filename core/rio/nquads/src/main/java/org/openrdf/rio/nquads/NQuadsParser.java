@@ -141,8 +141,8 @@ public class NQuadsParser extends NTriplesParser {
 			c = assertLineTerminates(c);
 		}
 		catch (RDFParseException rdfpe) {
-			if (getParserConfig().get(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES)
-					|| getParserConfig().isNonFatalError(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES))
+			if (getParserConfig().get(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)
+					|| getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES))
 			{
 				ignoredAnError = true;
 			}

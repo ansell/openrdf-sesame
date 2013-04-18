@@ -288,14 +288,14 @@ public class NTriplesParser extends RDFParserBase {
 			}
 			else if (c != '.') {
 				reportError("Expected '.', found: " + (char)c,
-						NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			c = assertLineTerminates(c);
 		}
 		catch (RDFParseException rdfpe) {
-			if (getParserConfig().get(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES)
-					&& getParserConfig().isNonFatalError(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES))
+			if (getParserConfig().get(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)
+					&& getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES))
 			{
 				ignoredAnError = true;
 			}
@@ -430,7 +430,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else if (c != ':') {
-			reportError("Expected ':', found: " + (char)c, NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+			reportError("Expected ':', found: " + (char)c, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
 		c = reader.read();
@@ -439,7 +439,7 @@ public class NTriplesParser extends RDFParserBase {
 		}
 		else if (!NTriplesUtil.isLetter(c)) {
 			reportError("Expected a letter, found: " + (char)c,
-					NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 		name.append((char)c);
 
@@ -499,7 +499,7 @@ public class NTriplesParser extends RDFParserBase {
 			}
 			else if (c != '^') {
 				reportError("Expected '^', found: " + (char)c,
-						NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			c = reader.read();
@@ -510,7 +510,7 @@ public class NTriplesParser extends RDFParserBase {
 			}
 			else if (c != '<') {
 				reportError("Expected '<', found: " + (char)c,
-						NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			c = parseUriRef(c, datatype);
@@ -527,7 +527,7 @@ public class NTriplesParser extends RDFParserBase {
 			uri = NTriplesUtil.unescapeString(uri);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage(), NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+			reportError(e.getMessage(), NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
 		return super.createURI(uri);
@@ -540,7 +540,7 @@ public class NTriplesParser extends RDFParserBase {
 			label = NTriplesUtil.unescapeString(label);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage(), NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+			reportError(e.getMessage(), NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
 		if (lang.length() == 0) {
@@ -678,7 +678,7 @@ public class NTriplesParser extends RDFParserBase {
 
 		// Very few parsers support stop at first error, so it is not enabled in
 		// RDFParserBase
-		result.add(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES);
+		result.add(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 
 		return result;
 	}
