@@ -231,7 +231,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Deprecated
 	public boolean verifyData() {
-		return this.parserConfig.get(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		return this.parserConfig.verifyData();
 	}
 
 	@Override
@@ -253,7 +253,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Deprecated
 	public boolean stopAtFirstError() {
-		throw new RuntimeException("This setting is not supported anymore.");
+		return this.parserConfig.stopAtFirstError();
 	}
 
 	@SuppressWarnings("deprecation")
