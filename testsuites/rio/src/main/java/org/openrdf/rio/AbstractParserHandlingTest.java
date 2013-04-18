@@ -307,6 +307,30 @@ public abstract class AbstractParserHandlingTest {
 	}
 
 	/**
+	 * Tests whether an unknown datatype with the message and with a failure.
+	 */
+	@Test
+	public final void testUnknownDatatypeWithMessageWithFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_DATATYPE_VALUE, UNKNOWN_DATATYPE_URI);
+		InputStream input = getUnknownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+
+		try {
+			testParser.parse(input, BASE_URI);
+			fail("Did not receive expected exception");
+		}
+		catch (RDFParseException e) {
+			// expected
+		}
+
+		assertErrorListener(0, 1, 0);
+		assertModel(new LinkedHashModel());
+	}
+
+	/**
 	 * @param expectedModel
 	 */
 	private void assertModel(Model expectedModel) {
