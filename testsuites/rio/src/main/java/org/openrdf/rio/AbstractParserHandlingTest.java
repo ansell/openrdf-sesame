@@ -878,18 +878,10 @@ public abstract class AbstractParserHandlingTest {
 		assertModel(expectedModel);
 	}
 
-	/**
-	 * @param expectedModel
-	 */
 	private void assertModel(Model expectedModel) {
 		assertTrue("Did not find expected statements", ModelUtil.equals(expectedModel, testStatements));
 	}
 
-	/**
-	 * @param expectedWarnings
-	 * @param expectedErrors
-	 * @param expectedFatalErrors
-	 */
 	private void assertErrorListener(int expectedWarnings, int expectedErrors, int expectedFatalErrors) {
 		assertEquals("Unexpected number of warnings", expectedWarnings, testListener.getWarnings().size());
 		assertEquals("Unexpected number of errors", expectedErrors, testListener.getErrors().size());
