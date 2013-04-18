@@ -289,7 +289,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Deprecated
 	public DatatypeHandling datatypeHandling() {
-		throw new RuntimeException("This setting is not supported anymore.");
+		return this.parserConfig.datatypeHandling();
 	}
 
 	/**
