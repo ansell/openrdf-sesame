@@ -126,6 +126,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 		// setParserConfig(new ParserConfig(true, true, true,
 		// DatatypeHandling.IGNORE));
+		setParserConfig(new ParserConfig());
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 
 		if (debugEnabled()) {
