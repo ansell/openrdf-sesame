@@ -279,7 +279,10 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 
 		int marker = PLAIN_LITERAL_RECORD_MARKER;
 
-		if (datatype != null) {
+		if (language != null) {
+			marker = LANG_LITERAL_RECORD_MARKER;
+		}
+		else if (datatype != null) {
 			String namespace = datatype.getNamespace();
 
 			if (!namespaceTable.containsKey(namespace)) {
@@ -288,9 +291,6 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 			}
 
 			marker = DATATYPE_LITERAL_RECORD_MARKER;
-		}
-		else if (language != null) {
-			marker = LANG_LITERAL_RECORD_MARKER;
 		}
 
 		out.writeByte(marker);

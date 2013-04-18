@@ -311,15 +311,15 @@ class FileIO {
 			String language = lit.getLanguage();
 			URI datatype = lit.getDatatype();
 
-			if (datatype != null) {
-				dataOut.writeByte(DATATYPE_LITERAL_MARKER);
-				writeString(label, dataOut);
-				writeValue(datatype, dataOut);
-			}
-			else if (language != null) {
+			if (language != null) {
 				dataOut.writeByte(LANG_LITERAL_MARKER);
 				writeString(label, dataOut);
 				writeString(language, dataOut);
+			}
+			else if (datatype != null) {
+				dataOut.writeByte(DATATYPE_LITERAL_MARKER);
+				writeString(label, dataOut);
+				writeValue(datatype, dataOut);
 			}
 			else {
 				dataOut.writeByte(PLAIN_LITERAL_MARKER);

@@ -96,7 +96,7 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 		if (datatype == null && language == null) {
 			table.insertSimple(id, label);
 		}
-		else if (datatype == null) {
+		else if (language != null) {
 			table.insertLanguage(id, label, language);
 		}
 		else {
