@@ -73,9 +73,6 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		throws Exception
 	{
 		parser = createRDFParser();
-		parser.setVerifyData(true);
-		parser.setDatatypeHandling(RDFParser.DatatypeHandling.VERIFY);
-		parser.setStopAtFirstError(true);
 		rdfHandler = new TestRDFHandler();
 		parser.setRDFHandler(this.rdfHandler);
 	}
@@ -95,7 +92,6 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		throws Exception
 	{
 		RDFParser nquadsParser = createRDFParser();
-		nquadsParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 		nquadsParser.setRDFHandler(new RDFHandlerBase());
 
 		InputStream in = NQuadsParserTestCase.class.getResourceAsStream(NQUADS_TEST_FILE);
@@ -118,7 +114,6 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		throws Exception
 	{
 		RDFParser nquadsParser = createRDFParser();
-		nquadsParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 		nquadsParser.setRDFHandler(new RDFHandlerBase());
 
 		InputStream in = NQuadsParserTestCase.class.getResourceAsStream(NTRIPLES_TEST_FILE);
