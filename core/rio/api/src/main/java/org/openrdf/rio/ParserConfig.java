@@ -213,7 +213,7 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 */
 	@Deprecated
 	public DatatypeHandling datatypeHandling() {
-		throw new RuntimeException("This method is not used anymore");
+		throw new RuntimeException("This method is not supported anymore.");
 	}
 
 	@Override
