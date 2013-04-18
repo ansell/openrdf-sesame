@@ -294,9 +294,8 @@ public class NTriplesParser extends RDFParserBase {
 			c = assertLineTerminates(c);
 		}
 		catch (RDFParseException rdfpe) {
-			if (getParserConfig().get(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)
-					&& getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES))
-			{
+			if (getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)) {
+				reportError(rdfpe, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 				ignoredAnError = true;
 			}
 			else {
@@ -540,7 +539,7 @@ public class NTriplesParser extends RDFParserBase {
 			label = NTriplesUtil.unescapeString(label);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage(), NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			reportFatalError(e);
 		}
 
 		if (lang.length() == 0) {
@@ -577,6 +576,12 @@ public class NTriplesParser extends RDFParserBase {
 		throws RDFParseException
 	{
 		reportError(msg, lineNo, -1, setting);
+	}
+
+	protected void reportError(Exception e, RioSetting<Boolean> setting)
+		throws RDFParseException
+	{
+		reportError(e, lineNo, -1, setting);
 	}
 
 	/**

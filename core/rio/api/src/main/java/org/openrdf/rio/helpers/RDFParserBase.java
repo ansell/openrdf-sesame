@@ -705,6 +705,57 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
+	 * 
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param lineNo
+	 *        Optional line number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param columnNo
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
+	 */
+	protected void reportError(Exception e, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
+		throws RDFParseException
+	{
+		if (getParserConfig().get(relevantSetting)) {
+			if (errListener != null) {
+				errListener.error(e.getMessage(), lineNo, columnNo);
+			}
+
+			if (!getParserConfig().isNonFatalError(relevantSetting)) {
+				if (e instanceof RDFParseException) {
+					throw (RDFParseException)e;
+				}
+				else {
+					throw new RDFParseException(e, lineNo, columnNo);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Reports a fatal error to the registered ParseErrorListener, if any, and
 	 * throws a <tt>ParseException</tt> afterwards. This method simply calls
 	 * {@link #reportFatalError(String,int,int)} supplying <tt>-1</tt> for the

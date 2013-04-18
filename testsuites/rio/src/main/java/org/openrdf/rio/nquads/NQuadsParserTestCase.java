@@ -621,7 +621,9 @@ public abstract class NQuadsParserTestCase extends TestCase {
 																										// with
 																										// error.
 						"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
-		parser.setStopAtFirstError(true);
+
+		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, false);
+
 		try {
 			parser.parse(bais, "http://test.base.uri");
 			Assert.fail("Expected exception when encountering an invalid line");
@@ -644,7 +646,10 @@ public abstract class NQuadsParserTestCase extends TestCase {
 						"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
 		final TestRDFHandler rdfHandler = new TestRDFHandler();
 		parser.setRDFHandler(rdfHandler);
-		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, true);
+
+		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, false);
+		parser.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		
 		parser.parse(bais, "http://base-uri");
 		rdfHandler.assertHandler(2);
 		final Collection<Statement> statements = rdfHandler.getStatements();

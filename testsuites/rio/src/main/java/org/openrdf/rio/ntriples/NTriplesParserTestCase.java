@@ -135,9 +135,9 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		String data = "invalid nt";
 
 		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.getParserConfig().setNonFatalErrors(
-				Collections.<RioSetting<?>> singleton(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES));
-		ntriplesParser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, Boolean.TRUE);
+		ntriplesParser.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		ntriplesParser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES,
+				Boolean.TRUE);
 
 		Model model = new LinkedHashModel();
 		ntriplesParser.setRDFHandler(new StatementCollector(model));
@@ -183,8 +183,7 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			// Force the connection to not use stop at first error
-			conn.getParserConfig().setNonFatalErrors(
-					Collections.<RioSetting<?>> singleton(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES));
+			conn.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			conn.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, Boolean.TRUE);
 
 			String data = "invalid nt";

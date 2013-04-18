@@ -35,7 +35,7 @@ public class NTriplesParserSettings {
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> FAIL_ON_NTRIPLES_INVALID_LINES = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignorentriplesinvalidlines", "Ignore N-Triples invalid lines", Boolean.TRUE);
+			"org.openrdf.rio.failonntriplesinvalidlines", "Fail on N-Triples invalid lines", Boolean.TRUE);
 
 	/**
 	 * Private constructor
