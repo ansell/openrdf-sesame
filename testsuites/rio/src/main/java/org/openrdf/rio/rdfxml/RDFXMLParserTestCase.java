@@ -51,6 +51,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
@@ -187,7 +188,8 @@ public abstract class RDFXMLParserTestCase {
 			// Parse input data
 			RDFParser rdfxmlParser = createRDFParser();
 			rdfxmlParser.setValueFactory(new CanonXMLValueFactory());
-			rdfxmlParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			rdfxmlParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+			rdfxmlParser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 
 			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
 			StatementCollector inputCollector = new StatementCollector(inputCollection);
@@ -200,7 +202,8 @@ public abstract class RDFXMLParserTestCase {
 			// Parse expected output data
 			NTriplesParser ntriplesParser = new NTriplesParser();
 			ntriplesParser.setValueFactory(new CanonXMLValueFactory());
-			ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			ntriplesParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+			ntriplesParser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 
 			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
 			StatementCollector outputCollector = new StatementCollector(outputCollection);
@@ -260,7 +263,9 @@ public abstract class RDFXMLParserTestCase {
 				// Try parsing the input; this should result in an error being
 				// reported.
 				RDFParser rdfxmlParser = createRDFParser();
-				rdfxmlParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+				rdfxmlParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+				rdfxmlParser.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+				rdfxmlParser.getParserConfig().set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, true);
 
 				rdfxmlParser.setRDFHandler(new StatementCollector());
 
@@ -321,7 +326,8 @@ public abstract class RDFXMLParserTestCase {
 	}
 
 	private static URL url(String uri)
-			throws MalformedURLException {
+		throws MalformedURLException
+	{
 		if (!uri.startsWith("injar:"))
 			return new URL(uri);
 		int start = uri.indexOf(':') + 3;
@@ -330,7 +336,8 @@ public abstract class RDFXMLParserTestCase {
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -344,7 +351,8 @@ public abstract class RDFXMLParserTestCase {
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

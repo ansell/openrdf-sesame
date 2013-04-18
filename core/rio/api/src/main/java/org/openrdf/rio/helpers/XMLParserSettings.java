@@ -76,34 +76,34 @@ public class XMLParserSettings {
 	 * Parser setting to determine whether to ignore non-fatal errors that come
 	 * from SAX parsers.
 	 * <p>
-	 * Defaults to false
+	 * Defaults to true
 	 * 
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> FAIL_ON_SAX_NON_FATAL_ERRORS = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignoresaxnonfatalerrors", "", false);
+			"org.openrdf.rio.ignoresaxnonfatalerrors", "", true);
 
 	/**
 	 * Parser setting to determine whether to ignore non-standard attributes that
 	 * are found in an XML document.
 	 * <p>
-	 * Defaults to false
+	 * Defaults to true
 	 * 
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> FAIL_ON_NON_STANDARD_ATTRIBUTES = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignorenonstandardattributes", "", false);
+			"org.openrdf.rio.ignorenonstandardattributes", "", true);
 
 	/**
 	 * Parser setting to determine whether to ignore XML documents containing
 	 * invalid NCNAMEs.
 	 * <p>
-	 * Defaults to false
+	 * Defaults to true
 	 * 
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> FAIL_ON_INVALID_NCNAME = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignoreinvalidncname", "", false);
+			"org.openrdf.rio.ignoreinvalidncname", "", true);
 
 	/**
 	 * Parser setting to determine whether to throw an error for duplicate uses
@@ -120,12 +120,12 @@ public class XMLParserSettings {
 	 * Parser setting to determine whether to ignore XML documents containing
 	 * invalid QNAMEs.
 	 * <p>
-	 * Defaults to false
+	 * Defaults to true
 	 * 
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> FAIL_ON_INVALID_QNAME = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignoreinvalidqname", "", false);
+			"org.openrdf.rio.ignoreinvalidqname", "", true);
 
 	/**
 	 * Private constructor
