@@ -1092,7 +1092,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * @param setting
 	 */
 	private void checkPropertyEltName(String namespaceURI, String localName, String qName,
-			RioSetting<?> setting)
+			RioSetting<Boolean> setting)
 		throws RDFParseException
 	{
 		if (RDF.NAMESPACE.equals(namespaceURI)) {
@@ -1232,7 +1232,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * column number information to the error.
 	 */
 	@Override
-	protected void reportError(String msg, RioSetting<?> setting)
+	protected void reportError(String msg, RioSetting<Boolean> setting)
 		throws RDFParseException
 	{
 		Locator locator = saxFilter.getLocator();

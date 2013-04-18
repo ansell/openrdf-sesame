@@ -573,7 +573,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * information to the error.
 	 */
 	@Override
-	protected void reportError(String msg, RioSetting<?> setting)
+	protected void reportError(String msg, RioSetting<Boolean> setting)
 		throws RDFParseException
 	{
 		reportError(msg, lineNo, -1, setting);
