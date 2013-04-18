@@ -65,6 +65,11 @@ public abstract class AbstractParserHandlingTest {
 			"urn:test:unknowndatatype");
 
 	/**
+	 * Test value used for testing unknown datatype value handling.
+	 */
+	private static final String KNOWN_DATATYPE_VALUE = "31415926";
+
+	/**
 	 * Test URI used for testing known datatype support.
 	 * <p>
 	 * This may be anything, but it must match with the given
@@ -81,6 +86,11 @@ public abstract class AbstractParserHandlingTest {
 	 * Test Language tag used for testing unknown language support.
 	 */
 	private static final String UNKNOWN_LANGUAGE_TAG = "fakelanguage123";
+
+	/**
+	 * Test value used for testing known language value handling.
+	 */
+	private static final String KNOWN_LANGUAGE_VALUE = "G'day mate";
 
 	/**
 	 * Test Language tag used for testing known language support.
@@ -336,6 +346,182 @@ public abstract class AbstractParserHandlingTest {
 	}
 
 	/**
+	 * Tests whether an known datatype with the default settings will both
+	 * generate no message and not fail.
+	 */
+	@Test
+	public final void testKnownDatatypeNoMessageNoFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the default settings (using
+	 * {@link ParserConfig#useDefaults()}) will both generate no message and not
+	 * fail.
+	 */
+	@Test
+	public final void testKnownDatatypeNoMessageNoFailCase2()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().useDefaults();
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the correct settings will both
+	 * generate no message and not fail.
+	 */
+	@Test
+	public final void testKnownDatatypeNoMessageNoFailCase3()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the correct settings will both
+	 * generate no message and not fail when addNonFatalError is called with the
+	 * given setting.
+	 */
+	@Test
+	public final void testKnownDatatypeNoMessageNoFailCase4()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the correct settings will both
+	 * generate no message and not fail when setNonFatalError is called with an
+	 * empty set to reset the fatal errors
+	 */
+	@Test
+	public final void testKnownDatatypeNoMessageNoFailCase5()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
+		testParser.getParserConfig().setNonFatalErrors(new HashSet<RioSetting<?>>());
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the message no fail.
+	 */
+	@Test
+	public final void testKnownDatatypeWithMessageNoFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the message no fail.
+	 */
+	@Test
+	public final void testKnownDatatypeWithMessageNoFailCase2()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().useDefaults();
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the message no fail.
+	 */
+	@Test
+	public final void testKnownDatatypeWithMessageNoFailCase3()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		testParser.getParserConfig().setNonFatalErrors(
+				Collections.<RioSetting<?>> singleton(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES));
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known datatype with the message which generates a failure
+	 * if the datatype is unknown.
+	 */
+	@Test
+	public final void testKnownDatatypeWithMessageWhereUnknownWouldFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_DATATYPE_VALUE, KNOWN_DATATYPE_URI);
+		InputStream input = getKnownDatatypeStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
 	 * Tests whether an unknown language with the default settings will both
 	 * generate no message and not fail.
 	 */
@@ -514,6 +700,182 @@ public abstract class AbstractParserHandlingTest {
 
 		assertErrorListener(0, 1, 0);
 		assertModel(new LinkedHashModel());
+	}
+
+	/**
+	 * Tests whether an known language with the default settings will both
+	 * generate no message and not fail.
+	 */
+	@Test
+	public final void testKnownLanguageNoMessageNoFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the default settings (using
+	 * {@link ParserConfig#useDefaults()}) will both generate no message and not
+	 * fail.
+	 */
+	@Test
+	public final void testKnownLanguageNoMessageNoFailCase2()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().useDefaults();
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the correct settings will both
+	 * generate no message and not fail.
+	 */
+	@Test
+	public final void testKnownLanguageNoMessageNoFailCase3()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, false);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the correct settings will both
+	 * generate no message and not fail when addNonFatalError is called with the
+	 * given setting.
+	 */
+	@Test
+	public final void testKnownLanguageNoMessageNoFailCase4()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, false);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the correct settings will both
+	 * generate no message and not fail when setNonFatalError is called with an
+	 * empty set to reset the fatal errors
+	 */
+	@Test
+	public final void testKnownLanguageNoMessageNoFailCase5()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, false);
+		testParser.getParserConfig().setNonFatalErrors(new HashSet<RioSetting<?>>());
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the message no fail.
+	 */
+	@Test
+	public final void testKnownLanguageWithMessageNoFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the message no fail.
+	 */
+	@Test
+	public final void testKnownLanguageWithMessageNoFailCase2()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().useDefaults();
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the message no fail.
+	 */
+	@Test
+	public final void testKnownLanguageWithMessageNoFailCase3()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		testParser.getParserConfig().setNonFatalErrors(
+				Collections.<RioSetting<?>> singleton(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES));
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an known language with the message which generates a failure
+	 * if the language is unknown.
+	 */
+	@Test
+	public final void testKnownLanguageWithMessageWhereUnknownWouldFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(KNOWN_LANGUAGE_VALUE, KNOWN_LANGUAGE_TAG);
+		InputStream input = getKnownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
 	}
 
 	/**
