@@ -91,7 +91,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * Methods *
 	 *---------*/
 
-	// implements RDFParser.getRDFFormat()
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
@@ -117,6 +117,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * @throws IllegalArgumentException
 	 *         If the supplied input stream or base URI is <tt>null</tt>.
 	 */
+	@Override
 	public synchronized void parse(InputStream in, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -153,6 +154,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * @throws IllegalArgumentException
 	 *         If the supplied reader or base URI is <tt>null</tt>.
 	 */
+	@Override
 	public synchronized void parse(Reader reader, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -392,7 +394,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else {
-			reportFatalError("Expected '<', '_' or '\"', found: " + (char)c);
+			reportFatalError("Expected '<', '_' or '\"', found: " + (char)c + "");
 		}
 
 		return c;
@@ -401,8 +403,10 @@ public class NTriplesParser extends RDFParserBase {
 	protected int parseUriRef(int c, StringBuilder uriRef)
 		throws IOException, RDFParseException
 	{
-		assert c == '<' : "Supplied char should be a '<', is: " + c;
-
+		if (c != '<') {
+			reportError("Supplied char should be a '<', is: " + (char)c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
 		// Read up to the next '>' character
 		c = reader.read();
 		while (c != '>') {
@@ -422,7 +426,10 @@ public class NTriplesParser extends RDFParserBase {
 	protected int parseNodeID(int c, StringBuilder name)
 		throws IOException, RDFParseException
 	{
-		assert c == '_' : "Supplied char should be a '_', is: " + c;
+		if (c != '_') {
+			reportError("Supplied char should be a '_', is: " + (char)c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
 
 		c = reader.read();
 		if (c == -1) {
@@ -455,7 +462,10 @@ public class NTriplesParser extends RDFParserBase {
 	private int parseLiteral(int c, StringBuilder value, StringBuilder lang, StringBuilder datatype)
 		throws IOException, RDFParseException
 	{
-		assert c == '"' : "Supplied char should be a '\"', is: " + c;
+		if (c != '"') {
+			reportError("Supplied char should be a '\"', is: " + c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
 
 		// Read up to the next '"' character
 		c = reader.read();
@@ -681,8 +691,6 @@ public class NTriplesParser extends RDFParserBase {
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
 
-		// Very few parsers support stop at first error, so it is not enabled in
-		// RDFParserBase
 		result.add(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 
 		return result;
