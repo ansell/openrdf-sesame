@@ -73,6 +73,11 @@ public abstract class AbstractParserHandlingTest {
 	private static final URI KNOWN_DATATYPE_URI = XMLSchema.INTEGER;
 
 	/**
+	 * Test value used for testing unknown language support.
+	 */
+	private static final String UNKNOWN_LANGUAGE_VALUE = "xsdfsawreaewraew";
+
+	/**
 	 * Test Language tag used for testing unknown language support.
 	 */
 	private static final String UNKNOWN_LANGUAGE_TAG = "fakelanguage123";
@@ -317,6 +322,187 @@ public abstract class AbstractParserHandlingTest {
 		InputStream input = getUnknownDatatypeStream(expectedModel);
 
 		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+
+		try {
+			testParser.parse(input, BASE_URI);
+			fail("Did not receive expected exception");
+		}
+		catch (RDFParseException e) {
+			// expected
+		}
+
+		assertErrorListener(0, 1, 0);
+		assertModel(new LinkedHashModel());
+	}
+
+	/**
+	 * Tests whether an unknown language with the default settings will both
+	 * generate no message and not fail.
+	 */
+	@Test
+	public final void testUnknownLanguageNoMessageNoFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the default settings (using
+	 * {@link ParserConfig#useDefaults()}) will both generate no message and not
+	 * fail.
+	 */
+	@Test
+	public final void testUnknownLanguageNoMessageNoFailCase2()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().useDefaults();
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the correct settings will both
+	 * generate no message and not fail.
+	 */
+	@Test
+	public final void testUnknownLanguageNoMessageNoFailCase3()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, false);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the correct settings will both
+	 * generate no message and not fail when addNonFatalError is called with the
+	 * given setting.
+	 */
+	@Test
+	public final void testUnknownLanguageNoMessageNoFailCase4()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, false);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the correct settings will both
+	 * generate no message and not fail when setNonFatalError is called with an
+	 * empty set to reset the fatal errors
+	 */
+	@Test
+	public final void testUnknownLanguageNoMessageNoFailCase5()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, false);
+		testParser.getParserConfig().setNonFatalErrors(new HashSet<RioSetting<?>>());
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 0, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the message no fail.
+	 */
+	@Test
+	public final void testUnknownLanguageWithMessageNoFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 1, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the message no fail.
+	 */
+	@Test
+	public final void testUnknownLanguageWithMessageNoFailCase2()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().useDefaults();
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		testParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 1, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the message no fail.
+	 */
+	@Test
+	public final void testUnknownLanguageWithMessageNoFailCase3()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		testParser.getParserConfig().setNonFatalErrors(
+				Collections.<RioSetting<?>> singleton(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES));
+
+		testParser.parse(input, BASE_URI);
+
+		assertErrorListener(0, 1, 0);
+		assertModel(expectedModel);
+	}
+
+	/**
+	 * Tests whether an unknown language with the message and with a failure.
+	 */
+	@Test
+	public final void testUnknownLanguageWithMessageWithFailCase1()
+		throws Exception
+	{
+		Model expectedModel = getTestModel(UNKNOWN_LANGUAGE_VALUE, UNKNOWN_LANGUAGE_TAG);
+		InputStream input = getUnknownLanguageStream(expectedModel);
+
+		testParser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
 
 		try {
 			testParser.parse(input, BASE_URI);
