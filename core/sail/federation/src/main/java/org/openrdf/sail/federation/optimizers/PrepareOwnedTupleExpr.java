@@ -1,18 +1,15 @@
-/* 
- * Licensed to Aduna under one or more contributor license agreements.  
- * See the NOTICE.txt file distributed with this work for additional 
- * information regarding copyright ownership. 
- *
- * Aduna licenses this file to you under the terms of the Aduna BSD 
- * License (the "License"); you may not use this file except in compliance 
- * with the License. See the LICENSE.txt file distributed with this work 
- * for the full License.
- *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
- * implied. See the License for the specific language governing permissions
- * and limitations under the License.
+/*
+ * Licensed to Aduna under one or more contributor license agreements. See the NOTICE.txt file
+ * distributed with this work for additional information regarding copyright ownership.
+ * 
+ * Aduna licenses this file to you under the terms of the Aduna BSD License (the "License"); you may
+ * not use this file except in compliance with the License. See the LICENSE.txt file distributed
+ * with this work for the full License.
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.openrdf.sail.federation.optimizers;
 
@@ -53,67 +50,84 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
  * 
  * @author James Leigh
  */
-public class PrepareOwnedTupleExpr extends
-		QueryModelVisitorBase<RepositoryException> implements QueryOptimizer {
+public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryException> implements
+		QueryOptimizer
+{
+
 	private static final String END_BLOCK = "}\n";
+
 	private OwnedTupleExpr owner;
+
 	private String pattern;
+
 	private TupleExpr patternNode;
+
 	/** local name to sparql name */
 	private Map<String, String> variables = new HashMap<String, String>();
+
 	private boolean reduce;
+
 	private boolean reduced;
+
 	private boolean distinct;
 
 	public void optimize(TupleExpr query, Dataset dataset, BindingSet bindings) {
 		try {
 			query.visit(this);
-		} catch (RepositoryException e) {
+		}
+		catch (RepositoryException e) {
 			throw new UndeclaredThrowableException(e);
 		}
 	}
 
 	@Override
-	public void meetOther(QueryModelNode node) throws RepositoryException {
+	public void meetOther(QueryModelNode node)
+		throws RepositoryException
+	{
 		if (node instanceof OwnedTupleExpr) {
-			meetOwnedTupleExpr((OwnedTupleExpr) node);
-		} else if (node instanceof NaryJoin) {
-			meetMultiJoin((NaryJoin) node);
-		} else {
+			meetOwnedTupleExpr((OwnedTupleExpr)node);
+		}
+		else if (node instanceof NaryJoin) {
+			meetMultiJoin((NaryJoin)node);
+		}
+		else {
 			super.meetOther(node);
 		}
 	}
 
 	private void meetOwnedTupleExpr(OwnedTupleExpr node)
-			throws RepositoryException {
+		throws RepositoryException
+	{
 		OwnedTupleExpr before = this.owner;
 		try {
 			this.owner = node;
 			meetNode(node);
 			this.owner = null; // NOPMD
-		} finally {
+		}
+		finally {
 			this.owner = before;
 		}
 	}
 
 	@Override
-	protected void meetNode(QueryModelNode node) throws RepositoryException {
+	protected void meetNode(QueryModelNode node)
+		throws RepositoryException
+	{
 		super.meetNode(node);
-		if (owner != null && patternNode != null
-				&& !(patternNode instanceof StatementPattern)) {
+		if (owner != null && patternNode != null && !(patternNode instanceof StatementPattern)) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("SELECT");
 			if (distinct) {
 				builder.append(" DISTINCT");
-			} else if (reduced || reduce) {
+			}
+			else if (reduced || reduce) {
 				builder.append(" REDUCED");
 			}
 			boolean mapping = false;
 			Map<String, String> bindings = new HashMap<String, String>();
 			ProjectionElemList list = new ProjectionElemList();
 			for (String name : patternNode.getBindingNames()) {
-				mapping = addBindingNames(builder, mapping, bindings, list,
-						name);
+				mapping = addBindingNames(builder, mapping, bindings, list, name);
 			}
 			builder.append("\nWHERE {\n").append(pattern).append("}");
 			meetNodeLocal(builder, mapping, bindings, list);
@@ -124,27 +138,29 @@ public class PrepareOwnedTupleExpr extends
 		patternNode = null; // NOPMD
 	}
 
-	private void meetNodeLocal(StringBuilder builder, boolean mapping,
-			Map<String, String> bindings, ProjectionElemList list)
-			throws RepositoryException, AssertionError {
+	private void meetNodeLocal(StringBuilder builder, boolean mapping, Map<String, String> bindings,
+			ProjectionElemList list)
+		throws RepositoryException, AssertionError
+	{
 		try {
 			QueryModelNode parent = patternNode.getParentNode();
 			if (parent instanceof OwnedTupleExpr) {
-				OwnedTupleExpr owned = (OwnedTupleExpr) parent;
-				meetNodeLocalParentOwned(builder, mapping, bindings, list,
-						owned);
-			} else {
+				OwnedTupleExpr owned = (OwnedTupleExpr)parent;
+				meetNodeLocalParentOwned(builder, mapping, bindings, list, owned);
+			}
+			else {
 				meetNodeLocalParentNotOwned(builder, mapping, bindings, list);
 			}
-		} catch (MalformedQueryException e) {
+		}
+		catch (MalformedQueryException e) {
 			throw new AssertionError(e);
 		}
 	}
 
-	private void meetNodeLocalParentOwned(StringBuilder builder,
-			boolean mapping, Map<String, String> bindings,
-			ProjectionElemList list, OwnedTupleExpr owned)
-			throws RepositoryException, MalformedQueryException {
+	private void meetNodeLocalParentOwned(StringBuilder builder, boolean mapping,
+			Map<String, String> bindings, ProjectionElemList list, OwnedTupleExpr owned)
+		throws RepositoryException, MalformedQueryException
+	{
 		owned.prepare(QueryLanguage.SPARQL, builder.toString(), bindings);
 		if (mapping) {
 			Projection proj = new Projection(owned.clone(), list);
@@ -152,24 +168,24 @@ public class PrepareOwnedTupleExpr extends
 		}
 	}
 
-	private void meetNodeLocalParentNotOwned(StringBuilder builder,
-			boolean mapping, Map<String, String> bindings,
-			ProjectionElemList list) throws RepositoryException,
-			MalformedQueryException {
-		OwnedTupleExpr owned = new OwnedTupleExpr(owner.getOwner(),
-				patternNode.clone());
+	private void meetNodeLocalParentNotOwned(StringBuilder builder, boolean mapping,
+			Map<String, String> bindings, ProjectionElemList list)
+		throws RepositoryException, MalformedQueryException
+	{
+		OwnedTupleExpr owned = new OwnedTupleExpr(owner.getOwner(), patternNode.clone());
 		owned.prepare(QueryLanguage.SPARQL, builder.toString(), bindings);
 		if (mapping) {
 			Projection proj = new Projection(owned, list);
 			patternNode.replaceWith(proj);
-		} else {
+		}
+		else {
 			patternNode.replaceWith(owned);
 		}
 	}
 
-	private boolean addBindingNames(StringBuilder builder,
-			boolean alreadyMapping, Map<String, String> bindings,
-			ProjectionElemList list, String name) {
+	private boolean addBindingNames(StringBuilder builder, boolean alreadyMapping,
+			Map<String, String> bindings, ProjectionElemList list, String name)
+	{
 		boolean mapping = alreadyMapping;
 		if (variables.containsKey(name)) {
 			String var = variables.get(name);
@@ -184,12 +200,15 @@ public class PrepareOwnedTupleExpr extends
 	}
 
 	@Override
-	public void meet(Distinct node) throws RepositoryException {
+	public void meet(Distinct node)
+		throws RepositoryException
+	{
 		boolean before = reduce;
 		try {
 			reduce = true;
 			node.getArg().visit(this);
-		} finally {
+		}
+		finally {
 			reduce = before;
 		}
 		if (patternNode == null) {
@@ -200,12 +219,15 @@ public class PrepareOwnedTupleExpr extends
 	}
 
 	@Override
-	public void meet(Reduced node) throws RepositoryException {
+	public void meet(Reduced node)
+		throws RepositoryException
+	{
 		boolean before = reduce;
 		try {
 			reduce = true;
 			node.getArg().visit(this);
-		} finally {
+		}
+		finally {
 			reduce = before;
 		}
 		if (patternNode == null) {
@@ -216,12 +238,14 @@ public class PrepareOwnedTupleExpr extends
 	}
 
 	@Override
-	public void meet(Projection node) throws RepositoryException {
+	public void meet(Projection node)
+		throws RepositoryException
+	{
 		TupleExpr arg = node.getArg();
-		if (arg instanceof StatementPattern
-				&& arg.getBindingNames().equals(node.getBindingNames())) {
+		if (arg instanceof StatementPattern && arg.getBindingNames().equals(node.getBindingNames())) {
 			meetNode(node);
-		} else {
+		}
+		else {
 			arg.visit(this);
 			if (patternNode == null) {
 				return;
@@ -240,7 +264,9 @@ public class PrepareOwnedTupleExpr extends
 	}
 
 	@Override
-	public void meet(LeftJoin node) throws RepositoryException {
+	public void meet(LeftJoin node)
+		throws RepositoryException
+	{
 		if (node.getCondition() == null) {
 			Map<String, String> vars = new HashMap<String, String>();
 			StringBuilder builder = new StringBuilder();
@@ -250,30 +276,34 @@ public class PrepareOwnedTupleExpr extends
 				vars.putAll(variables);
 				node.getRightArg().visit(this);
 				if (patternNode != null) {
-					builder.append("OPTIONAL {").append(pattern)
-							.append(END_BLOCK);
+					builder.append("OPTIONAL {").append(pattern).append(END_BLOCK);
 					vars.putAll(variables);
 					this.variables = vars;
 					this.pattern = builder.toString();
 					this.patternNode = node;
 				}
 			}
-		} else {
+		}
+		else {
 			super.meet(node);
 		}
 	}
 
-	public void meetMultiJoin(NaryJoin node) throws RepositoryException {
+	public void meetMultiJoin(NaryJoin node)
+		throws RepositoryException
+	{
 		Map<String, String> vars = new HashMap<String, String>();
 		StringBuilder builder = new StringBuilder();
 		for (TupleExpr arg : node.getArgs()) {
 			arg.visit(this);
 			if (patternNode == null && owner != null) {
 				return; // unsupported operation
-			} else if (patternNode == null) {
+			}
+			else if (patternNode == null) {
 				// no owner
 				builder = null; // NOPMD
-			} else if (builder != null) {
+			}
+			else if (builder != null) {
 				builder.append("{").append(pattern).append(END_BLOCK);
 				vars.putAll(variables);
 			}
@@ -286,7 +316,9 @@ public class PrepareOwnedTupleExpr extends
 	}
 
 	@Override
-	public void meet(Join node) throws RepositoryException {
+	public void meet(Join node)
+		throws RepositoryException
+	{
 		Map<String, String> vars = new HashMap<String, String>();
 		StringBuilder builder = new StringBuilder();
 		node.getLeftArg().visit(this);
@@ -305,19 +337,19 @@ public class PrepareOwnedTupleExpr extends
 	}
 
 	@Override
-	public void meet(StatementPattern node) throws RepositoryException {
+	public void meet(StatementPattern node)
+		throws RepositoryException
+	{
 		StringBuilder builder = new StringBuilder();
 		Scope scope = node.getScope();
 		Var subj = node.getSubjectVar();
 		Var pred = node.getPredicateVar();
 		Var obj = node.getObjectVar();
 		Var ctx = node.getContextVar();
-		boolean cokay = ctx == null && scope.equals(Scope.DEFAULT_CONTEXTS)
-				|| ctx != null && scope.equals(Scope.NAMED_CONTEXTS);
-		boolean sokay = !subj.hasValue() || subj.isAnonymous()
-				|| subj.getValue() instanceof URI;
-		boolean ookay = !obj.hasValue() || obj.isAnonymous()
-				|| obj.getValue() instanceof URI
+		boolean cokay = ctx == null && scope.equals(Scope.DEFAULT_CONTEXTS) || ctx != null
+				&& scope.equals(Scope.NAMED_CONTEXTS);
+		boolean sokay = !subj.hasValue() || subj.isAnonymous() || subj.getValue() instanceof URI;
+		boolean ookay = !obj.hasValue() || obj.isAnonymous() || obj.getValue() instanceof URI
 				|| obj.getValue() instanceof Literal;
 		if (cokay && sokay && ookay) {
 			variables.clear();
@@ -345,7 +377,8 @@ public class PrepareOwnedTupleExpr extends
 			}
 			this.pattern = builder.toString();
 			this.patternNode = node;
-		} else {
+		}
+		else {
 			this.patternNode = null; // NOPMD
 		}
 	}
@@ -354,7 +387,8 @@ public class PrepareOwnedTupleExpr extends
 		if (var.hasValue() && var.isAnonymous()) {
 			Value value = var.getValue();
 			writeValue(builder, value);
-		} else {
+		}
+		else {
 			String varName = var.getName();
 			appendVar(builder, varName);
 		}
@@ -384,17 +418,19 @@ public class PrepareOwnedTupleExpr extends
 
 	private void writeValue(StringBuilder builder, Value val) {
 		if (val instanceof Resource) {
-			writeResource(builder, (Resource) val);
-		} else {
-			writeLiteral(builder, (Literal) val);
+			writeResource(builder, (Resource)val);
+		}
+		else {
+			writeLiteral(builder, (Literal)val);
 		}
 	}
 
 	private void writeResource(StringBuilder builder, Resource res) {
 		if (res instanceof URI) {
-			writeURI(builder, (URI) res);
-		} else {
-			writeBNode(builder, (BNode) res);
+			writeURI(builder, (URI)res);
+		}
+		else {
+			writeBNode(builder, (BNode)res);
 		}
 	}
 
@@ -412,13 +448,13 @@ public class PrepareOwnedTupleExpr extends
 	private void writeLiteral(StringBuilder builder, Literal lit) {
 		String label = lit.getLabel();
 
-		if (label.indexOf('\n') > 0 || label.indexOf('\r') > 0
-				|| label.indexOf('\t') > 0) {
+		if (label.indexOf('\n') > 0 || label.indexOf('\r') > 0 || label.indexOf('\t') > 0) {
 			// Write label as long string
 			builder.append("\"\"\"");
 			builder.append(TurtleUtil.encodeLongString(label));
 			builder.append("\"\"\"");
-		} else {
+		}
+		else {
 			// Write label as normal string
 			builder.append("\"");
 			builder.append(TurtleUtil.encodeString(label));
@@ -426,13 +462,12 @@ public class PrepareOwnedTupleExpr extends
 		}
 
 		URI datatype = lit.getDatatype();
-		if (datatype == null) {
-			if (lit.getLanguage() != null) {
-				// Append the literal's language
-				builder.append("@");
-				builder.append(lit.getLanguage());
-			}
-		} else {
+		if (lit.getLanguage() != null) {
+			// Append the literal's language
+			builder.append("@");
+			builder.append(lit.getLanguage());
+		}
+		else if (datatype != null) {
 			// Append the literal's data type (possibly written as an
 			// abbreviated URI)
 			builder.append("^^");

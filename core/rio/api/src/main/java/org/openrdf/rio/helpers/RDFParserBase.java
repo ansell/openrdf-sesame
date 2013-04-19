@@ -231,7 +231,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Deprecated
 	public boolean verifyData() {
-		return this.parserConfig.get(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		return this.parserConfig.verifyData();
 	}
 
 	@Override
@@ -245,7 +245,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, !stopAtFirstError);
+		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, stopAtFirstError);
 	}
 
 	/**
@@ -253,7 +253,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Deprecated
 	public boolean stopAtFirstError() {
-		throw new RuntimeException("This setting is not supported anymore.");
+		return this.parserConfig.stopAtFirstError();
 	}
 
 	@SuppressWarnings("deprecation")
@@ -289,7 +289,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Deprecated
 	public DatatypeHandling datatypeHandling() {
-		throw new RuntimeException("This setting is not supported anymore.");
+		return this.parserConfig.datatypeHandling();
 	}
 
 	/**
@@ -331,7 +331,7 @@ public abstract class RDFParserBase implements RDFParser {
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
 		if (defaultPrefix.containsKey(prefix)) {
-			reportError(msg, RDFaParserSettings.ALLOW_RDFA_UNDEFINED_PREFIXES);
+			reportError(msg, RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
 			return defaultPrefix.get(prefix);
 		}
 		else if ("".equals(prefix)) {
@@ -631,15 +631,28 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Reports an error to the registered ParseErrorListener, if any. This method
-	 * simply calls {@link #reportError(String,int,int)} supplying <tt>-1</tt>
-	 * for the line- and column number. This method throws a
-	 * <tt>ParseException</tt> when 'stop-at-first-error' has been set to
-	 * <tt>true</tt>.
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
-	 * @see #setStopAtFirstError
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
 	 */
-	protected void reportError(String msg, RioSetting<?> relevantSetting)
+	protected void reportError(String msg, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
 		reportError(msg, -1, -1, relevantSetting);
@@ -647,20 +660,98 @@ public abstract class RDFParserBase implements RDFParser {
 
 	/**
 	 * Reports an error with associated line- and column number to the registered
-	 * ParseErrorListener, if any. This method throws a <tt>ParseException</tt>
-	 * when 'stop-at-first-error' has been set to <tt>true</tt>.
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
-	 * @see #setStopAtFirstError
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param lineNo
+	 *        Optional line number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param columnNo
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
 	 */
-	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<?> relevantSetting)
+	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
-		if (errListener != null) {
-			errListener.error(msg, lineNo, columnNo);
-		}
+		if (getParserConfig().get(relevantSetting)) {
+			if (errListener != null) {
+				errListener.error(msg, lineNo, columnNo);
+			}
 
-		if (!getParserConfig().isNonFatalError(relevantSetting)) {
-			throw new RDFParseException(msg, lineNo, columnNo);
+			if (!getParserConfig().isNonFatalError(relevantSetting)) {
+				throw new RDFParseException(msg, lineNo, columnNo);
+			}
+		}
+	}
+
+	/**
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
+	 * 
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param lineNo
+	 *        Optional line number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param columnNo
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
+	 */
+	protected void reportError(Exception e, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
+		throws RDFParseException
+	{
+		if (getParserConfig().get(relevantSetting)) {
+			if (errListener != null) {
+				errListener.error(e.getMessage(), lineNo, columnNo);
+			}
+
+			if (!getParserConfig().isNonFatalError(relevantSetting)) {
+				if (e instanceof RDFParseException) {
+					throw (RDFParseException)e;
+				}
+				else {
+					throw new RDFParseException(e, lineNo, columnNo);
+				}
+			}
 		}
 	}
 

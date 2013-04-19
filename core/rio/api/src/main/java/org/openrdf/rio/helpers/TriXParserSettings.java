@@ -16,8 +16,6 @@
  */
 package org.openrdf.rio.helpers;
 
-import org.openrdf.rio.ParseErrorListener;
-import org.openrdf.rio.RioConfig;
 import org.openrdf.rio.RioSetting;
 
 /**
@@ -30,25 +28,25 @@ public class TriXParserSettings {
 
 	/**
 	 * Boolean setting for parser to determine whether missing datatypes in TriX
-	 * are ignored and only generate errors into the {@link ParseErrorListener}.
+	 * are ignored.
 	 * <p>
-	 * Defaults to false.
+	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_TRIX_MISSING_DATATYPE = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignoretrixmissingdatatype", "Ignore TriX missing datatype", Boolean.FALSE);
+	public static final RioSetting<Boolean> FAIL_ON_TRIX_MISSING_DATATYPE = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.ignoretrixmissingdatatype", "Ignore TriX missing datatype", Boolean.TRUE);
+
 	/**
 	 * Boolean setting for parser to determine whether invalid statements are
-	 * ignored in TriX and only generate errors into the
-	 * {@link ParseErrorListener}.
+	 * ignored in TriX.
 	 * <p>
-	 * Defaults to false.
+	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_TRIX_INVALID_STATEMENT = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignoretrixmissingdatatype", "Ignore TriX missing datatype", Boolean.FALSE);
+	public static final RioSetting<Boolean> FAIL_ON_TRIX_INVALID_STATEMENT = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.ignoretrixmissingdatatype", "Ignore TriX missing datatype", Boolean.TRUE);
 
 	/**
 	 * Private constructor

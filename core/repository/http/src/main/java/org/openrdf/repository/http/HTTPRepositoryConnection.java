@@ -71,6 +71,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -109,13 +110,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
 	private boolean active;
-	
+
 	/*
 	 * Stores a stack trace that indicates where this connection as created if
 	 * debugging is enabled.
 	 */
 	private Throwable creatorTrace;
-
 
 	/*--------------*
 	 * Constructors *
@@ -124,7 +124,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public HTTPRepositoryConnection(HTTPRepository repository) {
 		super(repository);
 
-		setParserConfig(new ParserConfig(true, true, true, DatatypeHandling.IGNORE));
+		// setParserConfig(new ParserConfig(true, true, true,
+		// DatatypeHandling.IGNORE));
+		setParserConfig(new ParserConfig());
+		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 
 		if (debugEnabled()) {
 			creatorTrace = new Throwable();
@@ -404,9 +407,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		// FIXME (J1) in the new setup, isActive is always true when you get to this point. We need transactional support
+		// FIXME (J1) in the new setup, isActive is always true when you get to
+		// this point. We need transactional support
 		// in the httpclient itself (and thus in the protocol).
-		if (!isActive()) { 
+		if (!isActive()) {
 			// Send bytes directly to the server
 			SesameHTTPClient httpClient = getRepository().getHTTPClient();
 			httpClient.upload(in, baseURI, dataFormat, false, contexts);
@@ -420,9 +424,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		// FIXME (J1) in the new setup, isActive is always true when you get to this point. We need transactional support
+		// FIXME (J1) in the new setup, isActive is always true when you get to
+		// this point. We need transactional support
 		// in the httpclient itself (and thus in the protocol).
-		if (!isActive()) { 
+		if (!isActive()) {
 			// Send bytes directly to the server
 			SesameHTTPClient httpClient = getRepository().getHTTPClient();
 			httpClient.upload(reader, baseURI, dataFormat, false, contexts);
@@ -452,9 +457,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		boolean localTransaction = startLocalTransaction();
-		
+
 		txn.add(new ClearOperation(contexts));
-		
+
 		conditionalCommit(localTransaction);
 	}
 
@@ -464,11 +469,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (prefix == null) {
 			throw new NullPointerException("prefix must not be null");
 		}
-		
+
 		boolean localTransaction = startLocalTransaction();
-		
+
 		txn.add(new RemoveNamespaceOperation(prefix));
-		
+
 		conditionalCommit(localTransaction);
 	}
 
@@ -489,7 +494,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (name == null) {
 			throw new NullPointerException("name must not be null");
 		}
-		
+
 		boolean localTransaction = startLocalTransaction();
 		txn.add(new SetNamespaceOperation(prefix, name));
 		conditionalCommit(localTransaction);
@@ -560,13 +565,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		op.setDataset(update.getDataset());
 		txn.add(op);
 	}
-	
+
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
 		return new HTTPUpdate(this, ql, update, baseURI);
 	}
-	
+
 	/**
 	 * Verifies that the connection is open, throws a {@link StoreException} if
 	 * it isn't.
