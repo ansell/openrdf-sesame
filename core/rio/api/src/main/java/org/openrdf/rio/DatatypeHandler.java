@@ -52,6 +52,7 @@ public interface DatatypeHandler {
 	 * @see <a
 	 *      href="http://mappings.dbpedia.org/index.php/DBpedia_Datatypes">DBPedia
 	 *      Datatypes</a>
+	 * @since 2.7.1
 	 */
 	public static final String DBPEDIA = "org.openrdf.rio.datatypes.dbpedia";
 
