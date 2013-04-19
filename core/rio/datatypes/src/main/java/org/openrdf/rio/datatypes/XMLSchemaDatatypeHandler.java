@@ -50,19 +50,28 @@ public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 	public boolean verifyDatatype(String literalValue, URI datatypeUri)
 		throws LiteralUtilException
 	{
-		return XMLDatatypeUtil.isValidValue(literalValue, datatypeUri);
+		if (isRecognizedDatatype(datatypeUri)) {
+			return XMLDatatypeUtil.isValidValue(literalValue, datatypeUri);
+		}
+
+		throw new LiteralUtilException("Could not verify XMLSchema literal");
 	}
 
 	@Override
 	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
-		try {
-			return valueFactory.createLiteral(XMLDatatypeUtil.normalize(literalValue, datatypeUri), datatypeUri);
+		if (isRecognizedDatatype(datatypeUri)) {
+			try {
+				return valueFactory.createLiteral(XMLDatatypeUtil.normalize(literalValue, datatypeUri),
+						datatypeUri);
+			}
+			catch (IllegalArgumentException e) {
+				throw new LiteralUtilException("Could not normalise XMLSchema literal", e);
+			}
 		}
-		catch (IllegalArgumentException e) {
-			throw new LiteralUtilException("Could not normalise XMLSchema literal", e);
-		}
+		
+		throw new LiteralUtilException("Could not normalise XMLSchema literal");
 	}
 
 	@Override
