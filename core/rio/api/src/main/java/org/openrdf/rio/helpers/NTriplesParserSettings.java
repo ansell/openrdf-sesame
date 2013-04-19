@@ -16,7 +16,6 @@
  */
 package org.openrdf.rio.helpers;
 
-import org.openrdf.rio.RioConfig;
 import org.openrdf.rio.RioSetting;
 
 /**
@@ -29,14 +28,14 @@ public class NTriplesParserSettings {
 
 	/**
 	 * Boolean setting for parser to determine whether syntactically invalid
-	 * lines in N-Triples and N-Quads documents can be silently dropped.
+	 * lines in N-Triples and N-Quads documents generate a parse error.
 	 * <p>
-	 * Defaults to false.
+	 * Defaults to true.
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<Boolean> IGNORE_NTRIPLES_INVALID_LINES = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.ignorentriplesinvalidlines", "Ignore N-Triples invalid lines", Boolean.FALSE);
+	public static final RioSetting<Boolean> FAIL_ON_NTRIPLES_INVALID_LINES = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.failonntriplesinvalidlines", "Fail on N-Triples invalid lines", Boolean.TRUE);
 
 	/**
 	 * Private constructor

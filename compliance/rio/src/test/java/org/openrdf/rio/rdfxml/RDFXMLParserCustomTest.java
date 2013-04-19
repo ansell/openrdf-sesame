@@ -81,7 +81,7 @@ public class RDFXMLParserCustomTest {
 		RDFParser aParser = Rio.createParser(RDFFormat.RDFXML);
 		aParser.setRDFHandler(new StatementCollector(aGraph));
 
-		ParserConfig config = new ParserConfig(true, false, true, DatatypeHandling.VERIFY);
+		ParserConfig config = new ParserConfig();
 		aParser.setParserConfig(config);
 
 		try {

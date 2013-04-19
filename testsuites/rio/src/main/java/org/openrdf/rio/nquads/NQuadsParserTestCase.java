@@ -73,9 +73,6 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		throws Exception
 	{
 		parser = createRDFParser();
-		parser.setVerifyData(true);
-		parser.setDatatypeHandling(RDFParser.DatatypeHandling.VERIFY);
-		parser.setStopAtFirstError(true);
 		rdfHandler = new TestRDFHandler();
 		parser.setRDFHandler(this.rdfHandler);
 	}
@@ -95,7 +92,6 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		throws Exception
 	{
 		RDFParser nquadsParser = createRDFParser();
-		nquadsParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 		nquadsParser.setRDFHandler(new RDFHandlerBase());
 
 		InputStream in = NQuadsParserTestCase.class.getResourceAsStream(NQUADS_TEST_FILE);
@@ -118,7 +114,6 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		throws Exception
 	{
 		RDFParser nquadsParser = createRDFParser();
-		nquadsParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 		nquadsParser.setRDFHandler(new RDFHandlerBase());
 
 		InputStream in = NQuadsParserTestCase.class.getResourceAsStream(NTRIPLES_TEST_FILE);
@@ -621,7 +616,9 @@ public abstract class NQuadsParserTestCase extends TestCase {
 																										// with
 																										// error.
 						"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
-		parser.setStopAtFirstError(true);
+
+		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, false);
+
 		try {
 			parser.parse(bais, "http://test.base.uri");
 			Assert.fail("Expected exception when encountering an invalid line");
@@ -644,7 +641,10 @@ public abstract class NQuadsParserTestCase extends TestCase {
 						"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
 		final TestRDFHandler rdfHandler = new TestRDFHandler();
 		parser.setRDFHandler(rdfHandler);
-		parser.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, true);
+
+		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, false);
+		parser.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		
 		parser.parse(bais, "http://base-uri");
 		rdfHandler.assertHandler(2);
 		final Collection<Statement> statements = rdfHandler.getStatements();

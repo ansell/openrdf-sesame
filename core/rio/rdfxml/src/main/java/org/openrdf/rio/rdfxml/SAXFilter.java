@@ -342,7 +342,8 @@ class SAXFilter implements ContentHandler {
 			// FIXME: in parseLiteralMode we should also check if start- and
 			// end-tags match but these start tags are not tracked yet.
 
-			if (rdfParser.verifyData() && !parseLiteralMode) {
+			if (rdfParser.getParserConfig().get(XMLParserSettings.FAIL_ON_MISMATCHED_TAGS) && !parseLiteralMode)
+			{
 				// Verify that the end tag matches the start tag.
 				ElementInfo elInfo;
 
@@ -354,7 +355,8 @@ class SAXFilter implements ContentHandler {
 				}
 
 				if (!qName.equals(elInfo.qName)) {
-					rdfParser.reportFatalError("expected end tag </'" + elInfo.qName + ">, found </" + qName + ">");
+					rdfParser.reportError("expected end tag </'" + elInfo.qName + ">, found </" + qName + ">",
+							XMLParserSettings.FAIL_ON_MISMATCHED_TAGS);
 				}
 			}
 
@@ -509,7 +511,7 @@ class SAXFilter implements ContentHandler {
 
 				if ("".equals(namespace)) {
 					rdfParser.reportError("unqualified attribute '" + qName + "' not allowed",
-							XMLParserSettings.IGNORE_INVALID_QNAME);
+							XMLParserSettings.FAIL_ON_INVALID_QNAME);
 				}
 
 				Att att = new Att(namespace, localName, qName, value);

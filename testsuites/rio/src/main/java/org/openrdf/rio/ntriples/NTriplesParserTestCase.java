@@ -113,7 +113,7 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		String data = "invalid nt";
 
 		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES,
+		ntriplesParser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES,
 				Boolean.FALSE);
 
 		Model model = new LinkedHashModel();
@@ -135,9 +135,9 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		String data = "invalid nt";
 
 		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.getParserConfig().setNonFatalErrors(
-				Collections.<RioSetting<?>> singleton(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES));
-		ntriplesParser.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, Boolean.TRUE);
+		ntriplesParser.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		ntriplesParser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES,
+				Boolean.TRUE);
 
 		Model model = new LinkedHashModel();
 		ntriplesParser.setRDFHandler(new StatementCollector(model));
@@ -159,7 +159,7 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			// Force the connection to use stop at first error
-			conn.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, Boolean.FALSE);
+			conn.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, Boolean.FALSE);
 
 			String data = "invalid nt";
 			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);
@@ -183,9 +183,8 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		RepositoryConnection conn = repo.getConnection();
 		try {
 			// Force the connection to not use stop at first error
-			conn.getParserConfig().setNonFatalErrors(
-					Collections.<RioSetting<?>> singleton(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES));
-			conn.getParserConfig().set(NTriplesParserSettings.IGNORE_NTRIPLES_INVALID_LINES, Boolean.TRUE);
+			conn.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			conn.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, Boolean.TRUE);
 
 			String data = "invalid nt";
 			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);

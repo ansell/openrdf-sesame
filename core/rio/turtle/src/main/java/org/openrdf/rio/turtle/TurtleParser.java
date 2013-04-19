@@ -1191,7 +1191,7 @@ public class TurtleParser extends RDFParserBase {
 	 * information to the error.
 	 */
 	@Override
-	protected void reportError(String msg, RioSetting<?> setting)
+	protected void reportError(String msg, RioSetting<Boolean> setting)
 		throws RDFParseException
 	{
 		reportError(msg, lineReader.getLineNumber(), -1, setting);
