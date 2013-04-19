@@ -584,8 +584,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-
-				if (lit.getDatatype() != null) {
+				else if (lit.getDatatype() != null) {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");
@@ -716,8 +715,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-
-				if (lit.getDatatype() != null) {
+				else if (lit.getDatatype() != null) {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");

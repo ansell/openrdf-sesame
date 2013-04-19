@@ -140,10 +140,10 @@ public abstract class IdSequence {
 	protected long hashLiteralType(MessageDigest digest, Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
-			if (lit.getDatatype() != null)
-				return hash(digest, lit.getDatatype().stringValue());
 			if (lit.getLanguage() != null)
 				return hash(digest, lit.getLanguage());
+			if (lit.getDatatype() != null)
+				return hash(digest, lit.getDatatype().stringValue());
 		}
 		return 0;
 	}
