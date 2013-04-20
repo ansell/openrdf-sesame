@@ -644,7 +644,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 
 		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, false);
 		parser.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
-		
+
 		parser.parse(bais, "http://base-uri");
 		rdfHandler.assertHandler(2);
 		final Collection<Statement> statements = rdfHandler.getStatements();
@@ -665,11 +665,15 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		parser.setRDFHandler(rdfHandler);
 		parser.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, useDatatypeVerification);
 		parser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, useDatatypeVerification);
+		if (!useDatatypeVerification) {
+			parser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+			parser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		}
 
 		final ByteArrayInputStream bais = new ByteArrayInputStream(
 				("<http://dbpedia.org/resource/Camillo_Benso,_conte_di_Cavour> "
 						+ "<http://dbpedia.org/property/mandatofine> "
-						+ "\"1380.0\"^^<http://dbpedia.org/datatype/second> "
+						+ "\"1380.0\"^^<http://dbpedia.org/invalid/datatype/second> "
 						+ "<http://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour#absolute-line=20> .").getBytes());
 		parser.parse(bais, "http://base-uri");
 		rdfHandler.assertHandler(1);

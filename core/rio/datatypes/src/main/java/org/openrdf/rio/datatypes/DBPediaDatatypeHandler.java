@@ -17,32 +17,28 @@
 package org.openrdf.rio.datatypes;
 
 import org.openrdf.model.Literal;
-
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.DatatypeHandler;
 
 /**
- * An implementation of a datatype handler that can process {@link RDF} built-in
- * datatypes.
+ * An implementation of a datatype handler that can process DBPedia datatypes.
  * 
  * @author Peter Ansell
- * @since 2.7.0
+ * @since 2.7.1
  */
-public class RDFDatatypeHandler implements DatatypeHandler {
+public class DBPediaDatatypeHandler implements DatatypeHandler {
 
 	/**
 	 * Default constructor.
 	 */
-	public RDFDatatypeHandler() {
+	public DBPediaDatatypeHandler() {
 	}
 
 	@Override
 	public boolean isRecognizedDatatype(URI datatypeUri) {
-		return org.openrdf.model.vocabulary.RDF.LANGSTRING.equals(datatypeUri)
-				|| org.openrdf.model.vocabulary.RDF.XMLLITERAL.equals(datatypeUri);
+		return datatypeUri.stringValue().startsWith("http://dbpedia.org/datatype/");
 	}
 
 	@Override
@@ -53,29 +49,23 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 			// TODO: Implement verification
 			return true;
 		}
-
-		throw new LiteralUtilException("Could not verify RDF builtin literal");
+		
+		throw new LiteralUtilException("Could not verify DBPedia literal");
 	}
 
 	@Override
 	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
-		if (isRecognizedDatatype(datatypeUri)) {
-			try {
-				// TODO: Implement normalisation
-				return valueFactory.createLiteral(literalValue, datatypeUri);
-			}
-			catch (IllegalArgumentException e) {
-				throw new LiteralUtilException("Could not normalise RDF vocabulary defined literal", e);
-			}
+		if(isRecognizedDatatype(datatypeUri)) {
+			return valueFactory.createLiteral(literalValue, datatypeUri);
 		}
-
-		throw new LiteralUtilException("Could not normalise RDF vocabulary defined literal");
+		
+		throw new LiteralUtilException("Could not normalise DBPedia literal");
 	}
 
 	@Override
 	public String getKey() {
-		return DatatypeHandler.RDFDATATYPES;
+		return DatatypeHandler.DBPEDIA;
 	}
 }
