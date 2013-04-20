@@ -33,14 +33,28 @@ public interface DatatypeHandler {
 
 	/**
 	 * Identifier for datatypes defined in the {@link XMLSchema} vocabulary.
+	 * 
+	 * @since 2.7.0
 	 */
 	public static final String XMLSCHEMA = "org.openrdf.rio.datatypes.xmlschema";
 
 	/**
 	 * Identifier for datatypes defined in the
 	 * {@link org.openrdf.model.vocabulary.RDF} vocabulary.
+	 * 
+	 * @since 2.7.0
 	 */
 	public static final String RDFDATATYPES = "org.openrdf.rio.datatypes.rdf";
+
+	/**
+	 * Identifier for datatypes defined by DBPedia.
+	 * 
+	 * @see <a
+	 *      href="http://mappings.dbpedia.org/index.php/DBpedia_Datatypes">DBPedia
+	 *      Datatypes</a>
+	 * @since 2.7.1
+	 */
+	public static final String DBPEDIA = "org.openrdf.rio.datatypes.dbpedia";
 
 	/**
 	 * Checks if the given datatype URI is recognized by this datatype handler.
