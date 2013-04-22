@@ -24,6 +24,7 @@ import java.util.Map;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFHandlerException;
 
@@ -44,6 +45,8 @@ public class ContextStatementCollector extends RDFHandlerBase {
 
 	private Resource[] contexts;
 
+	private ValueFactory vf;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -53,8 +56,8 @@ public class ContextStatementCollector extends RDFHandlerBase {
 	 * reported statements and a new LinkedHashMap to store the reported
 	 * namespaces.
 	 */
-	public ContextStatementCollector(Resource... contexts) {
-		this(new ArrayList<Statement>(), contexts);
+	public ContextStatementCollector(ValueFactory vf, Resource... contexts) {
+		this(new ArrayList<Statement>(), vf, contexts);
 	}
 
 	/**
@@ -62,20 +65,21 @@ public class ContextStatementCollector extends RDFHandlerBase {
 	 * supplied collection and that uses a new LinkedHashMap to store the
 	 * reported namespaces.
 	 */
-	public ContextStatementCollector(Collection<Statement> statements, Resource... contexts) {
-		this(statements, new LinkedHashMap<String, String>(), contexts);
+	public ContextStatementCollector(Collection<Statement> statements, ValueFactory vf, Resource... contexts) {
+		this(statements, new LinkedHashMap<String, String>(), vf, contexts);
 	}
 
 	/**
 	 * Creates a new StatementCollector that stores reported statements and
 	 * namespaces in the supplied containers.
 	 */
-	public ContextStatementCollector(Collection<Statement> statements, Map<String, String> namespaces,
+	public ContextStatementCollector(Collection<Statement> statements, Map<String, String> namespaces, ValueFactory vf,
 			Resource... contexts)
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		this.statements = statements;
 		this.namespaces = namespaces;
+		this.vf = vf;
 		this.contexts = contexts;
 	}
 
@@ -120,7 +124,7 @@ public class ContextStatementCollector extends RDFHandlerBase {
 		}
 		else {
 			for (Resource nextContext : contexts) {
-				statements.add(ValueFactoryImpl.getInstance().createStatement(st.getSubject(), st.getPredicate(),
+				statements.add(vf.createStatement(st.getSubject(), st.getPredicate(),
 						st.getObject(), nextContext));
 			}
 		}
