@@ -280,7 +280,7 @@ public class Rio {
 	{
 		Model result = new LinkedHashModel();
 		RDFParser parser = createParser(dataFormat);
-		parser.setRDFHandler(new StatementCollector(result));
+		parser.setRDFHandler(new StatementCollector(result, contexts));
 		try {
 			parser.parse(in, baseURI);
 		}
@@ -323,7 +323,7 @@ public class Rio {
 	{
 		Model result = new LinkedHashModel();
 		RDFParser parser = createParser(dataFormat);
-		parser.setRDFHandler(new StatementCollector(result));
+		parser.setRDFHandler(new StatementCollector(result, contexts));
 		try {
 			parser.parse(reader, baseURI);
 		}
