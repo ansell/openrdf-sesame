@@ -21,10 +21,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
@@ -42,8 +39,6 @@ public class StatementCollector extends RDFHandlerBase {
 
 	private Map<String, String> namespaces;
 
-	private Resource[] contexts;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -53,8 +48,8 @@ public class StatementCollector extends RDFHandlerBase {
 	 * reported statements and a new LinkedHashMap to store the reported
 	 * namespaces.
 	 */
-	public StatementCollector(Resource... contexts) {
-		this(new ArrayList<Statement>(), contexts);
+	public StatementCollector() {
+		this(new ArrayList<Statement>());
 	}
 
 	/**
@@ -62,7 +57,7 @@ public class StatementCollector extends RDFHandlerBase {
 	 * supplied collection and that uses a new LinkedHashMap to store the
 	 * reported namespaces.
 	 */
-	public StatementCollector(Collection<Statement> statements, Resource... contexts) {
+	public StatementCollector(Collection<Statement> statements) {
 		this(statements, new LinkedHashMap<String, String>());
 	}
 
@@ -70,13 +65,9 @@ public class StatementCollector extends RDFHandlerBase {
 	 * Creates a new StatementCollector that stores reported statements and
 	 * namespaces in the supplied containers.
 	 */
-	public StatementCollector(Collection<Statement> statements, Map<String, String> namespaces,
-			Resource... contexts)
-	{
-		OpenRDFUtil.verifyContextNotNull(contexts);
+	public StatementCollector(Collection<Statement> statements, Map<String, String> namespaces) {
 		this.statements = statements;
 		this.namespaces = namespaces;
-		this.contexts = contexts;
 	}
 
 	/*---------*
@@ -115,14 +106,6 @@ public class StatementCollector extends RDFHandlerBase {
 
 	@Override
 	public void handleStatement(Statement st) {
-		if (contexts.length == 0) {
-			statements.add(st);
-		}
-		else {
-			for (Resource nextContext : contexts) {
-				statements.add(ValueFactoryImpl.getInstance().createStatement(st.getSubject(), st.getPredicate(),
-						st.getObject(), nextContext));
-			}
-		}
+		statements.add(st);
 	}
 }
