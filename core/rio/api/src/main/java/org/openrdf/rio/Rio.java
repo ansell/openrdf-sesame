@@ -28,6 +28,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.rio.helpers.ContextStatementCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -280,7 +281,7 @@ public class Rio {
 	{
 		Model result = new LinkedHashModel();
 		RDFParser parser = createParser(dataFormat);
-		parser.setRDFHandler(new StatementCollector(result, contexts));
+		parser.setRDFHandler(new ContextStatementCollector(result, contexts));
 		try {
 			parser.parse(in, baseURI);
 		}
@@ -323,7 +324,7 @@ public class Rio {
 	{
 		Model result = new LinkedHashModel();
 		RDFParser parser = createParser(dataFormat);
-		parser.setRDFHandler(new StatementCollector(result, contexts));
+		parser.setRDFHandler(new ContextStatementCollector(result, contexts));
 		try {
 			parser.parse(reader, baseURI);
 		}
