@@ -318,7 +318,7 @@ public class Rio {
 	 *         If an error was found while parsing the RDF data.
 	 * @since 2.7.1
 	 */
-	public static Model add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
+	public static Model parse(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, UnsupportedRDFormatException
 	{
 		Model result = new LinkedHashModel();
