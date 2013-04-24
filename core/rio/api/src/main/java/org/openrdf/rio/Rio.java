@@ -23,9 +23,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Collection;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -334,6 +336,61 @@ public class Rio {
 			throw new RuntimeException(e);
 		}
 		return result;
+	}
+
+	/**
+	 * Writes the given statements to the given output stream in the given
+	 * format.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @param output
+	 *        The {@link OutputStream} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws UnsupportedRDFormatException
+	 *         If no writer is available for the specified RDF format.
+	 * @since 2.7.1
+	 */
+	public static void write(Iterable<Statement> model, OutputStream output, RDFFormat dataFormat)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+
+		writer.startRDF();
+		for (final Statement st : model) {
+			writer.handleStatement(st);
+		}
+		writer.endRDF();
+	}
+
+	/**
+	 * Writes the given statements to the given writer in the given format.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @param output
+	 *        The {@link Writer} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws UnsupportedRDFormatException
+	 *         If no writer is available for the specified RDF format.
+	 * @since 2.7.1
+	 */
+	public static void write(Iterable<Statement> model, Writer output, RDFFormat dataFormat)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+
+		writer.startRDF();
+		for (final Statement st : model) {
+			writer.handleStatement(st);
+		}
+		writer.endRDF();
 	}
 
 	public static void main(String[] args)
