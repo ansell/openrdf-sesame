@@ -25,7 +25,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
 
+import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
@@ -360,6 +362,13 @@ public class Rio {
 		final RDFWriter writer = Rio.createWriter(dataFormat, output);
 
 		writer.startRDF();
+
+		if (model instanceof Model) {
+			for (Namespace nextNamespace : ((Model)model).getNamespaces()) {
+				writer.handleNamespace(nextNamespace.getPrefix(), nextNamespace.getName());
+			}
+		}
+
 		for (final Statement st : model) {
 			writer.handleStatement(st);
 		}
@@ -387,6 +396,13 @@ public class Rio {
 		final RDFWriter writer = Rio.createWriter(dataFormat, output);
 
 		writer.startRDF();
+
+		if (model instanceof Model) {
+			for (Namespace nextNamespace : ((Model)model).getNamespaces()) {
+				writer.handleNamespace(nextNamespace.getPrefix(), nextNamespace.getName());
+			}
+		}
+
 		for (final Statement st : model) {
 			writer.handleStatement(st);
 		}
