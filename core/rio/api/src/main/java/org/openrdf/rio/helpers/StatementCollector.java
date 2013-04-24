@@ -22,22 +22,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.openrdf.model.Statement;
-import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * A RDFHandler that can be used to collect reported statements in collections.
  * 
  * @author Arjohn Kampman
  */
-public class StatementCollector extends RDFHandlerBase {
-
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	private Collection<Statement> statements;
-
-	private Map<String, String> namespaces;
+public class StatementCollector extends ContextStatementCollector {
 
 	/*--------------*
 	 * Constructors *
@@ -66,47 +58,6 @@ public class StatementCollector extends RDFHandlerBase {
 	 * namespaces in the supplied containers.
 	 */
 	public StatementCollector(Collection<Statement> statements, Map<String, String> namespaces) {
-		this.statements = statements;
-		this.namespaces = namespaces;
-	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	/**
-	 * Clear the set of collected statements.
-	 */
-	public void clear() {
-		statements.clear();
-	}
-
-	/**
-	 * Gets the collection that contains the collected statements.
-	 */
-	public Collection<Statement> getStatements() {
-		return statements;
-	}
-
-	/**
-	 * Gets the map that contains the collected namespaces.
-	 */
-	public Map<String, String> getNamespaces() {
-		return namespaces;
-	}
-
-	@Override
-	public void handleNamespace(String prefix, String uri)
-		throws RDFHandlerException
-	{
-		if (!namespaces.containsKey(prefix)) {
-			namespaces.put(prefix, uri);
-		}
-	}
-
-	@Override
-	public void handleStatement(Statement st)
-	{
-		statements.add(st);
+		super(statements, namespaces, ValueFactoryImpl.getInstance());
 	}
 }
