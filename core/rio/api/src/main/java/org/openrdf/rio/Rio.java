@@ -253,8 +253,8 @@ public class Rio {
 	}
 
 	/**
-	 * Adds RDF data from an InputStream to a {@link Model}, optionally to one or
-	 * more named contexts.
+	 * Adds RDF data from an {@link InputStream} to a {@link Model}, optionally
+	 * to one or more named contexts.
 	 * 
 	 * @param in
 	 *        An InputStream from which RDF data can be read.
@@ -273,7 +273,7 @@ public class Rio {
 	 * @throws IOException
 	 *         If an I/O error occurred while reading from the input stream.
 	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
+	 *         If no {@link RDFParser} is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
 	 * @since 2.7.1
@@ -295,11 +295,11 @@ public class Rio {
 	}
 
 	/**
-	 * Adds RDF data from a Reader to a {@link Model}, optionally to one or more
-	 * named contexts. <b>Note: using a Reader to upload byte-based data means
-	 * that you have to be careful not to destroy the data's character encoding
-	 * by enforcing a default character encoding upon the bytes. If possible,
-	 * adding such data using an InputStream is to be preferred.</b>
+	 * Adds RDF data from a {@link Reader} to a {@link Model}, optionally to one
+	 * or more named contexts. <b>Note: using a Reader to upload byte-based data
+	 * means that you have to be careful not to destroy the data's character
+	 * encoding by enforcing a default character encoding upon the bytes. If
+	 * possible, adding such data using an InputStream is to be preferred.</b>
 	 * 
 	 * @param reader
 	 *        A Reader from which RDF data can be read.
@@ -316,7 +316,7 @@ public class Rio {
 	 * @throws IOException
 	 *         If an I/O error occurred while reading from the reader.
 	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
+	 *         If no {@link RDFParser} is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
 	 * @since 2.7.1
@@ -338,8 +338,10 @@ public class Rio {
 	}
 
 	/**
-	 * Writes the given statements to the given output stream in the given
+	 * Writes the given statements to the given {@link OutputStream} in the given
 	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
 	 * 
 	 * @param model
 	 *        A collection of statements, such as a {@link Model}, to be written.
@@ -350,7 +352,7 @@ public class Rio {
 	 * @throws RDFHandlerException
 	 *         Thrown if there is an error writing the statements.
 	 * @throws UnsupportedRDFormatException
-	 *         If no writer is available for the specified RDF format.
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
 	 * @since 2.7.1
 	 */
 	public static void write(Iterable<Statement> model, OutputStream output, RDFFormat dataFormat)
@@ -373,7 +375,10 @@ public class Rio {
 	}
 
 	/**
-	 * Writes the given statements to the given writer in the given format.
+	 * Writes the given statements to the given {@link Writer} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
 	 * 
 	 * @param model
 	 *        A collection of statements, such as a {@link Model}, to be written.
@@ -384,7 +389,7 @@ public class Rio {
 	 * @throws RDFHandlerException
 	 *         Thrown if there is an error writing the statements.
 	 * @throws UnsupportedRDFormatException
-	 *         If no writer is available for the specified RDF format.
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
 	 * @since 2.7.1
 	 */
 	public static void write(Iterable<Statement> model, Writer output, RDFFormat dataFormat)
