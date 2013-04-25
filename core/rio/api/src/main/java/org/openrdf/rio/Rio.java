@@ -25,12 +25,13 @@ import java.io.Reader;
 import java.io.Writer;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.helpers.ContextStatementCollector;
-import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Factory class providing static methods for creating RDF parsers and -writers
@@ -252,8 +253,8 @@ public class Rio {
 	}
 
 	/**
-	 * Adds RDF data from an InputStream to a {@link Model}, optionally to one or
-	 * more named contexts.
+	 * Adds RDF data from an {@link InputStream} to a {@link Model}, optionally
+	 * to one or more named contexts.
 	 * 
 	 * @param in
 	 *        An InputStream from which RDF data can be read.
@@ -272,7 +273,7 @@ public class Rio {
 	 * @throws IOException
 	 *         If an I/O error occurred while reading from the input stream.
 	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
+	 *         If no {@link RDFParser} is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
 	 * @since 2.7.1
@@ -294,11 +295,11 @@ public class Rio {
 	}
 
 	/**
-	 * Adds RDF data from a Reader to a {@link Model}, optionally to one or more
-	 * named contexts. <b>Note: using a Reader to upload byte-based data means
-	 * that you have to be careful not to destroy the data's character encoding
-	 * by enforcing a default character encoding upon the bytes. If possible,
-	 * adding such data using an InputStream is to be preferred.</b>
+	 * Adds RDF data from a {@link Reader} to a {@link Model}, optionally to one
+	 * or more named contexts. <b>Note: using a Reader to upload byte-based data
+	 * means that you have to be careful not to destroy the data's character
+	 * encoding by enforcing a default character encoding upon the bytes. If
+	 * possible, adding such data using an InputStream is to be preferred.</b>
 	 * 
 	 * @param reader
 	 *        A Reader from which RDF data can be read.
@@ -315,7 +316,7 @@ public class Rio {
 	 * @throws IOException
 	 *         If an I/O error occurred while reading from the reader.
 	 * @throws UnsupportedRDFormatException
-	 *         If no parser is available for the specified RDF format.
+	 *         If no {@link RDFParser} is available for the specified RDF format.
 	 * @throws RDFParseException
 	 *         If an error was found while parsing the RDF data.
 	 * @since 2.7.1
@@ -334,6 +335,80 @@ public class Rio {
 			throw new RuntimeException(e);
 		}
 		return result;
+	}
+
+	/**
+	 * Writes the given statements to the given {@link OutputStream} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @param output
+	 *        The {@link OutputStream} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.7.1
+	 */
+	public static void write(Iterable<Statement> model, OutputStream output, RDFFormat dataFormat)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+
+		writer.startRDF();
+
+		if (model instanceof Model) {
+			for (Namespace nextNamespace : ((Model)model).getNamespaces()) {
+				writer.handleNamespace(nextNamespace.getPrefix(), nextNamespace.getName());
+			}
+		}
+
+		for (final Statement st : model) {
+			writer.handleStatement(st);
+		}
+		writer.endRDF();
+	}
+
+	/**
+	 * Writes the given statements to the given {@link Writer} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @param output
+	 *        The {@link Writer} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.7.1
+	 */
+	public static void write(Iterable<Statement> model, Writer output, RDFFormat dataFormat)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+
+		writer.startRDF();
+
+		if (model instanceof Model) {
+			for (Namespace nextNamespace : ((Model)model).getNamespaces()) {
+				writer.handleNamespace(nextNamespace.getPrefix(), nextNamespace.getName());
+			}
+		}
+
+		for (final Statement st : model) {
+			writer.handleStatement(st);
+		}
+		writer.endRDF();
 	}
 
 	public static void main(String[] args)
