@@ -23,9 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Collection;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -34,7 +32,6 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.helpers.ContextStatementCollector;
-import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Factory class providing static methods for creating RDF parsers and -writers
