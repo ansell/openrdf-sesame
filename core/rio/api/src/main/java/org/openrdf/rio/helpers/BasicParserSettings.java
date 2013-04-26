@@ -88,7 +88,8 @@ public class BasicParserSettings {
 			"org.openrdf.rio.datatypehandlers", "Datatype Handlers", Arrays.asList(
 					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA),
 					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.RDFDATATYPES),
-					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.DBPEDIA)));
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.DBPEDIA),
+					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.VIRTUOSOGEOMETRY)));
 
 	/**
 	 * Boolean setting for parser to determine whether to fail parsing if
