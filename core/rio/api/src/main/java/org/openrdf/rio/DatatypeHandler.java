@@ -57,6 +57,16 @@ public interface DatatypeHandler {
 	public static final String DBPEDIA = "org.openrdf.rio.datatypes.dbpedia";
 
 	/**
+	 * Identifier for datatypes defined in the Virtuoso Geometry vocabulary.
+	 * 
+	 * @see <a
+	 *      href="http://docs.openlinksw.com/virtuoso/rdfsparqlgeospat.html">Virtuoso
+	 *      Geospatial</a>
+	 * @since 2.7.1
+	 */
+	public static final String VIRTUOSOGEOMETRY = "org.openrdf.rio.datatypes.virtuosogeometry";
+
+	/**
 	 * Checks if the given datatype URI is recognized by this datatype handler.
 	 * 
 	 * @param datatypeUri
