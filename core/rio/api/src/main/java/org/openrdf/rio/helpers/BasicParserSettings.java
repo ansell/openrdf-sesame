@@ -200,10 +200,14 @@ public class BasicParserSettings {
 		List<DatatypeHandler> defaultDatatypeHandlers = new ArrayList<DatatypeHandler>(4);
 		try {
 			DatatypeHandlerRegistry registry = DatatypeHandlerRegistry.getInstance();
-			defaultDatatypeHandlers.add(registry.get(DatatypeHandler.XMLSCHEMA));
-			defaultDatatypeHandlers.add(registry.get(DatatypeHandler.RDFDATATYPES));
-			defaultDatatypeHandlers.add(registry.get(DatatypeHandler.DBPEDIA));
-			defaultDatatypeHandlers.add(registry.get(DatatypeHandler.VIRTUOSOGEOMETRY));
+			for (String nextHandler : Arrays.asList(DatatypeHandler.XMLSCHEMA, DatatypeHandler.RDFDATATYPES,
+					DatatypeHandler.DBPEDIA, DatatypeHandler.VIRTUOSOGEOMETRY))
+			{
+				DatatypeHandler nextdt = registry.get(nextHandler);
+				if (nextdt != null) {
+					defaultDatatypeHandlers.add(nextdt);
+				}
+			}
 		}
 		catch (Exception e) {
 			// Ignore exceptions so that service loading failures do not cause
@@ -216,7 +220,12 @@ public class BasicParserSettings {
 		List<LanguageHandler> defaultLanguageHandlers = new ArrayList<LanguageHandler>(1);
 		try {
 			LanguageHandlerRegistry registry = LanguageHandlerRegistry.getInstance();
-			defaultLanguageHandlers.add(registry.get(LanguageHandler.RFC3066));
+			for (String nextHandler : Arrays.asList(LanguageHandler.RFC3066)) {
+				LanguageHandler nextlang = registry.get(nextHandler);
+				if (nextlang != null) {
+					defaultLanguageHandlers.add(nextlang);
+				}
+			}
 		}
 		catch (Exception e) {
 			// Ignore exceptions so that service loading failures do not cause
