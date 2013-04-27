@@ -24,6 +24,9 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iteration;
+
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -407,6 +410,83 @@ public class Rio {
 
 		for (final Statement st : model) {
 			writer.handleStatement(st);
+		}
+		writer.endRDF();
+	}
+
+	/**
+	 * Writes the given statements to the given {@link OutputStream} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * @param <X>
+	 * 
+	 * @param model
+	 *        An iteration of statements to be written.
+	 * @param output
+	 *        The {@link OutputStream} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws X
+	 *         The exception thrown by the given closeable iteration.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.7.1
+	 */
+	public static <X extends Exception> void write(CloseableIteration<Statement, X> model, OutputStream output, RDFFormat dataFormat)
+		throws RDFHandlerException, X
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+
+		writer.startRDF();
+		try {
+			while (model.hasNext()) {
+				writer.handleStatement(model.next());
+			}
+		}
+		finally {
+			model.close();
+		}
+		writer.endRDF();
+	}
+
+	/**
+	 * Writes the given statements to the given {@link Writer} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * 
+	 * @param <X>
+	 * @param model
+	 *        An iteration of statements to be written.
+	 * @param output
+	 *        The {@link Writer} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws X
+	 *         The exception thrown by the given closeable iteration.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.7.1
+	 */
+	public static <X extends Exception> void write(CloseableIteration<Statement, X> model, Writer output,
+			RDFFormat dataFormat)
+		throws RDFHandlerException, X
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+
+		writer.startRDF();
+		try {
+			while (model.hasNext()) {
+				writer.handleStatement(model.next());
+			}
+		}
+		finally {
+			model.close();
 		}
 		writer.endRDF();
 	}
