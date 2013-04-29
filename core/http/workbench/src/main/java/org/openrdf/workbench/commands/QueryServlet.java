@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -140,6 +141,12 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
+	@Override
+	public void destroy() {
+		this.storage.shutdown();
+		super.destroy();
+	}
+	
 	/**
 	 * Long query strings could blow past the Tomcat default 8k HTTP header limit
 	 * if stuffed into a cookie. In this case, we need to set a flag to avoid

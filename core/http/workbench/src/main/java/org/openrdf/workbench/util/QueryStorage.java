@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,10 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.http.HTTPRepository;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.RepositoryProvider;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.nativerdf.NativeStore;
 import org.openrdf.workbench.exceptions.BadRequestException;
@@ -59,11 +64,15 @@ public class QueryStorage {
 		throws RepositoryException, IOException
 	{
 		synchronized (LOCK) {
-			if (instance == null) {
+			if (instance == null || instance.isShutdown()) {
 				instance = new QueryStorage(config);
 			}
 			return instance;
 		}
+	}
+
+	private boolean isShutdown() {
+		return queries == null || ! queries.isInitialized();
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryStorage.class);
@@ -131,20 +140,17 @@ public class QueryStorage {
 	{
 		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
 		queries.initialize();
+	}
 
-		Runtime.getRuntime().addShutdownHook(new Thread("workbench-storage-shutdown") {
-			@Override
-			public void run() {
-				if (queries != null && queries.isInitialized()) {
-					try {
-						queries.shutDown();
-					}
-					catch (RepositoryException e) {
-						// ignore and hope for the best
-					}
-				}
+	public void shutdown() {
+		try {
+			if (queries != null && queries.isInitialized()) {
+				queries.shutDown();
 			}
-		});
+		}
+		catch (RepositoryException e) {
+			// ignore
+		}
 	}
 
 	/**
