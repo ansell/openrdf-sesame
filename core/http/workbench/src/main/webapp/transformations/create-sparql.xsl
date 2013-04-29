@@ -15,7 +15,9 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<form action="create">
+		<script src="../../scripts/create.js" type="text/javascript">
+		</script>
+		<form action="create" method="post">
 			<table class="dataentry">
 				<tbody>
 					<tr>
@@ -24,41 +26,9 @@
 						</th>
 						<td>
 							<select id="type" name="type">
-								<option value="memory">
-									In Memory Store
-								</option>
-								<option value="memory-rdfs">
-									In Memory Store RDF Schema
-								</option>
-								<option value="memory-rdfs-dt">
-									In Memory Store RDF Schema and
-									Direct Type
-									Hierarchy
-								</option>
-								<option value="native">
-									Native Java Store
-								</option>
-								<option value="native-rdfs">
-									Native Java Store RDF Schema
-								</option>
-								<option value="native-rdfs-dt">
-									Native Java Store RDF Schema and
-									Direct Type
-									Hierarchy
-								</option>
-								<option value="mysql">
-									MySql RDF Store
-								</option>
-								<option value="pgsql">
-									PostgreSQL RDF Store
-								</option>
-								<option value="remote">
-									Remote RDF Store
-								</option>
 								<option value="sparql">
 									SPARQL endpoint proxy
 								</option>
-								<option value="federate">Federation Store</option>
 							</select>
 						</td>
 						<td></td>
@@ -68,7 +38,8 @@
 							<xsl:value-of select="$repository-id.label" />
 						</th>
 						<td>
-							<input type="text" id="id" name="id" size="16" />
+							<input type="text" id="id" name="Local repository ID" size="16"
+								value="endpoint@localhost" />
 						</td>
 						<td></td>
 					</tr>
@@ -77,7 +48,28 @@
 							<xsl:value-of select="$repository-title.label" />
 						</th>
 						<td>
-							<input type="text" id="title" name="title" size="48" />
+							<input type="text" id="title" name="Repository title" size="48"
+								value="SPARQL endpoint proxy @localhost" />
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<th>
+							<xsl:value-of select="$sparql-repository-query-endpoint.label" />
+						</th>
+						<td>
+							<input type="text" id="query-endpoint" name="SPARQL query endpoint"
+								size="48" value="http://" />
+						</td>
+						<td></td>
+					</tr>
+										<tr>
+						<th>
+							<xsl:value-of select="$sparql-repository-update-endpoint.label" />
+						</th>
+						<td>
+							<input type="text" id="update-endpoint" name="SPARQL update endpoint"
+								size="48" value="" />
 						</td>
 						<td></td>
 					</tr>
@@ -86,7 +78,8 @@
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
 								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
-							<input type="submit" name="next" value="{$next.label}" />
+							<input id="create" type="button" value="{$create.label}"
+								onclick="checkOverwrite()" />
 						</td>
 					</tr>
 				</tbody>
