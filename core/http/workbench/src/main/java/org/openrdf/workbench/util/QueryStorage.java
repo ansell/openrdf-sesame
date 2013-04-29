@@ -132,7 +132,7 @@ public class QueryStorage {
 		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
 		queries.initialize();
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
+		Runtime.getRuntime().addShutdownHook(new Thread("workbench-storage-shutdown") {
 			@Override
 			public void run() {
 				if (queries != null && queries.isInitialized()) {
