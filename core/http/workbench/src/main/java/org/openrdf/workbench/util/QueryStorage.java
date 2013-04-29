@@ -131,6 +131,20 @@ public class QueryStorage {
 	{
 		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
 		queries.initialize();
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				if (queries != null && queries.isInitialized()) {
+					try {
+						queries.shutDown();
+					}
+					catch (RepositoryException e) {
+						// ignore and hope for the best
+					}
+				}
+			}
+		});
 	}
 
 	/**
