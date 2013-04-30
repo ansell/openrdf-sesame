@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.DatatypeHandlerRegistry;
 import org.openrdf.rio.LanguageHandler;
@@ -34,6 +37,8 @@ import org.openrdf.rio.RioSetting;
  * @since 2.7.0
  */
 public class BasicParserSettings {
+
+	private final static Logger log = LoggerFactory.getLogger(BasicParserSettings.class);
 
 	/**
 	 * Boolean setting for parser to determine whether values for recognised
@@ -207,11 +212,15 @@ public class BasicParserSettings {
 				if (nextdt != null) {
 					defaultDatatypeHandlers.add(nextdt);
 				}
+				else {
+					log.warn("Could not find DatatypeHandler : {}", nextHandler);
+				}
 			}
 		}
 		catch (Exception e) {
 			// Ignore exceptions so that service loading failures do not cause
 			// class initialization errors.
+			log.warn("Found an error loading DatatypeHandler services", e);
 		}
 
 		DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>("org.openrdf.rio.datatypehandlers",
@@ -225,11 +234,15 @@ public class BasicParserSettings {
 				if (nextlang != null) {
 					defaultLanguageHandlers.add(nextlang);
 				}
+				else {
+					log.warn("Could not find LanguageHandler : {}", nextHandler);
+				}
 			}
 		}
 		catch (Exception e) {
 			// Ignore exceptions so that service loading failures do not cause
 			// class initialization errors.
+			log.warn("Found an error loading LanguageHandler services", e);
 		}
 
 		LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>("org.openrdf.rio.languagehandlers",
