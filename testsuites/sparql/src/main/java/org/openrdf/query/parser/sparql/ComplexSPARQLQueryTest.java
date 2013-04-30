@@ -414,7 +414,7 @@ public abstract class ComplexSPARQLQueryTest {
 	@Test
 	public void testSES1081SameTermWithValues()
 		throws Exception
-	{	
+	{
 		loadTestData("/testdata-query/dataset-ses1081.trig");
 		StringBuilder query = new StringBuilder();
 		query.append("PREFIX ex: <http://example.org/>\n");
@@ -447,10 +447,10 @@ public abstract class ComplexSPARQLQueryTest {
 				BindingSet bs = result.next();
 				count++;
 				assertNotNull(bs);
-				
+
 				Value s = bs.getValue("s");
 				Value a = bs.getValue("a");
-				
+
 				assertNotNull(s);
 				assertNotNull(a);
 				assertEquals(f.createURI("http://example.org/a"), s);
@@ -961,6 +961,138 @@ public abstract class ComplexSPARQLQueryTest {
 	 * @see http://www.openrdf.org/issues/browse/SES-1091
 	 * @throws Exception
 	 */
+	public void testArbitraryLengthPathWithBinding4()
+		throws Exception
+	{
+		loadTestData("/testdata-query/alp-testdata.ttl", this.alice);
+
+		// binding on child instead of parent.
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?parent ?child ");
+		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			// first execute without binding
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(7, count);
+
+			// execute again, but this time setting a binding
+			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+
+			result = tq.evaluate();
+			assertNotNull(result);
+
+			count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(2, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
+	@Test
+	/**
+	 * @see http://www.openrdf.org/issues/browse/SES-1091
+	 * @throws Exception
+	 */
+	public void testArbitraryLengthPathWithBinding5()
+		throws Exception
+	{
+		loadTestData("/testdata-query/alp-testdata.ttl", this.alice, this.bob);
+
+		// binding on child instead of parent.
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?parent ?child ");
+		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			// first execute without binding
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(7, count);
+
+			// execute again, but this time setting a binding
+			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+
+			result = tq.evaluate();
+			assertNotNull(result);
+
+			count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(2, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
+	@Test
+	/**
+	 * @see http://www.openrdf.org/issues/browse/SES-1091
+	 * @throws Exception
+	 */
 	public void testArbitraryLengthPathWithFilter1()
 		throws Exception
 	{
@@ -1131,13 +1263,13 @@ public abstract class ComplexSPARQLQueryTest {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	protected void loadTestData(String dataFile)
+	protected void loadTestData(String dataFile, Resource... contexts)
 		throws RDFParseException, RepositoryException, IOException
 	{
 		logger.debug("loading dataset {}", dataFile);
 		InputStream dataset = ComplexSPARQLQueryTest.class.getResourceAsStream(dataFile);
 		try {
-			conn.add(dataset, "", RDFFormat.forFileName(dataFile));
+			conn.add(dataset, "", RDFFormat.forFileName(dataFile), contexts);
 		}
 		finally {
 			dataset.close();

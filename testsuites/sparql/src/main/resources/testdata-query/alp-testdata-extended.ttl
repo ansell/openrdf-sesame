@@ -1,0 +1,73 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ex: <http://example.org/> .
+
+ex:PO_0000066 rdf:type owl:Class .
+ex:PO_0000066 rdfs:label "epithem cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0000066 rdfs:subClassOf ex:PO_0000074 .
+
+ex:PO_0000071 rdf:type owl:Class .
+ex:PO_0000071 rdfs:label "companion cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0000071 rdfs:subClassOf ex:PO_0000074 .
+
+ex:PO_0000074 rdf:type owl:Class .
+ex:PO_0000074 rdfs:label "parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0000074 rdfs:subClassOf ex:PO_0025030 .
+
+ex:PO_0000076 rdf:type owl:Class .
+ex:PO_0000076 rdfs:label "chlorenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0000076 rdfs:subClassOf ex:PO_0000074 .
+
+ex:PO_0004006 rdf:type owl:Class .
+ex:PO_0004006 rdfs:label "mesophyll cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004006 rdfs:subClassOf ex:PO_0000076 .
+
+ex:PO_0004525 rdf:type owl:Class .
+ex:PO_0004525 rdfs:label "wood parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004525 rdfs:subClassOf ex:PO_0000074 .
+
+ex:PO_0004526 rdf:type owl:Class .
+ex:PO_0004527 rdfs:label "axial wood parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004526 rdfs:subClassOf ex:PO_0004525 .
+
+ex:PO_0004527 rdf:type owl:Class .
+ex:PO_0004527 rdfs:label "ray wood parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004527 rdfs:subClassOf ex:PO_0004525 .
+
+ex:PO_0004528 rdf:type owl:Class .
+ex:PO_0004528 rdfs:label "upright wood ray parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004528 rdfs:subClassOf ex:PO_0004527 .
+
+ex:PO_0004529 rdf:type owl:Class .
+ex:PO_0004529 rdfs:label "procumbent wood ray parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004529 rdfs:subClassOf ex:PO_0004527 .
+
+ex:PO_0004530 rdf:type owl:Class .
+ex:PO_0004530 rdfs:label "tile cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004530 rdfs:subClassOf ex:PO_0004528 .
+
+ex:PO_0004531 rdf:type owl:Class .
+ex:PO_0004531 rdfs:label "sheath cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0004531 rdfs:subClassOf ex:PO_0004528 .
+
+ex:PO_0006205 rdf:type owl:Class .
+ex:PO_0006205 rdfs:label "spongy mesophyll cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0006205 rdfs:subClassOf ex:PO_0004006 .
+
+ex:PO_0006206 rdf:type owl:Class .
+ex:PO_0006206 rdfs:label "palisade mesophyll cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0006206 rdfs:subClassOf ex:PO_0004006 .
+
+ex:PO_0025285 rdf:type owl:Class .
+ex:PO_0025285 rdfs:label "callus parenchyma cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0025285 rdfs:subClassOf ex:PO_0000074 .
+
+ex:PO_0030001 rdf:type owl:Class .
+ex:PO_0030001 rdfs:label "chloronema cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0030001 rdfs:subClassOf ex:PO_0000076 .
+
+ex:PO_0030002 rdf:type owl:Class .
+ex:PO_0030002 rdfs:label "caulonema cell"^^<http://www.w3.org/2001/XMLSchema#string> .
+ex:PO_0030002 rdfs:subClassOf ex:PO_0000076 .
+
