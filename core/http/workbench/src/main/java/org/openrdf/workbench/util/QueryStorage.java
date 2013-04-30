@@ -59,11 +59,15 @@ public class QueryStorage {
 		throws RepositoryException, IOException
 	{
 		synchronized (LOCK) {
-			if (instance == null) {
+			if (instance == null || instance.isShutdown()) {
 				instance = new QueryStorage(config);
 			}
 			return instance;
 		}
+	}
+
+	private boolean isShutdown() {
+		return queries == null || ! queries.isInitialized();
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryStorage.class);
@@ -131,6 +135,17 @@ public class QueryStorage {
 	{
 		queries = new SailRepository(new NativeStore(new File(appConfig.getDataDir(), "queries")));
 		queries.initialize();
+	}
+
+	public void shutdown() {
+		try {
+			if (queries != null && queries.isInitialized()) {
+				queries.shutDown();
+			}
+		}
+		catch (RepositoryException e) {
+			// ignore
+		}
 	}
 
 	/**
