@@ -133,7 +133,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testIsRecognizedDatatypeNull()
+	public void testIsRecognizedDatatypeNull()
 		throws Exception
 	{
 		thrown.expect(NullPointerException.class);
@@ -146,7 +146,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testIsRecognizedDatatypeTrue()
+	public void testIsRecognizedDatatypeTrue()
 		throws Exception
 	{
 		assertTrue(testHandler.isRecognizedDatatype(getRecognisedDatatypeUri()));
@@ -158,7 +158,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testIsRecognizedDatatypeFalse()
+	public void testIsRecognizedDatatypeFalse()
 		throws Exception
 	{
 		assertFalse(testHandler.isRecognizedDatatype(getUnrecognisedDatatypeUri()));
@@ -170,7 +170,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeNullDatatypeUri()
+	public void testVerifyDatatypeNullDatatypeUri()
 		throws Exception
 	{
 		thrown.expect(NullPointerException.class);
@@ -183,7 +183,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeNullValueRecognised()
+	public void testVerifyDatatypeNullValueRecognised()
 		throws Exception
 	{
 		thrown.expect(NullPointerException.class);
@@ -196,7 +196,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeNullValueUnrecognised()
+	public void testVerifyDatatypeNullValueUnrecognised()
 		throws Exception
 	{
 		thrown.expect(LiteralUtilException.class);
@@ -209,7 +209,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeUnrecognisedDatatypeUri()
+	public void testVerifyDatatypeUnrecognisedDatatypeUri()
 		throws Exception
 	{
 		thrown.expect(LiteralUtilException.class);
@@ -222,7 +222,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeInvalidValue()
+	public void testVerifyDatatypeInvalidValue()
 		throws Exception
 	{
 		assertFalse(testHandler.verifyDatatype(getValueNotMatchingRecognisedDatatypeUri(),
@@ -235,7 +235,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeValidValue()
+	public void testVerifyDatatypeValidValue()
 		throws Exception
 	{
 		assertTrue(testHandler.verifyDatatype(getValueMatchingRecognisedDatatypeUri(),
@@ -248,7 +248,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeNullDatatypeUri()
+	public void testNormalizeDatatypeNullDatatypeUri()
 		throws Exception
 	{
 		thrown.expect(NullPointerException.class);
@@ -261,7 +261,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeNullValue()
+	public void testNormalizeDatatypeNullValue()
 		throws Exception
 	{
 		thrown.expect(NullPointerException.class);
@@ -274,7 +274,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeUnrecognisedDatatypeUri()
+	public void testNormalizeDatatypeUnrecognisedDatatypeUri()
 		throws Exception
 	{
 		thrown.expect(LiteralUtilException.class);
@@ -287,7 +287,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeInvalidValue()
+	public void testNormalizeDatatypeInvalidValue()
 		throws Exception
 	{
 		thrown.expect(LiteralUtilException.class);
@@ -301,7 +301,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeValidValue()
+	public void testNormalizeDatatypeValidValue()
 		throws Exception
 	{
 		Literal result = testHandler.normalizeDatatype(getValueMatchingRecognisedDatatypeUri(),
@@ -321,7 +321,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * Test method for {@link org.openrdf.rio.DatatypeHandler#getKey()}.
 	 */
 	@Test
-	public final void testGetKey()
+	public void testGetKey()
 		throws Exception
 	{
 		String result = testHandler.getKey();
