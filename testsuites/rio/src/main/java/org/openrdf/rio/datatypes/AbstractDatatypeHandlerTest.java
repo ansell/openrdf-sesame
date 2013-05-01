@@ -20,11 +20,14 @@ import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.rio.DatatypeHandler;
 
 /**
@@ -33,6 +36,9 @@ import org.openrdf.rio.DatatypeHandler;
  * @author Peter Ansell
  */
 public abstract class AbstractDatatypeHandlerTest {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	/**
 	 * Generates a new instance of the {@link DatatypeHandler} implementation in
@@ -127,8 +133,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testIsRecognizedDatatypeNull() {
-		fail("Not yet implemented"); // TODO
+	public final void testIsRecognizedDatatypeNull()
+		throws Exception
+	{
+		thrown.expect(NullPointerException.class);
+		testHandler.isRecognizedDatatype(null);
 	}
 
 	/**
@@ -137,8 +146,10 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testIsRecognizedDatatypeTrue() {
-		fail("Not yet implemented"); // TODO
+	public final void testIsRecognizedDatatypeTrue()
+		throws Exception
+	{
+		assertTrue(testHandler.isRecognizedDatatype(getRecognisedDatatypeUri()));
 	}
 
 	/**
@@ -147,8 +158,10 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testIsRecognizedDatatypeFalse() {
-		fail("Not yet implemented"); // TODO
+	public final void testIsRecognizedDatatypeFalse()
+		throws Exception
+	{
+		assertFalse(testHandler.isRecognizedDatatype(getUnrecognisedDatatypeUri()));
 	}
 
 	/**
@@ -157,8 +170,41 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeNullDatatypeUri() {
-		fail("Not yet implemented"); // TODO
+	public final void testVerifyDatatypeNullDatatypeUri()
+		throws Exception
+	{
+		thrown.expect(NullPointerException.class);
+		testHandler.verifyDatatype(getValueMatchingRecognisedDatatypeUri(), null);
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * .
+	 * <p>
+	 * The value is optional and if it is null, the recognised datatype should
+	 * return true.
+	 */
+	@Test
+	public final void testVerifyDatatypeNullValueRecognised()
+		throws Exception
+	{
+		assertTrue(testHandler.verifyDatatype(null, getRecognisedDatatypeUri()));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * .
+	 * <p>
+	 * The value is optional and if it is null, the unrecognised datatype should
+	 * return false.
+	 */
+	@Test
+	public final void testVerifyDatatypeNullValueUnrecognised()
+		throws Exception
+	{
+		assertFalse(testHandler.verifyDatatype(null, getUnrecognisedDatatypeUri()));
 	}
 
 	/**
@@ -167,8 +213,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeNullValue() {
-		fail("Not yet implemented"); // TODO
+	public final void testVerifyDatatypeUnrecognisedDatatypeUri()
+		throws Exception
+	{
+		thrown.expect(LiteralUtilException.class);
+		testHandler.verifyDatatype(getValueMatchingRecognisedDatatypeUri(), getUnrecognisedDatatypeUri());
 	}
 
 	/**
@@ -177,8 +226,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeUnrecognisedDatatypeUri() {
-		fail("Not yet implemented"); // TODO
+	public final void testVerifyDatatypeInvalidValue()
+		throws Exception
+	{
+		assertFalse(testHandler.verifyDatatype(getValueNotMatchingRecognisedDatatypeUri(),
+				getRecognisedDatatypeUri()));
 	}
 
 	/**
@@ -187,18 +239,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testVerifyDatatypeInvalidValue() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
-	 * .
-	 */
-	@Test
-	public final void testVerifyDatatypeValidValue() {
-		fail("Not yet implemented"); // TODO
+	public final void testVerifyDatatypeValidValue()
+		throws Exception
+	{
+		assertTrue(testHandler.verifyDatatype(getValueMatchingRecognisedDatatypeUri(),
+				getRecognisedDatatypeUri()));
 	}
 
 	/**
@@ -207,8 +252,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeNullDatatypeUri() {
-		fail("Not yet implemented"); // TODO
+	public final void testNormalizeDatatypeNullDatatypeUri()
+		throws Exception
+	{
+		thrown.expect(NullPointerException.class);
+		testHandler.normalizeDatatype(getValueMatchingRecognisedDatatypeUri(), null, vf);
 	}
 
 	/**
@@ -217,8 +265,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeNullValue() {
-		fail("Not yet implemented"); // TODO
+	public final void testNormalizeDatatypeNullValue()
+		throws Exception
+	{
+		thrown.expect(NullPointerException.class);
+		testHandler.normalizeDatatype(null, getRecognisedDatatypeUri(), vf);
 	}
 
 	/**
@@ -227,8 +278,11 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeUnrecognisedDatatypeUri() {
-		fail("Not yet implemented"); // TODO
+	public final void testNormalizeDatatypeUnrecognisedDatatypeUri()
+		throws Exception
+	{
+		thrown.expect(LiteralUtilException.class);
+		testHandler.normalizeDatatype(getValueMatchingRecognisedDatatypeUri(), getUnrecognisedDatatypeUri(), vf);
 	}
 
 	/**
@@ -237,8 +291,12 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeInvalidValue() {
-		fail("Not yet implemented"); // TODO
+	public final void testNormalizeDatatypeInvalidValue()
+		throws Exception
+	{
+		thrown.expect(LiteralUtilException.class);
+		testHandler.normalizeDatatype(getValueNotMatchingRecognisedDatatypeUri(), getRecognisedDatatypeUri(),
+				vf);
 	}
 
 	/**
@@ -247,16 +305,33 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * .
 	 */
 	@Test
-	public final void testNormalizeDatatypeValidValue() {
-		fail("Not yet implemented"); // TODO
+	public final void testNormalizeDatatypeValidValue()
+		throws Exception
+	{
+		Literal result = testHandler.normalizeDatatype(getValueMatchingRecognisedDatatypeUri(),
+				getRecognisedDatatypeUri(), vf);
+		Literal expectedResult = getNormalisedLiteralForRecognisedDatatypeAndValue();
+
+		assertNotNull(expectedResult.getDatatype());
+		assertNotNull(expectedResult.getLabel());
+		assertNull(expectedResult.getLanguage());
+
+		assertEquals(expectedResult.getDatatype(), result.getDatatype());
+		assertEquals(expectedResult.getLabel(), result.getLabel());
+		assertEquals(expectedResult.getLanguage(), result.getLanguage());
 	}
 
 	/**
 	 * Test method for {@link org.openrdf.rio.DatatypeHandler#getKey()}.
 	 */
 	@Test
-	public final void testGetKey() {
-		fail("Not yet implemented"); // TODO
+	public final void testGetKey()
+		throws Exception
+	{
+		String result = testHandler.getKey();
+		String expectedResult = getExpectedKey();
+
+		assertEquals(expectedResult, result);
 	}
 
 }
