@@ -181,30 +181,26 @@ public abstract class AbstractDatatypeHandlerTest {
 	 * Test method for
 	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
 	 * .
-	 * <p>
-	 * The value is optional and if it is null, the recognised datatype should
-	 * return true.
 	 */
 	@Test
 	public final void testVerifyDatatypeNullValueRecognised()
 		throws Exception
 	{
-		assertTrue(testHandler.verifyDatatype(null, getRecognisedDatatypeUri()));
+		thrown.expect(NullPointerException.class);
+		testHandler.verifyDatatype(null, getRecognisedDatatypeUri());
 	}
 
 	/**
 	 * Test method for
 	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
 	 * .
-	 * <p>
-	 * The value is optional and if it is null, the unrecognised datatype should
-	 * return false.
 	 */
 	@Test
 	public final void testVerifyDatatypeNullValueUnrecognised()
 		throws Exception
 	{
-		assertFalse(testHandler.verifyDatatype(null, getUnrecognisedDatatypeUri()));
+		thrown.expect(LiteralUtilException.class);
+		testHandler.verifyDatatype(null, getUnrecognisedDatatypeUri());
 	}
 
 	/**

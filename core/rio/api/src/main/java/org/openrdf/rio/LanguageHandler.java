@@ -63,8 +63,7 @@ public interface LanguageHandler {
 	 * tag.
 	 * 
 	 * @param literalValue
-	 *        Optional literal value. If null, it must be ignored and the result
-	 *        defined solely by the language tag.
+	 *        Literal value matching the given language tag.
 	 * @param languageTag
 	 *        A language tag that matched with
 	 *        {@link #isRecognizedLanguage(String)}.
