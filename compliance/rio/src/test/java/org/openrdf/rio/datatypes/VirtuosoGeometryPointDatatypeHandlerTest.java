@@ -21,11 +21,11 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 
 /**
- * Test for {@link XMLSchemaDatatypeHandler} with {@link XMLSchema#DOUBLE}.
+ * Test for {@link VirtuosoDatatypeHandler} with
+ * http://www.openlinksw.com/schemas/virtrdf#Geometry .
  * 
  * @author Peter Ansell
  */
