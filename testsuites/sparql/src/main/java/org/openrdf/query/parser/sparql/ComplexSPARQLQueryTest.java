@@ -81,6 +81,8 @@ public abstract class ComplexSPARQLQueryTest {
 
 	private URI alice;
 
+	private URI mary;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -99,7 +101,8 @@ public abstract class ComplexSPARQLQueryTest {
 
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
-
+		mary = f.createURI(EX_NS, "mary");
+		
 		logger.debug("test setup complete.");
 	}
 
@@ -1088,6 +1091,73 @@ public abstract class ComplexSPARQLQueryTest {
 
 	}
 
+	@Test
+	/**
+	 * @see http://www.openrdf.org/issues/browse/SES-1091
+	 * @throws Exception
+	 */
+	public void testArbitraryLengthPathWithBinding6()
+		throws Exception
+	{
+		loadTestData("/testdata-query/alp-testdata.ttl", this.alice, this.bob, this.mary);
+
+		// binding on child instead of parent.
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?parent ?child ");
+		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			// first execute without binding
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(7, count);
+
+			// execute again, but this time setting a binding
+			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+
+			result = tq.evaluate();
+			assertNotNull(result);
+
+			count = 0;
+			while (result.hasNext()) {
+				count++;
+				BindingSet bs = result.next();
+				assertTrue(bs.hasBinding("child"));
+				assertTrue(bs.hasBinding("parent"));
+			}
+			assertEquals(2, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
+	
 	@Test
 	/**
 	 * @see http://www.openrdf.org/issues/browse/SES-1091
