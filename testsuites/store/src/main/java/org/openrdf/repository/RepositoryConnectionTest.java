@@ -16,21 +16,15 @@
  */
 package org.openrdf.repository;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,6 +55,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
+import junit.framework.TestCase;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
@@ -88,7 +84,6 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
@@ -785,24 +780,6 @@ public abstract class RepositoryConnectionTest {
 		query.setBinding(NAME, nameBob);
 
 		assertThat(query.evaluate(), is(equalTo(true)));
-	}
-
-	public void testIdenticalVariablesInStatementPattern()
-		throws Exception
-	{
-		testCon.add(alice, publisher, bob);
-
-		StringBuilder queryBuilder = new StringBuilder();
-		queryBuilder.append("SELECT ?publisher ");
-		queryBuilder.append("{ ?publisher <http://purl.org/dc/elements/1.1/publisher> ?publisher }");
-
-		testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate(
-				new TupleQueryResultHandlerBase() {
-
-					public void handleSolution(BindingSet bindingSet) {
-						fail("nobody is self published");
-					}
-				});
 	}
 
 	@Test

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.hamcrest.core.Is;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +38,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
@@ -51,6 +49,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -465,6 +464,25 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
+	}
+
+	@Test
+	public void testIdenticalVariablesInStatementPattern()
+		throws Exception
+	{
+		conn.add(alice, f.createURI("http://purl.org/dc/elements/1.1/publisher"), bob);
+
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append("SELECT ?publisher ");
+		queryBuilder.append("{ ?publisher <http://purl.org/dc/elements/1.1/publisher> ?publisher }");
+
+		conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate(
+				new TupleQueryResultHandlerBase() {
+
+					public void handleSolution(BindingSet bindingSet) {
+						fail("nobody is self published");
+					}
+				});
 	}
 
 	@Test
