@@ -28,7 +28,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 
 /**
- * Test for {@link XMLSchemaDatatypeHandler} with {@link XMLSchema#DOUBLE}.
+ * Test for {@link RDFDatatypeHandler} with {@link RDF#LANGSTRING}.
  * 
  * @author Peter Ansell
  */
@@ -51,7 +51,7 @@ public class RDFLangStringDatatypeHandlerTest extends AbstractDatatypeHandlerTes
 	}
 
 	// -------------------------------------
-	// XMLSchema Double specific methods
+	// RDF LangString specific methods
 	// -------------------------------------
 
 	@Override
