@@ -57,6 +57,16 @@ public interface DatatypeHandler {
 	public static final String DBPEDIA = "org.openrdf.rio.datatypes.dbpedia";
 
 	/**
+	 * Identifier for datatypes defined in the Virtuoso Geometry vocabulary.
+	 * 
+	 * @see <a
+	 *      href="http://docs.openlinksw.com/virtuoso/rdfsparqlgeospat.html">Virtuoso
+	 *      Geospatial</a>
+	 * @since 2.7.1
+	 */
+	public static final String VIRTUOSOGEOMETRY = "org.openrdf.rio.datatypes.virtuosogeometry";
+
+	/**
 	 * Checks if the given datatype URI is recognized by this datatype handler.
 	 * 
 	 * @param datatypeUri
@@ -69,16 +79,15 @@ public interface DatatypeHandler {
 	public boolean isRecognizedDatatype(URI datatypeUri);
 
 	/**
-	 * Verifies that the datatype URI is valid, optionally including an automated
-	 * check on the literal value.
+	 * Verifies that the datatype URI is valid, including a check on the
+	 * structure of the literal value.
 	 * <p>
 	 * This method must only be called after verifying that
 	 * {@link #isRecognizedDatatype(URI)} returns true for the given datatype
 	 * URI.
 	 * 
 	 * @param literalValue
-	 *        Optional literal value. If null, it must be ignored and the result
-	 *        defined solely by the datatype URI.
+	 *        Literal value matching the given datatype URI.
 	 * @param datatypeUri
 	 *        A datatype URI that matched with {@link #isRecognizedDatatype(URI)}
 	 * @return True if the datatype URI is recognized by this datatype handler,
