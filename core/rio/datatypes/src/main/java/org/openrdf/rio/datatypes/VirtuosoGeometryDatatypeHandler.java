@@ -49,6 +49,10 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 
 	@Override
 	public boolean isRecognizedDatatype(URI datatypeUri) {
+		if (datatypeUri == null) {
+			throw new NullPointerException("Datatype URI cannot be null");
+		}
+
 		return VIRTRDF_GEOMETRY.equals(datatypeUri);
 	}
 
@@ -67,7 +71,7 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
-		if (isRecognizedDatatype(datatypeUri)) {
+		if (isRecognizedDatatype(datatypeUri) && verifyDatatypeInternal(literalValue, datatypeUri)) {
 			// TODO: Implement normalization
 			return valueFactory.createLiteral(literalValue, datatypeUri);
 		}
@@ -83,6 +87,10 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 	private boolean verifyDatatypeInternal(String literalValue, URI datatypeUri)
 		throws LiteralUtilException
 	{
+		if (literalValue == null) {
+			throw new NullPointerException("Literal value cannot be null");
+		}
+
 		if (VIRTRDF_GEOMETRY.equals(datatypeUri)) {
 			if (!literalValue.startsWith(POINT_START)) {
 				return false;
@@ -108,7 +116,7 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 			catch (NumberFormatException e) {
 				return false;
 			}
-			
+
 			return true;
 		}
 
