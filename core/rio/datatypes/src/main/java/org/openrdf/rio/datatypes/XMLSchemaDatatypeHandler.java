@@ -43,6 +43,10 @@ public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 
 	@Override
 	public boolean isRecognizedDatatype(URI datatypeUri) {
+		if (datatypeUri == null) {
+			throw new NullPointerException("Datatype URI cannot be null");
+		}
+
 		return XMLDatatypeUtil.isBuiltInDatatype(datatypeUri);
 	}
 
@@ -51,6 +55,10 @@ public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri)) {
+			if(literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+			
 			return XMLDatatypeUtil.isValidValue(literalValue, datatypeUri);
 		}
 
@@ -62,6 +70,10 @@ public class XMLSchemaDatatypeHandler implements DatatypeHandler {
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri)) {
+			if(literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+			
 			try {
 				return valueFactory.createLiteral(XMLDatatypeUtil.normalize(literalValue, datatypeUri),
 						datatypeUri);
