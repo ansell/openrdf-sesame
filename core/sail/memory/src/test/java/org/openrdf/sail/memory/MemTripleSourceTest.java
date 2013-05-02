@@ -222,6 +222,31 @@ public class MemTripleSourceTest {
 	 * .
 	 */
 	@Test
+	public final void testGetStatementsTwoContextsOnePredicate()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				RDFS.SUBCLASSOF, null);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(8, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
 	public final void testGetStatementsThreeContextsAllNull()
 		throws Exception
 	{
