@@ -140,7 +140,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			TripleSource tripleSource = new MemTripleSource(includeInferred, snapshot, readMode);
+			TripleSource tripleSource = new MemTripleSource(store, includeInferred, snapshot, readMode);
 			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
@@ -633,15 +633,18 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	/**
 	 * Implementation of the TripleSource interface from the Sail Query Model
 	 */
-	class MemTripleSource implements TripleSource {
+	public static class MemTripleSource implements TripleSource {
 
 		protected final int snapshot;
 
 		protected final ReadMode readMode;
 
 		protected final boolean includeInferred;
+		
+		protected final MemoryStore store;
 
-		public MemTripleSource(boolean includeInferred, int snapshot, ReadMode readMode) {
+		public MemTripleSource(MemoryStore store, boolean includeInferred, int snapshot, ReadMode readMode) {
+			this.store = store;
 			this.includeInferred = includeInferred;
 			this.snapshot = snapshot;
 			this.readMode = readMode;
