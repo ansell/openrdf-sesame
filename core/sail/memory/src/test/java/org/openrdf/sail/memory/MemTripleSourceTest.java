@@ -34,6 +34,7 @@ import info.aduna.iteration.Iterations;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -159,6 +160,31 @@ public class MemTripleSourceTest {
 			List<MemStatement> list = Iterations.asList(statements);
 
 			assertEquals(16, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsNoContextsOnePredicate()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl");
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				RDFS.SUBCLASSOF, null);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(4, list.size());
 		}
 		finally {
 			statements.close();
