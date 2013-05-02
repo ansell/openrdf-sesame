@@ -506,6 +506,7 @@ public class MemoryStore extends NotifyingSailBase {
 		}
 
 		if (memSubj != null) {
+			// FIXME: The following is not restricted to the given contexts
 			MemStatementList l = memSubj.getSubjectStatementList();
 			if (l.size() < smallestList.size()) {
 				smallestList = l;
@@ -513,6 +514,7 @@ public class MemoryStore extends NotifyingSailBase {
 		}
 
 		if (memPred != null) {
+			// FIXME: The following is not restricted to the given contexts
 			MemStatementList l = memPred.getPredicateStatementList();
 			if (l.size() < smallestList.size()) {
 				smallestList = l;
@@ -520,6 +522,7 @@ public class MemoryStore extends NotifyingSailBase {
 		}
 
 		if (memObj != null) {
+			// FIXME: The following is not restricted to the given contexts
 			MemStatementList l = memObj.getObjectStatementList();
 			if (l.size() < smallestList.size()) {
 				smallestList = l;
