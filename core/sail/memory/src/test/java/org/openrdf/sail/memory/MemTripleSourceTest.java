@@ -65,7 +65,7 @@ public class MemTripleSourceTest {
 	private URI mary;
 
 	private MemValueFactory f;
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -75,7 +75,7 @@ public class MemTripleSourceTest {
 	{
 		store = new MemoryStore();
 		f = store.getValueFactory();
-		
+
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
 		mary = f.createURI(EX_NS, "mary");
@@ -310,6 +310,81 @@ public class MemTripleSourceTest {
 			List<MemStatement> list = Iterations.asList(statements);
 
 			assertEquals(4, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsNoContextsOnePredicateTwoContexts()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl");
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				RDFS.SUBCLASSOF, null, this.alice, this.bob);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(0, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsOneContextOnePredicateTwoContexts()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl", this.alice);
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				RDFS.SUBCLASSOF, null, this.alice, this.bob);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(4, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsTwoContextsOnePredicateTwoContexts()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				RDFS.SUBCLASSOF, null, this.alice, this.bob);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(8, list.size());
 		}
 		finally {
 			statements.close();
