@@ -501,6 +501,7 @@ public class MemoryStore extends NotifyingSailBase {
 			}
 
 			memContexts = contextSet.toArray(new MemResource[contextSet.size()]);
+			// FIXME: The following is not restricted to the given contexts
 			smallestList = statements;
 		}
 
