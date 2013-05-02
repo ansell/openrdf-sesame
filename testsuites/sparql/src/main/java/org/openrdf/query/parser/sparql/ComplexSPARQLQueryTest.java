@@ -1061,10 +1061,15 @@ public abstract class ComplexSPARQLQueryTest {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
 
+			System.out.println("--- testArbitraryLengthPathWithBinding5 ---");
+			
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
+				
+				System.out.println(bs);
+				
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
@@ -1127,10 +1132,15 @@ public abstract class ComplexSPARQLQueryTest {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
 
+			System.out.println("--- testArbitraryLengthPathWithBinding6 ---");
+			
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
+				
+				System.out.println(bs);
+				
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
@@ -1196,10 +1206,15 @@ public abstract class ComplexSPARQLQueryTest {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
 
+			System.out.println("--- testArbitraryLengthPathWithBinding7 ---");
+			
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
+
+				System.out.println(bs);
+				
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
@@ -1265,11 +1280,14 @@ public abstract class ComplexSPARQLQueryTest {
 			// first execute without binding
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
-
+			System.out.println("--- testArbitraryLengthPathWithBinding8 ---");
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
+
+				System.out.println(bs);
+				
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
