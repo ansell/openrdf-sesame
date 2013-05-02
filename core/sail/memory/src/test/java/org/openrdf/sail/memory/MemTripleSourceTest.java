@@ -868,6 +868,81 @@ public class MemTripleSourceTest {
 		}
 	}
 
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsThreeContextsOneContext()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				null, null, this.alice);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(8, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsThreeContextsTwoContexts()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				null, null, this.alice, this.bob);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(16, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * .
+	 */
+	@Test
+	public final void testGetStatementsThreeContextsThreeContexts()
+		throws Exception
+	{
+		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
+		MemTripleSource source = getTripleSourceCommitted();
+
+		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
+				null, null, this.alice, this.bob, this.mary);
+
+		try {
+			List<MemStatement> list = Iterations.asList(statements);
+
+			assertEquals(24, list.size());
+		}
+		finally {
+			statements.close();
+		}
+	}
+
 	protected void loadTestData(String dataFile, Resource... contexts)
 		throws RDFParseException, IOException, SailException
 	{
