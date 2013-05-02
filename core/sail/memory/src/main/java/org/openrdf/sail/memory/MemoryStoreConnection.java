@@ -633,7 +633,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	/**
 	 * Implementation of the TripleSource interface from the Sail Query Model
 	 */
-	protected class MemTripleSource implements TripleSource {
+	class MemTripleSource implements TripleSource {
 
 		protected final int snapshot;
 
