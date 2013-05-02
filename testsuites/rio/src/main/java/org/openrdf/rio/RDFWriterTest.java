@@ -31,9 +31,11 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -69,11 +71,15 @@ public abstract class RDFWriterTest {
 		Literal dtLit = vf.createLiteral(1);
 		Literal langLit = vf.createLiteral("test", "en");
 		Literal litWithNewline = vf.createLiteral("literal with newline\n");
+		Literal litWithSingleQuotes = vf.createLiteral("''some single quote text'' - abc");
+		Literal litWithDoubleQuotes = vf.createLiteral("\"some double quote text\" - abc");
 
 		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
 		Statement st2 = vf.createStatement(uri1, uri2, langLit, uri2);
 		Statement st3 = vf.createStatement(uri1, uri2, dtLit);
 		Statement st4 = vf.createStatement(uri1, uri2, litWithNewline);
+		Statement st5 = vf.createStatement(uri1, uri2, litWithSingleQuotes);
+		Statement st6 = vf.createStatement(uri1, uri2, litWithDoubleQuotes);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
@@ -83,22 +89,25 @@ public abstract class RDFWriterTest {
 		rdfWriter.handleStatement(st2);
 		rdfWriter.handleStatement(st3);
 		rdfWriter.handleStatement(st4);
+		rdfWriter.handleStatement(st5);
+		rdfWriter.handleStatement(st6);
 		rdfWriter.endRDF();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		rdfParser.setValueFactory(vf);
-		StatementCollector stCollector = new StatementCollector();
-		rdfParser.setRDFHandler(stCollector);
+		Model model = new LinkedHashModel();
+		rdfParser.setRDFHandler(new StatementCollector(model));
 
 		rdfParser.parse(in, "foo:bar");
 
-		Collection<Statement> statements = stCollector.getStatements();
-		assertEquals("Unexpected number of statements", 4, statements.size());
+		assertEquals("Unexpected number of statements", 6, model.size());
 //		assertTrue(statements.contains(st1));
-		assertTrue(statements.contains(st2));
-		assertTrue(statements.contains(st3));
-		assertTrue("missing statement with literal ending on newline", statements.contains(st4));
+		assertTrue(model.contains(st2));
+		assertTrue(model.contains(st3));
+		assertTrue("missing statement with literal ending on newline", model.contains(st4));
+		assertTrue("missing statement with single quotes", model.contains(st5));
+		assertTrue("missing statement with double quotes", model.contains(st6));
 	}
 
 	@Test
