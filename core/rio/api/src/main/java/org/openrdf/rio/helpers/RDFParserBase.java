@@ -547,7 +547,7 @@ public abstract class RDFParserBase implements RDFParser {
 		if (result == null) {
 			try {
 				// Backup for unnormalised language literal creation
-				if (lang != null) {
+				if (lang != null && (datatype == null || RDF.LANGSTRING.equals(datatype))) {
 					result = valueFactory.createLiteral(label, lang);
 				}
 				// Backup for unnormalised datatype literal creation
