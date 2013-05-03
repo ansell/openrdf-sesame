@@ -47,9 +47,6 @@ import org.openrdf.rio.RioSetting;
  */
 public class RDFParserHelperTest {
 
-	/**
-	 * 
-	 */
 	private static final String TEST_MESSAGE_FOR_FAILURE = "Test message for failure.";
 
 	@Rule
