@@ -41,6 +41,7 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -95,6 +96,10 @@ public abstract class RDFWriterTest {
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
+		ParserConfig config = new ParserConfig();
+		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+		rdfParser.setParserConfig(config);
 		rdfParser.setValueFactory(vf);
 		Model model = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(model));
