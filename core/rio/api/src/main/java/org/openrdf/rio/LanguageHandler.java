@@ -41,6 +41,12 @@ public interface LanguageHandler {
 	public static final String RFC3066 = "org.openrdf.rio.languages.RFC3066";
 
 	/**
+	 * Identifier for the language tag format defined by RFC4646, which obsoletes
+	 * RFC3066, but which is not referenced by the RDF specification.
+	 */
+	public static final String RFC4646 = "org.openrdf.rio.languages.RFC4646";
+
+	/**
 	 * Checks if the given language tag is recognized by this language handler,
 	 * including cases where the language tag is recognized, but is not yet
 	 * normalized.
