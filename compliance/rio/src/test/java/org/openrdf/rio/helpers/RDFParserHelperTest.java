@@ -21,7 +21,9 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
@@ -35,9 +37,9 @@ import org.openrdf.rio.ParserConfig;
  */
 public class RDFParserHelperTest {
 
-	/**
-	 * 
-	 */
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
 	private static final String LABEL_TESTA = "test-a";
 
 	private ParserConfig parserConfig;
@@ -65,6 +67,20 @@ public class RDFParserHelperTest {
 	public void tearDown()
 		throws Exception
 	{
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#createLiteral(java.lang.String, java.lang.String, org.openrdf.model.URI, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener, org.openrdf.model.ValueFactory)}
+	 * .
+	 */
+	@Test
+	public final void testCreateLiteralLabelNull()
+		throws Exception
+	{
+		thrown.expect(NullPointerException.class);
+		thrown.expectMessage("Cannot create a literal using a null label");
+		RDFParserHelper.createLiteral(null, null, null, parserConfig, errListener, valueFactory);
 	}
 
 	/**

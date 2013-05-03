@@ -82,6 +82,10 @@ public class RDFParserHelper {
 			ParserConfig parserConfig, ParseErrorListener errListener, ValueFactory valueFactory)
 		throws RDFParseException
 	{
+		if(label == null) {
+			throw new NullPointerException("Cannot create a literal using a null label");
+		}
+		
 		Literal result = null;
 		String workingLabel = label;
 		String workingLang = lang;
