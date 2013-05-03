@@ -30,6 +30,7 @@ import org.junit.rules.ExpectedException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.LanguageHandler;
@@ -142,6 +143,27 @@ public class RDFParserHelperTest {
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertNull(literal.getLanguage());
 		assertEquals(XMLSchema.STRING, literal.getDatatype());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#createLiteral(java.lang.String, java.lang.String, org.openrdf.model.URI, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener, org.openrdf.model.ValueFactory)}
+	 * .
+	 * <p>
+	 * SES-1803 : Temporary decision to ensure RDF-1.0 backwards compatibility
+	 * for Literals created by this method in cases where {@link RDF#LANGSTRING}
+	 * is given and there is a language.
+	 */
+	@Test
+	public final void testCreateLiteralLabelAndLanguageWithRDFLangString()
+		throws Exception
+	{
+		Literal literal = RDFParserHelper.createLiteral(LABEL_TESTA, LANG_EN, RDF.LANGSTRING, parserConfig,
+				errListener, valueFactory);
+
+		assertEquals(LABEL_TESTA, literal.getLabel());
+		assertEquals(LANG_EN, literal.getLanguage());
+		assertNull(literal.getDatatype());
 	}
 
 	/**
