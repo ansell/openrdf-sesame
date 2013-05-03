@@ -18,6 +18,8 @@ package org.openrdf.rio.helpers;
 
 import static org.junit.Assert.*;
 
+import java.util.Collections;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -28,6 +30,9 @@ import org.junit.rules.ExpectedException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.rio.DatatypeHandler;
+import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParserConfig;
 
 /**
@@ -41,6 +46,8 @@ public class RDFParserHelperTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	private static final String LABEL_TESTA = "test-a";
+
+	private static final String LANG_EN = "en";
 
 	private ParserConfig parserConfig;
 
@@ -56,6 +63,9 @@ public class RDFParserHelperTest {
 		throws Exception
 	{
 		parserConfig = new ParserConfig();
+		// By default we wipe out the SPI loaded datatype and language handlers
+		parserConfig.set(BasicParserSettings.DATATYPE_HANDLERS, Collections.<DatatypeHandler> emptyList());
+		parserConfig.set(BasicParserSettings.LANGUAGE_HANDLERS, Collections.<LanguageHandler> emptyList());
 		errListener = new ParseErrorCollector();
 		valueFactory = new ValueFactoryImpl();
 	}
@@ -98,6 +108,40 @@ public class RDFParserHelperTest {
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertNull(literal.getLanguage());
 		assertNull(literal.getDatatype());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#createLiteral(java.lang.String, java.lang.String, org.openrdf.model.URI, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener, org.openrdf.model.ValueFactory)}
+	 * .
+	 */
+	@Test
+	public final void testCreateLiteralLabelAndLanguage()
+		throws Exception
+	{
+		Literal literal = RDFParserHelper.createLiteral(LABEL_TESTA, LANG_EN, null, parserConfig, errListener,
+				valueFactory);
+
+		assertEquals(LABEL_TESTA, literal.getLabel());
+		assertEquals(LANG_EN, literal.getLanguage());
+		assertNull(literal.getDatatype());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#createLiteral(java.lang.String, java.lang.String, org.openrdf.model.URI, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener, org.openrdf.model.ValueFactory)}
+	 * .
+	 */
+	@Test
+	public final void testCreateLiteralLabelAndDatatype()
+		throws Exception
+	{
+		Literal literal = RDFParserHelper.createLiteral(LABEL_TESTA, null, XMLSchema.STRING, parserConfig,
+				errListener, valueFactory);
+
+		assertEquals(LABEL_TESTA, literal.getLabel());
+		assertNull(literal.getLanguage());
+		assertEquals(XMLSchema.STRING, literal.getDatatype());
 	}
 
 	/**
