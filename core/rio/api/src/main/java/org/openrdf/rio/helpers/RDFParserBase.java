@@ -453,19 +453,22 @@ public abstract class RDFParserBase implements RDFParser {
 	protected Literal createLiteral(String label, String lang, URI datatype)
 		throws RDFParseException
 	{
+		Literal result = null;
+		String workingLabel = label;
+		String workingLang = lang;
+		URI workingDatatype = datatype;
+
 		// In RDF-1.1 we must do lang check first as language literals will all
 		// have datatype RDF.LANGSTRING, but only language literals would have a
 		// non-null lang
-		if (lang != null) {
-			boolean recognisedLanguage = false;
-			LanguageHandler recognisedLanguageHandler = null;
+		if (workingLang != null) {
 			if (getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
+				boolean recognisedLanguage = false;
 				for (LanguageHandler nextHandler : getParserConfig().get(BasicParserSettings.LANGUAGE_HANDLERS)) {
-					if (nextHandler.isRecognizedLanguage(lang)) {
+					if (nextHandler.isRecognizedLanguage(workingLang)) {
 						recognisedLanguage = true;
-						recognisedLanguageHandler = nextHandler;
 						try {
-							if (!nextHandler.verifyLanguage(label, lang)) {
+							if (!nextHandler.verifyLanguage(workingLabel, workingLang)) {
 								reportError("'" + lang + "' is not a valid language tag ",
 										BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 							}
@@ -474,6 +477,19 @@ public abstract class RDFParserBase implements RDFParser {
 							reportError("'" + label
 									+ " could not be verified by a language handler that recognised it. language was "
 									+ lang, BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+						}
+						if (getParserConfig().get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
+							try {
+								result = nextHandler.normalizeLanguage(workingLabel, workingLang, valueFactory);
+								workingLabel = result.getLabel();
+								workingLang = result.getLanguage();
+								workingDatatype = result.getDatatype();
+							}
+							catch (LiteralUtilException e) {
+								reportError("'" + label + "' did not have a valid value for language " + lang + ": "
+										+ e.getMessage() + " and could not be normalised",
+										BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+							}
 						}
 					}
 				}
@@ -486,35 +502,15 @@ public abstract class RDFParserBase implements RDFParser {
 				}
 			}
 
-			if (getParserConfig().get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
-				if (!recognisedLanguage) {
-					reportError("'" + label + "' is not a valid value for language " + lang
-							+ " and could not be normalised.", BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
-				}
-				else {
-					try {
-						return recognisedLanguageHandler.normalizeLanguage(label, lang, valueFactory);
-					}
-					catch (LiteralUtilException e) {
-						reportError(
-								"'" + label + "' did not have a valid value for language " + lang + ": "
-										+ e.getMessage() + " and could not be normalised",
-								BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
-					}
-				}
-			}
 		}
 		else if (datatype != null) {
-			boolean recognisedDatatype = false;
-			DatatypeHandler recognisedDatatypeHandler = null;
-
 			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
+				boolean recognisedDatatype = false;
 				for (DatatypeHandler nextHandler : getParserConfig().get(BasicParserSettings.DATATYPE_HANDLERS)) {
-					if (nextHandler.isRecognizedDatatype(datatype)) {
+					if (nextHandler.isRecognizedDatatype(workingDatatype)) {
 						recognisedDatatype = true;
-						recognisedDatatypeHandler = nextHandler;
 						try {
-							if (!nextHandler.verifyDatatype(label, datatype)) {
+							if (!nextHandler.verifyDatatype(workingLabel, workingDatatype)) {
 								reportError("'" + label + "' is not a valid value for datatype " + datatype,
 										BasicParserSettings.VERIFY_DATATYPE_VALUES);
 							}
@@ -523,6 +519,19 @@ public abstract class RDFParserBase implements RDFParser {
 							reportError("'" + label
 									+ " could not be verified by a datatype handler that recognised it. datatype was "
 									+ datatype, BasicParserSettings.VERIFY_DATATYPE_VALUES);
+						}
+						if (getParserConfig().get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
+							try {
+								result = nextHandler.normalizeDatatype(workingLabel, workingDatatype, valueFactory);
+								workingLabel = result.getLabel();
+								workingLang = result.getLanguage();
+								workingDatatype = result.getDatatype();
+							}
+							catch (LiteralUtilException e) {
+								reportError("'" + label + "' is not a valid value for datatype " + datatype + ": "
+										+ e.getMessage() + " and could not be normalised",
+										BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+							}
 						}
 					}
 				}
@@ -533,42 +542,28 @@ public abstract class RDFParserBase implements RDFParser {
 				}
 			}
 
-			if (getParserConfig().get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
-				if (!recognisedDatatype) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype
-							+ " and could not be normalised.", BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+		}
+
+		if (result == null) {
+			try {
+				// Backup for unnormalised language literal creation
+				if (lang != null) {
+					result = valueFactory.createLiteral(label, lang);
+				}
+				// Backup for unnormalised datatype literal creation
+				else if (datatype != null) {
+					result = valueFactory.createLiteral(label, datatype);
 				}
 				else {
-					try {
-						return recognisedDatatypeHandler.normalizeDatatype(label, datatype, valueFactory);
-					}
-					catch (LiteralUtilException e) {
-						reportError(
-								"'" + label + "' is not a valid value for datatype " + datatype + ": "
-										+ e.getMessage() + " and could not be normalised",
-								BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
-					}
+					result = valueFactory.createLiteral(label);
 				}
+			}
+			catch (Exception e) {
+				reportFatalError(e);
 			}
 		}
 
-		try {
-			// Backup for unnormalised datatype literal creation
-			if (datatype != null) {
-				return valueFactory.createLiteral(label, datatype);
-			}
-			// Backup for unnormalised language literal creation
-			else if (lang != null) {
-				return valueFactory.createLiteral(label, lang);
-			}
-			else {
-				return valueFactory.createLiteral(label);
-			}
-		}
-		catch (Exception e) {
-			reportFatalError(e);
-			return null; // required by compiler
-		}
+		return result;
 	}
 
 	/**
