@@ -461,7 +461,7 @@ public abstract class RDFParserBase implements RDFParser {
 		// In RDF-1.1 we must do lang check first as language literals will all
 		// have datatype RDF.LANGSTRING, but only language literals would have a
 		// non-null lang
-		if (workingLang != null) {
+		if (workingLang != null && (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype))) {
 			if (getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
 				boolean recognisedLanguage = false;
 				for (LanguageHandler nextHandler : getParserConfig().get(BasicParserSettings.LANGUAGE_HANDLERS)) {
@@ -503,7 +503,7 @@ public abstract class RDFParserBase implements RDFParser {
 			}
 
 		}
-		else if (datatype != null) {
+		else if (workingDatatype != null) {
 			if (getParserConfig().get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
 				boolean recognisedDatatype = false;
 				for (DatatypeHandler nextHandler : getParserConfig().get(BasicParserSettings.DATATYPE_HANDLERS)) {
@@ -547,15 +547,15 @@ public abstract class RDFParserBase implements RDFParser {
 		if (result == null) {
 			try {
 				// Backup for unnormalised language literal creation
-				if (lang != null && (datatype == null || RDF.LANGSTRING.equals(datatype))) {
-					result = valueFactory.createLiteral(label, lang);
+				if (workingLang != null && (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype))) {
+					result = valueFactory.createLiteral(workingLabel, workingLang);
 				}
 				// Backup for unnormalised datatype literal creation
-				else if (datatype != null) {
-					result = valueFactory.createLiteral(label, datatype);
+				else if (workingDatatype != null) {
+					result = valueFactory.createLiteral(workingLabel, workingDatatype);
 				}
 				else {
-					result = valueFactory.createLiteral(label);
+					result = valueFactory.createLiteral(workingLabel);
 				}
 			}
 			catch (Exception e) {
