@@ -107,8 +107,13 @@ public abstract class RDFWriterTest {
 		rdfParser.parse(in, "foo:bar");
 
 		assertEquals("Unexpected number of statements", 6, model.size());
-//		assertTrue(statements.contains(st1));
-		assertTrue(model.contains(st2));
+		// assertTrue(statements.contains(st1));
+		if (rdfParser.getRDFFormat().supportsContexts()) {
+			assertTrue(model.contains(st2));
+		}
+		else {
+			assertTrue(model.contains(vf.createStatement(uri1, uri2, langLit)));
+		}
 		assertTrue(model.contains(st3));
 		assertTrue("missing statement with literal ending on newline", model.contains(st4));
 		assertTrue("missing statement with single quotes", model.contains(st5));
