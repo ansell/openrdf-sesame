@@ -35,6 +35,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.LanguageHandler;
+import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
@@ -203,14 +204,35 @@ public class RDFParserHelperTest {
 	 * .
 	 */
 	@Test
-	public final void testReportErrorStringRioSettingOfBooleanParserConfigParseErrorListener()
+	public final void testReportErrorStringRioSettingOfBooleanParserConfigParseErrorListenerFatal()
 		throws Exception
 	{
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
 		thrown.expect(RDFParseException.class);
 		thrown.expectMessage(TEST_MESSAGE_FOR_FAILURE);
+		try {
+			RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.VERIFY_DATATYPE_VALUES,
+					parserConfig, errListener);
+		}
+		finally {
+			assertErrorListener(0, 1, 0);
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
+	 * .
+	 */
+	@Test
+	public final void testReportErrorStringRioSettingOfBooleanParserConfigParseErrorListenerNonFatal()
+		throws Exception
+	{
+		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.VERIFY_DATATYPE_VALUES,
 				parserConfig, errListener);
+		assertErrorListener(0, 1, 0);
 	}
 
 	/**
@@ -291,4 +313,20 @@ public class RDFParserHelperTest {
 		fail("Not yet implemented"); // TODO
 	}
 
+	/**
+	 * Private method for verifying the number of errors that were logged to the
+	 * {@link ParseErrorListener}.
+	 * 
+	 * @param fatalErrors
+	 *        Expected number of fatal errors logged by error listener.
+	 * @param errors
+	 *        Expected number of errors logged by error listener.
+	 * @param warnings
+	 *        Expected number of warnings logged by error listener.
+	 */
+	private void assertErrorListener(int fatalErrors, int errors, int warnings) {
+		assertEquals(fatalErrors, errListener.getFatalErrors().size());
+		assertEquals(errors, errListener.getErrors().size());
+		assertEquals(warnings, errListener.getWarnings().size());
+	}
 }
