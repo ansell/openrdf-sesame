@@ -273,7 +273,7 @@ public class RDFParserHelperTest {
 	 */
 	@Ignore
 	@Test
-	public final void testReportErrorStringIntIntRioSettingOfBooleanParserConfigParseErrorListener()
+	public final void testReportErrorStringIntInt()
 		throws Exception
 	{
 		fail("Not yet implemented"); // TODO
@@ -286,7 +286,7 @@ public class RDFParserHelperTest {
 	 */
 	@Ignore
 	@Test
-	public final void testReportErrorExceptionIntIntRioSettingOfBooleanParserConfigParseErrorListener()
+	public final void testReportErrorExceptionIntInt()
 		throws Exception
 	{
 		fail("Not yet implemented"); // TODO
@@ -299,7 +299,7 @@ public class RDFParserHelperTest {
 	 */
 	@Ignore
 	@Test
-	public final void testReportFatalErrorStringParseErrorListener()
+	public final void testReportFatalErrorString()
 		throws Exception
 	{
 		fail("Not yet implemented"); // TODO
@@ -312,7 +312,7 @@ public class RDFParserHelperTest {
 	 */
 	@Ignore
 	@Test
-	public final void testReportFatalErrorStringIntIntParseErrorListener()
+	public final void testReportFatalErrorStringIntInt()
 		throws Exception
 	{
 		fail("Not yet implemented"); // TODO
@@ -325,7 +325,7 @@ public class RDFParserHelperTest {
 	 */
 	@Ignore
 	@Test
-	public final void testReportFatalErrorExceptionParseErrorListener()
+	public final void testReportFatalErrorException()
 		throws Exception
 	{
 		fail("Not yet implemented"); // TODO
@@ -338,7 +338,7 @@ public class RDFParserHelperTest {
 	 */
 	@Ignore
 	@Test
-	public final void testReportFatalErrorExceptionIntIntParseErrorListener()
+	public final void testReportFatalErrorExceptionIntInt()
 		throws Exception
 	{
 		fail("Not yet implemented"); // TODO
