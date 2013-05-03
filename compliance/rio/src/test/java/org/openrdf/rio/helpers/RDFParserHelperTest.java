@@ -195,11 +195,6 @@ public class RDFParserHelperTest {
 		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
-	 * .
-	 */
 	@Test
 	public final void testReportErrorStringFatalActive()
 		throws Exception
@@ -216,11 +211,6 @@ public class RDFParserHelperTest {
 		}
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
-	 * .
-	 */
 	@Test
 	public final void testReportErrorStringNonFatalActive()
 		throws Exception
@@ -232,11 +222,6 @@ public class RDFParserHelperTest {
 		assertErrorListener(0, 1, 0);
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
-	 * .
-	 */
 	@Test
 	public final void testReportErrorStringFatalInactive()
 		throws Exception
@@ -247,11 +232,6 @@ public class RDFParserHelperTest {
 		assertErrorListener(0, 0, 0);
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
-	 * .
-	 */
 	@Test
 	public final void testReportErrorStringNonFatalInactive()
 		throws Exception
@@ -263,17 +243,52 @@ public class RDFParserHelperTest {
 		assertErrorListener(0, 0, 0);
 	}
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, int, int, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
-	 * .
-	 */
-	@Ignore
 	@Test
-	public final void testReportErrorStringIntInt()
+	public final void testReportErrorStringIntIntFatalActive()
 		throws Exception
 	{
-		fail("Not yet implemented"); // TODO
+		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+		thrown.expect(RDFParseException.class);
+		thrown.expectMessage(TEST_MESSAGE_FOR_FAILURE);
+		try {
+			RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, 1, 1,
+					BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig, errListener);
+		}
+		finally {
+			assertErrorListener(0, 1, 0);
+		}
+	}
+
+	@Test
+	public final void testReportErrorStringIntIntNonFatalActive()
+		throws Exception
+	{
+		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, 1, 1, BasicParserSettings.VERIFY_DATATYPE_VALUES,
+				parserConfig, errListener);
+		assertErrorListener(0, 1, 0);
+	}
+
+	@Test
+	public final void testReportErrorStringIntIntFatalInactive()
+		throws Exception
+	{
+		assertFalse(parserConfig.get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES));
+		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, 1, 1,
+				BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, parserConfig, errListener);
+		assertErrorListener(0, 0, 0);
+	}
+
+	@Test
+	public final void testReportErrorStringIntIntNonFatalInactive()
+		throws Exception
+	{
+		assertFalse(parserConfig.get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES));
+		parserConfig.addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, 1, 1,
+				BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, parserConfig, errListener);
+		assertErrorListener(0, 0, 0);
 	}
 
 	/**
