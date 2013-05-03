@@ -168,6 +168,27 @@ public class RDFParserHelperTest {
 
 	/**
 	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#createLiteral(java.lang.String, java.lang.String, org.openrdf.model.URI, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener, org.openrdf.model.ValueFactory)}
+	 * .
+	 * <p>
+	 * SES-1803 : Temporary decision to ensure RDF-1.0 backwards compatibility
+	 * for Literals created by this method in cases where {@link RDF#LANGSTRING}
+	 * is given and there is NO given language.
+	 */
+	@Test
+	public final void testCreateLiteralLabelNoLanguageWithRDFLangString()
+		throws Exception
+	{
+		Literal literal = RDFParserHelper.createLiteral(LABEL_TESTA, null, RDF.LANGSTRING, parserConfig,
+				errListener, valueFactory);
+
+		assertEquals(LABEL_TESTA, literal.getLabel());
+		assertNull(literal.getLanguage());
+		assertEquals(RDF.LANGSTRING, literal.getDatatype());
+	}
+
+	/**
+	 * Test method for
 	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
 	 * .
 	 */
