@@ -72,8 +72,8 @@ public abstract class RDFWriterTest {
 		Literal dtLit = vf.createLiteral(1);
 		Literal langLit = vf.createLiteral("test", "en");
 		Literal litWithNewline = vf.createLiteral("literal with newline\n");
-		Literal litWithSingleQuotes = vf.createLiteral("''some single quote text'' - abc");
-		Literal litWithDoubleQuotes = vf.createLiteral("\"some double quote text\" - abc");
+		Literal litWithSingleQuotes = vf.createLiteral("'''some single quote text''' - abc");
+		Literal litWithDoubleQuotes = vf.createLiteral("\"\"\"some double quote text\"\"\" - abc");
 
 		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
 		Statement st2 = vf.createStatement(uri1, uri2, langLit, uri2);
