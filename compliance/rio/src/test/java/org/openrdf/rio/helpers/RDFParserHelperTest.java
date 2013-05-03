@@ -19,6 +19,7 @@ package org.openrdf.rio.helpers;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
+import java.util.HashSet;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,6 +36,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.RioSetting;
 
 /**
  * Tests for {@link RDFParserHelper} methods.
@@ -67,6 +69,8 @@ public class RDFParserHelperTest {
 		// By default we wipe out the SPI loaded datatype and language handlers
 		parserConfig.set(BasicParserSettings.DATATYPE_HANDLERS, Collections.<DatatypeHandler> emptyList());
 		parserConfig.set(BasicParserSettings.LANGUAGE_HANDLERS, Collections.<LanguageHandler> emptyList());
+		// Ensure that the set of non-fatal errors is empty by default
+		parserConfig.setNonFatalErrors(new HashSet<RioSetting<?>>());
 		errListener = new ParseErrorCollector();
 		valueFactory = new ValueFactoryImpl();
 	}
