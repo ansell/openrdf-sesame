@@ -36,6 +36,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 
 /**
@@ -44,6 +45,11 @@ import org.openrdf.rio.RioSetting;
  * @author Peter Ansell
  */
 public class RDFParserHelperTest {
+
+	/**
+	 * 
+	 */
+	private static final String TEST_MESSAGE_FOR_FAILURE = "Test message for failure.";
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -196,12 +202,15 @@ public class RDFParserHelperTest {
 	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
 	 * .
 	 */
-	@Ignore
 	@Test
 	public final void testReportErrorStringRioSettingOfBooleanParserConfigParseErrorListener()
 		throws Exception
 	{
-		fail("Not yet implemented"); // TODO
+		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+		thrown.expect(RDFParseException.class);
+		thrown.expectMessage(TEST_MESSAGE_FOR_FAILURE);
+		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.VERIFY_DATATYPE_VALUES,
+				parserConfig, errListener);
 	}
 
 	/**
