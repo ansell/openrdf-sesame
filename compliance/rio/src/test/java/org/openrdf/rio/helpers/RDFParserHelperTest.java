@@ -204,7 +204,7 @@ public class RDFParserHelperTest {
 	 * .
 	 */
 	@Test
-	public final void testReportErrorStringRioSettingOfBooleanParserConfigParseErrorListenerFatal()
+	public final void testReportErrorStringFatalActive()
 		throws Exception
 	{
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
@@ -225,7 +225,7 @@ public class RDFParserHelperTest {
 	 * .
 	 */
 	@Test
-	public final void testReportErrorStringRioSettingOfBooleanParserConfigParseErrorListenerNonFatal()
+	public final void testReportErrorStringNonFatalActive()
 		throws Exception
 	{
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
@@ -233,6 +233,37 @@ public class RDFParserHelperTest {
 		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.VERIFY_DATATYPE_VALUES,
 				parserConfig, errListener);
 		assertErrorListener(0, 1, 0);
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
+	 * .
+	 */
+	@Test
+	public final void testReportErrorStringFatalInactive()
+		throws Exception
+	{
+		assertFalse(parserConfig.get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES));
+		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES,
+				parserConfig, errListener);
+		assertErrorListener(0, 0, 0);
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.helpers.RDFParserHelper#reportError(java.lang.String, org.openrdf.rio.RioSetting, org.openrdf.rio.ParserConfig, org.openrdf.rio.ParseErrorListener)}
+	 * .
+	 */
+	@Test
+	public final void testReportErrorStringNonFatalInactive()
+		throws Exception
+	{
+		assertFalse(parserConfig.get(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES));
+		parserConfig.addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES,
+				parserConfig, errListener);
+		assertErrorListener(0, 0, 0);
 	}
 
 	/**
