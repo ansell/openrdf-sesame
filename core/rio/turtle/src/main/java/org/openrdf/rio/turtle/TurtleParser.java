@@ -685,7 +685,7 @@ public class TurtleParser extends RDFParserBase {
 		int c2 = read();
 		int c3 = read();
 
-		if ((c2 == '"' && c3 == '"') || (c2 == '\'' && c3 == '\'')) {
+		if ((c1 == '"' && c2 == '"' && c3 == '"') || (c1 == '\'' && c2 == '\'' && c3 == '\'')) {
 			// Long string
 			result = parseLongString(c2);
 		}

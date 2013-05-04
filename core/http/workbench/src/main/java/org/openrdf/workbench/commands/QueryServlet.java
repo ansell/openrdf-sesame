@@ -140,6 +140,12 @@ public class QueryServlet extends TransformationServlet {
 		}
 	}
 
+	@Override
+	public void destroy() {
+		this.storage.shutdown();
+		super.destroy();
+	}
+	
 	/**
 	 * Long query strings could blow past the Tomcat default 8k HTTP header limit
 	 * if stuffed into a cookie. In this case, we need to set a flag to avoid

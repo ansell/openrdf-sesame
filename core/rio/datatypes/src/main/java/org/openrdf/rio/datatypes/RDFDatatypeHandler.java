@@ -41,6 +41,10 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 
 	@Override
 	public boolean isRecognizedDatatype(URI datatypeUri) {
+		if (datatypeUri == null) {
+			throw new NullPointerException("Datatype URI cannot be null");
+		}
+
 		return org.openrdf.model.vocabulary.RDF.LANGSTRING.equals(datatypeUri)
 				|| org.openrdf.model.vocabulary.RDF.XMLLITERAL.equals(datatypeUri);
 	}
@@ -50,6 +54,10 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri)) {
+			if (literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+
 			// TODO: Implement verification
 			return true;
 		}
@@ -62,6 +70,10 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri)) {
+			if (literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+
 			try {
 				// TODO: Implement normalisation
 				return valueFactory.createLiteral(literalValue, datatypeUri);
