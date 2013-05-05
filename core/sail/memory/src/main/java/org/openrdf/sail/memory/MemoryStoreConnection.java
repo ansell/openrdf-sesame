@@ -626,42 +626,6 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		store.getNamespaceStore().clear();
 	}
 
-	/*-----------------------------*
-	 * Inner class MemTripleSource *
-	 *-----------------------------*/
-
-	/**
-	 * Implementation of the TripleSource interface from the Sail Query Model
-	 */
-	public static class MemTripleSource implements TripleSource {
-
-		protected final int snapshot;
-
-		protected final ReadMode readMode;
-
-		protected final boolean includeInferred;
-		
-		protected final MemoryStore store;
-
-		public MemTripleSource(MemoryStore store, boolean includeInferred, int snapshot, ReadMode readMode) {
-			this.store = store;
-			this.includeInferred = includeInferred;
-			this.snapshot = snapshot;
-			this.readMode = readMode;
-		}
-
-		public CloseableIteration<MemStatement, QueryEvaluationException> getStatements(Resource subj,
-				URI pred, Value obj, Resource... contexts)
-		{
-			return store.createStatementIterator(QueryEvaluationException.class, subj, pred, obj,
-					!includeInferred, snapshot, readMode, contexts);
-		}
-
-		public MemValueFactory getValueFactory() {
-			return store.getValueFactory();
-		}
-	} // end inner class MemTripleSource
-
 	/*-------------------------------------*
 	 * Inner class MemEvaluationStatistics *
 	 *-------------------------------------*/

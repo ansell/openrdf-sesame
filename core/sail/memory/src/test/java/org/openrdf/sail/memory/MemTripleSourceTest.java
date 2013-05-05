@@ -42,7 +42,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
@@ -95,7 +94,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -120,7 +119,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -145,7 +144,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -170,7 +169,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -195,7 +194,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -220,7 +219,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -245,7 +244,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -270,7 +269,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -295,7 +294,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -320,7 +319,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -345,7 +344,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -370,7 +369,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -395,7 +394,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -420,7 +419,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -445,7 +444,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -470,7 +469,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -495,7 +494,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -520,7 +519,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -545,7 +544,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -570,7 +569,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -595,7 +594,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -620,7 +619,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -645,7 +644,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -670,7 +669,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -695,7 +694,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -720,7 +719,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -745,7 +744,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -770,7 +769,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -795,7 +794,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -820,7 +819,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -845,7 +844,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -870,7 +869,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -895,7 +894,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -920,7 +919,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -945,7 +944,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -970,7 +969,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -995,7 +994,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1020,7 +1019,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1045,7 +1044,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1070,7 +1069,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemoryStoreConnection.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
