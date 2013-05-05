@@ -939,7 +939,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+			tq.setBinding("child", f.createURI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1005,7 +1005,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+			tq.setBinding("child", f.createURI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1076,7 +1076,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+			tq.setBinding("child", f.createURI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1147,7 +1147,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+			tq.setBinding("child", f.createURI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1221,7 +1221,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+			tq.setBinding("child", f.createURI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1294,7 +1294,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "PO_0025117"));
+			tq.setBinding("child", f.createURI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1423,7 +1423,7 @@ public abstract class ComplexSPARQLQueryTest {
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append("SELECT ?parent ?child ");
-		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . FILTER (?child = <http://example.org/PO_0025117>) }");
+		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . FILTER (?child = <http://example.org/C>) }");
 
 		TupleQuery tq = null;
 		try {
