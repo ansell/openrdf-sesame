@@ -630,7 +630,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"));
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"));
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -655,7 +655,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"));
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"));
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -680,7 +680,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"));
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"));
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -705,7 +705,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"), this.alice);
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -730,7 +730,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"), this.alice);
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -755,7 +755,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"), this.alice);
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -780,7 +780,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"), this.alice, this.bob);
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice, this.bob);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -805,7 +805,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"), this.alice, this.bob);
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice, this.bob);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -830,7 +830,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(null,
-				RDFS.SUBCLASSOF, f.createURI(EX_NS, "PO_0025131"), this.alice, this.bob);
+				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice, this.bob);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -855,7 +855,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(
-				f.createURI(EX_NS, "PO_0025117"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
+				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -880,7 +880,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(
-				f.createURI(EX_NS, "PO_0025117"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
+				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -905,7 +905,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(
-				f.createURI(EX_NS, "PO_0025117"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
+				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -930,7 +930,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(
-				f.createURI(EX_NS, "PO_0025117"), RDFS.SUBCLASSOF, null);
+				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -955,7 +955,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(
-				f.createURI(EX_NS, "PO_0025117"), RDFS.SUBCLASSOF, null);
+				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
@@ -980,7 +980,7 @@ public class MemTripleSourceTest {
 		MemTripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<MemStatement, QueryEvaluationException> statements = source.getStatements(
-				f.createURI(EX_NS, "PO_0025117"), RDFS.SUBCLASSOF, null);
+				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null);
 
 		try {
 			List<MemStatement> list = Iterations.asList(statements);
