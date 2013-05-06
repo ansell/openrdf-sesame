@@ -48,6 +48,10 @@ public class RFC3066LanguageHandler implements LanguageHandler {
 
 	@Override
 	public boolean isRecognizedLanguage(String languageTag) {
+		if (languageTag == null) {
+			throw new NullPointerException("Language tag cannot be null");
+		}
+
 		// language tag is RFC3066-conformant if it matches this regex:
 		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
 		boolean result = matcher.matcher(languageTag).matches();
@@ -59,17 +63,31 @@ public class RFC3066LanguageHandler implements LanguageHandler {
 	public boolean verifyLanguage(String literalValue, String languageTag)
 		throws LiteralUtilException
 	{
-		boolean result = matcher.matcher(languageTag).matches();
+		if (isRecognizedLanguage(languageTag)) {
+			if (literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
 
-		return result;
+			return matcher.matcher(languageTag).matches();
+		}
+
+		throw new LiteralUtilException("Could not verify RFC3066 language tag");
 	}
 
 	@Override
 	public Literal normalizeLanguage(String literalValue, String languageTag, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
-		// TODO Implement normalisation more effectively than this
-		return valueFactory.createLiteral(literalValue, languageTag.toLowerCase());
+		if (isRecognizedLanguage(languageTag)) {
+			if (literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+
+			// TODO Implement normalisation more effectively than this
+			return valueFactory.createLiteral(literalValue, languageTag.toLowerCase());
+		}
+
+		throw new LiteralUtilException("Could not normalize RFC3066 language tag");
 	}
 
 	@Override
