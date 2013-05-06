@@ -140,7 +140,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				readMode = ReadMode.TRANSACTION;
 			}
 
-			TripleSource tripleSource = new MemTripleSource(includeInferred, snapshot, readMode);
+			TripleSource tripleSource = new MemTripleSource(store, includeInferred, snapshot, readMode);
 			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
@@ -625,39 +625,6 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		// FIXME: changes to namespace prefixes not isolated in transactions yet
 		store.getNamespaceStore().clear();
 	}
-
-	/*-----------------------------*
-	 * Inner class MemTripleSource *
-	 *-----------------------------*/
-
-	/**
-	 * Implementation of the TripleSource interface from the Sail Query Model
-	 */
-	protected class MemTripleSource implements TripleSource {
-
-		protected final int snapshot;
-
-		protected final ReadMode readMode;
-
-		protected final boolean includeInferred;
-
-		public MemTripleSource(boolean includeInferred, int snapshot, ReadMode readMode) {
-			this.includeInferred = includeInferred;
-			this.snapshot = snapshot;
-			this.readMode = readMode;
-		}
-
-		public CloseableIteration<MemStatement, QueryEvaluationException> getStatements(Resource subj,
-				URI pred, Value obj, Resource... contexts)
-		{
-			return store.createStatementIterator(QueryEvaluationException.class, subj, pred, obj,
-					!includeInferred, snapshot, readMode, contexts);
-		}
-
-		public MemValueFactory getValueFactory() {
-			return store.getValueFactory();
-		}
-	} // end inner class MemTripleSource
 
 	/*-------------------------------------*
 	 * Inner class MemEvaluationStatistics *
