@@ -26,6 +26,8 @@ import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -48,6 +50,8 @@ import org.openrdf.rio.helpers.StatementCollector;
  */
 public abstract class AbstractParserHandlingTest {
 
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	/**
 	 * Base URI for test parsing.
 	 */
@@ -879,6 +883,10 @@ public abstract class AbstractParserHandlingTest {
 	}
 
 	private void assertModel(Model expectedModel) {
+		if(logger.isTraceEnabled()) {
+			logger.trace("Expected: {}", expectedModel);
+			logger.trace("Actual: {}", testStatements);
+		}
 		assertTrue("Did not find expected statements", ModelUtil.equals(expectedModel, testStatements));
 	}
 
