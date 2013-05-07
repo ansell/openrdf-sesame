@@ -145,7 +145,7 @@ public class QueryServlet extends TransformationServlet {
 		this.storage.shutdown();
 		super.destroy();
 	}
-	
+
 	/**
 	 * Long query strings could blow past the Tomcat default 8k HTTP header limit
 	 * if stuffed into a cookie. In this case, we need to set a flag to avoid
@@ -261,22 +261,22 @@ public class QueryServlet extends TransformationServlet {
 		throws IOException, BadRequestException, OpenRDFException, JSONException
 	{
 		resp.setContentType("application/json");
-		final JSONObject json = new JSONObject();
-		final HTTPRepository http = (HTTPRepository)repository;
-		final boolean accessible = storage.checkAccess(http);
+		JSONObject json = new JSONObject();
+		HTTPRepository http = (HTTPRepository)repository;
+		boolean accessible = storage.checkAccess(http);
 		json.put("accessible", accessible);
 		if (accessible) {
-			final String queryName = req.getParameter("query-name");
+			String queryName = req.getParameter("query-name");
 			String userName = getUserName(req);
-			final boolean existed = storage.askExists(http, queryName, userName);
+			boolean existed = storage.askExists(http, queryName, userName);
 			json.put("existed", existed);
-			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
+			boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
 			if (written) {
-				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
-				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
-				final String queryText = req.getParameter(QUERY);
-				final boolean infer = Boolean.valueOf(req.getParameter(INFER));
-				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
+				boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
+				QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
+				String queryText = req.getParameter(QUERY);
+				boolean infer = req.isParameterPresent(INFER) ? Boolean.valueOf(req.getParameter(INFER)) : false;
+				int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
@@ -288,7 +288,7 @@ public class QueryServlet extends TransformationServlet {
 			}
 			json.put("written", written);
 		}
-		final PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
+		PrintWriter writer = new PrintWriter(new BufferedWriter(resp.getWriter()));
 		writer.write(json.toString());
 		writer.flush();
 	}
