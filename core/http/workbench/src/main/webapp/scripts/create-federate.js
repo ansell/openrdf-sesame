@@ -1,5 +1,5 @@
 // Prerequisite: template.js
-// Prerequisite: jquery-1.9.0.min.js
+// Prerequisite: jquery
 
 function respondToFormState() {
 	var enoughMembers = $('input.memberID').filter(':checked').length >= 2;

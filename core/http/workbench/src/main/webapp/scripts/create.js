@@ -1,4 +1,4 @@
-// Prerequisite: jquery-1.9.0.min.js
+// Prerequisite: jquery
 // Prerequisite: template.js
 
 function populateParameters() {

@@ -34,7 +34,7 @@
 					href="../../styles/basic/all.css" media="all" />
 				<link rel="shortcut icon" href="../../favicon.ico" type="image/ico" />
 				<link rel="icon" href="../../favicon.png" type="image/png" />
-				<script src="../../scripts/jquery-1.9.0.min.js" type="text/javascript"></script>
+				<script src="../../scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
 				<script src="../../scripts/template.js" type="text/javascript">
 				</script>
 			</head>
