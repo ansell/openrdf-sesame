@@ -53,6 +53,7 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.WriterConfig;
 
 /**
  * Abstract class implementing most 'convenience' methods in the
@@ -75,6 +76,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private volatile ParserConfig parserConfig = new ParserConfig();
 
+	private volatile WriterConfig writerConfig = new WriterConfig();
+
 	private volatile boolean isOpen;
 
 	// private volatile boolean active;
@@ -90,6 +93,14 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	public ParserConfig getParserConfig() {
 		return parserConfig;
+	}
+
+	public void setWriterConfig(WriterConfig writerConfig) {
+		this.writerConfig = writerConfig;
+	}
+
+	public WriterConfig getWriterConfig() {
+		return writerConfig;
 	}
 
 	public Repository getRepository() {

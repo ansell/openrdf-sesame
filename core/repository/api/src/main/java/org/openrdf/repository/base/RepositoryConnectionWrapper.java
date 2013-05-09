@@ -47,6 +47,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.WriterConfig;
 
 /**
  * Delegates all calls to the delegate RepositoryConnection. Conditionally
@@ -175,6 +176,38 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 		catch (RepositoryException e) {
 			logger.error("Error while trying to retrieve parser config", e);
+		}
+		return null;
+	}
+
+	@Override
+	public void setWriterConfig(WriterConfig writerConfig) {
+		try {
+			if (isDelegatingAdd()) {
+				getDelegate().setWriterConfig(writerConfig);
+			}
+			else {
+				super.setWriterConfig(writerConfig);
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Error while trying to configure writer", e);
+		}
+
+	}
+
+	@Override
+	public WriterConfig getWriterConfig() {
+		try {
+			if (isDelegatingAdd()) {
+				return getDelegate().getWriterConfig();
+			}
+			else {
+				return super.getWriterConfig();
+			}
+		}
+		catch (RepositoryException e) {
+			logger.error("Error while trying to retrieve writer config", e);
 		}
 		return null;
 	}
