@@ -45,6 +45,7 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.WriterConfig;
 
 /**
  * Main interface for updating data in and performing queries on a Sesame
@@ -119,6 +120,23 @@ public interface RepositoryConnection {
 	 * @return a Rio RDF parser configuration.
 	 */
 	public ParserConfig getParserConfig();
+
+	/**
+	 * Set the parser configuration this connection should use for
+	 * RDFWriter-based operations.
+	 * 
+	 * @param config
+	 *        a Rio RDF Writer configuration.
+	 */
+	public void setWriterConfig(WriterConfig config);
+
+	/**
+	 * Returns the writer configuration this connection uses for Rio-based
+	 * operations.
+	 * 
+	 * @return a Rio RDF Writer configuration.
+	 */
+	public WriterConfig getWriterConfig();
 
 	/**
 	 * Gets a ValueFactory for this RepositoryConnection.
