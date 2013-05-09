@@ -1,5 +1,5 @@
 // Prerequisite: template.js
-// Prerequisite: jquery-1.9.0.js
+// Prerequisite: jquery
 
 /**
  * First, adds the given parameter to the URL query string. Second, adds a
