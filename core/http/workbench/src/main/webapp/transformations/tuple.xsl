@@ -29,8 +29,6 @@
 	<xsl:include href="table.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/jquery-1.9.0.min.js" type="text/javascript">
-		</script>
 		<script src="../../scripts/paging.js" type="text/javascript">
 		</script>
 		<script src="../../scripts/tuple.js" type="text/javascript">
