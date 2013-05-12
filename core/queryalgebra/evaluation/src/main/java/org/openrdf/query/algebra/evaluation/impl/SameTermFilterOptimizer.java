@@ -150,7 +150,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		private void renameVar(Var oldVar, Var newVar, Filter filter) {
-			filter.getArg().visit(new VarRenamer(oldVar.getName(), newVar.getName()));
+			filter.getArg().visit(new VarRenamer(oldVar, newVar));
 
 			// TODO: skip this step if old variable name is not used
 			// Replace SameTerm-filter with an Extension, the old variable name
@@ -167,20 +167,19 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	}
 
 	protected static class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
+		private final Var oldVar;
 
-		private final String oldName;
+		private final Var newVar;
 
-		private final String newName;
-
-		public VarRenamer(String oldName, String newName) {
-			this.oldName = oldName;
-			this.newName = newName;
+		public VarRenamer(Var oldVar, Var newVar) {
+			this.oldVar = oldVar;
+			this.newVar = newVar;
 		}
 
 		@Override
 		public void meet(Var var) {
-			if (var.getName().equals(oldName)) {
-				var.setName(newName);
+			if (var.equals(oldVar)) {
+				var.replaceWith(newVar.clone());
 			}
 		}
 
@@ -188,8 +187,8 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		public void meet(ProjectionElem projElem)
 			throws RuntimeException
 		{
-			if (projElem.getSourceName().equals(oldName)) {
-				projElem.setSourceName(newName);
+			if (projElem.getSourceName().equals(oldVar.getName())) {
+				projElem.setSourceName(newVar.getName());
 			}
 		}
 	}
