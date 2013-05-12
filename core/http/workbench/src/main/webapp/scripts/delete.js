@@ -1,5 +1,5 @@
 // Prerequisite: template.js
-// Prerequisite: jquery-1.9.0.min.js
+// Prerequisite: jquery
 
 /**
  * Invoked by the "Delete" button on the form in delete.xsl. Checks with the

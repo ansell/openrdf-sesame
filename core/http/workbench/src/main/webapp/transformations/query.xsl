@@ -87,7 +87,7 @@
 							</input>
 							<xsl:value-of select="$include-inferred.label" />
 							<input id="save-private" name="save-private" type="checkbox"
-								value="false" />
+								value="true" />
 							<xsl:value-of select="$save-private.label" />
 						</td>
 					</tr>

@@ -145,7 +145,7 @@ public class QueryServlet extends TransformationServlet {
 		this.storage.shutdown();
 		super.destroy();
 	}
-	
+
 	/**
 	 * Long query strings could blow past the Tomcat default 8k HTTP header limit
 	 * if stuffed into a cookie. In this case, we need to set a flag to avoid
@@ -275,7 +275,7 @@ public class QueryServlet extends TransformationServlet {
 				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
 				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
 				final String queryText = req.getParameter(QUERY);
-				final boolean infer = Boolean.valueOf(req.getParameter(INFER));
+				final boolean infer = req.isParameterPresent(INFER) ? Boolean.valueOf(req.getParameter(INFER)) : false;
 				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);

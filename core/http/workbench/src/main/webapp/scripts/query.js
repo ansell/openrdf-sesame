@@ -186,9 +186,7 @@ function trimQuery() {
  * 'save privately' option.
  */
 function disablePrivateSaveForAnonymous() {
-	var user = document.getElementById('selected-user').getElementsByTagName(
-			'span')[0].innerHTML;
-	if (user == 'None') {
+	if ($('#selected-user>span').is('.disabled')) {
 		var checkbox = document.getElementById('save-private');
 		checkbox.setAttribute('value', false);
 		checkbox.setAttribute('disabled', 'disabled');

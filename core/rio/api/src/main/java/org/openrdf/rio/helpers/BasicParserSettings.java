@@ -16,8 +16,12 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.DatatypeHandlerRegistry;
@@ -33,6 +37,8 @@ import org.openrdf.rio.RioSetting;
  * @since 2.7.0
  */
 public class BasicParserSettings {
+
+	private final static Logger log = LoggerFactory.getLogger(BasicParserSettings.class);
 
 	/**
 	 * Boolean setting for parser to determine whether values for recognised
@@ -84,11 +90,7 @@ public class BasicParserSettings {
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<List<DatatypeHandler>> DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>(
-			"org.openrdf.rio.datatypehandlers", "Datatype Handlers", Arrays.asList(
-					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.XMLSCHEMA),
-					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.RDFDATATYPES),
-					DatatypeHandlerRegistry.getInstance().get(DatatypeHandler.DBPEDIA)));
+	public static final RioSetting<List<DatatypeHandler>> DATATYPE_HANDLERS;
 
 	/**
 	 * Boolean setting for parser to determine whether to fail parsing if
@@ -139,9 +141,7 @@ public class BasicParserSettings {
 	 * 
 	 * @since 2.7.0
 	 */
-	public static final RioSetting<List<LanguageHandler>> LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>(
-			"org.openrdf.rio.languagehandlers", "Language Handlers",
-			Arrays.asList(LanguageHandlerRegistry.getInstance().get(LanguageHandler.RFC3066)));
+	public static final RioSetting<List<LanguageHandler>> LANGUAGE_HANDLERS;
 
 	/**
 	 * Boolean setting for parser to determine whether relative URIs are
@@ -200,6 +200,54 @@ public class BasicParserSettings {
 	 */
 	public static final RioSetting<Long> LARGE_LITERALS_LIMIT = new RioSettingImpl<Long>(
 			"org.openrdf.rio.largeliteralslimit", "Size limit for large literals", 1048576L);
+
+	static {
+		List<DatatypeHandler> defaultDatatypeHandlers = new ArrayList<DatatypeHandler>(4);
+		try {
+			DatatypeHandlerRegistry registry = DatatypeHandlerRegistry.getInstance();
+			for (String nextHandler : Arrays.asList(DatatypeHandler.XMLSCHEMA, DatatypeHandler.RDFDATATYPES,
+					DatatypeHandler.DBPEDIA, DatatypeHandler.VIRTUOSOGEOMETRY))
+			{
+				DatatypeHandler nextdt = registry.get(nextHandler);
+				if (nextdt != null) {
+					defaultDatatypeHandlers.add(nextdt);
+				}
+				else {
+					log.warn("Could not find DatatypeHandler : {}", nextHandler);
+				}
+			}
+		}
+		catch (Exception e) {
+			// Ignore exceptions so that service loading failures do not cause
+			// class initialization errors.
+			log.warn("Found an error loading DatatypeHandler services", e);
+		}
+
+		DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>("org.openrdf.rio.datatypehandlers",
+				"Datatype Handlers", defaultDatatypeHandlers);
+
+		List<LanguageHandler> defaultLanguageHandlers = new ArrayList<LanguageHandler>(1);
+		try {
+			LanguageHandlerRegistry registry = LanguageHandlerRegistry.getInstance();
+			for (String nextHandler : Arrays.asList(LanguageHandler.RFC3066)) {
+				LanguageHandler nextlang = registry.get(nextHandler);
+				if (nextlang != null) {
+					defaultLanguageHandlers.add(nextlang);
+				}
+				else {
+					log.warn("Could not find LanguageHandler : {}", nextHandler);
+				}
+			}
+		}
+		catch (Exception e) {
+			// Ignore exceptions so that service loading failures do not cause
+			// class initialization errors.
+			log.warn("Found an error loading LanguageHandler services", e);
+		}
+
+		LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>("org.openrdf.rio.languagehandlers",
+				"Language Handlers", defaultLanguageHandlers);
+	}
 
 	/**
 	 * Private default constructor.

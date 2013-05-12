@@ -146,7 +146,14 @@ public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluatio
 					if (reportedValues.contains(vp)) {
 						// new arbitrary-length path semantics: filter out
 						// duplicates
-						continue;
+						if (currentIter.hasNext()) {
+							continue;
+						}
+						else {
+							// if the current iter is exhausted, we need to check
+							// that no further paths of greater length still exists.
+							continue again;
+						}
 					}
 
 					if (startVarFixed && endVarFixed) {

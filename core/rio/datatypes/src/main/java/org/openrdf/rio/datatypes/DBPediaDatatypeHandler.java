@@ -38,6 +38,10 @@ public class DBPediaDatatypeHandler implements DatatypeHandler {
 
 	@Override
 	public boolean isRecognizedDatatype(URI datatypeUri) {
+		if (datatypeUri == null) {
+			throw new NullPointerException("Datatype URI cannot be null");
+		}
+
 		return datatypeUri.stringValue().startsWith("http://dbpedia.org/datatype/");
 	}
 
@@ -46,10 +50,14 @@ public class DBPediaDatatypeHandler implements DatatypeHandler {
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri)) {
+			if (literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+
 			// TODO: Implement verification
 			return true;
 		}
-		
+
 		throw new LiteralUtilException("Could not verify DBPedia literal");
 	}
 
@@ -57,10 +65,14 @@ public class DBPediaDatatypeHandler implements DatatypeHandler {
 	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
-		if(isRecognizedDatatype(datatypeUri)) {
+		if (isRecognizedDatatype(datatypeUri)) {
+			if (literalValue == null) {
+				throw new NullPointerException("Literal value cannot be null");
+			}
+
 			return valueFactory.createLiteral(literalValue, datatypeUri);
 		}
-		
+
 		throw new LiteralUtilException("Could not normalise DBPedia literal");
 	}
 
