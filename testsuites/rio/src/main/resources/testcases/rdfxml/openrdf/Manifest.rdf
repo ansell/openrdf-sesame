@@ -81,5 +81,29 @@
    </test:outputDocument>
 </test:PositiveParserTest>
 
+<test:PositiveParserTest rdf:about="ses-679">
+   <test:status>APPROVED</test:status>
+   <test:description>
+      Relative datatype URI with no xml:base. The datatype must be derived from the parsers Base URL.
+   </test:description>
+
+   <test:inputDocument>
+      <test:RDF-XML-Document rdf:about="ses-679.rdf" />
+   </test:inputDocument>
+
+</test:PositiveParserTest>
+
+<test:PositiveParserTest rdf:about="ses-959">
+   <test:status>APPROVED</test:status>
+   <test:description>
+      Relative datatype URI with no xml:base. The datatype must be derived from the parsers Base URL.
+   </test:description>
+
+   <test:inputDocument>
+      <test:RDF-XML-Document rdf:about="ses-959.rdf" />
+   </test:inputDocument>
+
+</test:PositiveParserTest>
+
 </rdf:RDF>
 
