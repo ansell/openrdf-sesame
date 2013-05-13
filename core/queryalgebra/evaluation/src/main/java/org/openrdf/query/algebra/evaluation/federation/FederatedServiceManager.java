@@ -16,8 +16,6 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.openrdf.repository.RepositoryException;
 
 /**
@@ -26,89 +24,33 @@ import org.openrdf.repository.RepositoryException;
  * expressions for particular service Urls.
  * <p>
  * Lookup can be done via the serviceUrl using the method
- * {@link #getService(String)}. If there is no service for the specified url, a
- * {@link SPARQLFederatedService} is created and registered for future use.
- * <p>
- * Note that this manager can be used to register custom
- * {@link FederatedService} implementations to provide custom behavior for
- * SERVICE evaluation.
+ * {@link #getService(String)}.
  * <p>
  * The default behavior can be changed by extending from this class and setting
- * the implementation class via {@link #setImplementationClass(Class)}. The new
- * class must provide the default constructor.
+ * the implementation class via {@link #setInstance(FederatedServiceManager)}.
  * 
  * @author Andreas Schwarte
+ * @author James Leigh
  */
-public class FederatedServiceManager {
+public abstract class FederatedServiceManager {
 
 	/*
 	 * TODO maybe move to some other package ? 
-	 * TODO shutdown method ?
 	 */
 
-	private static Class<? extends FederatedServiceManager> implementationClass = FederatedServiceManager.class;
+	private static FederatedServiceManager instance = new FederatedServiceManagerImpl();
 
-	private static volatile FederatedServiceManager instance = null;
-
-	public static FederatedServiceManager getInstance() {
-		if (instance == null) {
-			try {
-				instance = implementationClass.newInstance();
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
+	public static synchronized FederatedServiceManager getInstance() {
 		return instance;
 	}
 
-	public static synchronized void setImplementationClass(
-			Class<? extends FederatedServiceManager> implementationClass)
+	public static synchronized void setInstance(FederatedServiceManager manager)
 	{
-		FederatedServiceManager.implementationClass = implementationClass;
-		try {
-			instance = implementationClass.newInstance();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		instance = manager;
 	}
 
-	public FederatedServiceManager() {
+	protected FederatedServiceManager() {
 		;
-	}
-
-	/**
-	 * Map service URL to the corresponding initialized {@link FederatedService}
-	 */
-	private ConcurrentHashMap<String, FederatedService> endpointToService = new ConcurrentHashMap<String, FederatedService>();
-
-	/**
-	 * Register the specified service to evaluate SERVICE expressions for the
-	 * given url.
-	 * 
-	 * @param serviceUrl
-	 * @param service
-	 */
-	public void registerService(String serviceUrl, FederatedService service) {
-		endpointToService.put(serviceUrl, service);
-	}
-
-	/**
-	 * Unregister a service registered to serviceURl
-	 * 
-	 * @param serviceUrl
-	 */
-	public void unregisterService(String serviceUrl) {
-		FederatedService service = endpointToService.remove(serviceUrl);
-		if (service != null) {
-			try {
-				service.shutdown();
-			}
-			catch (RepositoryException e) {
-				// TODO issue a warning, otherwise ignore
-			}
-		}
 	}
 
 	/**
@@ -121,30 +63,9 @@ public class FederatedServiceManager {
 	 * @return the {@link FederatedService}, created fresh if necessary
 	 * @throws RepositoryException
 	 */
-	public FederatedService getService(String serviceUrl)
-		throws RepositoryException
-	{
-		FederatedService service = endpointToService.get(serviceUrl);
-		if (service == null) {
-			service = new SPARQLFederatedService(serviceUrl);
-			service.initialize();
-			endpointToService.put(serviceUrl, service);
-		}
-		return service;
-	}
+	public abstract FederatedService getService(String serviceUrl)
+		throws RepositoryException;
 
-	public void unregisterAll() {
-		synchronized (endpointToService) {
-			for (FederatedService service : endpointToService.values()) {
-				try {
-					service.shutdown();
-				}
-				catch (RepositoryException e) {
-					// TODO issue a warning, otherwise ignore
-				}
-			}
-			endpointToService.clear();
-		}
-	}
+	public abstract void shutDown();
 
 }

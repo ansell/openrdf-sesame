@@ -31,6 +31,7 @@ import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.Iterations;
 import info.aduna.iteration.SingletonIteration;
 
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -116,9 +117,19 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @param serviceUrl
 	 *        the serviceUrl use to initialize the inner {@link SPARQLRepository}
 	 */
-	public SPARQLFederatedService(String serviceUrl) {
+	public SPARQLFederatedService(String serviceUrl, SesameClient client) {
 		super();
-		this.rep = new SPARQLRepository(serviceUrl);
+		this.rep = new SPARQLRepository(serviceUrl) {
+
+			@Override
+			protected void shutDownInternal()
+				throws RepositoryException
+			{
+				setSesameClient(null);
+				super.shutDownInternal();
+			}
+		};
+		this.rep.setSesameClient(client);
 	}
 
 	/**

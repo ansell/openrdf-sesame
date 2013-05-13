@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpException;
-
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
@@ -81,6 +81,8 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * Variables *
 	 *-----------*/
 
+	private SesameClient client;
+
 	/**
 	 * The URL of the remote server, e.g. http://localhost:8080/openrdf-sesame/
 	 */
@@ -110,6 +112,24 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * Methods *
 	 *---------*/
 
+	@Override
+	public void initialize()
+		throws RepositoryException
+	{
+		super.initialize();
+		if (client == null) {
+			client = new SesameClientImpl();
+		}
+	}
+
+	@Override
+	public void shutDown() {
+		super.shutDown();
+		if (client != null) {
+			client.shutDown();
+		}
+	}
+
 	/**
 	 * Set the username and password for authenication with the remote server.
 	 * 
@@ -127,7 +147,17 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	protected Repository createSystemRepository()
 		throws RepositoryException
 	{
-		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
+		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID) {
+
+			@Override
+			protected void shutDownInternal()
+				throws RepositoryException
+			{
+				setSesameClient(null);
+				super.shutDownInternal();
+			}
+		};
+		systemRepository.setSesameClient(client);
 		systemRepository.setUsernameAndPassword(username, password);
 		systemRepository.initialize();
 		return systemRepository;
@@ -172,7 +202,17 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		HTTPRepository result = null;
 
 		if (RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), id)) {
-			result = new HTTPRepository(serverURL, id);
+			result = new HTTPRepository(serverURL, id) {
+
+				@Override
+				protected void shutDownInternal()
+					throws RepositoryException
+				{
+					setSesameClient(null);
+					super.shutDownInternal();
+				}
+			};
+			result.setSesameClient(client);
 			result.setUsernameAndPassword(username, password);
 			result.initialize();
 		}
@@ -200,45 +240,39 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		try {
-			SesameHTTPClient httpClient = new SesameHTTPClient();
-			httpClient.setRepository(serverURL, null);
+			SesameHTTPClient httpClient = client.createSesameSession(serverURL);
 			httpClient.setUsernameAndPassword(username, password);
-			try {
-				TupleQueryResult responseFromServer = httpClient.getRepositoryList();
-				while (responseFromServer.hasNext()) {
-					BindingSet bindingSet = responseFromServer.next();
-					RepositoryInfo repInfo = new RepositoryInfo();
+			TupleQueryResult responseFromServer = httpClient.getRepositoryList();
+			while (responseFromServer.hasNext()) {
+				BindingSet bindingSet = responseFromServer.next();
+				RepositoryInfo repInfo = new RepositoryInfo();
 
-					String id = Literals.getLabel(bindingSet.getValue("id"), null);
+				String id = Literals.getLabel(bindingSet.getValue("id"), null);
 
-					if (skipSystemRepo && id.equals(SystemRepository.ID)) {
-						continue;
-					}
-
-					Value uri = bindingSet.getValue("uri");
-					String description = Literals.getLabel(bindingSet.getValue("title"), null);
-					boolean readable = Literals.getBooleanValue(bindingSet.getValue("readable"), false);
-					boolean writable = Literals.getBooleanValue(bindingSet.getValue("writable"), false);
-
-					if (uri instanceof URI) {
-						try {
-							repInfo.setLocation(new URL(uri.toString()));
-						}
-						catch (MalformedURLException e) {
-							logger.warn("Server reported malformed repository URL: {}", uri);
-						}
-					}
-
-					repInfo.setId(id);
-					repInfo.setDescription(description);
-					repInfo.setReadable(readable);
-					repInfo.setWritable(writable);
-
-					result.add(repInfo);
+				if (skipSystemRepo && id.equals(SystemRepository.ID)) {
+					continue;
 				}
-			}
-			finally {
-				httpClient.shutDown();
+
+				Value uri = bindingSet.getValue("uri");
+				String description = Literals.getLabel(bindingSet.getValue("title"), null);
+				boolean readable = Literals.getBooleanValue(bindingSet.getValue("readable"), false);
+				boolean writable = Literals.getBooleanValue(bindingSet.getValue("writable"), false);
+
+				if (uri instanceof URI) {
+					try {
+						repInfo.setLocation(new URL(uri.toString()));
+					}
+					catch (MalformedURLException e) {
+						logger.warn("Server reported malformed repository URL: {}", uri);
+					}
+				}
+
+				repInfo.setId(id);
+				repInfo.setDescription(description);
+				repInfo.setReadable(readable);
+				repInfo.setWritable(writable);
+
+				result.add(repInfo);
 			}
 		}
 		catch (IOException ioe) {
@@ -269,26 +303,15 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		boolean existingRepo = RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
 
 		if (existingRepo) {
-			SesameHTTPClient httpClient = new SesameHTTPClient();
+			SesameHTTPClient httpClient = client.createSesameSession(serverURL);
+			httpClient.setUsernameAndPassword(username, password);
 
 			try {
-				httpClient.setServerURL(serverURL);
-				httpClient.setUsernameAndPassword(username, password);
-
-				try {
-					httpClient.deleteRepository(repositoryID);
-				}
-				catch (HttpException e) {
-					logger.warn("error while deleting remote repository", e);
-					throw new RepositoryConfigException(e);
-				}
-				catch (IOException e) {
-					logger.warn("error while deleting remote repository", e);
-					throw new RepositoryConfigException(e);
-				}
+				httpClient.deleteRepository(repositoryID);
 			}
-			finally {
-				httpClient.shutDown();
+			catch (IOException e) {
+				logger.warn("error while deleting remote repository", e);
+				throw new RepositoryConfigException(e);
 			}
 		}
 

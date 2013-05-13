@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.httpclient.HttpMethod;
-
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultHandlerException;
@@ -49,8 +47,6 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private InputStream in;
 
-	private HttpMethod method;
-
 	private QueueCursor<BindingSet> queue;
 
 	private List<String> bindingNames;
@@ -61,18 +57,16 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private CountDownLatch linksReady = new CountDownLatch(1);
 
-	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in, HttpMethod connection) {
-		this(new QueueCursor<BindingSet>(10), parser, in, connection);
+	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in) {
+		this(new QueueCursor<BindingSet>(10), parser, in);
 	}
 
-	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
-			HttpMethod connection)
+	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in)
 	{
 		super(Collections.<String>emptyList(), queue);
 		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
-		this.method = connection;
 	}
 
 	@Override
@@ -103,14 +97,14 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	@Override
 	public void run() {
-		boolean completed = false;
 		parserThread = Thread.currentThread();
 		try {
-			parser.setQueryResultHandler(this);
-			parser.parseQueryResult(in);
-			// release connection back into pool if all results have been read
-			method.releaseConnection();
-			completed = true;
+			try {
+				parser.setQueryResultHandler(this);
+				parser.parseQueryResult(in);
+			} finally {
+				in.close();
+			}
 		}
 		catch (QueryResultHandlerException e) {
 			// parsing cancelled or interrupted
@@ -125,10 +119,6 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 			parserThread = null;
 			queue.done();
 			bindingNamesReady.countDown();
-			if (!completed) {
-				method.abort();
-				method.releaseConnection();
-			}
 		}
 	}
 

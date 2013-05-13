@@ -16,37 +16,42 @@
  */
 package org.openrdf.http.client;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 
 import info.aduna.io.IOUtil;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.http.protocol.error.ErrorInfo;
-import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.http.protocol.transaction.TransactionWriter;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Resource;
@@ -64,7 +69,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.UnsupportedRDFormatException;
 
 
 
@@ -78,10 +82,12 @@ public class SesameHTTPClient extends HTTPClient {
 
 
 	private String serverURL;
-	
-	
 
-	public void setServerURL(String serverURL) {
+	public SesameHTTPClient(HttpClient client, ExecutorService executor) {
+		super(client, executor);
+	}
+
+	protected void setServerURL(String serverURL) {
 		if (serverURL == null) {
 			throw new IllegalArgumentException("serverURL must not be null");
 		}
@@ -95,11 +101,6 @@ public class SesameHTTPClient extends HTTPClient {
 	
 	public String getRepositoryURL() {
 		return this.getQueryURL();
-	}
-	
-	public void setRepository(String serverURL, String repositoryID) {
-		setServerURL(serverURL);
-		setQueryURL(Protocol.getRepositoryLocation(serverURL, repositoryID));
 	}
 	
 	public void setRepository(String repositoryURL) {
@@ -157,8 +158,7 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkServerURL();
 
-		GetMethod method = new GetMethod(Protocol.getRepositoriesLocation(serverURL));
-		setDoAuthentication(method);
+		HttpGet method = new HttpGet(Protocol.getRepositoriesLocation(serverURL));
 
 		try {
 			getTupleQueryResult(method, handler);
@@ -167,9 +167,6 @@ public class SesameHTTPClient extends HTTPClient {
 			// This shouldn't happen as no queries are involved
 			logger.warn("Server reported unexpected malfored query error", e);
 			throw new RepositoryException(e.getMessage(), e);
-		}
-		finally {
-			releaseConnection(method);
 		}
 	}
 	
@@ -182,29 +179,16 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkServerURL();
 
-		GetMethod method = new GetMethod(Protocol.getProtocolLocation(serverURL));
-		setDoAuthentication(method);
+		HttpGet method = new HttpGet(Protocol.getProtocolLocation(serverURL));
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_OK) {
-				return method.getResponseBodyAsString();
-			}
-			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
-				// trying to contact a non-Sesame server?
-				throw new RepositoryException("Failed to get server protocol; no such resource on this server");
-			}
-			else {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to get server protocol: " + errInfo);
-			}
+			return EntityUtils.toString(executeOK(method).getEntity());
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 	
@@ -219,62 +203,44 @@ public class SesameHTTPClient extends HTTPClient {
 
 		String[] encodedContexts = Protocol.encodeContexts(contexts);
 
-		NameValuePair[] contextParams = new NameValuePair[encodedContexts.length];
-		for (int i = 0; i < encodedContexts.length; i++) {
-			contextParams[i] = new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
-		}
-
-		HttpMethod method = new GetMethod(Protocol.getSizeLocation(getQueryURL()));
-		setDoAuthentication(method);
-		method.setQueryString(contextParams);
-
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_OK) {
-				String response = method.getResponseBodyAsString();
-				try {
-					return Long.parseLong(response);
-				}
-				catch (NumberFormatException e) {
-					throw new RepositoryException("Server responded with invalid size value: " + response);
-				}
+			URIBuilder url = new URIBuilder(Protocol.getSizeLocation(getQueryURL()));
+			for (int i = 0; i < encodedContexts.length; i++) {
+				url.setParameter(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
 			}
-			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
+	
+			HttpUriRequest method = new HttpGet(url.build());
+	
+			String response = EntityUtils.toString(executeOK(method).getEntity());
+			try {
+				return Long.parseLong(response);
 			}
-			else {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException(errInfo.toString());
+			catch (NumberFormatException e) {
+				throw new RepositoryException("Server responded with invalid size value: " + response);
 			}
+		} catch (URISyntaxException e) {
+			throw new AssertionError(e);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
-	public void deleteRepository(String repositoryID) throws HttpException, IOException, RepositoryException {
+	public void deleteRepository(String repositoryID) throws IOException, RepositoryException {
 		
-		HttpMethod method = new DeleteMethod(Protocol.getRepositoryLocation(serverURL, repositoryID));
-		setDoAuthentication(method);
+		HttpUriRequest method = new HttpDelete(Protocol.getRepositoryLocation(serverURL, repositoryID));
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_NO_CONTENT) {
-				return;
-			}
-			else if (httpCode == HttpURLConnection.HTTP_FORBIDDEN) {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new UnauthorizedException(errInfo.getErrorMessage());
-			}
-			else {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to delete repository: " + errInfo + " (" + httpCode + ")");
-			}
+			executeNoContent(method);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
@@ -303,8 +269,7 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new GetMethod(Protocol.getNamespacesLocation(getQueryURL()));
-		setDoAuthentication(method);
+		HttpUriRequest method = new HttpGet(Protocol.getNamespacesLocation(getQueryURL()));
 
 		try {
 			getTupleQueryResult(method, handler);
@@ -313,9 +278,6 @@ public class SesameHTTPClient extends HTTPClient {
 			logger.warn("Server reported unexpected malfored query error", e);
 			throw new RepositoryException(e.getMessage(), e);
 		}
-		finally {
-			releaseConnection(method);
-		}
 	}
 
 	public String getNamespace(String prefix)
@@ -323,28 +285,16 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new GetMethod(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
-		setDoAuthentication(method);
+		HttpUriRequest method = new HttpGet(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_OK) {
-				return method.getResponseBodyAsString();
-			}
-			else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
-				return null;
-			}
-			else if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to get namespace: " + errInfo + " (" + httpCode + ")");
-			}
+			return EntityUtils.toString(executeOK(method).getEntity());
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
@@ -353,23 +303,17 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		EntityEnclosingMethod method = new PutMethod(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
-		setDoAuthentication(method);
-		method.setRequestEntity(new StringRequestEntity(name, "text/plain", "UTF-8"));
+		HttpPut method = new HttpPut(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
+		method.setEntity(new StringEntity(name, ContentType.create("text/plain", "UTF-8")));
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (!is2xx(httpCode)) {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to set namespace: " + errInfo + " (" + httpCode + ")");
-			}
+			executeNoContent(method);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
@@ -378,22 +322,16 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new DeleteMethod(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
-		setDoAuthentication(method);
+		HttpUriRequest method = new HttpDelete(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (!is2xx(httpCode)) {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to remove namespace: " + errInfo + " (" + httpCode + ")");
-			}
+			executeNoContent(method);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
@@ -402,22 +340,16 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		HttpMethod method = new DeleteMethod(Protocol.getNamespacesLocation(getQueryURL()));
-		setDoAuthentication(method);
+		HttpUriRequest method = new HttpDelete(Protocol.getNamespacesLocation(getQueryURL()));
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (!is2xx(httpCode)) {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Failed to clear namespaces: " + errInfo + " (" + httpCode + ")");
-			}
+			executeNoContent(method);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
@@ -446,8 +378,7 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		GetMethod method = new GetMethod(Protocol.getContextsLocation(getQueryURL()));
-		setDoAuthentication(method);
+		HttpGet method = new HttpGet(Protocol.getContextsLocation(getQueryURL()));
 
 		try {
 			getTupleQueryResult(method, handler);
@@ -455,9 +386,6 @@ public class SesameHTTPClient extends HTTPClient {
 		catch (MalformedQueryException e) {
 			logger.warn("Server reported unexpected malfored query error", e);
 			throw new RepositoryException(e.getMessage(), e);
-		}
-		finally {
-			releaseConnection(method);
 		}
 	}
 
@@ -474,35 +402,34 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		GetMethod method = new GetMethod(Protocol.getStatementsLocation(getQueryURL()));
-		setDoAuthentication(method);
-
-		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
-		if (subj != null) {
-			params.add(new NameValuePair(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj)));
-		}
-		if (pred != null) {
-			params.add(new NameValuePair(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred)));
-		}
-		if (obj != null) {
-			params.add(new NameValuePair(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj)));
-		}
-		for (String encodedContext : Protocol.encodeContexts(contexts)) {
-			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
-		}
-		params.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
-
-		method.setQueryString(params.toArray(new NameValuePair[params.size()]));
-
 		try {
-			getRDF(method, handler, true);
-		}
-		catch (MalformedQueryException e) {
-			logger.warn("Server reported unexpected malfored query error", e);
-			throw new RepositoryException(e.getMessage(), e);
-		}
-		finally {
-			releaseConnection(method);
+			URIBuilder url = new URIBuilder(Protocol.getStatementsLocation(getQueryURL()));
+	
+			if (subj != null) {
+				url.setParameter(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj));
+			}
+			if (pred != null) {
+				url.setParameter(Protocol.PREDICATE_PARAM_NAME, Protocol.encodeValue(pred));
+			}
+			if (obj != null) {
+				url.setParameter(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj));
+			}
+			for (String encodedContext : Protocol.encodeContexts(contexts)) {
+				url.setParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
+			}
+			url.setParameter(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred));
+	
+			HttpGet method = new HttpGet(url.build());
+	
+			try {
+				getRDF(method, handler, true);
+			}
+			catch (MalformedQueryException e) {
+				logger.warn("Server reported unexpected malfored query error", e);
+				throw new RepositoryException(e.getMessage(), e);
+			}
+		} catch (URISyntaxException e) {
+			throw new AssertionError(e);
 		}
 	}
 
@@ -511,25 +438,34 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		checkRepositoryURL();
 
-		PostMethod method = new PostMethod(Protocol.getStatementsLocation(getQueryURL()));
-		setDoAuthentication(method);
+		HttpPost method = new HttpPost(Protocol.getStatementsLocation(getQueryURL()));
 
 		// Create a RequestEntity for the transaction data
-		method.setRequestEntity(new RequestEntity() {
-
+		method.setEntity(new AbstractHttpEntity() {
 			public long getContentLength() {
 				return -1; // don't know
 			}
 
-			public String getContentType() {
-				return Protocol.TXN_MIME_TYPE;
+			public Header getContentType() {
+				return new BasicHeader("Content-Type", Protocol.TXN_MIME_TYPE);
 			}
 
 			public boolean isRepeatable() {
 				return true;
 			}
 
-			public void writeRequest(OutputStream out)
+			public boolean isStreaming() {
+				return true;
+			}
+
+			public InputStream getContent() throws IOException,
+					IllegalStateException {
+				ByteArrayOutputStream buf = new ByteArrayOutputStream();
+				writeTo(buf);
+				return new ByteArrayInputStream(buf.toByteArray());
+			}
+
+			public void writeTo(OutputStream out)
 				throws IOException
 			{
 				TransactionWriter txnWriter = new TransactionWriter();
@@ -538,18 +474,13 @@ public class SesameHTTPClient extends HTTPClient {
 		});
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (!is2xx(httpCode)) {
-				ErrorInfo errInfo = getErrorInfo(method);
-				throw new RepositoryException("Transaction failed: " + errInfo + " (" + httpCode + ")");
-			}
+			executeNoContent(method);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 	
@@ -559,7 +490,7 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		// Set Content-Length to -1 as we don't know it and we also don't want to
 		// cache
-		RequestEntity entity = new InputStreamRequestEntity(contents, -1, dataFormat.getDefaultMIMEType());
+		HttpEntity entity = new InputStreamEntity(contents, -1, ContentType.parse(dataFormat.getDefaultMIMEType()));
 		upload(entity, baseURI, overwrite, contexts);
 	}
 
@@ -569,21 +500,32 @@ public class SesameHTTPClient extends HTTPClient {
 	{
 		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
 
-		RequestEntity entity = new RequestEntity() {
+		HttpEntity entity = new AbstractHttpEntity() {
 
 			public long getContentLength() {
 				return -1; // don't know
 			}
 
-			public String getContentType() {
-				return dataFormat.getDefaultMIMEType() + "; charset=" + charset.name();
+			public Header getContentType() {
+				return new BasicHeader("Content-Type", dataFormat.getDefaultMIMEType() + "; charset=" + charset.name());
 			}
 
 			public boolean isRepeatable() {
-				return false;
+				return true;
 			}
 
-			public void writeRequest(OutputStream out)
+			public boolean isStreaming() {
+				return true;
+			}
+
+			public InputStream getContent() throws IOException,
+					IllegalStateException {
+				ByteArrayOutputStream buf = new ByteArrayOutputStream();
+				writeTo(buf);
+				return new ByteArrayInputStream(buf.toByteArray());
+			}
+
+			public void writeTo(OutputStream out)
 				throws IOException
 			{
 				OutputStreamWriter writer = new OutputStreamWriter(out, charset);
@@ -595,66 +537,49 @@ public class SesameHTTPClient extends HTTPClient {
 		upload(entity, baseURI, overwrite, contexts);
 	}
 
-	protected void upload(RequestEntity reqEntity, String baseURI, boolean overwrite, Resource... contexts)
+	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		checkRepositoryURL();
 
-		String uploadURL = Protocol.getStatementsLocation(getQueryURL());
-
-		// Select appropriate HTTP method
-		EntityEnclosingMethod method;
-		if (overwrite) {
-			method = new PutMethod(uploadURL);
-		}
-		else {
-			method = new PostMethod(uploadURL);
-		}
-
-		setDoAuthentication(method);
-
-		// Set relevant query parameters
-		List<NameValuePair> params = new ArrayList<NameValuePair>(5);
-		for (String encodedContext : Protocol.encodeContexts(contexts)) {
-			params.add(new NameValuePair(Protocol.CONTEXT_PARAM_NAME, encodedContext));
-		}
-		if (baseURI != null && baseURI.trim().length() != 0) {
-			String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
-			params.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, encodedBaseURI));
-		}
-		method.setQueryString(params.toArray(new NameValuePair[params.size()]));
-
-		// Set payload
-		method.setRequestEntity(reqEntity);
-
-		// Send request
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
+			URIBuilder url = new URIBuilder(Protocol.getStatementsLocation(getQueryURL()));
+	
+			// Set relevant query parameters
+			for (String encodedContext : Protocol.encodeContexts(contexts)) {
+				url.setParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
-			else if (httpCode == HttpURLConnection.HTTP_UNSUPPORTED_TYPE) {
-				throw new UnsupportedRDFormatException(method.getResponseBodyAsString());
+			if (baseURI != null && baseURI.trim().length() != 0) {
+				String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
+				url.setParameter(Protocol.BASEURI_PARAM_NAME, encodedBaseURI);
 			}
-			else if (!is2xx(httpCode)) {
-				ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
-
-				if (errInfo.getErrorType() == ErrorType.MALFORMED_DATA) {
-					throw new RDFParseException(errInfo.getErrorMessage());
-				}
-				else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_FILE_FORMAT) {
-					throw new UnsupportedRDFormatException(errInfo.getErrorMessage());
-				}
-				else {
-					throw new RepositoryException("Failed to upload data: " + errInfo);
-				}
+	
+			// Select appropriate HTTP method
+			HttpEntityEnclosingRequest method;
+			if (overwrite) {
+				method = new HttpPut(url.build());
 			}
-		}
-		finally {
-			releaseConnection(method);
+			else {
+				method = new HttpPost(url.build());
+			}
+	
+			// Set payload
+			method.setEntity(reqEntity);
+	
+			// Send request
+			try {
+				executeNoContent((HttpUriRequest)method);
+			}
+			catch (RepositoryException|RDFParseException e) {
+				throw e;
+			}
+			catch (OpenRDFException e) {
+				throw new RepositoryException(e);
+			}
+		} catch (URISyntaxException e) {
+			throw new AssertionError(e);
 		}
 	}
 }

@@ -16,9 +16,11 @@
  */
 package org.openrdf.query.parser.sparql;
 
-import static org.junit.Assert.*;
-
-import org.junit.rules.TemporaryFolder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,9 +38,9 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +129,7 @@ public class SPARQLServiceEvaluationTest {
 	{
 		testDir = tempDir.newFolder("sparql-service-evaluation-test").toPath();
 
-		FederatedServiceManager.getInstance().unregisterAll();
+		FederatedServiceManager.getInstance().shutDown();
 
 		// set up the server: the maximal number of endpoints must be known
 		List<String> repositoryIds = new ArrayList<String>(MAX_ENDPOINTS);

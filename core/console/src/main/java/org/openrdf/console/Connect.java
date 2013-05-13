@@ -16,7 +16,6 @@
  */
 package org.openrdf.console;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +26,8 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameHTTPClient;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.repository.RepositoryException;
@@ -88,9 +89,9 @@ public class Connect implements Command {
 		boolean result = false;
 		try {
 			// Ping server
-			final SesameHTTPClient httpClient = new SesameHTTPClient();
+			final SesameClient client = new SesameClientImpl();
 			try {
-				httpClient.setServerURL(url);
+				SesameHTTPClient httpClient = client.createSesameSession(url);
 
 				if (user != null) {
 					httpClient.setUsernameAndPassword(user, pass);
@@ -100,7 +101,7 @@ public class Connect implements Command {
 				httpClient.getServerProtocol();
 			}
 			finally {
-				httpClient.shutDown();
+				client.shutDown();
 			}
 			final RemoteRepositoryManager manager = new RemoteRepositoryManager(url);
 			manager.setUsernameAndPassword(user, pass);

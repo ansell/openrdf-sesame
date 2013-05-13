@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.httpclient.HttpMethod;
-
 import info.aduna.iteration.IterationWrapper;
 
 import org.openrdf.model.Statement;
@@ -64,16 +62,13 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 
 	private QueueCursor<Statement> queue;
 
-	private HttpMethod method;
-
-	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI,
-			HttpMethod method)
+	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI)
 	{
-		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI, method);
+		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI);
 	}
 
 	public BackgroundGraphResult(QueueCursor<Statement> queue, RDFParser parser, InputStream in,
-			Charset charset, String baseURI, HttpMethod method)
+			Charset charset, String baseURI)
 	{
 		super(queue);
 		this.queue = queue;
@@ -81,7 +76,6 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		this.in = in;
 		this.charset = charset;
 		this.baseURI = baseURI;
-		this.method = method;
 	}
 
 	public boolean hasNext()
@@ -121,18 +115,19 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 	}
 
 	public void run() {
-		boolean completed = false;
 		parserThread = Thread.currentThread();
 		try {
-			parser.setRDFHandler(this);
-			if (charset == null) {
-				parser.parse(in, baseURI);
+			try {
+				parser.setRDFHandler(this);
+				if (charset == null) {
+					parser.parse(in, baseURI);
+				}
+				else {
+					parser.parse(new InputStreamReader(in, charset), baseURI);
+				}
+			} finally {
+				in.close();
 			}
-			else {
-				parser.parse(new InputStreamReader(in, charset), baseURI);
-			}
-			method.releaseConnection();
-			completed = true;
 		}
 		catch (RDFHandlerException e) {
 			// parsing was cancelled or interrupted
@@ -146,10 +141,6 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		finally {
 			parserThread = null;
 			queue.done();
-			if (!completed) {
-				method.abort();
-				method.releaseConnection();
-			}
 		}
 	}
 
