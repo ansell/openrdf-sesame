@@ -99,28 +99,34 @@ public abstract class RDFXMLParserTestCase {
 		TestSuite suite = new TestSuite(RDFXMLParserTestCase.class.getName());
 
 		// Add all positive parser tests
-		String query = "select TESTCASE, INPUT, OUTPUT "
-				+ "from {TESTCASE} rdf:type {test:PositiveParserTest}; "
-				+ "                test:inputDocument {INPUT}; "
-				+ "                test:outputDocument {OUTPUT}; "
-				+ "                test:status {\"APPROVED\"} "
-				+ "using namespace test = <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#>";
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX test: <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#> \n");
+		query.append(" SELECT ?TESTCASE ?INPUT ?OUTPUT WHERE { ");
+		query.append(" ?TESTCASE a test:PositiveParserTest . ");
+		query.append(" ?TESTCASE test:inputDocument ?INPUT . ");
+		query.append(" ?TESTCASE test:status ?testStatus . ");
+		query.append(" OPTIONAL { ?TESTCASE test:outputDocument ?OUTPUT . } ");
+		query.append(" FILTER( ?testStatus = \"APPROVED\" ) ");
+		query.append(" } ");
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, query.toString()).evaluate();
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String caseURI = bindingSet.getValue("TESTCASE").toString();
 			String inputURL = bindingSet.getValue("INPUT").toString();
-			String outputURL = bindingSet.getValue("OUTPUT").toString();
+			String outputURL = null;
+			if (bindingSet.hasBinding("OUTPUT")) {
+				outputURL = bindingSet.getValue("OUTPUT").toString();
+			}
 			suite.addTest(new PositiveParserTest(caseURI, inputURL, outputURL));
 		}
 
 		queryResult.close();
 
 		// Add all negative parser tests
-		query = "select TESTCASE, INPUT " + "from {TESTCASE} rdf:type {test:NegativeParserTest}; "
+		String negativeQuery = "select TESTCASE, INPUT " + "from {TESTCASE} rdf:type {test:NegativeParserTest}; "
 				+ "                test:inputDocument {INPUT}; " + "                test:status {\"APPROVED\"} "
 				+ "using namespace test = <http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#>";
-		queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
+		queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, negativeQuery).evaluate();
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String caseURI = bindingSet.getValue("TESTCASE").toString();
@@ -209,24 +215,26 @@ public abstract class RDFXMLParserTestCase {
 			StatementCollector outputCollector = new StatementCollector(outputCollection);
 			ntriplesParser.setRDFHandler(outputCollector);
 
-			in = resolveURL(outputURL).openStream();
-			ntriplesParser.parse(in, base(inputURL));
-			in.close();
+			if (outputURL != null) {
+				InputStream output = resolveURL(outputURL).openStream();
+				ntriplesParser.parse(output, base(inputURL));
+				output.close();
 
-			// Check equality of the two models
-			if (!ModelUtil.equals(inputCollection, outputCollection)) {
-				StringBuilder sb = new StringBuilder(1024);
-				sb.append("models not equal\n");
-				sb.append("Expected:\n");
-				for (Statement st : outputCollection) {
-					sb.append(st).append("\n");
-				}
-				sb.append("Actual:\n");
-				for (Statement st : inputCollection) {
-					sb.append(st).append("\n");
-				}
+				// Check equality of the two models
+				if (!ModelUtil.equals(inputCollection, outputCollection)) {
+					StringBuilder sb = new StringBuilder(1024);
+					sb.append("models not equal\n");
+					sb.append("Expected:\n");
+					for (Statement st : outputCollection) {
+						sb.append(st).append("\n");
+					}
+					sb.append("Actual:\n");
+					for (Statement st : inputCollection) {
+						sb.append(st).append("\n");
+					}
 
-				fail(sb.toString());
+					fail(sb.toString());
+				}
 			}
 		}
 
