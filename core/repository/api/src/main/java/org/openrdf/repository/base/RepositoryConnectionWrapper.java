@@ -150,7 +150,9 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	public void setParserConfig(ParserConfig parserConfig) {
 		super.setParserConfig(parserConfig);
 		try {
-			getDelegate().setParserConfig(parserConfig);
+			if (getDelegate() != null) {
+				getDelegate().setParserConfig(parserConfig);
+			}
 		}
 		catch (RepositoryException e) {
 			logger.error("Error while trying to configure parser", e);
