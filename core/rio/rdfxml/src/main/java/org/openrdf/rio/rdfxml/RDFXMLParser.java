@@ -30,6 +30,7 @@ import java.util.Stack;
 import javax.xml.XMLConstants;
 import javax.xml.transform.sax.SAXResult;
 
+import org.apache.commons.io.input.BOMInputStream;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -226,7 +227,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			throw new IllegalArgumentException("Base URI cannot be 'null'");
 		}
 
-		InputSource inputSource = new InputSource(in);
+		InputSource inputSource = new InputSource(new BOMInputStream(in, false));
 		inputSource.setSystemId(baseURI);
 
 		parse(inputSource);

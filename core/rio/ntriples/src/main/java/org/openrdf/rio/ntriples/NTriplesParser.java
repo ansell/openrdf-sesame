@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.apache.commons.io.input.BOMInputStream;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -127,7 +129,7 @@ public class NTriplesParser extends RDFParserBase {
 		// Note: baseURI will be checked in parse(Reader, String)
 
 		try {
-			parse(new InputStreamReader(in, "US-ASCII"), baseURI);
+			parse(new InputStreamReader(new BOMInputStream(in, false), "US-ASCII"), baseURI);
 		}
 		catch (UnsupportedEncodingException e) {
 			// Every platform should support the US-ASCII encoding...

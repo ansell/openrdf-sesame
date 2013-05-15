@@ -17,9 +17,9 @@
 package org.openrdf.rio.rdfxml;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -53,11 +53,11 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 
 		RepositoryConnection con1 = rep1.getConnection();
 
-		URL ciaScheme = this.getClass().getResource("/cia-factbook/CIA-onto-enhanced.rdf");
-		URL ciaFacts = this.getClass().getResource("/cia-factbook/CIA-facts-enhanced.rdf");
+		InputStream ciaScheme = this.getClass().getResourceAsStream("/cia-factbook/CIA-onto-enhanced.rdf");
+		InputStream ciaFacts = this.getClass().getResourceAsStream("/cia-factbook/CIA-facts-enhanced.rdf");
 
-		con1.add(ciaScheme, ciaScheme.toExternalForm(), RDFFormat.forFileName(ciaScheme.toExternalForm()));
-		con1.add(ciaFacts, ciaFacts.toExternalForm(), RDFFormat.forFileName(ciaFacts.toExternalForm()));
+		con1.add(ciaScheme, "urn:cia-factbook/CIA-onto-enhanced.rdf", RDFFormat.RDFXML);
+		con1.add(ciaFacts, "urn:cia-factbook/CIA-facts-enhanced.rdf", RDFFormat.RDFXML);
 
 		StringWriter writer = new StringWriter();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
