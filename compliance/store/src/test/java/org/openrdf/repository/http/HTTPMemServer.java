@@ -127,6 +127,8 @@ public class HTTPMemServer {
 				try (RepositoryConnection con = systemRepo.getConnection();) {
 					con.clear();
 				}
+				catch(RepositoryException e) {
+				}
 				finally {
 					systemRepo.shutDown();
 				}

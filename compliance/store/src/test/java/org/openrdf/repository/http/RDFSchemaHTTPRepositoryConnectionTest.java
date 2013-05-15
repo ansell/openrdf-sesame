@@ -43,7 +43,11 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 			super.setUp();
 		}
 		catch (Exception e) {
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 	}

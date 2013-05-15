@@ -48,7 +48,11 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 			super.setUp();
 		}
 		catch (Exception e) {
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 	}

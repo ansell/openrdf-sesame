@@ -60,7 +60,11 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		}
 		catch (Exception e) {
 			logger.error("Could not setup server", e);
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 
