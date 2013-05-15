@@ -27,6 +27,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.commons.io.input.BOMInputStream;
+
 /**
  * RDF parser implementation for the {@link RDFFormat#NQUADS N-Quads} RDF
  * format, extending the Rio N-Triples parser. A specification of N-Quads can be
@@ -55,7 +57,7 @@ public class NQuadsParser extends NTriplesParser {
 		// Note: baseURI will be checked in parse(Reader, String)
 
 		try {
-			parse(new InputStreamReader(inputStream, "US-ASCII"), baseURI);
+			parse(new InputStreamReader(new BOMInputStream(inputStream, false), "US-ASCII"), baseURI);
 		}
 		catch (UnsupportedEncodingException e) {
 			// Every platform should support the US-ASCII encoding...
