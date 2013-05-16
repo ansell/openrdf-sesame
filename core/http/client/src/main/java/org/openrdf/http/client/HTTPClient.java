@@ -1026,6 +1026,8 @@ public class HTTPClient {
 	}
 
 	/**
+	 * Sets the parser configuration used to process HTTP response data.
+	 * 
 	 * @param parserConfig
 	 *        The parserConfig to set.
 	 */
@@ -1034,7 +1036,7 @@ public class HTTPClient {
 	}
 
 	/**
-	 * @return Returns the parserConfig.
+	 * @return Returns the parser configuration used to process HTTP response data.
 	 */
 	public ParserConfig getParserConfig() {
 		return parserConfig;
