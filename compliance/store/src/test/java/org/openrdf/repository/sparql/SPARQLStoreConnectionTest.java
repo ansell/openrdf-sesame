@@ -93,7 +93,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testURISerialization() for SPARQLRepository");
 	}
-	
+
 	@Override
 	@Ignore
 	public void testAutoCommit()
@@ -473,6 +473,14 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		finally {
 			result.close();
 		}
+	}
+
+	@Override
+	@Ignore("upload of malformed literal using SPARQL fails with error.")
+	public void testGetStatementsMalformedLanguageLiteral()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testGetStatementsMalformedLanguageLiteral() for SPARQLRepository");
 	}
 
 	@Override
