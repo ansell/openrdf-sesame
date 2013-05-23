@@ -98,10 +98,12 @@
 					<tr>
 						<td></td>
 						<td>
-							<span class="error">
-								<xsl:value-of
-									select="//sparql:binding[@name='error-message']" />
-							</span>
+							<xsl:if test="count(//sparql:binding[@name='error-message']) &gt; 0">
+								<span class="error">
+									<xsl:value-of
+										select="//sparql:binding[@name='error-message']" />
+								</span>
+							</xsl:if>
 						</td>
 						<td></td>
 					</tr>
