@@ -87,13 +87,6 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	public SPARQLConnection(SPARQLRepository repository) {
 		super(repository);
-		
-		// parser used for processing server response data should be lenient.
-		ParserConfig responseParserConfig = new ParserConfig();
-		responseParserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
-		responseParserConfig.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
-		getRepository().getHTTPClient().setParserConfig(responseParserConfig);
-
 	}
 
 	@Override

@@ -16,15 +16,21 @@
  */
 package org.openrdf.repository;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,11 +57,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
-
-import junit.framework.TestCase;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
@@ -74,6 +79,7 @@ import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -91,6 +97,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -384,6 +391,39 @@ public abstract class RepositoryConnectionTest {
 		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameAlice, false));
 		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
 		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
+	}
+
+	@Test
+	public void testAddMalformedLiterals()
+		throws Exception
+	{
+		try {
+			testCon.add(
+					RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "malformed-literals.ttl"),
+					"", RDFFormat.TURTLE);
+			fail("upload of malformed literals should fail with error in default configuration");
+		}
+		catch (RDFParseException e) {
+			// ignore, as expected
+		}
+	}
+
+	@Test
+	@Ignore("temporarily disabled because parser config comm not supported in client-server settings")
+	public void testAddMalformedLiteralsCustomConfig()
+		throws Exception
+	{
+		testCon.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		testCon.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+
+		try {
+			testCon.add(
+					RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "malformed-literals.ttl"),
+					"", RDFFormat.TURTLE);
+		}
+		catch (RDFParseException e) {
+			fail("parse exception shouldn't occur with custom config: " + e.getMessage());
+		}
 	}
 
 	@Test
@@ -869,6 +909,53 @@ public abstract class RepositoryConnectionTest {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
+
+	@Test
+	public void testGetStatementsMalformedTypedLiteral()
+		throws Exception
+	{	
+		Literal invalidIntegerLiteral = vf.createLiteral("the number four", XMLSchema.INTEGER);
+		try {
+			URI pred = vf.createURI(URN_PRED);
+			testCon.add(bob, pred, invalidIntegerLiteral);
+			
+			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
+			
+			assertNotNull(statements);
+			assertTrue(statements.hasNext());
+			Statement st = statements.next();
+			assertTrue(st.getObject() instanceof Literal);
+			assertTrue(st.getObject().equals(invalidIntegerLiteral));
+		}
+		catch (RepositoryException e) {
+			// shouldn't happen
+			fail(e.getMessage());
+		}
+	}
+
+
+	@Test
+	public void testGetStatementsMalformedLanguageLiteral()
+		throws Exception
+	{	
+		Literal invalidLanguageLiteral = vf.createLiteral("the number four", "en_us");
+		try {
+			URI pred = vf.createURI(URN_PRED);
+			testCon.add(bob, pred, invalidLanguageLiteral);
+			
+			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
+			
+			assertNotNull(statements);
+			assertTrue(statements.hasNext());
+			Statement st = statements.next();
+			assertTrue(st.getObject() instanceof Literal);
+			assertTrue(st.getObject().equals(invalidLanguageLiteral));
+		}
+		catch (RepositoryException e) {
+			// shouldn't happen
+			fail(e.getMessage());
+		}
+	}
 	@Test
 	public void testGetStatementsInSingleContext()
 		throws Exception

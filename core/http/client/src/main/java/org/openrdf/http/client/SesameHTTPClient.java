@@ -65,6 +65,7 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 
 
 
@@ -79,8 +80,13 @@ public class SesameHTTPClient extends HTTPClient {
 
 	private String serverURL;
 	
+	public SesameHTTPClient() {
+		super();
+		
+		// we want to preserve bnode ids to allow Sesame API methods to match blank nodes.
+		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+	}
 	
-
 	public void setServerURL(String serverURL) {
 		if (serverURL == null) {
 			throw new IllegalArgumentException("serverURL must not be null");

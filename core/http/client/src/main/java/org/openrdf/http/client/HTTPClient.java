@@ -85,6 +85,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
@@ -145,6 +146,11 @@ public class HTTPClient {
 
 	public HTTPClient() {
 		valueFactory = ValueFactoryImpl.getInstance();
+
+		// parser used for processing server response data should be lenient
+		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+
 		initialize();
 	}
 
@@ -1036,7 +1042,8 @@ public class HTTPClient {
 	}
 
 	/**
-	 * @return Returns the parser configuration used to process HTTP response data.
+	 * @return Returns the parser configuration used to process HTTP response
+	 *         data.
 	 */
 	public ParserConfig getParserConfig() {
 		return parserConfig;

@@ -124,13 +124,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public HTTPRepositoryConnection(HTTPRepository repository) {
 		super(repository);
 
-		// parser used for processing server response data should be lenient, and should preserve bnode ids.
-		ParserConfig responseParserConfig = new ParserConfig();
-		responseParserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
-		responseParserConfig.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
-		responseParserConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
-		getRepository().getHTTPClient().setParserConfig(responseParserConfig);
-		
 		// parser used for locally processing input data to be sent to the server should be strict, and should preserve bnode ids.
 		setParserConfig(new ParserConfig());
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
