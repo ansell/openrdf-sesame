@@ -59,6 +59,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -85,6 +87,10 @@ public class SesameHTTPClient extends HTTPClient {
 		
 		// we want to preserve bnode ids to allow Sesame API methods to match blank nodes.
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+		
+		// Sesame client has preference for binary response formats, as these are most performant
+		setPreferredTupleQueryResultFormat(TupleQueryResultFormat.BINARY);
+		setPreferredRDFFormat(RDFFormat.BINARY);
 	}
 	
 	public void setServerURL(String serverURL) {

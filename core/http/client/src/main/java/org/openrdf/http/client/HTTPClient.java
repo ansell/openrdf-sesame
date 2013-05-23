@@ -828,7 +828,7 @@ public class HTTPClient {
 		MalformedQueryException
 	{
 
-		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, preferredRDFFormat);
+		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, getPreferredRDFFormat());
 		for (String acceptParam : acceptParams) {
 			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
 		}
