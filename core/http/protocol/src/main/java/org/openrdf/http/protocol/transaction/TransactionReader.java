@@ -64,6 +64,7 @@ public class TransactionReader {
 	{
 		SimpleSAXParser saxParser = new SimpleSAXParser();
 		TransactionSAXParser handler = new TransactionSAXParser();
+		saxParser.setPreserveWhitespace(true);
 		saxParser.setListener(handler);
 		saxParser.parse(in);
 		return handler.getTxn();
