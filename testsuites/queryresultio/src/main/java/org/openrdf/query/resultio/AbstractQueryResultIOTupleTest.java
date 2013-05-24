@@ -37,7 +37,14 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 	protected abstract TupleQueryResultFormat getTupleFormat();
 
 	@Test
-	public final void testSPARQLResultFormat()
+	public final void testSPARQLResultFormatSingleVarMultipleBindingSets()
+		throws Exception
+	{
+		doTupleNoLinks(getTupleFormat(), createTupleSingleVarMultipleBindingSets(), createTupleSingleVarMultipleBindingSets());
+	}
+
+	@Test
+	public final void testSPARQLResultFormatMultipleBindingsMultipleBindingSets()
 		throws Exception
 	{
 		doTupleNoLinks(getTupleFormat(), createTupleMultipleBindingSets(), createTupleMultipleBindingSets());
