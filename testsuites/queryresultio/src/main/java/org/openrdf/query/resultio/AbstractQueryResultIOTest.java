@@ -99,7 +99,13 @@ public abstract class AbstractQueryResultIOTest {
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
 		solution3.addBinding("a", new BNodeImpl("bnode3"));
 
-		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2);
+		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
+		solution4.addBinding("a", new LiteralImpl("\'\'single-quoted string with newline at the end       \n", XMLSchema.STRING));
+
+		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
+		solution5.addBinding("a", new LiteralImpl("\"\"double-quoted string with space at the end         ", XMLSchema.STRING));
+
+		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4, solution5);
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
