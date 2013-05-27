@@ -415,7 +415,7 @@ public class QueryEvaluationUtil {
 	 */
 	public static boolean isStringLiteral(Literal l) {
 		if (l.isLanguageLiteral()) {
-			return false;
+			return true;
 		}
 
 		URI datatype = l.getDatatype();
