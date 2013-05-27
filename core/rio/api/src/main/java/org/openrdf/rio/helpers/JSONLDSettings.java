@@ -66,7 +66,7 @@ public class JSONLDSettings {
 	 * false. xsd:integer and xsd:double values will be converted to JSON
 	 * numbers.
 	 * <p>
-	 * Defaults to true.
+	 * Defaults to false for RDF compatibility.
 	 * 
 	 * @since 2.7.0
 	 * @see <a
@@ -74,7 +74,7 @@ public class JSONLDSettings {
 	 *      Data Structures</a>
 	 */
 	public static final RioSetting<Boolean> USE_NATIVE_TYPES = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.jsonld.usenativetypes", "Use Native JSON Types", Boolean.TRUE);
+			"org.openrdf.rio.jsonld.usenativetypes", "Use Native JSON Types", Boolean.FALSE);
 
 	/**
 	 * If set to true, the JSON-LD processor will use the expanded rdf:type IRI

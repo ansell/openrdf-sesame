@@ -37,7 +37,6 @@ import info.aduna.io.MavenUtil;
 import info.aduna.platform.Platform;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.QueryResultFormat;
@@ -334,15 +333,6 @@ public abstract class BaseServlet implements Servlet {
 		// is supported
 		if (resultWriter.getSupportedSettings().contains(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL)) {
 			resultWriter.getWriterConfig().set(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, true);
-		}
-
-		// Explicitly support the xsd prefix for XMLSchema namespace as it is
-		// required by XSLT scripts
-		try {
-			resultWriter.handleNamespace("xsd", "http://www.w3.org/2001/XMLSchema#");
-		}
-		catch (QueryResultHandlerException e) {
-			throw new IOException(e);
 		}
 
 		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());

@@ -82,6 +82,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	public void setDelegate(RepositoryConnection delegate) {
 		this.delegate = delegate;
+		setParserConfig(delegate.getParserConfig());
 	}
 
 	/**
@@ -96,8 +97,6 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	 * @see #add(Reader, String, RDFFormat, Resource...)
 	 * @see #add(Resource, URI, Value, Resource...)
 	 * @see #add(URL, String, RDFFormat, Resource...)
-	 * @see #getParserConfig()
-	 * @see #setParserConfig(ParserConfig)
 	 * @return <code>true</code> to delegate add methods, <code>false</code> to
 	 *         call {@link #addWithoutCommit(Resource, URI, Value, Resource[])}
 	 * @throws RepositoryException
@@ -150,34 +149,15 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	@Override
 	public void setParserConfig(ParserConfig parserConfig) {
+		super.setParserConfig(parserConfig);
 		try {
-			if (isDelegatingAdd()) {
+			if (getDelegate() != null) {
 				getDelegate().setParserConfig(parserConfig);
-			}
-			else {
-				super.setParserConfig(parserConfig);
 			}
 		}
 		catch (RepositoryException e) {
 			logger.error("Error while trying to configure parser", e);
 		}
-
-	}
-
-	@Override
-	public ParserConfig getParserConfig() {
-		try {
-			if (isDelegatingAdd()) {
-				return getDelegate().getParserConfig();
-			}
-			else {
-				return super.getParserConfig();
-			}
-		}
-		catch (RepositoryException e) {
-			logger.error("Error while trying to retrieve parser config", e);
-		}
-		return null;
 	}
 
 	@Override
