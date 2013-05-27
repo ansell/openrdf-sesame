@@ -16,6 +16,7 @@
  */
 package org.openrdf.queryrender;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.rio.ntriples.NTriplesUtil;
 
 /**
  * @author Michael Grove
@@ -46,24 +48,13 @@ public final class RenderUtils {
 	public static String getSPARQLQueryString(Value theValue) {
 		StringBuilder aBuffer = new StringBuilder();
 
-		if (theValue instanceof URI) {
-			URI aURI = (URI)theValue;
-			aBuffer.append("<").append(aURI.toString()).append(">");
+		try {
+			NTriplesUtil.append(theValue, aBuffer);
 		}
-		else if (theValue instanceof BNode) {
-			aBuffer.append("_:").append(((BNode)theValue).getID());
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize value", e);
 		}
-		else if (theValue instanceof Literal) {
-			Literal aLit = (Literal)theValue;
-
-			aBuffer.append("\"\"\"").append(escape(aLit.getLabel())).append("\"\"\"").append(
-					aLit.getLanguage() != null ? "@" + aLit.getLanguage() : "");
-
-			if (aLit.getDatatype() != null) {
-				aBuffer.append("^^<").append(aLit.getDatatype().toString()).append(">");
-			}
-		}
-
+		
 		return aBuffer.toString();
 	}
 

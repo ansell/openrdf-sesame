@@ -29,6 +29,11 @@
 			<artifactId>sesame-queryalgebra-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-rio-ntriples</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
