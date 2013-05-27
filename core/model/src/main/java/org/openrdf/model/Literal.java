@@ -21,11 +21,22 @@ import java.math.BigInteger;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.openrdf.model.vocabulary.RDF;
+
 /**
- * An RDF literal consisting of a label (the value) and optionally a language
- * tag or a datatype (but not both).
+ * An RDF-1.1 Literal.
+ * <p>
+ * A Literal may be either a Language Literal or a Typed Literal.
+ * <p>
+ * All Language Literals must have the datatype rdf:langString.
+ * <p>
+ * All Typed Literals must have a non-null datatype that is not rdf:langString.
+ * <p>
+ * If a Typed Literal is not explicitly given a datatype, then xsd:string will
+ * is implied.
  * 
  * @author Arjohn Kampman
+ * @author Peter Ansell
  */
 public interface Literal extends Value {
 
@@ -39,18 +50,39 @@ public interface Literal extends Value {
 	/**
 	 * Gets the language tag for this literal, normalized to lower case.
 	 * 
-	 * @return The language tag for this literal, or <tt>null</tt> if it
-	 *         doesn't have one.
+	 * @return The language tag for this literal, or <tt>null</tt> if it doesn't
+	 *         have one.
 	 */
 	public String getLanguage();
 
 	/**
+	 * Identifies whether this is an RDF-1.1 Language Literal. A Language Literal
+	 * must return a non-null value from {@link #getLanguage()}, and
+	 * {@link #getDatatype()} must return {@link RDF#LANGSTRING}.
+	 * 
+	 * @return True if this is an RDF-1.1 Language Literal.
+	 */
+	public boolean isLanguageLiteral();
+
+	/**
 	 * Gets the datatype for this literal.
 	 * 
-	 * @return The datatype for this literal, or <tt>null</tt> if it doesn't
-	 *         have one.
+	 * @return The datatype for this literal. This datatype must be
+	 *         {@link RDF#LANGSTRING} if {@link #isLanguageLiteral()} returns
+	 *         true.
 	 */
 	public URI getDatatype();
+
+	/**
+	 * Identifies whether this is an RDF-1.1 Typed Literal. A Typed Literal must
+	 * return null from {@link #getLanguage()} and return false from
+	 * {@link #isLanguageLiteral()}.
+	 * 
+	 * @return True if this Literal is an RDF-1.1 Typed Literal. If
+	 *         {@link #isLanguageLiteral()} returns true, this method must return
+	 *         false.
+	 */
+	public boolean isTypedLiteral();
 
 	/**
 	 * Compares a literal object to another object.
@@ -75,7 +107,8 @@ public interface Literal extends Value {
 	 * Returns the <tt>byte</tt> value of this literal.
 	 * 
 	 * @return The <tt>byte value of the literal.
-	 * @throws NumberFormatException If the literal cannot be represented by a <tt>byte</tt>.
+	 * @throws NumberFormatException
+	 *         If the literal cannot be represented by a <tt>byte</tt>.
 	 */
 	public byte byteValue();
 
@@ -102,7 +135,8 @@ public interface Literal extends Value {
 	 * 
 	 * @return The <tt>long</tt> value of the literal.
 	 * @throws NumberFormatException
-	 *         If the literal's label cannot be represented by to a <tt>long</tt>.
+	 *         If the literal's label cannot be represented by to a <tt>long</tt>
+	 *         .
 	 */
 	public long longValue();
 
@@ -147,7 +181,8 @@ public interface Literal extends Value {
 	 * 
 	 * @return The <tt>long</tt> value of the literal.
 	 * @throws IllegalArgumentException
-	 *         If the literal's label cannot be represented by a <tt>boolean</tt>.
+	 *         If the literal's label cannot be represented by a <tt>boolean</tt>
+	 *         .
 	 */
 	public boolean booleanValue();
 
@@ -155,9 +190,9 @@ public interface Literal extends Value {
 	 * Returns the {@link XMLGregorianCalendar} value of this literal. A calendar
 	 * representation can be given for literals whose label conforms to the
 	 * syntax of the following <a href="http://www.w3.org/TR/xmlschema-2/">XML
-	 * Schema datatypes</a>: <tt>dateTime</tt>, <tt>time</tt>,
-	 * <tt>date</tt>, <tt>gYearMonth</tt>, <tt>gMonthDay</tt>,
-	 * <tt>gYear</tt>, <tt>gMonth</tt> or <tt>gDay</tt>.
+	 * Schema datatypes</a>: <tt>dateTime</tt>, <tt>time</tt>, <tt>date</tt>,
+	 * <tt>gYearMonth</tt>, <tt>gMonthDay</tt>, <tt>gYear</tt>, <tt>gMonth</tt>
+	 * or <tt>gDay</tt>.
 	 * 
 	 * @return The calendar value of the literal.
 	 * @throws IllegalArgumentException

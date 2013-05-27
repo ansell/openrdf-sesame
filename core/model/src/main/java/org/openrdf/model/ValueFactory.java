@@ -20,6 +20,7 @@ import java.util.Date;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -76,7 +77,8 @@ public interface ValueFactory {
 	public BNode createBNode(String nodeID);
 
 	/**
-	 * Creates a new literal with the supplied label.
+	 * Creates a new literal with the supplied label and a datatype of
+	 * {@link XMLSchema#STRING}.
 	 * 
 	 * @param label
 	 *        The literal's label.
@@ -84,7 +86,8 @@ public interface ValueFactory {
 	public Literal createLiteral(String label);
 
 	/**
-	 * Creates a new literal with the supplied label and language attribute.
+	 * Creates a new Language Literal with the supplied label and language
+	 * attribute and the datatype of {@link RDF#LANGSTRING}.
 	 * 
 	 * @param label
 	 *        The literal's label.
@@ -95,13 +98,13 @@ public interface ValueFactory {
 	public Literal createLiteral(String label, String language);
 
 	/**
-	 * Creates a new literal with the supplied label and datatype.
+	 * Creates a new Typed Literal with the supplied label and datatype.
 	 * 
 	 * @param label
 	 *        The literal's label.
 	 * @param datatype
-	 *        The literal's datatype, or <tt>null</tt> if the literal doesn't
-	 *        have a datatype.
+	 *        The literal's datatype. If this is null, then the datatype
+	 *        {@link XMLSchema#STRING} will be assigned to this Literal.
 	 */
 	public Literal createLiteral(String label, URI datatype);
 
