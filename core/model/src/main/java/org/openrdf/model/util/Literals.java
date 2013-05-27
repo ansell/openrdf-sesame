@@ -28,6 +28,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.language.LanguageTag;
 import org.openrdf.model.util.language.LanguageTagSyntaxException;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -601,6 +602,30 @@ public class Literals {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Determines whether the given literal is a Typed Literal that does not have
+	 * one of the native datatypes. The native datatypes are
+	 * {@link RDF#LANGSTRING} for Language Literals, and {@link XMLSchema#STRING}
+	 * as the default datatype for other Typed Literals.
+	 * <p>
+	 * This method is used to determine whether the datatype returned by
+	 * {@link Literal#getDatatype()} is necessary in concrete syntaxes where
+	 * Language Literals do not have an explicit datatype and
+	 * {@link XMLSchema#STRING} is implied for other literals.
+	 * 
+	 * @param literal
+	 * @return Returns true if the literal is a Typed Literal and its datatype is
+	 *         not the implied datatype, {@link XMLSchema#STRING}.
+	 * @since 2.8.0
+	 */
+	public static boolean hasNonNativeDatatype(Literal literal) {
+		if (literal.isLanguageLiteral() || literal.getDatatype().equals(XMLSchema.STRING)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	protected Literals() {
