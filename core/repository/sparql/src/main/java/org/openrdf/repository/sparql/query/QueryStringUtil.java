@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.sparql.query;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
+import org.openrdf.rio.ntriples.NTriplesUtil;
 
 /**
  * Utility class to perfom query string manipulations as used in
@@ -86,24 +88,22 @@ public class QueryStringUtil {
 	}
 
 	private static StringBuilder appendValue(StringBuilder sb, URI uri) {
-		sb.append("<").append(uri.stringValue()).append(">");
-		return sb;
+		try {
+			NTriplesUtil.append(uri, sb);
+			return sb;
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize URI", e);
+		}
 	}
 
 	private static StringBuilder appendValue(StringBuilder sb, Literal lit) {
-		sb.append('"');
-		sb.append(SPARQLUtil.encodeString(lit.getLabel()));
-		sb.append('"');
-
-		if (lit.getLanguage() != null) {
-			sb.append('@');
-			sb.append(lit.getLanguage());
+		try {
+			NTriplesUtil.append(lit, sb);
+			return sb;
 		}
-		else if (lit.getDatatype() != null) {
-			sb.append("^^<");
-			sb.append(lit.getDatatype().stringValue());
-			sb.append('>');
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize literal", e);
 		}
-		return sb;
 	}
 }
