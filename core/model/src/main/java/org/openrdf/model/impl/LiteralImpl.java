@@ -24,6 +24,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * An implementation of the {@link Literal} interface.
@@ -118,34 +120,54 @@ public class LiteralImpl implements Literal {
 	 *---------*/
 
 	protected void setLabel(String label) {
-		if(label == null) {
+		if (label == null) {
 			throw new NullPointerException("Literal label cannot be null");
 		}
 
 		this.label = label;
 	}
 
+	@Override
 	public String getLabel() {
 		return label;
 	}
 
 	protected void setLanguage(String language) {
+		if (language != null) {
+			this.datatype = RDF.LANGSTRING;
+		}
 		this.language = language;
 	}
 
+	@Override
 	public String getLanguage() {
 		return language;
 	}
 
-	protected void setDatatype(URI datatype) {
-		this.datatype = datatype;
+	@Override
+	public boolean isLanguageLiteral() {
+		return this.language != null;
 	}
 
+	protected void setDatatype(URI datatype) {
+		if (datatype == null) {
+			this.datatype = XMLSchema.STRING;
+		}
+		else {
+			this.datatype = datatype;
+		}
+	}
+
+	@Override
 	public URI getDatatype() {
 		return datatype;
 	}
-
-	// Overrides Object.equals(Object), implements Literal.equals(Object)
+	
+	@Override
+	public boolean isTypedLiteral() {
+		return this.language == null;
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -190,10 +212,14 @@ public class LiteralImpl implements Literal {
 		return false;
 	}
 
-	// overrides Object.hashCode(), implements hashCode()
 	@Override
 	public int hashCode() {
-		return label.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
+		result = prime * result + ((datatype == null) ? 0 : datatype.hashCode());
+		result = prime * result + ((language == null) ? 0 : language.hashCode());
+		return result;
 	}
 
 	/**
@@ -207,12 +233,12 @@ public class LiteralImpl implements Literal {
 		sb.append(label);
 		sb.append('"');
 
-		if (language != null) {
+		if (isLanguageLiteral()) {
 			sb.append('@');
 			sb.append(language);
 		}
 
-		if (datatype != null) {
+		if (isTypedLiteral()) {
 			sb.append("^^<");
 			sb.append(datatype.toString());
 			sb.append(">");
@@ -221,46 +247,57 @@ public class LiteralImpl implements Literal {
 		return sb.toString();
 	}
 
+	@Override
 	public String stringValue() {
 		return label;
 	}
 
+	@Override
 	public boolean booleanValue() {
 		return XMLDatatypeUtil.parseBoolean(getLabel());
 	}
 
+	@Override
 	public byte byteValue() {
 		return XMLDatatypeUtil.parseByte(getLabel());
 	}
 
+	@Override
 	public short shortValue() {
 		return XMLDatatypeUtil.parseShort(getLabel());
 	}
 
+	@Override
 	public int intValue() {
 		return XMLDatatypeUtil.parseInt(getLabel());
 	}
 
+	@Override
 	public long longValue() {
 		return XMLDatatypeUtil.parseLong(getLabel());
 	}
 
+	@Override
 	public float floatValue() {
 		return XMLDatatypeUtil.parseFloat(getLabel());
 	}
 
+	@Override
 	public double doubleValue() {
 		return XMLDatatypeUtil.parseDouble(getLabel());
 	}
 
+	@Override
 	public BigInteger integerValue() {
 		return XMLDatatypeUtil.parseInteger(getLabel());
 	}
 
+	@Override
 	public BigDecimal decimalValue() {
 		return XMLDatatypeUtil.parseDecimal(getLabel());
 	}
 
+	@Override
 	public XMLGregorianCalendar calendarValue() {
 		return XMLDatatypeUtil.parseCalendar(getLabel());
 	}
