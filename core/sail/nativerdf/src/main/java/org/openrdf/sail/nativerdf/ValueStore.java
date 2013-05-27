@@ -17,6 +17,7 @@
 package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -497,12 +498,12 @@ public class ValueStore extends ValueFactoryBase implements java.lang.AutoClosea
 		byte[] langData = null;
 		int langDataLength = 0;
 		if (literal.getLanguage() != null) {
-			langData = literal.getLanguage().getBytes("UTF-8");
+			langData = literal.getLanguage().getBytes(StandardCharsets.UTF_8);
 			langDataLength = langData.length;
 		}
 
 		// Get label in UTF-8
-		byte[] labelData = literal.getLabel().getBytes("UTF-8");
+		byte[] labelData = literal.getLabel().getBytes(StandardCharsets.UTF_8);
 
 		// Combine parts in a single byte array
 		byte[] literalData = new byte[6 + langDataLength + labelData.length];
