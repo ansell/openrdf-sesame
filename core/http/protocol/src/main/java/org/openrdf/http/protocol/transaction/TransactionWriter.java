@@ -297,7 +297,7 @@ public class TransactionWriter {
 			if (literal.getLanguage() != null) {
 				xmlWriter.setAttribute(TransactionXMLConstants.LANG_ATT, literal.getLanguage());
 			}
-			if (literal.getDatatype() != null) {
+			else if (literal.getDatatype() != null) {
 				xmlWriter.setAttribute(TransactionXMLConstants.DATATYPE_ATT, literal.getDatatype().toString());
 			}
 
