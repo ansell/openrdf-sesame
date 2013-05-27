@@ -116,7 +116,9 @@ public class RDFParserHelperTest {
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertNull(literal.getLanguage());
-		assertNull(literal.getDatatype());
+		assertEquals(XMLSchema.STRING, literal.getDatatype());
+		assertFalse(literal.isLanguageLiteral());
+		assertTrue(literal.isTypedLiteral());
 	}
 
 	/**
@@ -151,6 +153,8 @@ public class RDFParserHelperTest {
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertNull(literal.getLanguage());
 		assertEquals(XMLSchema.STRING, literal.getDatatype());
+		assertFalse(literal.isLanguageLiteral());
+		assertTrue(literal.isTypedLiteral());
 	}
 
 	/**
