@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,6 +51,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
 import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
+import org.openrdf.rio.ntriples.NTriplesUtil;
 
 /**
  * Federated Service wrapping the {@link SPARQLRepository} to communicate with a
@@ -445,8 +447,13 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @return the StringBuilder, for convenience
 	 */
 	protected static StringBuilder appendURI(StringBuilder sb, URI uri) {
-		sb.append("<").append(uri.stringValue()).append(">");
-		return sb;
+		try {
+			NTriplesUtil.append(uri, sb);
+			return sb;
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize URI", e);
+		}
 	}
 
 	/**
@@ -457,19 +464,12 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @return the StringBuilder, for convenience
 	 */
 	protected static StringBuilder appendLiteral(StringBuilder sb, Literal lit) {
-		sb.append('"');
-		sb.append(lit.getLabel().replace("\"", "\\\""));
-		sb.append('"');
-
-		if (lit.getLanguage() != null) {
-			sb.append('@');
-			sb.append(lit.getLanguage());
+		try {
+			NTriplesUtil.append(lit, sb);
+			return sb;
 		}
-		else if (lit.getDatatype() != null) {
-			sb.append("^^<");
-			sb.append(lit.getDatatype().stringValue());
-			sb.append('>');
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize literal", e);
 		}
-		return sb;
 	}
 }
