@@ -29,7 +29,6 @@ import org.openrdf.model.impl.LiteralImpl;
  * Wraps a {@link LiteralImpl} providing an internal id and version.
  * 
  * @author James Leigh
- * 
  */
 public class RdbmsLiteral extends RdbmsValue implements Literal {
 
@@ -46,58 +45,82 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 		this.lit = lit;
 	}
 
+	@Override
 	public boolean booleanValue() {
 		return lit.booleanValue();
 	}
 
+	@Override
 	public byte byteValue() {
 		return lit.byteValue();
 	}
 
+	@Override
 	public XMLGregorianCalendar calendarValue() {
 		return lit.calendarValue();
 	}
 
+	@Override
 	public BigDecimal decimalValue() {
 		return lit.decimalValue();
 	}
 
+	@Override
 	public double doubleValue() {
 		return lit.doubleValue();
 	}
 
+	@Override
 	public float floatValue() {
 		return lit.floatValue();
 	}
 
+	@Override
 	public URI getDatatype() {
 		return lit.getDatatype();
 	}
 
+	@Override
+	public boolean isTypedLiteral() {
+		return lit.isTypedLiteral();
+	}
+
+	@Override
 	public String getLabel() {
 		return lit.getLabel();
 	}
 
+	@Override
 	public String getLanguage() {
 		return lit.getLanguage();
 	}
 
+	@Override
+	public boolean isLanguageLiteral() {
+		return lit.isLanguageLiteral();
+	}
+
+	@Override
 	public BigInteger integerValue() {
 		return lit.integerValue();
 	}
 
+	@Override
 	public int intValue() {
 		return lit.intValue();
 	}
 
+	@Override
 	public long longValue() {
 		return lit.longValue();
 	}
 
+	@Override
 	public short shortValue() {
 		return lit.shortValue();
 	}
 
+	@Override
 	public String stringValue() {
 		return lit.stringValue();
 	}
