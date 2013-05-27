@@ -110,7 +110,7 @@ public class LiteralImpl implements Literal {
 		if (language != null) {
 			setLanguage(language.toLowerCase());
 		}
-		if (datatype != null) {
+		else {
 			setDatatype(datatype);
 		}
 	}
