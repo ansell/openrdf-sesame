@@ -77,6 +77,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.rio.ntriples.NTriplesUtil;
 
 /**
  * Provides a {@link RepositoryConnection} interface to any SPARQL endpoint.
@@ -850,46 +851,39 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private void createBGP(StringBuilder qb, Resource subject, URI predicate, Value object) {
 		if (subject != null) {
-			if (subject instanceof BNode) {
-				qb.append("_:" + subject.stringValue() + " ");
+			try {
+				NTriplesUtil.append(subject, qb);
 			}
-			else {
-				qb.append("<" + subject.stringValue() + "> ");
+			catch (IOException e) {
+				throw new RuntimeException("Failed to serialize resource", e);
 			}
+			qb.append(" ");
 		}
 		else {
 			qb.append("?subj");
 		}
 
 		if (predicate != null) {
-			qb.append("<" + predicate.stringValue() + "> ");
+			try {
+				NTriplesUtil.append(predicate, qb);
+			}
+			catch (IOException e) {
+				throw new RuntimeException("Failed to serialize URI", e);
+			}
+			qb.append(" ");
 		}
 		else {
 			qb.append("?pred");
 		}
 
 		if (object != null) {
-			if (object instanceof Literal) {
-				Literal lit = (Literal)object;
-				qb.append("\"");
-				qb.append(SPARQLUtil.encodeString(lit.getLabel()));
-				qb.append("\"");
-
-				if (lit.getLanguage() != null) {
-					qb.append("@");
-					qb.append(lit.getLanguage());
-				}
-				else if (lit.getDatatype() != null) {
-					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
-				}
-				qb.append(" ");
+			try {
+				NTriplesUtil.append(object, qb);
 			}
-			else if (object instanceof BNode) {
-				qb.append("_:" + object.stringValue() + " ");
+			catch (IOException e) {
+				throw new RuntimeException("Failed to serialize value", e);
 			}
-			else {
-				qb.append("<" + object.stringValue() + "> ");
-			}
+			qb.append(" ");
 		}
 		else {
 			qb.append("?obj");
