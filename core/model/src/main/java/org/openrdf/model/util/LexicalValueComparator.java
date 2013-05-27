@@ -99,18 +99,8 @@ public class LexicalValueComparator implements Serializable, Comparator<Value> {
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
-		if (leftDatatype != null) {
-			if (rightDatatype != null) {
-				// Both literals have datatypes
-				result = compareDatatypes(leftDatatype, rightDatatype);
-			}
-			else {
-				result = 1;
-			}
-		}
-		else if (rightDatatype != null) {
-			result = -1;
-		}
+		// Both literals have datatypes
+		result = compareDatatypes(leftDatatype, rightDatatype);
 
 		if (result == 0) {
 			// datatypes are equal or both literals are untyped; sort by language
