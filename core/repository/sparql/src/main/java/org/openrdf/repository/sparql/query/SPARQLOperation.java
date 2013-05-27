@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.sparql.query;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +36,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.Operation;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.rio.ntriples.NTriplesUtil;
 
 /**
  * @author jeen
@@ -154,25 +156,23 @@ public abstract class SPARQLOperation implements Operation {
 	}
 
 	private StringBuilder appendValue(StringBuilder sb, URI uri) {
-		sb.append("<").append(uri.stringValue()).append(">");
-		return sb;
+		try {
+			NTriplesUtil.append(uri, sb);
+			return sb;
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize URI", e);
+		}
 	}
 
 	private StringBuilder appendValue(StringBuilder sb, Literal lit) {
-		sb.append('"');
-		sb.append(lit.getLabel().replace("\"", "\\\""));
-		sb.append('"');
-
-		if (lit.getLanguage() != null) {
-			sb.append('@');
-			sb.append(lit.getLanguage());
+		try {
+			NTriplesUtil.append(lit, sb);
+			return sb;
 		}
-		else if (lit.getDatatype() != null) {
-			sb.append("^^<");
-			sb.append(lit.getDatatype().stringValue());
-			sb.append('>');
+		catch (IOException e) {
+			throw new RuntimeException("Failed to serialize literal", e);
 		}
-		return sb;
 	}
 
 
