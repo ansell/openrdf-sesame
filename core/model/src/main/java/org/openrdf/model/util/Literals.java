@@ -19,6 +19,7 @@ package org.openrdf.model.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -26,8 +27,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.language.LanguageTag;
-import org.openrdf.model.util.language.LanguageTagSyntaxException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -414,22 +413,19 @@ public class Literals {
 	}
 
 	/**
-	 * Determine the Locale from a literal's language tag, as specified by RFC
-	 * 3166. Note that RFC 3166 isn't fully covered by the current (JSE 6)
-	 * implementation of java.util.Locale. Therefore, this method will only
-	 * return a specific locale for language tags that comply with the Locale
-	 * API, i.e. those that contain an ISO639 language, an optional ISO3166
-	 * country and an optional variant. In all other cases (i.e. if an error
-	 * occurs or the language tag represents an IANA-registred language tag), the
-	 * fallback value will be returned.
+	 * Determine the Locale from a literal's language tag, as specified by BCP47.
+	 * <p>
+	 * This implementation relies on the Java-7
+	 * {@link Locale#forLanguageTag(String)} method to interpret the language tag
+	 * using the rules from BCP47.
 	 * 
 	 * @param l
 	 *        the literal
 	 * @param fallback
 	 *        a fallback value for the locale
-	 * @return the Locale, or the fallback if a suitable Locale could not be
-	 *         constructed for the language tag.
-	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
+	 * @return the Locale, or the fallback if the language was null or the Locale
+	 *         was not legal according to BCP47.
+	 * @see <a href="https://tools.ietf.org/html/bcp47">BCP47</a>
 	 */
 	public static Locale getLocale(Literal l, Locale fallback) {
 		Locale result = fallback;
@@ -437,11 +433,12 @@ public class Literals {
 		try {
 			String lang = l.getLanguage();
 			if (lang != null) {
-				LanguageTag tag = new LanguageTag(lang);
-				result = tag.toLocale();
+				Locale.Builder builder = new Locale.Builder();
+				builder.setLanguageTag(lang);
+				result = builder.build();
 			}
 		}
-		catch (LanguageTagSyntaxException e) {
+		catch (IllformedLocaleException e) {
 			result = fallback;
 		}
 
