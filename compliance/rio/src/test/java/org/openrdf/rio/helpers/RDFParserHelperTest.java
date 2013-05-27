@@ -136,6 +136,8 @@ public class RDFParserHelperTest {
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertEquals(LANG_EN, literal.getLanguage());
 		assertEquals(RDF.LANGSTRING, literal.getDatatype());
+		assertTrue(literal.isLanguageLiteral());
+		assertFalse(literal.isTypedLiteral());
 	}
 
 	/**
