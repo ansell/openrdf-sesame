@@ -36,6 +36,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -309,7 +310,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		Literal object = (Literal)statement.getObject();
 		Assert.assertEquals("2010-05-02", object.stringValue());
 		Assert.assertEquals("en", object.getLanguage());
-		Assert.assertNull("en", object.getDatatype());
+		Assert.assertEquals(RDF.LANGSTRING, object.getDatatype());
 		Assert.assertEquals("http://sin.siteserv.org/def/", statement.getContext().stringValue());
 	}
 
