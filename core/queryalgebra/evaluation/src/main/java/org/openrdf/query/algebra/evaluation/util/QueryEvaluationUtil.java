@@ -322,11 +322,14 @@ public class QueryEvaluationUtil {
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#dfn-plain-literal">RDF
 	 *      Literal Documentation</a>
+	 * @deprecated RDF-1.1 does not define Plain Literals. All RDF-1.0 Plain
+	 *             Literals now have the datatype xsd:string. Now only returns
+	 *             true for RDF-1.1 Language Literals.
 	 */
+	@Deprecated
 	public static boolean isPlainLiteral(Value v) {
 		if (v instanceof Literal) {
-			Literal l = (Literal)v;
-			return (l.getDatatype() == null);
+			return ((Literal)v).isLanguageLiteral();
 		}
 		return false;
 	}
@@ -337,12 +340,11 @@ public class QueryEvaluationUtil {
 	 * 
 	 * @see <a href="http://www.w3.org/TR/sparql11-query/#simple_literal">SPARQL
 	 *      Simple Literal Documentation</a>
+	 * @deprecated RDF-1.1 does not allow Simple Literals. All RDF-1.0 Plain
+	 *             Literals now have the datatype xsd:string.
 	 */
+	@Deprecated
 	public static boolean isSimpleLiteral(Value v) {
-		if (v instanceof Literal) {
-			return isSimpleLiteral((Literal)v);
-		}
-
 		return false;
 	}
 
@@ -352,15 +354,20 @@ public class QueryEvaluationUtil {
 	 * 
 	 * @see <a href="http://www.w3.org/TR/sparql11-query/#simple_literal">SPARQL
 	 *      Simple Literal Documentation</a>
+	 * @deprecated RDF-1.1 does not define Plain Literals. All RDF-1.0 Plain
+	 *             Literals now have the datatype xsd:string.
 	 */
+	@Deprecated
 	public static boolean isSimpleLiteral(Literal l) {
-		return l.getLanguage() == null && l.getDatatype() == null;
+		return false;
 	}
 
 	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
-	 * literal" is either a simple literal, a plain literal with language tag, or
-	 * a literal with datatype xsd:string.
+	 * literal" is a literal with datatype xsd:string.
+	 * <p>
+	 * To avoid common mistakes, if {@link Literal#isLanguageLiteral()}, returns
+	 * true, then this method returns false.
 	 * 
 	 * @see <a href="http://www.w3.org/TR/sparql11-query/#func-string">SPARQL
 	 *      Functions on Strings Documentation</a>
@@ -389,6 +396,7 @@ public class QueryEvaluationUtil {
 	 *      Argument Compatibility Rules</a>
 	 */
 	public static boolean compatibleArguments(Literal arg1, Literal arg2) {
+		// FIXME: isSimpleLiteral and isPlainLiteral are not meaningful in RDF-1.1
 		boolean compatible = ((isSimpleLiteral(arg1) || XMLSchema.STRING.equals(arg1.getDatatype())) && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())))
 				|| (isPlainLiteral(arg1) && isPlainLiteral(arg2) && arg1.getLanguage() != null && arg1.getLanguage().equals(
 						arg2.getLanguage()))
@@ -399,15 +407,21 @@ public class QueryEvaluationUtil {
 
 	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
-	 * literal" is either a simple literal, a plain literal with language tag, or
-	 * a literal with datatype xsd:string.
+	 * literal" is a literal with the datatype xsd:string.
+	 * <p>
+	 * To avoid common mistakes, if {@link Literal#isLanguageLiteral()}, returns
+	 * true, then this method returns false.
 	 * 
 	 * @see <a href="http://www.w3.org/TR/sparql11-query/#func-string">SPARQL
 	 *      Functions on Strings Documentation</a>
 	 */
 	public static boolean isStringLiteral(Literal l) {
+		if (l.isLanguageLiteral()) {
+			return false;
+		}
+
 		URI datatype = l.getDatatype();
-		return datatype == null || datatype.equals(XMLSchema.STRING);
+		return datatype.equals(XMLSchema.STRING);
 	}
 
 	private static boolean isSupportedDatatype(URI datatype) {
