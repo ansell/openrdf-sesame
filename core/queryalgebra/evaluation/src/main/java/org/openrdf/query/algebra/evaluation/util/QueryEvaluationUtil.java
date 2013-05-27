@@ -273,9 +273,7 @@ public class QueryEvaluationUtil {
 			boolean literalsEqual = leftLit.equals(rightLit);
 
 			if (!literalsEqual) {
-				if (leftDatatype != null && rightDatatype != null && isSupportedDatatype(leftDatatype)
-						&& isSupportedDatatype(rightDatatype))
-				{
+				if (isSupportedDatatype(leftDatatype) && isSupportedDatatype(rightDatatype)) {
 					// left and right arguments have incompatible but supported
 					// datatypes
 
@@ -289,8 +287,8 @@ public class QueryEvaluationUtil {
 						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
 					}
 				}
-				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
-						&& leftLit.getLanguage() == null)
+				else if ((leftLit.isLanguageLiteral() && !rightLit.isLanguageLiteral())
+						|| (!leftLit.isLanguageLiteral() && rightLit.isLanguageLiteral()))
 				{
 					// For literals with unsupported datatypes we don't know if their
 					// values are equal
