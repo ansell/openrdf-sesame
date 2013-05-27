@@ -417,6 +417,12 @@ public class NTriplesUtil {
 			else if (c == '\t') {
 				appendable.append("\\t");
 			}
+			else if (c == '\b') {
+				appendable.append("\\b");
+			}
+			else if (c == '\f') {
+				appendable.append("\\f");
+			}
 			else if (cInt >= 0x0 && cInt <= 0x8 || cInt == 0xB || cInt == 0xC || cInt >= 0xE && cInt <= 0x1F
 					|| cInt >= 0x7F && cInt <= 0xFFFF)
 			{
