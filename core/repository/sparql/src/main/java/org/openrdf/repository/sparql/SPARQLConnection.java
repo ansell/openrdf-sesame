@@ -730,37 +730,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private void createDataBody(StringBuilder qb, Iterable<? extends Statement> statements) {
 		for (Statement st : statements) {
-			if (st.getSubject() instanceof BNode) {
-				qb.append("_:" + st.getSubject().stringValue() + " ");
-			}
-			else {
-				qb.append("<" + st.getSubject().stringValue() + "> ");
-			}
-
-			qb.append("<" + st.getPredicate().stringValue() + "> ");
-
-			if (st.getObject() instanceof Literal) {
-				Literal lit = (Literal)st.getObject();
-				qb.append("\"");
-				qb.append(SPARQLUtil.encodeString(lit.getLabel()));
-				qb.append("\"");
-
-				if (lit.getLanguage() != null) {
-					qb.append("@");
-					qb.append(lit.getLanguage());
-				}
-				else if (lit.getDatatype() != null) {
-					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
-				}
-				qb.append(" ");
-			}
-			else if (st.getObject() instanceof BNode) {
-				qb.append("_:" + st.getObject().stringValue() + " ");
-			}
-			else {
-				qb.append("<" + st.getObject().stringValue() + "> ");
-			}
-			qb.append(". \n");
+			createBGP(qb, st.getSubject(), st.getPredicate(), st.getObject());
 		}
 	}
 
