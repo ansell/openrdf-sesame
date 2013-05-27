@@ -481,17 +481,15 @@ public class ValueStore extends ValueFactoryBase implements java.lang.AutoClosea
 		// Get datatype ID
 		int datatypeID = NativeValue.UNKNOWN_ID;
 
-		if (literal.getDatatype() != null) {
-			if (create) {
-				datatypeID = storeValue(literal.getDatatype());
-			}
-			else {
-				datatypeID = getID(literal.getDatatype());
+		if (create) {
+			datatypeID = storeValue(literal.getDatatype());
+		}
+		else {
+			datatypeID = getID(literal.getDatatype());
 
-				if (datatypeID == NativeValue.UNKNOWN_ID) {
-					// Unknown datatype means unknown literal
-					return null;
-				}
+			if (datatypeID == NativeValue.UNKNOWN_ID) {
+				// Unknown datatype means unknown literal
+				return null;
 			}
 		}
 
