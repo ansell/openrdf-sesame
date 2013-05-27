@@ -34,6 +34,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.TreeModel;
+import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -167,8 +168,7 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 			if (l.getLanguage() != null) {
 				jg.writeObjectField(RDFJSONUtility.LANG, l.getLanguage());
 			}
-	
-			if (l.getDatatype() != null) {
+			else if (Literals.hasNonNativeDatatype(l)) {
 				jg.writeObjectField(RDFJSONUtility.DATATYPE, l.getDatatype().stringValue());
 			}
 		}
