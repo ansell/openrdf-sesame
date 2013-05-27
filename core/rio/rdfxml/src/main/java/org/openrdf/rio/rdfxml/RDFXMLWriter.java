@@ -32,6 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -296,7 +297,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					if (isXMLLiteral) {
 						writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
 					}
-					else {
+					else if (Literals.hasNonNativeDatatype(objLit)) {
 						writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
 					}
 				}
