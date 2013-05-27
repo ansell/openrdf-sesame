@@ -61,6 +61,7 @@ public interface Literal extends Value {
 	 * {@link #getDatatype()} must return {@link RDF#LANGSTRING}.
 	 * 
 	 * @return True if this is an RDF-1.1 Language Literal.
+	 * @since 2.8.0
 	 */
 	public boolean isLanguageLiteral();
 
@@ -81,6 +82,7 @@ public interface Literal extends Value {
 	 * @return True if this Literal is an RDF-1.1 Typed Literal. If
 	 *         {@link #isLanguageLiteral()} returns true, this method must return
 	 *         false.
+	 * @since 2.8.0
 	 */
 	public boolean isTypedLiteral();
 
