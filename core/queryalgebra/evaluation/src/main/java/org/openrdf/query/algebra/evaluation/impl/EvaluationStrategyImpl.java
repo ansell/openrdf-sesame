@@ -1141,12 +1141,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (v instanceof Literal) {
 			Literal literal = (Literal)v;
 
-			if (literal.getDatatype() != null) {
+			if(literal.isLanguageLiteral()) {
+				return RDF.LANGSTRING;
+			}
+			else if (literal.getDatatype() != null) {
 				// literal with datatype
 				return literal.getDatatype();
-			}
-			else if (literal.getLanguage() != null) {
-				return RDF.LANGSTRING;
 			}
 			else {
 				// simple literal
