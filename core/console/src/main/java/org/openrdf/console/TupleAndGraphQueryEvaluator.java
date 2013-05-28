@@ -36,6 +36,8 @@ import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.ntriples.NTriplesUtil;
 
 /**
@@ -49,6 +51,15 @@ public class TupleAndGraphQueryEvaluator {
 
 	private final ConsoleParameters parameters;
 
+	private static final ParserConfig nonVerifyingParserConfig;
+	
+	static {
+		nonVerifyingParserConfig = new ParserConfig();
+		nonVerifyingParserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
+		nonVerifyingParserConfig.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
+		nonVerifyingParserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, false);
+	}
+	
 	TupleAndGraphQueryEvaluator(ConsoleIO consoleIO, ConsoleState state, ConsoleParameters parameters) {
 		this.consoleIO = consoleIO;
 		this.state = state;
@@ -144,6 +155,7 @@ public class TupleAndGraphQueryEvaluator {
 			return;
 		}
 		final RepositoryConnection con = repository.getConnection();
+		con.setParserConfig(nonVerifyingParserConfig);
 		try {
 			consoleIO.writeln("Evaluating query...");
 			final long startTime = System.nanoTime();
