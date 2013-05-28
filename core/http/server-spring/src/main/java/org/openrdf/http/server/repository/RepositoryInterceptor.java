@@ -34,6 +34,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.rio.helpers.BasicParserSettings;
 
 /**
  * Interceptor for repository requests. Handles the opening and closing of
@@ -122,6 +123,12 @@ public class RepositoryInterceptor extends ServerInterceptor {
 
 				repositoryCon = repository.getConnection();
 
+				// SES-1834 by default, the Sesame server should not treat datatype or language value verification errors
+				// as fatal. This is to be graceful, by default, about accepting "dirty" data.
+				// SES-1833 this should be configurable by the user.
+				repositoryCon.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+				repositoryCon.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+				
 				// FIXME: hack for repositories that return connections that are not
 				// in auto-commit mode by default
 				if (!repositoryCon.isAutoCommit()) {
