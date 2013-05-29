@@ -476,14 +476,6 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	}
 
 	@Override
-	@Ignore("upload of malformed literal using SPARQL fails with error.")
-	public void testGetStatementsMalformedLanguageLiteral()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testGetStatementsMalformedLanguageLiteral() for SPARQLRepository");
-	}
-
-	@Override
 	@Ignore
 	public void testBNodeSerialization()
 		throws Exception

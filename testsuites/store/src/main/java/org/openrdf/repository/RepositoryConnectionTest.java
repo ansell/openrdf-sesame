@@ -409,7 +409,6 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	@Ignore("temporarily disabled because parser config comm not supported in client-server settings")
 	public void testAddMalformedLiteralsCustomConfig()
 		throws Exception
 	{
