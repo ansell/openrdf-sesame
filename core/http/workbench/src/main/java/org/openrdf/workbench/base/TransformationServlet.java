@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.CookieHandler;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -37,6 +39,15 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class TransformationServlet extends BaseRepositoryServlet {
 
+	protected static final ParserConfig NON_VERIFYING_PARSER_CONFIG;
+	
+	static {
+		NON_VERIFYING_PARSER_CONFIG = new ParserConfig();
+		NON_VERIFYING_PARSER_CONFIG.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
+		NON_VERIFYING_PARSER_CONFIG.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
+		NON_VERIFYING_PARSER_CONFIG.set(BasicParserSettings.VERIFY_RELATIVE_URIS, false);
+	}
+	
 	protected static final String CONTEXT = "context";
 
 	protected static final String INFO = "info";

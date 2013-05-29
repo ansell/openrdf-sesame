@@ -341,6 +341,7 @@ public class QueryServlet extends TransformationServlet {
 		throws BadRequestException, OpenRDFException, UnsupportedQueryResultFormatException, IOException
 	{
 		final RepositoryConnection con = repository.getConnection();
+		con.setParserConfig(NON_VERIFYING_PARSER_CONFIG);
 		try {
 			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {

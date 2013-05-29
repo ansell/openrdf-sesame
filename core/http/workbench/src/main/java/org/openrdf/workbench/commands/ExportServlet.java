@@ -56,6 +56,7 @@ public class ExportServlet extends TupleServlet {
 				resp.setHeader("Content-disposition", attachment);
 			}
 			RepositoryConnection con = repository.getConnection();
+			con.setParserConfig(NON_VERIFYING_PARSER_CONFIG);
 			try {
 				RDFWriterFactory factory = getInstance().get(format);
 				if (format.getCharset() != null) {
