@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +98,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
@@ -394,7 +396,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public void testAddMalformedLiterals()
+	public void testAddMalformedLiteralsDefaultConfig()
 		throws Exception
 	{
 		try {
@@ -409,19 +411,21 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public void testAddMalformedLiteralsCustomConfig()
+	public void testAddMalformedLiteralsStrictConfig()
 		throws Exception
 	{
-		testCon.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
-		testCon.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+		Set<RioSetting<?>> empty = Collections.emptySet();
+		testCon.getParserConfig().setNonFatalErrors(empty);
 
 		try {
 			testCon.add(
 					RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "malformed-literals.ttl"),
 					"", RDFFormat.TURTLE);
+			fail("upload of malformed literals should fail with error in strict configuration");
+
 		}
 		catch (RDFParseException e) {
-			fail("parse exception shouldn't occur with custom config: " + e.getMessage());
+			// ingnore, as expected.
 		}
 	}
 
@@ -951,6 +955,7 @@ public abstract class RepositoryConnectionTest {
 			assertTrue(st.getObject().equals(invalidLanguageLiteral));
 		}
 		catch (RepositoryException e) {
+			e.printStackTrace();
 			// shouldn't happen
 			fail(e.getMessage());
 		}
