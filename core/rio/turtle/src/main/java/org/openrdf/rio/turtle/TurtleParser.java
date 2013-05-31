@@ -631,7 +631,9 @@ public class TurtleParser extends RDFParserBase {
 			if (c == -1) {
 				throwEOFException();
 			}
-			if (!TurtleUtil.isLanguageStartChar(c)) {
+
+			boolean verifyLanguageTag = getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+			if (verifyLanguageTag && !TurtleUtil.isLanguageStartChar(c)) {
 				reportError("Expected a letter, found '" + (char)c + "'",
 						BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			}
@@ -639,7 +641,11 @@ public class TurtleParser extends RDFParserBase {
 			lang.append((char)c);
 
 			c = read();
-			while (TurtleUtil.isLanguageChar(c)) {
+			while (!TurtleUtil.isWhitespace(c)) {
+				if (verifyLanguageTag && !TurtleUtil.isLanguageChar(c)) {
+					reportError("Illegal language tag char: '" + (char)c + "'",
+							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+				}
 				lang.append((char)c);
 				c = read();
 			}

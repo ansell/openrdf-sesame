@@ -63,8 +63,10 @@ import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
 import org.openrdf.repository.sparql.query.SPARQLTupleQuery;
 import org.openrdf.repository.sparql.query.SPARQLUpdate;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 
 /**
  * Provides a {@link RepositoryConnection} interface to any SPARQL endpoint.

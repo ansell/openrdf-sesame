@@ -60,6 +60,7 @@ public class NamespacesServlet extends TransformationServlet {
 		// TupleResultBuilder builder = new TupleResultBuilder(out);
 		builder.transform(xslPath, "namespaces.xsl");
 		RepositoryConnection con = repository.getConnection();
+		con.setParserConfig(NON_VERIFYING_PARSER_CONFIG);
 		try {
 			builder.start("prefix", "namespace");
 			builder.link(Arrays.asList(INFO));
