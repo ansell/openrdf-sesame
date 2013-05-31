@@ -42,7 +42,11 @@ public class HTTPSparqlDatasetTest extends SparqlDatasetTest {
 			super.setUp();
 		}
 		catch (Exception e) {
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 	}

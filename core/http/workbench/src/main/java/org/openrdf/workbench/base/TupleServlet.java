@@ -45,6 +45,7 @@ public abstract class TupleServlet extends TransformationServlet {
 	{
 		TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
 		RepositoryConnection con = repository.getConnection();
+		con.setParserConfig(NON_VERIFYING_PARSER_CONFIG);
 		try {
 			for (Namespace ns : Iterations.asList(con.getNamespaces())) {
 				builder.prefix(ns.getPrefix(), ns.getName());

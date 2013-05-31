@@ -36,4 +36,10 @@
         mf:action [ qt:data   <test-02.trig> ] ;
         mf:result  <test-02.out>
      ]
+     
+     [  mf:name      "UTF-8 BOM Mark" ;
+        rdfs:comment "Test parsing with UTF-8 BOM Mark - SES-1830" ;
+        mf:action [ qt:data   <test-utf8-bom-mark.trig> ] ;
+        mf:result  <test-utf8-bom-mark.out>
+     ]
    ).

@@ -27,6 +27,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
+import org.apache.commons.io.input.BOMInputStream;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -83,7 +85,7 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 		JsonParser jp = null;
 
 		try {
-			jp = RDFJSONUtility.JSON_FACTORY.createJsonParser(inputStream);
+			jp = RDFJSONUtility.JSON_FACTORY.createJsonParser(new BOMInputStream(inputStream, false));
 			rdfJsonToHandlerInternal(this.rdfHandler, this.valueFactory, jp);
 		}
 		catch (final IOException e) {

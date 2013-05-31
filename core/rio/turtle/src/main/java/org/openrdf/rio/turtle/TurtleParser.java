@@ -25,6 +25,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
+import org.apache.commons.io.input.BOMInputStream;
+
 import info.aduna.text.ASCIIUtil;
 
 import org.openrdf.model.BNode;
@@ -143,7 +145,7 @@ public class TurtleParser extends RDFParserBase {
 		// Note: baseURI will be checked in parse(Reader, String)
 
 		try {
-			parse(new InputStreamReader(in, "UTF-8"), baseURI);
+			parse(new InputStreamReader(new BOMInputStream(in, false), "UTF-8"), baseURI);
 		}
 		catch (UnsupportedEncodingException e) {
 			// Every platform should support the UTF-8 encoding...
@@ -629,7 +631,9 @@ public class TurtleParser extends RDFParserBase {
 			if (c == -1) {
 				throwEOFException();
 			}
-			if (!TurtleUtil.isLanguageStartChar(c)) {
+
+			boolean verifyLanguageTag = getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+			if (verifyLanguageTag && !TurtleUtil.isLanguageStartChar(c)) {
 				reportError("Expected a letter, found '" + (char)c + "'",
 						BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			}
@@ -637,7 +641,11 @@ public class TurtleParser extends RDFParserBase {
 			lang.append((char)c);
 
 			c = read();
-			while (TurtleUtil.isLanguageChar(c)) {
+			while (!TurtleUtil.isWhitespace(c)) {
+				if (verifyLanguageTag && !TurtleUtil.isLanguageChar(c)) {
+					reportError("Illegal language tag char: '" + (char)c + "'",
+							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+				}
 				lang.append((char)c);
 				c = read();
 			}

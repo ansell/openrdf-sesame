@@ -20,17 +20,23 @@ import static org.junit.Assert.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import info.aduna.io.Java7FileUtil;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
 
 public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
@@ -50,7 +56,11 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 			super.setUp();
 		}
 		catch (Exception e) {
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 	}
@@ -186,6 +196,30 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
 
+	}
+	
+	@Test
+	@Override
+	public void testAddMalformedLiteralsDefaultConfig()
+		throws Exception
+	{
+		try {
+			testCon.add(
+					RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "malformed-literals.ttl"),
+					"", RDFFormat.TURTLE);
+		}
+		catch (OpenRDFException e) {
+			fail("upload of malformed literals should not fail with error in default configuration for HTTPRepository");
+		}
+	}
+
+	@Test
+	@Override
+	@Ignore("See SES-1833")
+	public void testAddMalformedLiteralsStrictConfig()
+		throws Exception
+	{
+		System.err.println("SES-1833: temporarily disabled testAddMalformedLiteralsStrictConfig() for HTTPRepository");
 	}
 
 }

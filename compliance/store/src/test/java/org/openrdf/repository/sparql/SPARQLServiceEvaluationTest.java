@@ -119,7 +119,11 @@ public class SPARQLServiceEvaluationTest {
 
 		}
 		catch (Exception e) {
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 	}

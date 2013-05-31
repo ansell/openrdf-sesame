@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -50,7 +53,9 @@ public class HTTPMemServer {
 
 	private static final String OPENRDF_CONTEXT = "/openrdf";
 
-	private final int port;
+	private static final Set<Integer> usedPorts = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+
+	private int port;
 
 	private final String serverUrl;
 
@@ -66,6 +71,11 @@ public class HTTPMemServer {
 		System.clearProperty("DEBUG");
 
 		port = getFreePort();
+		while (usedPorts.contains(port)) {
+			port = getFreePort();
+		}
+		usedPorts.add(port);
+
 		serverUrl = "http://" + HOST + ":" + port + OPENRDF_CONTEXT;
 		repositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_REPO_ID);
 		inferenceRepositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_INFERENCE_REPO_ID);
@@ -126,6 +136,8 @@ public class HTTPMemServer {
 			if (systemRepo != null) {
 				try (RepositoryConnection con = systemRepo.getConnection();) {
 					con.clear();
+				}
+				catch (RepositoryException e) {
 				}
 				finally {
 					systemRepo.shutDown();

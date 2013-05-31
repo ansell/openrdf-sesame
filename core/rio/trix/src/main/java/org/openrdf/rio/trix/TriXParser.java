@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.input.BOMInputStream;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -92,7 +93,7 @@ public class TriXParser extends RDFParserBase {
 	public void parse(InputStream in, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		parse(in);
+		parse(new BOMInputStream(in, false));
 	}
 
 	public void parse(Reader reader, String baseURI)

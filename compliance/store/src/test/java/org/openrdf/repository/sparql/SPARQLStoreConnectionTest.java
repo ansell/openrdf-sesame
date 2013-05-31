@@ -60,7 +60,11 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		}
 		catch (Exception e) {
 			logger.error("Could not setup server", e);
-			server.stop();
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
 			throw e;
 		}
 
@@ -110,7 +114,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testURISerialization() for SPARQLRepository");
 	}
-	
+
 	@Override
 	@Ignore
 	public void testAutoCommit()
@@ -191,6 +195,15 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for SPARQLRepository");
+	}
+
+	@Test
+	@Override
+	@Ignore("can not execute test because required data add results in illegal SPARQL syntax")
+	public void testGetStatementsMalformedLanguageLiteral()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testGetStatementsMalformedLanguageLiteral() for SPARQLRepository");
 	}
 
 	@Override
