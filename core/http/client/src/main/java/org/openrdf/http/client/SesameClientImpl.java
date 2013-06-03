@@ -31,7 +31,7 @@ import org.apache.http.impl.client.SystemDefaultHttpClient;
  */
 public class SesameClientImpl implements SesameClient {
 
-	protected SystemDefaultHttpClient httpClient;
+	private SystemDefaultHttpClient httpClient;
 
 	private ExecutorService executor = null;
 
@@ -61,7 +61,10 @@ public class SesameClientImpl implements SesameClient {
 	 *-----------------*/
 
 	public synchronized void shutDown() {
-		executor.shutdown();
+		if (executor != null) {
+			executor.shutdown();
+			executor = null;
+		}
 		if (httpClient != null) {
 			HttpClientUtils.closeQuietly(httpClient);
 			httpClient = null;
@@ -74,9 +77,10 @@ public class SesameClientImpl implements SesameClient {
 	 * this method multiple times will have no effect.
 	 */
 	public synchronized void initialize() {
-		if (httpClient == null) {
+		if (executor == null) {
 			executor = Executors.newCachedThreadPool();
-
+		}
+		if (httpClient == null) {
 			httpClient = new SystemDefaultHttpClient();
 			httpClient.setHttpRequestRetryHandler(new StandardHttpRequestRetryHandler(3, false));
 		}
