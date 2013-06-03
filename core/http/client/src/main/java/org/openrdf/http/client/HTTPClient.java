@@ -352,7 +352,7 @@ public class HTTPClient {
 		try {
 			executeNoContent(method);
 		}
-		catch (RepositoryException|MalformedQueryException|QueryInterruptedException e) {
+		catch (RepositoryException | MalformedQueryException | QueryInterruptedException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
@@ -419,7 +419,7 @@ public class HTTPClient {
 		try {
 			return getBoolean(method);
 		}
-		catch (RepositoryException|MalformedQueryException|QueryInterruptedException e) {
+		catch (RepositoryException | MalformedQueryException | QueryInterruptedException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
@@ -666,7 +666,7 @@ public class HTTPClient {
 		try {
 			return executeOK(method);
 		}
-		catch (RepositoryException|QueryInterruptedException|MalformedQueryException e) {
+		catch (RepositoryException | QueryInterruptedException | MalformedQueryException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
@@ -796,7 +796,7 @@ public class HTTPClient {
 		try {
 			return executeOK(method);
 		}
-		catch (RepositoryException|QueryInterruptedException|MalformedQueryException e) {
+		catch (RepositoryException | QueryInterruptedException | MalformedQueryException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
