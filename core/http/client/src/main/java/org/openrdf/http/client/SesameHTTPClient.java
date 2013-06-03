@@ -583,7 +583,7 @@ public class SesameHTTPClient extends HTTPClient {
 			try {
 				executeNoContent((HttpUriRequest)method);
 			}
-			catch (RepositoryException|RDFParseException e) {
+			catch (RepositoryException | RDFParseException e) {
 				throw e;
 			}
 			catch (OpenRDFException e) {
