@@ -105,7 +105,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Variables *
 	 *-----------*/
 
-	private final List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
+	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
 	private final SesameHTTPClient client;
 
