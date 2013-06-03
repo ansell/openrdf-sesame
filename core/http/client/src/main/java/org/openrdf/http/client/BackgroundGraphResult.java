@@ -46,8 +46,6 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 
 	private volatile boolean closed;
 
-	private volatile Thread parserThread;
-
 	private RDFParser parser;
 
 	private Charset charset;
@@ -100,14 +98,13 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 	protected void handleClose()
 		throws QueryEvaluationException
 	{
-		super.handleClose();
-		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
-		}
 		try {
-			queue.close();
-			in.close();
+			try {
+				closed = true;
+				super.handleClose();
+			} finally {
+				in.close();
+			}
 		}
 		catch (IOException e) {
 			throw new QueryEvaluationException(e);
@@ -115,7 +112,6 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 	}
 
 	public void run() {
-		parserThread = Thread.currentThread();
 		try {
 			try {
 				parser.setRDFHandler(this);
@@ -139,7 +135,6 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 			queue.toss(e);
 		}
 		finally {
-			parserThread = null;
 			queue.done();
 		}
 	}
@@ -176,14 +171,14 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		throws RDFHandlerException
 	{
 		namespacesReady.countDown();
-		if (closed)
-			throw new RDFHandlerException("Result closed");
 		try {
 			queue.put(st);
 		}
 		catch (InterruptedException e) {
 			throw new RDFHandlerException(e);
 		}
+		if (closed)
+			throw new RDFHandlerException("Result closed");
 	}
 
 	public void endRDF()

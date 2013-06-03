@@ -41,8 +41,6 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private volatile boolean closed;
 
-	private volatile Thread parserThread;
-
 	private TupleQueryResultParser parser;
 
 	private InputStream in;
@@ -51,11 +49,7 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private List<String> bindingNames;
 
-	private List<String> links;
-
 	private CountDownLatch bindingNamesReady = new CountDownLatch(1);
-
-	private CountDownLatch linksReady = new CountDownLatch(1);
 
 	public BackgroundTupleResult(TupleQueryResultParser parser, InputStream in) {
 		this(new QueueCursor<BindingSet>(10), parser, in);
@@ -73,11 +67,17 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	protected synchronized void handleClose()
 		throws QueryEvaluationException
 	{
-		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
+		try {
+			try {
+				closed = true;
+				super.handleClose();
+			} finally {
+				in.close();
+			}
 		}
-		super.handleClose();
+		catch (IOException e) {
+			throw new QueryEvaluationException(e);
+		}
 	}
 
 	@Override
@@ -97,7 +97,6 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	@Override
 	public void run() {
-		parserThread = Thread.currentThread();
 		try {
 			try {
 				parser.setQueryResultHandler(this);
@@ -116,7 +115,6 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 			queue.toss(e);
 		}
 		finally {
-			parserThread = null;
 			queue.done();
 			bindingNamesReady.countDown();
 		}
@@ -134,14 +132,14 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
-		if (closed)
-			throw new TupleQueryResultHandlerException("Result closed");
 		try {
 			queue.put(bindingSet);
 		}
 		catch (InterruptedException e) {
 			throw new TupleQueryResultHandlerException(e);
 		}
+		if (closed)
+			throw new TupleQueryResultHandlerException("Result closed");
 	}
 
 	@Override
@@ -162,7 +160,6 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	public void handleLinks(List<String> linkUrls)
 		throws QueryResultHandlerException
 	{
-		this.links = linkUrls;
-		linksReady.countDown();
+		// ignore
 	}
 }
