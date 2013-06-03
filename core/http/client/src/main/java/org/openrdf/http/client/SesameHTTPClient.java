@@ -64,14 +64,12 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
-import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.UnsupportedRDFormatException;
 import org.openrdf.rio.helpers.BasicParserSettings;
 
 
@@ -512,6 +510,7 @@ public class SesameHTTPClient extends HTTPClient {
 		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
 
 		HttpEntity entity = new AbstractHttpEntity() {
+			private InputStream content;
 
 			public long getContentLength() {
 				return -1; // don't know
@@ -522,26 +521,33 @@ public class SesameHTTPClient extends HTTPClient {
 			}
 
 			public boolean isRepeatable() {
-				return true;
+				return false;
 			}
 
 			public boolean isStreaming() {
 				return true;
 			}
 
-			public InputStream getContent() throws IOException,
+			public synchronized InputStream getContent() throws IOException,
 					IllegalStateException {
-				ByteArrayOutputStream buf = new ByteArrayOutputStream();
-				writeTo(buf);
-				return new ByteArrayInputStream(buf.toByteArray());
+				if (content == null) {
+					ByteArrayOutputStream buf = new ByteArrayOutputStream();
+					writeTo(buf);
+					content = new ByteArrayInputStream(buf.toByteArray());
+				}
+				return content;
 			}
 
 			public void writeTo(OutputStream out)
 				throws IOException
 			{
-				OutputStreamWriter writer = new OutputStreamWriter(out, charset);
-				IOUtil.transfer(contents, writer);
-				writer.flush();
+				try {
+					OutputStreamWriter writer = new OutputStreamWriter(out, charset);
+					IOUtil.transfer(contents, writer);
+					writer.flush();
+				} finally {
+					contents.close();
+				}
 			}
 		};
 
