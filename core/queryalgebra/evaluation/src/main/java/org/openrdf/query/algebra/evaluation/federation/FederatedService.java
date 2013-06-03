@@ -106,6 +106,11 @@ public interface FederatedService {
 		throws QueryEvaluationException;
 
 	/**
+	 * Method to check if {@link #initialize()} had been called.
+	 */
+	public boolean isInitialized();
+
+	/**
 	 * Method to perform any initializations, invoked after construction.
 	 */
 	public void initialize()

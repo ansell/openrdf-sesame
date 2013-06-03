@@ -79,9 +79,12 @@ public class FederatedServiceManagerImpl extends FederatedServiceManager {
 	 * 
 	 * @param serviceUrl
 	 */
-	public synchronized void unregisterService(String serviceUrl) {
-		FederatedService service = endpointToService.remove(serviceUrl);
-		if (service != null) {
+	public void unregisterService(String serviceUrl) {
+		FederatedService service;
+		synchronized (endpointToService) {
+			service = endpointToService.remove(serviceUrl);
+		}
+		if (service != null && service.isInitialized()) {
 			try {
 				service.shutdown();
 			}
@@ -101,35 +104,43 @@ public class FederatedServiceManagerImpl extends FederatedServiceManager {
 	 * @return the {@link FederatedService}, created fresh if necessary
 	 * @throws RepositoryException
 	 */
-	public synchronized FederatedService getService(String serviceUrl)
+	public FederatedService getService(String serviceUrl)
 		throws RepositoryException
 	{
-		FederatedService service = endpointToService.get(serviceUrl);
-		if (service == null) {
-			service = new SPARQLFederatedService(serviceUrl, getSesameClient());
+		FederatedService service;
+		synchronized (endpointToService) {
+			service = endpointToService.get(serviceUrl);
+			if (service == null) {
+				service = new SPARQLFederatedService(serviceUrl, getSesameClient());
+				endpointToService.put(serviceUrl, service);
+			}
+		}
+		if (!service.isInitialized()) {
 			service.initialize();
-			endpointToService.put(serviceUrl, service);
 		}
 		return service;
 	}
 
-	public synchronized void unregisterAll() {
-		for (FederatedService service : endpointToService.values()) {
-			try {
-				service.shutdown();
+	public void unregisterAll() {
+		synchronized (endpointToService) {
+			for (FederatedService service : endpointToService.values()) {
+				try {
+					service.shutdown();
+				}
+				catch (RepositoryException e) {
+					// TODO issue a warning, otherwise ignore
+				}
 			}
-			catch (RepositoryException e) {
-				// TODO issue a warning, otherwise ignore
-			}
+			endpointToService.clear();
 		}
-		endpointToService.clear();
 	}
 
 	@Override
-	public synchronized void shutDown() {
+	public void shutDown() {
 		unregisterAll();
 		if (client != null) {
 			client.shutDown();
+			client = null;
 		}
 	}
 

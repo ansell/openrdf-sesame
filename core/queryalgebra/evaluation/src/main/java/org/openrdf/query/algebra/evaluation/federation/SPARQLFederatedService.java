@@ -334,6 +334,10 @@ public class SPARQLFederatedService implements FederatedService {
 		rep.initialize();
 	}
 
+	public boolean isInitialized() {
+		return rep.isInitialized();
+	}
+
 	private void closeQuietly(TupleQueryResult res) {
 		try {
 			if (res != null)
