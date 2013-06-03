@@ -23,10 +23,22 @@ package org.openrdf.http.client;
  */
 public interface SesameClient {
 
+	/**
+	 * Creates a new session to the remote SPARQL endpoint to manage the auth
+	 * state.
+	 */
 	HTTPClient createSparqlSession(String queryEndpointUrl, String updateEndpointUrl);
 
+	/**
+	 * Creates a new session to the remote Sesame server to manage the auth
+	 * state.
+	 */
 	SesameHTTPClient createSesameSession(String serverURL);
 
+	/**
+	 * Closes any remaining TCP connections and threads used by the sessions
+	 * created by this object.
+	 */
 	void shutDown();
 
 }
