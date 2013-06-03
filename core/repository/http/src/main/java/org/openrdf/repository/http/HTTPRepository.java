@@ -260,6 +260,7 @@ public class HTTPRepository extends RepositoryBase {
 	{
 		if (client != null) {
 			client.shutDown();
+			client = null;
 		}
 	}
 
