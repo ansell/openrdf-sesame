@@ -936,7 +936,7 @@ public class HTTPClient {
 				}
 				else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
 					// trying to contact a non-Sesame server?
-					throw new RepositoryException("Failed to get server protocol; no such resource on this server");
+					throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
 				}
 				else {
 					ErrorInfo errInfo = getErrorInfo(response);
