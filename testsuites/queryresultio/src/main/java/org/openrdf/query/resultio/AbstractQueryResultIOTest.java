@@ -100,20 +100,16 @@ public abstract class AbstractQueryResultIOTest {
 		solution3.addBinding("a", new BNodeImpl("bnode3"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
-		solution4.addBinding("a", new LiteralImpl("''single-quoted string",
-				XMLSchema.STRING));
+		solution4.addBinding("a", new LiteralImpl("''single-quoted string", XMLSchema.STRING));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
-		solution5.addBinding("a", new LiteralImpl("\"\"double-quoted string",
-				XMLSchema.STRING));
+		solution5.addBinding("a", new LiteralImpl("\"\"double-quoted string", XMLSchema.STRING));
 
 		MapBindingSet solution6 = new MapBindingSet(bindingNames.size());
-		solution6.addBinding("a", new LiteralImpl("space at the end         ",
-				XMLSchema.STRING));
+		solution6.addBinding("a", new LiteralImpl("space at the end         ", XMLSchema.STRING));
 
 		MapBindingSet solution7 = new MapBindingSet(bindingNames.size());
-		solution7.addBinding("a", new LiteralImpl("space at the end         ",
-				XMLSchema.STRING));
+		solution7.addBinding("a", new LiteralImpl("space at the end         ", XMLSchema.STRING));
 
 		// TODO: Enable double-quoted string with no datatype test
 		MapBindingSet solution8 = new MapBindingSet(bindingNames.size());
@@ -121,11 +117,10 @@ public abstract class AbstractQueryResultIOTest {
 
 		// TODO: Enable newline test
 		MapBindingSet solution9 = new MapBindingSet(bindingNames.size());
-		solution9.addBinding("a", new LiteralImpl("newline at the end \n",
-				XMLSchema.STRING));
+		solution9.addBinding("a", new LiteralImpl("newline at the end \n", XMLSchema.STRING));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
-				solution5, solution6, solution7);//, solution8, solution9);
+				solution5, solution6, solution7);// , solution8, solution9);
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
@@ -151,17 +146,21 @@ public abstract class AbstractQueryResultIOTest {
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
 		// TODO: Enable newline test
-		//solution4.addBinding("a", new LiteralImpl("string with newline at the end       \n"));
+		// solution4.addBinding("a", new
+		// LiteralImpl("string with newline at the end       \n"));
 		solution4.addBinding("b", new LiteralImpl("string with space at the end         "));
 		solution4.addBinding("c", new LiteralImpl("    "));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
 		solution5.addBinding("a", new LiteralImpl("''single-quoted string"));
-		// TODO: Double quote test fails with TSV when there are multiple bindings in the same line
-		//solution5.addBinding("b", new LiteralImpl("\"\"double-quoted string"));
-		//solution5.addBinding("c", new LiteralImpl("		unencoded tab characters followed by encoded \t\t"));
+		// TODO: Double quote test fails with TSV when there are multiple bindings
+		// in the same line
+		// solution5.addBinding("b", new LiteralImpl("\"\"double-quoted string"));
+		// solution5.addBinding("c", new
+		// LiteralImpl("		unencoded tab characters followed by encoded \t\t"));
 
-		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4, solution5);
+		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
+				solution5);
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
@@ -472,6 +471,23 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.writeBoolean(input, format, out);
 		out.flush();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		boolean output = QueryResultIO.parse(in, format);
+
+		assertEquals(output, input);
+	}
+
+	protected void doBooleanLinksOnly(BooleanQueryResultFormat format, boolean input, List<String> links)
+		throws IOException, QueryResultHandlerException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, QueryEvaluationException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		writer.handleLinks(links);
+		writer.handleBoolean(input);
+
+		// System.out.println("output: " + out.toString("UTF-8"));
+
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		boolean output = QueryResultIO.parse(in, format);
 

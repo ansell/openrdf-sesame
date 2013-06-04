@@ -69,6 +69,30 @@ public abstract class AbstractQueryResultIOBooleanTest extends AbstractQueryResu
 	}
 
 	@Test
+	public final void testBooleanEmptyLinksOnly()
+		throws Exception
+	{
+		doBooleanLinksOnly(getBooleanFormat(), true, Arrays.<String> asList());
+		doBooleanLinksOnly(getBooleanFormat(), false, Arrays.<String> asList());
+	}
+
+	@Test
+	public final void testBooleanOneLinkOnly()
+		throws Exception
+	{
+		doBooleanLinksOnly(getBooleanFormat(), true, Arrays.asList("info"));
+		doBooleanLinksOnly(getBooleanFormat(), false, Arrays.asList("info"));
+	}
+
+	@Test
+	public final void testBooleanMultipleLinksOnly()
+		throws Exception
+	{
+		doBooleanLinksOnly(getBooleanFormat(), true, Arrays.asList("info", "alternate", "other", "another"));
+		doBooleanLinksOnly(getBooleanFormat(), false, Arrays.asList("info", "alternate", "other", "another"));
+	}
+
+	@Test
 	public final void testBooleanMultipleLinksWithStylesheet()
 		throws Exception
 	{
