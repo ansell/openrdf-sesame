@@ -931,25 +931,23 @@ public class HTTPClient {
 		throws MalformedQueryException, QueryInterruptedException, RepositoryException
 	{
 		try {
-			if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				throw new UnauthorizedException();
-			}
-			else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
-				throw new QueryInterruptedException();
-			}
-			else {
-				ErrorInfo errInfo = getErrorInfo(method);
-
-				// Throw appropriate exception
-				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-					throw new MalformedQueryException(errInfo.getErrorMessage());
-				}
-				else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-					throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-				}
-				else {
-					throw new RepositoryException(errInfo.toString());
-				}
+			switch (httpCode) {
+				case HttpURLConnection.HTTP_UNAUTHORIZED: // 401
+					throw new UnauthorizedException();
+				case HttpURLConnection.HTTP_UNAVAILABLE: // 503
+					throw new QueryInterruptedException();
+				default:
+					ErrorInfo errInfo = getErrorInfo(method);
+					// Throw appropriate exception
+					if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
+						throw new MalformedQueryException(errInfo.getErrorMessage());
+					}
+					else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
+						throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
+					}
+					else {
+						throw new RepositoryException(errInfo.getErrorMessage());
+					}
 			}
 		}
 		finally {
