@@ -163,6 +163,10 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			endHeader();
 		}
 
+		if (tupleVariablesFound) {
+			throw new QueryResultHandlerException("Cannot call handleBoolean after startQueryResults");
+		}
+
 		try {
 			if (value) {
 				xmlWriter.textElement(BOOLEAN_TAG, BOOLEAN_TRUE);
