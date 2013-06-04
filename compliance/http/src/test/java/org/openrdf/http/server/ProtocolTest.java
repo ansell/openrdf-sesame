@@ -22,23 +22,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
-import org.junit.Test;
-
 import junit.framework.TestCase;
+
+import org.junit.Test;
 
 import info.aduna.io.IOUtil;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
 
 public class ProtocolTest extends TestCase {
 
@@ -62,6 +58,7 @@ public class ProtocolTest extends TestCase {
 	/**
 	 * Tests the server's methods for updating all data in a repository.
 	 */
+	@Test
 	public void testRepository_PUT()
 		throws Exception
 	{
@@ -71,6 +68,7 @@ public class ProtocolTest extends TestCase {
 	/**
 	 * Tests the server's methods for deleting all data in a repository.
 	 */
+	@Test
 	public void testRepository_DELETE()
 		throws Exception
 	{
@@ -81,6 +79,7 @@ public class ProtocolTest extends TestCase {
 	 * Tests the server's methods for updating the data in the default context of
 	 * a repository.
 	 */
+	@Test
 	public void testNullContext_PUT()
 		throws Exception
 	{
@@ -93,6 +92,7 @@ public class ProtocolTest extends TestCase {
 	 * Tests the server's methods for deleting the data from the default context
 	 * of a repository.
 	 */
+	@Test
 	public void testNullContext_DELETE()
 		throws Exception
 	{
@@ -105,6 +105,7 @@ public class ProtocolTest extends TestCase {
 	 * Tests the server's methods for updating the data in a named context of a
 	 * repository.
 	 */
+	@Test
 	public void testNamedContext_PUT()
 		throws Exception
 	{
@@ -118,6 +119,7 @@ public class ProtocolTest extends TestCase {
 	 * Tests the server's methods for deleting the data from a named context of a
 	 * repository.
 	 */
+	@Test
 	public void testNamedContext_DELETE()
 		throws Exception
 	{
@@ -131,6 +133,7 @@ public class ProtocolTest extends TestCase {
 	 * Tests the server's methods for quering a repository using GET requests to
 	 * send SeRQL-select queries.
 	 */
+	@Test
 	public void testSeRQLselect()
 		throws Exception
 	{
@@ -209,6 +212,7 @@ public class ProtocolTest extends TestCase {
 		try {
 			int responseCode = conn.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_NOT_ACCEPTABLE) {
+				// do nothing, expected
 			}
 			else {
 				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
@@ -251,8 +255,8 @@ public class ProtocolTest extends TestCase {
 					contentType = contentType.substring(0, charPos);
 				}
 				
-				RDFFormat mimeType = RDFFormat.forMIMEType(contentType);
-				assertNotNull(mimeType);
+				RDFFormat format = RDFFormat.forMIMEType(contentType);
+				assertNotNull(format);
 			}
 			else {
 				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
