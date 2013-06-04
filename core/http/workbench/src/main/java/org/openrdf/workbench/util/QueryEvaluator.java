@@ -253,7 +253,7 @@ public final class QueryEvaluator {
 			}
 			else if (query instanceof BooleanQuery) {
 				builder.transform(xslPath, "boolean.xsl");
-				builder.start();
+				builder.startBoolean();
 				this.evaluateBooleanQuery(builder, (BooleanQuery)query);
 				builder.endBoolean();
 			}
