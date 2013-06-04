@@ -44,6 +44,12 @@ public abstract class GraphQueryResultTest extends TestCase {
 
 	private String multipleDescribeQuery;
 
+	private String emptyConstructQuery;
+
+	private String singleConstructQuery;
+
+	private String multipleConstructQuery;
+
 	protected void setUp()
 		throws Exception
 	{
@@ -90,23 +96,15 @@ public abstract class GraphQueryResultTest extends TestCase {
 	 * build some simple SPARQL queries to use for testing the result set object.
 	 */
 	private void buildQueries() {
-		StringBuilder query = new StringBuilder();
+		emptyDescribeQuery = "DESCRIBE <urn:test:non-existent-uri>";
+		singleDescribeQuery = "DESCRIBE <" + OWL.THING.stringValue() + ">";
+		multipleDescribeQuery = "DESCRIBE <" + OWL.CLASS.stringValue() + ">";
 
-		query.append("DESCRIBE <urn:test:non-existent-uri>");
-
-		emptyDescribeQuery = query.toString();
-
-		query = new StringBuilder();
-
-		query.append("DESCRIBE <" + OWL.THING.stringValue() + ">");
-
-		singleDescribeQuery = query.toString();
-
-		query = new StringBuilder();
-
-		query.append("DESCRIBE <" + OWL.CLASS.stringValue() + ">");
-
-		multipleDescribeQuery = query.toString();
+		emptyConstructQuery = "CONSTRUCT { <urn:test:non-existent-uri> ?p ?o . } WHERE { <urn:test:non-existent-uri> ?p ?o . }";
+		singleConstructQuery = "CONSTRUCT { ?s ?p <" + OWL.THING.stringValue() + "> . } WHERE { ?s ?p <"
+				+ OWL.THING.stringValue() + "> . }";
+		multipleConstructQuery = "CONSTRUCT { ?s ?p <" + OWL.CLASS.stringValue() + "> . } WHERE { ?s ?p <"
+				+ OWL.CLASS.stringValue() + "> . }";
 	}
 
 	private void addData()
@@ -126,7 +124,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 	{
 		GraphQueryResult result = con.prepareGraphQuery(QueryLanguage.SPARQL, emptyDescribeQuery).evaluate();
 		assertFalse("Query result should be empty", result.hasNext());
-		
+
 		Model model = QueryResults.asModel(result);
 		assertTrue("Query result should be empty", model.isEmpty());
 	}
@@ -136,7 +134,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 	{
 		GraphQueryResult result = con.prepareGraphQuery(QueryLanguage.SPARQL, singleDescribeQuery).evaluate();
 		assertTrue("Query result should not be empty", result.hasNext());
-		
+
 		Model model = QueryResults.asModel(result);
 		assertFalse("Query result should not be empty", model.isEmpty());
 		assertEquals(1, model.size());
@@ -147,7 +145,39 @@ public abstract class GraphQueryResultTest extends TestCase {
 	{
 		GraphQueryResult result = con.prepareGraphQuery(QueryLanguage.SPARQL, multipleDescribeQuery).evaluate();
 		assertTrue("Query result should not be empty", result.hasNext());
-		
+
+		Model model = QueryResults.asModel(result);
+		assertFalse("Query result should not be empty", model.isEmpty());
+		assertEquals(4, model.size());
+	}
+
+	public void testConstructEmpty()
+		throws Exception
+	{
+		GraphQueryResult result = con.prepareGraphQuery(QueryLanguage.SPARQL, emptyConstructQuery).evaluate();
+		assertFalse("Query result should be empty", result.hasNext());
+
+		Model model = QueryResults.asModel(result);
+		assertTrue("Query result should be empty", model.isEmpty());
+	}
+
+	public void testConstructSingle()
+		throws Exception
+	{
+		GraphQueryResult result = con.prepareGraphQuery(QueryLanguage.SPARQL, singleConstructQuery).evaluate();
+		assertTrue("Query result should not be empty", result.hasNext());
+
+		Model model = QueryResults.asModel(result);
+		assertFalse("Query result should not be empty", model.isEmpty());
+		assertEquals(1, model.size());
+	}
+
+	public void testConstructMultiple()
+		throws Exception
+	{
+		GraphQueryResult result = con.prepareGraphQuery(QueryLanguage.SPARQL, multipleConstructQuery).evaluate();
+		assertTrue("Query result should not be empty", result.hasNext());
+
 		Model model = QueryResults.asModel(result);
 		assertFalse("Query result should not be empty", model.isEmpty());
 		assertEquals(4, model.size());
