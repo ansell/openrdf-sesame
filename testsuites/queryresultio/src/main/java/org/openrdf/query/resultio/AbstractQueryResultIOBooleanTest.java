@@ -110,4 +110,13 @@ public abstract class AbstractQueryResultIOBooleanTest extends AbstractQueryResu
 		doBooleanStylesheet(getBooleanFormat(), false, "test.xsl");
 	}
 
+	@Test
+	public final void testInvalidBooleanAfterStartQueryResult()
+		throws Exception
+	{
+		doInvalidBooleanAfterStartQueryResult(getBooleanFormat(), true,
+				Arrays.asList("info", "alternate", "other", "another"));
+		doInvalidBooleanAfterStartQueryResult(getBooleanFormat(), false,
+				Arrays.asList("info", "alternate", "other", "another"));
+	}
 }

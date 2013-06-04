@@ -494,6 +494,38 @@ public abstract class AbstractQueryResultIOTest {
 		assertEquals(output, input);
 	}
 
+	protected void doInvalidBooleanAfterStartQueryResult(BooleanQueryResultFormat format, boolean input,
+			List<String> links)
+		throws IOException, QueryResultHandlerException, QueryResultParseException,
+		UnsupportedQueryResultFormatException, QueryEvaluationException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		writer.handleLinks(links);
+		// Determine whether this writer also supports startQueryResult, if not,
+		// this test is irrelevant as it will fail early
+		boolean supported = true;
+		try {
+			writer.startQueryResult(Arrays.asList("foo"));
+		}
+		catch (UnsupportedOperationException uoe) {
+			// Boolean writers are allowed to throw this for startQueryResult
+			supported = false;
+		}
+
+		if (supported) {
+			try {
+				// After calling startQueryResult, we should not be able to call
+				// handleBoolean without an exception occuring
+				writer.handleBoolean(input);
+				fail("Did not find expected exception");
+			}
+			catch (QueryResultHandlerException e) {
+				// Expected
+			}
+		}
+	}
+
 	protected void doBooleanLinks(BooleanQueryResultFormat format, boolean input, List<String> links)
 		throws IOException, QueryResultHandlerException, QueryResultParseException,
 		UnsupportedQueryResultFormatException, QueryEvaluationException
