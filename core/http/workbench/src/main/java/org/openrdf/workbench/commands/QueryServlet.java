@@ -251,7 +251,7 @@ public class QueryServlet extends TransformationServlet {
 			builder.start(EDIT_PARAMS);
 			builder.link(Arrays.asList(INFO, "namespaces"));
 			final String queryLn = req.getParameter(EDIT_PARAMS[0]);
-			final String query = req.getParameter(EDIT_PARAMS[1]);
+			final String query = getQueryText(req);
 			final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
 			final IntegerLiteralImpl limit = new IntegerLiteralImpl(new BigInteger(
 					req.getParameter(EDIT_PARAMS[3])));
@@ -276,7 +276,7 @@ public class QueryServlet extends TransformationServlet {
 		json.put("accessible", accessible);
 		if (accessible) {
 			final String queryName = req.getParameter("query-name");
-			String userName = getUserName(req);
+			String userName = getUserNameFromParameter(req, SERVER_USER);
 			final boolean existed = storage.askExists(http, queryName, userName);
 			json.put("existed", existed);
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
@@ -284,7 +284,8 @@ public class QueryServlet extends TransformationServlet {
 				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
 				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
 				final String queryText = req.getParameter(QUERY);
-				final boolean infer = req.isParameterPresent(INFER) ? Boolean.valueOf(req.getParameter(INFER)) : false;
+				final boolean infer = req.isParameterPresent(INFER) ? Boolean.valueOf(req.getParameter(INFER))
+						: false;
 				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);
@@ -302,8 +303,8 @@ public class QueryServlet extends TransformationServlet {
 		writer.flush();
 	}
 
-	private String getUserName(final WorkbenchRequest req) {
-		String userName = req.getParameter(SERVER_USER);
+	private String getUserNameFromParameter(WorkbenchRequest req, String parameter) {
+		String userName = req.getParameter(parameter);
 		if (null == userName) {
 			userName = "";
 		}
@@ -411,7 +412,8 @@ public class QueryServlet extends TransformationServlet {
 					}
 				}
 				else if ("id".equals(ref)) {
-					result = storage.getQueryText((HTTPRepository)repository, getUserName(req), query);
+					result = storage.getQueryText((HTTPRepository)repository,
+							getUserNameFromParameter(req, "owner"), query);
 				}
 				else {
 					// if ref not recognized assume request meant "text"
