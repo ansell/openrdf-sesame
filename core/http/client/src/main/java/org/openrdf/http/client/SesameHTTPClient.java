@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -297,7 +299,14 @@ public class SesameHTTPClient extends HTTPClient {
 		HttpUriRequest method = new HttpGet(Protocol.getNamespacePrefixLocation(getQueryURL(), prefix));
 
 		try {
-			return EntityUtils.toString(executeOK(method).getEntity());
+			HttpResponse response = execute(method);
+			int code = response.getStatusLine().getStatusCode();
+			if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_NOT_AUTHORITATIVE) {
+				return EntityUtils.toString(response.getEntity());
+			} else {
+				EntityUtils.consume(response.getEntity());
+				return null;
+			}
 		}
 		catch (RepositoryException e) {
 			throw e;

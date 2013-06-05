@@ -885,22 +885,12 @@ public class HTTPClient {
 
 		try {
 			int httpCode = response.getStatusLine().getStatusCode();
-			if (httpCode == HttpURLConnection.HTTP_OK) {
+			if (httpCode == HttpURLConnection.HTTP_OK || httpCode == HttpURLConnection.HTTP_NOT_AUTHORITATIVE) {
 				fail = false;
 				return response; // everything OK, control flow can continue
 			} else {
-				ErrorInfo errInfo = getErrorInfo(response);
-
-				// Throw appropriate exception
-				if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-					throw new MalformedQueryException(errInfo.getErrorMessage());
-				}
-				else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-					throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-				}
-				else {
-					throw new RepositoryException(errInfo.toString());
-				}
+				// trying to contact a non-Sesame server?
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
 			}
 		} finally {
 			if (fail) {
@@ -912,20 +902,28 @@ public class HTTPClient {
 	protected void executeNoContent(HttpUriRequest method)
 		throws IOException, OpenRDFException
 	{
-		EntityUtils.consume(execute(method).getEntity());
+		HttpResponse response = execute(method);
+		try {
+			if (response.getStatusLine().getStatusCode() >= 300) {
+				// trying to contact a non-Sesame server?
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
+			}
+		} finally {
+			EntityUtils.consume(response.getEntity());
+		}
 	}
 
-	private HttpResponse execute(HttpUriRequest method)
+	protected HttpResponse execute(HttpUriRequest method)
 		throws IOException, OpenRDFException
 	{
-		boolean fail = true;
+		boolean consume = true;
 		method.setParams(params);
 		HttpResponse response = httpClient.execute(method, httpContext);
 
 		try {
 			int httpCode = response.getStatusLine().getStatusCode();
-			if (httpCode >= 200 && httpCode < 300) {
-				fail = false;
+			if (httpCode >= 200 && httpCode < 300 || httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				consume = false;
 				return response; // everything OK, control flow can continue
 			} else {
 				if (httpCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
@@ -933,10 +931,6 @@ public class HTTPClient {
 				}
 				else if (httpCode == HttpURLConnection.HTTP_UNAVAILABLE) {
 					throw new QueryInterruptedException();
-				}
-				else if (httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
-					// trying to contact a non-Sesame server?
-					throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
 				}
 				else {
 					ErrorInfo errInfo = getErrorInfo(response);
@@ -960,7 +954,7 @@ public class HTTPClient {
 				}
 			}
 		} finally {
-			if (fail) {
+			if (consume) {
 				EntityUtils.consumeQuietly(response.getEntity());
 			}
 		}
