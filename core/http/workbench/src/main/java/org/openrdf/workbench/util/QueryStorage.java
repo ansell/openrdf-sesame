@@ -67,7 +67,7 @@ public class QueryStorage {
 	}
 
 	private boolean isShutdown() {
-		return queries == null || ! queries.isInitialized();
+		return queries == null || !queries.isInitialized();
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(QueryStorage.class);
@@ -84,9 +84,13 @@ public class QueryStorage {
 	private static final String ASK_EXISTS = PRE
 			+ "ASK { [] :userName $<userName> ; :queryName $<queryName> ; :repository $<repository> . }";
 
-	private static final String FILTER = "FILTER (?user = $<userName> || ?user = \"\" ) }";
+	private static final String UPDATE_FILTER = "FILTER (?user = $<userName> || ?user = \"\" ) } ";
 
-	private static final String CAN_DELETE = PRE + "ASK { $<query> :userName ?user . " + FILTER;
+	private static final String READ_FILTER = "FILTER (?user = $<userName> || ?user = \"\" || ?shared) } ";
+
+	private static final String ASK_UPDATABLE = PRE + "ASK { $<query> :userName ?user . " + UPDATE_FILTER;
+
+	private static final String ASK_READABLE = PRE + "ASK { $<query> :userName ?user  . " + READ_FILTER;
 
 	private static final String DELETE = PRE + "DELETE WHERE { $<query> :userName ?user ; ?p ?o . }";
 
@@ -97,7 +101,7 @@ public class QueryStorage {
 			+ MATCH
 			+ "}\nINSERT { $<query> :shared $<shared> ; :queryLanguage $<queryLanguage> ; :query $<queryText> ; "
 			+ ":infer $<infer> ; :rowsPerPage $<rowsPerPage> . } WHERE { $<query> :userName ?user ; " + MATCH
-			+ FILTER;
+			+ UPDATE_FILTER;
 
 	private static final String SELECT_URI = PRE
 			+ "SELECT ?query { ?query :repository $<repository> ; :userName $<userName> ; :queryName $<queryName> . } ";
@@ -223,10 +227,44 @@ public class QueryStorage {
 		updateQueryRepository(save.toString());
 	}
 
-	public boolean canDelete(final URI query, final String currentUser)
+	/**
+	 * Determines whether the user with the given userName is allowed to update
+	 * or delete the given query.
+	 * 
+	 * @param query
+	 *        the node identifying the query of interest
+	 * @param currentUser
+	 *        the user to check access for
+	 * @return <tt>true</tt> if the given query was saved by the given user or
+	 *         the anonymous user
+	 */
+	public boolean canChange(final URI query, final String currentUser)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException
 	{
-		final QueryStringBuilder canDelete = new QueryStringBuilder(CAN_DELETE);
+		return performAccessQuery(ASK_UPDATABLE, query, currentUser);
+	}
+
+	/**
+	 * Determines whether the user with the given userName is allowed to read the
+	 * given query.
+	 * 
+	 * @param query
+	 *        the node identifying the query of interest
+	 * @param currentUser
+	 *        the user to check access for
+	 * @return <tt>true</tt> if the given query was saved by either the given
+	 *         user or the anonymous user, or is shared
+	 */
+	public boolean canRead(URI query, String currentUser)
+		throws RepositoryException, QueryEvaluationException, MalformedQueryException
+	{
+		return performAccessQuery(ASK_READABLE, query, currentUser);
+	}
+
+	private boolean performAccessQuery(String accessSPARQL, URI query, String currentUser)
+		throws RepositoryException, QueryEvaluationException, MalformedQueryException
+	{
+		final QueryStringBuilder canDelete = new QueryStringBuilder(accessSPARQL);
 		canDelete.replaceURI(QUERY, query.toString());
 		canDelete.replaceQuote(USER_NAME, currentUser);
 		LOGGER.info("{}", canDelete);
@@ -350,11 +388,27 @@ public class QueryStorage {
 		}
 	}
 
-	public URI selectSavedQuery(final HTTPRepository repository, final String userName, final String queryName)
+	/**
+	 * Returns the URI for the saved query in the given repository with the given
+	 * name, owned by the given owner.
+	 * 
+	 * @param repository
+	 *        The repository the query is associated with.
+	 * @param owner
+	 *        The user that saved the query.
+	 * @param queryName
+	 *        The name given to the query.
+	 * @return if it exists, the URI referring to the specified saved query.
+	 * @throws OpenRDFException
+	 *         if issues occur performing the necessary queries.
+	 * @throws BadRequestException
+	 *         if the the specified stored query doesn't exist
+	 */
+	public URI selectSavedQuery(final HTTPRepository repository, final String owner, final String queryName)
 		throws OpenRDFException, BadRequestException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT_URI);
-		select.replaceQuote(QueryStorage.USER_NAME, userName);
+		select.replaceQuote(QueryStorage.USER_NAME, owner);
 		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
 		select.replaceQuote(QUERY_NAME, queryName);
 		final RepositoryConnection connection = this.queries.getConnection();
@@ -373,11 +427,27 @@ public class QueryStorage {
 		}
 	}
 
-	public String getQueryText(final HTTPRepository repository, final String userName, final String queryName)
+	/**
+	 * Retrieves the specified query text. No security checks are done here. If
+	 * the saved query exists, its text is returned.
+	 * 
+	 * @param repository
+	 *        Repository that the saved query is associated with.
+	 * @param owner
+	 *        The user that saved the query.
+	 * @param queryName
+	 *        The name given to the saved query.
+	 * @return the text of the saved query, if it exists
+	 * @throws OpenRDFException
+	 *         if a problem occurs accessing storage
+	 * @throws BadRequestException
+	 *         if the specified query doesn't exist
+	 */
+	public String getQueryText(final HTTPRepository repository, final String owner, final String queryName)
 		throws OpenRDFException, BadRequestException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT_TEXT);
-		select.replaceQuote(QueryStorage.USER_NAME, userName);
+		select.replaceQuote(QueryStorage.USER_NAME, owner);
 		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
 		select.replaceQuote(QUERY_NAME, queryName);
 		final RepositoryConnection connection = this.queries.getConnection();
