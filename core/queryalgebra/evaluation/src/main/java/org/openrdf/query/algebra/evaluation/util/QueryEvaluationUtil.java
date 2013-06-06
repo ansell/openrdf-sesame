@@ -150,45 +150,33 @@ public class QueryEvaluationUtil {
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
-		// for purposes of query evaluation in SPARQL, simple literals and
-		// string-typed literals with the same
-		// lexical value are considered equal.
 		URI commonDatatype = null;
-		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && XMLSchema.STRING.equals(rightDatatype)) {
-			commonDatatype = XMLSchema.STRING;
-		}
-		else if (QueryEvaluationUtil.isSimpleLiteral(rightLit) && XMLSchema.STRING.equals(leftDatatype)) {
-			commonDatatype = XMLSchema.STRING;
-		}
-
 		Integer compareResult = null;
 
-		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
+		if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
-		else if ((leftDatatype != null && rightDatatype != null) || commonDatatype != null) {
-			if (commonDatatype == null) {
-				if (leftDatatype.equals(rightDatatype)) {
-					commonDatatype = leftDatatype;
+		else {
+			if (leftDatatype.equals(rightDatatype)) {
+				commonDatatype = leftDatatype;
+			}
+			else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
+					&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
+			{
+				// left and right arguments have different datatypes, try to find
+				// a
+				// more general, shared datatype
+				if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
+					commonDatatype = XMLSchema.DOUBLE;
 				}
-				else if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)
-						&& XMLDatatypeUtil.isNumericDatatype(rightDatatype))
-				{
-					// left and right arguments have different datatypes, try to find
-					// a
-					// more general, shared datatype
-					if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
-						commonDatatype = XMLSchema.DOUBLE;
-					}
-					else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
-						commonDatatype = XMLSchema.FLOAT;
-					}
-					else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
-						commonDatatype = XMLSchema.DECIMAL;
-					}
-					else {
-						commonDatatype = XMLSchema.INTEGER;
-					}
+				else if (leftDatatype.equals(XMLSchema.FLOAT) || rightDatatype.equals(XMLSchema.FLOAT)) {
+					commonDatatype = XMLSchema.FLOAT;
+				}
+				else if (leftDatatype.equals(XMLSchema.DECIMAL) || rightDatatype.equals(XMLSchema.DECIMAL)) {
+					commonDatatype = XMLSchema.DECIMAL;
+				}
+				else {
+					commonDatatype = XMLSchema.INTEGER;
 				}
 			}
 
