@@ -57,7 +57,7 @@ public class Replace implements Function {
 				flags = (Literal)args[3];
 			}
 
-			if (! QueryEvaluationUtil.isStringLiteral(arg)) {
+			if (!(arg.isLanguageLiteral() || QueryEvaluationUtil.isStringLiteral(arg))) {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + arg);
 			}
 
