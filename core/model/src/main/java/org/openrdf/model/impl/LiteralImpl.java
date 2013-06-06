@@ -154,6 +154,13 @@ public class LiteralImpl implements Literal {
 		if (datatype == null) {
 			this.datatype = XMLSchema.STRING;
 		}
+		else if(datatype.equals(RDF.LANGSTRING)) {
+			this.datatype = RDF.LANGSTRING;
+			// SES-1803 : Fallback for RDF-1.1
+			if(language == null) {
+				this.language = "";
+			}
+		}
 		else {
 			this.datatype = datatype;
 		}
