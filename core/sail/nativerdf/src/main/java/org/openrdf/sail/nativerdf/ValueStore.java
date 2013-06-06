@@ -571,11 +571,11 @@ public class ValueStore extends ValueFactoryBase implements java.lang.AutoClosea
 		// Get label
 		String label = new String(data, 6 + langLength, data.length - 6 - langLength, "UTF-8");
 
-		if (datatype != null) {
-			return new NativeLiteral(revision, label, datatype, id);
-		}
-		else if (lang != null) {
+		if (lang != null) {
 			return new NativeLiteral(revision, label, lang, id);
+		}
+		else if (datatype != null) {
+			return new NativeLiteral(revision, label, datatype, id);
 		}
 		else {
 			return new NativeLiteral(revision, label, id);
