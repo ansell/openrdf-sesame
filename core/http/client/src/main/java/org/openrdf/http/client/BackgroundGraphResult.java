@@ -113,16 +113,12 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 
 	public void run() {
 		try {
-			try {
-				parser.setRDFHandler(this);
-				if (charset == null) {
-					parser.parse(in, baseURI);
-				}
-				else {
-					parser.parse(new InputStreamReader(in, charset), baseURI);
-				}
-			} finally {
-				in.close();
+			parser.setRDFHandler(this);
+			if (charset == null) {
+				parser.parse(in, baseURI);
+			}
+			else {
+				parser.parse(new InputStreamReader(in, charset), baseURI);
 			}
 		}
 		catch (RDFHandlerException e) {

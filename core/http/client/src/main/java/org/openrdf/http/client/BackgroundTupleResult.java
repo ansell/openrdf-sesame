@@ -98,12 +98,8 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	@Override
 	public void run() {
 		try {
-			try {
-				parser.setQueryResultHandler(this);
-				parser.parseQueryResult(in);
-			} finally {
-				in.close();
-			}
+			parser.setQueryResultHandler(this);
+			parser.parseQueryResult(in);
 		}
 		catch (QueryResultHandlerException e) {
 			// parsing cancelled or interrupted
