@@ -61,17 +61,17 @@ public class Replace implements Function {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + arg);
 			}
 
-			if (! QueryEvaluationUtil.isSimpleLiteral(pattern)) {
+			if (! QueryEvaluationUtil.isStringLiteral(pattern)) {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + pattern);
 			}
 
-			if (! QueryEvaluationUtil.isSimpleLiteral(replacement)) {
+			if (! QueryEvaluationUtil.isStringLiteral(replacement)) {
 				throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + replacement);
 			}
 
 			String flagString = null;
 			if (flags != null) {
-				if (!QueryEvaluationUtil.isSimpleLiteral(flags)) {
+				if (!QueryEvaluationUtil.isStringLiteral(flags)) {
 					throw new ValueExprEvaluationException("incompatible operand for REPLACE: " + flags);
 				}
 				flagString = flags.getLabel();
