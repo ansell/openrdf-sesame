@@ -223,6 +223,15 @@ public class QueryServlet extends TransformationServlet {
 			builder.result(exc.getMessage());
 			builder.end();
 		}
+		catch (HTTPQueryEvaluationException exc) {
+			LOGGER.warn(exc.toString(), exc);
+			TupleResultBuilder builder = getTupleResultBuilder(req, resp, out);
+			builder.transform(xslPath, "query.xsl");
+			builder.start("error-message");
+			builder.link(Arrays.asList(INFO, "namespaces"));
+			builder.result(exc.getMessage());
+			builder.end();
+		}
 		finally {
 			out.flush();
 		}

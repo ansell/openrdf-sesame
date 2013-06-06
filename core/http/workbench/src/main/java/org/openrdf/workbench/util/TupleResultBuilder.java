@@ -78,6 +78,11 @@ public class TupleResultBuilder {
 		return this;
 	}
 
+	public TupleResultBuilder startBoolean() {
+		// Do not need to do anything here currently
+		return this;
+	}
+
 	public TupleResultBuilder variables(String... names)
 		throws QueryResultHandlerException
 	{

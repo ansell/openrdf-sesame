@@ -369,6 +369,10 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			endHeader();
 		}
 
+		if (tupleVariablesFound) {
+			throw new QueryResultHandlerException("Cannot call handleBoolean after startQueryResults");
+		}
+
 		try {
 			if (value) {
 				jg.writeBooleanField("boolean", Boolean.TRUE);
