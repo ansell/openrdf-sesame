@@ -42,6 +42,7 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTPrefixDecl;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
@@ -105,20 +106,24 @@ public class SPARQLParser implements QueryParser {
 				PrefixDeclProcessor.process(uc);
 				Set<String> usedBNodeIds = BlankNodeVarProcessor.process(uc);
 
-				if (Collections.disjoint(usedBNodeIds, globalUsedBNodeIds)) {
-					globalUsedBNodeIds.addAll(usedBNodeIds);
+				if (uc.getUpdate() instanceof ASTInsertData || uc.getUpdate() instanceof ASTInsertData) {
+					if (Collections.disjoint(usedBNodeIds, globalUsedBNodeIds)) {
+						globalUsedBNodeIds.addAll(usedBNodeIds);
+					}
+					else {
+						throw new MalformedQueryException(
+								"blank node identifier may not be shared across INSERT/DELETE DATA operations");
+					}
 				}
-				else {
-					throw new MalformedQueryException("blank node identifier may not be shared across update operations");
-				}
-				
+
 				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
 
 				ASTUpdate updateNode = uc.getUpdate();
 				if (updateNode != null) {
 					UpdateExpr updateExpr = (UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null);
-					
-					// add individual update expression to ParsedUpdate sequence container
+
+					// add individual update expression to ParsedUpdate sequence
+					// container
 					update.addUpdateExpr(updateExpr);
 
 					// associate updateExpr with the correct dataset (if any)
@@ -218,7 +223,7 @@ public class SPARQLParser implements QueryParser {
 
 		StringBuilder buf = new StringBuilder();
 		String line = null;
-		
+
 		int emptyLineCount = 0;
 		while ((line = in.readLine()) != null) {
 			if (line.length() > 0) {
@@ -228,7 +233,7 @@ public class SPARQLParser implements QueryParser {
 			else {
 				emptyLineCount++;
 			}
-			
+
 			if (emptyLineCount == 2) {
 				emptyLineCount = 0;
 				String queryStr = buf.toString().trim();
