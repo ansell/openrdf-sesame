@@ -199,12 +199,10 @@ public class RDFParserHelperTest {
 				errListener, valueFactory);
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertNull(literal.getLanguage());
+		//assertNull(literal.getLanguage());
 		assertEquals(RDF.LANGSTRING, literal.getDatatype());
-		// Strict definition of literal.isLanguageLiteral is that it must return
-		// false if the language is null
-		assertFalse(literal.isLanguageLiteral());
-		assertTrue(literal.isTypedLiteral());
+		assertTrue(literal.isLanguageLiteral());
+		assertFalse(literal.isTypedLiteral());
 	}
 
 	@Test
