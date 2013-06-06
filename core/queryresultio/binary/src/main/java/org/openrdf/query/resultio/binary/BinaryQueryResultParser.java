@@ -279,7 +279,11 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 	{
 		String label = readString();
 
-		if (recordTypeMarker == DATATYPE_LITERAL_RECORD_MARKER) {
+		if (recordTypeMarker == LANG_LITERAL_RECORD_MARKER) {
+			String language = readString();
+			return valueFactory.createLiteral(label, language);
+		}
+		else if (recordTypeMarker == DATATYPE_LITERAL_RECORD_MARKER) {
 			URI datatype = null;
 
 			int dtTypeMarker = in.readByte();
@@ -295,10 +299,6 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 			}
 
 			return valueFactory.createLiteral(label, datatype);
-		}
-		else if (recordTypeMarker == LANG_LITERAL_RECORD_MARKER) {
-			String language = readString();
-			return valueFactory.createLiteral(label, language);
 		}
 		else {
 			return valueFactory.createLiteral(label);
