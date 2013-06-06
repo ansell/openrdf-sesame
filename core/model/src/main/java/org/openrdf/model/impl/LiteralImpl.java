@@ -166,7 +166,7 @@ public class LiteralImpl implements Literal {
 	
 	@Override
 	public boolean isTypedLiteral() {
-		return this.language == null;
+		return this.language == null && !this.datatype.equals(RDF.LANGSTRING);
 	}
 	
 	@Override
