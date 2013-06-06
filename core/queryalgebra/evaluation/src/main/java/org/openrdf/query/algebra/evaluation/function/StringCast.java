@@ -21,6 +21,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -51,10 +52,7 @@ public class StringCast implements Function {
 			Literal literal = (Literal)value;
 			URI datatype = literal.getDatatype();
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
-				return valueFactory.createLiteral(literal.getLabel(), XMLSchema.STRING);
-			}
-			else if (datatype != null) {
+			if (!literal.isLanguageLiteral()) {
 				if (datatype.equals(XMLSchema.STRING)) {
 					return literal;
 				}
