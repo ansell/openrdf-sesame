@@ -132,13 +132,15 @@ public class LiteralComparatorTest extends TestCase {
 	public void testLeftSimple()
 		throws Exception
 	{
-		assertTrue(cmp.compare(simple1, typed1) < 0);
+		// SES-1803 : In RDF-1.1, there is no difference between these literals so they should compare as equal
+		assertTrue(cmp.compare(simple1, typed1) == 0);
 	}
 
 	public void testRightSimple()
 		throws Exception
 	{
-		assertTrue(cmp.compare(typed1, simple1) > 0);
+		// SES-1803 : In RDF-1.1, there is no difference between these literals so they should compare as equal
+		assertTrue(cmp.compare(typed1, simple1) == 0);
 	}
 
 	public void testOrder()
