@@ -1323,8 +1323,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			farg = evaluate(flagsArg, bindings);
 		}
 
-		if (QueryEvaluationUtil.isStringLiteral(arg) && QueryEvaluationUtil.isSimpleLiteral(parg)
-				&& (farg == null || QueryEvaluationUtil.isSimpleLiteral(farg)))
+		if (QueryEvaluationUtil.isStringLiteral(arg) && QueryEvaluationUtil.isStringLiteral(parg)
+				&& (farg == null || QueryEvaluationUtil.isStringLiteral(farg)))
 		{
 			String text = ((Literal)arg).getLabel();
 			String ptn = ((Literal)parg).getLabel();
