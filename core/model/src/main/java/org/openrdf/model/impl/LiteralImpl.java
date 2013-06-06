@@ -237,8 +237,7 @@ public class LiteralImpl implements Literal {
 			sb.append('@');
 			sb.append(language);
 		}
-
-		if (isTypedLiteral()) {
+		else if (isTypedLiteral()) {
 			sb.append("^^<");
 			sb.append(datatype.toString());
 			sb.append(">");
