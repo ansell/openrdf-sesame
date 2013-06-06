@@ -170,6 +170,8 @@
 	<variable name="remote-repository-id.label">
 		Remote repository ID
 	</variable>
+	<variable name="sparql-repository-query-endpoint.label">SPARQL query endpoint URL</variable>
+	<variable name="sparql-repository-update-endpoint.label">SPARQL update endpoint URL (optional)</variable>
 	<variable name="federation-members.label">Federation members</variable>
 	<variable name="distinct.label">Distinct</variable>
 	<variable name="read-only.label">Read-only</variable>

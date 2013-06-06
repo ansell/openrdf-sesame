@@ -31,6 +31,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.junit.Test;
+
 import info.aduna.io.IOUtil;
 
 import org.openrdf.http.protocol.Protocol;
@@ -52,7 +54,7 @@ public class ProtocolTest {
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-http-compliance-datadir");
+		File testFolder = tempDir.newFolder("sesame-protocol-test-datadir");
 		testFolder.mkdirs();
 		server = new TestServer(testFolder);
 		server.start();
@@ -147,9 +149,137 @@ public class ProtocolTest {
 	public void testSeRQLselect()
 		throws Exception
 	{
-		TupleQueryResult queryResult = evaluate(server.getRepositoryUrl(), "select * from {X} P {Y}",
+		TupleQueryResult queryResult = evaluateTupleQuery(server.getRepositoryUrl(), "select * from {X} P {Y}",
 				QueryLanguage.SERQL);
 		QueryResultIO.write(queryResult, TupleQueryResultFormat.SPARQL, System.out);
+	}
+	
+
+	/**
+	 * Checks that the requested content type is returned when accept header explicitly set.
+	 */
+	@Test
+	public void testContentTypeForGraphQuery1_GET()
+		throws Exception
+	{
+		String query = "DESCRIBE <foo:bar>";
+		String location = server.getRepositoryUrl();
+		location += "?query=" + URLEncoder.encode(query, "UTF-8");
+
+		URL url = new URL(location);
+
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+
+		// Request RDF/XML formatted results:
+		conn.setRequestProperty("Accept", RDFFormat.RDFXML.getDefaultMIMEType());
+
+		conn.connect();
+
+		try {
+			int responseCode = conn.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				String contentType = conn.getHeaderField("Content-Type");
+				assertNotNull(contentType);
+				
+				// snip off optional charset declaration
+				int charPos = contentType.indexOf(";");
+				if (charPos > -1) {
+					contentType = contentType.substring(0, charPos);
+				}
+				
+				assertEquals(RDFFormat.RDFXML.getDefaultMIMEType(), contentType);
+			}
+			else {
+				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
+						+ responseCode + ")";
+				fail(response);
+				throw new RuntimeException(response);
+			}
+		}
+		finally {
+			conn.disconnect();
+		}
+	}
+	
+	/**
+	 * Checks that a proper error (HTTP 406) is returned when accept header is set incorrectly on graph query.
+	 */
+	@Test
+	public void testContentTypeForGraphQuery2_GET()
+		throws Exception
+	{
+		String query = "DESCRIBE <foo:bar>";
+		String location = server.getRepositoryUrl();
+		location += "?query=" + URLEncoder.encode(query, "UTF-8");
+
+		URL url = new URL(location);
+
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+
+		// incorrect mime-type for graph query results
+		conn.setRequestProperty("Accept", TupleQueryResultFormat.SPARQL.getDefaultMIMEType());
+		
+		conn.connect();
+
+		try {
+			int responseCode = conn.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_NOT_ACCEPTABLE) {
+				// do nothing, expected
+			}
+			else {
+				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
+						+ responseCode + ")";
+				fail(response);
+			}
+		}
+		finally {
+			conn.disconnect();
+		}
+	}
+	
+
+	/**
+	 * Checks that a suitable RDF content type is returned when accept header not explicitly set.
+	 */
+	@Test
+	public void testContentTypeForGraphQuery3_GET()
+		throws Exception
+	{
+		String query = "DESCRIBE <foo:bar>";
+		String location = server.getRepositoryUrl();
+		location += "?query=" + URLEncoder.encode(query, "UTF-8");
+
+		URL url = new URL(location);
+
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+
+		conn.connect();
+
+		try {
+			int responseCode = conn.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				String contentType = conn.getHeaderField("Content-Type");
+				assertNotNull(contentType);
+				
+				// snip off optional charset declaration
+				int charPos = contentType.indexOf(";");
+				if (charPos > -1) {
+					contentType = contentType.substring(0, charPos);
+				}
+				
+				RDFFormat format = RDFFormat.forMIMEType(contentType);
+				assertNotNull(format);
+			}
+			else {
+				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
+						+ responseCode + ")";
+				fail(response);
+				throw new RuntimeException(response);
+			}
+		}
+		finally {
+			conn.disconnect();
+		}
 	}
 
 	private void putFile(String location, String file)
@@ -213,7 +343,7 @@ public class ProtocolTest {
 		}
 	}
 
-	private TupleQueryResult evaluate(String location, String query, QueryLanguage queryLn)
+	private TupleQueryResult evaluateTupleQuery(String location, String query, QueryLanguage queryLn)
 		throws Exception
 	{
 		location += "?query=" + URLEncoder.encode(query, "UTF-8") + "&queryLn=" + queryLn.getName();
@@ -244,4 +374,5 @@ public class ProtocolTest {
 			conn.disconnect();
 		}
 	}
+	
 }
