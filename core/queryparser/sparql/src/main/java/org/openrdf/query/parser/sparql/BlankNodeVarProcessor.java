@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,11 +40,14 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  */
 public class BlankNodeVarProcessor extends ASTVisitorBase {
 
-	public static void process(ASTOperationContainer qc)
+	
+	public static Set<String> process(ASTOperationContainer qc)
 		throws MalformedQueryException
 	{
 		try {
-			qc.jjtAccept(new BlankNodeToVarConverter(), null);
+			BlankNodeToVarConverter converter = new BlankNodeToVarConverter();
+			qc.jjtAccept(converter, null);
+			return converter.getUsedBNodeIDs();
 		}
 		catch (VisitorException e) {
 			throw new MalformedQueryException(e);
@@ -65,6 +69,11 @@ public class BlankNodeVarProcessor extends ASTVisitorBase {
 		private String createAnonVarName() {
 			return "-anon-" + anonVarNo++;
 		}
+		
+		public Set<String> getUsedBNodeIDs() {
+			usedBNodeIDs.addAll(conversionMap.keySet());
+			return Collections.unmodifiableSet(usedBNodeIDs);
+		}
 
 		@Override
 		public Object visit(ASTBasicGraphPattern node, Object data)
@@ -73,7 +82,7 @@ public class BlankNodeVarProcessor extends ASTVisitorBase {
 			// The same Blank node ID cannot be used across Graph Patterns
 			usedBNodeIDs.addAll(conversionMap.keySet());
 
-			// Blank nodes are scope to Basic Graph Patterns
+			// Blank nodes are scoped to Basic Graph Patterns
 			conversionMap.clear();
 
 			return super.visit(node, data);

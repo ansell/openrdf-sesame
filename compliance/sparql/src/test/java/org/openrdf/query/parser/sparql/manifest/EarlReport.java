@@ -87,8 +87,9 @@ public class EarlReport {
 		con.add(projectNode, RDF.TYPE, DOAP.PROJECT);
 		con.add(projectNode, DOAP.NAME, vf.createLiteral("OpenRDF Sesame"));
 		con.add(projectNode, DOAP.RELEASE, releaseNode);
+		con.add(projectNode, DOAP.HOMEPAGE, vf.createURI("http://www.openrdf.org/"));
 		con.add(releaseNode, RDF.TYPE, DOAP.VERSION);
-		con.add(releaseNode, DOAP.NAME, vf.createLiteral("Sesame 2.6.6"));
+		con.add(releaseNode, DOAP.NAME, vf.createLiteral("Sesame 2.7.0"));
 		SimpleDateFormat xsdDataFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String currentDate = xsdDataFormat.format(new Date());
 		con.add(releaseNode, DOAP.CREATED, vf.createLiteral(currentDate, XMLSchema.DATE));
