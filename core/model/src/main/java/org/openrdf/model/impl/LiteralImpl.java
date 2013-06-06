@@ -75,7 +75,7 @@ public class LiteralImpl implements Literal {
 	 *        The label for the literal, must not be <tt>null</tt>.
 	 */
 	public LiteralImpl(String label) {
-		this(label, null, null);
+		this(label, null, XMLSchema.STRING);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class LiteralImpl implements Literal {
 	 *        The language tag for the literal.
 	 */
 	public LiteralImpl(String label, String language) {
-		this(label, language, null);
+		this(label, language, RDF.LANGSTRING);
 	}
 
 	/**
