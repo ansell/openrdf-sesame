@@ -510,14 +510,6 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	{
 		if (literal.getLanguage() != null) {
 			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
-			if (!rdfLangStringToLangLiteral() && literal.getDatatype() != null) {
-				// Only enter this section if there is a datatype. Whatever datatype
-				// it is, it should be RDF.LANGSTRING
-				if (isQName(RDF.LANGSTRING)) {
-					writeQName(RDF.LANGSTRING);
-				}
-				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, RDF.LANGSTRING.stringValue());
-			}
 		}
 		// Only enter this section for non-language literals now, as the
 		// rdf:langString datatype is handled implicitly above
@@ -536,9 +528,5 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 	private boolean xsdStringToPlainLiteral() {
 		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
-	}
-
-	private boolean rdfLangStringToLangLiteral() {
-		return getWriterConfig().get(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 	}
 }
