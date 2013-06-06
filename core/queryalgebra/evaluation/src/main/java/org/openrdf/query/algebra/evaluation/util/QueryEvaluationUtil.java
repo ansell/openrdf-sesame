@@ -392,10 +392,7 @@ public class QueryEvaluationUtil {
 
 	/**
 	 * Checks whether the supplied literal is a "string literal". A "string
-	 * literal" is a literal with the datatype xsd:string.
-	 * <p>
-	 * To avoid common mistakes, if {@link Literal#isLanguageLiteral()}, returns
-	 * true, then this method returns false.
+	 * literal" is a literal with the datatype xsd:string or a language literal.
 	 * 
 	 * @see <a href="http://www.w3.org/TR/sparql11-query/#func-string">SPARQL
 	 *      Functions on Strings Documentation</a>
