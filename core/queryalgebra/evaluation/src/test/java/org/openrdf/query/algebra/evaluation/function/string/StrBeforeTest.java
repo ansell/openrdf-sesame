@@ -160,7 +160,7 @@ public class StrBeforeTest {
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: \"foobar\"^^<http://www.w3.org/2001/XMLSchema#string>, \"b\"^^<http://www.w3.org/2001/XMLSchema#date>", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: \"foobar\", \"b\"^^<http://www.w3.org/2001/XMLSchema#date>", e.getMessage());
 		}
 	}
 	
@@ -176,7 +176,7 @@ public class StrBeforeTest {
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: \"10\"^^<http://www.w3.org/2001/XMLSchema#int>, \"b\"^^<http://www.w3.org/2001/XMLSchema#string>", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: \"10\"^^<http://www.w3.org/2001/XMLSchema#int>, \"b\"", e.getMessage());
 		}
 	}
 	
@@ -193,7 +193,7 @@ public class StrBeforeTest {
 			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: http://example.org/foobar, \"b\"^^<http://www.w3.org/2001/XMLSchema#string>", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: http://example.org/foobar, \"b\"", e.getMessage());
 		}
 	}
 	
@@ -224,7 +224,7 @@ public class StrBeforeTest {
 			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: \"foobar\"^^<http://www.w3.org/2001/XMLSchema#string>, \"b\"@nl", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: \"foobar\", \"b\"@nl", e.getMessage());
 		}
 	}
 	
