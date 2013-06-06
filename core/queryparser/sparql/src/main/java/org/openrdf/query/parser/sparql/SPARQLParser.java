@@ -18,8 +18,11 @@ package org.openrdf.query.parser.sparql;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Dataset;
@@ -68,10 +71,8 @@ public class SPARQLParser implements QueryParser {
 			List<ASTPrefixDecl> sharedPrefixDeclarations = null;
 
 			Node node = updateSequence.jjtGetChild(0);
-			if (node instanceof ASTPrefixDecl) {
 
-			}
-
+			Set<String> globalUsedBNodeIds = new HashSet<String>();
 			for (int i = 0; i < updateOperations.size(); i++) {
 
 				ASTUpdateContainer uc = updateOperations.get(i);
@@ -102,8 +103,15 @@ public class SPARQLParser implements QueryParser {
 				}
 
 				PrefixDeclProcessor.process(uc);
-				BlankNodeVarProcessor.process(uc);
+				Set<String> usedBNodeIds = BlankNodeVarProcessor.process(uc);
 
+				if (Collections.disjoint(usedBNodeIds, globalUsedBNodeIds)) {
+					globalUsedBNodeIds.addAll(usedBNodeIds);
+				}
+				else {
+					throw new MalformedQueryException("blank node identifier may not be shared across update operations");
+				}
+				
 				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
 
 				ASTUpdate updateNode = uc.getUpdate();
