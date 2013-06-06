@@ -383,10 +383,9 @@ public class QueryEvaluationUtil {
 	 */
 	public static boolean compatibleArguments(Literal arg1, Literal arg2) {
 		// FIXME: isSimpleLiteral and isPlainLiteral are not meaningful in RDF-1.1
-		boolean compatible = ((isSimpleLiteral(arg1) || XMLSchema.STRING.equals(arg1.getDatatype())) && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())))
-				|| (isPlainLiteral(arg1) && isPlainLiteral(arg2) && arg1.getLanguage() != null && arg1.getLanguage().equals(
-						arg2.getLanguage()))
-				|| (isPlainLiteral(arg1) && arg1.getLanguage() != null && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())));
+		boolean compatible = ((XMLSchema.STRING.equals(arg1.getDatatype())) && (XMLSchema.STRING.equals(arg2.getDatatype())))
+				|| (arg1.getLanguage() != null && arg1.getLanguage().equals(arg2.getLanguage()))
+				|| (arg1.getLanguage() != null && (XMLSchema.STRING.equals(arg2.getDatatype())));
 
 		return compatible;
 	}
