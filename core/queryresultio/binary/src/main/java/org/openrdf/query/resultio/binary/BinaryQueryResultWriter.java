@@ -296,11 +296,11 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		out.writeByte(marker);
 		writeString(label);
 
-		if (datatype != null) {
-			writeQName(datatype);
-		}
-		else if (language != null) {
+		if (language != null) {
 			writeString(language);
+		}
+		else if (datatype != null) {
+			writeQName(datatype);
 		}
 	}
 
