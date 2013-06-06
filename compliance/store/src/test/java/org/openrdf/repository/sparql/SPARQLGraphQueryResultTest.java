@@ -16,26 +16,29 @@
  */
 package org.openrdf.repository.sparql;
 
+import java.nio.file.Path;
+
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.GraphQueryResultTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.http.HTTPMemServer;
 
-
 /**
- *
  * @author Jeen Broekstra
  */
 public class SPARQLGraphQueryResultTest extends GraphQueryResultTest {
 
-
 	private HTTPMemServer server;
+
+	private Path dataDir;
 
 	@Override
 	public void setUp()
 		throws Exception
 	{
-		server = new HTTPMemServer();
+		dataDir = tempDir.newFolder("sparqlgraphqueryresult-test").toPath();
+
+		server = new HTTPMemServer(dataDir);
 		try {
 			server.start();
 			super.setUp();
@@ -53,13 +56,13 @@ public class SPARQLGraphQueryResultTest extends GraphQueryResultTest {
 		super.tearDown();
 		server.stop();
 	}
-	
+
 	@Override
 	protected Repository newRepository()
 		throws Exception
 	{
-		return new SPARQLRepository(HTTPMemServer.REPOSITORY_URL,
-				Protocol.getStatementsLocation(HTTPMemServer.REPOSITORY_URL));
+		return new SPARQLRepository(server.getRepositoryUrl(),
+				Protocol.getStatementsLocation(server.getRepositoryUrl()));
 
 	}
 
