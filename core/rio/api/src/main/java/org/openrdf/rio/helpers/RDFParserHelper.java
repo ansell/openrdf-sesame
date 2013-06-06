@@ -91,6 +91,13 @@ public class RDFParserHelper {
 		String workingLang = lang;
 		URI workingDatatype = datatype;
 
+		if(workingLang == null && RDF.LANGSTRING.equals(workingDatatype)) {
+			reportError("'" + workingLabel + "' had rdf:langString datatype, but no language", BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, parserConfig, errListener);
+			// If they signalled that they wanted to support mapping of rdf:langString to language literal, then attempt to go on with an empty language
+			workingLang = "";
+			workingDatatype = null;
+		}
+		
 		// In RDF-1.1 we must do lang check first as language literals will all
 		// have datatype RDF.LANGSTRING, but only language literals would have a
 		// non-null lang
