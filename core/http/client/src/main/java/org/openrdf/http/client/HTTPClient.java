@@ -16,7 +16,25 @@
  */
 package org.openrdf.http.client;
 
-import static org.openrdf.http.protocol.Protocol.ACCEPT_PARAM_NAME;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.http.protocol.error.ErrorInfo;
+import org.openrdf.http.protocol.error.ErrorType;
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.*;
+import org.openrdf.query.resultio.*;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.rio.*;
+import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.ParseErrorLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -32,61 +50,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.ProxyHost;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.openrdf.http.protocol.Protocol;
-import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.http.protocol.error.ErrorInfo;
-import org.openrdf.http.protocol.error.ErrorType;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.Binding;
-import org.openrdf.query.Dataset;
-import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryInterruptedException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.resultio.BooleanQueryResultFormat;
-import org.openrdf.query.resultio.BooleanQueryResultParser;
-import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
-import org.openrdf.query.resultio.QueryResultIO;
-import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.query.resultio.TupleQueryResultParser;
-import org.openrdf.query.resultio.TupleQueryResultParserRegistry;
-import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.rio.ParserConfig;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RDFParserRegistry;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.rio.helpers.BasicParserSettings;
-import org.openrdf.rio.helpers.ParseErrorLogger;
+import static org.openrdf.http.protocol.Protocol.ACCEPT_PARAM_NAME;
 
 /**
  * The HTTP client provides low level HTTP methods for the HTTP communication of
@@ -294,19 +258,22 @@ public class HTTPClient {
 	 *        the password
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		// checkServerURL();
+        setUsernameAndPasswordForUrl(username, password, getQueryURL());
+    }
+
+    protected void setUsernameAndPasswordForUrl(String username, String password, String url) {
 
 		if (username != null && password != null) {
-			logger.debug("Setting username '{}' and password for server at {}.", username, queryURL);
+			logger.debug("Setting username '{}' and password for server at {}.", username, url);
 			try {
-				URL server = new URL(getQueryURL());
+				URL server = new URL(url);
 				authScope = new AuthScope(server.getHost(), AuthScope.ANY_PORT);
 				httpClient.getState().setCredentials(authScope,
 						new UsernamePasswordCredentials(username, password));
 				httpClient.getParams().setAuthenticationPreemptive(true);
 			}
 			catch (MalformedURLException e) {
-				logger.warn("Unable to set username and password for malformed URL {}", queryURL);
+				logger.warn("Unable to set username and password for malformed URL {}", url);
 			}
 		}
 		else {
