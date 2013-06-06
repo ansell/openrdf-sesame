@@ -24,6 +24,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -237,7 +238,7 @@ public class LiteralImpl implements Literal {
 			sb.append('@');
 			sb.append(language);
 		}
-		else if (isTypedLiteral()) {
+		else if (Literals.hasNonNativeDatatype(this)) {
 			sb.append("^^<");
 			sb.append(datatype.toString());
 			sb.append(">");
