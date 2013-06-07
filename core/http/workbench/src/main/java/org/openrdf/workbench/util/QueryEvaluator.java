@@ -30,7 +30,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -93,42 +92,37 @@ public final class QueryEvaluator {
 	{
 		final QueryLanguage queryLn = QueryLanguage.valueOf(req.getParameter("queryLn"));
 		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
-		boolean deferResultCount = false;
+		boolean evaluateCookie = false;
+		int offset = req.getInt("offset");
+		int limit = req.getInt("limit");
+		boolean paged = limit > 0;
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
-			final int limit = req.getInt("limit");
-			deferResultCount = limit <= 0;
 			final int know_total = req.getInt("know_total");
-			if (know_total > 0) {
+			evaluateCookie = know_total <= 0;
+			if (!evaluateCookie) {
 				cookies.addTotalResultCountCookie(req, resp, know_total);
 			}
-			else {
-				if (!deferResultCount) {
-					// When all results are wanted, we skip initial this round trip
-					// to the server just to get a count, preferring to just pull in
-					// all results at once.
-					// TODO Skip this when limit has been set > 0, too.
-					final int result_count = (query instanceof GraphQuery) ? this.countQueryResults((GraphQuery)query)
-							: this.countQueryResults((TupleQuery)query);
-					cookies.addTotalResultCountCookie(req, resp, result_count);
+			if (paged) {
+				PagedQuery pagedQuery = new PagedQuery(queryText, queryLn, limit, offset);
+				if (pagedQuery.isPaged()) {
+					offset = pagedQuery.getOffset();
+					limit = pagedQuery.getLimit();
 				}
-			}
-			if (!deferResultCount) {
-				query = QueryFactory.prepareQuery(con, queryLn,
-						new PagedQuery(queryText, queryLn, limit, req.getInt("offset")).toString());
+				if (!evaluateCookie) {
+					query = QueryFactory.prepareQuery(con, queryLn, pagedQuery.toString());
+				}
 			}
 		}
 		if (req.isParameterPresent("infer")) {
 			final boolean infer = Boolean.parseBoolean(req.getParameter("infer"));
 			query.setIncludeInferred(infer);
 		}
-		// TODO use limit, offset and know_total to skip the first evaluation for
-		// counting above when possible.
-		this.evaluate(builder, out, xslPath, req, resp, cookies, query, deferResultCount);
+		this.evaluate(builder, out, xslPath, req, resp, cookies, query, evaluateCookie, paged, offset, limit);
 	}
 
 	/***
 	 * Evaluate a tuple query, and create an XML results document. This method
-	 * completes writing of the response.
+	 * completes writing of the response. !paged means use all results.
 	 * 
 	 * @param builder
 	 *        response builder helper for generating the XML response to the
@@ -144,16 +138,21 @@ public final class QueryEvaluator {
 	 *        needed to write result count cookie
 	 * @param query
 	 *        the query to be evaluated
+	 * @param writeCookie
+	 *        whether to write the total result count cookie
+	 * @param paged
+	 *        whether to display a limited subset
 	 * @throws QueryResultHandlerException
 	 */
 	public void evaluateTupleQuery(final TupleResultBuilder builder, String xslPath, WorkbenchRequest req,
-			HttpServletResponse resp, CookieHandler cookies, final TupleQuery query, boolean deferResultCount)
+			HttpServletResponse resp, CookieHandler cookies, final TupleQuery query, boolean writeCookie,
+			boolean paged, int offset, int limit)
 		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		final TupleQueryResult result = query.evaluate();
 		final String[] names = result.getBindingNames().toArray(new String[0]);
 		List<BindingSet> bindings = Iterations.asList(result);
-		if (deferResultCount) {
+		if (writeCookie) {
 			cookies.addTotalResultCountCookie(req, resp, bindings.size());
 		}
 		builder.transform(xslPath, "tuple.xsl");
@@ -161,14 +160,29 @@ public final class QueryEvaluator {
 		builder.variables(names);
 		builder.link(Arrays.asList(INFO));
 		final List<Object> values = new ArrayList<Object>(names.length);
+		if (paged && writeCookie) {
+			// Only in this case do we have paged results, but were given the full
+			// query. Just-in-case parameter massaging below to avoid array index
+			// issues.
+			int fromIndex = Math.min(0, offset);
+			bindings = bindings.subList(fromIndex,
+					Math.max(fromIndex, Math.min(offset + limit, bindings.size())));
+		}
 		for (BindingSet set : bindings) {
-			values.clear();
-			for (int i = 0; i < names.length; i++) {
-				values.add(set.getValue(names[i]));
-			}
-			builder.result(values.toArray());
+			addResult(builder, names, values, set);
 		}
 		builder.end();
+	}
+
+	private void addResult(final TupleResultBuilder builder, final String[] names, final List<Object> values,
+			BindingSet set)
+		throws QueryResultHandlerException
+	{
+		values.clear();
+		for (int i = 0; i < names.length; i++) {
+			values.add(set.getValue(names[i]));
+		}
+		builder.result(values.toArray());
 	}
 
 	/***
@@ -193,11 +207,7 @@ public final class QueryEvaluator {
 			final List<Object> values = new ArrayList<Object>();
 			while (result.hasNext()) {
 				final BindingSet set = result.next();
-				values.clear();
-				for (int i = 0; i < names.length; i++) {
-					values.add(set.getValue(names[i]));
-				}
-				builder.result(values.toArray());
+				addResult(builder, names, values, set);
 			}
 		}
 		finally {
@@ -222,61 +232,36 @@ public final class QueryEvaluator {
 	 *        needed to write result count cookie
 	 * @param query
 	 *        the query to be evaluated
+	 * @param writeCookie
+	 *        whether to write the total result count cookie
 	 * @throws QueryResultHandlerException
 	 */
 	private void evaluateGraphQuery(final TupleResultBuilder builder, String xslPath, WorkbenchRequest req,
-			HttpServletResponse resp, CookieHandler cookies, final GraphQuery query, boolean deferResultCount)
+			HttpServletResponse resp, CookieHandler cookies, final GraphQuery query, boolean writeCookie,
+			boolean paged, int offset, int limit)
 		throws QueryEvaluationException, QueryResultHandlerException
 	{
 		List<Statement> statements = Iterations.asList(query.evaluate());
-		if (deferResultCount) {
+		if (writeCookie) {
 			cookies.addTotalResultCountCookie(req, resp, statements.size());
 		}
 		builder.transform(xslPath, "graph.xsl");
 		builder.start();
 		builder.variables("subject", "predicate", "object");
 		builder.link(Arrays.asList(INFO));
+		if (paged && writeCookie) {
+			// Only in this case do we have paged results, but were given the full
+			// query. Just-in-case parameter massaging below to avoid array index
+			// issues.
+			int fromIndex = Math.min(0, offset);
+			statements = statements.subList(fromIndex,
+					Math.max(fromIndex, Math.min(offset + limit, statements.size())));
+		}
 		for (Statement statement : statements) {
 			builder.result(statement.getSubject(), statement.getPredicate(), statement.getObject(),
 					statement.getContext());
 		}
 		builder.end();
-	}
-
-	private int countQueryResults(final GraphQuery query)
-		throws QueryEvaluationException
-	{
-		int rval = 0;
-		final GraphQueryResult result = query.evaluate();
-		try {
-			while (result.hasNext()) {
-				result.next();
-				rval++;
-			}
-		}
-		finally {
-			result.close();
-		}
-
-		return rval;
-	}
-
-	private int countQueryResults(final TupleQuery query)
-		throws QueryEvaluationException
-	{
-		int rval = 0;
-		final TupleQueryResult result = query.evaluate();
-		try {
-			while (result.hasNext()) {
-				result.next();
-				rval++;
-			}
-		}
-		finally {
-			result.close();
-		}
-
-		return rval;
 	}
 
 	private void evaluateGraphQuery(final RDFWriter writer, final GraphQuery query)
@@ -295,11 +280,12 @@ public final class QueryEvaluator {
 
 	private void evaluate(final TupleResultBuilder builder, final OutputStream out, final String xslPath,
 			final WorkbenchRequest req, HttpServletResponse resp, CookieHandler cookies, final Query query,
-			boolean deferResultCount)
+			boolean writeCookie, boolean paged, int offset, int limit)
 		throws OpenRDFException, BadRequestException
 	{
 		if (query instanceof TupleQuery) {
-			this.evaluateTupleQuery(builder, xslPath, req, resp, cookies, (TupleQuery)query, deferResultCount);
+			this.evaluateTupleQuery(builder, xslPath, req, resp, cookies, (TupleQuery)query, writeCookie, paged,
+					offset, limit);
 		}
 		else {
 			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
@@ -307,7 +293,8 @@ public final class QueryEvaluator {
 			if (query instanceof GraphQuery) {
 				GraphQuery graphQuery = (GraphQuery)query;
 				if (null == format) {
-					this.evaluateGraphQuery(builder, xslPath, req, resp, cookies, graphQuery, deferResultCount);
+					this.evaluateGraphQuery(builder, xslPath, req, resp, cookies, graphQuery, writeCookie, paged,
+							offset, limit);
 				}
 				else {
 					this.evaluateGraphQuery(RDFWriterRegistry.getInstance().get(format).getWriter(out), graphQuery);
