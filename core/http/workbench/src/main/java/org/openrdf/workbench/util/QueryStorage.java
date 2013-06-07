@@ -90,7 +90,8 @@ public class QueryStorage {
 
 	private static final String ASK_UPDATABLE = PRE + "ASK { $<query> :userName ?user . " + UPDATE_FILTER;
 
-	private static final String ASK_READABLE = PRE + "ASK { $<query> :userName ?user  . " + READ_FILTER;
+	private static final String ASK_READABLE = PRE + "ASK { $<query> :userName ?user  ; :shared ?shared . "
+			+ READ_FILTER;
 
 	private static final String DELETE = PRE + "DELETE WHERE { $<query> :userName ?user ; ?p ?o . }";
 
@@ -113,7 +114,7 @@ public class QueryStorage {
 			+ "SELECT ?query ?user ?queryName ?shared ?queryLn ?queryText ?infer ?rowsPerPage "
 			+ "{ ?query :repository $<repository> ; :userName ?user ; :queryName ?queryName ; :shared ?shared ; "
 			+ ":queryLanguage ?queryLn ; :query ?queryText ; :infer ?infer ; :rowsPerPage ?rowsPerPage .\n"
-			+ "FILTER (?user = $<userName> || ?user = \"\" || ?shared) } ORDER BY ?user ?queryName";
+			+ READ_FILTER + "ORDER BY ?user ?queryName";
 
 	private final Repository queries;
 
