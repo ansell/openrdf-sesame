@@ -59,7 +59,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
-import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
@@ -669,4 +668,10 @@ public class SesameHTTPClient extends HTTPClient {
 			releaseConnection(method);
 		}
 	}
+
+    @Override
+    public void setUsernameAndPassword(String username, String password) {
+        checkServerURL();
+        setUsernameAndPasswordForUrl(username, password, getServerURL());
+    }
 }
