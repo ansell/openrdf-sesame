@@ -294,19 +294,22 @@ public class HTTPClient {
 	 *        the password
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		// checkServerURL();
+		setUsernameAndPasswordForUrl(username, password, getQueryURL());
+	}
+
+	protected void setUsernameAndPasswordForUrl(String username, String password, String url) {
 
 		if (username != null && password != null) {
-			logger.debug("Setting username '{}' and password for server at {}.", username, queryURL);
+			logger.debug("Setting username '{}' and password for server at {}.", username, url);
 			try {
-				URL server = new URL(getQueryURL());
+				URL server = new URL(url);
 				authScope = new AuthScope(server.getHost(), AuthScope.ANY_PORT);
 				httpClient.getState().setCredentials(authScope,
 						new UsernamePasswordCredentials(username, password));
 				httpClient.getParams().setAuthenticationPreemptive(true);
 			}
 			catch (MalformedURLException e) {
-				logger.warn("Unable to set username and password for malformed URL {}", queryURL);
+				logger.warn("Unable to set username and password for malformed URL {}", url);
 			}
 		}
 		else {
@@ -828,7 +831,8 @@ public class HTTPClient {
 		MalformedQueryException
 	{
 
-		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, getPreferredRDFFormat());
+		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext,
+				getPreferredRDFFormat());
 		for (String acceptParam : acceptParams) {
 			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
 		}

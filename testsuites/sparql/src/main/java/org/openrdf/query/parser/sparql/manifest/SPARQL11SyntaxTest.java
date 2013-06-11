@@ -67,24 +67,24 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 	static {
 		StringBuilder sb = new StringBuilder(512);
 
-		sb.append("SELECT subManifest ");
-		sb.append("FROM {} rdf:first {subManifest} ");
-		sb.append("USING NAMESPACE");
-		sb.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>,");
-		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>");
+		sb.append("PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> ");
+		sb.append("PREFIX qt: <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> ");
+		sb.append("SELECT ?subManifest ");
+		sb.append("WHERE { [] mf:include [ rdf:rest*/rdf:first ?subManifest ] . } ");
 		SUBMANIFEST_QUERY = sb.toString();
 
 		sb.setLength(0);
-		sb.append("SELECT TestURI, Name, Action, Type ");
-		sb.append("FROM {} rdf:first {TestURI} rdf:type {Type};");
-		sb.append("                            mf:name {Name};");
-		sb.append("                            mf:action {Action};");
-		sb.append("                            dawgt:approval {dawgt:Approved} ");
-		sb.append("WHERE Type = mf:PositiveSyntaxTest11 or Type = mf:NegativeSyntaxTest11 or Type = mf:PositiveUpdateSyntaxTest11 or Type = mf:NegativeUpdateSyntaxTest11 ");
-		sb.append("USING NAMESPACE");
-		sb.append("  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>,");
-		sb.append("  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>,");
-		sb.append("  dawgt = <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>");
+		sb.append("PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> ");
+		sb.append("PREFIX qt: <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> ");
+		sb.append("PREFIX dawgt: <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#> ");
+		sb.append("SELECT ?TestURI ?Name ?Action ?Type ");
+		sb.append("WHERE { [] rdf:first ?TestURI. ");
+		sb.append("        ?TestURI a ?Type ; ");
+		sb.append("                 mf:name ?Name ;");
+		sb.append("                 mf:action ?Action ;");
+		sb.append("                 dawgt:approval dawgt:Approved . ");
+		sb.append("        FILTER(?Type IN (mf:PositiveSyntaxTest11, mf:NegativeSyntaxTest11, mf:PositiveUpdateSyntaxTest11, mf:NegativeUpdateSyntaxTest11)) ");
+		sb.append(" } ");
 		TESTCASE_QUERY = sb.toString();
 	}
 
@@ -162,7 +162,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 			tmpDir = null;
 		}
 		else {
-			URL url = SPARQL11SyntaxTest.class.getResource("/sparql11-test-suite/");
+			URL url = SPARQL11SyntaxTest.class.getResource("/testcases-sparql-1.1-w3c/");
 			if ("jar".equals(url.getProtocol())) {
 				try {
 					tmpDir = FileUtil.createTempDir("sparql-syntax");
@@ -233,7 +233,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		logger.info("Searching for sub-manifests");
 		List<String> subManifestList = new ArrayList<String>();
 
-		TupleQueryResult subManifests = con.prepareTupleQuery(QueryLanguage.SERQL, SUBMANIFEST_QUERY).evaluate();
+		TupleQueryResult subManifests = con.prepareTupleQuery(QueryLanguage.SPARQL, SUBMANIFEST_QUERY).evaluate();
 		while (subManifests.hasNext()) {
 			BindingSet bindings = subManifests.next();
 			subManifestList.add(bindings.getValue("subManifest").toString());
@@ -252,7 +252,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 			TestSuite subSuite = new TestSuite(subManifest.substring(host.length()));
 
 			logger.info("Creating test cases for {}", subManifest);
-			TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SERQL, TESTCASE_QUERY).evaluate();
+			TupleQueryResult tests = con.prepareTupleQuery(QueryLanguage.SPARQL, TESTCASE_QUERY).evaluate();
 			while (tests.hasNext()) {
 				BindingSet bindingSet = tests.next();
 

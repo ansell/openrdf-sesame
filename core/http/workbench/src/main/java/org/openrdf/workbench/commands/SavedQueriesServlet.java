@@ -91,7 +91,7 @@ public class SavedQueriesServlet extends TransformationServlet {
 				userName = "";
 			}
 			final URIImpl queryURI = new URIImpl(urn);
-			if (storage.canDelete(queryURI, userName)) {
+			if (storage.canChange(queryURI, userName)) {
 				storage.deleteQuery(queryURI, userName);
 			}
 			else {

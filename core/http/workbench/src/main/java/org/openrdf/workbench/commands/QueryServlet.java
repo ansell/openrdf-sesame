@@ -43,6 +43,7 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -246,20 +247,32 @@ public class QueryServlet extends TransformationServlet {
 			saveQuery(req, resp);
 		}
 		else if ("edit".equals(action)) {
-			final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
-			builder.transform(xslPath, "query.xsl");
-			builder.start(EDIT_PARAMS);
-			builder.link(Arrays.asList(INFO, "namespaces"));
-			final String queryLn = req.getParameter(EDIT_PARAMS[0]);
-			final String query = req.getParameter(EDIT_PARAMS[1]);
-			final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
-			final IntegerLiteralImpl limit = new IntegerLiteralImpl(new BigInteger(
-					req.getParameter(EDIT_PARAMS[3])));
-			builder.result(queryLn, query, infer, limit);
-			builder.end();
+			if (canReadSavedQuery(req)) {
+				/* only need read access for edit action, since we are only reading the saved query text
+				   to present it in the editor */
+				final TupleResultBuilder builder = getTupleResultBuilder(req, resp, resp.getOutputStream());
+				builder.transform(xslPath, "query.xsl");
+				builder.start(EDIT_PARAMS);
+				builder.link(Arrays.asList(INFO, "namespaces"));
+				final String queryLn = req.getParameter(EDIT_PARAMS[0]);
+				final String query = getQueryText(req);
+				final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
+				final IntegerLiteralImpl limit = new IntegerLiteralImpl(new BigInteger(
+						req.getParameter(EDIT_PARAMS[3])));
+				builder.result(queryLn, query, infer, limit);
+				builder.end();
+			}
+			else {
+				throw new BadRequestException("Current user may not read the given query.");
+			}
 		}
 		else if ("exec".equals(action)) {
-			service(req, resp, xslPath);
+			if (canReadSavedQuery(req)) {
+				service(req, resp, xslPath);
+			}
+			else {
+				throw new BadRequestException("Current user may not read the given query.");
+			}
 		}
 		else {
 			throw new BadRequestException("POST with unexpected action parameter value: " + action);
@@ -276,7 +289,7 @@ public class QueryServlet extends TransformationServlet {
 		json.put("accessible", accessible);
 		if (accessible) {
 			final String queryName = req.getParameter("query-name");
-			String userName = getUserName(req);
+			String userName = getUserNameFromParameter(req, SERVER_USER);
 			final boolean existed = storage.askExists(http, queryName, userName);
 			json.put("existed", existed);
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
@@ -284,7 +297,8 @@ public class QueryServlet extends TransformationServlet {
 				final boolean shared = !Boolean.valueOf(req.getParameter("save-private"));
 				final QueryLanguage queryLanguage = QueryLanguage.valueOf(req.getParameter(QUERY_LN));
 				final String queryText = req.getParameter(QUERY);
-				final boolean infer = req.isParameterPresent(INFER) ? Boolean.valueOf(req.getParameter(INFER)) : false;
+				final boolean infer = req.isParameterPresent(INFER) ? Boolean.valueOf(req.getParameter(INFER))
+						: false;
 				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
 					final URI query = storage.selectSavedQuery(http, userName, queryName);
@@ -302,8 +316,8 @@ public class QueryServlet extends TransformationServlet {
 		writer.flush();
 	}
 
-	private String getUserName(final WorkbenchRequest req) {
-		String userName = req.getParameter(SERVER_USER);
+	private String getUserNameFromParameter(WorkbenchRequest req, String parameter) {
+		String userName = req.getParameter(parameter);
 		if (null == userName) {
 			userName = "";
 		}
@@ -411,7 +425,8 @@ public class QueryServlet extends TransformationServlet {
 					}
 				}
 				else if ("id".equals(ref)) {
-					result = storage.getQueryText((HTTPRepository)repository, getUserName(req), query);
+					result = storage.getQueryText((HTTPRepository)repository,
+							getUserNameFromParameter(req, "owner"), query);
 				}
 				else {
 					// if ref not recognized assume request meant "text"
@@ -427,4 +442,18 @@ public class QueryServlet extends TransformationServlet {
 		}
 		return result;
 	}
+
+	private boolean canReadSavedQuery(WorkbenchRequest req)
+		throws BadRequestException, OpenRDFException
+	{
+		if (req.isParameterPresent(REF)) {
+			return "id".equals(req.getParameter(REF)) ? storage.canRead(storage.selectSavedQuery(
+					(HTTPRepository)repository, getUserNameFromParameter(req, "owner"), req.getParameter(QUERY)),
+					getUserNameFromParameter(req, SERVER_USER)) : true;
+		}
+		else {
+			throw new BadRequestException("Expected 'ref' parameter in request.");
+		}
+	}
+
 }

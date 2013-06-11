@@ -18,8 +18,11 @@ package org.openrdf.query.parser.sparql;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.Dataset;
@@ -39,6 +42,7 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
 import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
+import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTPrefixDecl;
 import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
@@ -68,10 +72,8 @@ public class SPARQLParser implements QueryParser {
 			List<ASTPrefixDecl> sharedPrefixDeclarations = null;
 
 			Node node = updateSequence.jjtGetChild(0);
-			if (node instanceof ASTPrefixDecl) {
 
-			}
-
+			Set<String> globalUsedBNodeIds = new HashSet<String>();
 			for (int i = 0; i < updateOperations.size(); i++) {
 
 				ASTUpdateContainer uc = updateOperations.get(i);
@@ -102,15 +104,26 @@ public class SPARQLParser implements QueryParser {
 				}
 
 				PrefixDeclProcessor.process(uc);
-				BlankNodeVarProcessor.process(uc);
+				Set<String> usedBNodeIds = BlankNodeVarProcessor.process(uc);
+
+				if (uc.getUpdate() instanceof ASTInsertData || uc.getUpdate() instanceof ASTInsertData) {
+					if (Collections.disjoint(usedBNodeIds, globalUsedBNodeIds)) {
+						globalUsedBNodeIds.addAll(usedBNodeIds);
+					}
+					else {
+						throw new MalformedQueryException(
+								"blank node identifier may not be shared across INSERT/DELETE DATA operations");
+					}
+				}
 
 				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
 
 				ASTUpdate updateNode = uc.getUpdate();
 				if (updateNode != null) {
 					UpdateExpr updateExpr = (UpdateExpr)updateNode.jjtAccept(updateExprBuilder, null);
-					
-					// add individual update expression to ParsedUpdate sequence container
+
+					// add individual update expression to ParsedUpdate sequence
+					// container
 					update.addUpdateExpr(updateExpr);
 
 					// associate updateExpr with the correct dataset (if any)
@@ -210,7 +223,7 @@ public class SPARQLParser implements QueryParser {
 
 		StringBuilder buf = new StringBuilder();
 		String line = null;
-		
+
 		int emptyLineCount = 0;
 		while ((line = in.readLine()) != null) {
 			if (line.length() > 0) {
@@ -220,7 +233,7 @@ public class SPARQLParser implements QueryParser {
 			else {
 				emptyLineCount++;
 			}
-			
+
 			if (emptyLineCount == 2) {
 				emptyLineCount = 0;
 				String queryStr = buf.toString().trim();
