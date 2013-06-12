@@ -153,7 +153,7 @@ public class QueryEvaluationUtil {
 		URI commonDatatype = null;
 		Integer compareResult = null;
 
-		if (QueryEvaluationUtil.isStringLiteral(leftLit) && QueryEvaluationUtil.isStringLiteral(rightLit)) {
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
 		else {
@@ -331,6 +331,10 @@ public class QueryEvaluationUtil {
 	 */
 	@Deprecated
 	public static boolean isSimpleLiteral(Value v) {
+		if (v instanceof Literal) {
+			return isSimpleLiteral((Literal)v);
+		}
+		
 		return false;
 	}
 
@@ -345,7 +349,7 @@ public class QueryEvaluationUtil {
 	 */
 	@Deprecated
 	public static boolean isSimpleLiteral(Literal l) {
-		return false;
+		return !l.isLanguageLiteral() && XMLSchema.STRING.equals(l.getDatatype());
 	}
 
 	/**
