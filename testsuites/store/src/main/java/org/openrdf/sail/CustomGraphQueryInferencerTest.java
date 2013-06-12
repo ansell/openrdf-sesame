@@ -1,4 +1,4 @@
-package org.openrdf.sail.inferencer.fc;
+package org.openrdf.sail;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,18 +17,19 @@ import info.aduna.io.ResourceUtil;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.SailException;
+import org.openrdf.sail.inferencer.fc.CustomGraphQueryInferencer;
 
 public class CustomGraphQueryInferencerTest extends TestCase {
 
@@ -55,8 +57,6 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		EXPECTATIONS.put("predicate", new Expectation(8, 2, 0, 2, 0));
 		EXPECTATIONS.put("resource", new Expectation(4, 2, 2, 0, 2));
 	}
-
-	private final SailRepository sail;
 
 	private final CustomGraphQueryInferencer inferencer;
 
@@ -87,10 +87,8 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 			String match, String initial, String delete)
 		throws MalformedQueryException, UnsupportedQueryLanguageException, SailException, RepositoryException
 	{
-		super("custom-query-inferencing/" + resourceFolder);
+		super(store.getClass().getName() + "-custom-query-inferencing/" + resourceFolder);
 		inferencer = new CustomGraphQueryInferencer(store, QueryLanguage.SPARQL, rule, match);
-		sail = new SailRepository(inferencer);
-		sail.initialize();
 		this.resourceFolder = resourceFolder;
 		this.initial = initial;
 		this.delete = delete;
@@ -102,29 +100,32 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		UpdateExecutionException
 	{
 		// Initialize
-		SailRepositoryConnection connection = sail.getConnection();
+		Repository sail = new SailRepository(inferencer);
+		sail.initialize();
+		RepositoryConnection connection = sail.getConnection();
 		connection.clear();
 		connection.add(new StringReader(initial), BASE, RDFFormat.TURTLE);
 
 		// Test initial inferencer state
 		Expectation testData = EXPECTATIONS.get(resourceFolder);
-		assertThat(inferencer.watchPredicates.size(), is(equalTo(testData.predCount)));
-		assertThat(inferencer.watchObjects.size(), is(equalTo(testData.objCount)));
-		assertThat(inferencer.watchSubjects.size(), is(equalTo(testData.subjCount)));
+		Collection<Value> watchPredicates = inferencer.getWatchPredicates();
+		assertThat(watchPredicates.size(), is(equalTo(testData.predCount)));
+		Collection<Value> watchObjects = inferencer.getWatchObjects();
+		assertThat(watchObjects.size(), is(equalTo(testData.objCount)));
+		Collection<Value> watchSubjects = inferencer.getWatchSubjects();
+		assertThat(watchSubjects.size(), is(equalTo(testData.subjCount)));
 		ValueFactory factory = connection.getValueFactory();
 		if ("predicate".equals(resourceFolder)) {
-			assertThat(inferencer.watchPredicates.contains(factory.createURI(BASE, "brotherOf")),
-					is(equalTo(true)));
-			assertThat(inferencer.watchPredicates.contains(factory.createURI(BASE, "parentOf")),
-					is(equalTo(true)));
+			assertThat(watchPredicates.contains(factory.createURI(BASE, "brotherOf")), is(equalTo(true)));
+			assertThat(watchPredicates.contains(factory.createURI(BASE, "parentOf")), is(equalTo(true)));
 		}
 		else {
 			URI bob = factory.createURI(BASE, "Bob");
 			URI alice = factory.createURI(BASE, "Alice");
-			assertThat(inferencer.watchSubjects.contains(bob), is(equalTo(true)));
-			assertThat(inferencer.watchSubjects.contains(alice), is(equalTo(true)));
-			assertThat(inferencer.watchObjects.contains(bob), is(equalTo(true)));
-			assertThat(inferencer.watchObjects.contains(alice), is(equalTo(true)));
+			assertThat(watchSubjects.contains(bob), is(equalTo(true)));
+			assertThat(watchSubjects.contains(alice), is(equalTo(true)));
+			assertThat(watchObjects.contains(bob), is(equalTo(true)));
+			assertThat(watchObjects.contains(alice), is(equalTo(true)));
 		}
 
 		// Test initial inferencing results
@@ -151,7 +152,7 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 			String rule = ResourceUtil.getString(testFolder + "/rule.rq");
 			String match = ResourceUtil.getString(testFolder + "/match.rq");
 			String initial = ResourceUtil.getString(testFolder + "/initial.ttl");
-			String delete = ResourceUtil.getString(testFolder + "/initial.ttl");
+			String delete = ResourceUtil.getString(testFolder + "/delete.ru");
 			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, rule, match, initial, delete));
 		}
 	}

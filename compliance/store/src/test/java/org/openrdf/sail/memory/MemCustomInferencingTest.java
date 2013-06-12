@@ -16,22 +16,28 @@
  */
 package org.openrdf.sail.memory;
 
+import java.io.IOException;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.openrdf.sail.InferencingTest;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.sail.CustomGraphQueryInferencerTest;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 
 public class MemCustomInferencingTest extends TestCase {
 
 	public static Test suite()
-		throws SailException
+		throws MalformedQueryException, UnsupportedQueryLanguageException, SailException, RepositoryException,
+		IOException
 	{
 		NotifyingSail store = new MemoryStore();
 		TestSuite suite = new TestSuite(MemCustomInferencingTest.class.getName());
-		InferencingTest.addTests(suite, store);
+		CustomGraphQueryInferencerTest.addTests(suite, store);
 		return suite;
 	}
 }

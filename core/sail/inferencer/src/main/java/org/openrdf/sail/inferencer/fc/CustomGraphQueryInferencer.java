@@ -17,6 +17,7 @@
 package org.openrdf.sail.inferencer.fc;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.slf4j.Logger;
@@ -62,11 +63,11 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 
 	private ParsedGraphQuery customMatcher;
 
-	protected final Collection<Value> watchPredicates = new HashSet<Value>();
+	private final Collection<Value> watchPredicates = new HashSet<Value>();
 
-	protected final Collection<Value> watchSubjects = new HashSet<Value>();
+	private final Collection<Value> watchSubjects = new HashSet<Value>();
 
-	protected final Collection<Value> watchObjects = new HashSet<Value>();
+	private final Collection<Value> watchObjects = new HashSet<Value>();
 
 	private boolean hasWatchValues;
 
@@ -146,7 +147,7 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 	 * @throws SailException
 	 *         if a problem occurs interpreting the rule pattern
 	 */
-	public void setFields(QueryLanguage language, String queryText, String matcherText)
+	public final void setFields(QueryLanguage language, String queryText, String matcherText)
 		throws MalformedQueryException, SailException
 	{
 		customQuery = QueryParserUtil.parseGraphQuery(language, queryText, null);
@@ -201,6 +202,36 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 		finally {
 			con.close();
 		}
+	}
+	
+	/**
+	 * Exposed for test purposes.
+	 * 
+	 * @return a computed collection of the statement subjects that, when
+	 *         added or removed, trigger an update of inferred statements
+	 */
+	public Collection<Value> getWatchSubjects() {
+		return Collections.unmodifiableCollection(watchSubjects);
+	}
+
+	/**
+	 * Exposed for test purposes.
+	 * 
+	 * @return a computed collection of the statement predicates that, when
+	 *         added or removed, trigger an update of inferred statements
+	 */
+	public Collection<Value> getWatchPredicates() {
+		return Collections.unmodifiableCollection(watchPredicates);
+	}
+
+	/**
+	 * Exposed for test purposes.
+	 * 
+	 * @return a computed collection of the statement objects that, when added
+	 *         or removed, trigger an update of inferred statements
+	 */
+	public Collection<Value> getWatchObjects() {
+		return Collections.unmodifiableCollection(watchObjects);
 	}
 
 	private class Connection extends InferencerConnectionWrapper implements SailConnectionListener {
