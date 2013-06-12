@@ -200,6 +200,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		// suite to complete successfully
 		con.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, Boolean.FALSE);
 		con.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, Boolean.FALSE);
+		con.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, Boolean.TRUE);
 		try {
 			String queryString = readQueryString();
 			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
