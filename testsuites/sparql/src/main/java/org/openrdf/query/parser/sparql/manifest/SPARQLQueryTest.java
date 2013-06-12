@@ -659,7 +659,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		query.append(" WHERE NOT resultFile LIKE \"*.csv\" ");
 		// skip tests involving JSON, sesame currently does not have a SPARQL/JSON
 		// parser.
-		query.append(" AND NOT resultFile LIKE \"*.srj\" ");
+		//query.append(" AND NOT resultFile LIKE \"*.srj\" ");
 		// skip tests involving entailment regimes
 		query.append(" AND NOT BOUND(Regime) ");
 		// skip test involving basic federation, these are tested separately.
