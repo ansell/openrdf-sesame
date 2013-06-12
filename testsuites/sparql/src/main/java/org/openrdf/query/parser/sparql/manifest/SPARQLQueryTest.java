@@ -67,6 +67,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
@@ -112,6 +113,8 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected Repository dataRep;
 
+	protected final ParserConfig testParserConfig;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -133,6 +136,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 		this.dataset = dataSet;
 		this.laxCardinality = laxCardinality;
 		this.checkOrder = checkOrder;
+		this.testParserConfig = new ParserConfig();
+		this.testParserConfig.addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		this.testParserConfig.addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+		this.testParserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		this.testParserConfig.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+		this.testParserConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, Boolean.TRUE);
 	}
 
 	/*---------*
@@ -196,11 +205,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
-		// Some SPARQL Tests have non-XSD datatypes that must pass for the test
-		// suite to complete successfully
-		con.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, Boolean.FALSE);
-		con.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, Boolean.FALSE);
-		con.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, Boolean.TRUE);
+		con.setParserConfig(testParserConfig);
 		try {
 			String queryString = readQueryString();
 			Query query = con.prepareQuery(QueryLanguage.SPARQL, queryString, queryFileURL);
@@ -460,6 +465,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
+		con.setParserConfig(testParserConfig);
 		try {
 			// Merge default and named graphs to filter duplicates
 			Set<URI> graphURIs = new HashSet<URI>();
@@ -482,11 +488,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		try {
 			con.begin();
+			con.setParserConfig(testParserConfig);
 			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
 			RDFParser rdfParser = Rio.createParser(rdfFormat, dataRep.getValueFactory());
-			rdfParser.setVerifyData(false);
-			rdfParser.setDatatypeHandling(DatatypeHandling.IGNORE);
-			// rdfParser.setPreserveBNodeIDs(true);
+			rdfParser.setParserConfig(testParserConfig);
 
 			RDFInserter rdfInserter = new RDFInserter(con);
 			rdfInserter.enforceContext(context);
@@ -535,6 +540,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
 				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
+				parser.setParserConfig(testParserConfig);
 				parser.setValueFactory(dataRep.getValueFactory());
 
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
@@ -581,8 +587,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		if (rdfFormat != null) {
 			RDFParser parser = Rio.createParser(rdfFormat);
-			parser.setDatatypeHandling(DatatypeHandling.IGNORE);
-			parser.setPreserveBNodeIDs(true);
+			parser.setParserConfig(testParserConfig);
 			parser.setValueFactory(dataRep.getValueFactory());
 
 			Set<Statement> result = new LinkedHashSet<Statement>();
