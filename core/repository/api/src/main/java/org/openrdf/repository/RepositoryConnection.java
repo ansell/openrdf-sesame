@@ -110,9 +110,7 @@ public interface RepositoryConnection extends java.lang.AutoCloseable {
 	 * 
 	 * @param config
 	 *        a Rio RDF Parser configuration.
-	 * @deprecated Use {@link #getParserConfig()} and {@link ParserConfig#useDefaults()} instead.
 	 */
-	@Deprecated
 	public void setParserConfig(ParserConfig config);
 
 	/**
