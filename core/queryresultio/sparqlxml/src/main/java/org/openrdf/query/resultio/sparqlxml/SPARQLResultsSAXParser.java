@@ -38,6 +38,7 @@ import info.aduna.xml.SimpleSAXAdapter;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
@@ -128,7 +129,10 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 			String xmlLang = atts.get(LITERAL_LANG_ATT);
 			String datatype = atts.get(LITERAL_DATATYPE_ATT);
 
-			if (datatype != null) {
+			if (xmlLang != null) {
+				currentValue = valueFactory.createLiteral(text, xmlLang);
+			}
+			else if (datatype != null) {
 				try {
 					currentValue = valueFactory.createLiteral(text, valueFactory.createURI(datatype));
 				}
@@ -137,11 +141,8 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 					throw new SAXException(e.getMessage(), e);
 				}
 			}
-			else if (xmlLang != null) {
-				currentValue = valueFactory.createLiteral(text, xmlLang);
-			}
 			else {
-				currentValue = valueFactory.createLiteral(text);
+				currentValue = valueFactory.createLiteral(text, XMLSchema.STRING);
 			}
 		}
 		else if (RESULT_TAG.equals(tagName)) {
