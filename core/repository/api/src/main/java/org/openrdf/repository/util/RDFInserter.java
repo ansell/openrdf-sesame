@@ -18,6 +18,8 @@ package org.openrdf.repository.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
@@ -67,7 +69,7 @@ public class RDFInserter extends RDFHandlerBase {
 	 * Map used to keep track of which blank node IDs have been mapped to which
 	 * BNode object in case preserveBNodeIDs is false.
 	 */
-	private final Map<String, BNode> bNodesMap;
+	private final ConcurrentMap<String, BNode> bNodesMap;
 
 	/*--------------*
 	 * Constructors *
@@ -84,7 +86,7 @@ public class RDFInserter extends RDFHandlerBase {
 		this.con = con;
 		preserveBNodeIDs = true;
 		namespaceMap = new HashMap<String, String>();
-		bNodesMap = new HashMap<String, BNode>();
+		bNodesMap = new ConcurrentHashMap<String, BNode>();
 	}
 
 	/*---------*
@@ -224,7 +226,11 @@ public class RDFInserter extends RDFHandlerBase {
 
 		if (result == null) {
 			result = con.getRepository().getValueFactory().createBNode();
-			bNodesMap.put(bNode.getID(), result);
+			BNode putIfAbsent = bNodesMap.putIfAbsent(bNode.getID(), result);
+			
+			if(putIfAbsent != null) {
+				result = putIfAbsent;
+			}
 		}
 
 		return result;
