@@ -66,6 +66,7 @@ public class LiteralImpl implements Literal {
 	 *--------------*/
 
 	protected LiteralImpl() {
+		this("");
 	}
 
 	/**
