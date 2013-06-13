@@ -57,7 +57,7 @@ public class LiteralImpl implements Literal {
 	private String language;
 
 	/**
-	 * The literal's datatype (null if not applicable).
+	 * The literal's datatype. Must not be null.
 	 */
 	private URI datatype;
 
