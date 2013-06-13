@@ -18,6 +18,7 @@ package org.openrdf.sail.memory.model;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * A MemoryStore-specific extension of Literal giving it node properties.
@@ -55,8 +56,7 @@ public class MemLiteral extends LiteralImpl implements MemValue {
 	 *        The label for this literal.
 	 */
 	public MemLiteral(Object creator, String label) {
-		super(label);
-		this.creator = creator;
+		this(creator, label, XMLSchema.STRING);
 	}
 
 	/**
