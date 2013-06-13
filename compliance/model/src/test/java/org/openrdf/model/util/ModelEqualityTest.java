@@ -23,11 +23,14 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -76,8 +79,8 @@ public class ModelEqualityTest extends TestCase {
 	private void testFilesEqual(String file1, String file2)
 		throws Exception
 	{
-		Set<Statement> model1 = loadModel(file1);
-		Set<Statement> model2 = loadModel(file2);
+		Model model1 = loadModel(file1);
+		Model model2 = loadModel(file2);
 
 		// long startTime = System.currentTimeMillis();
 		boolean modelsEqual = ModelUtil.equals(model1, model2);
@@ -89,20 +92,19 @@ public class ModelEqualityTest extends TestCase {
 		assertTrue(modelsEqual);
 	}
 
-	private Set<Statement> loadModel(String fileName)
+	private Model loadModel(String fileName)
 		throws Exception
 	{
 		URL modelURL = this.getClass().getResource(TESTCASES_DIR + fileName);
 		assertNotNull("Test file not found: " + fileName, modelURL);
 
-		Set<Statement> model = new LinkedHashSet<Statement>();
+		Model model = new LinkedHashModel();
 
 		RDFFormat rdfFormat = Rio.getParserFormatForFileName(fileName);
 		assertNotNull("Unable to determine RDF format for file: " + fileName, rdfFormat);
 
 		RDFParser parser = Rio.createParser(rdfFormat);
-		parser.setDatatypeHandling(DatatypeHandling.IGNORE);
-		parser.setPreserveBNodeIDs(true);
+		parser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 		parser.setRDFHandler(new StatementCollector(model));
 
 		InputStream in = modelURL.openStream();
