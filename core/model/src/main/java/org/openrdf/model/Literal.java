@@ -32,7 +32,7 @@ import org.openrdf.model.vocabulary.RDF;
  * <p>
  * All Typed Literals must have a non-null datatype that is not rdf:langString.
  * <p>
- * If a Typed Literal is not explicitly given a datatype, then xsd:string will
+ * If a Typed Literal is not explicitly given a datatype, then xsd:string 
  * is implied.
  * 
  * @author Arjohn Kampman
