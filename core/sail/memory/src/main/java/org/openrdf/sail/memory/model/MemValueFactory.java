@@ -309,7 +309,7 @@ public class MemValueFactory extends ValueFactoryBase {
 			String label = literal.getLabel();
 			URI datatype = literal.getDatatype();
 			
-			if (literal.getLanguage() != null) {
+			if (literal.isLanguageLiteral()) {
 				memLiteral = new MemLiteral(this, label, literal.getLanguage());
 			}
 			else if (datatype != null) {
@@ -342,7 +342,7 @@ public class MemValueFactory extends ValueFactoryBase {
 				}
 			}
 			else {
-				memLiteral = new MemLiteral(this, label);
+				memLiteral = new MemLiteral(this, label, XMLSchema.STRING);
 			}
 
 			boolean wasNew = literalRegistry.add(memLiteral);
