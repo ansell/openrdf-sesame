@@ -385,7 +385,7 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	@Override
 	public synchronized Literal createLiteral(String value) {
-		Literal tempLiteral = new LiteralImpl(value);
+		Literal tempLiteral = new LiteralImpl(value, XMLSchema.STRING);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
