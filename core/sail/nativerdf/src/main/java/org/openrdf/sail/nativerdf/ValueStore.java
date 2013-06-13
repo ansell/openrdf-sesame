@@ -35,6 +35,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
 import org.openrdf.sail.nativerdf.model.NativeBNode;
 import org.openrdf.sail.nativerdf.model.NativeLiteral;
@@ -739,7 +740,7 @@ public class ValueStore extends ValueFactoryBase implements java.lang.AutoClosea
 			return (NativeLiteral)l;
 		}
 
-		if (l.getLanguage() != null) {
+		if (l.isLanguageLiteral()) {
 			return new NativeLiteral(revision, l.getLabel(), l.getLanguage());
 		}
 		else if (l.getDatatype() != null) {
@@ -747,7 +748,7 @@ public class ValueStore extends ValueFactoryBase implements java.lang.AutoClosea
 			return new NativeLiteral(revision, l.getLabel(), datatype);
 		}
 		else {
-			return new NativeLiteral(revision, l.getLabel());
+			return new NativeLiteral(revision, l.getLabel(), XMLSchema.STRING);
 		}
 	}
 
