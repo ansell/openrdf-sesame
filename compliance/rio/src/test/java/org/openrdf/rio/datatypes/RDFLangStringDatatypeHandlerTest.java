@@ -16,6 +16,10 @@
  */
 package org.openrdf.rio.datatypes;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -49,7 +53,16 @@ public class RDFLangStringDatatypeHandlerTest extends AbstractDatatypeHandlerTes
 		throws Exception
 	{
 	}
-
+	
+	
+	@Ignore("SES-1803 : Using RDF LANGSTRING automatically adds an empty language tag")
+	@Test
+	@Override
+	public void testNormalizeDatatypeValidValue()
+		throws Exception
+	{
+	}
+	
 	// -------------------------------------
 	// RDF LangString specific methods
 	// -------------------------------------
