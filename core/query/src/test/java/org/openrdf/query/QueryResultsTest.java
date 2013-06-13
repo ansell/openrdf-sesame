@@ -16,10 +16,15 @@
  */
 package org.openrdf.query;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import junit.framework.TestCase;
 
@@ -30,6 +35,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.MutableTupleQueryResult;
@@ -37,7 +43,7 @@ import org.openrdf.query.impl.MutableTupleQueryResult;
 /**
  * @author Arjohn Kampman
  */
-public class QueryResultsTest extends TestCase {
+public class QueryResultsTest {
 
 	private MutableTupleQueryResult tqr1;
 
@@ -66,6 +72,10 @@ public class QueryResultsTest extends TestCase {
 
 	private Literal lit2;
 
+	private Literal lit3a;
+
+	private Literal lit3b;
+
 	private URI a = VF.createURI("urn:a");
 
 	private URI b = VF.createURI("urn:b");
@@ -76,8 +86,8 @@ public class QueryResultsTest extends TestCase {
 
 	private URI q = VF.createURI("urn:q");
 
-	@Override
-	protected void setUp() {
+	@Before
+	public void setUp() {
 		tqr1 = new MutableTupleQueryResult(twoBindingNames);
 		tqr2 = new MutableTupleQueryResult(twoBindingNames);
 		tqr3 = new MutableTupleQueryResult(threeBindingNames);
@@ -92,8 +102,11 @@ public class QueryResultsTest extends TestCase {
 
 		lit1 = VF.createLiteral(1);
 		lit2 = VF.createLiteral("test", "en");
+		lit3a = VF.createLiteral("test");
+		lit3b = VF.createLiteral("test", XMLSchema.STRING);
 	}
 
+	@Test
 	public void testAsModel()
 		throws QueryEvaluationException
 	{
@@ -104,10 +117,10 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(model.contains(VF.createStatement(a, p, b)));
 	}
 
+	@Test
 	public void testDistinctGraphQueryResults()
 		throws QueryEvaluationException
 	{
-
 		GraphQueryResult filtered = QueryResults.distinctResults(gqr);
 
 		List<Statement> processed = new ArrayList<Statement>();
@@ -118,10 +131,10 @@ public class QueryResultsTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDistinctTupleQueryResults()
 		throws QueryEvaluationException
 	{
-
 		BindingSet a = new ListBindingSet(twoBindingNames, foo, lit1);
 		BindingSet b = new ListBindingSet(twoBindingNames, bar, lit2);
 		tqr1.append(a);
@@ -185,6 +198,7 @@ public class QueryResultsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEmptyQueryResult()
 		throws QueryEvaluationException
 	{
@@ -195,6 +209,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testEmptyQueryResult2()
 		throws QueryEvaluationException
 	{
@@ -204,6 +219,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr1, tqr3));
 	}
 
+	@Test
 	public void testEmptyQueryResult3()
 		throws QueryEvaluationException
 	{
@@ -213,6 +229,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr3, tqr1));
 	}
 
+	@Test
 	public void testEmptyBindingSet()
 		throws QueryEvaluationException
 	{
@@ -221,6 +238,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testNonBNodeBindingSet1()
 		throws QueryEvaluationException
 	{
@@ -233,6 +251,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testNonBNodeBindingSet2()
 		throws QueryEvaluationException
 	{
@@ -242,6 +261,7 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testNonBNodeBindingSet3()
 		throws QueryEvaluationException
 	{
@@ -251,7 +271,8 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr3, tqr2));
 	}
 
-	public void testNonBNodeBindingSet()
+	@Test
+	public void testNonBNodeBindingSet4()
 		throws QueryEvaluationException
 	{
 		tqr1.append(new ListBindingSet(twoBindingNames, foo, lit1));
@@ -260,6 +281,50 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
+	public void testNonBNodeBindingSet5()
+		throws QueryEvaluationException
+	{
+		tqr1.append(new ListBindingSet(twoBindingNames, foo, lit3a));
+		tqr1.append(new ListBindingSet(twoBindingNames, bar, lit3b));
+
+		tqr2.append(new ListBindingSet(twoBindingNames, bar, lit3a));
+		tqr2.append(new ListBindingSet(twoBindingNames, foo, lit3b));
+
+		assertTrue(QueryResults.equals(tqr1, tqr2));
+	}
+
+	@Test
+	public void testNonBNodeBindingSet6()
+		throws QueryEvaluationException
+	{
+		tqr1.append(new ListBindingSet(twoBindingNames, bar, lit3b));
+		tqr2.append(new ListBindingSet(twoBindingNames, bar, lit3a));
+
+		assertTrue(QueryResults.equals(tqr1, tqr2));
+	}
+
+	@Test
+	public void testNonBNodeBindingSet7()
+		throws QueryEvaluationException
+	{
+		tqr1.append(new ListBindingSet(twoBindingNames, bar, lit2));
+		tqr2.append(new ListBindingSet(twoBindingNames, bar, lit3a));
+
+		assertFalse(QueryResults.equals(tqr1, tqr2));
+	}
+
+	@Test
+	public void testNonBNodeBindingSet8()
+		throws QueryEvaluationException
+	{
+		tqr1.append(new ListBindingSet(twoBindingNames, bar, lit2));
+		tqr2.append(new ListBindingSet(twoBindingNames, bar, lit3b));
+
+		assertFalse(QueryResults.equals(tqr1, tqr2));
+	}
+
+	@Test
 	public void testBNodeBindingSet1()
 		throws QueryEvaluationException
 	{
@@ -272,6 +337,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testBNodeBindingSet2()
 		throws QueryEvaluationException
 	{
@@ -281,6 +347,7 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testBNodeBindingSet3()
 		throws QueryEvaluationException
 	{
@@ -293,6 +360,7 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testBNodeBindingSet4()
 		throws QueryEvaluationException
 	{
@@ -305,6 +373,7 @@ public class QueryResultsTest extends TestCase {
 		assertTrue(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testBNodeBindingSet5()
 		throws QueryEvaluationException
 	{
@@ -317,6 +386,7 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr1, tqr2));
 	}
 
+	@Test
 	public void testBNodeBindingSet6()
 		throws QueryEvaluationException
 	{
@@ -326,6 +396,7 @@ public class QueryResultsTest extends TestCase {
 		assertFalse(QueryResults.equals(tqr3, tqr1));
 	}
 
+	@Test
 	public void testBNodeBindingSet7()
 		throws QueryEvaluationException
 	{
