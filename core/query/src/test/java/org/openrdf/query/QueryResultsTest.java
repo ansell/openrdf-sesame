@@ -46,9 +46,7 @@ import org.openrdf.query.impl.MutableTupleQueryResult;
 public class QueryResultsTest {
 
 	private MutableTupleQueryResult tqr1;
-
 	private MutableTupleQueryResult tqr2;
-
 	private MutableTupleQueryResult tqr3;
 
 	/** a stub GraphQueryResult, containing a number of duplicate statements */
@@ -57,33 +55,27 @@ public class QueryResultsTest {
 	private static ValueFactory VF = new ValueFactoryImpl();
 
 	private List<String> twoBindingNames = Arrays.asList("a", "b");
-
 	private List<String> threeBindingNames = Arrays.asList("a", "b", "c");
 
 	private URI foo;
-
 	private URI bar;
 
 	private BNode bnode1;
-
 	private BNode bnode2;
+	private BNode bnode3;
+	private BNode bnode4;
+	private BNode bnode5;
+	private BNode bnode6;
 
 	private Literal lit1;
-
 	private Literal lit2;
-
 	private Literal lit3a;
-
 	private Literal lit3b;
 
 	private URI a = VF.createURI("urn:a");
-
 	private URI b = VF.createURI("urn:b");
-
 	private URI c = VF.createURI("urn:c");
-
 	private URI p = VF.createURI("urn:p");
-
 	private URI q = VF.createURI("urn:q");
 
 	@Before
@@ -97,9 +89,14 @@ public class QueryResultsTest {
 		foo = VF.createURI("http://example.org/foo");
 		bar = VF.createURI("http://example.org/bar");
 
-		bnode1 = VF.createBNode();
-		bnode2 = VF.createBNode();
+		bnode1 = VF.createBNode("bn1");
+		bnode2 = VF.createBNode("bn2");
+		bnode3 = VF.createBNode("bn3");
 
+		bnode4 = VF.createBNode();
+		bnode5 = VF.createBNode();
+		bnode6 = VF.createBNode();
+		
 		lit1 = VF.createLiteral(1);
 		lit2 = VF.createLiteral("test", "en");
 		lit3a = VF.createLiteral("test");
@@ -404,5 +401,35 @@ public class QueryResultsTest {
 		tqr1.append(new ListBindingSet(twoBindingNames, foo, bnode2));
 
 		assertFalse(QueryResults.equals(tqr1, tqr3));
+	}
+
+	@Test
+	public void testBNodeBindingSet8()
+		throws QueryEvaluationException
+	{
+		tqr1.append(new ListBindingSet(threeBindingNames, bnode1, bnode2, bnode3));
+		tqr1.append(new ListBindingSet(threeBindingNames, foo, bnode2, lit3a));
+		tqr1.append(new ListBindingSet(threeBindingNames, bar, bnode3, lit2));
+
+		tqr2.append(new ListBindingSet(threeBindingNames, bnode4, bnode5, bnode6));
+		tqr2.append(new ListBindingSet(threeBindingNames, foo, bnode5, lit3b));
+		tqr2.append(new ListBindingSet(threeBindingNames, bar, bnode6, lit2));
+
+		assertTrue(QueryResults.equals(tqr1, tqr2));
+	}
+
+	@Test
+	public void testBNodeBindingSet9()
+		throws QueryEvaluationException
+	{
+		tqr1.append(new ListBindingSet(threeBindingNames, bnode1, bnode2, bnode3));
+		tqr1.append(new ListBindingSet(threeBindingNames, foo, bnode2, lit3a));
+		tqr1.append(new ListBindingSet(threeBindingNames, bar, bnode3, lit2));
+
+		tqr2.append(new ListBindingSet(threeBindingNames, bnode4, bnode5, bnode6));
+		tqr2.append(new ListBindingSet(threeBindingNames, foo, bnode5, lit3b));
+		tqr2.append(new ListBindingSet(threeBindingNames, bar, bnode4, lit2));
+
+		assertFalse(QueryResults.equals(tqr1, tqr2));
 	}
 }
