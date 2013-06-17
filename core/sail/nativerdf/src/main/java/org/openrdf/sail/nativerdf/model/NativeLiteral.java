@@ -42,12 +42,11 @@ public class NativeLiteral extends LiteralImpl implements NativeValue {
 	 *--------------*/
 
 	protected NativeLiteral(ValueStoreRevision revision, int internalID) {
-		super();
-		setInternalID(internalID, revision);
+		this(revision, "", XMLSchema.STRING, UNKNOWN_ID);
 	}
 
 	public NativeLiteral(ValueStoreRevision revision, String label) {
-		this(revision, label, UNKNOWN_ID);
+		this(revision, label, XMLSchema.STRING, UNKNOWN_ID);
 	}
 
 	public NativeLiteral(ValueStoreRevision revision, String label, int internalID) {
