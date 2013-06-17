@@ -111,6 +111,7 @@ public class LiteralImpl implements Literal {
 		setLabel(label);
 		if (language != null) {
 			setLanguage(language.toLowerCase());
+			setDatatype(RDF.LANGSTRING);
 		}
 		else {
 			setDatatype(datatype);
