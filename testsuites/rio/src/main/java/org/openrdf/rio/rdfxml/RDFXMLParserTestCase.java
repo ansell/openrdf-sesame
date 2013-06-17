@@ -37,8 +37,10 @@ import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.xml.sax.SAXException;
 
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.RDF;
@@ -191,9 +193,8 @@ public abstract class RDFXMLParserTestCase {
 			rdfxmlParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 			rdfxmlParser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 
-			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
-			StatementCollector inputCollector = new StatementCollector(inputCollection);
-			rdfxmlParser.setRDFHandler(inputCollector);
+			Model inputCollection = new LinkedHashModel();
+			rdfxmlParser.setRDFHandler(new StatementCollector(inputCollection));
 
 			InputStream in = resolveURL(inputURL).openStream();
 			rdfxmlParser.parse(in, base(inputURL));
@@ -205,9 +206,8 @@ public abstract class RDFXMLParserTestCase {
 			ntriplesParser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 			ntriplesParser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 
-			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
-			StatementCollector outputCollector = new StatementCollector(outputCollection);
-			ntriplesParser.setRDFHandler(outputCollector);
+			Model outputCollection = new LinkedHashModel();
+			ntriplesParser.setRDFHandler(new StatementCollector(outputCollection));
 
 			in = resolveURL(outputURL).openStream();
 			ntriplesParser.parse(in, base(inputURL));

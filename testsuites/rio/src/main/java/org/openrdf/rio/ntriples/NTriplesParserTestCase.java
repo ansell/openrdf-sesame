@@ -31,6 +31,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -65,7 +66,9 @@ public abstract class NTriplesParserTestCase extends TestCase {
 		throws Exception
 	{
 		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+		ParserConfig config = ntriplesParser.getParserConfig();
+		config.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		config.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 		Model model = new LinkedHashModel();
 		ntriplesParser.setRDFHandler(new StatementCollector(model));
 
