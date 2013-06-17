@@ -66,7 +66,7 @@ public class LiteralImpl implements Literal {
 	 *--------------*/
 
 	protected LiteralImpl() {
-		this("");
+		this("", null, XMLSchema.STRING);
 	}
 
 	/**
