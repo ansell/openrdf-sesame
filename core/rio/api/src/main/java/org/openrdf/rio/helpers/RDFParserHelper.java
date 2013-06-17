@@ -113,7 +113,7 @@ public class RDFParserHelper {
 			// rdf:langString to language literal, then attempt to go on with a
 			// default language
 			workingLang = "en";
-			workingDatatype = null;
+			//workingDatatype = null;
 		}
 
 		// In RDF-1.1 we must do lang check first as language literals will all
