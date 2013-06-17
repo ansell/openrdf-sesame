@@ -359,19 +359,7 @@ public class Rio {
 		throws RDFHandlerException
 	{
 		final RDFWriter writer = Rio.createWriter(dataFormat, output);
-
-		writer.startRDF();
-
-		if (model instanceof Model) {
-			for (Namespace nextNamespace : ((Model)model).getNamespaces()) {
-				writer.handleNamespace(nextNamespace.getPrefix(), nextNamespace.getName());
-			}
-		}
-
-		for (final Statement st : model) {
-			writer.handleStatement(st);
-		}
-		writer.endRDF();
+		write(model, writer);
 	}
 
 	/**
@@ -396,7 +384,23 @@ public class Rio {
 		throws RDFHandlerException
 	{
 		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+		write(model, writer);
+	}
 
+	/**
+	 * Writes the given statements to the given {@link RDFHandler}.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @since 2.7.3
+	 */
+	public static void write(Iterable<Statement> model, RDFHandler writer)
+		throws RDFHandlerException
+	{
 		writer.startRDF();
 
 		if (model instanceof Model) {
