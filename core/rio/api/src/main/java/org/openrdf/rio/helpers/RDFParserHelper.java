@@ -210,7 +210,7 @@ public class RDFParserHelper {
 					result = valueFactory.createLiteral(workingLabel, workingDatatype);
 				}
 				else {
-					result = valueFactory.createLiteral(workingLabel);
+					result = valueFactory.createLiteral(workingLabel, XMLSchema.STRING);
 				}
 			}
 			catch (Exception e) {
