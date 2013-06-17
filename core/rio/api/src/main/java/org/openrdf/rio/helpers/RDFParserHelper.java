@@ -21,6 +21,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParseErrorListener;
@@ -91,17 +92,31 @@ public class RDFParserHelper {
 		String workingLang = lang;
 		URI workingDatatype = datatype;
 
-		if(workingLang == null && RDF.LANGSTRING.equals(workingDatatype)) {
-			reportError("'" + workingLabel + "' had rdf:langString datatype, but no language", BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, parserConfig, errListener);
-			// If they signalled that they wanted to support mapping of rdf:langString to language literal, then attempt to go on with an empty language
-			workingLang = "";
+		// Enforce RDF.LangString as datatype for all language literals
+		if (workingLang != null) {
+			workingDatatype = RDF.LANGSTRING;
+		}
+
+		// XSD:string is the datatype for all non-language literals without
+		// explicit datatypes
+		if (workingLang == null && workingDatatype == null) {
+			workingDatatype = XMLSchema.STRING;
+		}
+
+		if (workingLang == null && RDF.LANGSTRING.equals(workingDatatype)) {
+			reportError("'" + workingLabel + "' had rdf:langString datatype, but no language",
+					BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, parserConfig, errListener);
+			// If they signalled that they wanted to support mapping of
+			// rdf:langString to language literal, then attempt to go on with a
+			// default language
+			workingLang = "en";
 			workingDatatype = null;
 		}
-		
+
 		// In RDF-1.1 we must do lang check first as language literals will all
 		// have datatype RDF.LANGSTRING, but only language literals would have a
 		// non-null lang
-		if (workingLang != null && (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype))) {
+		if (workingLang != null) {
 			if (parserConfig.get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
 				boolean recognisedLanguage = false;
 				for (LanguageHandler nextHandler : parserConfig.get(BasicParserSettings.LANGUAGE_HANDLERS)) {
