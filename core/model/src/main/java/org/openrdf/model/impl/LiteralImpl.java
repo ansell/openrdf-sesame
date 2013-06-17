@@ -192,18 +192,6 @@ public class LiteralImpl implements Literal {
 				return false;
 			}
 
-			// Compare datatypes
-			if (datatype == null) {
-				if (other.getDatatype() != null) {
-					return false;
-				}
-			}
-			else {
-				if (!datatype.equals(other.getDatatype())) {
-					return false;
-				}
-			}
-
 			// Compare language tags
 			if (language == null) {
 				if (other.getLanguage() != null) {
@@ -212,6 +200,18 @@ public class LiteralImpl implements Literal {
 			}
 			else {
 				if (!language.equals(other.getLanguage())) {
+					return false;
+				}
+			}
+
+			// Compare datatypes
+			if (datatype == null) {
+				if (other.getDatatype() != null) {
+					return false;
+				}
+			}
+			else {
+				if (!datatype.equals(other.getDatatype())) {
 					return false;
 				}
 			}
@@ -247,7 +247,8 @@ public class LiteralImpl implements Literal {
 			sb.append('@');
 			sb.append(language);
 		}
-		else if (Literals.hasNonNativeDatatype(this)) {
+		//else if (Literals.hasNonNativeDatatype(this)) {
+		else {
 			sb.append("^^<");
 			sb.append(datatype.toString());
 			sb.append(">");
