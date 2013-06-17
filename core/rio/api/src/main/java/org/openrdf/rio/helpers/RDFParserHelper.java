@@ -92,8 +92,11 @@ public class RDFParserHelper {
 		String workingLang = lang;
 		URI workingDatatype = datatype;
 
-		// Enforce RDF.LangString as datatype for all language literals
-		if (workingLang != null) {
+		// Enforce RDF.LangString as datatype for language literals when the
+		// datatype was not specified
+		// NOTE: Cannot enforce this in all cases as RDF/XML specifies that
+		// datatype takes precedence over language if both are present
+		if (workingLang != null && workingDatatype == null) {
 			workingDatatype = RDF.LANGSTRING;
 		}
 
