@@ -954,7 +954,7 @@ public class TurtleParser extends RDFParserBase {
 			}
 
 			if (c == ' ') {
-				reportError("IRI included an unencoded space: '" + c + "'");
+				reportFatalError("IRI included an unencoded space: '" + c + "'");
 			}
 
 			uriBuf.append((char)c);
@@ -966,14 +966,14 @@ public class TurtleParser extends RDFParserBase {
 					throwEOFException();
 				}
 				if (c != 'u' && c != 'U') {
-					reportError("IRI includes string escapes: '\\" + c + "'");
+					reportFatalError("IRI includes string escapes: '\\" + c + "'");
 				}
 				uriBuf.append((char)c);
 			}
 		}
 
 		if (c == '.') {
-			reportError("IRI must not end in a '.'");
+			reportFatalError("IRI must not end in a '.'");
 		}
 
 		String uri = uriBuf.toString();
@@ -1037,7 +1037,7 @@ public class TurtleParser extends RDFParserBase {
 			verifyCharacterOrFail(c, ":");
 
 			if (!TurtleUtil.isPN_PREFIX(prefix.toString())) {
-				reportError("Prefix was not valid");
+				reportFatalError("Invalid prefix: " + prefix.toString());
 			}
 
 			namespace = getNamespace(prefix.toString());
@@ -1067,11 +1067,11 @@ public class TurtleParser extends RDFParserBase {
 		}
 
 		if (c == '.') {
-			reportError("Blank node identifier must not end in a '.'");
+			reportFatalError("Blank node identifier must not end in a '.'");
 		}
 
 		if (!TurtleUtil.isLegalName(localName.toString())) {
-			reportError("Local name was not valid");
+			reportFatalError("Invalid local name:" + localName.toString());
 		}
 
 		// Unread last character
