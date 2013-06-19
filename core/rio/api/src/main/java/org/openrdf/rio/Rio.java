@@ -363,9 +363,8 @@ public class Rio {
 		throws IOException, RDFParseException, UnsupportedRDFormatException
 	{
 		Model result = new LinkedHashModel();
-		RDFParser parser = createParser(dataFormat);
+		RDFParser parser = createParser(dataFormat, valueFactory);
 		parser.setParserConfig(settings);
-		parser.setValueFactory(valueFactory);
 		parser.setParseErrorListener(errors);
 		parser.setRDFHandler(new ContextStatementCollector(result, valueFactory, contexts));
 		try {
@@ -418,9 +417,8 @@ public class Rio {
 		throws IOException, RDFParseException, UnsupportedRDFormatException
 	{
 		Model result = new LinkedHashModel();
-		RDFParser parser = createParser(dataFormat);
+		RDFParser parser = createParser(dataFormat, valueFactory);
 		parser.setParserConfig(settings);
-		parser.setValueFactory(valueFactory);
 		parser.setParseErrorListener(errors);
 		parser.setRDFHandler(new ContextStatementCollector(result, valueFactory, contexts));
 		try {
@@ -454,8 +452,7 @@ public class Rio {
 	public static void write(Iterable<Statement> model, OutputStream output, RDFFormat dataFormat)
 		throws RDFHandlerException
 	{
-		final RDFWriter writer = Rio.createWriter(dataFormat, output);
-		write(model, writer);
+		write(model, output, dataFormat, new WriterConfig());
 	}
 
 	/**
@@ -479,7 +476,66 @@ public class Rio {
 	public static void write(Iterable<Statement> model, Writer output, RDFFormat dataFormat)
 		throws RDFHandlerException
 	{
+		write(model, output, dataFormat, new WriterConfig());
+	}
+
+	/**
+	 * Writes the given statements to the given {@link OutputStream} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @param output
+	 *        The {@link OutputStream} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @param settings
+	 *        The {@link WriterConfig} containing settings for configuring the
+	 *        writer.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.7.3
+	 */
+	public static void write(Iterable<Statement> model, OutputStream output, RDFFormat dataFormat,
+			WriterConfig settings)
+		throws RDFHandlerException
+	{
 		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+		writer.setWriterConfig(settings);
+		write(model, writer);
+	}
+
+	/**
+	 * Writes the given statements to the given {@link Writer} in the given
+	 * format.
+	 * <p>
+	 * If the collection is a {@link Model}, its namespaces will also be written.
+	 * 
+	 * @param model
+	 *        A collection of statements, such as a {@link Model}, to be written.
+	 * @param output
+	 *        The {@link Writer} to write the statements to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statements.
+	 * @param settings
+	 *        The {@link WriterConfig} containing settings for configuring the
+	 *        writer.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statements.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.7.3
+	 */
+	public static void write(Iterable<Statement> model, Writer output, RDFFormat dataFormat,
+			WriterConfig settings)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+		writer.setWriterConfig(settings);
 		write(model, writer);
 	}
 
