@@ -40,7 +40,7 @@ public class RioConfig implements Serializable {
 	 */
 	protected final ConcurrentMap<RioSetting<Object>, Object> settings = new ConcurrentHashMap<RioSetting<Object>, Object>();
 
-	protected final Logger log = LoggerFactory.getLogger(ParserConfig.class);
+	protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 
@@ -113,4 +113,12 @@ public class RioConfig implements Serializable {
 		return settings.containsKey(setting);
 	}
 
+	/**
+	 * Resets all settings back to their default values.
+	 * 
+	 * @since 2.7.0
+	 */
+	public void useDefaults() {
+		settings.clear();
+	}
 }

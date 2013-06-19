@@ -215,22 +215,13 @@ public class HTTPRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-		// empty implementation of abstract superclass method
+		httpClient.initialize();
 	}
 
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		// httpclient shutdown moved to finalize method, to avoid problems with
-		// shutdown followed by re-initialization. See SES-1059.
-	}
-
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
 		httpClient.shutDown();
-		super.finalize();
 	}
 
 	// httpClient is shared with HTTPConnection

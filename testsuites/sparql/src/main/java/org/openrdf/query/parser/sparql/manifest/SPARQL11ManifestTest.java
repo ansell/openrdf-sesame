@@ -118,11 +118,12 @@ public class SPARQL11ManifestTest {
 
 		addTurtle(con, new URL(manifestFile), manifestFile);
 
-		String query = "SELECT DISTINCT manifestFile FROM {x} rdf:first {manifestFile} "
-				+ "USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
-				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
+		String query = " PREFIX qt: <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> "
+				+ "PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> "
+				+ "SELECT DISTINCT ?manifestFile "
+				+ "WHERE { [] mf:include [ rdf:rest*/rdf:first ?manifestFile ] . }   ";
 
-		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SERQL, query, manifestFile).evaluate();
+		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SPARQL, query, manifestFile).evaluate();
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
@@ -175,11 +176,12 @@ public class SPARQL11ManifestTest {
 
 		addTurtle(con, new URL(manifestFile), manifestFile);
 
-		String query = "SELECT DISTINCT manifestFile FROM {x} rdf:first {manifestFile} "
-				+ "USING NAMESPACE mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
-				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
-
-		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SERQL, query, manifestFile).evaluate();
+		String query = " PREFIX qt: <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> "
+				+ "PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> "
+				+ "SELECT DISTINCT ?manifestFile "
+				+ "WHERE { [] mf:include [ rdf:rest*/rdf:first ?manifestFile ] . }   ";
+		
+		TupleQueryResult manifestResults = con.prepareTupleQuery(QueryLanguage.SPARQL, query, manifestFile).evaluate();
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
@@ -206,7 +208,7 @@ public class SPARQL11ManifestTest {
 		else {
 			URL url = null;
 			if (officialWorkingGroupTests) {
-				url = SPARQL11ManifestTest.class.getResource("/sparql11-test-suite/manifest-all.ttl");
+				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1-w3c/manifest-all.ttl");
 			}
 			else {
 				url = SPARQL11ManifestTest.class.getResource("/testcases-sparql-1.1/manifest-evaluation.ttl");

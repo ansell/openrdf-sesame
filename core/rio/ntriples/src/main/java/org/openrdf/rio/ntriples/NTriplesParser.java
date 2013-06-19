@@ -21,6 +21,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+
+import org.apache.commons.io.input.BOMInputStream;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -32,6 +37,9 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
 /**
@@ -85,7 +93,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * Methods *
 	 *---------*/
 
-	// implements RDFParser.getRDFFormat()
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
@@ -111,6 +119,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * @throws IllegalArgumentException
 	 *         If the supplied input stream or base URI is <tt>null</tt>.
 	 */
+	@Override
 	public synchronized void parse(InputStream in, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -120,7 +129,7 @@ public class NTriplesParser extends RDFParserBase {
 		// Note: baseURI will be checked in parse(Reader, String)
 
 		try {
-			parse(new InputStreamReader(in, "US-ASCII"), baseURI);
+			parse(new InputStreamReader(new BOMInputStream(in, false), "US-ASCII"), baseURI);
 		}
 		catch (UnsupportedEncodingException e) {
 			// Every platform should support the US-ASCII encoding...
@@ -147,6 +156,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * @throws IllegalArgumentException
 	 *         If the supplied reader or base URI is <tt>null</tt>.
 	 */
+	@Override
 	public synchronized void parse(Reader reader, String baseURI)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -209,7 +219,9 @@ public class NTriplesParser extends RDFParserBase {
 	/**
 	 * Verifies that there is only whitespace until the end of the line.
 	 */
-	protected int assertLineTerminates(int c) throws IOException, RDFParseException {
+	protected int assertLineTerminates(int c)
+		throws IOException, RDFParseException
+	{
 		c = reader.read();
 
 		c = skipWhitespace(c);
@@ -219,8 +231,8 @@ public class NTriplesParser extends RDFParserBase {
 		}
 
 		return c;
-	}	
-	
+	}
+
 	/**
 	 * Reads characters from reader until the first EOL has been read. The first
 	 * character after the EOL is returned. In case the end of the character
@@ -262,8 +274,7 @@ public class NTriplesParser extends RDFParserBase {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		boolean ignoredAnError = false;
-		try
-		{
+		try {
 			c = parseSubject(c);
 
 			c = skipWhitespace(c);
@@ -280,27 +291,25 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '.') {
-				reportError("Expected '.', found: " + (char)c);
+				reportError("Expected '.', found: " + (char)c,
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			c = assertLineTerminates(c);
 		}
-		catch(RDFParseException rdfpe)
-		{
-			if(stopAtFirstError())
-			{
-				throw rdfpe;
-			}
-			else
-			{
+		catch (RDFParseException rdfpe) {
+			if (getParserConfig().isNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES)) {
+				reportError(rdfpe, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 				ignoredAnError = true;
+			}
+			else {
+				throw rdfpe;
 			}
 		}
 
 		c = skipLine(c);
 
-		if(!ignoredAnError)
-		{
+		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object);
 			rdfHandler.handleStatement(st);
 		}
@@ -387,7 +396,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else {
-			reportFatalError("Expected '<', '_' or '\"', found: " + (char)c);
+			reportFatalError("Expected '<', '_' or '\"', found: " + (char)c + "");
 		}
 
 		return c;
@@ -396,8 +405,10 @@ public class NTriplesParser extends RDFParserBase {
 	protected int parseUriRef(int c, StringBuilder uriRef)
 		throws IOException, RDFParseException
 	{
-		assert c == '<' : "Supplied char should be a '<', is: " + c;
-
+		if (c != '<') {
+			reportError("Supplied char should be a '<', is: " + (char)c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
 		// Read up to the next '>' character
 		c = reader.read();
 		while (c != '>') {
@@ -417,14 +428,17 @@ public class NTriplesParser extends RDFParserBase {
 	protected int parseNodeID(int c, StringBuilder name)
 		throws IOException, RDFParseException
 	{
-		assert c == '_' : "Supplied char should be a '_', is: " + c;
+		if (c != '_') {
+			reportError("Supplied char should be a '_', is: " + (char)c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
 
 		c = reader.read();
 		if (c == -1) {
 			throwEOFException();
 		}
 		else if (c != ':') {
-			reportError("Expected ':', found: " + (char)c);
+			reportError("Expected ':', found: " + (char)c, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
 		c = reader.read();
@@ -432,7 +446,8 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else if (!NTriplesUtil.isLetter(c)) {
-			reportError("Expected a letter, found: " + (char)c);
+			reportError("Expected a letter, found: " + (char)c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 		name.append((char)c);
 
@@ -449,7 +464,10 @@ public class NTriplesParser extends RDFParserBase {
 	private int parseLiteral(int c, StringBuilder value, StringBuilder lang, StringBuilder datatype)
 		throws IOException, RDFParseException
 	{
-		assert c == '"' : "Supplied char should be a '\"', is: " + c;
+		if (c != '"') {
+			reportError("Supplied char should be a '\"', is: " + c,
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
 
 		// Read up to the next '"' character
 		c = reader.read();
@@ -491,7 +509,8 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '^') {
-				reportError("Expected '^', found: " + (char)c);
+				reportError("Expected '^', found: " + (char)c,
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			c = reader.read();
@@ -501,7 +520,8 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '<') {
-				reportError("Expected '<', found: " + (char)c);
+				reportError("Expected '<', found: " + (char)c,
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			c = parseUriRef(c, datatype);
@@ -518,7 +538,7 @@ public class NTriplesParser extends RDFParserBase {
 			uri = NTriplesUtil.unescapeString(uri);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage());
+			reportError(e.getMessage(), NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
 		return super.createURI(uri);
@@ -531,7 +551,7 @@ public class NTriplesParser extends RDFParserBase {
 			label = NTriplesUtil.unescapeString(label);
 		}
 		catch (IllegalArgumentException e) {
-			reportError(e.getMessage());
+			reportFatalError(e);
 		}
 
 		if (lang.length() == 0) {
@@ -564,10 +584,16 @@ public class NTriplesParser extends RDFParserBase {
 	 * information to the error.
 	 */
 	@Override
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<Boolean> setting)
 		throws RDFParseException
 	{
-		reportError(msg, lineNo, -1);
+		reportError(msg, lineNo, -1, setting);
+	}
+
+	protected void reportError(Exception e, RioSetting<Boolean> setting)
+		throws RDFParseException
+	{
+		reportError(e, lineNo, -1, setting);
 	}
 
 	/**
@@ -658,6 +684,18 @@ public class NTriplesParser extends RDFParserBase {
 		languageTagBuffer.trimToSize();
 		datatypeUriBuffer.setLength(0);
 		datatypeUriBuffer.trimToSize();
+	}
+
+	/*
+	 * N-Triples parser supports these settings.
+	 */
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+
+		result.add(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+
+		return result;
 	}
 
 }

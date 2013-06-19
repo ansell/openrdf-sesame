@@ -21,24 +21,27 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.rio.ParseErrorListener;
 
-
 /**
- * A ParseErrorListener that reports Rio parser errors to the SLf4J Logging framework.
+ * A ParseErrorListener that reports Rio parser errors to the SLf4J Logging
+ * framework.
  * 
  * @author jeen
  */
 public class ParseErrorLogger implements ParseErrorListener {
 
 	private final Logger logger = LoggerFactory.getLogger(ParseErrorLogger.class);
-	
+
+	@Override
 	public void warning(String msg, int lineNo, int colNo) {
 		logger.warn(msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
+	@Override
 	public void error(String msg, int lineNo, int colNo) {
 		logger.warn("[Rio error] " + msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
+	@Override
 	public void fatalError(String msg, int lineNo, int colNo) {
 		logger.error("[Rio fatal] " + msg + " (" + lineNo + ", " + colNo + ")");
 	}

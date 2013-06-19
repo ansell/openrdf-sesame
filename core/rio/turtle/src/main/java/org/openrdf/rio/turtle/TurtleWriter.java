@@ -374,16 +374,16 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write("\"");
 		}
 
-		if (lit.getDatatype() != null) {
+		if (lit.getLanguage() != null) {
+			// Append the literal's language
+			writer.write("@");
+			writer.write(lit.getLanguage());
+		}
+		else if (lit.getDatatype() != null) {
 			// Append the literal's datatype (possibly written as an abbreviated
 			// URI)
 			writer.write("^^");
 			writeURI(lit.getDatatype());
-		}
-		else if (lit.getLanguage() != null) {
-			// Append the literal's language
-			writer.write("@");
-			writer.write(lit.getLanguage());
 		}
 	}
 

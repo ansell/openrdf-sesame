@@ -51,8 +51,6 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/jquery-1.9.0.min.js" type="text/javascript">
-		</script>
 		<script src="../../scripts/paging.js" type="text/javascript">  </script>
 		<script src="../../scripts/explore.js" type="text/javascript">  </script>
 		<xsl:if test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
@@ -100,10 +98,12 @@
 					<tr>
 						<td></td>
 						<td>
-							<span class="error">
-								<xsl:value-of
-									select="//sparql:binding[@name='error-message']" />
-							</span>
+							<xsl:if test="count(//sparql:binding[@name='error-message']) &gt; 0">
+								<span class="error">
+									<xsl:value-of
+										select="//sparql:binding[@name='error-message']" />
+								</span>
+							</xsl:if>
 						</td>
 						<td></td>
 					</tr>

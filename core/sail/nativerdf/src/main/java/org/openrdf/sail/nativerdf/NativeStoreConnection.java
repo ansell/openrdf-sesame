@@ -41,6 +41,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -129,7 +130,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 			NativeTripleSource tripleSource = new NativeTripleSource(nativeStore, includeInferred,
 					transactionActive());
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
+			EvaluationStrategy strategy = getEvaluationStrategy(dataset, tripleSource);
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
 			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
@@ -152,6 +153,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		catch (QueryEvaluationException e) {
 			throw new SailException(e);
 		}
+	}
+
+	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, NativeTripleSource tripleSource) {
+		return new EvaluationStrategyImpl(tripleSource, dataset);
 	}
 
 	protected void replaceValues(TupleExpr tupleExpr)
@@ -632,4 +637,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().clear();
 	}
+
+
 }

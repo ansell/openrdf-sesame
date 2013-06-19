@@ -465,8 +465,7 @@ public class SPARQLFederatedService implements FederatedService {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}
-
-		if (lit.getDatatype() != null) {
+		else if (lit.getDatatype() != null) {
 			sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');

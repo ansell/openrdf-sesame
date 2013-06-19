@@ -16,11 +16,14 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
@@ -84,6 +87,29 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 					return;
 				}
 
+				if (leftArg instanceof Var || rightArg instanceof Var) {
+
+					BindingSetAssignmentCollector collector = new BindingSetAssignmentCollector();
+					filterArg.visit(collector);
+
+					for (BindingSetAssignment bsa : collector.getBindingSetAssignments()) {
+						// check if the VALUES clause / bindingsetassignment contains
+						// one of the arguments of the sameTerm.
+						// if so, we can not inline.
+						Set<String> names = bsa.getAssuredBindingNames();
+						if (leftArg instanceof Var) {
+							if (names.contains(((Var)leftArg).getName())) {
+								return;
+							}
+						}
+						if (rightArg instanceof Var) {
+							if (names.contains(((Var)rightArg).getName())) {
+								return;
+							}
+						}
+					}
+				}
+
 				Value leftValue = getValue(leftArg);
 				Value rightValue = getValue(rightArg);
 
@@ -124,7 +150,7 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		}
 
 		private void renameVar(Var oldVar, Var newVar, Filter filter) {
-			filter.getArg().visit(new VarRenamer(oldVar.getName(), newVar.getName()));
+			filter.getArg().visit(new VarRenamer(oldVar, newVar));
 
 			// TODO: skip this step if old variable name is not used
 			// Replace SameTerm-filter with an Extension, the old variable name
@@ -141,20 +167,19 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 	}
 
 	protected static class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
+		private final Var oldVar;
 
-		private final String oldName;
+		private final Var newVar;
 
-		private final String newName;
-
-		public VarRenamer(String oldName, String newName) {
-			this.oldName = oldName;
-			this.newName = newName;
+		public VarRenamer(Var oldVar, Var newVar) {
+			this.oldVar = oldVar;
+			this.newVar = newVar;
 		}
 
 		@Override
 		public void meet(Var var) {
-			if (var.getName().equals(oldName)) {
-				var.setName(newName);
+			if (var.equals(oldVar)) {
+				var.replaceWith(newVar.clone());
 			}
 		}
 
@@ -162,9 +187,23 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 		public void meet(ProjectionElem projElem)
 			throws RuntimeException
 		{
-			if (projElem.getSourceName().equals(oldName)) {
-				projElem.setSourceName(newName);
+			if (projElem.getSourceName().equals(oldVar.getName())) {
+				projElem.setSourceName(newVar.getName());
 			}
+		}
+	}
+
+	protected static class BindingSetAssignmentCollector extends QueryModelVisitorBase<RuntimeException> {
+
+		private List<BindingSetAssignment> assignments = new ArrayList<BindingSetAssignment>();
+
+		@Override
+		public void meet(BindingSetAssignment bsa) {
+			assignments.add(bsa);
+		}
+
+		public List<BindingSetAssignment> getBindingSetAssignments() {
+			return assignments;
 		}
 	}
 

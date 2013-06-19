@@ -18,6 +18,11 @@ package org.openrdf.repository.sparql;
 
 import static org.openrdf.query.QueryLanguage.SPARQL;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -63,8 +68,15 @@ import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
 import org.openrdf.repository.sparql.query.SPARQLTupleQuery;
 import org.openrdf.repository.sparql.query.SPARQLUpdate;
+import org.openrdf.repository.util.RDFInserter;
+import org.openrdf.repository.util.RDFLoader;
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Provides a {@link RepositoryConnection} interface to any SPARQL endpoint.
@@ -327,6 +339,158 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
+	public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
+		// to preserve bnode identity, we need to make sure all statements are
+		// processed in a single INSERT DATA command
+		StatementCollector collector = new StatementCollector();
+
+		boolean localTransaction = startLocalTransaction();
+
+		try {
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(file, baseURI, dataFormat, collector);
+			add(collector.getStatements(), contexts);
+			conditionalCommit(localTransaction);
+		}
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+	}
+
+	@Override
+	public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
+		// to preserve bnode identity, we need to make sure all statements are
+		// processed in a single INSERT DATA command
+		StatementCollector collector = new StatementCollector();
+		boolean localTransaction = startLocalTransaction();
+
+		try {
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(url, baseURI, dataFormat, collector);
+			add(collector.getStatements(), contexts);
+			conditionalCommit(localTransaction);
+		}
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+	}
+
+	@Override
+	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
+		// to preserve bnode identity, we need to make sure all statements are
+		// processed in a single INSERT DATA command
+		StatementCollector collector = new StatementCollector();
+
+		boolean localTransaction = startLocalTransaction();
+
+		try {
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(in, baseURI, dataFormat, collector);
+			add(collector.getStatements(), contexts);
+			conditionalCommit(localTransaction);
+		}
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+	}
+
+	@Override
+	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
+		throws IOException, RDFParseException, RepositoryException
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+
+		// to preserve bnode identity, we need to make sure all statements are
+		// processed in a single INSERT DATA command
+		StatementCollector collector = new StatementCollector();
+
+		boolean localTransaction = startLocalTransaction();
+
+		try {
+			RDFLoader loader = new RDFLoader(getParserConfig(), getValueFactory());
+			loader.load(reader, baseURI, dataFormat, collector);
+
+			add(collector.getStatements(), contexts);
+			conditionalCommit(localTransaction);
+		}
+		catch (RDFHandlerException e) {
+			conditionalRollback(localTransaction);
+
+			// RDFInserter only throws wrapped RepositoryExceptions
+			throw (RepositoryException)e.getCause();
+		}
+		catch (RDFParseException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+		catch (RuntimeException e) {
+			conditionalRollback(localTransaction);
+			throw e;
+		}
+	}
+
 	public void add(Statement st, Resource... contexts)
 		throws RepositoryException
 	{
@@ -584,8 +748,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-
-				if (lit.getDatatype() != null) {
+				else if (lit.getDatatype() != null) {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");
@@ -716,8 +879,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-
-				if (lit.getDatatype() != null) {
+				else if (lit.getDatatype() != null) {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");

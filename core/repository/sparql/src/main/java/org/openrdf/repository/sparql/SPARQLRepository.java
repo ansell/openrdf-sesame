@@ -76,7 +76,7 @@ public class SPARQLRepository extends RepositoryBase {
 
 		// initialize HTTP client
 		httpClient = createHTTPClient();
-		httpClient.setValueFactory(new ValueFactoryImpl());
+		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setQueryURL(queryEndpointUrl);
 		httpClient.setUpdateURL(updateEndpointUrl);
@@ -112,7 +112,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-		// no-op
+		httpClient.initialize();
 	}
 
 	public boolean isWritable()
@@ -128,23 +128,27 @@ public class SPARQLRepository extends RepositoryBase {
 	protected HTTPClient getHTTPClient() {
 		return httpClient;
 	}
+	
+	/**
+	 * Set the username and password to use for authenticating with the remote
+	 * repository.
+	 * 
+	 * @param username
+	 *        the username. Setting this to null will disable authentication.
+	 * @param password
+	 *        the password. Setting this to null will disable authentication.
+	 */
+	public void setUsernameAndPassword(final String username, final String password) {
+		httpClient.setUsernameAndPassword(username, password);
+	}
 
 	@Override
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		// httpclient shutdown moved to finalize method, to avoid problems with
-		// shutdown followed by re-initialization. See SES-1059.
+		httpClient.shutDown();
 	}
 	
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		httpClient.shutDown();
-		super.finalize();
-	}
-
 	@Override
 	public String toString() {
 		return getHTTPClient().getQueryURL();

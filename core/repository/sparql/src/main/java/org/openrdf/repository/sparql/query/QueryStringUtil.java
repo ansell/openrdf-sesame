@@ -51,7 +51,7 @@ public class QueryStringUtil {
 		if (bindings.size() == 0) {
 			return queryString;
 		}
-		
+
 		String qry = queryString;
 		int b = qry.indexOf('{');
 		String select = qry.substring(0, b);
@@ -60,9 +60,11 @@ public class QueryStringUtil {
 			String replacement = getReplacement(bindings.getValue(name));
 			if (replacement != null) {
 				String pattern = "[\\?\\$]" + name + "(?=\\W)";
-				select = select.replaceAll(pattern, "(" + Matcher.quoteReplacement(replacement) + " as ?" + name + ")");
-				
-				// we use Matcher.quoteReplacement to make sure things like newlines in literal values 
+				select = select.replaceAll(pattern, "(" + Matcher.quoteReplacement(replacement) + " as ?" + name
+						+ ")");
+
+				// we use Matcher.quoteReplacement to make sure things like newlines
+				// in literal values
 				// are preserved
 				where = where.replaceAll(pattern, Matcher.quoteReplacement(replacement));
 			}
@@ -97,8 +99,7 @@ public class QueryStringUtil {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}
-
-		if (lit.getDatatype() != null) {
+		else if (lit.getDatatype() != null) {
 			sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');

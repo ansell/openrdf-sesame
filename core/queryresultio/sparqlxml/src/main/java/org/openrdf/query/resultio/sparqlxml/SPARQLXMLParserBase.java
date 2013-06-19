@@ -107,6 +107,7 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 
 			try {
 				SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+				resultsSAXParser.setPreserveWhitespace(true);
 
 				resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
 

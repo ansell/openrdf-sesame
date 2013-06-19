@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.7.0-beta3-SNAPSHOT</version>
+		<version>2.7.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-runtime</artifactId>
@@ -145,6 +145,18 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-rio-datatypes</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-rio-languages</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-binary</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
@@ -164,6 +176,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-n3</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-rio-rdfjson</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>

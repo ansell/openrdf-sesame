@@ -21,8 +21,9 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Constants for FOAF primitives and for the FOAF namespace. TODO: Currently
- * only a minimal set. Needs expanding.
+ * Constants for FOAF primitives and for the FOAF namespace.
+ * 
+ * TODO: Currently only a minimal set. Needs expanding.
  */
 public class FOAF {
 

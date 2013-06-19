@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-core</artifactId>
-		<version>2.7.0-beta3-SNAPSHOT</version>
+		<version>2.7.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-util</artifactId>
@@ -22,6 +22,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

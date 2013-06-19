@@ -55,6 +55,9 @@
 								<option value="remote">
 									Remote RDF Store
 								</option>
+								<option value="sparql">
+									SPARQL endpoint proxy
+								</option>
 								<option value="federate">Federation Store</option>
 							</select>
 						</td>

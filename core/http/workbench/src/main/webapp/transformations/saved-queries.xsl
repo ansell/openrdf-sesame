@@ -53,6 +53,7 @@
 								<input type="hidden" name="queryLn" value="{$queryLn}" />
 								<input type="hidden" name="query" value="{$queryName}" />
 								<input type="hidden" name="ref" value="id" />
+								<input type="hidden" name="owner" value="{$user}" />
 								<input type="hidden" name="infer" value="{$infer}" />
 								<input type="hidden" name="limit" value="{$rowsPerPage}" />
 								<input type="submit" value="Execute" />
@@ -82,6 +83,7 @@
 								<input type="hidden" name="queryLn" value="{$queryLn}" />
 								<input type="hidden" name="query" value="{$queryName}" />
 								<input type="hidden" name="ref" value="id" />
+								<input type="hidden" name="owner" value="{$user}" />
 								<input type="hidden" name="infer" value="{$infer}" />
 								<input type="hidden" name="limit" value="{$rowsPerPage}" />
 								<input type="submit" value="Edit" />

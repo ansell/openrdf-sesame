@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.query.QueryLanguage;
 
 /**
- * @author dale
+ * @author Dale Visser
  */
 public class PagedQuery {
 
@@ -44,6 +44,10 @@ public class PagedQuery {
 	private static final Pattern SERQL_NAMESPACE = Pattern.compile("\\busing namespace\\b", FLAGS);
 
 	private final String modifiedQuery;
+
+	private final boolean hasLimitAndOffset;
+
+	private int limitSubstitute, offsetSubstitute;
 
 	/***
 	 * <p>
@@ -76,7 +80,8 @@ public class PagedQuery {
 		String rval = query;
 
 		// requestLimit <= 0 actually means don't limit display
-		if (requestLimit > 0) {
+		hasLimitAndOffset = requestLimit > 0;
+		if (hasLimitAndOffset) {
 			/* the matcher on the pattern will have a group for "limit l#" as 
 			    well as a group for l#, similarly for "offset o#" and o#. If 
 			    either doesn't exist, it can be appended at the end. */
@@ -101,13 +106,26 @@ public class PagedQuery {
 			// gracefully handle malicious value
 			final int offset = (requestOffset < 0) ? 0 : requestOffset;
 			final int maxRequestCount = requestLimit + offset;
-			final int limitSubstitute = (maxRequestCount < maxQueryCount) ? requestLimit : queryLimit - offset;
+			limitSubstitute = (maxRequestCount < maxQueryCount) ? requestLimit : queryLimit - offset;
+			offsetSubstitute = queryOffsetExists ? queryOffset + offset : offset;
 			rval = modifyLimit(language, rval, queryLimit, queryLimitExists, queryOffsetExists, limitSubstitute);
-			rval = modifyOffset(language, offset, rval, queryOffset, queryOffsetExists);
+			rval = modifyOffset(language, offset, rval, queryOffsetExists);
 			LOGGER.info("Modified Query: {}", rval);
 		}
 
 		this.modifiedQuery = rval;
+	}
+
+	public boolean isPaged() {
+		return this.hasLimitAndOffset;
+	}
+
+	public int getLimit() {
+		return this.limitSubstitute;
+	}
+
+	public int getOffset() {
+		return this.offsetSubstitute;
 	}
 
 	@Override
@@ -123,12 +141,11 @@ public class PagedQuery {
 		return maxQueryCount;
 	}
 
-	private static String modifyOffset(final QueryLanguage language, final int offset, final String query,
-			final int queryOffset, final boolean queryOffsetExists)
+	private String modifyOffset(final QueryLanguage language, final int offset, final String query,
+			final boolean queryOffsetExists)
 	{
 		String rval = query;
 		if (queryOffsetExists) {
-			final int offsetSubstitute = queryOffset + offset;
 			if (offsetSubstitute != offset) {
 				// do a clause replacement
 				final Matcher offsetMatcher = OFFSET_PATTERN.matcher(rval);

@@ -16,10 +16,10 @@
  */
 package org.openrdf.rio.helpers;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -34,7 +34,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.RDF;
 
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
@@ -203,23 +202,32 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	@Override
 	public Collection<RioSetting<?>> getSupportedSettings() {
-		Collection<RioSetting<?>> result = new ArrayList<RioSetting<?>>(4);
+		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
-		result.add(BasicParserSettings.DATATYPE_HANDLING);
-		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
-		result.add(BasicParserSettings.STOP_AT_FIRST_ERROR);
-		result.add(BasicParserSettings.VERIFY_DATA);
+		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
+		result.add(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		result.add(BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
+		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
 
 		return result;
 	}
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		this.parserConfig.set(BasicParserSettings.VERIFY_DATA, verifyData);
+		if (verifyData) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
+		}
+		else {
+			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
+		}
 	}
 
+	/**
+	 * @deprecated Use specific settings instead.
+	 */
+	@Deprecated
 	public boolean verifyData() {
-		return this.parserConfig.get(BasicParserSettings.VERIFY_DATA);
+		return this.parserConfig.verifyData();
 	}
 
 	@Override
@@ -233,20 +241,51 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
-		this.parserConfig.set(BasicParserSettings.STOP_AT_FIRST_ERROR, stopAtFirstError);
+		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, stopAtFirstError);
 	}
 
+	/**
+	 * @deprecated Check specific settings instead.
+	 */
+	@Deprecated
 	public boolean stopAtFirstError() {
-		return this.parserConfig.get(BasicParserSettings.STOP_AT_FIRST_ERROR);
+		return this.parserConfig.stopAtFirstError();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
-		this.parserConfig.set(BasicParserSettings.DATATYPE_HANDLING, datatypeHandling);
+		if (datatypeHandling == DatatypeHandling.VERIFY) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		}
+		else if (datatypeHandling == DatatypeHandling.NORMALIZE) {
+			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
+			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+			this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, true);
+		}
+		else {
+			// Only ignore if they have not explicitly set any of the relevant
+			// settings before this point
+			if (!this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)
+					&& !this.parserConfig.isSet(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)
+					&& !this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES))
+			{
+				this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
+				this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
+				this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, false);
+			}
+		}
 	}
 
+	/**
+	 * @deprecated Use {@link BasicParserSettings#VERIFY_DATATYPE_VALUES} and
+	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES} and
+	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
+	 */
+	@Deprecated
 	public DatatypeHandling datatypeHandling() {
-		return this.parserConfig.get(BasicParserSettings.DATATYPE_HANDLING);
+		return this.parserConfig.datatypeHandling();
 	}
 
 	/**
@@ -288,7 +327,7 @@ public abstract class RDFParserBase implements RDFParser {
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
 		if (defaultPrefix.containsKey(prefix)) {
-			reportError(msg);
+			reportError(msg, RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
 			return defaultPrefix.get(prefix);
 		}
 		else if ("".equals(prefix)) {
@@ -333,11 +372,9 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (verifyData()) {
-				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-							+ baseURI + "'");
-				}
+			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+						+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
 			}
 
 			uri = baseURI.resolve(uri);
@@ -412,72 +449,8 @@ public abstract class RDFParserBase implements RDFParser {
 	protected Literal createLiteral(String label, String lang, URI datatype)
 		throws RDFParseException
 	{
-		if (datatype != null) {
-			if (verifyData() && datatypeHandling() != DatatypeHandling.IGNORE) {
-				if (!(RDF.XMLLITERAL.equals(datatype) || XMLDatatypeUtil.isBuiltInDatatype(datatype))) {
-					// report a warning on all unrecognized datatypes
-					if (datatype.stringValue().startsWith("xsd")) {
-						reportWarning("datatype '" + datatype
-								+ "' seems be a prefixed name, should be a full URI instead.");
-					}
-					else {
-						reportWarning("'" + datatype + "' is not recognized as a supported xsd datatype.");
-					}
-				}
-			}
-
-			if (datatypeHandling() == DatatypeHandling.VERIFY) {
-				if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype);
-				}
-			}
-			else if (datatypeHandling() == DatatypeHandling.NORMALIZE) {
-				try {
-					label = XMLDatatypeUtil.normalize(label, datatype);
-				}
-				catch (IllegalArgumentException e) {
-					reportError("'" + label + "' is not a valid value for datatype " + datatype + ": "
-							+ e.getMessage());
-				}
-			}
-		}
-
-		try {
-			if (datatype != null) {
-				return valueFactory.createLiteral(label, datatype);
-			}
-			else if (lang != null) {
-				if (verifyData()) {
-					if (!isValidLanguageTag(lang)) {
-						reportError("'" + lang + "' is not a valid language tag ");
-					}
-				}
-				return valueFactory.createLiteral(label, lang);
-			}
-			else {
-				return valueFactory.createLiteral(label);
-			}
-		}
-		catch (Exception e) {
-			reportFatalError(e);
-			return null; // required by compiler
-		}
-	}
-
-	/**
-	 * Checks that the supplied language tag conforms to lexical formatting as
-	 * specified in RFC-3066.
-	 * 
-	 * @see <a href="http://www.ietf.org/rfc/rfc3066.txt">RFC 3066</a>
-	 * @param languageTag
-	 * @return true if the language tag is lexically valid, false otherwise.
-	 */
-	protected boolean isValidLanguageTag(String languageTag) {
-		// language tag is RFC3066-conformant if it matches this regex:
-		// [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
-		boolean result = Pattern.matches("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*", languageTag);
-
-		return result;
+		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
+				valueFactory);
 	}
 
 	/**
@@ -540,37 +513,109 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Reports an error to the registered ParseErrorListener, if any. This method
-	 * simply calls {@link #reportError(String,int,int)} supplying <tt>-1</tt>
-	 * for the line- and column number. This method throws a
-	 * <tt>ParseException</tt> when 'stop-at-first-error' has been set to
-	 * <tt>true</tt>.
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
-	 * @see #setStopAtFirstError
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
 	 */
-	protected void reportError(String msg)
+	protected void reportError(String msg, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
-		reportError(msg, -1, -1);
+		RDFParserHelper.reportError(msg, relevantSetting, getParserConfig(), getParseErrorListener());
 	}
 
 	/**
 	 * Reports an error with associated line- and column number to the registered
-	 * ParseErrorListener, if any. This method throws a <tt>ParseException</tt>
-	 * when 'stop-at-first-error' has been set to <tt>true</tt>.
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
-	 * @see #setStopAtFirstError
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param lineNo
+	 *        Optional line number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param columnNo
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
 	 */
-	protected void reportError(String msg, int lineNo, int columnNo)
+	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
-		if (errListener != null) {
-			errListener.error(msg, lineNo, columnNo);
-		}
+		RDFParserHelper.reportError(msg, lineNo, columnNo, relevantSetting, getParserConfig(),
+				getParseErrorListener());
+	}
 
-		if (stopAtFirstError()) {
-			throw new RDFParseException(msg, lineNo, columnNo);
-		}
+	/**
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
+	 * <p>
+	 * This method also throws an {@link RDFParseException} when the given
+	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
+	 * 
+	 * @param msg
+	 *        The message to use for
+	 *        {@link ParseErrorListener#error(String, int, int)} and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param lineNo
+	 *        Optional line number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param columnNo
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param relevantSetting
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
+	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
+	 *        exception will be thrown.
+	 * @throws RDFParseException
+	 *         If {@link ParserConfig#get(RioSetting)} returns true, and
+	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
+	 *         the given setting.
+	 */
+	protected void reportError(Exception e, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
+		throws RDFParseException
+	{
+		RDFParserHelper.reportError(e, lineNo, columnNo, relevantSetting, getParserConfig(),
+				getParseErrorListener());
 	}
 
 	/**
@@ -582,7 +627,7 @@ public abstract class RDFParserBase implements RDFParser {
 	protected void reportFatalError(String msg)
 		throws RDFParseException
 	{
-		reportFatalError(msg, -1, -1);
+		RDFParserHelper.reportFatalError(msg, getParseErrorListener());
 	}
 
 	/**
@@ -593,11 +638,7 @@ public abstract class RDFParserBase implements RDFParser {
 	protected void reportFatalError(String msg, int lineNo, int columnNo)
 		throws RDFParseException
 	{
-		if (errListener != null) {
-			errListener.fatalError(msg, lineNo, columnNo);
-		}
-
-		throw new RDFParseException(msg, lineNo, columnNo);
+		RDFParserHelper.reportFatalError(msg, lineNo, columnNo, getParseErrorListener());
 	}
 
 	/**
@@ -614,7 +655,7 @@ public abstract class RDFParserBase implements RDFParser {
 	protected void reportFatalError(Exception e)
 		throws RDFParseException
 	{
-		reportFatalError(e, -1, -1);
+		RDFParserHelper.reportFatalError(e, getParseErrorListener());
 	}
 
 	/**
@@ -630,16 +671,7 @@ public abstract class RDFParserBase implements RDFParser {
 	protected void reportFatalError(Exception e, int lineNo, int columnNo)
 		throws RDFParseException
 	{
-		if (e instanceof RDFParseException) {
-			throw (RDFParseException)e;
-		}
-		else {
-			if (errListener != null) {
-				errListener.fatalError(e.getMessage(), lineNo, columnNo);
-			}
-
-			throw new RDFParseException(e, lineNo, columnNo);
-		}
+		RDFParserHelper.reportFatalError(e, lineNo, columnNo, getParseErrorListener());
 	}
 
 }

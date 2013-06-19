@@ -118,7 +118,7 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 			}
 			catch (IllegalArgumentException e) {
 				// Malformed URI
-				throw new SAXException(e.getMessage());
+				throw new SAXException(e.getMessage(), e);
 			}
 		}
 		else if (BNODE_TAG.equals(tagName)) {
@@ -134,7 +134,7 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 				}
 				catch (IllegalArgumentException e) {
 					// Illegal datatype URI
-					throw new SAXException(e.getMessage());
+					throw new SAXException(e.getMessage(), e);
 				}
 			}
 			else if (xmlLang != null) {

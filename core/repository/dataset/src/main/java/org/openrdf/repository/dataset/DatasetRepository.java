@@ -29,6 +29,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParserRegistry;
@@ -67,7 +68,7 @@ public class DatasetRepository extends RepositoryWrapper {
 		return new DatasetRepositoryConnection(this, getDelegate().getConnection());
 	}
 
-	public void loadDataset(URL url, URI context)
+	public void loadDataset(URL url, URI context, ParserConfig config)
 		throws RepositoryException
 	{
 		try {
@@ -77,7 +78,7 @@ public class DatasetRepository extends RepositoryWrapper {
 				urlCon.setIfModifiedSince(since);
 			}
 			if (since == null || since < urlCon.getLastModified()) {
-				load(url, urlCon, context);
+				load(url, urlCon, context, config);
 			}
 		}
 		catch (RDFParseException e) {
@@ -88,7 +89,7 @@ public class DatasetRepository extends RepositoryWrapper {
 		}
 	}
 
-	private synchronized void load(URL url, URLConnection urlCon, URI context)
+	private synchronized void load(URL url, URLConnection urlCon, URI context, ParserConfig config)
 		throws RepositoryException, RDFParseException, IOException
 	{
 		long modified = urlCon.getLastModified();
@@ -113,6 +114,7 @@ public class DatasetRepository extends RepositoryWrapper {
 		try {
 			RepositoryConnection repCon = super.getConnection();
 			try {
+				repCon.setParserConfig(config);
 				repCon.begin();
 				repCon.clear(context);
 				repCon.add(stream, url.toExternalForm(), format, context);
