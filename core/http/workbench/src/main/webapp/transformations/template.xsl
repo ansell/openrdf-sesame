@@ -6,7 +6,7 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
-	<xsl:output method="html" />
+	<xsl:output method="html" doctype-system="about:legacy-compat" />
 
 	<xsl:variable name="info"
 		select="document(sparql:sparql/sparql:head/sparql:link[@href='info']/@href)" />
