@@ -66,7 +66,7 @@
 								<xsl:choose>
 									<xsl:when test="$info">
 										<xsl:value-of
-											select="$info//sparql:binding[@name='server']/sparql:literal" />
+											select="$info//sparql:binding[@name='server']/sparql:uri" />
 									</xsl:when>
 									<xsl:otherwise>
 										<span class="disabled">
