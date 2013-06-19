@@ -35,10 +35,14 @@ import org.openrdf.rio.helpers.ContextStatementCollector;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
- * Factory class providing static methods for creating RDF parsers and -writers
- * for various RDF file formats.
+ * Static methods for parsing and writing RDF for all available syntaxes.
+ * <p>
+ * It includes methods for searching for {@link RDFFormat}s based on MIME types
+ * and file extensions, creating {@link RDFParser}s and {@link RDFWriter}s, and
+ * directly parsing and writing.
  * 
  * @author Arjohn Kampman
+ * @author Peter Ansell
  */
 public class Rio {
 
