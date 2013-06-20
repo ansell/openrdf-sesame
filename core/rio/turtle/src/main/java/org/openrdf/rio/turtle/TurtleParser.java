@@ -1071,7 +1071,7 @@ public class TurtleParser extends RDFParserBase {
 		}
 
 		if (!TurtleUtil.isLegalName(localName.toString())) {
-			reportFatalError("Invalid local name:" + localName.toString());
+			reportFatalError("Invalid local name: " + localName.toString());
 		}
 
 		// Unread last character

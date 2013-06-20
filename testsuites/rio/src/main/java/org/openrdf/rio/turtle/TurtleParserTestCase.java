@@ -41,7 +41,7 @@ import org.openrdf.sail.memory.MemoryStore;
 
 /**
  * JUnit test for the Turtle parser that uses the tests that are available <a
- * href="https://dvcs.w3.org/hg/rdf/file/09a9da374a9f/rdf-turtle/">online</a>.
+ * href="http://www.w3.org/2013/TurtleTests/">online</a>.
  */
 public abstract class TurtleParserTestCase {
 
@@ -50,29 +50,20 @@ public abstract class TurtleParserTestCase {
 	 *-----------*/
 
 	/**
-	 * Base URL for tests submitted to the W3C by Andy Seaborne.
+	 * Base URL for W3C Tutle tests.
 	 */
-	protected static String TESTS_AFS_BASE_URL = "http://example/base/";
-
+	protected static String TESTS_AFS_BASE_URL = "http://www.w3.org/2013/TurtleTests/";
+	
 	/**
-	 * Base directory for tests submitted to the W3C by Andy Seaborne.
+	 * Base directory for W3C Turtle tests
 	 */
-	private static String TEST_AFS_FILE_BASE_PATH = "/testcases/turtle/tests-ttl/";
+	private static String TEST_AFS_FILE_BASE_PATH = "/testcases/turtle/tests-ttl-w3c-CR20130219/";
 
-	/**
-	 * Manifest for tests submitted to the W3C by Andy Seaborne.
-	 * <p>
-	 * FIXME: This is currently under an Apache License as Andy did not relicense
-	 * it before submitting.
-	 * 
-	 * @see http 
-	 *      ://lists.w3.org/Archives/Public/public-rdf-comments/2013Feb/0070.html
-	 */
-	private static String TEST_AFS_MANIFEST_URL = "/testcases/turtle/tests-ttl/manifest.ttl";
+	private static String TEST_AFS_MANIFEST_URL = TEST_AFS_FILE_BASE_PATH + "manifest.ttl";
 
-	private static String TEST_AFS_MANIFEST_URI_BASE = "https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-ttl/manifest.ttl#";
+	private static String TEST_AFS_MANIFEST_URI_BASE = "http://www.w3.org/2013/TurtleTests/manifest.ttl#";
 
-	private static String TEST_AFS_TEST_URI_BASE = "https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-ttl/";
+	private static String TEST_AFS_TEST_URI_BASE = "http://www.w3.org/2013/TurtleTests/";
 
 	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
 
