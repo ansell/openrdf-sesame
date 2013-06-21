@@ -116,30 +116,30 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
 				writeStartOfStartTag(RDF.NAMESPACE, "RDF");
+
+				if (defaultNamespace != null) {
+					writeNewLine();
+					writeIndent();
+					writer.write("xmlns=\"");
+					writer.write(XMLUtil.escapeDoubleQuotedAttValue(defaultNamespace));
+					writer.write("\"");
+				}
+	
+				for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
+					String name = entry.getKey();
+					String prefix = entry.getValue();
+	
+					writeNewLine();
+					writeIndent();
+					writer.write("xmlns:");
+					writer.write(prefix);
+					writer.write("=\"");
+					writer.write(XMLUtil.escapeDoubleQuotedAttValue(name));
+					writer.write("\"");
+				}
+	
+				writeEndOfStartTag();
 			}
-
-			if (defaultNamespace != null) {
-				writeNewLine();
-				writeIndent();
-				writer.write("xmlns=\"");
-				writer.write(XMLUtil.escapeDoubleQuotedAttValue(defaultNamespace));
-				writer.write("\"");
-			}
-
-			for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
-				String name = entry.getKey();
-				String prefix = entry.getValue();
-
-				writeNewLine();
-				writeIndent();
-				writer.write("xmlns:");
-				writer.write(prefix);
-				writer.write("=\"");
-				writer.write(XMLUtil.escapeDoubleQuotedAttValue(name));
-				writer.write("\"");
-			}
-
-			writeEndOfStartTag();
 
 			writeNewLine();
 		}
