@@ -110,11 +110,13 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			// prefix for it if there isn't one yet.
 			setNamespace("rdf", RDF.NAMESPACE);
 
-			if(getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
 				writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 			}
-			
-			writeStartOfStartTag(RDF.NAMESPACE, "RDF");
+
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
+				writeStartOfStartTag(RDF.NAMESPACE, "RDF");
+			}
 
 			if (defaultNamespace != null) {
 				writeNewLine();
@@ -161,7 +163,10 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			flushPendingStatements();
 
 			writeNewLine();
-			writeEndTag(RDF.NAMESPACE, "RDF");
+
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
+				writeEndTag(RDF.NAMESPACE, "RDF");
+			}
 
 			writer.flush();
 		}

@@ -34,9 +34,27 @@ public class XMLWriterSettings {
 	 * {@link RDFWriter#startRDF()} for the document to be valid XML.
 	 * <p>
 	 * Defaults to true.
+	 * 
+	 * @see <a
+	 *      href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-complete-document">RDF/XML
+	 *      specification</a>
 	 */
 	public static final RioSetting<Boolean> INCLUDE_XML_PI = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.includexmlpi", "Include XML Processing Instruction", Boolean.TRUE);
+
+	/**
+	 * Boolean setting for RDF/XML Writer to determine whether the rdf:RDF root
+	 * tag is to be written. The tag is optional in the RDF/XML specification,
+	 * but a standalone RDF/XML document typically includes it.
+	 * <p>
+	 * Defaults to true.
+	 * 
+	 * @see <a
+	 *      href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-complete-document">RDF/XML
+	 *      specification</a>
+	 */
+	public static final RioSetting<Boolean> INCLUDE_ROOT_RDF_TAG = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.includerootrdftag", "Include Root RDF Tag", Boolean.TRUE);
 
 	/**
 	 * Private default constructor.
