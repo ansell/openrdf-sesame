@@ -43,6 +43,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.XMLWriterSettings;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in <a
@@ -113,8 +114,11 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		}
 
 		try {
-			xmlWriter.startDocument();
 
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
+				xmlWriter.startDocument();
+			}
+			
 			xmlWriter.setAttribute("xmlns", NAMESPACE);
 			xmlWriter.startTag(ROOT_TAG);
 		}
