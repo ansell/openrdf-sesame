@@ -106,17 +106,19 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 			buff.reset();
 
 			try {
-				SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
-				resultsSAXParser.setPreserveWhitespace(true);
+				if (this.handler != null) {
+					SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+					resultsSAXParser.setPreserveWhitespace(true);
 
-				resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
+					resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
 
-				resultsSAXParser.parse(uncloseable);
+					resultsSAXParser.parse(uncloseable);
 
-				// we had success, so remove the exception that we were tracking
-				// from
-				// the boolean failure
-				caughtException = null;
+					// we had success, so remove the exception that we were tracking
+					// from
+					// the boolean failure
+					caughtException = null;
+				}
 			}
 			catch (SAXException e) {
 				caughtException = e;
