@@ -37,6 +37,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.XMLWriterSettings;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
@@ -109,8 +110,10 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			// prefix for it if there isn't one yet.
 			setNamespace("rdf", RDF.NAMESPACE);
 
-			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-
+			if(getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
+				writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			}
+			
 			writeStartOfStartTag(RDF.NAMESPACE, "RDF");
 
 			if (defaultNamespace != null) {
