@@ -124,11 +124,11 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					writer.write(XMLUtil.escapeDoubleQuotedAttValue(defaultNamespace));
 					writer.write("\"");
 				}
-	
+
 				for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
 					String name = entry.getKey();
 					String prefix = entry.getValue();
-	
+
 					writeNewLine();
 					writeIndent();
 					writer.write("xmlns:");
@@ -137,7 +137,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					writer.write(XMLUtil.escapeDoubleQuotedAttValue(name));
 					writer.write("\"");
 				}
-	
+
 				writeEndOfStartTag();
 			}
 
@@ -375,7 +375,9 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		else {
 			String prefix = namespaceTable.get(namespace);
 
-			if (prefix == null) {
+			// If the prefix was not defined, or the root rdf:RDF tag was not
+			// written, then use xmlns=...
+			if (prefix == null || !getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
 				writer.write("<");
 				writer.write(localName);
 				writer.write(" xmlns=\"");
