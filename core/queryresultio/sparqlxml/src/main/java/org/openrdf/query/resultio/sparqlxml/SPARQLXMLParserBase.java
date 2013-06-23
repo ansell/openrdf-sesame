@@ -81,7 +81,9 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 				result = valueParser.getValue();
 
 				try {
-					this.handler.handleBoolean(result);
+					if(this.handler != null) {
+						this.handler.handleBoolean(result);
+					}
 				}
 				catch (QueryResultHandlerException e) {
 					if (e.getCause() != null && e.getCause() instanceof IOException) {
