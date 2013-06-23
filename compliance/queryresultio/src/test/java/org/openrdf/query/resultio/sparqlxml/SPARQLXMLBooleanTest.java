@@ -16,22 +16,8 @@
  */
 package org.openrdf.query.resultio.sparqlxml;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.impl.TupleQueryResultImpl;
 import org.openrdf.query.resultio.AbstractQueryResultIOBooleanTest;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
-import org.openrdf.query.resultio.BooleanQueryResultParser;
-import org.openrdf.query.resultio.QueryResultIO;
-import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
@@ -49,20 +35,8 @@ public class SPARQLXMLBooleanTest extends AbstractQueryResultIOBooleanTest {
 		return BooleanQueryResultFormat.SPARQL;
 	}
 
-	@Test
-	public void testParseTupleAsBoolean() throws Exception {
-		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResult tqr = new TupleQueryResultImpl(Arrays.asList("x"), Collections.<BindingSet>emptyList());
-		QueryResultIO.write(tqr, TupleQueryResultFormat.SPARQL, out);
-		out.flush();
-		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		BooleanQueryResultParser parser = QueryResultIO.createParser(getBooleanFormat());
-		try {
-			parser.parse(in);
-			Assert.fail();
-		} catch (QueryResultParseException e) {
-			
-		}
+	@Override
+	protected TupleQueryResultFormat getMatchingTupleFormatOrNull() {
+		return TupleQueryResultFormat.SPARQL;
 	}
-
 }
