@@ -80,17 +80,15 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 
 				result = valueParser.getValue();
 
-				if (this.handler != null) {
-					try {
-						this.handler.handleBoolean(result);
+				try {
+					this.handler.handleBoolean(result);
+				}
+				catch (QueryResultHandlerException e) {
+					if (e.getCause() != null && e.getCause() instanceof IOException) {
+						throw (IOException)e.getCause();
 					}
-					catch (QueryResultHandlerException e) {
-						if (e.getCause() != null && e.getCause() instanceof IOException) {
-							throw (IOException)e.getCause();
-						}
-						else {
-							throw new QueryResultParseException("Found an issue with the query result handler", e);
-						}
+					else {
+						throw new QueryResultParseException("Found an issue with the query result handler", e);
 					}
 				}
 				// if there were no exceptions up to this point, return the boolean
@@ -106,19 +104,17 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 			buff.reset();
 
 			try {
-				if (this.handler != null) {
-					SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
-					resultsSAXParser.setPreserveWhitespace(true);
+				SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+				resultsSAXParser.setPreserveWhitespace(true);
 
-					resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
+				resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
 
-					resultsSAXParser.parse(uncloseable);
+				resultsSAXParser.parse(uncloseable);
 
-					// we had success, so remove the exception that we were tracking
-					// from
-					// the boolean failure
-					caughtException = null;
-				}
+				// we had success, so remove the exception that we were tracking
+				// from
+				// the boolean failure
+				caughtException = null;
 			}
 			catch (SAXException e) {
 				caughtException = e;

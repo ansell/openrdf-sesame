@@ -94,7 +94,9 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		throws SAXException
 	{
 		try {
-			handler.endQueryResult();
+			if(handler != null) {
+				handler.endQueryResult();
+			}
 		}
 		catch (TupleQueryResultHandlerException e) {
 			throw new SAXException(e);
@@ -158,7 +160,9 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		}
 		else if (RESULT_SET_TAG.equals(tagName)) {
 			try {
-				handler.startQueryResult(bindingNames);
+				if(handler != null) {
+					handler.startQueryResult(bindingNames);
+				}
 			}
 			catch (TupleQueryResultHandlerException e) {
 				throw new SAXException(e);
@@ -182,7 +186,9 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		}
 		else if (RESULT_TAG.equals(tagName)) {
 			try {
-				handler.handleSolution(currentSolution);
+				if(handler != null) {
+					handler.handleSolution(currentSolution);
+				}
 				currentSolution = null;
 			}
 			catch (TupleQueryResultHandlerException e) {
