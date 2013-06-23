@@ -19,6 +19,7 @@ package org.openrdf.query.resultio.sparqlxml;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BINDING_NAME_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BINDING_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BNODE_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_DATATYPE_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_LANG_ATT;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.LITERAL_TAG;
@@ -41,6 +42,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.query.resultio.QueryResultParseException;
 
 class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 
@@ -94,7 +96,7 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		throws SAXException
 	{
 		try {
-			if(handler != null) {
+			if (handler != null) {
 				handler.endQueryResult();
 			}
 		}
@@ -160,13 +162,18 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		}
 		else if (RESULT_SET_TAG.equals(tagName)) {
 			try {
-				if(handler != null) {
+				if (handler != null) {
 					handler.startQueryResult(bindingNames);
 				}
 			}
 			catch (TupleQueryResultHandlerException e) {
 				throw new SAXException(e);
 			}
+		}
+		else if (BOOLEAN_TAG.equals(tagName)) {
+			QueryResultParseException realException = new QueryResultParseException(
+					"Found boolean results in tuple parser");
+			throw new SAXException(realException);
 		}
 	}
 
@@ -186,7 +193,7 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		}
 		else if (RESULT_TAG.equals(tagName)) {
 			try {
-				if(handler != null) {
+				if (handler != null) {
 					handler.handleSolution(currentSolution);
 				}
 				currentSolution = null;
