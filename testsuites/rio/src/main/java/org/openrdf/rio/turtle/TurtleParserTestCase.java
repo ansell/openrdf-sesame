@@ -96,14 +96,14 @@ public abstract class TurtleParserTestCase {
 		TestSuite suite = new TestSuite(TurtleParserTestCase.class.getName());
 
 		// Add the N-Triples test
-		URI testUri = ValueFactoryImpl.getInstance().createURI(
-				"http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt");
-		String testName = "original-N-Triples-tests-using-Turtle-Parser";
-		String inputURL = NTRIPLES_TEST_FILE;
-		String outputURL = inputURL;
-		String baseURL = NTRIPLES_TEST_URL;
-		suite.addTest(new TurtlePositiveParserTest(testUri, testName, inputURL, outputURL, baseURL,
-				createTurtleParser(), createNTriplesParser()));
+//		URI testUri = ValueFactoryImpl.getInstance().createURI(
+//				"http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt");
+//		String testName = "original-N-Triples-tests-using-Turtle-Parser";
+//		String inputURL = NTRIPLES_TEST_FILE;
+//		String outputURL = inputURL;
+//		String baseURL = NTRIPLES_TEST_URL;
+//		suite.addTest(new TurtlePositiveParserTest(testUri, testName, inputURL, outputURL, baseURL,
+//				createTurtleParser(), createNTriplesParser()));
 
 		// Add the manifest for AFS test cases to a repository and query it
 		Repository afsRepository = new SailRepository(new MemoryStore());
@@ -127,20 +127,20 @@ public abstract class TurtleParserTestCase {
 
 		// Add the manifest for ntriples test cases using ntriples parser to a
 		// repository and query it
-		Repository coverageRepository = new SailRepository(new MemoryStore());
-		coverageRepository.initialize();
-		RepositoryConnection ntriplesCon = coverageRepository.getConnection();
-
-		InputStream coverageInputStream = this.getClass().getResourceAsStream(TURTLE_NTRIPLES_MANIFEST_URL);
-		ntriplesCon.add(coverageInputStream, TURTLE_NTRIPLES_MANIFEST_URI_BASE, RDFFormat.TURTLE);
-
-		parsePositiveNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
-		parseNegativeNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
-
-		ntriplesCon.close();
-		coverageRepository.shutDown();
+//		Repository coverageRepository = new SailRepository(new MemoryStore());
+//		coverageRepository.initialize();
+//		RepositoryConnection ntriplesCon = coverageRepository.getConnection();
+//
+//		InputStream coverageInputStream = this.getClass().getResourceAsStream(TURTLE_NTRIPLES_MANIFEST_URL);
+//		ntriplesCon.add(coverageInputStream, TURTLE_NTRIPLES_MANIFEST_URI_BASE, RDFFormat.TURTLE);
+//
+//		parsePositiveNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+//				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
+//		parseNegativeNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
+//				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
+//
+//		ntriplesCon.close();
+//		coverageRepository.shutDown();
 
 		return suite;
 	}
