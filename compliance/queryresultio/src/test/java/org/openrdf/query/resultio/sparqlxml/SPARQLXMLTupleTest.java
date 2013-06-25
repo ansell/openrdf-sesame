@@ -17,6 +17,7 @@
 package org.openrdf.query.resultio.sparqlxml;
 
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
@@ -34,4 +35,8 @@ public class SPARQLXMLTupleTest extends AbstractQueryResultIOTupleTest {
 		return TupleQueryResultFormat.SPARQL;
 	}
 
+	@Override
+	protected BooleanQueryResultFormat getMatchingBooleanFormatOrNull() {
+		return BooleanQueryResultFormat.SPARQL;
+	}
 }

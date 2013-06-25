@@ -15,6 +15,7 @@ package org.openrdf.query.resultio.text.csv;
 
 import org.junit.Ignore;
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
@@ -34,6 +35,11 @@ public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {
 	@Override
 	protected TupleQueryResultFormat getTupleFormat() {
 		return TupleQueryResultFormat.CSV;
+	}
+
+	@Override
+	protected BooleanQueryResultFormat getMatchingBooleanFormatOrNull() {
+		return null;
 	}
 
 }
