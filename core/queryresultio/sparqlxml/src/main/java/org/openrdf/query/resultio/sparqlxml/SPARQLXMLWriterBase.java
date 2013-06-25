@@ -67,6 +67,7 @@ import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicWriterSettings;
+import org.openrdf.rio.helpers.XMLWriterSettings;
 
 /**
  * An abstract class to implement the base functionality for both
@@ -195,8 +196,10 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			try {
 				xmlWriter.setPrettyPrint(getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT));
 
-				xmlWriter.startDocument();
-
+				if(getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
+					xmlWriter.startDocument();
+				}
+				
 				xmlWriter.setAttribute("xmlns", NAMESPACE);
 
 				if (getWriterConfig().get(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
