@@ -36,11 +36,19 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 	 */
 	protected abstract TupleQueryResultFormat getTupleFormat();
 
+	/**
+	 * @return The {@link BooleanQueryResultFormat} that may be parsed by the
+	 *         same parser as the one for {@link #getTupleFormat()}, or null if
+	 *         this functionality is not supported.
+	 */
+	protected abstract BooleanQueryResultFormat getMatchingBooleanFormatOrNull();
+
 	@Test
 	public final void testSPARQLResultFormatSingleVarMultipleBindingSets()
 		throws Exception
 	{
-		doTupleNoLinks(getTupleFormat(), createTupleSingleVarMultipleBindingSets(), createTupleSingleVarMultipleBindingSets());
+		doTupleNoLinks(getTupleFormat(), createTupleSingleVarMultipleBindingSets(),
+				createTupleSingleVarMultipleBindingSets());
 	}
 
 	@Test
@@ -55,6 +63,28 @@ public abstract class AbstractQueryResultIOTupleTest extends AbstractQueryResult
 		throws Exception
 	{
 		doTupleNoLinks(getTupleFormat(), createTupleNoBindingSets(), createTupleNoBindingSets());
+	}
+
+	@Test
+	public final void testNoHandlerNoResults()
+		throws Exception
+	{
+		doTupleNoHandler(getTupleFormat(), createTupleNoBindingSets(), createTupleNoBindingSets());
+	}
+
+	@Test
+	public final void testNoHandlerWithResults()
+		throws Exception
+	{
+		doTupleNoHandler(getTupleFormat(), createTupleMultipleBindingSets(), createTupleMultipleBindingSets());
+	}
+
+	@Test
+	public final void testTupleParseNoHandlerOnBooleanResults()
+		throws Exception
+	{
+		doTupleParseNoHandlerOnBooleanResults(getTupleFormat(), true, getMatchingBooleanFormatOrNull());
+		doTupleParseNoHandlerOnBooleanResults(getTupleFormat(), false, getMatchingBooleanFormatOrNull());
 	}
 
 	@Test

@@ -55,6 +55,12 @@ public class ModelEqualityTest extends TestCase {
 		testFilesEqual("sparql-graph-11.ttl", "sparql-graph-11.ttl");
 	}
 
+	public void testBlankNodeGraphs()
+		throws Exception
+	{
+		testFilesEqual("toRdf-0061-out.nq", "toRdf-0061-out.nq");
+	}
+
 	// public void testSparqlGraph11Shuffled()
 	// throws Exception
 	// {

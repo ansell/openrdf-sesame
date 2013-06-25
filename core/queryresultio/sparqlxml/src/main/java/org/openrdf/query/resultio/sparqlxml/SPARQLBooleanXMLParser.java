@@ -63,7 +63,7 @@ public class SPARQLBooleanXMLParser extends SPARQLXMLParserBase implements Boole
 		throws IOException, QueryResultParseException
 	{
 		try {
-			return parseQueryResultInternal(in);
+			return parseQueryResultInternal(in, true, false);
 		}
 		catch (QueryResultHandlerException e) {
 			throw new QueryResultParseException(e);

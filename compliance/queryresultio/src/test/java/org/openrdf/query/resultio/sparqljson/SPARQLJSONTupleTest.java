@@ -29,6 +29,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.helpers.QueryResultCollector;
 
@@ -46,6 +47,11 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	@Override
 	protected TupleQueryResultFormat getTupleFormat() {
 		return TupleQueryResultFormat.JSON;
+	}
+
+	@Override
+	protected BooleanQueryResultFormat getMatchingBooleanFormatOrNull() {
+		return BooleanQueryResultFormat.JSON;
 	}
 
 	@Test

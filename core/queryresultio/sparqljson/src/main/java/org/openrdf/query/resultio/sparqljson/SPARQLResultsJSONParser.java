@@ -77,10 +77,7 @@ public class SPARQLResultsJSONParser extends SPARQLJSONParserBase implements Tup
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		try {
-			if (handler == null) {
-				handler = new QueryResultCollector();
-			}
-			parseQueryResultInternal(in);
+			parseQueryResultInternal(in, false, true);
 		}
 		catch (TupleQueryResultHandlerException e) {
 			throw e;

@@ -17,11 +17,10 @@
 package org.openrdf.query.resultio.text.tsv;
 
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
- * 
- *
  * @author Peter Ansell
  */
 public class SPARQLTSVTupleTest extends AbstractQueryResultIOTupleTest {
@@ -34,6 +33,11 @@ public class SPARQLTSVTupleTest extends AbstractQueryResultIOTupleTest {
 	@Override
 	protected TupleQueryResultFormat getTupleFormat() {
 		return TupleQueryResultFormat.TSV;
+	}
+
+	@Override
+	protected BooleanQueryResultFormat getMatchingBooleanFormatOrNull() {
+		return null;
 	}
 
 }

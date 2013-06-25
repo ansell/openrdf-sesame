@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.AbstractQueryResultIOBooleanTest;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.helpers.QueryResultCollector;
 
 /**
@@ -39,6 +40,11 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 	@Override
 	protected BooleanQueryResultFormat getBooleanFormat() {
 		return BooleanQueryResultFormat.JSON;
+	}
+
+	@Override
+	protected TupleQueryResultFormat getMatchingTupleFormatOrNull() {
+		return TupleQueryResultFormat.JSON;
 	}
 
 	@Test
@@ -92,4 +98,5 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 
 		assertFalse(handler.getBoolean());
 	}
+
 }
