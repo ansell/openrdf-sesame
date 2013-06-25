@@ -1007,9 +1007,11 @@ public class TurtleParser extends RDFParserBase {
 			StringBuilder prefix = new StringBuilder(8);
 			prefix.append((char)c);
 
+			int previousChar = c;
 			c = read();
 			while (TurtleUtil.isPrefixChar(c)) {
 				prefix.append((char)c);
+				previousChar = c;
 				c = read();
 			}
 
@@ -1021,12 +1023,14 @@ public class TurtleParser extends RDFParserBase {
 					return createLiteral(value, null, XMLSchema.BOOLEAN);
 				}
 			}
+			else {
+				if (previousChar == '.') {
+					// '.' is a legal prefix name char, but can not appear at the end
+					reportFatalError("prefix can not end with with '.'");
+				}
+			}
 
 			verifyCharacterOrFail(c, ":");
-
-			if (!TurtleUtil.isPN_PREFIX(prefix.toString())) {
-				reportFatalError("Invalid prefix: " + prefix.toString());
-			}
 
 			namespace = getNamespace(prefix.toString());
 		}
@@ -1042,6 +1046,7 @@ public class TurtleParser extends RDFParserBase {
 				localName.append((char)c);
 			}
 
+			int previousChar = c;
 			c = read();
 			while (TurtleUtil.isNameChar(c)) {
 				if (c == '\\') {
@@ -1050,20 +1055,28 @@ public class TurtleParser extends RDFParserBase {
 				else {
 					localName.append((char)c);
 				}
+				previousChar = c;
 				c = read();
 			}
+
+			// Unread last character
+			unread(c);
+
+			if (previousChar == '.') {
+				// '.' is a legal name char, but can not appear at the end, so is
+				// not actually part of the name
+				unread(previousChar);
+				localName.deleteCharAt(localName.length() - 1);
+			}
+		}
+		else {
+			// Unread last character
+			unread(c);
 		}
 
-		if (c == '.') {
-			reportFatalError("Blank node identifier must not end in a '.'");
-		}
-
-		if (!TurtleUtil.isLegalName(localName.toString())) {
-			reportFatalError("Invalid local name: " + localName.toString());
-		}
-
-		// Unread last character
-		unread(c);
+		// if (c == '.') {
+		// reportFatalError("Blank node identifier must not end in a '.'");
+		// }
 
 		// Note: namespace has already been resolved
 		return createURI(namespace + localName.toString());
