@@ -56,33 +56,41 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 	public void parseQueryResult(InputStream in)
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
-		parseQueryResultInternal(in);
+		parseQueryResultInternal(in, true, true);
 	}
 
-	protected boolean parseQueryResultInternal(InputStream in)
+	protected boolean parseQueryResultInternal(InputStream in, boolean attemptParseBoolean,
+			boolean attemptParseTuple)
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
+		if (!attemptParseBoolean && !attemptParseTuple) {
+			throw new IllegalArgumentException(
+					"Internal error: Did not specify whether to parse as either boolean and/or tuple");
+		}
+
 		BufferedInputStream buff = new BufferedInputStream(in);
 		UncloseableInputStream uncloseable = new UncloseableInputStream(buff);
 
+		SAXException caughtException = null;
+
+		boolean result = false;
+
 		try {
-			buff.mark(Integer.MAX_VALUE);
-			boolean result = false;
+			if (attemptParseBoolean) {
+				buff.mark(Integer.MAX_VALUE);
+				try {
+					SPARQLBooleanSAXParser valueParser = new SPARQLBooleanSAXParser();
 
-			SAXException caughtException = null;
+					SimpleSAXParser booleanSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+					booleanSAXParser.setListener(valueParser);
+					booleanSAXParser.parse(uncloseable);
 
-			try {
-				SPARQLBooleanSAXParser valueParser = new SPARQLBooleanSAXParser();
+					result = valueParser.getValue();
 
-				SimpleSAXParser booleanSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
-				booleanSAXParser.setListener(valueParser);
-				booleanSAXParser.parse(uncloseable);
-
-				result = valueParser.getValue();
-
-				if (this.handler != null) {
 					try {
-						this.handler.handleBoolean(result);
+						if (this.handler != null) {
+							this.handler.handleBoolean(result);
+						}
 					}
 					catch (QueryResultHandlerException e) {
 						if (e.getCause() != null && e.getCause() instanceof IOException) {
@@ -92,34 +100,37 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 							throw new QueryResultParseException("Found an issue with the query result handler", e);
 						}
 					}
+					// if there were no exceptions up to this point, return the
+					// boolean
+					// result;
+					return result;
 				}
-				// if there were no exceptions up to this point, return the boolean
-				// result;
-				return result;
+				catch (SAXException e) {
+					caughtException = e;
+				}
+
+				// Reset the buffered input stream and try again looking for tuple
+				// results
+				buff.reset();
 			}
-			catch (SAXException e) {
-				caughtException = e;
-			}
 
-			// Reset the buffered input stream and try again looking for tuple
-			// results
-			buff.reset();
+			if (attemptParseTuple) {
+				try {
+					SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
+					resultsSAXParser.setPreserveWhitespace(true);
 
-			try {
-				SimpleSAXParser resultsSAXParser = new SimpleSAXParser(XMLReaderFactory.createXMLReader());
-				resultsSAXParser.setPreserveWhitespace(true);
+					resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
 
-				resultsSAXParser.setListener(new SPARQLResultsSAXParser(this.valueFactory, this.handler));
+					resultsSAXParser.parse(uncloseable);
 
-				resultsSAXParser.parse(uncloseable);
-
-				// we had success, so remove the exception that we were tracking
-				// from
-				// the boolean failure
-				caughtException = null;
-			}
-			catch (SAXException e) {
-				caughtException = e;
+					// we had success, so remove the exception that we were tracking
+					// from
+					// the boolean failure
+					caughtException = null;
+				}
+				catch (SAXException e) {
+					caughtException = e;
+				}
 			}
 
 			if (caughtException != null) {
@@ -139,11 +150,12 @@ public abstract class SPARQLXMLParserBase extends QueryResultParserBase {
 				}
 			}
 
-			return result;
 		}
 		finally {
 			uncloseable.doClose();
 		}
+		
+		return result;
 	}
 
 }

@@ -21,8 +21,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQueryResultHandler;
 import org.openrdf.query.QueryResultHandler;
 import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
 /**
@@ -34,7 +36,7 @@ import org.openrdf.query.TupleQueryResultHandlerException;
  * @author Peter Ansell
  * @since 2.7.0
  */
-public class QueryResultCollector implements QueryResultHandler {
+public class QueryResultCollector implements QueryResultHandler, TupleQueryResultHandler, BooleanQueryResultHandler {
 
 	private boolean hasBooleanSet = false;
 

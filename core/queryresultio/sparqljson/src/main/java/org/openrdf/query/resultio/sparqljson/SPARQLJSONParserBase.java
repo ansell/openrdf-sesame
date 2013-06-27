@@ -114,13 +114,19 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 	public void parseQueryResult(InputStream in)
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
-		parseQueryResultInternal(in);
+		parseQueryResultInternal(in, true, true);
 	}
 
-	protected boolean parseQueryResultInternal(InputStream in)
+	protected boolean parseQueryResultInternal(InputStream in, boolean attemptParseBoolean,
+			boolean attemptParseTuple)
 		throws IOException, QueryResultParseException, QueryResultHandlerException
 	{
-		JsonParser jp = JSON_FACTORY.createJsonParser(in);
+		if (!attemptParseBoolean && !attemptParseTuple) {
+			throw new IllegalArgumentException(
+					"Internal error: Did not specify whether to parse as either boolean and/or tuple");
+		}
+
+		JsonParser jp = JSON_FACTORY.createParser(in);
 		boolean result = false;
 
 		if (jp.nextToken() != JsonToken.START_OBJECT) {
@@ -146,6 +152,11 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 					final String headStr = jp.getCurrentName();
 
 					if (headStr.equals(VARS)) {
+						if (!attemptParseTuple) {
+							throw new QueryResultParseException(
+									"Found tuple results variables when attempting to parse SPARQL Results JSON to boolean result");
+						}
+						
 						if (jp.nextToken() != JsonToken.START_ARRAY) {
 							throw new QueryResultParseException("Expected variable labels to be an array",
 									jp.getCurrentLocation().getLineNr(), jp.getCurrentLocation().getColumnNr());
@@ -195,6 +206,10 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 				}
 			}
 			else if (baseStr.equals(RESULTS)) {
+				if (!attemptParseTuple) {
+					throw new QueryResultParseException(
+							"Found tuple results bindings when attempting to parse SPARQL Results JSON to boolean result");
+				}
 				if (jp.nextToken() != JsonToken.START_OBJECT) {
 					throw new QueryResultParseException("Found unexpected token in results object: "
 							+ jp.getCurrentName(), jp.getCurrentLocation().getLineNr(),
@@ -303,6 +318,10 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 				}
 			}
 			else if (baseStr.equals(BOOLEAN)) {
+				if (!attemptParseBoolean) {
+					throw new QueryResultParseException(
+							"Found boolean results when attempting to parse SPARQL Results JSON to tuple results");
+				}
 				jp.nextToken();
 
 				result = Boolean.parseBoolean(jp.getText());

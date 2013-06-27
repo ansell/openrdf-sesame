@@ -40,7 +40,7 @@ public class RioConfig implements Serializable {
 	 */
 	protected final ConcurrentMap<RioSetting<Object>, Object> settings = new ConcurrentHashMap<RioSetting<Object>, Object>();
 
-	protected final Logger log = LoggerFactory.getLogger(ParserConfig.class);
+	protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 

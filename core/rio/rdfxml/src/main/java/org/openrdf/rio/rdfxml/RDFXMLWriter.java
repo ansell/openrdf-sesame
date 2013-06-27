@@ -37,6 +37,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.XMLWriterSettings;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
@@ -109,32 +110,36 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			// prefix for it if there isn't one yet.
 			setNamespace("rdf", RDF.NAMESPACE);
 
-			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-
-			writeStartOfStartTag(RDF.NAMESPACE, "RDF");
-
-			if (defaultNamespace != null) {
-				writeNewLine();
-				writeIndent();
-				writer.write("xmlns=\"");
-				writer.write(XMLUtil.escapeDoubleQuotedAttValue(defaultNamespace));
-				writer.write("\"");
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
+				writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 			}
 
-			for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
-				String name = entry.getKey();
-				String prefix = entry.getValue();
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
+				writeStartOfStartTag(RDF.NAMESPACE, "RDF");
 
-				writeNewLine();
-				writeIndent();
-				writer.write("xmlns:");
-				writer.write(prefix);
-				writer.write("=\"");
-				writer.write(XMLUtil.escapeDoubleQuotedAttValue(name));
-				writer.write("\"");
+				if (defaultNamespace != null) {
+					writeNewLine();
+					writeIndent();
+					writer.write("xmlns=\"");
+					writer.write(XMLUtil.escapeDoubleQuotedAttValue(defaultNamespace));
+					writer.write("\"");
+				}
+
+				for (Map.Entry<String, String> entry : namespaceTable.entrySet()) {
+					String name = entry.getKey();
+					String prefix = entry.getValue();
+
+					writeNewLine();
+					writeIndent();
+					writer.write("xmlns:");
+					writer.write(prefix);
+					writer.write("=\"");
+					writer.write(XMLUtil.escapeDoubleQuotedAttValue(name));
+					writer.write("\"");
+				}
+
+				writeEndOfStartTag();
 			}
-
-			writeEndOfStartTag();
 
 			writeNewLine();
 		}
@@ -158,7 +163,10 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			flushPendingStatements();
 
 			writeNewLine();
-			writeEndTag(RDF.NAMESPACE, "RDF");
+
+			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
+				writeEndTag(RDF.NAMESPACE, "RDF");
+			}
 
 			writer.flush();
 		}
@@ -367,7 +375,9 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		else {
 			String prefix = namespaceTable.get(namespace);
 
-			if (prefix == null) {
+			// If the prefix was not defined, or the root rdf:RDF tag was not
+			// written, then use xmlns=...
+			if (prefix == null || !getWriterConfig().get(XMLWriterSettings.INCLUDE_ROOT_RDF_TAG)) {
 				writer.write("<");
 				writer.write(localName);
 				writer.write(" xmlns=\"");
