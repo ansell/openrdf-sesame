@@ -37,8 +37,7 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
@@ -105,13 +104,12 @@ public class Create implements Command {
 				final ConfigTemplate configTemplate = new ConfigTemplate(template);
 				final Map<String, String> valueMap = new HashMap<String, String>();
 				final Map<String, List<String>> variableMap = configTemplate.getVariableMap();
-				boolean eof = inputParameters(valueMap, variableMap);
+				boolean eof = inputParameters(valueMap, variableMap, configTemplate.getMultilineMap());
 				if (!eof) {
 					final String configString = configTemplate.render(valueMap);
 					final Repository systemRepo = this.state.getManager().getSystemRepository();
-					final ValueFactory factory = systemRepo.getValueFactory();
-					final Graph graph = new GraphImpl(factory);
-					final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, factory);
+					final Graph graph = new LinkedHashModel();
+					final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
 					rdfParser.setRDFHandler(new StatementCollector(graph));
 					rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
 					final Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
@@ -144,13 +142,13 @@ public class Create implements Command {
 			}
 		}
 		catch (Exception e) {
-			consoleIO.writeError(e.getMessage());
+			consoleIO.writeError(e.getClass().getName() + ": " + e.getMessage());
 			LOGGER.error("Failed to create repository", e);
 		}
 	}
 
 	private boolean inputParameters(final Map<String, String> valueMap,
-			final Map<String, List<String>> variableMap)
+			final Map<String, List<String>> variableMap, Map<String, String> multilineInput)
 		throws IOException
 	{
 		if (!variableMap.isEmpty()) {
@@ -175,7 +173,7 @@ public class Create implements Command {
 				consoleIO.write(" [" + values.get(0) + "]");
 			}
 			consoleIO.write(": ");
-			String value = consoleIO.readln();
+			String value = multilineInput.containsKey(var) ? consoleIO.readMultiLineInput() : consoleIO.readln();
 			eof = (value == null);
 			if (eof) {
 				break; // for loop
