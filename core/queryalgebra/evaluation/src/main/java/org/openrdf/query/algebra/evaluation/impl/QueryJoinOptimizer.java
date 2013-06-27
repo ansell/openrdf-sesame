@@ -27,15 +27,14 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
+import org.openrdf.query.algebra.helpers.TupleExprs;
 
 /**
  * A query optimizer that re-orders nested Joins.
@@ -99,7 +98,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				List<TupleExpr> orderedJoinArgs = new ArrayList<TupleExpr>(joinArgs.size());
 
 				// first get all subselects and order them
-				List<TupleExpr> orderedSubselects = reorderSubselects(selectProjections(joinArgs));
+				List<TupleExpr> orderedSubselects = reorderSubselects(getSubSelects(joinArgs));
 				joinArgs.removeAll(orderedSubselects);
 
 				// We order all remaining join arguments based on cardinality and
@@ -208,17 +207,18 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			return varFreqMap;
 		}
 
-		protected List<TupleExpr> selectProjections(List<TupleExpr> expressions) {
-			List<TupleExpr> projections = new ArrayList<TupleExpr>();
+		protected List<TupleExpr> getSubSelects(List<TupleExpr> expressions) {
+			List<TupleExpr> subselects = new ArrayList<TupleExpr>();
 
 			for (TupleExpr expr : expressions) {
-				if (expr instanceof Projection) {
-					projections.add(expr);
+				if (TupleExprs.containsProjection(expr)) {
+					subselects.add(expr);
 				}
 			}
-			return projections;
+			return subselects;
 		}
 
+		
 		/**
 		 * Determines an optimal ordering of subselect join arguments, based on
 		 * variable bindings. An ordering is considered optimal if for each
