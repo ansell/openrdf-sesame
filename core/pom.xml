@@ -13,21 +13,21 @@
   <packaging>pom</packaging>
 
   <modules>
-	 <module>console</module>
-	 <module>http</module>
+	 <module>util</module>
 	 <module>model</module>
+	 <module>rio</module>
+	 <module>queryresultio</module>
 	 <module>query</module>
 	 <module>queryalgebra</module>
 	 <module>queryparser</module>
 	 <module>queryrender</module>
-	 <module>queryresultio</module>
+	 <module>sail</module>
 	 <module>repository</module>
-	 <module>rio</module>
+	 <module>config</module>
+	 <module>console</module>
+	 <module>http</module>
 	 <module>runtime</module>
 	 <module>runtime-osgi</module>
-	 <module>sail</module>
-	 <module>config</module>
-	 <module>util</module>
   </modules>
 
   <name>OpenRDF Sesame Core</name>
