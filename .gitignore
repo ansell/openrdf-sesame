@@ -21,6 +21,10 @@ pom.xml.versionsBackup
 # GEdit generated stuff
 *.*~
 
+# IntelliJ files
+.idea/
+*.iml
+
 # Mac nonsense
 .DS_Store
 
