@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
+import java.net.URL;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -95,4 +96,22 @@ public class TestTurtleParser {
 		}
 	}
 
+	@Test
+	public void testPrefixParsing() throws Exception {
+		
+		URL url = new URL("http://www.w3.org/2013/TurtleTests/prefix_with_PN_CHARS_BASE_character_boundaries.ttl");
+		
+		parser.parse(url.openStream(), baseURI);
+		
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+		
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(2, statementCollector.getStatements().size());
+		
+		for (Statement st: statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
 }
