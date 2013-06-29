@@ -19,8 +19,6 @@ package org.openrdf.sail.inferencer.fc.config;
 import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.MATCHER_QUERY;
 import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.QUERY_LANGUAGE;
 import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.RULE_QUERY;
-import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.SPIN_CONSTRUCT;
-import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.SPIN_TEXT;
 
 import java.util.Iterator;
 
@@ -36,6 +34,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.sail.config.DelegatingSailImplConfigBase;
@@ -106,11 +105,11 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 			}
 			Iterator<Value> iter = GraphUtil.getObjectIterator(graph, implNode, RULE_QUERY);
 			if (iter.hasNext()) {
-				setRuleQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SPIN_TEXT).stringValue());
+				setRuleQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
 			}
 			iter = GraphUtil.getObjectIterator(graph, implNode, MATCHER_QUERY);
 			if (iter.hasNext()) {
-				setMatcherQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SPIN_TEXT).stringValue());
+				setMatcherQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
 			}
 		}
 		catch (GraphUtilException e) {
@@ -166,8 +165,8 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 			ValueFactory factory = ValueFactoryImpl.getInstance();
 			BNode queryNode = factory.createBNode();
 			graph.add(implNode, predicate, queryNode);
-			graph.add(queryNode, RDF.TYPE, SPIN_CONSTRUCT);
-			graph.add(queryNode, SPIN_TEXT, factory.createLiteral(queryText));
+			graph.add(queryNode, RDF.TYPE, SP.CONSTRUCT_CLASS);
+			graph.add(queryNode, SP.TEXT_PROPERTY, factory.createLiteral(queryText));
 		}
 	}
 }

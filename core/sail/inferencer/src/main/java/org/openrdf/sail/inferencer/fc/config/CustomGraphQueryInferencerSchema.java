@@ -43,18 +43,10 @@ public class CustomGraphQueryInferencerSchema {
 	/** <tt>http://www.openrdf.org/config/sail/customGraphQueryInferencer#matcherQuery</tt> */
 	public final static URI MATCHER_QUERY;
 
-	/** <tt>http://spinrdf.org/sp#Construct</tt> */
-	public static final URI SPIN_CONSTRUCT;
-
-	/** <tt>http://spinrdf.org/sp#text</tt> */
-	public static final URI SPIN_TEXT;
-
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		QUERY_LANGUAGE = factory.createURI(NAMESPACE, "queryLanguage");
 		RULE_QUERY = factory.createURI(NAMESPACE, "ruleQuery");
 		MATCHER_QUERY = factory.createURI(NAMESPACE, "matcherQuery");
-		SPIN_TEXT = factory.createURI("http://spinrdf.org/sp#text");
-		SPIN_CONSTRUCT = factory.createURI("http://spinrdf.org/sp#Construct");
 	}
 }
