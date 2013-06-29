@@ -31,6 +31,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.CompareSubQueryValueOperator;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Copy;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Create;
@@ -182,6 +183,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetCompareSubQueryValueOperator(node);
+	}
+
+	public void meet(DescribeOperator node)
+		throws X
+	{
+		meetUnaryTupleOperator(node);
 	}
 
 	public void meet(Copy node)

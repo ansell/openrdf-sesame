@@ -66,6 +66,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(CompareAny node)
 		throws X;
 
+	public void meet(DescribeOperator node)
+			throws X;
+
 	public void meet(Copy copy)
 			throws X;
 

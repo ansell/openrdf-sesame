@@ -63,6 +63,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
@@ -231,7 +232,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Var contextVar = alp.getContextVar();
 		final long minLength = alp.getMinLength();
 
-		return new PathIteration(this, scope, subjectVar, pathExpression, objVar, contextVar, minLength, bindings);
+		return new PathIteration(this, scope, subjectVar, pathExpression, objVar, contextVar, minLength,
+				bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ZeroLengthPath zlp,
@@ -265,7 +267,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		return getZeroLengthPathIterator(bindings, subjectVar, objVar, contextVar, subj, obj);
 	}
-
 
 	protected ZeroLengthPathIteration getZeroLengthPathIterator(final BindingSet bindings,
 			final Var subjectVar, final Var objVar, final Var contextVar, Value subj, Value obj)
@@ -380,6 +381,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				boundVars.add(var);
 			}
 		}
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(DescribeOperator operator,
+			final BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		// TODO stub
+		return null;
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,

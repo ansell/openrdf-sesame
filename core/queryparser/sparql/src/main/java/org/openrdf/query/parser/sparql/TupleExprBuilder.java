@@ -47,6 +47,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
@@ -894,44 +895,16 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		TupleExpr result = (TupleExpr)data;
-
-		// Create a graph query that produces the statements that have the
-		// requests resources as subject or object
-		Var subjVar = createAnonVar("-descr-subj");
-		Var predVar = createAnonVar("-descr-pred");
-		Var objVar = createAnonVar("-descr-obj");
-		StatementPattern sp = new StatementPattern(subjVar, predVar, objVar);
-
-		if (result == null) {
-			result = sp;
-		}
-		else {
-			result = new Join(result, sp);
-		}
-
-		List<SameTerm> sameTerms = new ArrayList<SameTerm>(2 * node.jjtGetNumChildren());
+		List<ValueExpr> describeExprs = new ArrayList<ValueExpr>(2 * node.jjtGetNumChildren());
 
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
-
-			sameTerms.add(new SameTerm(subjVar.clone(), resource));
-			sameTerms.add(new SameTerm(objVar.clone(), resource));
+			
+			describeExprs.add(resource);
 		}
 
-		ValueExpr constraint = sameTerms.get(0);
-		for (int i = 1; i < sameTerms.size(); i++) {
-			constraint = new Or(constraint, sameTerms.get(i));
-		}
-
-		result = new Filter(result, constraint);
-
-		ProjectionElemList projElemList = new ProjectionElemList();
-		projElemList.addElement(new ProjectionElem(subjVar.getName(), "subject"));
-		projElemList.addElement(new ProjectionElem(predVar.getName(), "predicate"));
-		projElemList.addElement(new ProjectionElem(objVar.getName(), "object"));
-		result = new Projection(result, projElemList);
-
-		return new Reduced(result);
+		return new DescribeOperator(result, describeExprs);
+		
 	}
 
 	@Override
