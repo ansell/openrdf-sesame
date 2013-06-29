@@ -387,7 +387,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		// TODO stub
+		// TODO implement stub
+		// we'll need to implement at least two strategies: one is the old
+		// behaviour, one is some sort of blank node closure.
+		// Question is how to integrate it in such a way that choice of strategy
+		// is configurable.
 		return null;
 	}
 
