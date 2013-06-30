@@ -82,6 +82,61 @@ public class RDFParserHelper {
 			ParserConfig parserConfig, ParseErrorListener errListener, ValueFactory valueFactory)
 		throws RDFParseException
 	{
+		return createLiteral(label, lang, datatype, parserConfig, errListener, valueFactory, -1, -1);
+	}
+
+	/**
+	 * Create a literal using the given parameters, including iterative
+	 * verification and normalization by any {@link DatatypeHandler} or
+	 * {@link LanguageHandler} implementations that are found in the
+	 * {@link ParserConfig}.
+	 * 
+	 * @param label
+	 *        The value for {@link Literal#getLabel()}, which may be iteratively
+	 *        normalized.
+	 * @param lang
+	 *        If this is not null, and the datatype is either not null, or is
+	 *        equal to {@link RDF#LANGSTRING}, then a language literal will be
+	 *        created.
+	 * @param datatype
+	 *        If datatype is not null, and the datatype is not equal to
+	 *        {@link RDF#LANGSTRING} with a non-null lang, then a datatype
+	 *        literal will be created.
+	 * @param parserConfig
+	 *        The source of parser settings, including the desired list of
+	 *        {@link DatatypeHandler} and {@link LanguageHandler}s to use for
+	 *        verification and normalization of datatype and language literals
+	 *        respectively.
+	 * @param errListener
+	 *        The {@link ParseErrorListener} to use for signalling errors. This
+	 *        will be called if a setting is enabled by setting it to true in the
+	 *        {@link ParserConfig}, after which the error may trigger an
+	 *        {@link RDFParseException} if the setting is not present in
+	 *        {@link ParserConfig#getNonFatalErrors()}.
+	 * @param valueFactory
+	 *        The {@link ValueFactory} to use for creating new {@link Literal}s
+	 *        using this method.
+	 * @param lineNo
+	 *        Optional line number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @param columnNo
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
+	 *        and for
+	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 * @return A {@link Literal} created based on the given parameters.
+	 * @throws RDFParseException
+	 *         If there was an error during the process that could not be
+	 *         recovered from, based on settings in the given parser config.
+	 * @since 2.7.4
+	 */
+	public static final Literal createLiteral(String label, String lang, URI datatype,
+			ParserConfig parserConfig, ParseErrorListener errListener, ValueFactory valueFactory, int lineNo,
+			int columnNo)
+		throws RDFParseException
+	{
 		if (label == null) {
 			throw new NullPointerException("Cannot create a literal using a null label");
 		}
@@ -102,14 +157,15 @@ public class RDFParserHelper {
 						recognisedLanguage = true;
 						try {
 							if (!nextHandler.verifyLanguage(workingLabel, workingLang)) {
-								reportError("'" + lang + "' is not a valid language tag ",
+								reportError("'" + lang + "' is not a valid language tag ", lineNo, columnNo,
 										BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig, errListener);
 							}
 						}
 						catch (LiteralUtilException e) {
 							reportError("'" + label
 									+ " could not be verified by a language handler that recognised it. language was "
-									+ lang, BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig, errListener);
+									+ lang, lineNo, columnNo, BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig,
+									errListener);
 						}
 						if (parserConfig.get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
 							try {
@@ -120,7 +176,7 @@ public class RDFParserHelper {
 							}
 							catch (LiteralUtilException e) {
 								reportError("'" + label + "' did not have a valid value for language " + lang + ": "
-										+ e.getMessage() + " and could not be normalised",
+										+ e.getMessage() + " and could not be normalised", lineNo, columnNo,
 										BasicParserSettings.NORMALIZE_LANGUAGE_TAGS, parserConfig, errListener);
 							}
 						}
@@ -131,7 +187,8 @@ public class RDFParserHelper {
 							"'"
 									+ label
 									+ "' was not recognised as a language literal, and could not be verified, with language "
-									+ lang, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, parserConfig, errListener);
+									+ lang, lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES,
+							parserConfig, errListener);
 				}
 			}
 
@@ -144,14 +201,15 @@ public class RDFParserHelper {
 						recognisedDatatype = true;
 						try {
 							if (!nextHandler.verifyDatatype(workingLabel, workingDatatype)) {
-								reportError("'" + label + "' is not a valid value for datatype " + datatype,
-										BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig, errListener);
+								reportError("'" + label + "' is not a valid value for datatype " + datatype, lineNo,
+										columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig, errListener);
 							}
 						}
 						catch (LiteralUtilException e) {
 							reportError("'" + label
 									+ " could not be verified by a datatype handler that recognised it. datatype was "
-									+ datatype, BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig, errListener);
+									+ datatype, lineNo, columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES,
+									parserConfig, errListener);
 						}
 						if (parserConfig.get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
 							try {
@@ -162,7 +220,7 @@ public class RDFParserHelper {
 							}
 							catch (LiteralUtilException e) {
 								reportError("'" + label + "' is not a valid value for datatype " + datatype + ": "
-										+ e.getMessage() + " and could not be normalised",
+										+ e.getMessage() + " and could not be normalised", lineNo, columnNo,
 										BasicParserSettings.NORMALIZE_DATATYPE_VALUES, parserConfig, errListener);
 							}
 						}
@@ -171,7 +229,8 @@ public class RDFParserHelper {
 
 				if (!recognisedDatatype) {
 					reportError("'" + label + "' was not recognised, and could not be verified, with datatype "
-							+ datatype, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, parserConfig, errListener);
+							+ datatype, lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES,
+							parserConfig, errListener);
 				}
 			}
 
@@ -192,7 +251,7 @@ public class RDFParserHelper {
 				}
 			}
 			catch (Exception e) {
-				reportFatalError(e, errListener);
+				reportFatalError(e, lineNo, columnNo, errListener);
 			}
 		}
 
