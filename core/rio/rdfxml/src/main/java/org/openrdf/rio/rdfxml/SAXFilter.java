@@ -181,7 +181,7 @@ class SAXFilter implements ContentHandler {
 		locator = loc;
 
 		ParseLocationListener pll = rdfParser.getParseLocationListener();
-		if (pll != null) {
+		if (pll != null && loc != null) {
 			pll.parseLocationUpdate(loc.getLineNumber(), loc.getColumnNumber());
 		}
 	}
@@ -230,7 +230,9 @@ class SAXFilter implements ContentHandler {
 				xmlLiteralPrefixes.add(prefix);
 			}
 
-			rdfParser.getRDFHandler().handleNamespace(prefix, uri);
+			if(rdfParser.getRDFHandler() != null) {
+				rdfParser.getRDFHandler().handleNamespace(prefix, uri);
+			}
 		}
 		catch (RDFParseException e) {
 			throw new SAXException(e);

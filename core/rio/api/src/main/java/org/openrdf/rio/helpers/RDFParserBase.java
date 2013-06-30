@@ -454,6 +454,20 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
+	 * Creates a {@link Literal} object with the supplied parameters, using the
+	 * lineNo and columnNo to enhance error messages or exceptions that may be
+	 * generated during the creation of the literal.
+	 * 
+	 * @since 2.7.4
+	 */
+	protected Literal createLiteral(String label, String lang, URI datatype, int lineNo, int columnNo)
+		throws RDFParseException
+	{
+		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
+				valueFactory, lineNo, columnNo);
+	}
+
+	/**
 	 * Creates a new {@link Statement} object with the supplied components.
 	 */
 	protected Statement createStatement(Resource subj, URI pred, Value obj)

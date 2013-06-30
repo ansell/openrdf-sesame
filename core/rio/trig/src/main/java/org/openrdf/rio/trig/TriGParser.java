@@ -188,6 +188,8 @@ public class TriGParser extends TurtleParser {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj, context);
-		rdfHandler.handleStatement(st);
+		if(rdfHandler != null) {
+			rdfHandler.handleStatement(st);
+		}
 	}
 }
