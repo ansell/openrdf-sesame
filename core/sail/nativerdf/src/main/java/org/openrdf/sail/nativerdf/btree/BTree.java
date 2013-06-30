@@ -2286,6 +2286,14 @@ public class BTree {
 					// the value that was removed had just been visited
 					currentIdx = valueIndex;
 					revisitValue.set(true);
+					
+					if (!node.isLeaf()) {
+						pushStacks(leftChildNode);
+						currentIdx = leftChildNode.getValueCount();
+						if (!leftChildNode.isLeaf()) {
+							pushStacks(currentNode.getChildNode(currentIdx));
+						}
+					}
 				}
 			}
 			else if (currentNode == rightChildNode) {
