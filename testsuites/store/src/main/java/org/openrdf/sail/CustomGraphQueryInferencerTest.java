@@ -83,11 +83,12 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 	 * @param delete
 	 *        deletion data to further test inferencer response (SPARQL/Update)
 	 */
-	public CustomGraphQueryInferencerTest(NotifyingSail store, String resourceFolder, String rule,
+	private CustomGraphQueryInferencerTest(NotifyingSail store, String resourceFolder, String rule,
 			String match, String initial, String delete)
 		throws MalformedQueryException, UnsupportedQueryLanguageException, SailException, RepositoryException
 	{
-		super(store.getClass().getName() + "-custom-query-inferencing/" + resourceFolder);
+		super(store.getClass().getName() + "-custom-query-inferencing/"
+				+ (match.isEmpty() ? "implicit-matcher/" : "") + resourceFolder);
 		inferencer = new CustomGraphQueryInferencer(store, QueryLanguage.SPARQL, rule, match);
 		this.resourceFolder = resourceFolder;
 		this.initial = initial;
@@ -154,6 +155,10 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 			String initial = ResourceUtil.getString(testFolder + "/initial.ttl");
 			String delete = ResourceUtil.getString(testFolder + "/delete.ru");
 			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, rule, match, initial, delete));
+
+			// To test that the matcher query can be omitted (at least for most
+			// rule queries).
+			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, rule, "", initial, delete));
 		}
 	}
 }
