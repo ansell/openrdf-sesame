@@ -71,10 +71,6 @@ public class HTTPMemServer {
 		System.clearProperty("DEBUG");
 
 		port = getFreePort();
-		while (usedPorts.contains(port)) {
-			port = getFreePort();
-		}
-		usedPorts.add(port);
 
 		serverUrl = "http://" + HOST + ":" + port + OPENRDF_CONTEXT;
 		repositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_REPO_ID);
@@ -98,19 +94,27 @@ public class HTTPMemServer {
 
 	}
 
-	private static int getFreePort() {
+	private static synchronized int getFreePort() {
 		int result = -1;
-		try (ServerSocket ss = new ServerSocket(0)) {
-			ss.setReuseAddress(true);
-			result = ss.getLocalPort();
-			try (DatagramSocket ds = new DatagramSocket(result);) {
-				ds.setReuseAddress(true);
+		while (result <= 0) {
+			try (ServerSocket ss = new ServerSocket(0)) {
+				ss.setReuseAddress(true);
+				result = ss.getLocalPort();
+				if(usedPorts.contains(result)) {
+					result = -1;
+				}
+				else
+				{
+					usedPorts.add(result);
+					try (DatagramSocket ds = new DatagramSocket(result);) {
+						ds.setReuseAddress(true);
+					}
+				}
+			}
+			catch (IOException e) {
+				result = -1;
 			}
 		}
-		catch (IOException e) {
-			result = -1;
-		}
-
 		return result;
 	}
 
