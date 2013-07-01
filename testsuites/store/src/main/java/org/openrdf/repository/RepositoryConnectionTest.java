@@ -240,14 +240,22 @@ public abstract class RepositoryConnectionTest {
 	public void tearDown()
 		throws Exception
 	{
-		if (testCon2 != null) {
-			testCon2.close();
+		try {
+			if (testCon2 != null) {
+				testCon2.close();
+			}
 		}
-		if (testCon != null) {
-			testCon.close();
-		}
-		if (testRepository != null) {
-			testRepository.shutDown();
+		finally {
+			try {
+				if (testCon != null) {
+					testCon.close();
+				}
+			}
+			finally {
+				if (testRepository != null) {
+					testRepository.shutDown();
+				}
+			}
 		}
 	}
 
@@ -926,18 +934,17 @@ public abstract class RepositoryConnectionTest {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedTypedLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidIntegerLiteral = vf.createLiteral("the number four", XMLSchema.INTEGER);
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidIntegerLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -950,18 +957,17 @@ public abstract class RepositoryConnectionTest {
 		}
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedLanguageLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidLanguageLiteral = vf.createLiteral("the number four", "en_us");
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidLanguageLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -974,6 +980,7 @@ public abstract class RepositoryConnectionTest {
 			fail(e.getMessage());
 		}
 	}
+
 	@Test
 	public void testGetStatementsInSingleContext()
 		throws Exception
