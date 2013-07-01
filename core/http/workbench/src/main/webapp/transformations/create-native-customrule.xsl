@@ -26,8 +26,9 @@
 						</th>
 						<td>
 							<select id="type" name="type">
-								<option value="memory-customrule">
-									In Memory Store Custom Graph Query
+								<option value="native-customrule">
+									Native Java Store Custom
+									Graph Query
 									Inference
 								</option>
 							</select>
@@ -40,7 +41,7 @@
 						</th>
 						<td>
 							<input type="text" id="id" name="Repository ID" size="16"
-								vaue="memory-customrule" />
+								value="native-customrule" />
 						</td>
 						<td></td>
 					</tr>
@@ -50,7 +51,7 @@
 						</th>
 						<td>
 							<input type="text" id="title" name="Repository title" size="48"
-								value="Memory store with custom graph query inferencing" />
+								value="Native store with custom graph query inferencing rule" />
 						</td>
 						<td></td>
 					</tr>
@@ -95,26 +96,12 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
-							<xsl:value-of select="$repository-persist.label" />
-						</td>
-						<td>
-							<input type="radio" id="persist" name="Persist" size="48"
-								value="true" checked="true" />
-							<xsl:value-of select="$true.label" />
-							<input type="radio" id="persist" name="Persist" size="48"
-								value="false" />
-							<xsl:value-of select="$false.label" />
-						</td>
-						<td></td>
-					</tr>
-					<tr>
 						<th>
-							<xsl:value-of select="$repository-sync-delay.label" />
+							<xsl:value-of select="$repository-indexes.label" />
 						</th>
 						<td>
-							<input type="text" id="delay" name="Sync delay" size="4"
-								value="0" />
+							<input type="text" id="indexes" name="Triple indexes" size="16"
+								value="spoc,posc" />
 						</td>
 						<td></td>
 					</tr>
