@@ -16,9 +16,16 @@
  */
 package org.openrdf.sail;
 
+import static org.junit.Assert.*;
+
 import java.util.Random;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -30,7 +37,16 @@ import org.openrdf.model.impl.URIImpl;
  * 
  * @author Arjohn Kampman
  */
-public abstract class SailConcurrencyTest extends TestCase {
+public abstract class SailConcurrencyTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+
+	/**
+	 * Timeout all individual tests after 3 minutes.
+	 */
+	@Rule
+	public Timeout to = new Timeout(180000);
 
 	/*-----------*
 	 * Constants *
@@ -50,23 +66,14 @@ public abstract class SailConcurrencyTest extends TestCase {
 
 	private boolean continueRunning;
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public SailConcurrencyTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
-		super.setUp();
 		store = createSail();
 		store.initialize();
 	}
@@ -74,18 +81,14 @@ public abstract class SailConcurrencyTest extends TestCase {
 	protected abstract Sail createSail()
 		throws SailException;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
-		try {
-			store.shutDown();
-		}
-		finally {
-			super.tearDown();
-		}
+		store.shutDown();
 	}
 
+	@Test
 	public void testGetContextIDs()
 		throws Exception
 	{
@@ -116,7 +119,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 				}
 				catch (Throwable t) {
 					continueRunning = false;
-					fail("Writer failed", t);
+					failWithException("Writer failed", t);
 				}
 			}
 		};
@@ -151,7 +154,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 				}
 				catch (Throwable t) {
 					continueRunning = false;
-					fail("Reader failed", t);
+					failWithException("Reader failed", t);
 				}
 			}
 		};
@@ -186,7 +189,7 @@ public abstract class SailConcurrencyTest extends TestCase {
 		}
 	}
 
-	protected synchronized void fail(String message, Throwable t) {
+	protected synchronized void failWithException(String message, Throwable t) {
 		System.err.println(message);
 		t.printStackTrace();
 		m_failed = true;
