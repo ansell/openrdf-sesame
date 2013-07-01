@@ -377,12 +377,14 @@ public class BTree {
 					throw new IOException("Unable to read BTree file " + file + "; it uses a newer file format");
 				}
 				else if (version != FILE_FORMAT_VERSION) {
-					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: "
+							+ version);
 				}
 			}
 			else if (Arrays.equals(OLD_MAGIC_NUMBER, magicNumber)) {
 				if (version != 1) {
-					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: " + version);
+					throw new IOException("Unable to read BTree file " + file + "; invalid file format version: "
+							+ version);
 				}
 				// Write new magic number to file
 				logger.info("Updating file header for btree file '{}'", file.getAbsolutePath());
@@ -1092,7 +1094,8 @@ public class BTree {
 
 		if (node.isLeaf()) {
 			if (node.isEmpty()) {
-				throw new IllegalArgumentException("Trying to remove largest value from an empty node in " + getFile());
+				throw new IllegalArgumentException("Trying to remove largest value from an empty node in "
+						+ getFile());
 			}
 			return node.removeValueRight(nodeValueCount - 1);
 		}
@@ -1727,7 +1730,14 @@ public class BTree {
 
 		public void deregister(NodeListener listener) {
 			synchronized (listeners) {
-				assert listeners.contains(listener);
+				// assert listeners.contains(listener);
+				int id = getID();
+				if (id == 150) {
+					if (!listeners.contains(listener)) {
+						logger.warn("node id {} does not contain listener", getID());
+						throw new RuntimeException();
+					}
+				}
 				listeners.remove(listener);
 			}
 		}
@@ -2189,7 +2199,8 @@ public class BTree {
 		{
 			btreeLock.readLock().lock();
 			try {
-				while (popStacks());
+				while (popStacks())
+					;
 
 				assert parentNodeStack.isEmpty();
 				assert parentIndexStack.isEmpty();
@@ -2198,12 +2209,13 @@ public class BTree {
 				btreeLock.readLock().unlock();
 			}
 		}
-		
+
 		private void pushStacks(Node newChildNode) {
 			newChildNode.register(this);
 			parentNodeStack.add(currentNode);
 			parentIndexStack.add(currentIdx);
 			currentNode = newChildNode;
+			currentNode.use();
 			currentIdx = 0;
 		}
 
@@ -2286,13 +2298,9 @@ public class BTree {
 					// the value that was removed had just been visited
 					currentIdx = valueIndex;
 					revisitValue.set(true);
-					
+
 					if (!node.isLeaf()) {
 						pushStacks(leftChildNode);
-						currentIdx = leftChildNode.getValueCount();
-						if (!leftChildNode.isLeaf()) {
-							pushStacks(currentNode.getChildNode(currentIdx));
-						}
 					}
 				}
 			}
@@ -2309,7 +2317,7 @@ public class BTree {
 				for (int i = 0; i < parentNodeStack.size(); i++) {
 					Node stackNode = parentNodeStack.get(i);
 
-					if (stackNode == rightChildNode ) {
+					if (stackNode == rightChildNode) {
 						int stackIdx = parentIndexStack.get(i);
 
 						if (stackIdx == 0) {
