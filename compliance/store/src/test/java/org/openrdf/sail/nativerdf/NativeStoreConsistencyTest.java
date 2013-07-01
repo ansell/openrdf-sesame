@@ -19,12 +19,17 @@ package org.openrdf.sail.nativerdf;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 
 import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
@@ -39,7 +44,6 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
 import org.openrdf.rio.RDFFormat;
@@ -51,20 +55,22 @@ import org.openrdf.rio.RDFFormat;
  */
 public class NativeStoreConsistencyTest {
 
-	private File dataDir;
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+
+	/**
+	 * Timeout all individual tests after 3 minutes.
+	 */
+	@Rule
+	public Timeout to = new Timeout(180000);
+
+	private Path dataDir;
 
 	@Before
 	public void setUp()
 		throws Exception
 	{
-		dataDir = FileUtil.createTempDir("nativestore-consistency");
-	}
-
-	@After
-	public void tearDown()
-		throws Exception
-	{
-		FileUtil.deleteDir(dataDir);
+		dataDir = tempDir.newFolder("nativestore-consistency").toPath();
 	}
 
 	@Test
@@ -105,7 +111,7 @@ public class NativeStoreConsistencyTest {
 		repo.shutDown();
 
 		// Step 4: check the repository size with SPOC only
-		new File(dataDir, "triples.prop").delete(); // delete triples.prop to
+		Files.deleteIfExists(dataDir.resolve("triples.prop")); // delete triples.prop to
 																	// update index usage
 		repo = new SailRepository(new NativeStore(dataDir, "spoc"));
 		repo.initialize();
@@ -117,7 +123,7 @@ public class NativeStoreConsistencyTest {
 		repo.shutDown();
 
 		// Step 5: check the repository size with PSOC only
-		new File(dataDir, "triples.prop").delete(); // delete triples.prop to
+		Files.deleteIfExists(dataDir.resolve("triples.prop")); // delete triples.prop to
 																	// update index usage
 		repo = new SailRepository(new NativeStore(dataDir, "psoc"));
 		repo.initialize();
