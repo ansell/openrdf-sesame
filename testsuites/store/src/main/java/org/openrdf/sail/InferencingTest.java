@@ -113,6 +113,10 @@ public class InferencingTest extends TestCase {
 		Collection<? extends Statement> entailedStatements = null;
 		Collection<? extends Statement> expectedStatements = null;
 
+		// Upload input data
+		InputStream stream = getClass().getResourceAsStream(inputData);
+		assertNotNull("Could not find test resource: " + inputData, stream);
+
 		Repository repository = new SailRepository(sailStack);
 		repository.initialize();
 
@@ -123,8 +127,6 @@ public class InferencingTest extends TestCase {
 		con.clear();
 		con.commit();
 
-		// Upload input data
-		InputStream stream = getClass().getResourceAsStream(inputData);
 		try {
 			con.begin();
 			con.add(stream, inputData, RDFFormat.NTRIPLES);

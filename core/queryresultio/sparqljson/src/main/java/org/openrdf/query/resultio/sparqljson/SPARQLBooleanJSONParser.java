@@ -69,10 +69,7 @@ public class SPARQLBooleanJSONParser extends SPARQLJSONParserBase implements Boo
 		throws IOException, QueryResultParseException
 	{
 		try {
-			if (handler == null) {
-				handler = new QueryResultCollector();
-			}
-			return parseQueryResultInternal(in);
+			return parseQueryResultInternal(in, true, false);
 		}
 		catch (QueryResultHandlerException e) {
 			throw new QueryResultParseException(e);

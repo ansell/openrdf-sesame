@@ -281,11 +281,14 @@ public class HTTPClient {
 	 *        the password
 	 */
 	public void setUsernameAndPassword(String username, String password) {
-		// checkServerURL();
+		setUsernameAndPasswordForUrl(username, password, getQueryURL());
+	}
+
+	protected void setUsernameAndPasswordForUrl(String username, String password, String url) {
 
 		if (username != null && password != null) {
-			logger.debug("Setting username '{}' and password for server at {}.", username, queryURL);
-			java.net.URI requestURI = java.net.URI.create(queryURL);
+			logger.debug("Setting username '{}' and password for server at {}.", username, url);
+			java.net.URI requestURI = java.net.URI.create(url);
 			String host = requestURI.getHost();
          int port = requestURI.getPort();
          AuthScope scope = new AuthScope(host,port);
@@ -788,7 +791,8 @@ public class HTTPClient {
 		throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
 	{
 
-		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext, getPreferredRDFFormat());
+		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext,
+				getPreferredRDFFormat());
 		for (String acceptParam : acceptParams) {
 			method.addHeader(ACCEPT_PARAM_NAME, acceptParam);
 		}

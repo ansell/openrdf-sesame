@@ -608,4 +608,10 @@ public class SesameHTTPClient extends HTTPClient {
 			throw new AssertionError(e);
 		}
 	}
+
+    @Override
+    public void setUsernameAndPassword(String username, String password) {
+        checkServerURL();
+        setUsernameAndPasswordForUrl(username, password, getServerURL());
+    }
 }

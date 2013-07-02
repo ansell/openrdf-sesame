@@ -18,7 +18,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 
-import info.aduna.io.FileUtil;
+import org.junit.Before;
 
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConcurrencyTest;
@@ -36,36 +36,17 @@ public class NativeStoreConcurrencyTest extends SailConcurrencyTest {
 
 	private File dataDir;
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public NativeStoreConcurrencyTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	@Before
 	@Override
-	protected void setUp()
+	public void setUp()
 		throws Exception
 	{
-		dataDir = FileUtil.createTempDir("nativestore");
+		dataDir = tempDir.newFolder("nativestoreconcurrency");
 		super.setUp();
-	}
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
 	}
 
 	@Override

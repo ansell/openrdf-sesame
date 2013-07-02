@@ -60,6 +60,8 @@
 	<variable name="contexts.label">Contexts</variable>
 	<variable name="types.label">Types</variable>
 	<variable name="query.label">Query</variable>
+	<variable name="rule-query.label">Rule Query</variable>
+	<variable name="matcher-query.label">Matcher Query</variable>
 	<variable name="saved-queries.label">Saved Queries</variable>
 	<variable name="export.label">Export</variable>
 	<variable name="modify.label">Modify</variable>

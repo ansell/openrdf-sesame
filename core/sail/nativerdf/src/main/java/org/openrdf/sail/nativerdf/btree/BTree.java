@@ -1738,7 +1738,14 @@ public class BTree implements java.lang.AutoCloseable {
 
 		public void deregister(NodeListener listener) {
 			synchronized (listeners) {
-				assert listeners.contains(listener);
+				// assert listeners.contains(listener);
+				int id = getID();
+				if (id == 150) {
+					if (!listeners.contains(listener)) {
+						logger.warn("node id {} does not contain listener", getID());
+						throw new RuntimeException();
+					}
+				}
 				listeners.remove(listener);
 			}
 		}
@@ -2216,6 +2223,7 @@ public class BTree implements java.lang.AutoCloseable {
 			parentNodeStack.add(currentNode);
 			parentIndexStack.add(currentIdx);
 			currentNode = newChildNode;
+			currentNode.use();
 			currentIdx = 0;
 		}
 
@@ -2298,6 +2306,10 @@ public class BTree implements java.lang.AutoCloseable {
 					// the value that was removed had just been visited
 					currentIdx = valueIndex;
 					revisitValue.set(true);
+
+					if (!node.isLeaf()) {
+						pushStacks(leftChildNode);
+					}
 				}
 			}
 			else if (currentNode == rightChildNode) {

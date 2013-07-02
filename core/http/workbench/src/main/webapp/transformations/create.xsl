@@ -35,6 +35,10 @@
 									Direct Type
 									Hierarchy
 								</option>
+								<option value="memory-customrule">
+									In Memory Store Custom Graph Query
+									Inference
+								</option>
 								<option value="native">
 									Native Java Store
 								</option>
