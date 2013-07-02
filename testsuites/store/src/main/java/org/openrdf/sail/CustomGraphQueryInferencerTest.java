@@ -52,16 +52,19 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 
 	private static final String PREDICATE = "predicate";
 
-	private static final String[] RESOURCE_FOLDERS = { PREDICATE, "resource" };
+	private static final String[] RESOURCE_FOLDERS = { PREDICATE, "resource", "predicate-serql" };
 
 	private static final Map<String, Expectation> EXPECTATIONS = new HashMap<String, Expectation>();
 
 	private static final Map<String, QueryLanguage> LANGUAGES = new HashMap<String, QueryLanguage>();
 	static {
-		EXPECTATIONS.put(PREDICATE, new Expectation(8, 2, 0, 2, 0));
+		Expectation predExpect = new Expectation(8, 2, 0, 2, 0);
+		EXPECTATIONS.put(PREDICATE, predExpect);
 		EXPECTATIONS.put("resource", new Expectation(4, 2, 2, 0, 2));
+		EXPECTATIONS.put("predicate-serql", predExpect);
 		LANGUAGES.put(PREDICATE, QueryLanguage.SPARQL);
 		LANGUAGES.put("resource", QueryLanguage.SPARQL);
+		LANGUAGES.put("predicate-serql", QueryLanguage.SERQL);
 	}
 
 	private final CustomGraphQueryInferencer inferencer;
@@ -122,7 +125,7 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		Collection<Value> watchSubjects = inferencer.getWatchSubjects();
 		assertThat(watchSubjects.size(), is(equalTo(testData.subjCount)));
 		ValueFactory factory = connection.getValueFactory();
-		if (PREDICATE.equals(resourceFolder)) {
+		if (resourceFolder.startsWith(PREDICATE)) {
 			assertThat(watchPredicates.contains(factory.createURI(BASE, "brotherOf")), is(equalTo(true)));
 			assertThat(watchPredicates.contains(factory.createURI(BASE, "parentOf")), is(equalTo(true)));
 		}
@@ -144,7 +147,9 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		assertThat(Iterations.asSet(connection.getStatements(null, null, null, true)).size(),
 				is(equalTo(testData.countAfterRemove)));
 
-		// Tidy up.
+		// Tidy up. Storage gets re-used for subsequent tests, so must clear here,
+		// in order to properly clear out any inferred statements.
+		connection.clear();
 		connection.close();
 		sail.shutDown();
 	}

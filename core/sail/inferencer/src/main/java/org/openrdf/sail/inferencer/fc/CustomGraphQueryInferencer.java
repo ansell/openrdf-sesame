@@ -66,7 +66,7 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 	static {
 		int flags = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
 		SPARQL_PATTERN = Pattern.compile("^(.*construct\\s+)(\\{.*\\}\\s*)where.*$", flags);
-		SERQL_PATTERN = Pattern.compile("^\\s*construct(\\s+.*)\\s+.*(\\s+using\\s+namespace.*)$", flags);
+		SERQL_PATTERN = Pattern.compile("^\\s*construct(\\s+.*)from\\s+.*(\\s+using\\s+namespace.*)$", flags);
 	}
 
 	private ParsedGraphQuery customQuery;
@@ -199,7 +199,7 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 			else if (QueryLanguage.SERQL == language) {
 				Matcher matcher = SERQL_PATTERN.matcher(queryText);
 				if (matcher.matches()) {
-					matcherQuery = "CONSTRUCT * FROM" + matcher.group(2) + matcher.group(2);
+					matcherQuery = "CONSTRUCT * FROM" + matcher.group(1) + matcher.group(2);
 				}
 			}
 			else {
