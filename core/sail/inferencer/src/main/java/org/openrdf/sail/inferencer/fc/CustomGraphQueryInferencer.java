@@ -65,7 +65,7 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 
 	static {
 		int flags = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
-		SPARQL_PATTERN = Pattern.compile("^(.*\\s*construct\\s+)where(\\s+\\{.*\\})\\s+where.*$", flags);
+		SPARQL_PATTERN = Pattern.compile("^(.*construct\\s+)(\\{.*\\}\\s*)where.*$", flags);
 		SERQL_PATTERN = Pattern.compile("^\\s*construct(\\s+.*)\\s+.*(\\s+using\\s+namespace.*)$", flags);
 	}
 
