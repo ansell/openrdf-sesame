@@ -459,6 +459,8 @@ public abstract class RDFParserBase implements RDFParser {
 	 * generated during the creation of the literal.
 	 * 
 	 * @since 2.7.4
+	 * @see org.openrdf.rio.helpers.RDFParserHelper#createLiteral(String, String,
+	 *      URI, ParserConfig, ParseErrorListener, ValueFactory, int, int)
 	 */
 	protected Literal createLiteral(String label, String lang, URI datatype, int lineNo, int columnNo)
 		throws RDFParseException
