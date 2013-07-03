@@ -167,7 +167,9 @@ public class NTriplesParser extends RDFParserBase {
 			throw new IllegalArgumentException("base URI can not be 'null'");
 		}
 
-		rdfHandler.startRDF();
+		if(rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
 
 		this.reader = reader;
 		lineNo = 1;
@@ -198,7 +200,9 @@ public class NTriplesParser extends RDFParserBase {
 			clear();
 		}
 
-		rdfHandler.endRDF();
+		if(rdfHandler != null) {
+			rdfHandler.endRDF();
+		}
 	}
 
 	/**
@@ -311,7 +315,9 @@ public class NTriplesParser extends RDFParserBase {
 
 		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object);
-			rdfHandler.handleStatement(st);
+			if(rdfHandler != null) {
+				rdfHandler.handleStatement(st);
+			}
 		}
 
 		subject = null;
@@ -567,7 +573,7 @@ public class NTriplesParser extends RDFParserBase {
 			dtURI = createURI(datatype);
 		}
 
-		return super.createLiteral(label, lang, dtURI);
+		return super.createLiteral(label, lang, dtURI, lineNo, -1);
 	}
 
 	/**
