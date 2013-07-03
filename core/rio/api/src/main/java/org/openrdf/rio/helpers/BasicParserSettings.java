@@ -206,7 +206,7 @@ public class BasicParserSettings {
 		try {
 			DatatypeHandlerRegistry registry = DatatypeHandlerRegistry.getInstance();
 			for (String nextHandler : Arrays.asList(DatatypeHandler.XMLSCHEMA, DatatypeHandler.RDFDATATYPES,
-					DatatypeHandler.DBPEDIA, DatatypeHandler.VIRTUOSOGEOMETRY))
+					DatatypeHandler.DBPEDIA, DatatypeHandler.VIRTUOSOGEOMETRY, DatatypeHandler.GEOSPARQL))
 			{
 				DatatypeHandler nextdt = registry.get(nextHandler);
 				if (nextdt != null) {
