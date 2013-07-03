@@ -19,8 +19,6 @@ package org.openrdf.sail.inferencer.fc;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +48,7 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
+import org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerConfig;
 
 /**
  * A forward-chaining inferencer that infers new statements using a SPARQL or
@@ -60,14 +59,6 @@ import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	private static final Pattern SPARQL_PATTERN, SERQL_PATTERN;
-
-	static {
-		int flags = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
-		SPARQL_PATTERN = Pattern.compile("^(.*construct\\s+)(\\{.*\\}\\s*)where.*$", flags);
-		SERQL_PATTERN = Pattern.compile("^\\s*construct(\\s+.*)from\\s+.*(\\s+using\\s+namespace.*)$", flags);
-	}
 
 	private ParsedGraphQuery customQuery;
 
@@ -161,7 +152,11 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 		throws MalformedQueryException, SailException
 	{
 		customQuery = QueryParserUtil.parseGraphQuery(language, queryText, null);
-		setMatcherQuery(language, matcherText, queryText);
+		String matcherQuery = matcherText;
+		if (matcherText.trim().isEmpty()) {
+			matcherQuery = CustomGraphQueryInferencerConfig.buildMatcherQueryFromRuleQuery(language, queryText);
+		}
+		customMatcher = QueryParserUtil.parseGraphQuery(language, matcherQuery, null);
 		customQuery.getTupleExpr().visit(new QueryModelVisitorBase<SailException>() {
 
 			@Override
@@ -183,30 +178,6 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 			}
 		});
 		hasWatchValues = !(watchSubjects.isEmpty() && watchPredicates.isEmpty() && watchObjects.isEmpty());
-	}
-
-	private void setMatcherQuery(QueryLanguage language, String matcherText, String queryText)
-		throws MalformedQueryException
-	{
-		String matcherQuery = matcherText;
-		if (matcherText.trim().isEmpty()) {
-			if (QueryLanguage.SPARQL == language) {
-				Matcher matcher = SPARQL_PATTERN.matcher(queryText);
-				if (matcher.matches()) {
-					matcherQuery = matcher.group(1) + "WHERE" + matcher.group(2);
-				}
-			}
-			else if (QueryLanguage.SERQL == language) {
-				Matcher matcher = SERQL_PATTERN.matcher(queryText);
-				if (matcher.matches()) {
-					matcherQuery = "CONSTRUCT * FROM" + matcher.group(1) + matcher.group(2);
-				}
-			}
-			else {
-				throw new IllegalArgumentException("language");
-			}
-		}
-		customMatcher = QueryParserUtil.parseGraphQuery(language, matcherQuery, null);
 	}
 
 	@Override
