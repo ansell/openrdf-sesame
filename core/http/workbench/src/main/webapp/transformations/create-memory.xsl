@@ -54,9 +54,9 @@
 						<td></td>
 					</tr>
 					<tr>
-						<td>
+						<th>
 							<xsl:value-of select="$repository-persist.label" />
-						</td>
+						</th>
 						<td>
 							<input type="radio" id="persist" name="Persist" size="48"
 								value="true" checked="true" />
