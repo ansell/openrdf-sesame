@@ -478,13 +478,17 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	void startDocument()
 		throws RDFParseException, RDFHandlerException
 	{
-		rdfHandler.startRDF();
+		if(rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
 	}
 
 	void endDocument()
 		throws RDFParseException, RDFHandlerException
 	{
-		rdfHandler.endRDF();
+		if(rdfHandler != null) {
+			rdfHandler.endRDF();
+		}
 	}
 
 	/*-----------------------------*
@@ -1210,7 +1214,22 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subject, predicate, object);
-		rdfHandler.handleStatement(st);
+		if(rdfHandler != null) {
+			rdfHandler.handleStatement(st);
+		}
+	}
+
+	@Override
+	protected Literal createLiteral(String label, String lang, URI datatype)
+		throws RDFParseException
+	{
+		Locator locator = saxFilter.getLocator();
+		if (locator != null) {
+			return createLiteral(label, lang, datatype, locator.getLineNumber(), locator.getColumnNumber());
+		}
+		else {
+			return createLiteral(label, lang, datatype, -1, -1);
+		}
 	}
 
 	/**

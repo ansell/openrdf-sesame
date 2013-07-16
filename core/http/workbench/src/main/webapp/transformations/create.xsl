@@ -50,6 +50,10 @@
 									Direct Type
 									Hierarchy
 								</option>
+								<option value="native-customrule">
+									Native Java Store Custom
+									Graph Query Inference
+								</option>
 								<option value="mysql">
 									MySql RDF Store
 								</option>
