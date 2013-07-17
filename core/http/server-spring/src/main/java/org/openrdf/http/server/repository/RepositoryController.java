@@ -94,7 +94,7 @@ public class RepositoryController extends AbstractController {
 	public RepositoryController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET, METHOD_POST, METHOD_DELETE });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_POST, METHOD_DELETE, METHOD_HEAD });
 	}
 
 	public void setRepositoryManager(RepositoryManager repMan) {
@@ -117,25 +117,26 @@ public class RepositoryController extends AbstractController {
 				throw new HTTPException(HttpStatus.SC_BAD_REQUEST,
 						"Repository delete error: query supplied with request");
 			}
-			
-			if(SystemRepository.ID.equals(repId)) {
+
+			if (SystemRepository.ID.equals(repId)) {
 				logger.warn("attempted delete of SYSTEM repository, aborting");
 				throw new HTTPException(HttpStatus.SC_FORBIDDEN, "SYSTEM Repository can not be deleted");
 			}
 
 			try {
-				// we need to forcibly close the default repository connection opened for this repository by
+				// we need to forcibly close the default repository connection
+				// opened for this repository by
 				// the interceptor.
 				RepositoryConnection connection = RepositoryInterceptor.getRepositoryConnection(request);
 				connection.close();
-				
+
 				boolean success = repositoryManager.removeRepository(repId);
 				if (success) {
 					logger.info("DELETE request successfully completed");
 					return new ModelAndView(EmptySuccessView.getInstance());
 				}
 				else {
-					logger.error("error while attempting to delete repository '" + repId + "'");	
+					logger.error("error while attempting to delete repository '" + repId + "'");
 					throw new HTTPException(HttpStatus.SC_BAD_REQUEST,
 							"could not locate repository configuration for repository '" + repId + "'.");
 				}
@@ -154,8 +155,13 @@ public class RepositoryController extends AbstractController {
 			qryCode = String.valueOf(queryStr).hashCode();
 		}
 
+		boolean headersOnly = false;
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET query {}", qryCode);
+		}
+		else if (METHOD_HEAD.equals(reqMethod)) {
+			logger.info("HEAD query {}", qryCode);
+			headersOnly = true;
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
 			logger.info("POST query {}", qryCode);
@@ -179,21 +185,21 @@ public class RepositoryController extends AbstractController {
 				if (query instanceof TupleQuery) {
 					TupleQuery tQuery = (TupleQuery)query;
 
-					queryResult = tQuery.evaluate();
+					queryResult = headersOnly ? null : tQuery.evaluate() ;
 					registry = TupleQueryResultWriterRegistry.getInstance();
 					view = TupleQueryResultView.getInstance();
 				}
 				else if (query instanceof GraphQuery) {
 					GraphQuery gQuery = (GraphQuery)query;
 
-					queryResult = gQuery.evaluate();
+					queryResult = headersOnly ? null : gQuery.evaluate() ;
 					registry = RDFWriterRegistry.getInstance();
 					view = GraphQueryResultView.getInstance();
 				}
 				else if (query instanceof BooleanQuery) {
 					BooleanQuery bQuery = (BooleanQuery)query;
 
-					queryResult = bQuery.evaluate();
+					queryResult = headersOnly ? null: bQuery.evaluate() ;
 					registry = BooleanQueryResultWriterRegistry.getInstance();
 					view = BooleanQueryResultView.getInstance();
 				}
@@ -209,7 +215,8 @@ public class RepositoryController extends AbstractController {
 			catch (QueryEvaluationException e) {
 				logger.info("Query evaluation error", e);
 				if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-					// custom signal from the backend, throw as HTTPException directly (see SES-1016).
+					// custom signal from the backend, throw as HTTPException
+					// directly (see SES-1016).
 					throw (HTTPException)e.getCause();
 				}
 				else {
@@ -223,6 +230,7 @@ public class RepositoryController extends AbstractController {
 			model.put(QueryResultView.FILENAME_HINT_KEY, "query-result");
 			model.put(QueryResultView.QUERY_RESULT_KEY, queryResult);
 			model.put(QueryResultView.FACTORY_KEY, factory);
+			model.put(QueryResultView.HEADERS_ONLY, headersOnly);
 
 			return new ModelAndView(view, model);
 		}

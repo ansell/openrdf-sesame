@@ -68,7 +68,7 @@ public class GraphController extends AbstractController {
 	public GraphController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET, METHOD_POST, "PUT", "DELETE" });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD, METHOD_POST, "PUT", "DELETE" });
 	}
 
 	@Override
@@ -82,10 +82,15 @@ public class GraphController extends AbstractController {
 
 		String reqMethod = request.getMethod();
 
-		if (METHOD_GET.equals(reqMethod)) {
+		if (METHOD_GET.equals(reqMethod) ) {
 			logger.info("GET graph");
 			result = getExportStatementsResult(repository, repositoryCon, request, response);
 			logger.info("GET graph request finished.");
+		}
+		else if (METHOD_HEAD.equals(reqMethod) ) {
+			logger.info("HEAD graph");
+			result = getExportStatementsResult(repository, repositoryCon, request, response);
+			logger.info("HEAD graph request finished.");
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
 			logger.info("POST data to graph");
@@ -160,7 +165,7 @@ public class GraphController extends AbstractController {
 		model.put(ExportStatementsView.CONTEXTS_KEY, new Resource[] { graph });
 		model.put(ExportStatementsView.FACTORY_KEY, rdfWriterFactory);
 		model.put(ExportStatementsView.USE_INFERENCING_KEY, true);
-
+		model.put(ExportStatementsView.HEADERS_ONLY, METHOD_HEAD.equals(request.getMethod()));
 		return new ModelAndView(ExportStatementsView.getInstance(), model);
 	}
 
