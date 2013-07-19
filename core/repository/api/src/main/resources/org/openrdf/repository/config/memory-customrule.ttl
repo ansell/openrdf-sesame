@@ -24,7 +24,7 @@
          ];
          cgqi:matcherQuery [
          	a sp:Construct ;
-         	sp:text '''{%Matcher query|insert matcher query here%}'''
+         	sp:text '''{%Matcher query (optional)|%}'''
          ];
          sail:delegate [
             sail:sailType "openrdf:MemoryStore" ;

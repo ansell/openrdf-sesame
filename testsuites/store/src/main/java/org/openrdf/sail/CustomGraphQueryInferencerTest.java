@@ -50,12 +50,21 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 
 	private static final String BASE = "http://foo.org/bar#";
 
-	private static final String[] RESOURCE_FOLDERS = { "predicate", "resource" };
+	private static final String PREDICATE = "predicate";
+
+	private static final String[] RESOURCE_FOLDERS = { PREDICATE, "resource", "predicate-serql" };
 
 	private static final Map<String, Expectation> EXPECTATIONS = new HashMap<String, Expectation>();
+
+	private static final Map<String, QueryLanguage> LANGUAGES = new HashMap<String, QueryLanguage>();
 	static {
-		EXPECTATIONS.put("predicate", new Expectation(8, 2, 0, 2, 0));
+		Expectation predExpect = new Expectation(8, 2, 0, 2, 0);
+		EXPECTATIONS.put(PREDICATE, predExpect);
 		EXPECTATIONS.put("resource", new Expectation(4, 2, 2, 0, 2));
+		EXPECTATIONS.put("predicate-serql", predExpect);
+		LANGUAGES.put(PREDICATE, QueryLanguage.SPARQL);
+		LANGUAGES.put("resource", QueryLanguage.SPARQL);
+		LANGUAGES.put("predicate-serql", QueryLanguage.SERQL);
 	}
 
 	private final CustomGraphQueryInferencer inferencer;
@@ -83,12 +92,13 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 	 * @param delete
 	 *        deletion data to further test inferencer response (SPARQL/Update)
 	 */
-	public CustomGraphQueryInferencerTest(NotifyingSail store, String resourceFolder, String rule,
-			String match, String initial, String delete)
+	private CustomGraphQueryInferencerTest(NotifyingSail store, String resourceFolder, QueryLanguage language,
+			String rule, String match, String initial, String delete)
 		throws MalformedQueryException, UnsupportedQueryLanguageException, SailException, RepositoryException
 	{
-		super(store.getClass().getName() + "-custom-query-inferencing/" + resourceFolder);
-		inferencer = new CustomGraphQueryInferencer(store, QueryLanguage.SPARQL, rule, match);
+		super(store.getClass().getName() + "-custom-query-inferencing/"
+				+ (match.isEmpty() ? "implicit-matcher/" : "") + resourceFolder);
+		inferencer = new CustomGraphQueryInferencer(store, language, rule, match);
 		this.resourceFolder = resourceFolder;
 		this.initial = initial;
 		this.delete = delete;
@@ -115,7 +125,7 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		Collection<Value> watchSubjects = inferencer.getWatchSubjects();
 		assertThat(watchSubjects.size(), is(equalTo(testData.subjCount)));
 		ValueFactory factory = connection.getValueFactory();
-		if ("predicate".equals(resourceFolder)) {
+		if (resourceFolder.startsWith(PREDICATE)) {
 			assertThat(watchPredicates.contains(factory.createURI(BASE, "brotherOf")), is(equalTo(true)));
 			assertThat(watchPredicates.contains(factory.createURI(BASE, "parentOf")), is(equalTo(true)));
 		}
@@ -137,7 +147,9 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		assertThat(Iterations.asSet(connection.getStatements(null, null, null, true)).size(),
 				is(equalTo(testData.countAfterRemove)));
 
-		// Tidy up.
+		// Tidy up. Storage gets re-used for subsequent tests, so must clear here,
+		// in order to properly clear out any inferred statements.
+		connection.clear();
 		connection.close();
 		sail.shutDown();
 	}
@@ -153,7 +165,14 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 			String match = ResourceUtil.getString(testFolder + "/match.rq");
 			String initial = ResourceUtil.getString(testFolder + "/initial.ttl");
 			String delete = ResourceUtil.getString(testFolder + "/delete.ru");
-			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, rule, match, initial, delete));
+			QueryLanguage language = LANGUAGES.get(resourceFolder);
+			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, language, rule, match,
+					initial, delete));
+
+			// To test that the matcher query can be omitted (at least for most
+			// rule queries).
+			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, language, rule, "", initial,
+					delete));
 		}
 	}
 }

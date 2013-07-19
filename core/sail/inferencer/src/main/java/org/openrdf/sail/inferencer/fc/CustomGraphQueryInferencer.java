@@ -48,6 +48,7 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
+import org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerConfig;
 
 /**
  * A forward-chaining inferencer that infers new statements using a SPARQL or
@@ -151,7 +152,11 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 		throws MalformedQueryException, SailException
 	{
 		customQuery = QueryParserUtil.parseGraphQuery(language, queryText, null);
-		customMatcher = QueryParserUtil.parseGraphQuery(language, matcherText, null);
+		String matcherQuery = matcherText;
+		if (matcherText.trim().isEmpty()) {
+			matcherQuery = CustomGraphQueryInferencerConfig.buildMatcherQueryFromRuleQuery(language, queryText);
+		}
+		customMatcher = QueryParserUtil.parseGraphQuery(language, matcherQuery, null);
 		customQuery.getTupleExpr().visit(new QueryModelVisitorBase<SailException>() {
 
 			@Override
@@ -203,12 +208,12 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 			con.close();
 		}
 	}
-	
+
 	/**
 	 * Exposed for test purposes.
 	 * 
-	 * @return a computed collection of the statement subjects that, when
-	 *         added or removed, trigger an update of inferred statements
+	 * @return a computed collection of the statement subjects that, when added
+	 *         or removed, trigger an update of inferred statements
 	 */
 	public Collection<Value> getWatchSubjects() {
 		return Collections.unmodifiableCollection(watchSubjects);
@@ -217,8 +222,8 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 	/**
 	 * Exposed for test purposes.
 	 * 
-	 * @return a computed collection of the statement predicates that, when
-	 *         added or removed, trigger an update of inferred statements
+	 * @return a computed collection of the statement predicates that, when added
+	 *         or removed, trigger an update of inferred statements
 	 */
 	public Collection<Value> getWatchPredicates() {
 		return Collections.unmodifiableCollection(watchPredicates);
@@ -227,8 +232,8 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 	/**
 	 * Exposed for test purposes.
 	 * 
-	 * @return a computed collection of the statement objects that, when added
-	 *         or removed, trigger an update of inferred statements
+	 * @return a computed collection of the statement objects that, when added or
+	 *         removed, trigger an update of inferred statements
 	 */
 	public Collection<Value> getWatchObjects() {
 		return Collections.unmodifiableCollection(watchObjects);

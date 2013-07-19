@@ -89,8 +89,8 @@
 							<xsl:value-of select="$matcher-query.label" />
 						</th>
 						<td>
-							<textarea id="matcherQuery" name="Matcher query" rows="8"
-								cols="80" wrap="hard">
+							<textarea id="matcherQuery" name="Matcher query (optional)" rows="8" cols="80"
+								wrap="hard">
 							</textarea>
 						</td>
 					</tr>
