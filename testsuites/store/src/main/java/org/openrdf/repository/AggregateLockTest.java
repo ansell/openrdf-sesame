@@ -14,7 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CountDownLatch;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
@@ -35,7 +35,7 @@ import org.openrdf.sail.memory.MemoryStore;
 public class AggregateLockTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(10000);
+	public Timeout timeout = new Timeout(30000);
 
 	private static final String NS = "urn:test:aggregate#";
 
@@ -50,8 +50,8 @@ public class AggregateLockTest {
 	private Repository m_repository;
 
 	@Before
-	public void setup()
-		throws OpenRDFException
+	public void setUp()
+		throws Exception
 	{
 		m_repository = new SailRepository(new MemoryStore());
 		m_repository.initialize();
@@ -64,7 +64,7 @@ public class AggregateLockTest {
 			URI property = factory.createURI(NS, "property");
 
 			try {
-				for (int i = 1; i <= 10000; i++) {
+				for (int i = 1; i <= 5000; i++) {
 					URI thing = factory.createURI(NS, "Thing" + i);
 					connection.add(thing, RDF.TYPE, type);
 
@@ -83,15 +83,15 @@ public class AggregateLockTest {
 	}
 
 	@After
-	public void teardown()
-		throws OpenRDFException
+	public void tearDown()
+		throws Exception
 	{
 		m_repository.shutDown();
 	}
 
 	@Test
 	public void testAggregateClose()
-		throws OpenRDFException
+		throws Exception
 	{
 		RepositoryConnection connection = m_repository.getConnection();
 		try {
@@ -99,7 +99,9 @@ public class AggregateLockTest {
 			query.setMaxQueryTime(QUERY_TIME);
 
 			final TupleQueryResult[] result = new TupleQueryResult[1];
-			final AtomicBoolean stop = new AtomicBoolean(false);
+			final CountDownLatch startLatch = new CountDownLatch(1);
+			final CountDownLatch closeLatch = new CountDownLatch(1);
+			final CountDownLatch finishLatch = new CountDownLatch(1);
 			final long[] times = new long[] { -1, -1 };
 
 			Runnable queryRunner = new Runnable() {
@@ -107,10 +109,9 @@ public class AggregateLockTest {
 				@Override
 				public void run() {
 					try {
-						synchronized (result) {
-							result[0] = query.evaluate();
-							System.out.println(">>>>>>>> query evaluating");
-						}
+						startLatch.await();
+						result[0] = query.evaluate();
+						System.out.println(">>>>>>>> query evaluating");
 
 						while (result[0].hasNext()) {
 							System.out.println(">>>>>>>> query found result");
@@ -119,19 +120,12 @@ public class AggregateLockTest {
 
 						times[0] = System.currentTimeMillis();
 						System.out.println(">>>>>>>> query finished");
-
-						try {
-							result[0].close();
-						}
-						catch (QueryEvaluationException ex) {
-							ex.printStackTrace();
-						}
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
 					}
 					finally {
-						stop.set(true);
+						closeLatch.countDown();
 					}
 				}
 			};
@@ -140,39 +134,25 @@ public class AggregateLockTest {
 
 				@Override
 				public void run() {
-					System.out.println("<<<<<<<<< waiting for query");
-					boolean doClose = false;
-					while (true) {
-						if (stop.get()) {
-							break;
-						}
+					try {
+						System.out.println("<<<<<<<<< waiting for query");
+						closeLatch.await();
 
-						synchronized (result) {
-							if (result[0] != null) {
-								doClose = true;
-								break;
-							}
-						}
+						System.out.println("<<<<<<<<< closing query");
 
-						sleep(100);
+						result[0].close();
+						times[1] = System.currentTimeMillis();
+						System.out.println("<<<<<<<<< query closed");
+
 					}
-
-					if (doClose) {
-						sleep(200);
-						try {
-							System.out.println("<<<<<<<<< closing query");
-
-							result[0].close();
-							times[1] = System.currentTimeMillis();
-							System.out.println("<<<<<<<<< query closed");
-							stop.set(true);
-						}
-						catch (QueryEvaluationException ex) {
-							ex.printStackTrace();
-						}
+					catch (QueryEvaluationException ex) {
+						ex.printStackTrace();
 					}
-					else {
-						stop.set(true);
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					finally {
+						finishLatch.countDown();
 					}
 				}
 			};
@@ -181,27 +161,20 @@ public class AggregateLockTest {
 			run(closeRunner, "<CLOSER>");
 
 			long start = System.currentTimeMillis();
-			while (!stop.get()) {
-				sleep(100);
-			}
+			startLatch.countDown();
+
+			finishLatch.await();
 
 			System.out.printf("QUERY RUNNER: took = %s\n", times[0] - start);
 			System.out.printf("CLOSE RUNNER: took = %s\n", times[1] - start);
 
-			assertTrue("the query should have been closed within the query timeout", times[0] < QUERY_TIME);
+			assertTrue("the query should have been closed within the query timeout",
+					(times[0] - start) < QUERY_TIME);
 			assertEquals("the query runner should not have set an end time as it should have been cancelled",
 					-1, times[0]);
 		}
 		finally {
 			connection.close();
-		}
-	}
-
-	private static void sleep(long time) {
-		try {
-			Thread.sleep(time);
-		}
-		catch (InterruptedException ex) { /* .... */
 		}
 	}
 
