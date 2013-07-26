@@ -17,8 +17,8 @@
 package org.openrdf.query.algebra;
 
 /**
- * ValueOperator that verifies if the first of its arguments occurs in any of the
- * subsequent arguments.
+ * ValueOperator that verifies if the first of its arguments occurs in any of
+ * the subsequent arguments.
  * 
  * @since 2.7.4
  * @author Jeen Broekstra
@@ -32,4 +32,18 @@ public class ListMemberOperator extends NAryValueOperator {
 		visitor.meet(this);
 	}
 
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof ListMemberOperator && super.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ "ListMemberOperator".hashCode();
+	}
+
+	@Override
+	public ListMemberOperator clone() {
+		return (ListMemberOperator)super.clone();
+	}
 }
