@@ -1011,6 +1011,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof If) {
 			return evaluate((If)expr, bindings);
 		}
+		else if (expr instanceof ListMemberOperator) {
+			return evaluate((ListMemberOperator)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
