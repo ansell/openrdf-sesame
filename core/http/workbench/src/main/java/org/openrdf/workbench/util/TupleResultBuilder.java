@@ -68,7 +68,8 @@ public class TupleResultBuilder {
 	 * {@link #result(Object...)}.
 	 * 
 	 * @param variables
-	 * @return
+	 *        one or more variable names
+	 * @return this builder, for the convenience of chaining calls
 	 * @throws QueryResultHandlerException
 	 */
 	public TupleResultBuilder start(String... variables)
@@ -109,7 +110,9 @@ public class TupleResultBuilder {
 	 * {@link #start(String...)} must be called before using this method.
 	 * 
 	 * @param result
-	 * @return
+	 *        a single result, one value for each variable, in the same order as
+	 *        the variable names were provided
+	 * @return this builder, for the convenience of chaining calls
 	 * @throws QueryResultHandlerException
 	 */
 	public TupleResultBuilder result(Object... result)
@@ -129,8 +132,10 @@ public class TupleResultBuilder {
 	 * {@link #start(String...)} must be called before using this method.
 	 * 
 	 * @param name
+	 *        the variable name, from the set of provided variable names
 	 * @param result
-	 * @return
+	 *        the result value associated with the given variable name
+	 * @return this builder, for the convenience of chaining calls
 	 * @throws QueryResultHandlerException
 	 */
 	public TupleResultBuilder namedResult(String name, Object result)
