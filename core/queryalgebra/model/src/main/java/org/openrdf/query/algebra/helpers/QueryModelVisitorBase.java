@@ -99,6 +99,7 @@ import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 
@@ -548,6 +549,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 		throws X
 	{
 		meetNode(node);
+	}
+
+	public void meet(ListMemberOperator node)
+		throws X
+	{
+		meetNAryValueOperator(node);
 	}
 
 	public void meet(Var node)

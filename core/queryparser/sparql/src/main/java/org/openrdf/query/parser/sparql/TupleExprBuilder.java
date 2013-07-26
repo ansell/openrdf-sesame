@@ -87,6 +87,7 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
@@ -2500,7 +2501,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr result = null;
 		ValueExpr leftArg = (ValueExpr)data;
-
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 0) {
@@ -2508,30 +2508,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-
 			result = new Compare(leftArg, arg, CompareOp.EQ);
 		}
 		else {
-			// create a set of disjunctive comparisons to represent the IN
-			// operator: X IN (a, b, c) -> X = a || X = b || X = c.
-			Or or = new Or();
-			Or currentOr = or;
+			ListMemberOperator listMemberOperator = new ListMemberOperator();
+			listMemberOperator.addArgument(leftArg);
+
 			for (int i = 0; i < listItemCount - 1; i++) {
 				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
-
-				currentOr.setLeftArg(new Compare(leftArg, arg, CompareOp.EQ));
-
-				if (i == listItemCount - 2) { // second-to-last item
-					arg = (ValueExpr)node.jjtGetChild(i + 1).jjtAccept(this, null);
-					currentOr.setRightArg(new Compare(leftArg, arg, CompareOp.EQ));
-				}
-				else {
-					Or newOr = new Or();
-					currentOr.setRightArg(newOr);
-					currentOr = newOr;
-				}
+				listMemberOperator.addArgument(arg);
 			}
-			result = or;
+			result = listMemberOperator;
 		}
 
 		return result;

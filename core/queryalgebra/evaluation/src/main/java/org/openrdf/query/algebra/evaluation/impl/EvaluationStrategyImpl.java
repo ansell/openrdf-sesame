@@ -86,6 +86,7 @@ import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
+import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MultiProjection;
@@ -232,7 +233,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Var contextVar = alp.getContextVar();
 		final long minLength = alp.getMinLength();
 
-		return new PathIteration(this, scope, subjectVar, pathExpression, objVar, contextVar, minLength, bindings);
+		return new PathIteration(this, scope, subjectVar, pathExpression, objVar, contextVar, minLength,
+				bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(ZeroLengthPath zlp,
@@ -266,7 +268,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		return getZeroLengthPathIterator(bindings, subjectVar, objVar, contextVar, subj, obj);
 	}
-
 
 	protected ZeroLengthPathIteration getZeroLengthPathIterator(final BindingSet bindings,
 			final Var subjectVar, final Var objVar, final Var contextVar, Value subj, Value obj)
@@ -1698,6 +1699,25 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			iter.close();
 		}
 
+		return BooleanLiteralImpl.valueOf(result);
+	}
+
+	public Value evaluate(ListMemberOperator node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		List<ValueExpr> args = node.getArguments();
+		Value leftValue = evaluate(args.get(0), bindings);
+
+		boolean result = false;
+		for (int i = 1; i < args.size(); i++) {
+			ValueExpr arg = args.get(i);
+			Value rightValue = evaluate(arg, bindings);
+			result = leftValue == null && rightValue == null || leftValue != null
+					&& leftValue.equals(rightValue);
+			if (result) {
+				break;
+			}
+		}
 		return BooleanLiteralImpl.valueOf(result);
 	}
 
