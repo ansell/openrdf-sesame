@@ -21,6 +21,8 @@ import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSc
 import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.RULE_QUERY;
 
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
@@ -35,6 +37,7 @@ import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.sail.config.DelegatingSailImplConfigBase;
@@ -48,6 +51,14 @@ import org.openrdf.sail.config.SailImplConfig;
  * @author Dale Visser
  */
 public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplConfigBase {
+
+	public static final Pattern SPARQL_PATTERN, SERQL_PATTERN;
+
+	static {
+		int flags = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
+		SPARQL_PATTERN = Pattern.compile("^(.*construct\\s+)(\\{.*\\}\\s*)where.*$", flags);
+		SERQL_PATTERN = Pattern.compile("^\\s*construct(\\s+.*)from\\s+.*(\\s+using\\s+namespace.*)$", flags);
+	}
 
 	private QueryLanguage language;
 
@@ -77,8 +88,14 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 		return ruleQuery;
 	}
 
+	/**
+	 * Set the optional matcher query.
+	 * 
+	 * @param matcherQuery
+	 *        if null, internal value will be set to the empty string
+	 */
 	public void setMatcherQuery(String matcherQuery) {
-		this.matcherQuery = matcherQuery;
+		this.matcherQuery = null == matcherQuery ? "" : matcherQuery;
 	}
 
 	public String getMatcherQuery() {
@@ -136,16 +153,14 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 				throw new SailConfigException("Problem occured parsing supplied rule query.", e);
 			}
 		}
-		if (null == matcherQuery) {
-			throw new SailConfigException("No matcher query specified for " + getType() + " Sail.");
+		try {
+			if (matcherQuery.trim().isEmpty()) {
+				matcherQuery = buildMatcherQueryFromRuleQuery(language, ruleQuery);
+			}
+			QueryParserUtil.parseGraphQuery(language, matcherQuery, null);
 		}
-		else {
-			try {
-				QueryParserUtil.parseGraphQuery(language, matcherQuery, null);
-			}
-			catch (OpenRDFException e) {
-				throw new SailConfigException("Problem occured parsing supplied matcher query.", e);
-			}
+		catch (OpenRDFException e) {
+			throw new SailConfigException("Problem occured parsing matcher query: " + matcherQuery, e);
 		}
 	}
 
@@ -159,6 +174,28 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 		addQueryNode(graph, implNode, MATCHER_QUERY, matcherQuery);
 		return implNode;
 	}
+
+	public static String buildMatcherQueryFromRuleQuery(QueryLanguage language, String ruleQuery)
+			throws MalformedQueryException
+		{
+			String result = "";
+			if (QueryLanguage.SPARQL == language) {
+				Matcher matcher = SPARQL_PATTERN.matcher(ruleQuery);
+				if (matcher.matches()) {
+					result = matcher.group(1) + "WHERE" + matcher.group(2);
+				}
+			}
+			else if (QueryLanguage.SERQL == language) {
+				Matcher matcher = SERQL_PATTERN.matcher(ruleQuery);
+				if (matcher.matches()) {
+					result = "CONSTRUCT * FROM" + matcher.group(1) + matcher.group(2);
+				}
+			}
+			else {
+				throw new IllegalStateException("language");
+			}
+			return result;
+		}
 
 	private void addQueryNode(Graph graph, Resource implNode, URI predicate, String queryText) {
 		if (null != queryText) {

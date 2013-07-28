@@ -89,7 +89,7 @@ public class PagedQuery {
 			int queryOffset = -1;
 			final Matcher matcher = LIMIT_OR_OFFSET.matcher(query);
 			while (matcher.find()) {
-				final String clause = matcher.group();
+				final String clause = matcher.group().toLowerCase();
 				final int value = Integer.parseInt(SPLITTER.split(clause)[1]);
 				if (clause.startsWith("limit")) {
 					queryLimit = value;
