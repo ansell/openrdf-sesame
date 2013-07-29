@@ -1715,8 +1715,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		for (int i = 1; i < args.size(); i++) {
 			ValueExpr arg = args.get(i);
 			Value rightValue = evaluate(arg, bindings);
-			result = leftValue == null && rightValue == null || leftValue != null
-					&& leftValue.equals(rightValue);
+			result = (leftValue == null && rightValue == null)
+					|| (leftValue != null && leftValue.equals(rightValue));
 			if (result) {
 				break;
 			}
