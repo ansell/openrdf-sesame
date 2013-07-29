@@ -56,7 +56,7 @@ public class NamespaceController extends AbstractController {
 	public NamespaceController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET, "PUT", "DELETE" });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD, "PUT", "DELETE" });
 	}
 
 	@Override
@@ -67,13 +67,22 @@ public class NamespaceController extends AbstractController {
 		String[] pathInfo = pathInfoStr.substring(1).split("/");
 		String prefix = pathInfo[pathInfo.length - 1];
 
+		String reqMethod = request.getMethod();
+
+		if (METHOD_HEAD.equals(reqMethod)) {
+			logger.info("HEAD namespace for prefix {}", prefix);
+
+			Map<String, Object> model = new HashMap<String, Object>();
+			return new ModelAndView(SimpleResponseView.getInstance(), model);
+		}
+
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 
-		String reqMethod = request.getMethod();
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET namespace for prefix {}", prefix);
 			return getExportNamespaceResult(repositoryCon, prefix);
 		}
+
 		else if ("PUT".equals(reqMethod)) {
 			logger.info("PUT prefix {}", prefix);
 			return getUpdateNamespaceResult(repositoryCon, prefix, request);
