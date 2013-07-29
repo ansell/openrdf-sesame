@@ -23,29 +23,33 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import info.aduna.io.Java7FileUtil;
 
 public class DefaultIndexTest {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	@Test
 	public void testDefaultIndex()
 		throws Exception
 	{
-		Path dir = Java7FileUtil.createTempDir("nativerdf");
+		Path dir = tempDir.newFolder("defaultindextest").toPath();
 		TripleStore store = new TripleStore(dir, null);
 		store.close();
 		// check that the triple store used the default index
 		assertEquals("spoc,posc", findIndex(dir));
-		Java7FileUtil.deleteDir(dir);
 	}
 
 	@Test
 	public void testExistingIndex()
 		throws Exception
 	{
-		Path dir = Java7FileUtil.createTempDir("nativerdf");
+		Path dir = tempDir.newFolder("defaultindextest").toPath();
 		// set a non-default index
 		TripleStore store = new TripleStore(dir, "spoc,opsc");
 		store.close();
@@ -54,7 +58,6 @@ public class DefaultIndexTest {
 		store = new TripleStore(dir, null);
 		store.close();
 		assertEquals(before, findIndex(dir));
-		Java7FileUtil.deleteDir(dir);
 	}
 
 	private String findIndex(Path dir)

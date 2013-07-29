@@ -156,12 +156,7 @@ public class SPARQLServiceEvaluationTest {
 			localRepository.shutDown();
 		}
 		finally {
-			try {
-				server.stop();
-			}
-			finally {
-				Java7FileUtil.deleteDir(testDir);
-			}
+			server.stop();
 		}
 	}
 

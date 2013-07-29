@@ -25,9 +25,9 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-
-import info.aduna.io.Java7FileUtil;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * @author Arjohn Kampman
@@ -57,6 +57,9 @@ public class BTreeTest {
 	 * Variables *
 	 *-----------*/
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	private Path dir;
 
 	private BTree btree;
@@ -69,7 +72,7 @@ public class BTreeTest {
 	public void setUp()
 		throws Exception
 	{
-		dir = Java7FileUtil.createTempDir("btree");
+		dir = tempDir.newFolder("btree").toPath();
 		btree = new BTree(dir, "test", 85, 1);
 	}
 
@@ -78,7 +81,6 @@ public class BTreeTest {
 		throws Exception
 	{
 		btree.delete();
-		Java7FileUtil.deleteDir(dir);
 	}
 
 	@Test

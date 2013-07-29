@@ -16,20 +16,17 @@
  */
 package org.openrdf.sail.nativerdf.btree;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-
-import junit.framework.TestCase;
+import org.junit.rules.TemporaryFolder;
 
 import info.aduna.io.ByteArrayUtil;
-import info.aduna.io.FileUtil;
-import info.aduna.io.Java7FileUtil;
 
 /**
  * @author Arjohn Kampman
@@ -42,6 +39,9 @@ public class BTreeBenchmark {
 	 * Variables *
 	 *-----------*/
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	private Path dir;
 
 	private BTree btree;
@@ -54,7 +54,7 @@ public class BTreeBenchmark {
 	public void setUp()
 		throws Exception
 	{
-		dir = Java7FileUtil.createTempDir("btree");
+		dir = tempDir.newFolder("btree-benchmark").toPath();
 		btree = new BTree(dir, "test", 4096, 8);
 	}
 
@@ -63,7 +63,6 @@ public class BTreeBenchmark {
 		throws Exception
 	{
 		btree.delete();
-		Java7FileUtil.deleteDir(dir);
 	}
 
 	@Test

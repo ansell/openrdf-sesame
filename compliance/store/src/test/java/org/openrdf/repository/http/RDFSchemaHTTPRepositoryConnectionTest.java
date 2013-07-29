@@ -65,12 +65,7 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 			super.tearDown();
 		}
 		finally {
-			try {
-				server.stop();
-			}
-			finally {
-				Java7FileUtil.deleteDir(testDir);
-			}
+			server.stop();
 		}
 	}
 

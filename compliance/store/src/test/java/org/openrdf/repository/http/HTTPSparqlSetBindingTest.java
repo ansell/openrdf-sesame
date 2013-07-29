@@ -16,10 +16,7 @@
  */
 package org.openrdf.repository.http;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-
-import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.SparqlSetBindingTest;
@@ -59,12 +56,7 @@ public class HTTPSparqlSetBindingTest extends SparqlSetBindingTest {
 			super.tearDown();
 		}
 		finally {
-			try {
-				server.stop();
-			}
-			finally {
-				Java7FileUtil.deleteDir(testDir);
-			}
+			server.stop();
 		}
 	}
 

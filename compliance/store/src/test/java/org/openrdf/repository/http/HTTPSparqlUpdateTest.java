@@ -16,13 +16,10 @@
  */
 package org.openrdf.repository.http;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.Ignore;
 import org.junit.Test;
-
-import info.aduna.io.Java7FileUtil;
 
 import org.openrdf.query.parser.sparql.SPARQLUpdateTest;
 import org.openrdf.repository.Repository;
@@ -65,12 +62,7 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 			super.tearDown();
 		}
 		finally {
-			try {
-				server.stop();
-			}
-			finally {
-				Java7FileUtil.deleteDir(testDir);
-			}
+			server.stop();
 		}
 	}
 

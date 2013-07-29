@@ -73,12 +73,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 			super.tearDown();
 		}
 		finally {
-			try {
-				server.stop();
-			}
-			finally {
-				Java7FileUtil.deleteDir(testDir);
-			}
+			server.stop();
 		}
 	}
 
