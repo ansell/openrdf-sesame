@@ -72,6 +72,7 @@ import info.aduna.iteration.Iterations;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -104,6 +105,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class RepositoryConnectionTest {
@@ -230,7 +232,7 @@ public abstract class RepositoryConnectionTest {
 
 		Александър = vf.createLiteral("Александър");
 
-		unknownContext = new URIImpl("urn:unknownContext");
+		unknownContext = vf.createURI("urn:unknownContext");
 
 		context1 = vf.createURI("urn:x-local:graph1");
 		context2 = vf.createURI("urn:x-local:graph2");
@@ -252,8 +254,29 @@ public abstract class RepositoryConnectionTest {
 				}
 			}
 			finally {
-				if (testRepository != null) {
-					testRepository.shutDown();
+				try {
+					if (testRepository != null) {
+						testRepository.shutDown();
+					}
+				}
+				finally {
+					testCon = null;
+					testCon2 = null;
+					testRepository = null;
+					vf = null;
+					bob = null;
+					alice = null;
+					alexander = null;
+					name = null;
+					mbox = null;
+					nameAlice = null;
+					nameBob = null;
+					mboxAlice = null;
+					mboxBob = null;
+					Александър = null;
+					unknownContext = null;
+					context1 = null;
+					context2 = null;
 				}
 			}
 		}
@@ -281,16 +304,10 @@ public abstract class RepositoryConnectionTest {
 		assertTrue(NEWLY_ADDED, testCon.hasStatement(statement, false));
 		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false));
 
-		Repository tempRep = new SailRepository(new MemoryStore());
-		tempRep.initialize();
-		RepositoryConnection con = tempRep.getConnection();
-
-		con.add(testCon.getStatements(null, null, null, false));
-
+		Model tempModel = new LinkedHashModel();
+		testCon.exportStatements(null, null, null, false, new StatementCollector(tempModel));
 		assertTrue("Temp Repository should contain newly added statement",
-				con.hasStatement(bob, name, nameBob, false));
-		con.close();
-		tempRep.shutDown();
+				tempModel.contains(bob, name, nameBob));
 	}
 
 	@Test
