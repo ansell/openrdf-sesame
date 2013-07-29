@@ -182,7 +182,7 @@ public class TurtleParser extends RDFParserBase {
 			throw new IllegalArgumentException("base URI must not be 'null'");
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.startRDF();
 		}
 
@@ -210,7 +210,7 @@ public class TurtleParser extends RDFParserBase {
 			clear();
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -310,7 +310,7 @@ public class TurtleParser extends RDFParserBase {
 
 		setNamespace(prefixStr, namespaceStr);
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleNamespace(prefixStr, namespaceStr);
 		}
 	}
@@ -648,6 +648,12 @@ public class TurtleParser extends RDFParserBase {
 
 			c = read();
 			while (!TurtleUtil.isWhitespace(c)) {
+				// SES-1887 : Flexibility introduced for SES-1985 and SES-1821 needs
+				// to be counterbalanced against legitimate situations where Turtle
+				// language tags do not need whitespace following the language tag
+				if (c == '.' || c == ';' || c == ',' || c == ')' || c == ']' || c == -1) {
+					break;
+				}
 				if (verifyLanguageTag && !TurtleUtil.isLanguageChar(c)) {
 					reportError("Illegal language tag char: '" + (char)c + "'",
 							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
@@ -1071,7 +1077,7 @@ public class TurtleParser extends RDFParserBase {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj);
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
 	}
@@ -1155,7 +1161,7 @@ public class TurtleParser extends RDFParserBase {
 				unread(c);
 			}
 		}
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleComment(comment.toString());
 		}
 		reportLocation();
