@@ -1064,19 +1064,36 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern(parentGP);
 
-		super.visit(node, null);
+//		super.visit(node, null);
 
+		boolean optionalPatternInGroup = false;
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			if (optionalPatternInGroup) {
+				// building the LeftJoin and resetting the graphPattern.
+				TupleExpr te = graphPattern.buildTupleExpr();
+				graphPattern = new GraphPattern(parentGP);
+				graphPattern.addRequiredTE(te);
+				optionalPatternInGroup = false;
+			}
+			
+			Node childNode = node.jjtGetChild(i);
+			data = childNode.jjtAccept(this, data);
+			
+			if (childNode instanceof ASTOptionalGraphPattern) {
+				optionalPatternInGroup = true;
+			}
+		}
+		
 		// Filters are scoped to the graph pattern group and do not affect
 		// bindings external to the group
 		TupleExpr te = graphPattern.buildTupleExpr();
 
-		// TODO not sure this is the cleanest way of handling this.
-		if (data != null && data instanceof Exists) {
-			((Exists)data).setSubQuery(te);
-		}
-		else {
+//		if (data != null && data instanceof Exists) {
+//			((Exists)data).setSubQuery(te);
+//		}
+//		else {
 			parentGP.addRequiredTE(te);
-		}
+//		}
 
 		graphPattern = parentGP;
 
@@ -2453,9 +2470,18 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Exists visit(ASTExistsFunc node, Object data)
 		throws VisitorException
 	{
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern(parentGP);
+		
 		Exists e = new Exists();
-
 		node.jjtGetChild(0).jjtAccept(this, e);
+		
+		TupleExpr te = graphPattern.buildTupleExpr();
+		
+		e.setSubQuery(te);
+		
+		graphPattern = parentGP;
+		
 		return e;
 	}
 
@@ -2463,8 +2489,19 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Not visit(ASTNotExistsFunc node, Object data)
 		throws VisitorException
 	{
+		
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern(parentGP);
+		
 		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
+		
+		TupleExpr te = graphPattern.buildTupleExpr();
+		
+		e.setSubQuery(te);
+		
+		graphPattern = parentGP;
+		
 		return new Not(e);
 	}
 
