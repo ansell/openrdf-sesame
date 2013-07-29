@@ -82,7 +82,7 @@ public abstract class ComplexSPARQLQueryTest {
 	private URI alice;
 
 	private URI mary;
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -102,7 +102,7 @@ public abstract class ComplexSPARQLQueryTest {
 		bob = f.createURI(EX_NS, "bob");
 		alice = f.createURI(EX_NS, "alice");
 		mary = f.createURI(EX_NS, "mary");
-		
+
 		logger.debug("test setup complete.");
 	}
 
@@ -468,6 +468,92 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
+	}
+
+	@Test
+	public void testSES1898LeftJoinSemantics1()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1898.trig");
+		StringBuilder query = new StringBuilder();
+		query.append("  PREFIX : <http://example.org/> ");
+		query.append("  SELECT * WHERE { ");
+		query.append("    ?s :p1 ?v1 . ");
+		query.append("    OPTIONAL {?s :p2 ?v2 } .");
+		query.append("     ?s :p3 ?v2 . ");
+		query.append("  } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				result.next();
+				count++;
+			}
+			assertEquals(0, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testSES1898LeftJoinSemantics2()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1898.trig");
+		StringBuilder query = new StringBuilder();
+		query.append("  PREFIX : <http://example.org/> ");
+		query.append("  SELECT * WHERE { ");
+		query.append("    ?s :p1 ?v1 . ");
+		query.append("    ?s :p3 ?v2 . ");
+		query.append("    OPTIONAL {?s :p2 ?v2 } .");
+		query.append("  } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			int count = 0;
+			while (result.hasNext()) {
+				result.next();
+				count++;
+			}
+			assertEquals(1, count);
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
@@ -1080,14 +1166,14 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(result);
 
 			System.out.println("--- testArbitraryLengthPathWithBinding5 ---");
-			
+
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
-				
+
 				System.out.println(bs);
-				
+
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
@@ -1151,14 +1237,14 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(result);
 
 			System.out.println("--- testArbitraryLengthPathWithBinding6 ---");
-			
+
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
-				
+
 				System.out.println(bs);
-				
+
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
@@ -1225,14 +1311,14 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(result);
 
 			System.out.println("--- testArbitraryLengthPathWithBinding7 ---");
-			
+
 			int count = 0;
 			while (result.hasNext()) {
 				count++;
 				BindingSet bs = result.next();
 
 				System.out.println(bs);
-				
+
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
@@ -1305,7 +1391,7 @@ public abstract class ComplexSPARQLQueryTest {
 				BindingSet bs = result.next();
 
 				System.out.println(bs);
-				
+
 				assertTrue(bs.hasBinding("child"));
 				assertTrue(bs.hasBinding("parent"));
 			}
