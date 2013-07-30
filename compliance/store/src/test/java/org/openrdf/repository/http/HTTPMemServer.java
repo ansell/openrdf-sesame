@@ -100,11 +100,10 @@ public class HTTPMemServer {
 			try (ServerSocket ss = new ServerSocket(0)) {
 				ss.setReuseAddress(true);
 				result = ss.getLocalPort();
-				if(usedPorts.contains(result)) {
+				if (usedPorts.contains(result)) {
 					result = -1;
 				}
-				else
-				{
+				else {
 					usedPorts.add(result);
 					try (DatagramSocket ds = new DatagramSocket(result);) {
 						ds.setReuseAddress(true);

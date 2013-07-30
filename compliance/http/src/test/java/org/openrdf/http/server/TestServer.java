@@ -20,6 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -57,6 +61,8 @@ public class TestServer {
 
 	private static final String OPENRDF_CONTEXT = "/openrdf";
 
+	private static final Set<Integer> usedPorts = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+
 	private final int port;
 
 	private final String serverUrl;
@@ -67,18 +73,14 @@ public class TestServer {
 
 	private WebAppContext webapp;
 
-	private File dataDir;
-
-	public TestServer(File dataDir) {
+	public TestServer(Path testDir) {
 		System.clearProperty("DEBUG");
-
-		this.dataDir = dataDir;
 
 		port = getFreePort();
 		serverUrl = "http://" + HOST + ":" + port + OPENRDF_CONTEXT;
 		repositoryUrl = Protocol.getRepositoryLocation(serverUrl, TEST_REPO_ID);
 		jetty = new Server();
-		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		jetty.setAttribute("info.aduna.platform.appdata.basedir", testDir.toAbsolutePath().toString());
 
 		ServerConnector conn = new ServerConnector(jetty);
 		conn.setHost(HOST);
@@ -86,54 +88,33 @@ public class TestServer {
 		jetty.addConnector(conn);
 
 		webapp = new WebAppContext();
-		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		System.out.println("setting webapp data dir attribute to: " + dataDir.getAbsolutePath());
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame.war");
 		jetty.setHandler(webapp);
-		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-
+		webapp.setAttribute("info.aduna.platform.appdata.basedir", testDir.toAbsolutePath().toString());
 	}
 
-	/**
-	 * Checks to see if a specific port is available.
-	 * 
-	 * @param port
-	 *        the port to check for availability
-	 */
-	private static int getFreePort() {
+	private static synchronized int getFreePort() {
 		int result = -1;
-		ServerSocket ss = null;
-		DatagramSocket ds = null;
-		try {
-			ss = new ServerSocket(0);
-			ss.setReuseAddress(true);
-			result = ss.getLocalPort();
-			try {
-				ds = new DatagramSocket(result);
-				ds.setReuseAddress(true);
-			}
-			finally {
-				if (ds != null) {
-					ds.close();
+		while (result <= 0) {
+			try (ServerSocket ss = new ServerSocket(0)) {
+				ss.setReuseAddress(true);
+				result = ss.getLocalPort();
+				if (usedPorts.contains(result)) {
+					result = -1;
+				}
+				else {
+					usedPorts.add(result);
+					try (DatagramSocket ds = new DatagramSocket(result);) {
+						ds.setReuseAddress(true);
+					}
 				}
 			}
-		}
-		catch (IOException e) {
-		}
-		finally {
-			if (ss != null) {
-				try {
-					ss.close();
-				}
-				catch (IOException e) {
-					/* should not be thrown */
-				}
+			catch (IOException e) {
+				result = -1;
 			}
 		}
-
 		return result;
 	}
 
@@ -143,10 +124,9 @@ public class TestServer {
 		// System.setProperty("info.aduna.platform.appdata.basedir",
 		// dataDir.getAbsolutePath());
 
+		// System.out.println("about to start server at: " + serverUrl);
 		jetty.start();
-		System.out.println("server started at: " + serverUrl);
-		jetty.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
-		webapp.setAttribute("info.aduna.platform.appdata.basedir", dataDir.getAbsolutePath());
+		// System.out.println("server started at: " + serverUrl);
 
 		createTestRepositories();
 	}
@@ -154,17 +134,39 @@ public class TestServer {
 	public void stop()
 		throws Exception
 	{
-		Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
-				SystemRepository.ID));
-		RepositoryConnection con = systemRepo.getConnection();
 		try {
-			con.clear();
+			Repository systemRepo = new HTTPRepository(Protocol.getRepositoryLocation(serverUrl,
+					SystemRepository.ID));
+			if (systemRepo != null) {
+				try (RepositoryConnection con = systemRepo.getConnection();) {
+					con.clear();
+				}
+				catch (RepositoryException e) {
+				}
+				finally {
+					systemRepo.shutDown();
+				}
+			}
 		}
 		finally {
-			con.close();
+			try {
+				webapp.stop();
+			}
+			finally {
+				try {
+					webapp.destroy();
+				}
+				finally {
+					try {
+						jetty.stop();
+					}
+					finally {
+						jetty.destroy();
+					}
+				}
+			}
 		}
-
-		jetty.stop();
+		// System.out.println("server stopped at: " + serverUrl);
 		System.clearProperty("org.mortbay.log.class");
 	}
 

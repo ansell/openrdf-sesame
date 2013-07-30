@@ -24,14 +24,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Path;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import org.junit.Test;
 
 import info.aduna.io.IOUtil;
 
@@ -54,10 +53,19 @@ public class ProtocolTest {
 	public void setUp()
 		throws Exception
 	{
-		File testFolder = tempDir.newFolder("sesame-protocol-test-datadir");
-		testFolder.mkdirs();
+		Path testFolder = tempDir.newFolder("sesame-protocol-test-datadir").toPath();
 		server = new TestServer(testFolder);
-		server.start();
+		try {
+			server.start();
+		}
+		catch (Exception e) {
+			try {
+				server.stop();
+			}
+			catch (Exception re) {
+			}
+			throw e;
+		}
 	}
 
 	@After
@@ -285,7 +293,7 @@ public class ProtocolTest {
 	@Test
 	public void testQueryResponse_HEAD() throws Exception {
 		String query = "DESCRIBE <foo:bar>";
-		String location = TestServer.REPOSITORY_URL;
+		String location = server.getRepositoryUrl();
 		location += "?query=" + URLEncoder.encode(query, "UTF-8");
 
 		URL url = new URL(location);
@@ -328,7 +336,7 @@ public class ProtocolTest {
 	@Test
 	public void testUpdateResponse_HEAD() throws Exception {
 		String query = "INSERT DATA { <foo:foo> <foo:bar> \"foo\". } ";
-		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
+		String location = Protocol.getStatementsLocation(server.getRepositoryUrl());
 		location += "?update=" + URLEncoder.encode(query, "UTF-8");
 
 		URL url = new URL(location);
