@@ -282,6 +282,88 @@ public class ProtocolTest {
 		}
 	}
 
+	@Test
+	public void testQueryResponse_HEAD() throws Exception {
+		String query = "DESCRIBE <foo:bar>";
+		String location = TestServer.REPOSITORY_URL;
+		location += "?query=" + URLEncoder.encode(query, "UTF-8");
+
+		URL url = new URL(location);
+
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		conn.setRequestMethod("HEAD");
+		
+		// Request RDF/XML formatted results:
+		conn.setRequestProperty("Accept", RDFFormat.RDFXML.getDefaultMIMEType());
+
+		conn.connect();
+
+		try {
+			int responseCode = conn.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				String contentType = conn.getHeaderField("Content-Type");
+				assertNotNull(contentType);
+				
+				// snip off optional charset declaration
+				int charPos = contentType.indexOf(";");
+				if (charPos > -1) {
+					contentType = contentType.substring(0, charPos);
+				}
+				
+				assertEquals(RDFFormat.RDFXML.getDefaultMIMEType(), contentType);
+				assertEquals(0, conn.getContentLength());
+			}
+			else {
+				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
+						+ responseCode + ")";
+				fail(response);
+				throw new RuntimeException(response);
+			}
+		}
+		finally {
+			conn.disconnect();
+		}
+	}
+	
+	@Test
+	public void testUpdateResponse_HEAD() throws Exception {
+		String query = "INSERT DATA { <foo:foo> <foo:bar> \"foo\". } ";
+		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
+		location += "?update=" + URLEncoder.encode(query, "UTF-8");
+
+		URL url = new URL(location);
+
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		conn.setRequestMethod("HEAD");
+		
+		conn.connect();
+
+		try {
+			int responseCode = conn.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				String contentType = conn.getHeaderField("Content-Type");
+				assertNotNull(contentType);
+				
+				// snip off optional charset declaration
+				int charPos = contentType.indexOf(";");
+				if (charPos > -1) {
+					contentType = contentType.substring(0, charPos);
+				}
+				
+				assertEquals(0, conn.getContentLength());
+			}
+			else {
+				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("
+						+ responseCode + ")";
+				fail(response);
+				throw new RuntimeException(response);
+			}
+		}
+		finally {
+			conn.disconnect();
+		}
+	}
+	
 	private void putFile(String location, String file)
 		throws Exception
 	{

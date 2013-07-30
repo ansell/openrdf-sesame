@@ -63,7 +63,7 @@ public class NamespacesController extends AbstractController {
 	public NamespacesController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET, "DELETE" });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD, "DELETE" });
 	}
 
 	@Override
@@ -73,6 +73,10 @@ public class NamespacesController extends AbstractController {
 		String reqMethod = request.getMethod();
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET namespace list");
+			return getExportNamespacesResult(request, response);
+		}
+		if (METHOD_HEAD.equals(reqMethod)) {
+			logger.info("HEAD namespace list");
 			return getExportNamespacesResult(request, response);
 		}
 		else if ("DELETE".equals(reqMethod)) {
@@ -87,38 +91,43 @@ public class NamespacesController extends AbstractController {
 	private ModelAndView getExportNamespacesResult(HttpServletRequest request, HttpServletResponse response)
 		throws ClientHTTPException, ServerHTTPException
 	{
-		List<String> columnNames = Arrays.asList("prefix", "namespace");
-		List<BindingSet> namespaces = new ArrayList<BindingSet>();
+		final boolean headersOnly = METHOD_HEAD.equals(request.getMethod());
 
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-		try {
-			CloseableIteration<? extends Namespace, RepositoryException> iter = repositoryCon.getNamespaces();
+		Map<String, Object> model = new HashMap<String, Object>();
+		if (!headersOnly) {
+			List<String> columnNames = Arrays.asList("prefix", "namespace");
+			List<BindingSet> namespaces = new ArrayList<BindingSet>();
 
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 			try {
-				while (iter.hasNext()) {
-					Namespace ns = iter.next();
+				CloseableIteration<? extends Namespace, RepositoryException> iter = repositoryCon.getNamespaces();
 
-					Literal prefix = new LiteralImpl(ns.getPrefix());
-					Literal namespace = new LiteralImpl(ns.getName());
+				try {
+					while (iter.hasNext()) {
+						Namespace ns = iter.next();
 
-					BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
-					namespaces.add(bindingSet);
+						Literal prefix = new LiteralImpl(ns.getPrefix());
+						Literal namespace = new LiteralImpl(ns.getName());
+
+						BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
+						namespaces.add(bindingSet);
+					}
+				}
+				finally {
+					iter.close();
 				}
 			}
-			finally {
-				iter.close();
+			catch (RepositoryException e) {
+				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 			}
-		}
-		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+			model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, namespaces));
 		}
 
 		TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(request, response,
 				TupleQueryResultWriterRegistry.getInstance());
 
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, namespaces));
 		model.put(QueryResultView.FILENAME_HINT_KEY, "namespaces");
+		model.put(QueryResultView.HEADERS_ONLY, headersOnly);
 		model.put(QueryResultView.FACTORY_KEY, factory);
 
 		return new ModelAndView(TupleQueryResultView.getInstance(), model);

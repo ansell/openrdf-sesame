@@ -93,7 +93,7 @@ public class StatementsController extends AbstractController {
 	public StatementsController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET, METHOD_POST, "PUT", "DELETE" });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_POST, METHOD_HEAD, "PUT", "DELETE" });
 	}
 
 	@Override
@@ -109,6 +109,10 @@ public class StatementsController extends AbstractController {
 
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET statements");
+			result = getExportStatementsResult(repository, repositoryCon, request, response);
+		}
+		else if (METHOD_HEAD.equals(reqMethod)) {
+			logger.info("HEAD statements");
 			result = getExportStatementsResult(repository, repositoryCon, request, response);
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
@@ -332,7 +336,7 @@ public class StatementsController extends AbstractController {
 		model.put(ExportStatementsView.CONTEXTS_KEY, contexts);
 		model.put(ExportStatementsView.USE_INFERENCING_KEY, Boolean.valueOf(useInferencing));
 		model.put(ExportStatementsView.FACTORY_KEY, rdfWriterFactory);
-
+		model.put(ExportStatementsView.HEADERS_ONLY, METHOD_HEAD.equals(request.getMethod()));
 		return new ModelAndView(ExportStatementsView.getInstance(), model);
 	}
 

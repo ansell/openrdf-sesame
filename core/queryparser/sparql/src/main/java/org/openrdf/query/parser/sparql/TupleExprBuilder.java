@@ -87,6 +87,7 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
@@ -1064,19 +1065,29 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		GraphPattern parentGP = graphPattern;
 		graphPattern = new GraphPattern(parentGP);
 
-		super.visit(node, null);
+		boolean optionalPatternInGroup = false;
+		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+			if (optionalPatternInGroup) {
+				// building the LeftJoin and resetting the graphPattern.
+				TupleExpr te = graphPattern.buildTupleExpr();
+				graphPattern = new GraphPattern(parentGP);
+				graphPattern.addRequiredTE(te);
+				optionalPatternInGroup = false;
+			}
+
+			Node childNode = node.jjtGetChild(i);
+			data = childNode.jjtAccept(this, data);
+
+			if (childNode instanceof ASTOptionalGraphPattern) {
+				optionalPatternInGroup = true;
+			}
+		}
 
 		// Filters are scoped to the graph pattern group and do not affect
 		// bindings external to the group
 		TupleExpr te = graphPattern.buildTupleExpr();
 
-		// TODO not sure this is the cleanest way of handling this.
-		if (data != null && data instanceof Exists) {
-			((Exists)data).setSubQuery(te);
-		}
-		else {
-			parentGP.addRequiredTE(te);
-		}
+		parentGP.addRequiredTE(te);
 
 		graphPattern = parentGP;
 
@@ -2453,9 +2464,18 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Exists visit(ASTExistsFunc node, Object data)
 		throws VisitorException
 	{
-		Exists e = new Exists();
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern(parentGP);
 
+		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
+
+		TupleExpr te = graphPattern.buildTupleExpr();
+
+		e.setSubQuery(te);
+
+		graphPattern = parentGP;
+
 		return e;
 	}
 
@@ -2463,8 +2483,19 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Not visit(ASTNotExistsFunc node, Object data)
 		throws VisitorException
 	{
+
+		GraphPattern parentGP = graphPattern;
+		graphPattern = new GraphPattern(parentGP);
+
 		Exists e = new Exists();
 		node.jjtGetChild(0).jjtAccept(this, e);
+
+		TupleExpr te = graphPattern.buildTupleExpr();
+
+		e.setSubQuery(te);
+
+		graphPattern = parentGP;
+
 		return new Not(e);
 	}
 
@@ -2500,7 +2531,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		ValueExpr result = null;
 		ValueExpr leftArg = (ValueExpr)data;
-
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 0) {
@@ -2508,30 +2538,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
-
 			result = new Compare(leftArg, arg, CompareOp.EQ);
 		}
 		else {
-			// create a set of disjunctive comparisons to represent the IN
-			// operator: X IN (a, b, c) -> X = a || X = b || X = c.
-			Or or = new Or();
-			Or currentOr = or;
+			ListMemberOperator listMemberOperator = new ListMemberOperator();
+			listMemberOperator.addArgument(leftArg);
+
 			for (int i = 0; i < listItemCount - 1; i++) {
 				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
-
-				currentOr.setLeftArg(new Compare(leftArg, arg, CompareOp.EQ));
-
-				if (i == listItemCount - 2) { // second-to-last item
-					arg = (ValueExpr)node.jjtGetChild(i + 1).jjtAccept(this, null);
-					currentOr.setRightArg(new Compare(leftArg, arg, CompareOp.EQ));
-				}
-				else {
-					Or newOr = new Or();
-					currentOr.setRightArg(newOr);
-					currentOr = newOr;
-				}
+				listMemberOperator.addArgument(arg);
 			}
-			result = or;
+			result = listMemberOperator;
 		}
 
 		return result;

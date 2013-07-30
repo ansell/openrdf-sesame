@@ -63,22 +63,26 @@ public class BooleanQueryResultView extends QueryResultView {
 		setContentType(response, brFormat);
 		setContentDisposition(model, response, brFormat);
 
-		OutputStream out = response.getOutputStream();
-		try {
-			BooleanQueryResultWriter qrWriter = brWriterFactory.getWriter(out);
-			boolean value = (Boolean)model.get(QUERY_RESULT_KEY);
-			qrWriter.handleBoolean(value);
-		}
-		catch (QueryResultHandlerException e) {
-			if (e.getCause() != null && e.getCause() instanceof IOException) {
-				throw (IOException)e.getCause();
+		boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
+
+		if (!headersOnly) {
+			OutputStream out = response.getOutputStream();
+			try {
+				BooleanQueryResultWriter qrWriter = brWriterFactory.getWriter(out);
+				boolean value = (Boolean)model.get(QUERY_RESULT_KEY);
+				qrWriter.handleBoolean(value);
 			}
-			else {
-				throw new IOException(e);
+			catch (QueryResultHandlerException e) {
+				if (e.getCause() != null && e.getCause() instanceof IOException) {
+					throw (IOException)e.getCause();
+				}
+				else {
+					throw new IOException(e);
+				}
 			}
-		}
-		finally {
-			out.close();
+			finally {
+				out.close();
+			}
 		}
 		logEndOfRequest(request);
 	}

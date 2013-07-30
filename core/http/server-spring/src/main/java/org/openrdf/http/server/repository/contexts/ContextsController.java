@@ -55,42 +55,44 @@ public class ContextsController extends AbstractController {
 	public ContextsController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD });
 	}
 
 	@Override
 	protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-
-		List<String> columnNames = Arrays.asList("contextID");
-		List<BindingSet> contexts = new ArrayList<BindingSet>();
-		try {
-			CloseableIteration<? extends Resource, RepositoryException> contextIter = repositoryCon.getContextIDs();
-
-			try {
-				while (contextIter.hasNext()) {
-					BindingSet bindingSet = new ListBindingSet(columnNames, contextIter.next());
-					contexts.add(bindingSet);
-				}
-			}
-			finally {
-				contextIter.close();
-			}
-		}
-		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
-		}
-
+		Map<String, Object> model = new HashMap<String, Object>();
 		TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(request, response,
 				TupleQueryResultWriterRegistry.getInstance());
 
-		Map<String, Object> model = new HashMap<String, Object>();
-		model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, contexts));
+		if (METHOD_GET.equals(request.getMethod())) {
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+
+			List<String> columnNames = Arrays.asList("contextID");
+			List<BindingSet> contexts = new ArrayList<BindingSet>();
+			try {
+				CloseableIteration<? extends Resource, RepositoryException> contextIter = repositoryCon.getContextIDs();
+
+				try {
+					while (contextIter.hasNext()) {
+						BindingSet bindingSet = new ListBindingSet(columnNames, contextIter.next());
+						contexts.add(bindingSet);
+					}
+				}
+				finally {
+					contextIter.close();
+				}
+			}
+			catch (RepositoryException e) {
+				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+			}
+			model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, contexts));
+		}
+
 		model.put(QueryResultView.FILENAME_HINT_KEY, "contexts");
 		model.put(QueryResultView.FACTORY_KEY, factory);
-
+		model.put(QueryResultView.HEADERS_ONLY, METHOD_HEAD.equals(request.getMethod()));
 		return new ModelAndView(TupleQueryResultView.getInstance(), model);
 	}
 }

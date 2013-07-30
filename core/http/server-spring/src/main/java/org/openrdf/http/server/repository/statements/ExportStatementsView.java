@@ -59,6 +59,8 @@ public class ExportStatementsView implements View {
 
 	public static final String FACTORY_KEY = "factory";
 
+	public static final String HEADERS_ONLY = "headersOnly";
+
 	private static final ExportStatementsView INSTANCE = new ExportStatementsView();
 
 	public static ExportStatementsView getInstance() {
@@ -84,6 +86,8 @@ public class ExportStatementsView implements View {
 		Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
 		boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);
 
+		boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
+
 		RDFWriterFactory rdfWriterFactory = (RDFWriterFactory)model.get(FACTORY_KEY);
 
 		RDFFormat rdfFormat = rdfWriterFactory.getRDFFormat();
@@ -107,8 +111,9 @@ public class ExportStatementsView implements View {
 			}
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
-			repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
-
+			if (!headersOnly) {
+				repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+			}
 			out.close();
 		}
 		catch (RDFHandlerException e) {
