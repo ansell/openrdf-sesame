@@ -18,6 +18,7 @@ package org.openrdf.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.TransactionIsolation;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -149,7 +150,8 @@ public interface SailConnection {
 
 	/**
 	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to close the transaction.
+	 * be called to close the transaction. The transaction will use the default
+	 * {@link TransactionIsolation} level for the SAIL.
 	 * 
 	 * @since 2.7.0
 	 * @throws SailException
@@ -157,6 +159,22 @@ public interface SailConnection {
 	 *         transaction is already active on this connection.
 	 */
 	public void begin()
+		throws SailException;
+
+	/**
+	 * Begins a transaction with the specified {@link TransactionIsolation}
+	 * level, requiring {@link #commit()} or {@link #rollback()} to be called to
+	 * close the transaction.
+	 * 
+	 * @param level
+	 *        the transaction isolation level on which this transaction operates.
+	 * @since 2.7.4
+	 * @throws SailException
+	 *         If the connection could not start a transaction, if the supplied
+	 *         transaction isolation level is not supported, or if a transaction
+	 *         is already active on this connection.
+	 */
+	public void begin(TransactionIsolation level)
 		throws SailException;
 
 	/**

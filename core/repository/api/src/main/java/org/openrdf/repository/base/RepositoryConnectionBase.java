@@ -29,6 +29,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.TransactionIsolation;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -52,7 +53,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
  * Abstract class implementing most 'convenience' methods in the
@@ -100,6 +100,13 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		return getRepository().getValueFactory();
 	}
 
+	@Override
+	public void begin(TransactionIsolation level) throws RepositoryException {
+		// As a default behavior, we simply ignore the specified level and start a transaction "as usual". Individual
+		// Repository implementations are expected to override this behavior when appropriate.
+		begin();
+	}
+	
 	public boolean isOpen()
 		throws RepositoryException
 	{

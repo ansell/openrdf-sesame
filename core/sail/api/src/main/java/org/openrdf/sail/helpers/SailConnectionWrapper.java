@@ -18,6 +18,7 @@ package org.openrdf.sail.helpers;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.TransactionIsolation;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -156,8 +157,7 @@ public class SailConnectionWrapper implements SailConnection {
 		wrappedCon.addStatement(modify, subj, pred, obj, contexts);
 	}
 
-	public void removeStatement(UpdateContext modify, Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public void removeStatement(UpdateContext modify, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		wrappedCon.removeStatement(modify, subj, pred, obj, contexts);
@@ -209,6 +209,12 @@ public class SailConnectionWrapper implements SailConnection {
 		throws SailException
 	{
 		wrappedCon.begin();
+	}
+
+	public void begin(TransactionIsolation level)
+		throws SailException
+	{
+		wrappedCon.begin(level);
 	}
 
 	public void prepare()

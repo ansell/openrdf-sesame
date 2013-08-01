@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.TransactionIsolation;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -112,12 +113,14 @@ public abstract class SailConnectionBase implements SailConnection {
 	private final Throwable creatorTrace;
 
 	/**
-	 * Statements that are currently being removed, but not yet realized, by an active operation.
+	 * Statements that are currently being removed, but not yet realized, by an
+	 * active operation.
 	 */
 	private final Map<UpdateContext, Model> removed = new HashMap<UpdateContext, Model>();
 
 	/**
-	 * Statements that are currently being added, but not yet realized, by an active operation.
+	 * Statements that are currently being added, but not yet realized, by an
+	 * active operation.
 	 */
 	private final Map<UpdateContext, Model> added = new HashMap<UpdateContext, Model>();
 
@@ -125,6 +128,10 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * Used to indicate a removed statement from all contexts.
 	 */
 	private final BNode wildContext = ValueFactoryImpl.getInstance().createBNode();
+
+	private TransactionIsolation isolationLevel;
+
+	private TransactionIsolation transactionIsolationLevel;
 
 	/*--------------*
 	 * Constructors *
@@ -174,6 +181,12 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void begin()
 		throws SailException
 	{
+		begin(this.sailBase.getDefaultIsolationLevel());
+	}
+
+	public void begin(TransactionIsolation level)
+		throws SailException
+	{
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -183,6 +196,7 @@ public abstract class SailConnectionBase implements SailConnection {
 				if (isActive()) {
 					throw new SailException("a transaction is already active on this connection.");
 				}
+				setTransactionIsolationLevel(level);
 				startTransactionInternal();
 				txnActive = true;
 			}
@@ -193,6 +207,21 @@ public abstract class SailConnectionBase implements SailConnection {
 		finally {
 			connectionLock.readLock().unlock();
 		}
+
+	}
+
+	private void setTransactionIsolationLevel(TransactionIsolation level) {
+		this.transactionIsolationLevel = level != null ? level : TransactionIsolation.READ_COMMITTED;
+	}
+
+	/**
+	 * Retrieve the currently specified {@link TransactionIsolation} level.
+	 * 
+	 * @return the current {@link TransactionIsolation} level. If no transaction
+	 *         is active, this may be <code>null</code>.
+	 */
+	protected TransactionIsolation getTransactionIsolation() {
+		return this.transactionIsolationLevel;
 	}
 
 	public boolean isActive()
@@ -494,7 +523,8 @@ public abstract class SailConnectionBase implements SailConnection {
 		synchronized (added) {
 			if (added.containsKey(op)) {
 				added.get(op).add(subj, pred, obj, contexts);
-			} else {
+			}
+			else {
 				addStatement(subj, pred, obj, contexts);
 			}
 		}
@@ -504,17 +534,17 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * The default implementation buffers removed statements until the update
 	 * operation is complete.
 	 */
-	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		synchronized (removed) {
 			if (removed.containsKey(op)) {
 				if (contexts != null && contexts.length == 0) {
-					contexts = new Resource[]{ wildContext };
+					contexts = new Resource[] { wildContext };
 				}
 				removed.get(op).add(subj, pred, obj, contexts);
-			} else {
+			}
+			else {
 				removeStatements(subj, pred, obj, contexts);
 			}
 		}
@@ -533,7 +563,8 @@ public abstract class SailConnectionBase implements SailConnection {
 				Resource ctx = st.getContext();
 				if (wildContext.equals(ctx)) {
 					removeStatements(st.getSubject(), st.getPredicate(), st.getObject());
-				} else {
+				}
+				else {
 					removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
 				}
 			}

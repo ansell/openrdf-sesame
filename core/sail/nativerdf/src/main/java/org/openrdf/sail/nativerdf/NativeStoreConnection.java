@@ -29,6 +29,7 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.TransactionIsolation;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -295,11 +296,22 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void startTransactionInternal() throws SailException
+	protected void startTransactionInternal()
+		throws SailException
 	{
-		// we do nothing, but delay obtaining transaction locks until the first write operation.
+		if (TransactionIsolation.REPEATABLE_READ.equals(getTransactionIsolation())) {
+			acquireExclusiveTransactionLock();
+		}
+		else if (TransactionIsolation.READ_COMMITTED.equals(getTransactionIsolation())) {
+			// we do nothing, but delay obtaining transaction locks until the first
+			// write operation.
+		}
+		else {
+			throw new SailException("transaction isolation level " + getTransactionIsolation()
+					+ " not supported by native store");
+		}
 	}
-	
+
 	private void acquireExclusiveTransactionLock()
 		throws SailException
 	{
@@ -368,7 +380,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			throw e;
 		}
 		finally {
-			if (txnLockAcquired) { 
+			if (txnLockAcquired) {
 				txnLock.release();
 			}
 			txnLockAcquired = false;
@@ -407,7 +419,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		acquireExclusiveTransactionLock();
-		
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		boolean result = false;
@@ -495,7 +507,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		acquireExclusiveTransactionLock();
-		
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
@@ -637,6 +649,5 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().clear();
 	}
-
 
 }

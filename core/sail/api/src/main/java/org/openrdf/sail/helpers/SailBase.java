@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.TransactionIsolation;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -47,6 +48,8 @@ public abstract class SailBase implements Sail {
 	 * Default connection timeout on shutdown: 20,000 milliseconds.
 	 */
 	protected final static long DEFAULT_CONNECTION_TIMEOUT = 20000L;
+
+	private TransactionIsolation defaultIsolationLevel = TransactionIsolation.READ_COMMITTED;
 
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and
@@ -294,5 +297,31 @@ public abstract class SailBase implements Sail {
 				logger.warn("tried to remove unknown connection object from store.");
 			}
 		}
+	}
+
+	/**
+	 * Retrieves the default {@link TransactionIsolation} level on which
+	 * transactions in this Sail operate.
+	 * 
+	 * @since 2.7.4
+	 * @return Returns the defaultIsolationLevel.
+	 */
+	public TransactionIsolation getDefaultIsolationLevel() {
+		return defaultIsolationLevel;
+	}
+
+	/**
+	 * Sets the default {@link TransactionIsolation} level on which transactions
+	 * in this Sail operate.
+	 * 
+	 * @since 2.7.4
+	 * @param defaultIsolationLevel
+	 *        The defaultIsolationLevel to set.
+	 */
+	public void setDefaultIsolationLevel(TransactionIsolation defaultIsolationLevel) {
+		if (defaultIsolationLevel == null) {
+			throw new IllegalArgumentException("default isolation level may not be null");
+		}
+		this.defaultIsolationLevel = defaultIsolationLevel;
 	}
 }

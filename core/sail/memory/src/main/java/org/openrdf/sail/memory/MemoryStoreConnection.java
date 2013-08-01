@@ -26,6 +26,7 @@ import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 
+import org.openrdf.TransactionIsolation;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -348,11 +349,17 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
-		txnLockAcquired = false;
-
-		// actual starting of transaction locking is handled on first modification
-		// operation. this allows concurrent reads while no changes have been
-		// made.
+		if (TransactionIsolation.REPEATABLE_READ.equals(getTransactionIsolation())) {
+			acquireExclusiveTransactionLock();
+		}
+		else if (TransactionIsolation.READ_COMMITTED.equals(getTransactionIsolation())) {
+			// we do nothing, but delay obtaining transaction locks until the first
+			// write operation.
+		}
+		else {
+			throw new SailException("transaction isolation level " + getTransactionIsolation()
+					+ " not supported by memory store");
+		}
 	}
 
 	private void acquireExclusiveTransactionLock()
