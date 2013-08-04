@@ -30,6 +30,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
@@ -176,12 +177,10 @@ public class CustomTurtleParserTest {
 		Literal myErrObject = vf.createLiteral(errLiteralString);
 
 		StringWriter out = new StringWriter();
-
-		TurtleWriter wr = new TurtleWriter(out);
-		wr.startRDF();
-		wr.handleStatement(vf.createStatement(mySubject, myPredicate, myOkObject));
-		wr.handleStatement(vf.createStatement(mySubject, myPredicate, myErrObject));
-		wr.endRDF();
+		Model model = new LinkedHashModel();
+		model.add(mySubject, myPredicate, myOkObject);
+		model.add(mySubject, myPredicate, myErrObject);
+		Rio.write(model, out, RDFFormat.TURTLE);
 		
 		String str = out.toString();
 		
