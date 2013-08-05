@@ -62,7 +62,6 @@ public class SizeController extends AbstractController {
 
 		if (!headersOnly) {
 			Repository repository = RepositoryInterceptor.getRepository(request);
-			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 
 			ValueFactory vf = repository.getValueFactory();
 			Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
@@ -70,7 +69,10 @@ public class SizeController extends AbstractController {
 			long size = -1;
 
 			try {
-				size = repositoryCon.size(contexts);
+				RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+				synchronized (repositoryCon) {
+					size = repositoryCon.size(contexts);
+				}
 			}
 			catch (RepositoryException e) {
 				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);

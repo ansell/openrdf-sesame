@@ -78,8 +78,6 @@ public class ExportStatementsView implements View {
 	public void render(Map model, HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-
 		Resource subj = (Resource)model.get(SUBJECT_KEY);
 		URI pred = (URI)model.get(PREDICATE_KEY);
 		Value obj = (Value)model.get(OBJECT_KEY);
@@ -112,7 +110,10 @@ public class ExportStatementsView implements View {
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
 			if (!headersOnly) {
-				repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+				RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+				synchronized (repositoryCon) {
+					repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+				}
 			}
 			out.close();
 		}
