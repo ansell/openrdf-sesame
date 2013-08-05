@@ -36,6 +36,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 
 /**
@@ -167,6 +168,44 @@ public class TransactionWriter {
 						dataset.getDefaultInsertGraph().stringValue());
 			}
 			xmlWriter.endTag(TransactionXMLConstants.DATASET_TAG);
+		}
+
+		if (op.getBindings() != null && op.getBindings().length > 0) {
+			xmlWriter.startTag(TransactionXMLConstants.BINDINGS);
+
+			for (Binding binding : op.getBindings()) {
+				if (binding.getName() != null && binding.getValue() != null
+						&& binding.getValue().stringValue() != null)
+				{
+					if (binding.getValue() instanceof URI) {
+						xmlWriter.setAttribute(TransactionXMLConstants.NAME_ATT, binding.getName());
+						xmlWriter.textElement(TransactionXMLConstants.BINDING_URI, binding.getValue().stringValue());
+					}
+
+					if (binding.getValue() instanceof BNode) {
+						xmlWriter.setAttribute(TransactionXMLConstants.NAME_ATT, binding.getName());
+						xmlWriter.textElement(TransactionXMLConstants.BINDING_BNODE,
+								binding.getValue().stringValue());
+					}
+
+					if (binding.getValue() instanceof Literal) {
+						xmlWriter.setAttribute(TransactionXMLConstants.NAME_ATT, binding.getName());
+
+						Literal literal = (Literal)binding.getValue();
+						if (literal.getLanguage() != null)
+							xmlWriter.setAttribute(TransactionXMLConstants.LANGUAGE_ATT, literal.getLanguage());
+
+						if (literal.getDatatype() != null)
+							xmlWriter.setAttribute(TransactionXMLConstants.DATA_TYPE_ATT,
+									literal.getDatatype().stringValue());
+
+						xmlWriter.textElement(TransactionXMLConstants.BINDING_LITERAL,
+								binding.getValue().stringValue());
+					}
+				}
+			}
+
+			xmlWriter.endTag(TransactionXMLConstants.BINDINGS);
 		}
 
 		xmlWriter.endTag(TransactionXMLConstants.SPARQL_UPDATE_TAG);
