@@ -894,7 +894,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTDescribe node, Object data)
 		throws VisitorException
 	{
-		TupleExpr result = (TupleExpr)data;
 		List<ValueExpr> describeExprs = new ArrayList<ValueExpr>(2 * node.jjtGetNumChildren());
 
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
@@ -903,7 +902,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			describeExprs.add(resource);
 		}
 
-		return new DescribeOperator(result, describeExprs);
+		return new DescribeOperator(describeExprs);
 		
 	}
 

@@ -16,14 +16,26 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
- * @author jeen
+ * @author Jeen Broekstra
  */
-public class DescribeOperator extends UnaryTupleOperator {
+public class DescribeOperator extends QueryModelNodeBase implements TupleExpr {
 
 	private List<ValueExpr> valueExprs;
+
+	/**
+	 * Create a new Describe Operator with the supplied DESCRIBE expressions.
+	 * 
+	 * @param describeExprs
+	 */
+	public DescribeOperator(List<ValueExpr> describeExprs) {
+		super();
+		this.valueExprs = describeExprs;
+	}
 
 	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
@@ -32,19 +44,43 @@ public class DescribeOperator extends UnaryTupleOperator {
 		visitor.meet(this);
 	}
 
-	public DescribeOperator(TupleExpr arg, List<ValueExpr> valueExprs) {
-		this.setArg(arg);
-		this.setValueExprs(valueExprs);
-	}
-	
-	/**
-	 * @return Returns the valueExprs.
-	 */
-	public List<ValueExpr> getValueExprs() {
-		return valueExprs;
+	@Override
+	public Set<String> getBindingNames() {
+		return null;
 	}
 
-	public void setValueExprs(List<ValueExpr> valueExprs) {
-		this.valueExprs = valueExprs;
+	@Override
+	public Set<String> getAssuredBindingNames() {
+		return null;
+	}
+
+	public List<ValueExpr> getDescribeExprs() {
+		return this.valueExprs;
+	}
+
+	public void setDescribeExprs(List<ValueExpr> describeExprs) {
+		this.valueExprs = describeExprs;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof DescribeOperator) {
+			DescribeOperator o = (DescribeOperator)other;
+			return valueExprs.equals(o.getDescribeExprs());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return valueExprs.hashCode();
+	}
+
+	@Override
+	public DescribeOperator clone() {
+		DescribeOperator clone = (DescribeOperator)super.clone();
+		clone.setDescribeExprs(new ArrayList<ValueExpr>(getDescribeExprs()));
+		return clone;
 	}
 }

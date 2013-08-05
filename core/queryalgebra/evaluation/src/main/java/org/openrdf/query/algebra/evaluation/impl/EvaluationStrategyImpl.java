@@ -125,6 +125,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
+import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
@@ -212,6 +213,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof BindingSetAssignment) {
 			return evaluate((BindingSetAssignment)expr, bindings);
+		}
+		else if (expr instanceof DescribeOperator) {
+			return evaluate((DescribeOperator)expr, bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
@@ -387,12 +391,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		// TODO implement stub
-		// we'll need to implement at least two strategies: one is the old
-		// behaviour, one is some sort of blank node closure.
-		// Question is how to integrate it in such a way that choice of strategy
-		// is configurable.
-		return null;
+		return new DescribeIteration(this, operator.getDescribeExprs(), bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,

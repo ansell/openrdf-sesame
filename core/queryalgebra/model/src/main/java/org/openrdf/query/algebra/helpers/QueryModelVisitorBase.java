@@ -188,7 +188,7 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	public void meet(DescribeOperator node)
 		throws X
 	{
-		meetUnaryTupleOperator(node);
+		meetNode(node);
 	}
 
 	public void meet(Copy node)
