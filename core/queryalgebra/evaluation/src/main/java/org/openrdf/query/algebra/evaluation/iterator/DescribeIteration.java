@@ -36,7 +36,12 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 /**
- * @author jeen
+ * Iteration that implements a simplified version of Symmetric Concise Bounded
+ * Description (omitting reified statements). 
+ * 
+ * @author Jeen Broekstra
+ * @since 2.7.4
+ * @see http://www.w3.org/Submission/CBD/#alternatives
  */
 public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
@@ -127,12 +132,13 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			if (!currentIter.hasNext() && nodeQueue.isEmpty()) {
 				currentIter.close();
 				currentIter = null;
-				
+
 				if (currentMode == Mode.OUTGOING_LINKS) {
 					currentMode = Mode.INCOMING_LINKS;
 				}
 				else {
-					// done with this valueExpr, reset to initialize next in value expression queue.
+					// done with this valueExpr, reset to initialize next in value
+					// expression queue.
 					currentMode = Mode.OUTGOING_LINKS;
 					startValue = null;
 				}
