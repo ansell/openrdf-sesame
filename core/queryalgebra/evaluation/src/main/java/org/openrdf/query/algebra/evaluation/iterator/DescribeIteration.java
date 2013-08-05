@@ -37,7 +37,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 /**
  * Iteration that implements a simplified version of Symmetric Concise Bounded
- * Description (omitting reified statements). 
+ * Description (omitting reified statements).
  * 
  * @author Jeen Broekstra
  * @since 2.7.4
@@ -93,6 +93,13 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			switch (currentMode) {
 				case OUTGOING_LINKS:
 					currentIter = createNextIteration(startValue, null);
+					if (!currentIter.hasNext()) {
+						// special case: start value has no outgoing links.
+						// immediately switch to incoming links.
+						currentIter.close();
+						currentMode = Mode.INCOMING_LINKS;
+						currentIter = createNextIteration(null, startValue);
+					}
 					break;
 				case INCOMING_LINKS:
 					currentIter = createNextIteration(null, startValue);
