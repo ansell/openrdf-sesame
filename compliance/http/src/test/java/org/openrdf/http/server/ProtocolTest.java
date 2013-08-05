@@ -16,8 +16,6 @@
  */
 package org.openrdf.http.server;
 
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,7 +23,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -381,19 +381,23 @@ public class ProtocolTest extends TestCase {
 	public void testSequentialNamespaceUpdates()
 		throws Exception
 	{
-		int limitCount = 10000;
+		int limitCount = 1000;
 		int limitPrefix = 50;
 
 		Random prng = new Random();
+		// String repositoryLocation =
+		// Protocol.getRepositoryLocation("http://localhost:8080/openrdf-sesame",
+		// "Test-NativeStore");
+		String repositoryLocation = TestServer.REPOSITORY_URL;
 
 		for (int count = 0; count < limitCount; count++) {
 			int i = prng.nextInt(limitPrefix);
 			String prefix = "prefix" + i;
 			String ns = "http://example.org/namespace" + i;
 
-			String location = Protocol.getNamespacePrefixLocation(TestServer.REPOSITORY_URL, prefix);
+			String location = Protocol.getNamespacePrefixLocation(repositoryLocation, prefix);
 
-			if (i % 2 == 0) {
+			if (count % 2 == 0) {
 				putNamespace(location, ns);
 			}
 			else {
@@ -411,13 +415,17 @@ public class ProtocolTest extends TestCase {
 	public void testConcurrentNamespaceUpdates()
 		throws Exception
 	{
-		int limitCount = 10000;
+		int limitCount = 1000;
 		int limitPrefix = 50;
 
 		Random prng = new Random();
 
-		final CountDownLatch openLatch = new CountDownLatch(1);
-		final CountDownLatch closeLatch = new CountDownLatch(limitCount);
+		// String repositoryLocation =
+		// Protocol.getRepositoryLocation("http://localhost:8080/openrdf-sesame",
+		// "Test-NativeStore");
+		String repositoryLocation = TestServer.REPOSITORY_URL;
+
+		ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
 		for (int count = 0; count < limitCount; count++) {
 			final int number = count;
@@ -425,20 +433,18 @@ public class ProtocolTest extends TestCase {
 			final String prefix = "prefix" + i;
 			final String ns = "http://example.org/namespace" + i;
 
-			final String location = Protocol.getNamespacePrefixLocation(TestServer.REPOSITORY_URL, prefix);
+			final String location = Protocol.getNamespacePrefixLocation(repositoryLocation, prefix);
 
 			Runnable runner = new Runnable() {
 
 				public void run() {
 					try {
-						openLatch.await();
-						if (i % 2 == 0) {
+						if (number % 2 == 0) {
 							putNamespace(location, ns);
 						}
 						else {
 							deleteNamespace(location);
 						}
-						closeLatch.countDown();
 					}
 					catch (Exception e) {
 						e.printStackTrace();
@@ -446,12 +452,11 @@ public class ProtocolTest extends TestCase {
 					}
 				}
 			};
-			new Thread(runner, "TestThread" + number).start();
+			threadPool.execute(runner);
 		}
-		// all threads are waiting on the latch.
-		openLatch.countDown(); // release the latch
-		// all threads are now running concurrently.
-		closeLatch.await();
+		threadPool.shutdown();
+		threadPool.awaitTermination(30000, TimeUnit.MILLISECONDS);
+		threadPool.shutdownNow();
 	}
 
 	private void putNamespace(String location, String namespace)
