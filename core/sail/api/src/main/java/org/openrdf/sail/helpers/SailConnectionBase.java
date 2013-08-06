@@ -112,12 +112,14 @@ public abstract class SailConnectionBase implements SailConnection {
 	private final Throwable creatorTrace;
 
 	/**
-	 * Statements that are currently being removed, but not yet realized, by an active operation.
+	 * Statements that are currently being removed, but not yet realized, by an
+	 * active operation.
 	 */
 	private final Map<UpdateContext, Model> removed = new HashMap<UpdateContext, Model>();
 
 	/**
-	 * Statements that are currently being added, but not yet realized, by an active operation.
+	 * Statements that are currently being added, but not yet realized, by an
+	 * active operation.
 	 */
 	private final Map<UpdateContext, Model> added = new HashMap<UpdateContext, Model>();
 
@@ -314,9 +316,17 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws SailException
 	{
 		connectionLock.readLock().lock();
+		CloseableIteration<? extends Statement, SailException> statementsInternal = null;
 		try {
 			verifyIsOpen();
-			return registerIteration(getStatementsInternal(subj, pred, obj, includeInferred, contexts));
+			statementsInternal = getStatementsInternal(subj, pred, obj, includeInferred, contexts);
+			return registerIteration(statementsInternal);
+		}
+		catch (StackOverflowError e) {
+			if (statementsInternal != null) {
+				statementsInternal.close();
+			}
+			throw e;
 		}
 		finally {
 			connectionLock.readLock().unlock();
@@ -494,7 +504,8 @@ public abstract class SailConnectionBase implements SailConnection {
 		synchronized (added) {
 			if (added.containsKey(op)) {
 				added.get(op).add(subj, pred, obj, contexts);
-			} else {
+			}
+			else {
 				addStatement(subj, pred, obj, contexts);
 			}
 		}
@@ -504,17 +515,17 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * The default implementation buffers removed statements until the update
 	 * operation is complete.
 	 */
-	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		synchronized (removed) {
 			if (removed.containsKey(op)) {
 				if (contexts != null && contexts.length == 0) {
-					contexts = new Resource[]{ wildContext };
+					contexts = new Resource[] { wildContext };
 				}
 				removed.get(op).add(subj, pred, obj, contexts);
-			} else {
+			}
+			else {
 				removeStatements(subj, pred, obj, contexts);
 			}
 		}
@@ -533,7 +544,8 @@ public abstract class SailConnectionBase implements SailConnection {
 				Resource ctx = st.getContext();
 				if (wildContext.equals(ctx)) {
 					removeStatements(st.getSubject(), st.getPredicate(), st.getObject());
-				} else {
+				}
+				else {
 					removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
 				}
 			}
