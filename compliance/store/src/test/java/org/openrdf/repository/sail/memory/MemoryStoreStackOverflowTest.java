@@ -50,6 +50,7 @@ public class MemoryStoreStackOverflowTest {
 						fail("Should overflow stack");
 					}
 					catch (StackOverflowError e) {
+						e.printStackTrace();
 						// Expected
 						System.out.println("Stack overflowed, as expected");
 					}
