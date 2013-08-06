@@ -26,7 +26,8 @@ public class MemoryStoreStackOverflowTest {
 	public void testStackOverflowWhenGettingLock()
 		throws Exception
 	{
-		String oldProperty = System.setProperty("info.aduna.concurrent.locks.trackLocks", "true");
+		// String oldProperty =
+		// System.setProperty("info.aduna.concurrent.locks.trackLocks", "true");
 		try {
 			Repository repository = new SailRepository(new MemoryStore());
 			repository.initialize();
@@ -50,7 +51,7 @@ public class MemoryStoreStackOverflowTest {
 						fail("Should overflow stack");
 					}
 					catch (StackOverflowError e) {
-						e.printStackTrace();
+						// e.printStackTrace();
 						// Expected
 						System.out.println("Stack overflowed, as expected");
 					}
@@ -76,9 +77,10 @@ public class MemoryStoreStackOverflowTest {
 			}
 		}
 		finally {
-			if (oldProperty != null) {
-				System.setProperty("info.aduna.concurrent.locks.trackLocks", oldProperty);
-			}
+			// if (oldProperty != null) {
+			// System.setProperty("info.aduna.concurrent.locks.trackLocks",
+			// oldProperty);
+			// }
 		}
 	}
 
