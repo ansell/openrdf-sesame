@@ -26,39 +26,58 @@ public class MemoryStoreStackOverflowTest {
 	public void testStackOverflowWhenGettingLock()
 		throws Exception
 	{
-		Repository repository = new SailRepository(new MemoryStore());
-		repository.initialize();
+		String oldProperty = System.setProperty("info.aduna.concurrent.locks.trackLocks", "true");
 		try {
-			final RepositoryConnection connection = repository.getConnection();
+			Repository repository = new SailRepository(new MemoryStore());
+			repository.initialize();
 			try {
-				Runnable runnable = new Runnable() {
+				final RepositoryConnection connection = repository.getConnection();
+				try {
+					Runnable runnable = new Runnable() {
 
-					@Override
-					public void run() {
-						try {
-							connection.hasStatement(null, null, null, true);
+						@Override
+						public void run() {
+							try {
+								connection.hasStatement(null, null, null, true);
+							}
+							catch (RepositoryException e) {
+								throw new RuntimeException(e);
+							}
 						}
-						catch (RepositoryException e) {
-							throw new RuntimeException(e);
+					};
+					try {
+						runAtStackOverflowDepth(runnable);
+						fail("Should overflow stack");
+					}
+					catch (StackOverflowError e) {
+						// Expected
+						System.out.println("Stack overflowed, as expected");
+					}
+				}
+				finally {
+					try {
+						if (connection.isActive()) {
+							connection.rollback();
 						}
 					}
-				};
-				try {
-					runAtStackOverflowDepth(runnable);
-					fail("Should overflow stack");
-				}
-				catch (StackOverflowError e) {
-					// Expected
-					System.out.println("Stack overflowed, as expected");
+					finally {
+						System.out.println("Closing connection");
+						connection.close();
+						System.out.println("Connection closed");
+					}
 				}
 			}
 			finally {
-				connection.close();
+				System.out.println("Shutting down repository");
+				// Will hang here, because it tries to get a write lock
+				repository.shutDown();
+				System.out.println("Repository shut down");
 			}
 		}
 		finally {
-			// Will hang here, because it tries to get a write lock
-			repository.shutDown();
+			if (oldProperty != null) {
+				System.setProperty("info.aduna.concurrent.locks.trackLocks", oldProperty);
+			}
 		}
 	}
 
