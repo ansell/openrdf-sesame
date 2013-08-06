@@ -99,26 +99,29 @@ public class NamespacesController extends AbstractController {
 			List<BindingSet> namespaces = new ArrayList<BindingSet>();
 
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-			try {
-				CloseableIteration<? extends Namespace, RepositoryException> iter = repositoryCon.getNamespaces();
-
+			synchronized(repositoryCon)
+			{
 				try {
-					while (iter.hasNext()) {
-						Namespace ns = iter.next();
-
-						Literal prefix = new LiteralImpl(ns.getPrefix());
-						Literal namespace = new LiteralImpl(ns.getName());
-
-						BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
-						namespaces.add(bindingSet);
+					CloseableIteration<? extends Namespace, RepositoryException> iter = repositoryCon.getNamespaces();
+	
+					try {
+						while (iter.hasNext()) {
+							Namespace ns = iter.next();
+	
+							Literal prefix = new LiteralImpl(ns.getPrefix());
+							Literal namespace = new LiteralImpl(ns.getName());
+	
+							BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
+							namespaces.add(bindingSet);
+						}
+					}
+					finally {
+						iter.close();
 					}
 				}
-				finally {
-					iter.close();
+				catch (RepositoryException e) {
+					throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 				}
-			}
-			catch (RepositoryException e) {
-				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 			}
 			model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, namespaces));
 		}
@@ -137,13 +140,16 @@ public class NamespacesController extends AbstractController {
 		throws ServerHTTPException
 	{
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-		try {
-			repositoryCon.clearNamespaces();
+		synchronized(repositoryCon)
+		{
+			try {
+				repositoryCon.clearNamespaces();
+			}
+			catch (RepositoryException e) {
+				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+			}
 		}
-		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
-		}
-
+		
 		return new ModelAndView(EmptySuccessView.getInstance());
 	}
 }

@@ -67,25 +67,27 @@ public class ContextsController extends AbstractController {
 				TupleQueryResultWriterRegistry.getInstance());
 
 		if (METHOD_GET.equals(request.getMethod())) {
-			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-
 			List<String> columnNames = Arrays.asList("contextID");
 			List<BindingSet> contexts = new ArrayList<BindingSet>();
-			try {
-				CloseableIteration<? extends Resource, RepositoryException> contextIter = repositoryCon.getContextIDs();
-
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized(repositoryCon)
+			{
 				try {
-					while (contextIter.hasNext()) {
-						BindingSet bindingSet = new ListBindingSet(columnNames, contextIter.next());
-						contexts.add(bindingSet);
+					CloseableIteration<? extends Resource, RepositoryException> contextIter = repositoryCon.getContextIDs();
+	
+					try {
+						while (contextIter.hasNext()) {
+							BindingSet bindingSet = new ListBindingSet(columnNames, contextIter.next());
+							contexts.add(bindingSet);
+						}
+					}
+					finally {
+						contextIter.close();
 					}
 				}
-				finally {
-					contextIter.close();
+				catch (RepositoryException e) {
+					throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 				}
-			}
-			catch (RepositoryException e) {
-				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 			}
 			model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, contexts));
 		}
