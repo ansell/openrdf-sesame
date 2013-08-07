@@ -259,6 +259,41 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testDescribeAWhere()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ?x WHERE {?x rdfs:label \"a\". } ");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory f = conn.getValueFactory();
+		URI a = f.createURI("http://example.org/a");
+		URI p = f.createURI("http://example.org/p");
+		Model result = QueryResults.asModel(gq.evaluate());
+		Set<Value> objects = result.filter(a, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				assertTrue(result.contains((Resource)object, null, null));
+				assertEquals(2, result.filter((Resource)object, null, null).size());
+			}
+		}
+	}
+	@Test
 	public void testDescribeB()
 		throws Exception
 	{
