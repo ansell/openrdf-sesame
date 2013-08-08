@@ -16,38 +16,17 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.List;
 
 /**
  * @author Jeen Broekstra
  */
 public class DescribeOperator extends UnaryTupleOperator {
 
-	private List<String> aliases;
-
 	/**
-	 * Create a new Describe Operator with the supplied DESCRIBE expressions.
-	 * 
-	 * @param describeExprs
-	 *        the list of names of expressions in the DESCRIBE clause.
+	 * @param e
 	 */
-	public DescribeOperator(List<String> aliases) {
-		super();
-		this.aliases = aliases;
-	}
-
-	/**
-	 * Create a new Describe Operator with the supplied tuple expression and
-	 * DESCRIBE expressions.
-	 * 
-	 * @param arg
-	 *        the tuple expresssion representing the WHERE clause
-	 * @param describeExprs
-	 *        list of names of expressions in the DESCRIBE clause.
-	 */
-	public DescribeOperator(TupleExpr arg, List<String> aliases) {
+	public DescribeOperator(TupleExpr arg) {
 		super(arg);
-		this.aliases = aliases;
 	}
 
 	@Override
@@ -57,12 +36,6 @@ public class DescribeOperator extends UnaryTupleOperator {
 		visitor.meet(this);
 	}
 
-	public List<String> getDescribeExprNames() {
-		return this.aliases;
-	}
 
-	public void setDescribeExprNames(List<String> aliases) {
-		this.aliases = aliases;
-	}
 
 }

@@ -75,11 +75,11 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	private Iteration<BindingSet, QueryEvaluationException> sourceIter;
 
 	public DescribeIteration(Iteration<BindingSet, QueryEvaluationException> sourceIter,
-			EvaluationStrategy strategy, List<String> describeExprNames, BindingSet parentBindings)
+			EvaluationStrategy strategy, Set<String> describeExprNames, BindingSet parentBindings)
 	{
 		this.strategy = strategy;
 		this.sourceIter = sourceIter;
-		this.describeExprNames = describeExprNames;
+		this.describeExprNames = new ArrayList<String>(describeExprNames);
 		this.parentBindings = parentBindings;
 	}
 

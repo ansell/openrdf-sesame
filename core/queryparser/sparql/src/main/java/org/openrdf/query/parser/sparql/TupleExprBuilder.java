@@ -901,10 +901,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			tupleExpr = new SingletonSet();
 		}
 
-		List<String> describeExprs = new ArrayList<String>(2 * node.jjtGetNumChildren());
-
 		Extension e = new Extension();
-
+		ProjectionElemList projectionElements = new ProjectionElemList();
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 			String alias = null;
@@ -916,12 +914,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 			ExtensionElem elem = new ExtensionElem(resource, alias);
 			e.addElement(elem);
-			describeExprs.add(alias);
+			projectionElements.addElement(new ProjectionElem(alias));
 		}
 
 		e.setArg(tupleExpr);
-
-		return new DescribeOperator(e, describeExprs);
+		Projection p = new Projection(e, projectionElements);
+		return new DescribeOperator(p);
 
 	}
 

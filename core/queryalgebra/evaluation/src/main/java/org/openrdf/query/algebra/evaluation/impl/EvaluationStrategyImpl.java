@@ -391,7 +391,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(operator.getArg(), bindings);
-		return new DescribeIteration(iter, this, operator.getDescribeExprNames(), bindings);
+		return new DescribeIteration(iter, this, operator.getBindingNames(), bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
