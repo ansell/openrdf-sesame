@@ -29,7 +29,7 @@ public class DescribeOperator extends UnaryTupleOperator {
 	 * Create a new Describe Operator with the supplied DESCRIBE expressions.
 	 * 
 	 * @param describeExprs
-	 *        the list of expressions in the DESCRIBE clause.
+	 *        the list of names of expressions in the DESCRIBE clause.
 	 */
 	public DescribeOperator(List<String> aliases) {
 		super();
@@ -43,7 +43,7 @@ public class DescribeOperator extends UnaryTupleOperator {
 	 * @param arg
 	 *        the tuple expresssion representing the WHERE clause
 	 * @param describeExprs
-	 *        list of expressions in the DESCRIBE clause.
+	 *        list of names of expressions in the DESCRIBE clause.
 	 */
 	public DescribeOperator(TupleExpr arg, List<String> aliases) {
 		super(arg);
@@ -57,11 +57,11 @@ public class DescribeOperator extends UnaryTupleOperator {
 		visitor.meet(this);
 	}
 
-	public List<String> getDescribeExprs() {
+	public List<String> getDescribeExprNames() {
 		return this.aliases;
 	}
 
-	public void setDescribeExprs(List<String> aliases) {
+	public void setDescribeExprNames(List<String> aliases) {
 		this.aliases = aliases;
 	}
 

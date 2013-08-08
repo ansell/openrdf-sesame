@@ -53,7 +53,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private final static String VARNAME_OBJECT = "object";
 
-	private final List<String> valueExprs;
+	private final List<String> describeExprNames;
 
 	private final EvaluationStrategy strategy;
 
@@ -63,7 +63,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private final Set<BNode> processedNodes = new HashSet<BNode>();
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> currentValueExprIter;
+	private CloseableIteration<BindingSet, QueryEvaluationException> currentDescribeExprIter;
 
 	private enum Mode {
 		OUTGOING_LINKS,
@@ -75,17 +75,17 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	private Iteration<BindingSet, QueryEvaluationException> sourceIter;
 
 	public DescribeIteration(Iteration<BindingSet, QueryEvaluationException> sourceIter,
-			EvaluationStrategy strategy, List<String> valueExprs, BindingSet parentBindings)
+			EvaluationStrategy strategy, List<String> describeExprNames, BindingSet parentBindings)
 	{
 		this.strategy = strategy;
 		this.sourceIter = sourceIter;
-		this.valueExprs = valueExprs;
+		this.describeExprNames = describeExprNames;
 		this.parentBindings = parentBindings;
 	}
 
 	private BindingSet currentBindings;
 
-	private int valueExprIndex;
+	private int describeExprsIndex;
 
 	private BindingSet parentBindings;
 
@@ -94,7 +94,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		throws QueryEvaluationException
 	{
 
-		if (currentValueExprIter == null) {
+		if (currentDescribeExprIter == null) {
 			if (currentBindings == null) {
 				if (sourceIter.hasNext()) {
 					currentBindings = sourceIter.next();
@@ -105,45 +105,45 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			}
 
 			if (startValue == null) {
-				String nextValueExpr = valueExprs.get(valueExprIndex++);
+				String nextValueExpr = describeExprNames.get(describeExprsIndex++);
 				if (nextValueExpr != null) {
 					startValue = currentBindings.getValue(nextValueExpr);
-					if (valueExprIndex == valueExprs.size()) { 
+					if (describeExprsIndex == describeExprNames.size()) { 
 						// reached the end of the list of valueExprs, reset to 
 						// read next value from source iterator if any.
 						currentBindings = null;
-						valueExprIndex = 0;
+						describeExprsIndex = 0;
 					}
 				}
 			}
 
 			switch (currentMode) {
 				case OUTGOING_LINKS:
-					currentValueExprIter = createNextIteration(startValue, null);
-					if (!currentValueExprIter.hasNext()) {
+					currentDescribeExprIter = createNextIteration(startValue, null);
+					if (!currentDescribeExprIter.hasNext()) {
 						// special case: start value has no outgoing links.
 						// immediately switch to incoming links.
-						currentValueExprIter.close();
+						currentDescribeExprIter.close();
 						currentMode = Mode.INCOMING_LINKS;
-						currentValueExprIter = createNextIteration(null, startValue);
+						currentDescribeExprIter = createNextIteration(null, startValue);
 					}
 					break;
 				case INCOMING_LINKS:
-					currentValueExprIter = createNextIteration(null, startValue);
+					currentDescribeExprIter = createNextIteration(null, startValue);
 					break;
 			}
 		}
 		else {
-			while (!currentValueExprIter.hasNext() && !nodeQueue.isEmpty()) {
+			while (!currentDescribeExprIter.hasNext() && !nodeQueue.isEmpty()) {
 				// process next node in queue
 				BNode nextNode = nodeQueue.poll();
-				currentValueExprIter.close();
+				currentDescribeExprIter.close();
 				switch (currentMode) {
 					case OUTGOING_LINKS:
-						currentValueExprIter = createNextIteration(nextNode, null);
+						currentDescribeExprIter = createNextIteration(nextNode, null);
 						break;
 					case INCOMING_LINKS:
-						currentValueExprIter = createNextIteration(null, nextNode);
+						currentDescribeExprIter = createNextIteration(null, nextNode);
 						break;
 
 				}
@@ -151,8 +151,8 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			}
 		}
 
-		if (currentValueExprIter.hasNext()) {
-			BindingSet bs = currentValueExprIter.next();
+		if (currentDescribeExprIter.hasNext()) {
+			BindingSet bs = currentDescribeExprIter.next();
 
 			String varname = currentMode == Mode.OUTGOING_LINKS ? VARNAME_OBJECT : VARNAME_SUBJECT;
 
@@ -163,9 +163,9 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				}
 			}
 
-			if (!currentValueExprIter.hasNext() && nodeQueue.isEmpty()) {
-				currentValueExprIter.close();
-				currentValueExprIter = null;
+			if (!currentDescribeExprIter.hasNext() && nodeQueue.isEmpty()) {
+				currentDescribeExprIter.close();
+				currentDescribeExprIter = null;
 
 				if (currentMode == Mode.OUTGOING_LINKS) {
 					currentMode = Mode.INCOMING_LINKS;
