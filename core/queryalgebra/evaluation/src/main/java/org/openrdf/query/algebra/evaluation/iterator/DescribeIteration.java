@@ -94,13 +94,14 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		throws QueryEvaluationException
 	{
 
-		if (currentDescribeExprIter == null) {
-			if (currentBindings == null) {
+		while (currentDescribeExprIter == null) {
+			if (currentBindings == null && startValue == null) {
 				if (sourceIter.hasNext()) {
 					currentBindings = sourceIter.next();
 				}
 				else {
-					currentBindings = parentBindings;
+					// no more bindings, therefore no more results to return.
+					return null;
 				}
 			}
 
@@ -108,12 +109,13 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				String nextValueExpr = describeExprNames.get(describeExprsIndex++);
 				if (nextValueExpr != null) {
 					startValue = currentBindings.getValue(nextValueExpr);
-					if (describeExprsIndex == describeExprNames.size()) { 
-						// reached the end of the list of valueExprs, reset to 
+					if (describeExprsIndex == describeExprNames.size()) {
+						// reached the end of the list of valueExprs, reset to
 						// read next value from source iterator if any.
 						currentBindings = null;
 						describeExprsIndex = 0;
 					}
+					currentMode = Mode.OUTGOING_LINKS;
 				}
 			}
 
@@ -121,34 +123,39 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				case OUTGOING_LINKS:
 					currentDescribeExprIter = createNextIteration(startValue, null);
 					if (!currentDescribeExprIter.hasNext()) {
-						// special case: start value has no outgoing links.
-						// immediately switch to incoming links.
+						// start value has no outgoing links.
 						currentDescribeExprIter.close();
+						currentDescribeExprIter = null;
 						currentMode = Mode.INCOMING_LINKS;
-						currentDescribeExprIter = createNextIteration(null, startValue);
 					}
 					break;
 				case INCOMING_LINKS:
 					currentDescribeExprIter = createNextIteration(null, startValue);
+					if (!currentDescribeExprIter.hasNext()) {
+						// no incoming links for this start value.
+						currentDescribeExprIter.close();
+						currentDescribeExprIter = null;
+						startValue = null;
+						currentMode = Mode.OUTGOING_LINKS;
+					}
 					break;
 			}
 		}
-		else {
-			while (!currentDescribeExprIter.hasNext() && !nodeQueue.isEmpty()) {
-				// process next node in queue
-				BNode nextNode = nodeQueue.poll();
-				currentDescribeExprIter.close();
-				switch (currentMode) {
-					case OUTGOING_LINKS:
-						currentDescribeExprIter = createNextIteration(nextNode, null);
-						break;
-					case INCOMING_LINKS:
-						currentDescribeExprIter = createNextIteration(null, nextNode);
-						break;
 
-				}
-				processedNodes.add(nextNode);
+		while (!currentDescribeExprIter.hasNext() && !nodeQueue.isEmpty()) {
+			// process next node in queue
+			BNode nextNode = nodeQueue.poll();
+			currentDescribeExprIter.close();
+			switch (currentMode) {
+				case OUTGOING_LINKS:
+					currentDescribeExprIter = createNextIteration(nextNode, null);
+					break;
+				case INCOMING_LINKS:
+					currentDescribeExprIter = createNextIteration(null, nextNode);
+					break;
+
 			}
+			processedNodes.add(nextNode);
 		}
 
 		if (currentDescribeExprIter.hasNext()) {

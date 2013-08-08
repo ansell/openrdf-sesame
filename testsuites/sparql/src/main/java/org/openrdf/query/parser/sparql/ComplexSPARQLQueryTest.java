@@ -44,6 +44,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
@@ -284,6 +285,54 @@ public abstract class ComplexSPARQLQueryTest {
 		URI a = f.createURI("http://example.org/a");
 		URI p = f.createURI("http://example.org/p");
 		Model result = QueryResults.asModel(gq.evaluate());
+		Set<Value> objects = result.filter(a, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				assertTrue(result.contains((Resource)object, null, null));
+				assertEquals(2, result.filter((Resource)object, null, null).size());
+			}
+		}
+	}
+	
+	@Test
+	public void testDescribeWhere()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ?x WHERE {?x rdfs:label ?y . } ");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory vf = conn.getValueFactory();
+		URI a = vf.createURI("http://example.org/a");
+		URI b = vf.createURI("http://example.org/b");
+		URI c = vf.createURI("http://example.org/c");
+		URI e = vf.createURI("http://example.org/e");
+		URI f = vf.createURI("http://example.org/f");
+		URI p = vf.createURI("http://example.org/p");
+
+		Model result = QueryResults.asModel(gq.evaluate());
+		assertTrue(result.contains(a, p, null));
+		assertTrue(result.contains(b, RDFS.LABEL, null));
+		assertTrue(result.contains(c, RDFS.LABEL, null));
+		assertTrue(result.contains(null, p, b));
+		assertTrue(result.contains(e, RDFS.LABEL, null));
+		assertTrue(result.contains(null, p, e ));
+		assertFalse(result.contains(f, null, null));
 		Set<Value> objects = result.filter(a, p, null).objects();
 		assertNotNull(objects);
 		for (Value object : objects) {
