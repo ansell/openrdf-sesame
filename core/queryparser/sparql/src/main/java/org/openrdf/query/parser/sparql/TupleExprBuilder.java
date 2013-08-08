@@ -895,16 +895,34 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTDescribe node, Object data)
 		throws VisitorException
 	{
-		List<ValueExpr> describeExprs = new ArrayList<ValueExpr>(2 * node.jjtGetNumChildren());
+
+		TupleExpr tupleExpr = (TupleExpr)data;
+		if (tupleExpr == null) {
+			tupleExpr = new SingletonSet();
+		}
+
+		List<String> describeExprs = new ArrayList<String>(2 * node.jjtGetNumChildren());
+
+		Extension e = new Extension();
 
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
-			
-			describeExprs.add(resource);
+			String alias = null;
+			if (resource instanceof Var) {
+				alias = "-describe-" + ((Var)resource).getName();
+			}
+			else {
+				alias = "-describe-" + UUID.randomUUID();
+			}
+			ExtensionElem elem = new ExtensionElem(resource, alias);
+			e.addElement(elem);
+			describeExprs.add(alias);
 		}
 
-		return new DescribeOperator(describeExprs);
-		
+		e.setArg(tupleExpr);
+
+		return new DescribeOperator(e, describeExprs);
+
 	}
 
 	@Override

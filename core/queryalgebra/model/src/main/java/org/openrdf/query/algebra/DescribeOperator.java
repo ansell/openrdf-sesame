@@ -16,25 +16,38 @@
  */
 package org.openrdf.query.algebra;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Jeen Broekstra
  */
-public class DescribeOperator extends QueryModelNodeBase implements TupleExpr {
+public class DescribeOperator extends UnaryTupleOperator {
 
-	private List<ValueExpr> valueExprs;
+	private List<String> aliases;
 
 	/**
 	 * Create a new Describe Operator with the supplied DESCRIBE expressions.
 	 * 
 	 * @param describeExprs
+	 *        the list of expressions in the DESCRIBE clause.
 	 */
-	public DescribeOperator(List<ValueExpr> describeExprs) {
+	public DescribeOperator(List<String> aliases) {
 		super();
-		this.valueExprs = describeExprs;
+		this.aliases = aliases;
+	}
+
+	/**
+	 * Create a new Describe Operator with the supplied tuple expression and
+	 * DESCRIBE expressions.
+	 * 
+	 * @param arg
+	 *        the tuple expresssion representing the WHERE clause
+	 * @param describeExprs
+	 *        list of expressions in the DESCRIBE clause.
+	 */
+	public DescribeOperator(TupleExpr arg, List<String> aliases) {
+		super(arg);
+		this.aliases = aliases;
 	}
 
 	@Override
@@ -44,43 +57,12 @@ public class DescribeOperator extends QueryModelNodeBase implements TupleExpr {
 		visitor.meet(this);
 	}
 
-	@Override
-	public Set<String> getBindingNames() {
-		return null;
+	public List<String> getDescribeExprs() {
+		return this.aliases;
 	}
 
-	@Override
-	public Set<String> getAssuredBindingNames() {
-		return null;
+	public void setDescribeExprs(List<String> aliases) {
+		this.aliases = aliases;
 	}
 
-	public List<ValueExpr> getDescribeExprs() {
-		return this.valueExprs;
-	}
-
-	public void setDescribeExprs(List<ValueExpr> describeExprs) {
-		this.valueExprs = describeExprs;
-	}
-
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof DescribeOperator) {
-			DescribeOperator o = (DescribeOperator)other;
-			return valueExprs.equals(o.getDescribeExprs());
-		}
-
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return valueExprs.hashCode();
-	}
-
-	@Override
-	public DescribeOperator clone() {
-		DescribeOperator clone = (DescribeOperator)super.clone();
-		clone.setDescribeExprs(new ArrayList<ValueExpr>(getDescribeExprs()));
-		return clone;
-	}
 }

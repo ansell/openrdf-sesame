@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.iterator;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
@@ -24,6 +25,7 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.model.BNode;
@@ -51,11 +53,9 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private final static String VARNAME_OBJECT = "object";
 
-	private final Queue<ValueExpr> valueExprs;
+	private final List<String> valueExprs;
 
 	private final EvaluationStrategy strategy;
-
-	private BindingSet bindings;
 
 	private Value startValue;
 
@@ -63,7 +63,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private final Set<BNode> processedNodes = new HashSet<BNode>();
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> currentIter;
+	private CloseableIteration<BindingSet, QueryEvaluationException> currentValueExprIter;
 
 	private enum Mode {
 		OUTGOING_LINKS,
@@ -72,51 +72,78 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private Mode currentMode = Mode.OUTGOING_LINKS;
 
-	public DescribeIteration(EvaluationStrategy strategy, List<ValueExpr> valueExprs, BindingSet bindings) {
+	private Iteration<BindingSet, QueryEvaluationException> sourceIter;
+
+	public DescribeIteration(Iteration<BindingSet, QueryEvaluationException> sourceIter,
+			EvaluationStrategy strategy, List<String> valueExprs, BindingSet parentBindings)
+	{
 		this.strategy = strategy;
-		this.valueExprs = new ArrayDeque<ValueExpr>(valueExprs);
-		this.bindings = bindings;
+		this.sourceIter = sourceIter;
+		this.valueExprs = valueExprs;
+		this.parentBindings = parentBindings;
 	}
+
+	private BindingSet currentBindings;
+
+	private int valueExprIndex;
+
+	private BindingSet parentBindings;
 
 	@Override
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		if (currentIter == null) {
+
+		if (currentValueExprIter == null) {
+			if (currentBindings == null) {
+				if (sourceIter.hasNext()) {
+					currentBindings = sourceIter.next();
+				}
+				else {
+					currentBindings = parentBindings;
+				}
+			}
+
 			if (startValue == null) {
-				ValueExpr nextValueExpr = valueExprs.poll();
+				String nextValueExpr = valueExprs.get(valueExprIndex++);
 				if (nextValueExpr != null) {
-					startValue = strategy.evaluate(nextValueExpr, bindings);
+					startValue = currentBindings.getValue(nextValueExpr);
+					if (valueExprIndex == valueExprs.size()) { 
+						// reached the end of the list of valueExprs, reset to 
+						// read next value from source iterator if any.
+						currentBindings = null;
+						valueExprIndex = 0;
+					}
 				}
 			}
 
 			switch (currentMode) {
 				case OUTGOING_LINKS:
-					currentIter = createNextIteration(startValue, null);
-					if (!currentIter.hasNext()) {
+					currentValueExprIter = createNextIteration(startValue, null);
+					if (!currentValueExprIter.hasNext()) {
 						// special case: start value has no outgoing links.
 						// immediately switch to incoming links.
-						currentIter.close();
+						currentValueExprIter.close();
 						currentMode = Mode.INCOMING_LINKS;
-						currentIter = createNextIteration(null, startValue);
+						currentValueExprIter = createNextIteration(null, startValue);
 					}
 					break;
 				case INCOMING_LINKS:
-					currentIter = createNextIteration(null, startValue);
+					currentValueExprIter = createNextIteration(null, startValue);
 					break;
 			}
 		}
 		else {
-			while (!currentIter.hasNext() && !nodeQueue.isEmpty()) {
+			while (!currentValueExprIter.hasNext() && !nodeQueue.isEmpty()) {
 				// process next node in queue
 				BNode nextNode = nodeQueue.poll();
-				currentIter.close();
+				currentValueExprIter.close();
 				switch (currentMode) {
 					case OUTGOING_LINKS:
-						currentIter = createNextIteration(nextNode, null);
+						currentValueExprIter = createNextIteration(nextNode, null);
 						break;
 					case INCOMING_LINKS:
-						currentIter = createNextIteration(null, nextNode);
+						currentValueExprIter = createNextIteration(null, nextNode);
 						break;
 
 				}
@@ -124,8 +151,8 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			}
 		}
 
-		if (currentIter.hasNext()) {
-			BindingSet bs = currentIter.next();
+		if (currentValueExprIter.hasNext()) {
+			BindingSet bs = currentValueExprIter.next();
 
 			String varname = currentMode == Mode.OUTGOING_LINKS ? VARNAME_OBJECT : VARNAME_SUBJECT;
 
@@ -136,9 +163,9 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				}
 			}
 
-			if (!currentIter.hasNext() && nodeQueue.isEmpty()) {
-				currentIter.close();
-				currentIter = null;
+			if (!currentValueExprIter.hasNext() && nodeQueue.isEmpty()) {
+				currentValueExprIter.close();
+				currentValueExprIter = null;
 
 				if (currentMode == Mode.OUTGOING_LINKS) {
 					currentMode = Mode.INCOMING_LINKS;
@@ -170,7 +197,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		Var objVar = new Var(VARNAME_OBJECT, object);
 
 		StatementPattern pattern = new StatementPattern(subjVar, predVar, objVar);
-		return strategy.evaluate(pattern, bindings);
+		return strategy.evaluate(pattern, parentBindings);
 	}
 
 }
