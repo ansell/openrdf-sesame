@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.iterator;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
@@ -24,6 +25,7 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.model.BNode;
@@ -51,11 +53,9 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private final static String VARNAME_OBJECT = "object";
 
-	private final Queue<ValueExpr> valueExprs;
+	private final List<String> describeExprNames;
 
 	private final EvaluationStrategy strategy;
-
-	private BindingSet bindings;
 
 	private Value startValue;
 
@@ -63,7 +63,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private final Set<BNode> processedNodes = new HashSet<BNode>();
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> currentIter;
+	private CloseableIteration<BindingSet, QueryEvaluationException> currentDescribeExprIter;
 
 	private enum Mode {
 		OUTGOING_LINKS,
@@ -72,60 +72,94 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private Mode currentMode = Mode.OUTGOING_LINKS;
 
-	public DescribeIteration(EvaluationStrategy strategy, List<ValueExpr> valueExprs, BindingSet bindings) {
+	private Iteration<BindingSet, QueryEvaluationException> sourceIter;
+
+	public DescribeIteration(Iteration<BindingSet, QueryEvaluationException> sourceIter,
+			EvaluationStrategy strategy, Set<String> describeExprNames, BindingSet parentBindings)
+	{
 		this.strategy = strategy;
-		this.valueExprs = new ArrayDeque<ValueExpr>(valueExprs);
-		this.bindings = bindings;
+		this.sourceIter = sourceIter;
+		this.describeExprNames = new ArrayList<String>(describeExprNames);
+		this.parentBindings = parentBindings;
 	}
+
+	private BindingSet currentBindings;
+
+	private int describeExprsIndex;
+
+	private BindingSet parentBindings;
 
 	@Override
 	protected BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
-		if (currentIter == null) {
+
+		while (currentDescribeExprIter == null) {
+			if (currentBindings == null && startValue == null) {
+				if (sourceIter.hasNext()) {
+					currentBindings = sourceIter.next();
+				}
+				else {
+					// no more bindings, therefore no more results to return.
+					return null;
+				}
+			}
+
 			if (startValue == null) {
-				ValueExpr nextValueExpr = valueExprs.poll();
+				String nextValueExpr = describeExprNames.get(describeExprsIndex++);
 				if (nextValueExpr != null) {
-					startValue = strategy.evaluate(nextValueExpr, bindings);
+					startValue = currentBindings.getValue(nextValueExpr);
+					if (describeExprsIndex == describeExprNames.size()) {
+						// reached the end of the list of valueExprs, reset to
+						// read next value from source iterator if any.
+						currentBindings = null;
+						describeExprsIndex = 0;
+					}
+					currentMode = Mode.OUTGOING_LINKS;
 				}
 			}
 
 			switch (currentMode) {
 				case OUTGOING_LINKS:
-					currentIter = createNextIteration(startValue, null);
-					if (!currentIter.hasNext()) {
-						// special case: start value has no outgoing links.
-						// immediately switch to incoming links.
-						currentIter.close();
+					currentDescribeExprIter = createNextIteration(startValue, null);
+					if (!currentDescribeExprIter.hasNext()) {
+						// start value has no outgoing links.
+						currentDescribeExprIter.close();
+						currentDescribeExprIter = null;
 						currentMode = Mode.INCOMING_LINKS;
-						currentIter = createNextIteration(null, startValue);
 					}
 					break;
 				case INCOMING_LINKS:
-					currentIter = createNextIteration(null, startValue);
+					currentDescribeExprIter = createNextIteration(null, startValue);
+					if (!currentDescribeExprIter.hasNext()) {
+						// no incoming links for this start value.
+						currentDescribeExprIter.close();
+						currentDescribeExprIter = null;
+						startValue = null;
+						currentMode = Mode.OUTGOING_LINKS;
+					}
 					break;
 			}
 		}
-		else {
-			while (!currentIter.hasNext() && !nodeQueue.isEmpty()) {
-				// process next node in queue
-				BNode nextNode = nodeQueue.poll();
-				currentIter.close();
-				switch (currentMode) {
-					case OUTGOING_LINKS:
-						currentIter = createNextIteration(nextNode, null);
-						break;
-					case INCOMING_LINKS:
-						currentIter = createNextIteration(null, nextNode);
-						break;
 
-				}
-				processedNodes.add(nextNode);
+		while (!currentDescribeExprIter.hasNext() && !nodeQueue.isEmpty()) {
+			// process next node in queue
+			BNode nextNode = nodeQueue.poll();
+			currentDescribeExprIter.close();
+			switch (currentMode) {
+				case OUTGOING_LINKS:
+					currentDescribeExprIter = createNextIteration(nextNode, null);
+					break;
+				case INCOMING_LINKS:
+					currentDescribeExprIter = createNextIteration(null, nextNode);
+					break;
+
 			}
+			processedNodes.add(nextNode);
 		}
 
-		if (currentIter.hasNext()) {
-			BindingSet bs = currentIter.next();
+		if (currentDescribeExprIter.hasNext()) {
+			BindingSet bs = currentDescribeExprIter.next();
 
 			String varname = currentMode == Mode.OUTGOING_LINKS ? VARNAME_OBJECT : VARNAME_SUBJECT;
 
@@ -136,9 +170,9 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				}
 			}
 
-			if (!currentIter.hasNext() && nodeQueue.isEmpty()) {
-				currentIter.close();
-				currentIter = null;
+			if (!currentDescribeExprIter.hasNext() && nodeQueue.isEmpty()) {
+				currentDescribeExprIter.close();
+				currentDescribeExprIter = null;
 
 				if (currentMode == Mode.OUTGOING_LINKS) {
 					currentMode = Mode.INCOMING_LINKS;
@@ -170,7 +204,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		Var objVar = new Var(VARNAME_OBJECT, object);
 
 		StatementPattern pattern = new StatementPattern(subjVar, predVar, objVar);
-		return strategy.evaluate(pattern, bindings);
+		return strategy.evaluate(pattern, parentBindings);
 	}
 
 }

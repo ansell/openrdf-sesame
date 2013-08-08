@@ -216,9 +216,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof BindingSetAssignment) {
 			return evaluate((BindingSetAssignment)expr, bindings);
 		}
-		else if (expr instanceof DescribeOperator) {
-			return evaluate((DescribeOperator)expr, bindings);
-		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -393,7 +390,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		return new DescribeIteration(this, operator.getDescribeExprs(), bindings);
+		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(operator.getArg(), bindings);
+		return new DescribeIteration(iter, this, operator.getBindingNames(), bindings);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
@@ -606,6 +604,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof QueryRoot) {
 			return evaluate(((QueryRoot)expr).getArg(), bindings);
+		}
+		else if (expr instanceof DescribeOperator) {
+			return evaluate((DescribeOperator)expr, bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");

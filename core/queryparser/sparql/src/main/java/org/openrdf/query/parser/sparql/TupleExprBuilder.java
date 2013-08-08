@@ -895,16 +895,36 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public TupleExpr visit(ASTDescribe node, Object data)
 		throws VisitorException
 	{
-		List<ValueExpr> describeExprs = new ArrayList<ValueExpr>(2 * node.jjtGetNumChildren());
 
+		TupleExpr tupleExpr = (TupleExpr)data;
+		if (tupleExpr == null) {
+			tupleExpr = new SingletonSet();
+		}
+
+		Extension e = new Extension();
+		ProjectionElemList projectionElements = new ProjectionElemList();
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 			
-			describeExprs.add(resource);
+			if (resource instanceof Var) {
+				projectionElements.addElement(new ProjectionElem(((Var)resource).getName()));
+			}
+			else {
+				String alias = "-describe-" + UUID.randomUUID();
+				ExtensionElem elem = new ExtensionElem(resource, alias);
+				e.addElement(elem);
+				projectionElements.addElement(new ProjectionElem(alias));
+			}
 		}
-
-		return new DescribeOperator(describeExprs);
 		
+		if (! e.getElements().isEmpty()) {
+			e.setArg(tupleExpr);
+			tupleExpr = e;
+		}
+		
+		Projection p = new Projection(tupleExpr, projectionElements);
+		return new DescribeOperator(p);
+
 	}
 
 	@Override
