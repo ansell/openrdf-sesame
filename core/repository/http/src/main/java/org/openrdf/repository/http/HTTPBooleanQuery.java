@@ -36,9 +36,9 @@ import org.openrdf.repository.RepositoryException;
  */
 public class HTTPBooleanQuery extends AbstractHTTPQuery implements BooleanQuery {
 
-	public HTTPBooleanQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI)
+	public HTTPBooleanQuery(HTTPClient client, QueryLanguage ql, String queryString, String baseURI)
 	{
-		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
+		super(client, ql, queryString, baseURI);
 	}
 
 	public boolean evaluate()

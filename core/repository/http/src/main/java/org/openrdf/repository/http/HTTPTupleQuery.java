@@ -40,8 +40,8 @@ import org.openrdf.repository.RepositoryException;
  */
 public class HTTPTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
-	public HTTPTupleQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
+	public HTTPTupleQuery(HTTPClient client, QueryLanguage ql, String queryString, String baseURI) {
+		super(client, ql, queryString, baseURI);
 	}
 
 	// TODO  maybe even make this shared code for SPARQL and REMOTE repository

@@ -43,9 +43,6 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 
 	protected final BindingSet bindings; // the bindings
 
-	/* Variables */
-	protected volatile Thread evaluationThread;
-
 	protected CloseableIteration<T, QueryEvaluationException> leftIter;
 
 	protected CloseableIteration<T, QueryEvaluationException> rightIter;
@@ -54,7 +51,7 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 
 	protected boolean finished = false;
 
-	protected QueueCursor<CloseableIteration<T, QueryEvaluationException>> rightQueue = new QueueCursor<CloseableIteration<T, QueryEvaluationException>>(
+	protected final QueueCursor<CloseableIteration<T, QueryEvaluationException>> rightQueue = new QueueCursor<CloseableIteration<T, QueryEvaluationException>>(
 			1024);
 
 	public JoinExecutorBase(CloseableIteration<T, QueryEvaluationException> leftIter, TupleExpr rightArg,
@@ -144,9 +141,7 @@ public abstract class JoinExecutorBase<T> extends LookAheadIteration<T, QueryEva
 		throws QueryEvaluationException
 	{
 		closed = true;
-		if (evaluationThread != null) {
-			evaluationThread.interrupt();
-		}
+		rightQueue.close();
 
 		if (rightIter != null) {
 			rightIter.close();

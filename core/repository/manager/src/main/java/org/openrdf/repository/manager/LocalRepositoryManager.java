@@ -30,13 +30,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.io.FileUtil;
 
+import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -75,6 +81,10 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 * The base dir to resolve any relative paths against.
 	 */
 	private final File baseDir;
+
+	private SesameClientImpl client;
+
+	private FederatedServiceResolverImpl serviceResolver;
 
 	/*--------------*
 	 * Constructors *
@@ -127,6 +137,47 @@ public class LocalRepositoryManager extends RepositoryManager {
 		throws MalformedURLException
 	{
 		return baseDir.toURI().toURL();
+	}
+
+	@Override
+	public HttpClient getHttpClient() {
+		if (client == null) {
+			return null;
+		} else {
+			return client.getHttpClient();
+		}
+	}
+
+	@Override
+	public synchronized void setHttpClient(HttpClient httpClient) {
+		if (client == null) {
+			client = new SesameClientImpl();
+		}
+		client.setHttpClient(httpClient);
+	}
+
+	/**
+	 * @return Returns the serviceResolver.
+	 */
+	protected synchronized FederatedServiceResolver getFederatedServiceResolver() {
+		if (serviceResolver == null) {
+			if (client == null) {
+				client = new SesameClientImpl();
+			}
+			serviceResolver = new FederatedServiceResolverImpl();
+			serviceResolver.setSesameClient(client);
+		}
+		return serviceResolver;
+	}
+
+	@Override
+	public void shutDown() {
+		super.shutDown();
+		if (serviceResolver != null) {
+			serviceResolver.shutDown();
+			serviceResolver = null;
+			client = null;
+		}
 	}
 
 	/**
@@ -198,6 +249,9 @@ public class LocalRepositoryManager extends RepositoryManager {
 		}
 		if (factory instanceof RepositoryResolverClient) {
 			((RepositoryResolverClient)factory).setRepositoryResolver(this);
+		}
+		if (factory instanceof FederatedServiceResolverClient) {
+			((FederatedServiceResolverClient)factory).setFederatedServiceResolver(getFederatedServiceResolver());
 		}
 		Repository repository = factory.getRepository(config);
 		if (config instanceof DelegatingRepositoryImplConfig) {

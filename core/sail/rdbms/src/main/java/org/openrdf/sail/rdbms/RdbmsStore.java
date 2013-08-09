@@ -28,6 +28,9 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.SailBase;
@@ -44,7 +47,7 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  *             different SAIL backend.
  */
 @Deprecated
-public class RdbmsStore extends SailBase {
+public class RdbmsStore extends SailBase implements FederatedServiceResolverClient {
 
 	private RdbmsConnectionFactory factory;
 
@@ -63,6 +66,10 @@ public class RdbmsStore extends SailBase {
 	private boolean sequenced = true;
 
 	private BasicDataSource ds;
+
+	private FederatedServiceResolver serviceResolver;
+
+	private FederatedServiceResolverImpl serviceResolverImpl;
 
 	public RdbmsStore() {
 		super();
@@ -147,6 +154,29 @@ public class RdbmsStore extends SailBase {
 		this.sequenced = useSequence;
 	}
 
+	/**
+	 * @return Returns the SERVICE resolver.
+	 */
+	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
+		if (serviceResolver == null) {
+			if (serviceResolverImpl == null) {
+				serviceResolverImpl = new FederatedServiceResolverImpl();
+			}
+			return serviceResolver = serviceResolverImpl;
+		}
+		return serviceResolver;
+	}
+
+	/**
+	 * Overrides the {@link FederatedServiceResolver} used by this instance, but
+	 * the given resolver is not shutDown when this instance is.
+	 * 
+	 * @param reslover The SERVICE resolver to set.
+	 */
+	public synchronized void setFederatedServiceResolver(FederatedServiceResolver reslover) {
+		this.serviceResolver = reslover;
+	}
+
 	@Override
 	protected void initializeInternal()
 		throws SailException
@@ -197,6 +227,10 @@ public class RdbmsStore extends SailBase {
 		}
 		catch (SQLException e) {
 			throw new RdbmsException(e);
+		} finally {
+			if (serviceResolverImpl != null) {
+				serviceResolverImpl.shutDown();
+			}
 		}
 	}
 

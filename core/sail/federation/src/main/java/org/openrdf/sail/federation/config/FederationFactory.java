@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.federation.config;
 
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
@@ -35,7 +37,7 @@ import org.openrdf.sail.federation.Federation;
  * @author James Leigh
  */
 public class FederationFactory implements SailFactory,
-		RepositoryResolverClient {
+		RepositoryResolverClient, FederatedServiceResolverClient {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -46,6 +48,8 @@ public class FederationFactory implements SailFactory,
 
 	private RepositoryResolver resolver;
 
+	private FederatedServiceResolver serviceResolver;
+
 	/**
 	 * Returns the Sail's type: <tt>openrdf:Federation</tt>.
 	 */
@@ -55,6 +59,15 @@ public class FederationFactory implements SailFactory,
 
 	public SailImplConfig getConfig() {
 		return new FederationConfig();
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return serviceResolver;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.serviceResolver = resolver;
 	}
 
 	public Sail getSail(SailImplConfig config) throws SailConfigException {
@@ -85,6 +98,7 @@ public class FederationFactory implements SailFactory,
 		sail.setLocalPropertySpace(cfg.getLocalPropertySpace());
 		sail.setDistinct(cfg.isDistinct());
 		sail.setReadOnly(cfg.isReadOnly());
+		sail.setFederatedServiceResolver(getFederatedServiceResolver());
 		return sail;
 	}
 

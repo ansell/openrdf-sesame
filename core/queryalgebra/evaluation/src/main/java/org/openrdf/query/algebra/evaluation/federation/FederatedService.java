@@ -16,6 +16,8 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
+import java.util.Set;
+
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.query.BindingSet;
@@ -29,17 +31,33 @@ import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
  * default {@link SPARQLFederatedService} is used.
  * 
  * @author Andreas Schwarte
+ * @author James Leigh
  * @see SPARQLFederatedService
  */
 public interface FederatedService {
 
 	/**
-	 * Query type
+	 * <p>
+	 * Evaluate the provided SPARQL query at this federated service.
+	 * </p>
+	 * 
+	 * <pre>
+	 * Expected behavior: evaluate boolean query using the bindings as constraints
+	 * </pre>
+	 * 
+	 * @param service
+	 *        the reference to the service node, contains additional meta
+	 *        information (vars, prefixes)
+	 * @param bindings
+	 *        the bindings serving as additional constraints
+	 * @param baseUri
+	 * @param type
+	 *        the {@link QueryType}, either ASK or SELECT
+	 * @return <code>true</code> if at least one result exists
+	 * @throws QueryEvaluationException
 	 */
-	public static enum QueryType {
-		SELECT,
-		ASK
-	}
+	public boolean ask(Service service, BindingSet bindings, String baseUri)
+		throws QueryEvaluationException;
 
 	/**
 	 * <p>
@@ -51,28 +69,23 @@ public interface FederatedService {
 	 * </p>
 	 * 
 	 * <pre>
-	 * Expected behavior:
-	 * a) SELECT: evaluate the given SPARQL query using the bindings as constraints
-	 * b) ASK: evaluate boolean query using the bindings as constraints
-	 * 		- true => return new SingletonIteration(bindings);
-	 *      - false => return new EmptyIteration<BindingSet, QueryEvaluationException>();
+	 * Expected behavior: evaluate the given SPARQL query using the bindings as constraints
 	 * </pre>
 	 * 
-	 * @param sparqlQueryString
-	 *        a SPARQL query (either SELECT or ASK, compare type parameter)
-	 * @param bindings
-	 *        the bindings serving as additional constraints
-	 * @param baseUri
-	 * @param type
-	 *        the {@link QueryType}, either ASK or SELECT
 	 * @param service
 	 *        the reference to the service node, contains additional meta
 	 *        information (vars, prefixes)
+	 * @param projectionVars
+	 *        The variables with unknown value that should be projected from this
+	 *        evaluation
+	 * @param bindings
+	 *        the bindings serving as additional constraints
+	 * @param baseUri
 	 * @return an iteration over the results of the query
 	 * @throws QueryEvaluationException
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(String sparqlQueryString,
-			BindingSet bindings, String baseUri, QueryType type, Service service)
+	public CloseableIteration<BindingSet, QueryEvaluationException> select(Service service,
+			Set<String> projectionVars, BindingSet bindings, String baseUri)
 		throws QueryEvaluationException;
 
 	/**
@@ -104,6 +117,11 @@ public interface FederatedService {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings, String baseUri)
 		throws QueryEvaluationException;
+
+	/**
+	 * Method to check if {@link #initialize()} had been called.
+	 */
+	public boolean isInitialized();
 
 	/**
 	 * Method to perform any initializations, invoked after construction.

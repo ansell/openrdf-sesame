@@ -49,6 +49,6 @@ public class LimitedSizeNativeStoreConnection extends NativeStoreConnection {
 
 	@Override
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, NativeTripleSource tripleSource) {
-		return new LimitedSizeEvaluationStrategy(tripleSource, dataset, maxCollectionsSize);
+		return new LimitedSizeEvaluationStrategy(tripleSource, dataset, maxCollectionsSize, nativeStore.getFederatedServiceResolver());
 	}
 }

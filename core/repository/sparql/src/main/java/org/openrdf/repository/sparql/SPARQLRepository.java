@@ -17,11 +17,10 @@
 package org.openrdf.repository.sparql;
 
 import java.io.File;
-import java.util.Map;
-
-import info.aduna.io.MavenUtil;
 
 import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -37,15 +36,14 @@ import org.openrdf.repository.base.RepositoryBase;
  */
 public class SPARQLRepository extends RepositoryBase {
 
-	private static final String APP_NAME = "OpenRDF.org SPARQLConnection";
-
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
-			"sesame-repository-sparql", "devel");
-
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private final HTTPClient httpClient;
+	private SesameClient client;
+	private String username;
+	private String password;
+	private String queryEndpointUrl;
+	private String updateEndpointUrl;
 
 	/**
 	 * Create a new SPARQLRepository using the supplied endpoint URL for queries
@@ -73,13 +71,19 @@ public class SPARQLRepository extends RepositoryBase {
 		if (queryEndpointUrl == null || updateEndpointUrl == null) {
 			throw new IllegalArgumentException("endpoint URL may not be null.");
 		}
+		this.queryEndpointUrl = queryEndpointUrl;
+		this.updateEndpointUrl = updateEndpointUrl;
+	}
 
-		// initialize HTTP client
-		httpClient = createHTTPClient();
-		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
-		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
-		httpClient.setQueryURL(queryEndpointUrl);
-		httpClient.setUpdateURL(updateEndpointUrl);
+	public synchronized SesameClient getSesameClient() {
+		if (client == null) {
+			client = new SesameClientImpl();
+		}
+		return client;
+	}
+
+	public synchronized  void setSesameClient(SesameClient client) {
+		this.client = client;
 	}
 
 	/**
@@ -89,7 +93,14 @@ public class SPARQLRepository extends RepositoryBase {
 	 * @return a HTTPClient object.
 	 */
 	protected HTTPClient createHTTPClient() {
-		return new HTTPClient();
+		// initialize HTTP client
+		HTTPClient httpClient = getSesameClient().createSparqlSession(queryEndpointUrl, updateEndpointUrl);
+		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
+		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
+		if (username != null) {
+			httpClient.setUsernameAndPassword(username, password);
+		}
+		return httpClient;
 	}
 
 	public RepositoryConnection getConnection()
@@ -97,7 +108,7 @@ public class SPARQLRepository extends RepositoryBase {
 	{
 		if (!isInitialized())
 			throw new RepositoryException("SPARQLRepository not initialized.");
-		return new SPARQLConnection(this);
+		return new SPARQLConnection(this, createHTTPClient());
 	}
 
 	public File getDataDir() {
@@ -112,7 +123,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-		httpClient.initialize();
+		// no-op
 	}
 
 	public boolean isWritable()
@@ -123,10 +134,6 @@ public class SPARQLRepository extends RepositoryBase {
 
 	public void setDataDir(File dataDir) {
 		// no-op
-	}
-
-	protected HTTPClient getHTTPClient() {
-		return httpClient;
 	}
 	
 	/**
@@ -139,33 +146,21 @@ public class SPARQLRepository extends RepositoryBase {
 	 *        the password. Setting this to null will disable authentication.
 	 */
 	public void setUsernameAndPassword(final String username, final String password) {
-		httpClient.setUsernameAndPassword(username, password);
+		this.username = username;
+		this.password = password;
 	}
 
 	@Override
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		httpClient.shutDown();
+		if (client != null) {
+			client.shutDown();
+		}
 	}
 	
 	@Override
 	public String toString() {
-		return getHTTPClient().getQueryURL();
-	}
-
-	/**
-	 * @return Returns the additionalHttpHeaders.
-	 */
-	public Map<String, String> getAdditionalHttpHeaders() {
-		return getHTTPClient().getAdditionalHttpHeaders();
-	}
-
-	/**
-	 * @param additionalHttpHeaders
-	 *        The additionalHttpHeaders to set as key value pairs.
-	 */
-	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		getHTTPClient().setAdditionalHttpHeaders(additionalHttpHeaders);
+		return queryEndpointUrl;
 	}
 }
