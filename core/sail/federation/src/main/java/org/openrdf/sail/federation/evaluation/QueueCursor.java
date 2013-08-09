@@ -88,7 +88,9 @@ public class QueueCursor<E> extends
 	 * Adds another item to the queue, blocking while the queue is full.
 	 */
 	public void put(E item) throws InterruptedException {
-		queue.put(item);
+		if (!done) {
+			queue.put(item);
+		}
 	}
 
 	/**
@@ -134,6 +136,10 @@ public class QueueCursor<E> extends
 
 	@Override
 	public void handleClose() throws QueryEvaluationException {
+		done = true;
+		do {
+			queue.clear(); // ensure extra room is available
+		} while (!queue.offer(afterLast));
 		checkException();
 	}
 

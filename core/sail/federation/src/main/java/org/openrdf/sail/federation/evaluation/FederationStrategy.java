@@ -32,6 +32,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.sail.federation.algebra.NaryJoin;
@@ -50,8 +51,8 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 	private final Executor executor;
 
 	public FederationStrategy(Executor executor, TripleSource tripleSource,
-			Dataset dataset) {
-		super(tripleSource, dataset);
+			Dataset dataset, FederatedServiceResolver serviceManager) {
+		super(tripleSource, dataset, serviceManager);
 		this.executor = executor;
 	}
 
@@ -138,7 +139,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 		if (result == null) {
 			TripleSource source = new RepositoryTripleSource(expr.getOwner());
 			EvaluationStrategy eval = new FederationStrategy(executor, source,
-					dataset);
+					dataset, serviceResolver);
 			result = eval.evaluate(expr.getArg(), bindings);
 		}
 		return result;

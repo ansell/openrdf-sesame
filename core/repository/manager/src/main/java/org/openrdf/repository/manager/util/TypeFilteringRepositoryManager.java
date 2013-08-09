@@ -25,6 +25,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
+
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
@@ -49,6 +51,22 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 
 		this.type = type;
 		this.delegate = delegate;
+	}
+
+	/**
+	 * @return
+	 * @see org.openrdf.repository.manager.RepositoryManager#getHttpClient()
+	 */
+	public HttpClient getHttpClient() {
+		return delegate.getHttpClient();
+	}
+
+	/**
+	 * @param httpClient
+	 * @see org.openrdf.repository.manager.RepositoryManager#setHttpClient(org.apache.http.client.HttpClient)
+	 */
+	public void setHttpClient(HttpClient httpClient) {
+		delegate.setHttpClient(httpClient);
 	}
 
 	@Override

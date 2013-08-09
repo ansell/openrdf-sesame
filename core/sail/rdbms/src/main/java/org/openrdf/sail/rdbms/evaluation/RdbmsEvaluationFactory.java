@@ -17,6 +17,8 @@
 package org.openrdf.sail.rdbms.evaluation;
 
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.schema.IdSequence;
 
@@ -26,13 +28,15 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * @author James Leigh
  * 
  */
-public class RdbmsEvaluationFactory {
+public class RdbmsEvaluationFactory implements FederatedServiceResolverClient {
 
 	private QueryBuilderFactory factory;
 
 	private RdbmsTripleRepository triples;
 
 	private IdSequence ids;
+
+	private FederatedServiceResolver serviceResolver;
 
 	public void setQueryBuilderFactory(QueryBuilderFactory factory) {
 		this.factory = factory;
@@ -46,7 +50,14 @@ public class RdbmsEvaluationFactory {
 		this.ids = ids;
 	}
 
+	/**
+	 * @param reslover The SERVICE resolver to set.
+	 */
+	public void setFederatedServiceResolver(FederatedServiceResolver reslover) {
+		this.serviceResolver = reslover;
+	}
+
 	public RdbmsEvaluation createRdbmsEvaluation(Dataset dataset) {
-		return new RdbmsEvaluation(factory, triples, dataset, ids);
+		return new RdbmsEvaluation(factory, triples, dataset, ids, serviceResolver);
 	}
 }

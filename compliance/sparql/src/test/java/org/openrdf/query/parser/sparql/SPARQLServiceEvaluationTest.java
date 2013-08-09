@@ -57,7 +57,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
 import org.openrdf.query.impl.MutableTupleQueryResult;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
@@ -114,8 +113,6 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 	public void setUp()
 		throws Exception
 	{
-		FederatedServiceManager.getInstance().unregisterAll();
-		
 		// set up the server: the maximal number of endpoints must be known
 		List<String> repositoryIds = new ArrayList<String>(MAX_ENDPOINTS);
 		for (int i=1; i<=MAX_ENDPOINTS; i++)

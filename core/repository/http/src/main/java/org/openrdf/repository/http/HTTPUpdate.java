@@ -39,8 +39,9 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 
 	protected final HTTPRepositoryConnection httpCon;
 
-	public HTTPUpdate(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
+	public HTTPUpdate(HTTPRepositoryConnection con, HTTPClient client, QueryLanguage ql, String queryString,
+			String baseURI) {
+		super(client, ql, queryString, baseURI);
 		this.httpCon = con;
 	}
 
@@ -52,7 +53,7 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 			// TODO have a look at this
 			if (httpCon.isAutoCommit()) {
 				// execute update immediately
-				HTTPClient client = httpCon.getRepository().getHTTPClient();
+				HTTPClient client = getHttpClient();
 				try {
 					client.sendUpdate(getQueryLanguage(), getQueryString(), getBaseURI(), dataset, includeInferred,
 							getBindingsArray());
