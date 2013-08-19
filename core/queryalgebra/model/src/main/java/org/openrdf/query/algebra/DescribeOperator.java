@@ -14,30 +14,28 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio.n3;
+package org.openrdf.query.algebra;
 
-import org.junit.Ignore;
-
-import junit.framework.Test;
-
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.turtle.TurtleParser;
 
 /**
- * JUnit test for the N3 parser that uses the tests that are available <a
- * href="http://www.w3.org/2000/10/swap/test/n3parser.tests">online</a>.
+ * @author Jeen Broekstra
  */
-@Ignore("FIXME: This test is badly broken")
-public class N3ParserTest extends N3ParserTestCase {
+public class DescribeOperator extends UnaryTupleOperator {
 
-	public static Test suite()
-		throws Exception
-	{
-		return new N3ParserTest().createTestSuite();
+	/**
+	 * @param e
+	 */
+	public DescribeOperator(TupleExpr arg) {
+		super(arg);
 	}
 
 	@Override
-	protected RDFParser createRDFParser() {
-		return new TurtleParser();
+	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
+		throws X
+	{
+		visitor.meet(this);
 	}
+
+
+
 }

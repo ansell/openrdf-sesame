@@ -65,6 +65,12 @@ public class SPARQLUpdateOperation implements TransactionOperation {
 			preparedUpdate.setIncludeInferred(isIncludeInferred());
 			preparedUpdate.setDataset(getDataset());
 			
+			if (getBindings() != null) {
+				for (Binding binding : getBindings()) {
+					preparedUpdate.setBinding(binding.getName(), binding.getValue());
+				}
+			}
+			
 			preparedUpdate.execute();
 		}
 		catch (MalformedQueryException e) {

@@ -78,33 +78,32 @@ public class GraphController extends AbstractController {
 		ModelAndView result;
 
 		Repository repository = RepositoryInterceptor.getRepository(request);
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 
 		String reqMethod = request.getMethod();
 
-		if (METHOD_GET.equals(reqMethod) ) {
+		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET graph");
-			result = getExportStatementsResult(repository, repositoryCon, request, response);
+			result = getExportStatementsResult(repository, request, response);
 			logger.info("GET graph request finished.");
 		}
-		else if (METHOD_HEAD.equals(reqMethod) ) {
+		else if (METHOD_HEAD.equals(reqMethod)) {
 			logger.info("HEAD graph");
-			result = getExportStatementsResult(repository, repositoryCon, request, response);
+			result = getExportStatementsResult(repository, request, response);
 			logger.info("HEAD graph request finished.");
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
 			logger.info("POST data to graph");
-			result = getAddDataResult(repository, repositoryCon, request, response, false);
+			result = getAddDataResult(repository, request, response, false);
 			logger.info("POST data request finished.");
 		}
 		else if ("PUT".equals(reqMethod)) {
 			logger.info("PUT data in graph");
-			result = getAddDataResult(repository, repositoryCon, request, response, true);
+			result = getAddDataResult(repository, request, response, true);
 			logger.info("PUT data request finished.");
 		}
 		else if ("DELETE".equals(reqMethod)) {
 			logger.info("DELETE data from graph");
-			result = getDeleteDataResult(repository, repositoryCon, request, response);
+			result = getDeleteDataResult(repository, request, response);
 			logger.info("DELETE data request finished.");
 		}
 		else {
@@ -147,8 +146,8 @@ public class GraphController extends AbstractController {
 	 * 
 	 * @return a model and view for exporting the statements.
 	 */
-	private ModelAndView getExportStatementsResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response)
+	private ModelAndView getExportStatementsResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
 		throws ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -172,8 +171,8 @@ public class GraphController extends AbstractController {
 	/**
 	 * Upload data to the graph.
 	 */
-	private ModelAndView getAddDataResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response, boolean replaceCurrent)
+	private ModelAndView getAddDataResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response, boolean replaceCurrent)
 		throws IOException, ClientHTTPException, ServerHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -191,16 +190,19 @@ public class GraphController extends AbstractController {
 
 		InputStream in = request.getInputStream();
 		try {
-			if (repositoryCon.isAutoCommit()) {
-				repositoryCon.begin();
-			}
-			
-			if (replaceCurrent) {
-				repositoryCon.clear(graph);
-			}
-			repositoryCon.add(in, graph.toString(), rdfFormat, graph);
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				if (repositoryCon.isAutoCommit()) {
+					repositoryCon.begin();
+				}
 
-			repositoryCon.commit();
+				if (replaceCurrent) {
+					repositoryCon.clear(graph);
+				}
+				repositoryCon.add(in, graph.toString(), rdfFormat, graph);
+
+				repositoryCon.commit();
+			}
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
@@ -223,7 +225,7 @@ public class GraphController extends AbstractController {
 	/**
 	 * Delete data from the graph.
 	 */
-	private ModelAndView getDeleteDataResult(Repository repository, RepositoryConnection repositoryCon,
+	private ModelAndView getDeleteDataResult(Repository repository,
 			HttpServletRequest request, HttpServletResponse response)
 		throws ClientHTTPException, ServerHTTPException
 	{
@@ -234,8 +236,12 @@ public class GraphController extends AbstractController {
 		URI graph = getGraphName(request, vf);
 
 		try {
-			repositoryCon.clear(graph);
-
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized(repositoryCon)
+			{
+				repositoryCon.clear(graph);
+			}
+			
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (RepositoryException e) {

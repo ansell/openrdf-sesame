@@ -63,6 +63,7 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
@@ -125,6 +126,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
+import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
@@ -384,6 +386,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(DescribeOperator operator,
+			final BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(operator.getArg(), bindings);
+		return new DescribeIteration(iter, this, operator.getBindingNames(), bindings);
+	}
+
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
 			final BindingSet bindings)
 		throws QueryEvaluationException
@@ -594,6 +604,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof QueryRoot) {
 			return evaluate(((QueryRoot)expr).getArg(), bindings);
+		}
+		else if (expr instanceof DescribeOperator) {
+			return evaluate((DescribeOperator)expr, bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");

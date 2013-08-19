@@ -16,11 +16,18 @@
  */
 package org.openrdf.repository.http;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.nio.file.Path;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.model.vocabulary.FOAF;
+import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.Update;
 import org.openrdf.query.parser.sparql.SPARQLUpdateTest;
 import org.openrdf.repository.Repository;
 
@@ -82,6 +89,42 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 		System.err.println("temporarily disabled testAutoCommitHandling() for HTTPRepository. See SES-1652");
 	}
 
+	@Test
+	public void testBindingsInUpdateTransaction()
+		throws Exception
+	{
+		// See issue SES-1889
+		logger.debug("executing test testBindingsInUpdateTransaction");
+
+		StringBuilder update1 = new StringBuilder();
+		update1.append(getNamespaceDeclarations());
+		update1.append("DELETE { ?x foaf:name ?y } WHERE {?x foaf:name ?y }");
+
+		try {
+			assertTrue(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+			assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+			con.begin();
+			Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update1.toString());
+			operation.setBinding("x", bob);
+			
+
+			operation.execute();
+
+			con.commit();
+		
+			// only bob's name should have been deleted (due to the binding)
+			assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
+			assertTrue(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
+
+		}
+		catch (Exception e) {
+			if(con.isActive()) {
+				con.rollback();
+			}
+		}
+	}
+	
 	@Ignore
 	@Test
 	@Override

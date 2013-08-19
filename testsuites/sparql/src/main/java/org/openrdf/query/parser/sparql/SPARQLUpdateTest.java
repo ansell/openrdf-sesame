@@ -67,21 +67,21 @@ public abstract class SPARQLUpdateTest {
 	@Rule
 	public TemporaryFolder tempDir = new TemporaryFolder();
 
-	static final Logger logger = LoggerFactory.getLogger(SPARQLUpdateTest.class);
+	protected static final Logger logger = LoggerFactory.getLogger(SPARQLUpdateTest.class);
 
 	private Repository rep;
 
-	private RepositoryConnection con;
+	protected RepositoryConnection con;
 
-	private ValueFactory f;
+	protected ValueFactory f;
 
-	private URI bob;
+	protected URI bob;
 
-	private URI alice;
+	protected URI alice;
 
-	private URI graph1;
+	protected URI graph1;
 
-	private URI graph2;
+	protected URI graph2;
 
 	protected static final String EX_NS = "http://example.org/";
 

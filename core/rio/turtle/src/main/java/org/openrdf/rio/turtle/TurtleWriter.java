@@ -361,7 +361,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	{
 		String label = lit.getLabel();
 
-		if (label.indexOf('\n') > 0 || label.indexOf('\r') > 0 || label.indexOf('\t') > 0) {
+		if (label.indexOf('\n') != -1 || label.indexOf('\r') != -1 || label.indexOf('\t') != -1) {
 			// Write label as long string
 			writer.write("\"\"\"");
 			writer.write(TurtleUtil.encodeLongString(label));
