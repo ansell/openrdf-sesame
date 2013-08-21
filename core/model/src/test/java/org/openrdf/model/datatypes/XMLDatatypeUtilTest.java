@@ -30,6 +30,31 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class XMLDatatypeUtilTest {
 
+	private static final String[] VALID_FLOATS = {
+		"1",
+		"1.0",
+		"1.0E6",
+		"-1.0E6",
+		"15.00001E2",
+		"1500000000000",
+		"1E104",
+		"INF",
+		"-INF",
+		"NaN"
+	};
+	
+	private static final String[] INVALID_FLOATS = {
+		"A1",
+		"1,0",
+		"1E106",
+		"100E104",
+		"1.0e1.2",
+		"1.0E 5",
+		"-NaN",
+		"+NaN",
+		"+INF"
+	};
+	
 	/** valid xsd:date values */
 	private static final String[] VALID_DATES = {
 			"2001-01-01",
@@ -225,6 +250,11 @@ public class XMLDatatypeUtilTest {
 	 */
 	@Test
 	public void testIsValidValue() {
+		
+		testValidation(VALID_FLOATS, XMLSchema.FLOAT, true);
+		testValidation(INVALID_FLOATS, XMLSchema.FLOAT, false);
+		
+		
 		testValidation(VALID_DATES, XMLSchema.DATE, true);
 		testValidation(INVALID_DATES, XMLSchema.DATE, false);
 
