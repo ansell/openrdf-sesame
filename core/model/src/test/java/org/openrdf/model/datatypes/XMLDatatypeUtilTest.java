@@ -38,6 +38,7 @@ public class XMLDatatypeUtilTest {
 		"15.00001E2",
 		"1500000000000",
 		"1E104",
+		"0.1E105",
 		"INF",
 		"-INF",
 		"NaN"
