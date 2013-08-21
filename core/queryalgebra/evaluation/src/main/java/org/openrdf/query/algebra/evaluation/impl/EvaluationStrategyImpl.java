@@ -1729,18 +1729,18 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		ValueExprEvaluationException typeError = null;
 		for (int i = 1; i < args.size(); i++) {
 			ValueExpr arg = args.get(i);
-			Value rightValue = evaluate(arg, bindings);
-			result = leftValue == null && rightValue == null;
-			if (!result) {
-				try {
+			try {
+				Value rightValue = evaluate(arg, bindings);
+				result = leftValue == null && rightValue == null;
+				if (!result) {
 					result = QueryEvaluationUtil.compare(leftValue, rightValue, CompareOp.EQ);
 				}
-				catch (ValueExprEvaluationException caught) {
-					typeError = caught;
+				if (result) {
+					break;
 				}
 			}
-			if (result) {
-				break;
+			catch (ValueExprEvaluationException caught) {
+				typeError = caught;
 			}
 		}
 

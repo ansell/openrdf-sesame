@@ -833,7 +833,7 @@ public abstract class ComplexSPARQLQueryTest {
 		loadTestData("/testdata-query/dataset-ses1913.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(" PREFIX : <http://example.org/>\n");
-		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, \"banana\", 1)) } ");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0 , 1)) } ");
 
 		TupleQuery tq = null;
 		try {
@@ -868,7 +868,7 @@ public abstract class ComplexSPARQLQueryTest {
 		loadTestData("/testdata-query/dataset-ses1913.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(" PREFIX : <http://example.org/>\n");
-		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, \"banana\")) } ");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0)) } ");
 
 		TupleQuery tq = null;
 		try {
@@ -890,6 +890,40 @@ public abstract class ComplexSPARQLQueryTest {
 		
 	}
 
+	@Test
+	public void testInComparison3()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1, 1/0)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value y = bs.getValue("y");
+		assertNotNull(y);
+		assertTrue(y instanceof Literal);
+		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+	}
+	
 	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception
