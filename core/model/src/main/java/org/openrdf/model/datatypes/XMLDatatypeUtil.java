@@ -1244,7 +1244,6 @@ public class XMLDatatypeUtil {
 		}
 		if (maxExponent != null) {
 			if (compareCanonicalIntegers(exponent, maxExponent) > 0) {
-				// TODO shift back and lower exponent?
 				throwIAE("Exponent larger than maximum value (" + maxExponent + ")");
 			}
 		}
