@@ -485,7 +485,7 @@ public class XMLDatatypeUtil {
 	 */
 	public static boolean isValidTime(String value) {
 
-		String regex = "\\d\\d:\\d\\d:\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+		String regex = "\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(Z|(\\+|-)\\d\\d:\\d\\d)?";
 
 		if (value.matches(regex)) {
 			return isValidCalendarValue(value);

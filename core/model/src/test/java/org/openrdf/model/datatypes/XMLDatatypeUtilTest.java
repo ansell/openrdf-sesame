@@ -52,7 +52,8 @@ public class XMLDatatypeUtilTest {
 		"1.0E 5",
 		"-NaN",
 		"+NaN",
-		"+INF"
+		"+INF",
+		"NAN"
 	};
 	
 	/** valid xsd:date values */
@@ -81,6 +82,8 @@ public class XMLDatatypeUtilTest {
 	private static final String[] VALID_TIMES = {
 		"13:00:00",
 		"09:15:10",
+		"09:15:10.01",
+		"09:15:10.12345",
 		"11:11:11Z",
 		"10:00:01+06:00",
 		"10:01:58-06:00"
@@ -91,6 +94,8 @@ public class XMLDatatypeUtilTest {
 		"foo",
 		"21:32",
 		"9:15:16",
+		"09:15:10.",
+		"09:15:10.x",
 		"2001-10-10:10:10:10",
 		"-10:00:00",
 		"25:25:25"
