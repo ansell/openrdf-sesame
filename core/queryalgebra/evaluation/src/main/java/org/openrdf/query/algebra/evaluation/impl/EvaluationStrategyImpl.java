@@ -618,14 +618,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BindingSetAssignment bsa,
-			BindingSet bindings)
+			final BindingSet bindings)
 		throws QueryEvaluationException
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> result;
 
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
-
-		// TODO handle existing bindings?
 
 		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
@@ -638,7 +636,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			public BindingSet next()
 				throws QueryEvaluationException
 			{
-				return iter.next();
+				final QueryBindingSet result = new QueryBindingSet(bindings);
+				result.addAll(iter.next());
+				return result;
 			}
 
 			public void remove()
