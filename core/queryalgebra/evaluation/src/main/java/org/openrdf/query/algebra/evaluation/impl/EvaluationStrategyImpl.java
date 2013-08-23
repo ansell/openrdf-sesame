@@ -60,6 +60,7 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.Datatype;
@@ -1725,15 +1726,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value leftValue = evaluate(args.get(0), bindings);
 
 		boolean result = false;
+		ValueExprEvaluationException typeError = null;
 		for (int i = 1; i < args.size(); i++) {
 			ValueExpr arg = args.get(i);
-			Value rightValue = evaluate(arg, bindings);
-			result = (leftValue == null && rightValue == null)
-					|| (leftValue != null && leftValue.equals(rightValue));
-			if (result) {
-				break;
+			try {
+				Value rightValue = evaluate(arg, bindings);
+				result = leftValue == null && rightValue == null;
+				if (!result) {
+					result = QueryEvaluationUtil.compare(leftValue, rightValue, CompareOp.EQ);
+				}
+				if (result) {
+					break;
+				}
+			}
+			catch (ValueExprEvaluationException caught) {
+				typeError = caught;
 			}
 		}
+
+		if (typeError != null && !result) {
+			// cf. SPARQL spec a type error is thrown if the value is not in the
+			// list and one of the list members caused a type error in the
+			// comparison.
+			throw typeError;
+		}
+
 		return BooleanLiteralImpl.valueOf(result);
 	}
 

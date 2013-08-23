@@ -46,6 +46,7 @@ import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -294,7 +295,7 @@ public abstract class ComplexSPARQLQueryTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testDescribeWhere()
 		throws Exception
@@ -331,7 +332,7 @@ public abstract class ComplexSPARQLQueryTest {
 		assertTrue(result.contains(c, RDFS.LABEL, null));
 		assertTrue(result.contains(null, p, b));
 		assertTrue(result.contains(e, RDFS.LABEL, null));
-		assertTrue(result.contains(null, p, e ));
+		assertTrue(result.contains(null, p, e));
 		assertFalse(result.contains(f, null, null));
 		Set<Value> objects = result.filter(a, p, null).objects();
 		assertNotNull(objects);
@@ -342,6 +343,7 @@ public abstract class ComplexSPARQLQueryTest {
 			}
 		}
 	}
+
 	@Test
 	public void testDescribeB()
 		throws Exception
@@ -404,7 +406,7 @@ public abstract class ComplexSPARQLQueryTest {
 		URI p = f.createURI("http://example.org/p");
 		URI e = f.createURI("http://example.org/e");
 		Model result = QueryResults.asModel(gq.evaluate());
-		
+
 		assertNotNull(result);
 		assertTrue(result.contains(null, p, e));
 		assertFalse(result.contains(e, null, null));
@@ -422,7 +424,7 @@ public abstract class ComplexSPARQLQueryTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testDescribeF()
 		throws Exception
@@ -449,7 +451,7 @@ public abstract class ComplexSPARQLQueryTest {
 		URI f = vf.createURI("http://example.org/f");
 		URI p = vf.createURI("http://example.org/p");
 		Model result = QueryResults.asModel(gq.evaluate());
-		
+
 		assertNotNull(result);
 		assertEquals(4, result.size());
 		Set<Value> objects = result.filter(f, p, null).objects();
@@ -761,7 +763,7 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testSES1898LeftJoinSemantics2()
 		throws Exception
@@ -824,6 +826,104 @@ public abstract class ComplexSPARQLQueryTest {
 				});
 	}
 
+	@Test
+	public void testInComparison1()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0 , 1)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value y = bs.getValue("y");
+		assertNotNull(y);
+		assertTrue(y instanceof Literal);
+		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+
+	}
+	
+	@Test
+	public void testInComparison2()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertFalse(result.hasNext());
+		
+	}
+
+	@Test
+	public void testInComparison3()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1, 1/0)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value y = bs.getValue("y");
+		assertNotNull(y);
+		assertTrue(y instanceof Literal);
+		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+	}
+	
 	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception

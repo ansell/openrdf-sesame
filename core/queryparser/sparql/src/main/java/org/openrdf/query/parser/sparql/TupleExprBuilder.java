@@ -2536,7 +2536,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			ListMemberOperator listMemberOperator = new ListMemberOperator();
 			listMemberOperator.addArgument(leftArg);
 
-			for (int i = 0; i < listItemCount - 1; i++) {
+			for (int i = 0; i < listItemCount; i++) {
 				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 				listMemberOperator.addArgument(arg);
 			}
