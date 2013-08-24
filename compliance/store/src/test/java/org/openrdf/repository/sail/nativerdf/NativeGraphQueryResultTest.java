@@ -39,7 +39,7 @@ public class NativeGraphQueryResultTest extends GraphQueryResultTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

@@ -16,14 +16,18 @@
  */
 package org.openrdf.repository;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class CascadeValueExceptionTest extends TestCase {
+public abstract class CascadeValueExceptionTest {
 
 	private static String queryStr1 = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\" < \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
 
@@ -33,6 +37,7 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 
 	private Repository repository;
 
+	@Test
 	public void testValueExceptionLessThan()
 		throws Exception
 	{
@@ -46,6 +51,7 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testValueExceptionEqual()
 		throws Exception
 	{
@@ -59,8 +65,8 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 		}
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -87,8 +93,8 @@ public abstract class CascadeValueExceptionTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

@@ -26,14 +26,6 @@ import org.openrdf.sail.SailException;
  */
 public class MemoryStoreConcurrencyTest extends SailConcurrencyTest {
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public MemoryStoreConcurrencyTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/

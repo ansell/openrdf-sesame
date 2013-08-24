@@ -16,11 +16,18 @@
  */
 package org.openrdf.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -28,7 +35,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 
-public abstract class TupleQueryResultTest extends TestCase {
+public abstract class TupleQueryResultTest {
 
 	private Repository rep;
 
@@ -40,7 +47,8 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 	private String multipleResultQuery;
 
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		rep = createRepository();
@@ -50,8 +58,8 @@ public abstract class TupleQueryResultTest extends TestCase {
 		addData();
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		con.close();
@@ -59,8 +67,6 @@ public abstract class TupleQueryResultTest extends TestCase {
 
 		rep.shutDown();
 		rep = null;
-
-		super.tearDown();
 	}
 
 	protected Repository createRepository()
@@ -121,6 +127,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testGetBindingNames()
 		throws Exception
 	{
@@ -128,6 +135,9 @@ public abstract class TupleQueryResultTest extends TestCase {
 		try {
 			List<String> headers = result.getBindingNames();
 
+			assertEquals("first header element is wrong", headers.get(0), "P");
+			assertEquals("second header element is wrong", headers.get(1), "D");
+			
 			if (!headers.get(0).equals("P")) {
 				fail("first header element should be 'P' but is '" + headers.get(0) + "'");
 			}
@@ -169,6 +179,7 @@ public abstract class TupleQueryResultTest extends TestCase {
 	}
 	*/
 
+	@Test
 	public void testIterator()
 		throws Exception
 	{
@@ -181,24 +192,21 @@ public abstract class TupleQueryResultTest extends TestCase {
 				count++;
 			}
 
-			if (count <= 1) {
-				fail("query should have multiple results.");
-			}
+			assertTrue("query should have multiple results.", count > 1);
 		}
 		finally {
 			result.close();
 		}
 	}
 
+	@Test
 	public void testIsEmpty()
 		throws Exception
 	{
 		TupleQueryResult result = con.prepareTupleQuery(QueryLanguage.SERQL, emptyResultQuery).evaluate();
 
 		try {
-			if (result.hasNext()) {
-				fail("Query result should be empty");
-			}
+			assertFalse("Query result should be empty", result.hasNext());
 		}
 		finally {
 			result.close();
