@@ -22,6 +22,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -462,12 +463,12 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryExcep
 		}
 
 		URI datatype = lit.getDatatype();
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			builder.append("@");
 			builder.append(lit.getLanguage());
 		}
-		else if (datatype != null) {
+		else if (Literals.isTypedLiteral(lit)) {
 			// Append the literal's data type (possibly written as an
 			// abbreviated URI)
 			builder.append("^^");

@@ -43,6 +43,7 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
@@ -311,12 +312,12 @@ class FileIO {
 			String language = lit.getLanguage();
 			URI datatype = lit.getDatatype();
 
-			if (language != null) {
+			if (Literals.isLanguageLiteral(lit)) {
 				dataOut.writeByte(LANG_LITERAL_MARKER);
 				writeString(label, dataOut);
 				writeString(language, dataOut);
 			}
-			else if (datatype != null) {
+			else if (Literals.isTypedLiteral(lit)) {
 				dataOut.writeByte(DATATYPE_LITERAL_MARKER);
 				writeString(label, dataOut);
 				writeValue(datatype, dataOut);

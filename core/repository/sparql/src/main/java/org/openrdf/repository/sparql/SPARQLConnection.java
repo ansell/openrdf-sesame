@@ -43,6 +43,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -744,11 +745,11 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 				qb.append(SPARQLUtil.encodeString(lit.getLabel()));
 				qb.append("\"");
 
-				if (lit.getLanguage() != null) {
+				if (Literals.isLanguageLiteral(lit)) {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-				else if (lit.getDatatype() != null) {
+				else if (Literals.isTypedLiteral(lit)) {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");
@@ -875,11 +876,11 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 				qb.append(SPARQLUtil.encodeString(lit.getLabel()));
 				qb.append("\"");
 
-				if (lit.getLanguage() != null) {
+				if (Literals.isLanguageLiteral(lit)) {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-				else if (lit.getDatatype() != null) {
+				else if (Literals.isTypedLiteral(lit)) {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");

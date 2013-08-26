@@ -603,6 +603,42 @@ public class Literals {
 		return false;
 	}
 
+	/**
+	 * Helper method to determine whether a literal is a typed literal, and not a
+	 * language literal.
+	 * 
+	 * @param literal
+	 *        The literal to check
+	 * @return True if the literal does not have a language tag attached to it
+	 *         and false otherwise.
+	 * @since 2.8.0
+	 */
+	public static boolean isTypedLiteral(Literal literal) {
+		if (literal == null) {
+			throw new NullPointerException("Literal cannot be null");
+		}
+
+		return literal.getLanguage() == null;
+	}
+
+	/**
+	 * Helper method to determine whether a literal is a language literal, and
+	 * not a typed literal.
+	 * 
+	 * @param literal
+	 *        The literal to check
+	 * @return True if the literal has a language tag attached to it and false
+	 *         otherwise.
+	 * @since 2.8.0
+	 */
+	public static boolean isLanguageLiteral(Literal literal) {
+		if (literal == null) {
+			throw new NullPointerException("Literal cannot be null");
+		}
+
+		return literal.getLanguage() != null;
+	}
+
 	protected Literals() {
 		// Protected default constructor to prevent instantiation
 	}

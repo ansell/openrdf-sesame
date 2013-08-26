@@ -33,6 +33,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -374,12 +375,12 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write("\"");
 		}
 
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			writer.write("@");
 			writer.write(lit.getLanguage());
 		}
-		else if (lit.getDatatype() != null) {
+		else if (Literals.isTypedLiteral(lit)) {
 			// Append the literal's datatype (possibly written as an abbreviated
 			// URI)
 			writer.write("^^");

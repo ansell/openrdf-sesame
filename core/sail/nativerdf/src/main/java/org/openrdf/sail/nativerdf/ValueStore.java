@@ -33,6 +33,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.util.Literals;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
 import org.openrdf.sail.nativerdf.model.NativeBNode;
 import org.openrdf.sail.nativerdf.model.NativeLiteral;
@@ -480,24 +482,22 @@ public class ValueStore extends ValueFactoryBase {
 		// Get datatype ID
 		int datatypeID = NativeValue.UNKNOWN_ID;
 
-		if (literal.getDatatype() != null) {
-			if (create) {
-				datatypeID = storeValue(literal.getDatatype());
-			}
-			else {
-				datatypeID = getID(literal.getDatatype());
+		if (create) {
+			datatypeID = storeValue(literal.getDatatype());
+		}
+		else {
+			datatypeID = getID(literal.getDatatype());
 
-				if (datatypeID == NativeValue.UNKNOWN_ID) {
-					// Unknown datatype means unknown literal
-					return null;
-				}
+			if (datatypeID == NativeValue.UNKNOWN_ID) {
+				// Unknown datatype means unknown literal
+				return null;
 			}
 		}
 
 		// Get language tag in UTF-8
 		byte[] langData = null;
 		int langDataLength = 0;
-		if (literal.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(literal)) {
 			langData = literal.getLanguage().getBytes("UTF-8");
 			langDataLength = langData.length;
 		}
@@ -571,14 +571,14 @@ public class ValueStore extends ValueFactoryBase {
 		// Get label
 		String label = new String(data, 6 + langLength, data.length - 6 - langLength, "UTF-8");
 
-		if (datatype != null) {
-			return new NativeLiteral(revision, label, datatype, id);
-		}
-		else if (lang != null) {
+		if (lang != null) {
 			return new NativeLiteral(revision, label, lang, id);
 		}
+		else if (datatype != null) {
+			return new NativeLiteral(revision, label, datatype, id);
+		}
 		else {
-			return new NativeLiteral(revision, label, id);
+			return new NativeLiteral(revision, label, XMLSchema.STRING, id);
 		}
 	}
 
@@ -644,7 +644,7 @@ public class ValueStore extends ValueFactoryBase {
 
 	@Override
 	public NativeLiteral createLiteral(String value) {
-		return new NativeLiteral(revision, value);
+		return new NativeLiteral(revision, value, XMLSchema.STRING);
 	}
 
 	@Override
@@ -739,15 +739,15 @@ public class ValueStore extends ValueFactoryBase {
 			return (NativeLiteral)l;
 		}
 
-		if (l.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(l)) {
 			return new NativeLiteral(revision, l.getLabel(), l.getLanguage());
 		}
-		else if (l.getDatatype() != null) {
+		else if (Literals.isTypedLiteral(l)) {
 			NativeURI datatype = getNativeURI(l.getDatatype());
 			return new NativeLiteral(revision, l.getLabel(), datatype);
 		}
 		else {
-			return new NativeLiteral(revision, l.getLabel());
+			return new NativeLiteral(revision, l.getLabel(), XMLSchema.STRING);
 		}
 	}
 

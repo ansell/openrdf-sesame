@@ -34,6 +34,7 @@ import info.aduna.iteration.SingletonIteration;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -461,11 +462,11 @@ public class SPARQLFederatedService implements FederatedService {
 		sb.append(lit.getLabel().replace("\"", "\\\""));
 		sb.append('"');
 
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}
-		else if (lit.getDatatype() != null) {
+		else if (Literals.isTypedLiteral(lit)) {
 			sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');

@@ -55,6 +55,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAMEQNAME;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -196,10 +197,10 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 			try {
 				xmlWriter.setPrettyPrint(getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT));
 
-				if(getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
+				if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
 					xmlWriter.startDocument();
 				}
-				
+
 				xmlWriter.setAttribute("xmlns", NAMESPACE);
 
 				if (getWriterConfig().get(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
@@ -511,20 +512,12 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	private void writeLiteral(Literal literal)
 		throws IOException
 	{
-		if (literal.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(literal)) {
 			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
-			if (!rdfLangStringToLangLiteral() && literal.getDatatype() != null) {
-				// Only enter this section if there is a datatype. Whatever datatype
-				// it is, it should be RDF.LANGSTRING
-				if (isQName(RDF.LANGSTRING)) {
-					writeQName(RDF.LANGSTRING);
-				}
-				xmlWriter.setAttribute(LITERAL_DATATYPE_ATT, RDF.LANGSTRING.stringValue());
-			}
 		}
 		// Only enter this section for non-language literals now, as the
 		// rdf:langString datatype is handled implicitly above
-		else if (literal.getDatatype() != null) {
+		else if (Literals.isTypedLiteral(literal)) {
 			URI datatype = literal.getDatatype();
 			if (!datatype.equals(XMLSchema.STRING) || !xsdStringToPlainLiteral()) {
 				if (isQName(datatype)) {

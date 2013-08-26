@@ -132,7 +132,10 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 			String xmlLang = atts.get(LITERAL_LANG_ATT);
 			String datatype = atts.get(LITERAL_DATATYPE_ATT);
 
-			if (datatype != null) {
+			if (xmlLang != null) {
+				currentValue = valueFactory.createLiteral(text, xmlLang);
+			}
+			else if (datatype != null) {
 				try {
 					currentValue = valueFactory.createLiteral(text, valueFactory.createURI(datatype));
 				}
@@ -140,9 +143,6 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 					// Illegal datatype URI
 					throw new SAXException(e.getMessage(), e);
 				}
-			}
-			else if (xmlLang != null) {
-				currentValue = valueFactory.createLiteral(text, xmlLang);
 			}
 			else {
 				currentValue = valueFactory.createLiteral(text);

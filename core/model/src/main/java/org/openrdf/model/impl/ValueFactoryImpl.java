@@ -22,6 +22,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * Default implementation of the ValueFactory interface that uses the RDF model
@@ -62,7 +63,7 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 
 	@Override
 	public Literal createLiteral(String value) {
-		return new LiteralImpl(value);
+		return new LiteralImpl(value, XMLSchema.STRING);
 	}
 
 	@Override

@@ -45,6 +45,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -306,12 +307,12 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
 
-		if (language != null) {
+		if (Literals.isLanguageLiteral(literal)) {
 			out.writeByte(LANG_LITERAL_VALUE);
 			writeString(label);
 			writeString(language);
 		}
-		else if (datatype != null) {
+		else if (Literals.isTypedLiteral(literal)) {
 			out.writeByte(DATATYPE_LITERAL_VALUE);
 			writeString(label);
 			writeString(datatype.toString());

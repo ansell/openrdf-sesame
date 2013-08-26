@@ -32,6 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -288,24 +289,25 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			}
 			else if (obj instanceof Literal) {
 				Literal objLit = (Literal)obj;
-
-				// language attribute
-				if (objLit.getLanguage() != null) {
-					writeAttribute("xml:lang", objLit.getLanguage());
-				}
-
 				// datatype attribute
 				boolean isXMLLiteral = false;
-				URI datatype = objLit.getDatatype();
-				if (datatype != null) {
-					// Check if datatype is rdf:XMLLiteral
-					isXMLLiteral = datatype.equals(RDF.XMLLITERAL);
 
-					if (isXMLLiteral) {
-						writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
-					}
-					else {
-						writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
+				// language attribute
+				if (Literals.isLanguageLiteral(objLit)) {
+					writeAttribute("xml:lang", objLit.getLanguage());
+				}
+				else if (Literals.isTypedLiteral(objLit)) {
+					URI datatype = objLit.getDatatype();
+					if (datatype != null) {
+						// Check if datatype is rdf:XMLLiteral
+						isXMLLiteral = datatype.equals(RDF.XMLLITERAL);
+
+						if (isXMLLiteral) {
+							writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
+						}
+						else {
+							writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
+						}
 					}
 				}
 

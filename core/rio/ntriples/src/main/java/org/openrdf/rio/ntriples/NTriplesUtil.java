@@ -24,6 +24,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.util.Literals;
 
 /**
  * Utility methods for N-Triples encoding/decoding.
@@ -325,12 +326,14 @@ public class NTriplesUtil {
 		escapeString(lit.getLabel(), appendable);
 		appendable.append("\"");
 
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			appendable.append("@");
 			appendable.append(lit.getLanguage());
 		}
-		else if (lit.getDatatype() != null) {
+		else if (Literals.isTypedLiteral(lit)) {
+			// SES-1917 : In RDF-1.1, all literals have a type, and if they are not
+			// language literals we display the type for backwards compatibility
 			// Append the literal's datatype
 			appendable.append("^^");
 			append(lit.getDatatype(), appendable);

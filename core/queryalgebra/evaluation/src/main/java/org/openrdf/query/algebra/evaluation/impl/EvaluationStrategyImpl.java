@@ -1100,6 +1100,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
+			// FIXME: The following will always be false as datatype is always null
+			// in RDF-1.1, even for Language Literals
 			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
 				return literal;
 			}
@@ -1121,6 +1123,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
+			// FIXME: The following will always be false as datatype is always null
+			// in RDF-1.1, even for Language Literals
 			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
 				return literal;
 			}
@@ -1274,7 +1278,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Literal lit = (Literal)argValue;
 			URI datatype = lit.getDatatype();
 
-			return BooleanLiteralImpl.valueOf(datatype != null && XMLDatatypeUtil.isNumericDatatype(datatype));
+			return BooleanLiteralImpl.valueOf(XMLDatatypeUtil.isNumericDatatype(datatype));
 		}
 		else {
 			return BooleanLiteralImpl.FALSE;

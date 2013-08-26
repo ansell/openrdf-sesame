@@ -70,10 +70,10 @@ public class MathUtil {
 		URI rightDatatype = rightLit.getDatatype();
 
 		// Only numeric value can be used in math expressions
-		if (leftDatatype == null || !XMLDatatypeUtil.isNumericDatatype(leftDatatype)) {
+		if (!XMLDatatypeUtil.isNumericDatatype(leftDatatype)) {
 			throw new ValueExprEvaluationException("Not a number: " + leftLit);
 		}
-		if (rightDatatype == null || !XMLDatatypeUtil.isNumericDatatype(rightDatatype)) {
+		if (!XMLDatatypeUtil.isNumericDatatype(rightDatatype)) {
 			throw new ValueExprEvaluationException("Not a number: " + rightLit);
 		}
 
