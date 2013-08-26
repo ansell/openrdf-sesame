@@ -16,15 +16,15 @@
  */
 package org.openrdf.repository;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -135,15 +135,8 @@ public abstract class TupleQueryResultTest {
 		try {
 			List<String> headers = result.getBindingNames();
 
-			assertEquals("first header element is wrong", headers.get(0), "P");
-			assertEquals("second header element is wrong", headers.get(1), "D");
-			
-			if (!headers.get(0).equals("P")) {
-				fail("first header element should be 'P' but is '" + headers.get(0) + "'");
-			}
-			if (!headers.get(1).equals("D")) {
-				fail("second header element should be 'D' but is '" + headers.get(1) + "'");
-			}
+			assertThat("first header element", headers.get(0), CoreMatchers.is("P"));
+			assertThat("second header element", headers.get(1), CoreMatchers.is("D"));
 		}
 		finally {
 			result.close();
