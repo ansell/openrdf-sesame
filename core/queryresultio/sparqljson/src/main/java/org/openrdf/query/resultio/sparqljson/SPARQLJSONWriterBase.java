@@ -34,6 +34,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
@@ -337,7 +338,11 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 				jg.writeObjectField("xml:lang", lit.getLanguage());
 			}
 			else if (Literals.isTypedLiteral(lit)) {
-				jg.writeObjectField("datatype", lit.getDatatype().stringValue());
+				URI datatype = lit.getDatatype();
+				boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
+				if (!ignoreDatatype) {
+					jg.writeObjectField("datatype", lit.getDatatype().stringValue());
+				}
 			}
 
 			jg.writeObjectField("type", "literal");
@@ -391,7 +396,6 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 		result.add(BasicQueryWriterSettings.JSONP_CALLBACK);
 		result.add(BasicWriterSettings.PRETTY_PRINT);
-		// TODO: Add implementation for this
 		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
 
 		return result;

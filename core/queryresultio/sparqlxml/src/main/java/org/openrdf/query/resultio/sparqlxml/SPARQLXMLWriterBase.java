@@ -529,8 +529,4 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 		xmlWriter.textElement(LITERAL_TAG, literal.getLabel());
 	}
-
-	private boolean xsdStringToPlainLiteral() {
-		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
-	}
 }

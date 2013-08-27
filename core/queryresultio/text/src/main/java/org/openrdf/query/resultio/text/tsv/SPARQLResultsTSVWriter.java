@@ -32,12 +32,14 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * TupleQueryResultWriter for the SPARQL TSV (Tab-Separated Values) format.
@@ -181,6 +183,9 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	{
 		String label = lit.getLabel();
 
+		URI datatype = lit.getDatatype();
+		boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
+		
 		boolean quoted = false;
 		if (Literals.isTypedLiteral(lit) || Literals.isLanguageLiteral(lit)) {
 			quoted = true;
@@ -199,10 +204,12 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 			writer.write(lit.getLanguage());
 		}
 		else if (Literals.isTypedLiteral(lit)) {
-			// Append the literal's datatype (possibly written as an abbreviated
-			// URI)
-			writer.write("^^");
-			writeURI(lit.getDatatype());
+			if (!ignoreDatatype) {
+				// Append the literal's datatype (possibly written as an abbreviated
+				// URI)
+				writer.write("^^");
+				writeURI(datatype);
+			}
 		}
 	}
 
