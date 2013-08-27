@@ -19,12 +19,12 @@ package org.openrdf.repository;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -135,8 +135,8 @@ public abstract class TupleQueryResultTest {
 		try {
 			List<String> headers = result.getBindingNames();
 
-			assertThat("first header element", headers.get(0), CoreMatchers.is("P"));
-			assertThat("second header element", headers.get(1), CoreMatchers.is("D"));
+			assertThat("first header element", headers.get(0), is("P"));
+			assertThat("second header element", headers.get(1), is("D"));
 		}
 		finally {
 			result.close();
