@@ -393,8 +393,6 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 		result.add(BasicWriterSettings.PRETTY_PRINT);
 		// TODO: Add implementation for this
 		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
-		// TODO: Add implementation for this
-		result.add(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 
 		return result;
 	}

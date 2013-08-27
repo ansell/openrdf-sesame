@@ -429,7 +429,6 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		result.add(BasicWriterSettings.PRETTY_PRINT);
 		result.add(BasicQueryWriterSettings.ADD_SESAME_QNAME);
 		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
-		result.add(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 
 		return result;
 	}
@@ -519,7 +518,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		// rdf:langString datatype is handled implicitly above
 		else if (Literals.isTypedLiteral(literal)) {
 			URI datatype = literal.getDatatype();
-			if (!datatype.equals(XMLSchema.STRING) || !xsdStringToPlainLiteral()) {
+			boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
+			if (!ignoreDatatype) {
 				if (isQName(datatype)) {
 					writeQName(datatype);
 				}
@@ -532,9 +532,5 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 
 	private boolean xsdStringToPlainLiteral() {
 		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
-	}
-
-	private boolean rdfLangStringToLangLiteral() {
-		return getWriterConfig().get(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL);
 	}
 }
