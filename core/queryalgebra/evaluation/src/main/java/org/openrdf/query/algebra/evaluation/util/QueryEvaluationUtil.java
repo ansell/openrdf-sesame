@@ -357,7 +357,7 @@ public class QueryEvaluationUtil {
 	 *      Simple Literal Documentation</a>
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
-		return l.getLanguage() == null && l.getDatatype().equals(XMLSchema.STRING);
+		return !Literals.isLanguageLiteral(l) && l.getDatatype().equals(XMLSchema.STRING);
 	}
 
 	/**
