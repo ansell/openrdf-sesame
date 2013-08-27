@@ -468,7 +468,7 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryExcep
 			builder.append("@");
 			builder.append(lit.getLanguage());
 		}
-		else if (Literals.isTypedLiteral(lit)) {
+		else {
 			// Append the literal's data type (possibly written as an
 			// abbreviated URI)
 			builder.append("^^");

@@ -56,7 +56,7 @@ public class StringCast implements Function {
 			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				return valueFactory.createLiteral(literal.getLabel(), XMLSchema.STRING);
 			}
-			else if (Literals.isTypedLiteral(literal)) {
+			else if (!Literals.isLanguageLiteral(literal)) {
 				if (datatype.equals(XMLSchema.STRING)) {
 					return literal;
 				}

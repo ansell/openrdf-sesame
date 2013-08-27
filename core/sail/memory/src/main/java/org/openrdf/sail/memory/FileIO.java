@@ -317,14 +317,10 @@ class FileIO {
 				writeString(label, dataOut);
 				writeString(language, dataOut);
 			}
-			else if (Literals.isTypedLiteral(lit)) {
+			else {
 				dataOut.writeByte(DATATYPE_LITERAL_MARKER);
 				writeString(label, dataOut);
 				writeValue(datatype, dataOut);
-			}
-			else {
-				dataOut.writeByte(PLAIN_LITERAL_MARKER);
-				writeString(label, dataOut);
 			}
 		}
 		else {

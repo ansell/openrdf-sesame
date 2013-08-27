@@ -516,7 +516,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		}
 		// Only enter this section for non-language literals now, as the
 		// rdf:langString datatype is handled implicitly above
-		else if (Literals.isTypedLiteral(literal)) {
+		else {
 			URI datatype = literal.getDatatype();
 			boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
 			if (!ignoreDatatype) {

@@ -749,7 +749,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-				else if (Literals.isTypedLiteral(lit)) {
+				else {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");
@@ -880,7 +880,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("@");
 					qb.append(lit.getLanguage());
 				}
-				else if (Literals.isTypedLiteral(lit)) {
+				else {
 					qb.append("^^<" + lit.getDatatype().stringValue() + ">");
 				}
 				qb.append(" ");

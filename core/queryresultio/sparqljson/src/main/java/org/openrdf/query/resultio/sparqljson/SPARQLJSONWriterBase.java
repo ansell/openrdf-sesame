@@ -337,7 +337,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 			if (Literals.isLanguageLiteral(lit)) {
 				jg.writeObjectField("xml:lang", lit.getLanguage());
 			}
-			else if (Literals.isTypedLiteral(lit)) {
+			else {
 				URI datatype = lit.getDatatype();
 				boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
 				if (!ignoreDatatype) {

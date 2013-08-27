@@ -143,7 +143,7 @@ public abstract class IdSequence {
 			if (Literals.isLanguageLiteral(lit)) {
 				return hash(digest, lit.getLanguage());
 			}
-			else if (Literals.isTypedLiteral(lit)) {
+			else {
 				return hash(digest, lit.getDatatype().stringValue());
 			}
 		}

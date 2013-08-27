@@ -39,7 +39,6 @@ import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
-import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * TupleQueryResultWriter for the SPARQL TSV (Tab-Separated Values) format.
@@ -185,31 +184,23 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 
 		URI datatype = lit.getDatatype();
 		boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
-		
-		boolean quoted = false;
-		if (Literals.isTypedLiteral(lit) || Literals.isLanguageLiteral(lit)) {
-			quoted = true;
-			writer.write("\"");
-		}
+
+		writer.write("\"");
 
 		writer.write(encodeString(label));
 
-		if (quoted) {
-			writer.write("\"");
-		}
+		writer.write("\"");
 
 		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			writer.write("@");
 			writer.write(lit.getLanguage());
 		}
-		else if (Literals.isTypedLiteral(lit)) {
-			if (!ignoreDatatype) {
-				// Append the literal's datatype (possibly written as an abbreviated
-				// URI)
-				writer.write("^^");
-				writeURI(datatype);
-			}
+		else if (!ignoreDatatype) {
+			// Append the literal's datatype (possibly written as an abbreviated
+			// URI)
+			writer.write("^^");
+			writeURI(datatype);
 		}
 	}
 

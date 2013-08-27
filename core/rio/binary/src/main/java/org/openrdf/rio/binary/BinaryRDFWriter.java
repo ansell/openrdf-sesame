@@ -312,14 +312,10 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 			writeString(label);
 			writeString(language);
 		}
-		else if (Literals.isTypedLiteral(literal)) {
+		else {
 			out.writeByte(DATATYPE_LITERAL_VALUE);
 			writeString(label);
 			writeString(datatype.toString());
-		}
-		else {
-			out.writeByte(PLAIN_LITERAL_VALUE);
-			writeString(label);
 		}
 	}
 

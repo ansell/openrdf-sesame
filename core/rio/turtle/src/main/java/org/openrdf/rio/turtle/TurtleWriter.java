@@ -380,7 +380,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write("@");
 			writer.write(lit.getLanguage());
 		}
-		else if (Literals.isTypedLiteral(lit)) {
+		else {
 			// Append the literal's datatype (possibly written as an abbreviated
 			// URI)
 			writer.write("^^");

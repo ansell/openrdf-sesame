@@ -62,7 +62,7 @@ public final class RenderUtils {
 			if (Literals.isLanguageLiteral(aLit)) {
 				aBuffer.append("@").append(aLit.getLanguage());
 			}
-			else if (Literals.isTypedLiteral(aLit)) {
+			else {
 				aBuffer.append("^^<").append(aLit.getDatatype().toString()).append(">");
 			}
 		}
@@ -95,7 +95,7 @@ public final class RenderUtils {
 			if (Literals.isLanguageLiteral(aLit)) {
 				aBuffer.append("@").append(aLit.getLanguage());
 			}
-			else if (Literals.isTypedLiteral(aLit)) {
+			else {
 				aBuffer.append("^^<").append(aLit.getDatatype().toString()).append(">");
 			}
 		}

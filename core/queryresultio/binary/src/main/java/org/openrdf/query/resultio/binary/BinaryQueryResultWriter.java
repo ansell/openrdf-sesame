@@ -283,7 +283,7 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		if (Literals.isLanguageLiteral(literal)) {
 			marker = LANG_LITERAL_RECORD_MARKER;
 		}
-		else if (Literals.isTypedLiteral(literal)) {
+		else {
 			String namespace = datatype.getNamespace();
 
 			if (!namespaceTable.containsKey(namespace)) {
@@ -300,7 +300,7 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		if (Literals.isLanguageLiteral(literal)) {
 			writeString(language);
 		}
-		else if (Literals.isTypedLiteral(literal)) {
+		else {
 			writeQName(datatype);
 		}
 	}

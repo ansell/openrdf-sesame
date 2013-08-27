@@ -168,7 +168,7 @@ public abstract class SPARQLOperation implements Operation {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}
-		else if (Literals.isTypedLiteral(lit)) {
+		else {
 			sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');

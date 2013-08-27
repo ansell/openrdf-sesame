@@ -234,12 +234,9 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 				xmlWriter.setAttribute(LANGUAGE_ATT, language);
 				xmlWriter.textElement(PLAIN_LITERAL_TAG, literal.getLabel());
 			}
-			else if (Literals.isTypedLiteral(literal)) {
+			else {
 				xmlWriter.setAttribute(DATATYPE_ATT, datatype.toString());
 				xmlWriter.textElement(TYPED_LITERAL_TAG, literal.getLabel());
-			}
-			else {
-				xmlWriter.textElement(PLAIN_LITERAL_TAG, literal.getLabel());
 			}
 		}
 		else {

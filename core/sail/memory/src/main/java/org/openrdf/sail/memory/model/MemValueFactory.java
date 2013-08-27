@@ -313,7 +313,7 @@ public class MemValueFactory extends ValueFactoryBase {
 			if (Literals.isLanguageLiteral(literal)) {
 				memLiteral = new MemLiteral(this, label, literal.getLanguage());
 			}
-			else if (Literals.isTypedLiteral(literal)) {
+			else {
 				try {
 					if (XMLDatatypeUtil.isIntegerDatatype(datatype)) {
 						memLiteral = new IntegerMemLiteral(this, label, literal.integerValue(), datatype);
@@ -341,9 +341,6 @@ public class MemValueFactory extends ValueFactoryBase {
 					// Unable to parse literal label to primitive type
 					memLiteral = new MemLiteral(this, label, datatype);
 				}
-			}
-			else {
-				memLiteral = new MemLiteral(this, label, XMLSchema.STRING);
 			}
 
 			boolean wasNew = literalRegistry.add(memLiteral);

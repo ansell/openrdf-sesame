@@ -296,18 +296,16 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 				if (Literals.isLanguageLiteral(objLit)) {
 					writeAttribute("xml:lang", objLit.getLanguage());
 				}
-				else if (Literals.isTypedLiteral(objLit)) {
+				else {
 					URI datatype = objLit.getDatatype();
-					if (datatype != null) {
-						// Check if datatype is rdf:XMLLiteral
-						isXMLLiteral = datatype.equals(RDF.XMLLITERAL);
+					// Check if datatype is rdf:XMLLiteral
+					isXMLLiteral = datatype.equals(RDF.XMLLITERAL);
 
-						if (isXMLLiteral) {
-							writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
-						}
-						else {
-							writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
-						}
+					if (isXMLLiteral) {
+						writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
+					}
+					else {
+						writeAttribute(RDF.NAMESPACE, "datatype", datatype.toString());
 					}
 				}
 

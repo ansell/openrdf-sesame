@@ -742,12 +742,9 @@ public class ValueStore extends ValueFactoryBase {
 		if (Literals.isLanguageLiteral(l)) {
 			return new NativeLiteral(revision, l.getLabel(), l.getLanguage());
 		}
-		else if (Literals.isTypedLiteral(l)) {
+		else {
 			NativeURI datatype = getNativeURI(l.getDatatype());
 			return new NativeLiteral(revision, l.getLabel(), datatype);
-		}
-		else {
-			return new NativeLiteral(revision, l.getLabel(), XMLSchema.STRING);
 		}
 	}
 
