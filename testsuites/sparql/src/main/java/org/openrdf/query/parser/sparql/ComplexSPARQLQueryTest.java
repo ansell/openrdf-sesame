@@ -925,6 +925,53 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 	
 	@Test
+	public void testValuesInOptional()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1692.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+
+		int count = 0;
+		while (result.hasNext()) {
+			count++;
+			BindingSet bs = result.next();
+			System.out.println(bs);
+			URI a = (URI)bs.getValue("a");
+			assertNotNull(a);
+			Value isX = bs.getValue("isX");
+			Literal name = (Literal)bs.getValue("name");
+			assertNotNull(name);
+			if (a.stringValue().endsWith("a1")) {
+				assertNotNull(isX);
+			}
+			else if (a.stringValue().endsWith(("a2"))) {
+				assertNull(isX);
+			}
+		}
+		assertEquals(2, count);
+	}
+	
+	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception
 	{
