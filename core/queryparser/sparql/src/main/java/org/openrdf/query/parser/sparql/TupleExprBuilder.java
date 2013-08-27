@@ -1506,8 +1506,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					else {
 
 						if (pathElement.isInverse()) {
+							final Var oldStartVar = startVar;
 							startVar = nextVar;
-							nextVar = subjVar;
+							nextVar = oldStartVar;
 						}
 
 						te = new StatementPattern(scope, startVar, predVar, nextVar, contextVar);
