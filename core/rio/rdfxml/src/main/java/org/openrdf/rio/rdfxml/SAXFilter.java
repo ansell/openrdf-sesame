@@ -230,7 +230,7 @@ class SAXFilter implements ContentHandler {
 				xmlLiteralPrefixes.add(prefix);
 			}
 
-			if(rdfParser.getRDFHandler() != null) {
+			if (rdfParser.getRDFHandler() != null) {
 				rdfParser.getRDFHandler().handleNamespace(prefix, uri);
 			}
 		}
@@ -437,11 +437,19 @@ class SAXFilter implements ContentHandler {
 	{
 		try {
 			if (inRDFContext) {
-				if (deferredElement != null) {
-					reportDeferredStartElement();
+				// verify if we need to switch to XMLLiteral processing mode immediately.
+				if (deferredElement != null && !parseLiteralMode) {
+					Att parseType = deferredElement.atts.getAtt(RDF.NAMESPACE, "parseType");
+					if (parseType != null && parseType.getValue().equals("Literal")) {
+						setParseLiteralMode();
+					}
 				}
 
 				if (parseLiteralMode) {
+					if (deferredElement != null) {
+						reportDeferredStartElement();
+					}
+
 					// Characters like '<', '>', and '&' must be escaped to
 					// prevent breaking the XML text.
 					String s = new String(ch, start, length);
@@ -450,6 +458,12 @@ class SAXFilter implements ContentHandler {
 				}
 				else {
 					charBuf.append(ch, start, length);
+					
+					// if the element is not empty we need to process it as such. Otherwise,
+					// we keep the start element deferred for now.
+					if (deferredElement != null && charBuf.toString().trim().length() > 0) {
+						reportDeferredStartElement();
+					}
 				}
 			}
 		}
