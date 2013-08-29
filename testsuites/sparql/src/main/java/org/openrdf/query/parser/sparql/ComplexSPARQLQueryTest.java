@@ -765,6 +765,39 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES1073InverseSymmetricPattern() throws Exception {
+		URI a = f.createURI("http://example.org/a");
+		URI b1 = f.createURI("http://example.org/b1");
+		URI b2 = f.createURI("http://example.org/b2");
+		URI c1 = f.createURI("http://example.org/c1");
+		URI c2 = f.createURI("http://example.org/c2");
+		URI a2b = f.createURI("http://example.org/a2b");
+		URI b2c = f.createURI("http://example.org/b2c");
+		conn.add(a, a2b, b1);
+		conn.add(a, a2b, b2);
+		conn.add(b1, b2c, c1);
+		conn.add(b2, b2c, c2);
+		String query = "select * ";
+				query += "where{ ";
+            query += "?c1 ^<http://example.org/b2c>/^<http://example.org/a2b>/<http://example.org/a2b>/<http://example.org/b2c> ?c2 . ";
+				query += " } ";
+		TupleQueryResult qRes = conn.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		try {
+			assertTrue(qRes.hasNext());
+			int count = 0;
+			while (qRes.hasNext()) {
+				BindingSet r = qRes.next();
+				System.out.println(r);
+				count++;
+			}
+			assertEquals(4, count);
+		}
+		finally {
+			qRes.close();
+		}			
+	}
+	
+	@Test
 	public void testSES1898LeftJoinSemantics2()
 		throws Exception
 	{
