@@ -33,6 +33,8 @@ public class Var extends QueryModelNodeBase implements ValueExpr {
 
 	private boolean anonymous = false;
 
+	private boolean constant = false;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -132,5 +134,19 @@ public class Var extends QueryModelNodeBase implements ValueExpr {
 	@Override
 	public Var clone() {
 		return (Var)super.clone();
+	}
+
+	/**
+	 * @return Returns the constant.
+	 */
+	public boolean isConstant() {
+		return constant;
+	}
+
+	/**
+	 * @param constant The constant to set.
+	 */
+	public void setConstant(boolean constant) {
+		this.constant = constant;
 	}
 }

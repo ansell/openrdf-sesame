@@ -315,6 +315,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		Var var = createAnonVar("-const-" + value.stringValue());
+		var.setConstant(true);
 		var.setValue(value);
 		return var;
 	}
@@ -574,7 +575,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							ValueExpr expr = (ValueExpr)operator.getParentNode();
 
 							Extension anonymousExtension = new Extension();
-							Var anonVar = createConstVar(null);
+							Var anonVar = createAnonVar("_anon_" + anonVarID++);
 							expr.replaceChildNode(operator, anonVar);
 							anonymousExtension.addElement(new ExtensionElem(operator, anonVar.getName()));
 
