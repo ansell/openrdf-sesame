@@ -243,6 +243,19 @@ public abstract class RepositoryConnectionTest {
 	protected abstract Repository createRepository()
 		throws Exception;
 
+	/**
+	 * Get the expected {@link URI} identifying the default context for this
+	 * Repository implementation.
+	 * <p>
+	 * Override to support repositories that assign a non-null context for
+	 * statements in the default context.
+	 * 
+	 * @return The expected default context. Returns null by default.
+	 */
+	protected URI getDefaultContext() {
+		return null;
+	}
+
 	@Test
 	public void testAddStatement()
 		throws Exception
@@ -895,7 +908,7 @@ public abstract class RepositoryConnectionTest {
 
 			while (result.hasNext()) {
 				Statement st = result.next();
-				assertNull("Statement should not be in a context ", st.getContext());
+				assertEquals("Statement should not be in a context ", getDefaultContext(), st.getContext());
 				assertTrue("Statement predicate should be equal to name ", st.getPredicate().equals(name));
 			}
 		}
@@ -910,18 +923,17 @@ public abstract class RepositoryConnectionTest {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedTypedLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidIntegerLiteral = vf.createLiteral("the number four", XMLSchema.INTEGER);
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidIntegerLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -934,18 +946,17 @@ public abstract class RepositoryConnectionTest {
 		}
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedLanguageLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidLanguageLiteral = vf.createLiteral("the number four", "en_us");
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidLanguageLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -958,6 +969,7 @@ public abstract class RepositoryConnectionTest {
 			fail(e.getMessage());
 		}
 	}
+
 	@Test
 	public void testGetStatementsInSingleContext()
 		throws Exception
@@ -1033,14 +1045,14 @@ public abstract class RepositoryConnectionTest {
 
 		// get statements with either no context or context2
 		CloseableIteration<? extends Statement, RepositoryException> iter = testCon.getStatements(null, null,
-				null, false, null, context2);
+				null, false, getDefaultContext(), context2);
 
 		try {
 			int count = 0;
 			while (iter.hasNext()) {
 				count++;
 				Statement st = iter.next();
-				assertThat(st.getContext(), anyOf(is(nullValue(Resource.class)), is(equalTo((Resource)context2))));
+				assertThat(st.getContext(), anyOf(equalTo((Resource)getDefaultContext()), is(equalTo((Resource)context2))));
 			}
 
 			assertEquals("there should be three statements", 3, count);
@@ -1846,7 +1858,7 @@ public abstract class RepositoryConnectionTest {
 		throws Exception
 	{
 		ContextAwareConnection con = new ContextAwareConnection(testCon);
-		URI defaultGraph = null; // null context
+		URI defaultGraph = getDefaultContext(); // null context
 		con.setReadContexts(defaultGraph);
 		con.setInsertContext(defaultGraph);
 		con.setRemoveContexts(defaultGraph);
