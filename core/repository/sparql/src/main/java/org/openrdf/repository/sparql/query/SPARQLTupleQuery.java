@@ -49,9 +49,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
 		HTTPClient client = getHttpClient();
 		try {
-			// TODO getQueryString() already inserts bindings, use emptybindingset
-			// as last argument?
-			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false,
+			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, getIncludeInferred(),
 					maxQueryTime, getBindingsArray());
 		}
 		catch (IOException e) {
@@ -71,7 +69,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
 		HTTPClient client = getHttpClient();
 		try {
-			client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, false, maxQueryTime,
+			client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime,
 					handler, getBindingsArray());
 		}
 		catch (IOException e) {

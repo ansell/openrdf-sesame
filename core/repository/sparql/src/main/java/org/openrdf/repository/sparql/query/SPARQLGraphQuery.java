@@ -47,7 +47,7 @@ public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 		HTTPClient client = getHttpClient();
 		try {
 			// TODO getQueryString() already inserts bindings, use emptybindingset as last argument?
-			return client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, false, maxQueryTime, getBindingsArray());
+			return client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
 		} 
 		catch (IOException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
@@ -65,7 +65,7 @@ public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 		
 		HTTPClient client = getHttpClient();
 		try {
-			client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, includeInferred, maxQueryTime, handler,
+			client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime, handler,
 					getBindingsArray());
 		}
 		catch (IOException e) {
