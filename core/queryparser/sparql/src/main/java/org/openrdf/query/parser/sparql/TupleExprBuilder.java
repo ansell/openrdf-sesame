@@ -16,6 +16,9 @@
  */
 package org.openrdf.query.parser.sparql;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.CRC32;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -234,9 +238,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	GraphPattern graphPattern = new GraphPattern();
 
-	private int constantVarID = 1;
+	private int anonVarID = 1;
 
-	private Map<ValueConstant, Var> mappedValueConstants = new HashMap<ValueConstant, Var>();
+	// private Map<ValueConstant, Var> mappedValueConstants = new
+	// HashMap<ValueConstant, Var>();
 
 	/*--------------*
 	 * Constructors *
@@ -266,15 +271,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			return (Var)valueExpr;
 		}
 		else if (valueExpr instanceof ValueConstant) {
-			ValueConstant vc = (ValueConstant)valueExpr;
-			if (mappedValueConstants.containsKey(vc)) {
-				return mappedValueConstants.get(vc);
-			}
-			else {
-				Var v = createConstVar(((ValueConstant)valueExpr).getValue());
-				mappedValueConstants.put(vc, v);
-				return v;
-			}
+			Var v = createConstVar(((ValueConstant)valueExpr).getValue());
+			return v;
 		}
 		else if (valueExpr == null) {
 			throw new IllegalArgumentException("valueExpr is null");
@@ -308,8 +306,19 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
+	/**
+	 * Creates an (anonymous) Var representing a constant value. The variable
+	 * name will be derived from the actual value to guarantee uniqueness.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	private Var createConstVar(Value value) {
-		Var var = createAnonVar("-const-" + constantVarID++);
+		if (value == null) {
+			throw new IllegalArgumentException("value can not be null");
+		}
+
+		Var var = createAnonVar("-const-" + value.stringValue());
 		var.setValue(value);
 		return var;
 	}
@@ -432,7 +441,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			// to the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
-				Var var = createAnonVar("-const-" + constantVarID++);
+				Var var = createAnonVar("-anon-" + anonVarID++);
 
 				// replace occurrence of the operator in the filter expression
 				// with the variable.
@@ -477,7 +486,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Extension extension = new Extension();
 
 				for (AggregateOperator operator : collector.getOperators()) {
-					Var var = createAnonVar("-const-" + constantVarID++);
+					Var var = createAnonVar("-anon-" + anonVarID++);
 
 					// replace occurrence of the operator in the order condition
 					// with the variable.
