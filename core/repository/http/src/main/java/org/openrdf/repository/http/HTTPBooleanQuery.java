@@ -47,7 +47,7 @@ public class HTTPBooleanQuery extends AbstractHTTPQuery implements BooleanQuery 
 		HTTPClient client = getHttpClient();
 
 		try {
-			return client.sendBooleanQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
+			return client.sendBooleanQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime,
 					getBindingsArray());
 		}
 		catch (IOException e) {
