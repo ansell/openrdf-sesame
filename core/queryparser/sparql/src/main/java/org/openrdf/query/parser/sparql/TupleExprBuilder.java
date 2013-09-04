@@ -314,7 +314,20 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			throw new IllegalArgumentException("value can not be null");
 		}
 
-		Var var = createAnonVar("-const-" + value.stringValue());
+		String uniqueStringForValue = value.stringValue();
+		
+		if (value instanceof Literal) {
+			// we need to append datatype and/or language tag to ensure a unique var name (see SES-1927)
+			Literal lit = (Literal)value;
+			if (lit.getDatatype() != null) {
+				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
+			}
+			if (lit.getLanguage() != null) {
+				uniqueStringForValue += "-" + lit.getLanguage();
+			}
+		}
+		
+		Var var = createAnonVar("-const-" + uniqueStringForValue);
 		var.setConstant(true);
 		var.setValue(value);
 		return var;
