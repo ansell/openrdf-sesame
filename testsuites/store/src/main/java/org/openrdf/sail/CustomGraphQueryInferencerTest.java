@@ -6,12 +6,13 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import info.aduna.io.ResourceUtil;
 import info.aduna.iteration.Iterations;
@@ -31,9 +32,10 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.inferencer.fc.CustomGraphQueryInferencer;
 
-public class CustomGraphQueryInferencerTest extends TestCase {
+@RunWith(Parameterized.class)
+public abstract class CustomGraphQueryInferencerTest {
 
-	private static class Expectation {
+	protected static class Expectation {
 
 		private final int initialCount, countAfterRemove, subjCount, predCount, objCount;
 
@@ -52,60 +54,26 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 
 	private static final String PREDICATE = "predicate";
 
-	private static final String[] RESOURCE_FOLDERS = { PREDICATE, "resource", "predicate-serql" };
-
-	private static final Map<String, Expectation> EXPECTATIONS = new HashMap<String, Expectation>();
-
-	private static final Map<String, QueryLanguage> LANGUAGES = new HashMap<String, QueryLanguage>();
-	static {
+	@Parameters(name = "{0}")
+	public static final Collection<Object[]> parameters() {
 		Expectation predExpect = new Expectation(8, 2, 0, 2, 0);
-		EXPECTATIONS.put(PREDICATE, predExpect);
-		EXPECTATIONS.put("resource", new Expectation(4, 2, 2, 0, 2));
-		EXPECTATIONS.put("predicate-serql", predExpect);
-		LANGUAGES.put(PREDICATE, QueryLanguage.SPARQL);
-		LANGUAGES.put("resource", QueryLanguage.SPARQL);
-		LANGUAGES.put("predicate-serql", QueryLanguage.SERQL);
+		return Arrays.asList(new Object[][] {
+				{ PREDICATE, predExpect, QueryLanguage.SPARQL },
+				{ "resource", new Expectation(4, 2, 2, 0, 2), QueryLanguage.SPARQL },
+				{ "predicate-serql", predExpect, QueryLanguage.SERQL } });
 	}
 
-	private final CustomGraphQueryInferencer inferencer;
+	private String initial;
 
-	private final String initial;
+	private String delete;
 
-	private final String delete;
+	private String resourceFolder;
 
-	private final String resourceFolder;
+	private Expectation testData;
 
-	/**
-	 * Create a new test of the CustomGraphQueryInferencer for the given
-	 * underlying store and data.
-	 * 
-	 * @param store
-	 *        the underlying storage Sail
-	 * @param resourceFolder
-	 *        name of folder where initialization and removal data resides
-	 * @param rule
-	 *        custom inferencing rule query (SPARQL)
-	 * @param match
-	 *        custom matcher query corresponding to rule (SPARQL)
-	 * @param initial
-	 *        initial data to store (Turtle)
-	 * @param delete
-	 *        deletion data to further test inferencer response (SPARQL/Update)
-	 */
-	private CustomGraphQueryInferencerTest(NotifyingSail store, String resourceFolder, QueryLanguage language,
-			String rule, String match, String initial, String delete)
-		throws MalformedQueryException, UnsupportedQueryLanguageException, SailException, RepositoryException
-	{
-		super(store.getClass().getName() + "-custom-query-inferencing/"
-				+ (match.isEmpty() ? "implicit-matcher/" : "") + resourceFolder);
-		inferencer = new CustomGraphQueryInferencer(store, language, rule, match);
-		this.resourceFolder = resourceFolder;
-		this.initial = initial;
-		this.delete = delete;
-	}
+	private QueryLanguage language;
 
-	@Override
-	protected void runTest()
+	protected void runTest(final CustomGraphQueryInferencer inferencer)
 		throws RepositoryException, RDFParseException, IOException, MalformedQueryException,
 		UpdateExecutionException
 	{
@@ -113,66 +81,96 @@ public class CustomGraphQueryInferencerTest extends TestCase {
 		Repository sail = new SailRepository(inferencer);
 		sail.initialize();
 		RepositoryConnection connection = sail.getConnection();
-		connection.clear();
-		connection.add(new StringReader(initial), BASE, RDFFormat.TURTLE);
+		try {
+			connection.begin();
+			connection.clear();
+			connection.add(new StringReader(initial), BASE, RDFFormat.TURTLE);
 
-		// Test initial inferencer state
-		Expectation testData = EXPECTATIONS.get(resourceFolder);
-		Collection<Value> watchPredicates = inferencer.getWatchPredicates();
-		assertThat(watchPredicates.size(), is(equalTo(testData.predCount)));
-		Collection<Value> watchObjects = inferencer.getWatchObjects();
-		assertThat(watchObjects.size(), is(equalTo(testData.objCount)));
-		Collection<Value> watchSubjects = inferencer.getWatchSubjects();
-		assertThat(watchSubjects.size(), is(equalTo(testData.subjCount)));
-		ValueFactory factory = connection.getValueFactory();
-		if (resourceFolder.startsWith(PREDICATE)) {
-			assertThat(watchPredicates.contains(factory.createURI(BASE, "brotherOf")), is(equalTo(true)));
-			assertThat(watchPredicates.contains(factory.createURI(BASE, "parentOf")), is(equalTo(true)));
+			// Test initial inferencer state
+			Collection<Value> watchPredicates = inferencer.getWatchPredicates();
+			assertThat(watchPredicates.size(), is(equalTo(testData.predCount)));
+			Collection<Value> watchObjects = inferencer.getWatchObjects();
+			assertThat(watchObjects.size(), is(equalTo(testData.objCount)));
+			Collection<Value> watchSubjects = inferencer.getWatchSubjects();
+			assertThat(watchSubjects.size(), is(equalTo(testData.subjCount)));
+			ValueFactory factory = connection.getValueFactory();
+			if (resourceFolder.startsWith(PREDICATE)) {
+				assertThat(watchPredicates.contains(factory.createURI(BASE, "brotherOf")), is(equalTo(true)));
+				assertThat(watchPredicates.contains(factory.createURI(BASE, "parentOf")), is(equalTo(true)));
+			}
+			else {
+				URI bob = factory.createURI(BASE, "Bob");
+				URI alice = factory.createURI(BASE, "Alice");
+				assertThat(watchSubjects.contains(bob), is(equalTo(true)));
+				assertThat(watchSubjects.contains(alice), is(equalTo(true)));
+				assertThat(watchObjects.contains(bob), is(equalTo(true)));
+				assertThat(watchObjects.contains(alice), is(equalTo(true)));
+			}
+
+			// Test initial inferencing results
+			assertThat(Iterations.asSet(connection.getStatements(null, null, null, true)).size(),
+					is(equalTo(testData.initialCount)));
+
+			// Test results after removing some statements
+			connection.prepareUpdate(QueryLanguage.SPARQL, delete).execute();
+			assertThat(Iterations.asSet(connection.getStatements(null, null, null, true)).size(),
+					is(equalTo(testData.countAfterRemove)));
+
+			// Tidy up. Storage gets re-used for subsequent tests, so must clear here,
+			// in order to properly clear out any inferred statements.
+			connection.clear();
+			connection.commit();
 		}
-		else {
-			URI bob = factory.createURI(BASE, "Bob");
-			URI alice = factory.createURI(BASE, "Alice");
-			assertThat(watchSubjects.contains(bob), is(equalTo(true)));
-			assertThat(watchSubjects.contains(alice), is(equalTo(true)));
-			assertThat(watchObjects.contains(bob), is(equalTo(true)));
-			assertThat(watchObjects.contains(alice), is(equalTo(true)));
+		finally {
+			connection.close();
 		}
-
-		// Test initial inferencing results
-		assertThat(Iterations.asSet(connection.getStatements(null, null, null, true)).size(),
-				is(equalTo(testData.initialCount)));
-
-		// Test results after removing some statements
-		connection.prepareUpdate(QueryLanguage.SPARQL, delete).execute();
-		assertThat(Iterations.asSet(connection.getStatements(null, null, null, true)).size(),
-				is(equalTo(testData.countAfterRemove)));
-
-		// Tidy up. Storage gets re-used for subsequent tests, so must clear here,
-		// in order to properly clear out any inferred statements.
-		connection.clear();
-		connection.close();
 		sail.shutDown();
 	}
 
-	public static void addTests(TestSuite suite, NotifyingSail store)
-		throws IOException, MalformedQueryException, UnsupportedQueryLanguageException, SailException,
-		RepositoryException
+	public CustomGraphQueryInferencerTest(String resourceFolder, Expectation testData, QueryLanguage language)
 	{
-		// repeat the following line for different variations
-		for (String resourceFolder : RESOURCE_FOLDERS) {
-			String testFolder = TEST_DIR_PREFIX + resourceFolder;
-			String rule = ResourceUtil.getString(testFolder + "/rule.rq");
-			String match = ResourceUtil.getString(testFolder + "/match.rq");
-			String initial = ResourceUtil.getString(testFolder + "/initial.ttl");
-			String delete = ResourceUtil.getString(testFolder + "/delete.ru");
-			QueryLanguage language = LANGUAGES.get(resourceFolder);
-			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, language, rule, match,
-					initial, delete));
-
-			// To test that the matcher query can be omitted (at least for most
-			// rule queries).
-			suite.addTest(new CustomGraphQueryInferencerTest(store, resourceFolder, language, rule, "", initial,
-					delete));
-		}
+		this.resourceFolder = resourceFolder;
+		this.testData = testData;
+		this.language = language;
 	}
+
+	protected CustomGraphQueryInferencer createRepository(boolean withMatchQuery)
+		throws IOException, MalformedQueryException, UnsupportedQueryLanguageException, RepositoryException,
+		SailException, RDFParseException
+	{
+		String testFolder = TEST_DIR_PREFIX + resourceFolder;
+		String rule = ResourceUtil.getString(testFolder + "/rule.rq");
+		String match = withMatchQuery ? ResourceUtil.getString(testFolder + "/match.rq") : "";
+		initial = ResourceUtil.getString(testFolder + "/initial.ttl");
+		delete = ResourceUtil.getString(testFolder + "/delete.ru");
+
+		NotifyingSail store = newSail();
+
+		return new CustomGraphQueryInferencer(store, language, rule, match);
+	}
+
+	/**
+	 * Gets an instance of the Sail that should be tested. The returned
+	 * repository must not be initialized.
+	 * 
+	 * @return an uninitialized NotifyingSail.
+	 */
+	protected abstract NotifyingSail newSail();
+
+	@Test
+	public void testCustomQueryInference()
+		throws RepositoryException, RDFParseException, MalformedQueryException, UpdateExecutionException,
+		IOException, UnsupportedQueryLanguageException, SailException
+	{
+		runTest(createRepository(true));
+	}
+
+	@Test
+	public void testCustomQueryInferenceImplicitMatcher()
+		throws RepositoryException, RDFParseException, MalformedQueryException, UpdateExecutionException,
+		IOException, UnsupportedQueryLanguageException, SailException
+	{
+		runTest(createRepository(false));
+	}
+
 }

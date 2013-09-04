@@ -16,47 +16,47 @@
  */
 package org.openrdf.sail.nativerdf;
 
+import static org.junit.Assume.assumeNotNull;
+
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import org.junit.After;
+import org.junit.Before;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.sail.CustomGraphQueryInferencerTest;
-import org.openrdf.sail.SailException;
+import org.openrdf.sail.NotifyingSail;
 
-public class NativeStoreCustomInferencingTest extends TestCase {
+public class NativeStoreCustomInferencingTest extends CustomGraphQueryInferencerTest {
 
-	public static Test suite()
-		throws SailException, IOException, MalformedQueryException, UnsupportedQueryLanguageException,
-		RepositoryException
+	private File dataDir;
+
+	public NativeStoreCustomInferencingTest(String resourceFolder, Expectation testData, QueryLanguage language)
 	{
-		final File dataDir = FileUtil.createTempDir("nativestore");
-		TestSuite suite = new TestSuite(NativeStoreCustomInferencingTest.class.getName()) {
+		super(resourceFolder, testData, language);
+	}
 
-			@Override
-			public void run(TestResult result) {
-				try {
-					super.run(result);
-				}
-				finally {
-					try {
-						FileUtil.deleteDir(dataDir);
-					}
-					catch (IOException e) {
-					}
-				}
-			}
-		};
+	@Before
+	public void setUp()
+		throws IOException
+	{
+		dataDir = FileUtil.createTempDir("nativestore");
+		assumeNotNull("could not create datadir", dataDir);
+	}
 
-		CustomGraphQueryInferencerTest.addTests(suite, new NativeStore(dataDir, "spoc,posc"));
-		return suite;
+	@After
+	public void tearDown()
+		throws IOException
+	{
+		if (dataDir != null)
+			FileUtil.deleteDir(dataDir);
+	}
+
+	@Override
+	protected NotifyingSail newSail() {
+		return new NativeStore(dataDir, "spoc,posc");
 	}
 }
