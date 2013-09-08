@@ -318,7 +318,24 @@ public abstract class SailConnectionBase implements SailConnection {
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
-			return registerIteration(evaluateInternal(tupleExpr, dataset, bindings, includeInferred));
+			boolean registered = false;
+			CloseableIteration<? extends BindingSet, QueryEvaluationException> iteration = evaluateInternal(
+					tupleExpr, dataset, bindings, includeInferred);
+			try {
+				CloseableIteration<? extends BindingSet, QueryEvaluationException> registeredIteration = registerIteration(iteration);
+				registered = true;
+				return registeredIteration;
+			}
+			finally {
+				if (!registered) {
+					try {
+						iteration.close();
+					}
+					catch (QueryEvaluationException e) {
+						throw new SailException(e);
+					}
+				}
+			}
 		}
 		finally {
 			connectionLock.readLock().unlock();
@@ -345,7 +362,19 @@ public abstract class SailConnectionBase implements SailConnection {
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
-			return registerIteration(getStatementsInternal(subj, pred, obj, includeInferred, contexts));
+			boolean registered = false;
+			CloseableIteration<? extends Statement, SailException> iteration = getStatementsInternal(subj, pred,
+					obj, includeInferred, contexts);
+			try {
+				CloseableIteration<? extends Statement, SailException> registeredIteration = registerIteration(iteration);
+				registered = true;
+				return registeredIteration;
+			}
+			finally {
+				if (!registered) {
+					iteration.close();
+				}
+			}
 		}
 		finally {
 			connectionLock.readLock().unlock();

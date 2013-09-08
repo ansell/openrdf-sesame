@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +34,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -41,8 +44,11 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -215,6 +221,251 @@ public abstract class ComplexSPARQLQueryTest {
 		catch (QueryEvaluationException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testDescribeA()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ex:a");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory f = conn.getValueFactory();
+		URI a = f.createURI("http://example.org/a");
+		URI p = f.createURI("http://example.org/p");
+		Model result = QueryResults.asModel(gq.evaluate());
+		Set<Value> objects = result.filter(a, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				assertTrue(result.contains((Resource)object, null, null));
+				assertEquals(2, result.filter((Resource)object, null, null).size());
+			}
+		}
+	}
+
+	@Test
+	public void testDescribeAWhere()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ?x WHERE {?x rdfs:label \"a\". } ");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory f = conn.getValueFactory();
+		URI a = f.createURI("http://example.org/a");
+		URI p = f.createURI("http://example.org/p");
+		Model result = QueryResults.asModel(gq.evaluate());
+		Set<Value> objects = result.filter(a, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				assertTrue(result.contains((Resource)object, null, null));
+				assertEquals(2, result.filter((Resource)object, null, null).size());
+			}
+		}
+	}
+
+	@Test
+	public void testDescribeWhere()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ?x WHERE {?x rdfs:label ?y . } ");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory vf = conn.getValueFactory();
+		URI a = vf.createURI("http://example.org/a");
+		URI b = vf.createURI("http://example.org/b");
+		URI c = vf.createURI("http://example.org/c");
+		URI e = vf.createURI("http://example.org/e");
+		URI f = vf.createURI("http://example.org/f");
+		URI p = vf.createURI("http://example.org/p");
+
+		Model result = QueryResults.asModel(gq.evaluate());
+		assertTrue(result.contains(a, p, null));
+		assertTrue(result.contains(b, RDFS.LABEL, null));
+		assertTrue(result.contains(c, RDFS.LABEL, null));
+		assertTrue(result.contains(null, p, b));
+		assertTrue(result.contains(e, RDFS.LABEL, null));
+		assertTrue(result.contains(null, p, e));
+		assertFalse(result.contains(f, null, null));
+		Set<Value> objects = result.filter(a, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				assertTrue(result.contains((Resource)object, null, null));
+				assertEquals(2, result.filter((Resource)object, null, null).size());
+			}
+		}
+	}
+
+	@Test
+	public void testDescribeB()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ex:b");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory f = conn.getValueFactory();
+		URI b = f.createURI("http://example.org/b");
+		URI p = f.createURI("http://example.org/p");
+		Model result = QueryResults.asModel(gq.evaluate());
+		Set<Resource> subjects = result.filter(null, p, b).subjects();
+		assertNotNull(subjects);
+		for (Value subject : subjects) {
+			if (subject instanceof BNode) {
+				assertTrue(result.contains(null, null, subject));
+			}
+		}
+	}
+
+	@Test
+	public void testDescribeD()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ex:d");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory f = conn.getValueFactory();
+		URI d = f.createURI("http://example.org/d");
+		URI p = f.createURI("http://example.org/p");
+		URI e = f.createURI("http://example.org/e");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertNotNull(result);
+		assertTrue(result.contains(null, p, e));
+		assertFalse(result.contains(e, null, null));
+		Set<Value> objects = result.filter(d, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				Set<Value> childObjects = result.filter((BNode)object, null, null).objects();
+				assertNotNull(childObjects);
+				for (Value childObject : childObjects) {
+					if (childObject instanceof BNode) {
+						assertTrue(result.contains((BNode)childObject, null, null));
+					}
+				}
+			}
+		}
+	}
+
+	@Test
+	public void testDescribeF()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-describe.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE ex:f");
+
+		GraphQuery gq = null;
+		try {
+			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		ValueFactory vf = conn.getValueFactory();
+		URI f = vf.createURI("http://example.org/f");
+		URI p = vf.createURI("http://example.org/p");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertNotNull(result);
+		assertEquals(4, result.size());
+		Set<Value> objects = result.filter(f, p, null).objects();
+		assertNotNull(objects);
+		for (Value object : objects) {
+			if (object instanceof BNode) {
+				Set<Value> childObjects = result.filter((BNode)object, null, null).objects();
+				assertNotNull(childObjects);
+				for (Value childObject : childObjects) {
+					if (childObject instanceof BNode) {
+						assertTrue(result.contains((BNode)childObject, null, null));
+					}
+				}
+			}
 		}
 	}
 
@@ -512,6 +763,39 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 	}
+
+	@Test
+	public void testSES1073InverseSymmetricPattern() throws Exception {
+		URI a = f.createURI("http://example.org/a");
+		URI b1 = f.createURI("http://example.org/b1");
+		URI b2 = f.createURI("http://example.org/b2");
+		URI c1 = f.createURI("http://example.org/c1");
+		URI c2 = f.createURI("http://example.org/c2");
+		URI a2b = f.createURI("http://example.org/a2b");
+		URI b2c = f.createURI("http://example.org/b2c");
+		conn.add(a, a2b, b1);
+		conn.add(a, a2b, b2);
+		conn.add(b1, b2c, c1);
+		conn.add(b2, b2c, c2);
+		String query = "select * ";
+				query += "where{ ";
+            query += "?c1 ^<http://example.org/b2c>/^<http://example.org/a2b>/<http://example.org/a2b>/<http://example.org/b2c> ?c2 . ";
+				query += " } ";
+		TupleQueryResult qRes = conn.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		try {
+			assertTrue(qRes.hasNext());
+			int count = 0;
+			while (qRes.hasNext()) {
+				BindingSet r = qRes.next();
+				System.out.println(r);
+				count++;
+			}
+			assertEquals(4, count);
+		}
+		finally {
+			qRes.close();
+		}			
+	}
 	
 	@Test
 	public void testSES1898LeftJoinSemantics2()
@@ -575,6 +859,151 @@ public abstract class ComplexSPARQLQueryTest {
 				});
 	}
 
+	@Test
+	public void testInComparison1()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0 , 1)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value y = bs.getValue("y");
+		assertNotNull(y);
+		assertTrue(y instanceof Literal);
+		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+
+	}
+	
+	@Test
+	public void testInComparison2()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertFalse(result.hasNext());
+		
+	}
+
+	@Test
+	public void testInComparison3()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1913.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1, 1/0)) } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value y = bs.getValue("y");
+		assertNotNull(y);
+		assertTrue(y instanceof Literal);
+		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+	}
+	
+	@Test
+	public void testValuesInOptional()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1692.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+
+		int count = 0;
+		while (result.hasNext()) {
+			count++;
+			BindingSet bs = result.next();
+			System.out.println(bs);
+			URI a = (URI)bs.getValue("a");
+			assertNotNull(a);
+			Value isX = bs.getValue("isX");
+			Literal name = (Literal)bs.getValue("name");
+			assertNotNull(name);
+			if (a.stringValue().endsWith("a1")) {
+				assertNotNull(isX);
+			}
+			else if (a.stringValue().endsWith(("a2"))) {
+				assertNull(isX);
+			}
+		}
+		assertEquals(2, count);
+	}
+	
 	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception

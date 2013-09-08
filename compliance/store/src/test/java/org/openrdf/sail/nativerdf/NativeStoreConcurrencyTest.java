@@ -36,20 +36,12 @@ public class NativeStoreConcurrencyTest extends SailConcurrencyTest {
 
 	private File dataDir;
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	public NativeStoreConcurrencyTest(String name) {
-		super(name);
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	@Override
-	protected void setUp()
+	public void setUp()
 		throws Exception
 	{
 		dataDir = FileUtil.createTempDir("nativestore");
@@ -57,7 +49,7 @@ public class NativeStoreConcurrencyTest extends SailConcurrencyTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

@@ -876,10 +876,6 @@ void PathMod() :
     <PLUS> { jjtThis.setLowerBound(1);
 	     jjtThis.setUpperBound(Long.MAX_VALUE);
     }
-    |
-    <LBRACE> ( min = <INTEGER> {jjtThis.setLowerBound(Long.parseLong(min.image)); } 
-		( <COMMA> ( <RBRACE> {jjtThis.setUpperBound(Long.MAX_VALUE); } | max = <INTEGER> {jjtThis.setUpperBound(Long.parseLong(max.image)); } <RBRACE> ) | <RBRACE> ) 
-			| <COMMA> max = <INTEGER> {jjtThis.setUpperBound(Long.parseLong(max.image)); jjtThis.setLowerBound(0); } <RBRACE> )
 }
 
 void VerbSimple() #void :

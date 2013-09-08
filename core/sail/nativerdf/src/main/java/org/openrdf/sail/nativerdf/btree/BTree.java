@@ -1730,14 +1730,7 @@ public class BTree {
 
 		public void deregister(NodeListener listener) {
 			synchronized (listeners) {
-				// assert listeners.contains(listener);
-				int id = getID();
-				if (id == 150) {
-					if (!listeners.contains(listener)) {
-						logger.warn("node id {} does not contain listener", getID());
-						throw new RuntimeException();
-					}
-				}
+	  		   assert listeners.contains(listener);
 				listeners.remove(listener);
 			}
 		}
@@ -2215,7 +2208,6 @@ public class BTree {
 			parentNodeStack.add(currentNode);
 			parentIndexStack.add(currentIdx);
 			currentNode = newChildNode;
-			currentNode.use();
 			currentIdx = 0;
 		}
 
@@ -2301,6 +2293,7 @@ public class BTree {
 
 					if (!node.isLeaf()) {
 						pushStacks(leftChildNode);
+						leftChildNode.use();
 					}
 				}
 			}

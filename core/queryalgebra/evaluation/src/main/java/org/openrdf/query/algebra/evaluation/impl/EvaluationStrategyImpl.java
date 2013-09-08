@@ -60,9 +60,11 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
@@ -125,6 +127,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
+import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
@@ -384,6 +387,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(DescribeOperator operator,
+			final BindingSet bindings)
+		throws QueryEvaluationException
+	{
+		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(operator.getArg(), bindings);
+		return new DescribeIteration(iter, this, operator.getBindingNames(), bindings);
+	}
+
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(StatementPattern sp,
 			final BindingSet bindings)
 		throws QueryEvaluationException
@@ -528,16 +539,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			protected BindingSet convert(Statement st) {
 				QueryBindingSet result = new QueryBindingSet(bindings);
 
-				if (subjVar != null && !result.hasBinding(subjVar.getName())) {
+				if (subjVar != null && !subjVar.isConstant() && !result.hasBinding(subjVar.getName())) {
 					result.addBinding(subjVar.getName(), st.getSubject());
 				}
-				if (predVar != null && !result.hasBinding(predVar.getName())) {
+				if (predVar != null && !predVar.isConstant() && !result.hasBinding(predVar.getName())) {
 					result.addBinding(predVar.getName(), st.getPredicate());
 				}
-				if (objVar != null && !result.hasBinding(objVar.getName())) {
+				if (objVar != null && !objVar.isConstant() && !result.hasBinding(objVar.getName())) {
 					result.addBinding(objVar.getName(), st.getObject());
 				}
-				if (conVar != null && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
+				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
 					result.addBinding(conVar.getName(), st.getContext());
 				}
 
@@ -595,6 +606,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof QueryRoot) {
 			return evaluate(((QueryRoot)expr).getArg(), bindings);
 		}
+		else if (expr instanceof DescribeOperator) {
+			return evaluate((DescribeOperator)expr, bindings);
+		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
 		}
@@ -611,8 +625,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
 
-		// TODO handle existing bindings?
-
+		final QueryBindingSet b = new QueryBindingSet(bindings);
+		
 		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
 			public boolean hasNext()
@@ -624,7 +638,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			public BindingSet next()
 				throws QueryEvaluationException
 			{
-				return iter.next();
+				final QueryBindingSet result = new QueryBindingSet(b);
+				result.addAll(iter.next());
+				return result;
 			}
 
 			public void remove()
@@ -1712,15 +1728,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value leftValue = evaluate(args.get(0), bindings);
 
 		boolean result = false;
+		ValueExprEvaluationException typeError = null;
 		for (int i = 1; i < args.size(); i++) {
 			ValueExpr arg = args.get(i);
-			Value rightValue = evaluate(arg, bindings);
-			result = (leftValue == null && rightValue == null)
-					|| (leftValue != null && leftValue.equals(rightValue));
-			if (result) {
-				break;
+			try {
+				Value rightValue = evaluate(arg, bindings);
+				result = leftValue == null && rightValue == null;
+				if (!result) {
+					result = QueryEvaluationUtil.compare(leftValue, rightValue, CompareOp.EQ);
+				}
+				if (result) {
+					break;
+				}
+			}
+			catch (ValueExprEvaluationException caught) {
+				typeError = caught;
 			}
 		}
+
+		if (typeError != null && !result) {
+			// cf. SPARQL spec a type error is thrown if the value is not in the
+			// list and one of the list members caused a type error in the
+			// comparison.
+			throw typeError;
+		}
+
 		return BooleanLiteralImpl.valueOf(result);
 	}
 

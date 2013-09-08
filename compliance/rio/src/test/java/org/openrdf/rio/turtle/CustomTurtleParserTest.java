@@ -19,14 +19,18 @@ package org.openrdf.rio.turtle;
 import static org.junit.Assert.*;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
+import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
@@ -161,4 +165,30 @@ public class CustomTurtleParserTest {
 		assertTrue(model.contains(null, null, vf.createLiteral("Foo", "fr-FR")));
 	}
 
+	@Test
+	public void testLiteralWithNewlines() throws Exception {
+		String namespace = "http://www.foo.com/bar#";
+		String okLiteralString = "Literal \n without \n new line at the beginning. \n ";
+		String errLiteralString = "\n Literal \n with \n new line at the beginning. \n ";
+	
+		URI mySubject = vf.createURI(namespace, "Subject");
+		URI myPredicate = vf.createURI(namespace, "Predicate");
+		Literal myOkObject = vf.createLiteral(okLiteralString);
+		Literal myErrObject = vf.createLiteral(errLiteralString);
+
+		StringWriter out = new StringWriter();
+		Model model = new LinkedHashModel();
+		model.add(mySubject, myPredicate, myOkObject);
+		model.add(mySubject, myPredicate, myErrObject);
+		Rio.write(model, out, RDFFormat.TURTLE);
+		
+		String str = out.toString();
+		
+		System.err.println(str);
+		
+		assertTrue("okLiteralString not found", str.contains(okLiteralString));
+		assertTrue("errLiteralString not found", str.contains(errLiteralString));		
+	}
+	
+	
 }

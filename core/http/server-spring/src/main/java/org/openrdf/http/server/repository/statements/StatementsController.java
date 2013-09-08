@@ -103,41 +103,40 @@ public class StatementsController extends AbstractController {
 		ModelAndView result;
 
 		Repository repository = RepositoryInterceptor.getRepository(request);
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 
 		String reqMethod = request.getMethod();
 
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET statements");
-			result = getExportStatementsResult(repository, repositoryCon, request, response);
+			result = getExportStatementsResult(repository, request, response);
 		}
 		else if (METHOD_HEAD.equals(reqMethod)) {
 			logger.info("HEAD statements");
-			result = getExportStatementsResult(repository, repositoryCon, request, response);
+			result = getExportStatementsResult(repository, request, response);
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
 			String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 
 			if (Protocol.TXN_MIME_TYPE.equals(mimeType)) {
 				logger.info("POST transaction to repository");
-				result = getTransactionResultResult(repository, repositoryCon, request, response);
+				result = getTransactionResultResult(repository, request, response);
 			}
 			else if (request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME)) {
 				logger.info("POST SPARQL update request to repository");
-				result = getSparqlUpdateResult(repository, repositoryCon, request, response);
+				result = getSparqlUpdateResult(repository, request, response);
 			}
 			else {
 				logger.info("POST data to repository");
-				result = getAddDataResult(repository, repositoryCon, request, response, false);
+				result = getAddDataResult(repository, request, response, false);
 			}
 		}
 		else if ("PUT".equals(reqMethod)) {
 			logger.info("PUT data in repository");
-			result = getAddDataResult(repository, repositoryCon, request, response, true);
+			result = getAddDataResult(repository, request, response, true);
 		}
 		else if ("DELETE".equals(reqMethod)) {
 			logger.info("DELETE data from repository");
-			result = getDeleteDataResult(repository, repositoryCon, request, response);
+			result = getDeleteDataResult(repository, request, response);
 		}
 		else {
 			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
@@ -156,8 +155,8 @@ public class StatementsController extends AbstractController {
 	 * @throws ServerHTTPException
 	 * @throws ClientHTTPException
 	 */
-	private ModelAndView getSparqlUpdateResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response)
+	private ModelAndView getSparqlUpdateResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
 		throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -242,31 +241,35 @@ public class StatementsController extends AbstractController {
 
 		try {
 
-			Update update = repositoryCon.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				Update update = repositoryCon.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
 
-			update.setIncludeInferred(includeInferred);
+				update.setIncludeInferred(includeInferred);
 
-			if (dataset != null) {
-				update.setDataset(dataset);
-			}
-
-			// determine if any variable bindings have been set on this update.
-			@SuppressWarnings("unchecked")
-			Enumeration<String> parameterNames = request.getParameterNames();
-
-			while (parameterNames.hasMoreElements()) {
-				String parameterName = parameterNames.nextElement();
-
-				if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
-				{
-					String bindingName = parameterName.substring(BINDING_PREFIX.length());
-					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
-							repository.getValueFactory());
-					update.setBinding(bindingName, bindingValue);
+				if (dataset != null) {
+					update.setDataset(dataset);
 				}
-			}
 
-			update.execute();
+				// determine if any variable bindings have been set on this update.
+				@SuppressWarnings("unchecked")
+				Enumeration<String> parameterNames = request.getParameterNames();
+
+				while (parameterNames.hasMoreElements()) {
+					String parameterName = parameterNames.nextElement();
+
+					if (parameterName.startsWith(BINDING_PREFIX)
+							&& parameterName.length() > BINDING_PREFIX.length())
+					{
+						String bindingName = parameterName.substring(BINDING_PREFIX.length());
+						Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
+								repository.getValueFactory());
+						update.setBinding(bindingName, bindingValue);
+					}
+				}
+
+				update.execute();
+			}
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
@@ -312,8 +315,8 @@ public class StatementsController extends AbstractController {
 	 * 
 	 * @return a model and view for exporting the statements.
 	 */
-	private ModelAndView getExportStatementsResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response)
+	private ModelAndView getExportStatementsResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
 		throws ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -343,8 +346,8 @@ public class StatementsController extends AbstractController {
 	/**
 	 * Process several actions as a transaction.
 	 */
-	private ModelAndView getTransactionResultResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response)
+	private ModelAndView getTransactionResultResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
 		throws IOException, ClientHTTPException, ServerHTTPException, HTTPException
 	{
 		InputStream in = request.getInputStream();
@@ -354,14 +357,16 @@ public class StatementsController extends AbstractController {
 			TransactionReader reader = new TransactionReader();
 			Iterable<? extends TransactionOperation> txn = reader.parse(in);
 
-			repositoryCon.begin();
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				repositoryCon.begin();
 
-			for (TransactionOperation op : txn) {
-				op.execute(repositoryCon);
+				for (TransactionOperation op : txn) {
+					op.execute(repositoryCon);
+				}
+
+				repositoryCon.commit();
 			}
-
-			repositoryCon.commit();
-
 			logger.debug("Transaction processed ");
 
 			return new ModelAndView(EmptySuccessView.getInstance());
@@ -391,8 +396,8 @@ public class StatementsController extends AbstractController {
 	/**
 	 * Upload data to the repository.
 	 */
-	private ModelAndView getAddDataResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response, boolean replaceCurrent)
+	private ModelAndView getAddDataResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response, boolean replaceCurrent)
 		throws IOException, ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -416,16 +421,19 @@ public class StatementsController extends AbstractController {
 
 		InputStream in = request.getInputStream();
 		try {
-			if (repositoryCon.isAutoCommit()) {
-				repositoryCon.begin();
-			}
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				if (repositoryCon.isAutoCommit()) {
+					repositoryCon.begin();
+				}
 
-			if (replaceCurrent) {
-				repositoryCon.clear(contexts);
-			}
-			repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
+				if (replaceCurrent) {
+					repositoryCon.clear(contexts);
+				}
+				repositoryCon.add(in, baseURI.toString(), rdfFormat, contexts);
 
-			repositoryCon.commit();
+				repositoryCon.commit();
+			}
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
@@ -455,8 +463,8 @@ public class StatementsController extends AbstractController {
 	/**
 	 * Delete data from the repository.
 	 */
-	private ModelAndView getDeleteDataResult(Repository repository, RepositoryConnection repositoryCon,
-			HttpServletRequest request, HttpServletResponse response)
+	private ModelAndView getDeleteDataResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
 		throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -469,7 +477,10 @@ public class StatementsController extends AbstractController {
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 
 		try {
-			repositoryCon.remove(subj, pred, obj, contexts);
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				repositoryCon.remove(subj, pred, obj, contexts);
+			}
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
