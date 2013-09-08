@@ -93,19 +93,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
-			sailConnection.begin();
-		}
-		catch (SailException e) {
-			throw new RepositoryException(e);
-		}
-	}
-
-	@Override
-	public void begin(IsolationLevel level)
-		throws RepositoryException
-	{
-		try {
-			sailConnection.begin(level);
+			sailConnection.begin(getIsolationLevel());
 		}
 		catch (SailException e) {
 			throw new RepositoryException(e);

@@ -74,9 +74,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		setDelegate(delegate);
 	}
 
-	public RepositoryConnection getDelegate()
-		throws RepositoryException
-	{
+	public RepositoryConnection getDelegate() {
 		return delegate;
 	}
 
@@ -150,13 +148,8 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	@Override
 	public void setParserConfig(ParserConfig parserConfig) {
 		super.setParserConfig(parserConfig);
-		try {
-			if (getDelegate() != null) {
-				getDelegate().setParserConfig(parserConfig);
-			}
-		}
-		catch (RepositoryException e) {
-			logger.error("Error while trying to configure parser", e);
+		if (getDelegate() != null) {
+			getDelegate().setParserConfig(parserConfig);
 		}
 	}
 
@@ -551,5 +544,17 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		throws RepositoryException
 	{
 		getDelegate().begin(level);
+	}
+
+	@Override
+	public void setIsolationLevel(IsolationLevel level)
+		throws IllegalStateException
+	{
+		getDelegate().setIsolationLevel(level);
+	}
+
+	@Override
+	public IsolationLevel getIsolationLevel() {
+		return getDelegate().getIsolationLevel();
 	}
 }

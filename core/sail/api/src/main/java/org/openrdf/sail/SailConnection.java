@@ -168,7 +168,7 @@ public interface SailConnection {
 	 * 
 	 * @param level
 	 *        the transaction isolation level on which this transaction operates.
-	 * @since 2.7.4
+	 * @since 2.8.0
 	 * @throws SailException
 	 *         If the connection could not start a transaction, if the supplied
 	 *         transaction isolation level is not supported, or if a transaction

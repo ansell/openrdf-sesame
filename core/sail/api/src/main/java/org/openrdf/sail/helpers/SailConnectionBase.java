@@ -187,6 +187,10 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void begin(IsolationLevel level)
 		throws SailException
 	{
+		if (level == null) {
+			level = this.sailBase.getDefaultIsolationLevel();
+		}
+
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -217,8 +221,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	/**
 	 * Retrieve the currently specified {@link IsolationLevel} level.
 	 * 
-	 * @return the current {@link IsolationLevel} level. If no transaction
-	 *         is active, this may be <code>null</code>.
+	 * @return the current {@link IsolationLevel} level. If no transaction is
+	 *         active, this may be <code>null</code>.
 	 */
 	protected IsolationLevel getTransactionIsolation() {
 		return this.transactionIsolationLevel;

@@ -46,6 +46,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.repository.util.RDFLoader;
 import org.openrdf.rio.ParserConfig;
@@ -77,6 +78,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private volatile boolean isOpen;
 
+	private IsolationLevel isolationLevel;
+
 	// private volatile boolean active;
 
 	protected RepositoryConnectionBase(Repository repository) {
@@ -101,12 +104,40 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	@Override
-	public void begin(IsolationLevel level) throws RepositoryException {
-		// As a default behavior, we simply ignore the specified level and start a transaction "as usual". Individual
-		// Repository implementations are expected to override this behavior when appropriate.
+	public void begin(IsolationLevel level)
+		throws RepositoryException
+	{
+		setIsolationLevel(level);
 		begin();
 	}
-	
+
+	@Override
+	public void setIsolationLevel(IsolationLevel level)
+		throws IllegalStateException
+	{
+		try {
+			if (isActive()) {
+				throw new IllegalStateException(
+						"Transaction isolation level can not be modified while transaction is active");
+			}
+			this.isolationLevel = level;
+		}
+		catch (UnknownTransactionStateException e) {
+			throw new IllegalStateException(
+					"Transaction isolation level can not be modified while transaction state is unknown", e);
+
+		}
+		catch (RepositoryException e) {
+			throw new IllegalStateException(
+					"Transaction isolation level can not be modified due to repository error", e);
+		}
+	}
+
+	@Override
+	public IsolationLevel getIsolationLevel() {
+		return this.isolationLevel;
+	}
+
 	public boolean isOpen()
 		throws RepositoryException
 	{
@@ -227,7 +258,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -263,7 +294,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -299,7 +330,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -387,7 +418,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -474,7 +505,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(subject, predicate, object, contexts);
-		
+
 		conditionalCommit(localTransaction);
 	}
 
@@ -534,7 +565,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws RepositoryException
 	{
 		boolean localTransaction = startLocalTransaction();
-		
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(st, contexts);
 
