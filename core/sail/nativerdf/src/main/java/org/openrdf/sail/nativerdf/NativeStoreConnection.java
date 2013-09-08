@@ -29,7 +29,7 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.TransactionIsolation;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -299,10 +299,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void startTransactionInternal()
 		throws SailException
 	{
-		if (TransactionIsolation.REPEATABLE_READ.equals(getTransactionIsolation())) {
+		if (IsolationLevel.REPEATABLE_READ.equals(getTransactionIsolation())) {
 			acquireExclusiveTransactionLock();
 		}
-		else if (TransactionIsolation.READ_COMMITTED.equals(getTransactionIsolation())) {
+		else if (IsolationLevel.READ_COMMITTED.equals(getTransactionIsolation())) {
 			// we do nothing, but delay obtaining transaction locks until the first
 			// write operation.
 		}

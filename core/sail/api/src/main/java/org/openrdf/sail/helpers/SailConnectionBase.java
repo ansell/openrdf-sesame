@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.TransactionIsolation;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -129,9 +129,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	 */
 	private final BNode wildContext = ValueFactoryImpl.getInstance().createBNode();
 
-	private TransactionIsolation isolationLevel;
+	private IsolationLevel isolationLevel;
 
-	private TransactionIsolation transactionIsolationLevel;
+	private IsolationLevel transactionIsolationLevel;
 
 	/*--------------*
 	 * Constructors *
@@ -184,7 +184,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		begin(this.sailBase.getDefaultIsolationLevel());
 	}
 
-	public void begin(TransactionIsolation level)
+	public void begin(IsolationLevel level)
 		throws SailException
 	{
 		connectionLock.readLock().lock();
@@ -210,17 +210,17 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	}
 
-	private void setTransactionIsolationLevel(TransactionIsolation level) {
-		this.transactionIsolationLevel = level != null ? level : TransactionIsolation.READ_COMMITTED;
+	private void setTransactionIsolationLevel(IsolationLevel level) {
+		this.transactionIsolationLevel = level != null ? level : IsolationLevel.READ_COMMITTED;
 	}
 
 	/**
-	 * Retrieve the currently specified {@link TransactionIsolation} level.
+	 * Retrieve the currently specified {@link IsolationLevel} level.
 	 * 
-	 * @return the current {@link TransactionIsolation} level. If no transaction
+	 * @return the current {@link IsolationLevel} level. If no transaction
 	 *         is active, this may be <code>null</code>.
 	 */
-	protected TransactionIsolation getTransactionIsolation() {
+	protected IsolationLevel getTransactionIsolation() {
 		return this.transactionIsolationLevel;
 	}
 

@@ -29,7 +29,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.TransactionIsolation;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -101,7 +101,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 	}
 
 	@Override
-	public void begin(TransactionIsolation level) throws RepositoryException {
+	public void begin(IsolationLevel level) throws RepositoryException {
 		// As a default behavior, we simply ignore the specified level and start a transaction "as usual". Individual
 		// Repository implementations are expected to override this behavior when appropriate.
 		begin();

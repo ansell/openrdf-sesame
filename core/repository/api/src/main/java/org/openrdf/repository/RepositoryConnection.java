@@ -25,7 +25,7 @@ import java.net.URL;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 
-import org.openrdf.TransactionIsolation;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -570,7 +570,7 @@ public interface RepositoryConnection {
 	 * be called to end the transaction.
 	 * 
 	 * @param level
-	 *        The {@link TransactionIsolation} level at which this transaction
+	 *        The {@link IsolationLevel} level at which this transaction
 	 *        will operate.
 	 * @throws RepositoryException
 	 *         If the connection could not start the transaction.
@@ -579,7 +579,7 @@ public interface RepositoryConnection {
 	 * @see #rollback()
 	 * @since 2.7.4
 	 */
-	public void begin(TransactionIsolation level)
+	public void begin(IsolationLevel level)
 		throws RepositoryException;
 
 	/**

@@ -19,7 +19,7 @@ package org.openrdf.repository.sail;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.TransactionIsolation;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -101,7 +101,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	public void begin(TransactionIsolation level)
+	public void begin(IsolationLevel level)
 		throws RepositoryException
 	{
 		try {
