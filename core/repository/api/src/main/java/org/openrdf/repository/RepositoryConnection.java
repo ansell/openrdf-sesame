@@ -570,6 +570,7 @@ public interface RepositoryConnection {
 	 * Retrieves the current transaction isolation level of the connection.
 	 * 
 	 * @return the current transaction isolation level.
+	 * @since 2.8.0
 	 */
 	public IsolationLevel getIsolationLevel();
 

@@ -303,7 +303,7 @@ public abstract class SailBase implements Sail {
 	 * Retrieves the default {@link IsolationLevel} level on which
 	 * transactions in this Sail operate.
 	 * 
-	 * @since 2.7.4
+	 * @since 2.8.0
 	 * @return Returns the defaultIsolationLevel.
 	 */
 	public IsolationLevel getDefaultIsolationLevel() {
@@ -314,7 +314,7 @@ public abstract class SailBase implements Sail {
 	 * Sets the default {@link IsolationLevel} level on which transactions
 	 * in this Sail operate.
 	 * 
-	 * @since 2.7.4
+	 * @since 2.8.0
 	 * @param defaultIsolationLevel
 	 *        The defaultIsolationLevel to set.
 	 */

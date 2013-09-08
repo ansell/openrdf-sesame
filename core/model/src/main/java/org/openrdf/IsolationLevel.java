@@ -25,7 +25,7 @@ package org.openrdf;
  * @author Jeen Broekstra
  * @author James Leigh
  * 
- * @since 2.8
+ * @since 2.8.0
  */
 public enum IsolationLevel {
 
