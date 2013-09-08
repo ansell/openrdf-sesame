@@ -99,5 +99,60 @@ public class SPARQLParserTest {
 		StatementPattern rightArg = (StatementPattern)j.getRightArg();
 
 		assertTrue(leftArg.getObjectVar().equals(rightArg.getSubjectVar()));
+		assertEquals(leftArg.getObjectVar().getName(), rightArg.getSubjectVar().getName());
+	}
+	
+	@Test
+	public void testSES1927UnequalLiteralValueConstants1()
+		throws Exception
+	{
+
+		StringBuilder qb = new StringBuilder();
+		qb.append("ASK {?a <foo:bar> \"test\". ?a <foo:foo> \"test\"@en .} ");
+
+		ParsedQuery q = parser.parseQuery(qb.toString(), null);
+		TupleExpr te = q.getTupleExpr();
+
+		assertNotNull(te);
+
+		assertTrue(te instanceof Slice);
+		Slice s = (Slice)te;
+		assertTrue(s.getArg() instanceof Join);
+		Join j = (Join)s.getArg();
+
+		assertTrue(j.getLeftArg() instanceof StatementPattern);
+		assertTrue(j.getRightArg() instanceof StatementPattern);
+		StatementPattern leftArg = (StatementPattern)j.getLeftArg();
+		StatementPattern rightArg = (StatementPattern)j.getRightArg();
+
+		assertFalse(leftArg.getObjectVar().equals(rightArg.getObjectVar()));
+		assertNotEquals(leftArg.getObjectVar().getName(), rightArg.getObjectVar().getName());
+	}
+	
+	@Test
+	public void testSES1927UnequalLiteralValueConstants2()
+		throws Exception
+	{
+
+		StringBuilder qb = new StringBuilder();
+		qb.append("ASK {?a <foo:bar> \"test\". ?a <foo:foo> \"test\"^^<foo:bar> .} ");
+
+		ParsedQuery q = parser.parseQuery(qb.toString(), null);
+		TupleExpr te = q.getTupleExpr();
+
+		assertNotNull(te);
+
+		assertTrue(te instanceof Slice);
+		Slice s = (Slice)te;
+		assertTrue(s.getArg() instanceof Join);
+		Join j = (Join)s.getArg();
+
+		assertTrue(j.getLeftArg() instanceof StatementPattern);
+		assertTrue(j.getRightArg() instanceof StatementPattern);
+		StatementPattern leftArg = (StatementPattern)j.getLeftArg();
+		StatementPattern rightArg = (StatementPattern)j.getRightArg();
+		
+		assertFalse(leftArg.getObjectVar().equals(rightArg.getObjectVar()));
+		assertNotEquals(leftArg.getObjectVar().getName(), rightArg.getObjectVar().getName());
 	}
 }
