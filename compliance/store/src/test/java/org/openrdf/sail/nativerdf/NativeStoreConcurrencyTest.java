@@ -16,11 +16,12 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
+import java.io.IOException;
 
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
-import org.openrdf.sail.Sail;
+import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailConcurrencyTest;
 import org.openrdf.sail.SailException;
 
@@ -34,36 +35,22 @@ public class NativeStoreConcurrencyTest extends SailConcurrencyTest {
 	 * Variables *
 	 *-----------*/
 
-	private File dataDir;
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	@Override
-	public void setUp()
-		throws Exception
-	{
-		dataDir = FileUtil.createTempDir("nativestore");
-		super.setUp();
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
-	}
-
-	@Override
-	protected Sail createSail()
+	protected NotifyingSail createSail()
 		throws SailException
 	{
-		return new NativeStore(dataDir, "spoc,posc");
+		try {
+			return new NativeStore(tempDir.newFolder("nativestore"), "spoc,posc");
+		}
+		catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 }

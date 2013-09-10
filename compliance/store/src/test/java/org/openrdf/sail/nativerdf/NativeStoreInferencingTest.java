@@ -16,15 +16,10 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import static org.junit.Assume.assumeNotNull;
-
-import java.io.File;
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
-
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.sail.InferencingTest;
 import org.openrdf.sail.NotifyingSail;
@@ -33,28 +28,18 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 
 public class NativeStoreInferencingTest extends InferencingTest {
 
-	private File dataDir;
-
-	@Before
-	public void setUp()
-		throws IOException
-	{
-		dataDir = FileUtil.createTempDir("nativestore");
-		assumeNotNull("could not create datadir", dataDir);
-	}
-
-	@After
-	public void tearDown()
-		throws IOException
-	{
-		if (dataDir != null)
-			FileUtil.deleteDir(dataDir);
-	}
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	@Override
 	protected Sail createSail() {
-		NotifyingSail sailStack = new NativeStore(dataDir, "spoc,posc");
-		sailStack = new ForwardChainingRDFSInferencer(sailStack);
-		return sailStack;
+		try {
+			NotifyingSail sailStack = new NativeStore(tempDir.newFolder("nativestore"), "spoc,posc");
+			sailStack = new ForwardChainingRDFSInferencer(sailStack);
+			return sailStack;
+		}
+		catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 }

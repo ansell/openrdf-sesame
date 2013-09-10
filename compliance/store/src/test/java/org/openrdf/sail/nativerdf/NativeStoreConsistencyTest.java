@@ -22,11 +22,10 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Model;
@@ -39,7 +38,6 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
 import org.openrdf.rio.RDFFormat;
@@ -51,21 +49,16 @@ import org.openrdf.rio.RDFFormat;
  */
 public class NativeStoreConsistencyTest {
 
-	private File dataDir;
+	/*-----------*
+	 * Variables *
+	 *-----------*/
 
-	@Before
-	public void setUp()
-		throws Exception
-	{
-		dataDir = FileUtil.createTempDir("nativestore-consistency");
-	}
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
-	@After
-	public void tearDown()
-		throws Exception
-	{
-		FileUtil.deleteDir(dataDir);
-	}
+	/*---------*
+	 * Methods *
+	 *---------*/
 
 	@Test
 	public void testSES1867IndexCorruption() throws Exception {
@@ -73,6 +66,7 @@ public class NativeStoreConsistencyTest {
 		URI oldContext = vf.createURI("http://example.org/oldContext");
 		URI newContext = vf.createURI("http://example.org/newContext");
 
+		File dataDir = tempDir.newFolder("nativestore-consistency");
 		
 		Repository repo = new SailRepository(new NativeStore(dataDir, "spoc,psoc"));
 		repo.initialize();

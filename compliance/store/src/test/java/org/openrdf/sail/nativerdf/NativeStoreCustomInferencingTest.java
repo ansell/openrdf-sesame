@@ -16,15 +16,12 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
-
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.sail.CustomGraphQueryInferencerTest;
@@ -32,31 +29,22 @@ import org.openrdf.sail.NotifyingSail;
 
 public class NativeStoreCustomInferencingTest extends CustomGraphQueryInferencerTest {
 
-	private File dataDir;
-
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	public NativeStoreCustomInferencingTest(String resourceFolder, Expectation testData, QueryLanguage language)
 	{
 		super(resourceFolder, testData, language);
 	}
 
-	@Before
-	public void setUp()
-		throws IOException
-	{
-		dataDir = FileUtil.createTempDir("nativestore");
-		assumeNotNull("could not create datadir", dataDir);
-	}
-
-	@After
-	public void tearDown()
-		throws IOException
-	{
-		if (dataDir != null)
-			FileUtil.deleteDir(dataDir);
-	}
-
 	@Override
 	protected NotifyingSail newSail() {
-		return new NativeStore(dataDir, "spoc,posc");
+		try {
+			return new NativeStore(tempDir.newFolder("nativestore"), "spoc,posc");
+		}
+		catch (IOException e) {
+			fail(e.getMessage());
+			throw new AssertionError(e);
+		}
 	}
 }
