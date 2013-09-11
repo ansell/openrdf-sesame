@@ -17,6 +17,13 @@
 package org.openrdf.workbench.commands;
 
 import java.util.Arrays;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import info.aduna.iteration.Iterations;
 
@@ -32,17 +39,38 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 
 public class SummaryServlet extends TransformationServlet {
 
+	private final ExecutorService executorService = Executors.newCachedThreadPool();
+
 	@Override
 	public void service(TupleResultBuilder builder, String xslPath)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException,
-		QueryResultHandlerException
+		QueryResultHandlerException, ExecutionException
 	{
 		builder.transform(xslPath, "summary.xsl");
 		builder.start("id", "description", "location", "server", "size", "contexts");
 		builder.link(Arrays.asList(INFO));
-		RepositoryConnection con = repository.getConnection();
+		final RepositoryConnection con = repository.getConnection();
+		String size = "";
+		Future<String> future = executorService.submit(new Callable<String>() {
+
+			@Override
+			public String call()
+				throws RepositoryException
+			{
+				return Long.toString(con.size());
+			}
+
+		});
 		try {
-			builder.result(info.getId(), info.getDescription(), info.getLocation(), getServer(), con.size(),
+			size = future.get(2000, TimeUnit.MILLISECONDS);
+		} catch (TimeoutException e){
+			size = "Timed out while requesting repository size.";
+		} catch (InterruptedException e){
+			size = "Interrupted while requesting repository size.";
+		}
+		try {
+
+			builder.result(info.getId(), info.getDescription(), info.getLocation(), getServer(), size,
 					Iterations.asList(con.getContextIDs()).size());
 			builder.end();
 		}
