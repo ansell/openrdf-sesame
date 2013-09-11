@@ -16,8 +16,9 @@
  */
 package org.openrdf.workbench.commands;
 
-import java.net.URL;
 import java.util.Arrays;
+
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -37,15 +38,12 @@ public class SummaryServlet extends TransformationServlet {
 		QueryResultHandlerException
 	{
 		builder.transform(xslPath, "summary.xsl");
-		builder.start("id", "description", "location", "server");
+		builder.start("id", "description", "location", "server", "size", "contexts");
 		builder.link(Arrays.asList(INFO));
-		String id = info.getId();
-		String desc = info.getDescription();
-		URL loc = info.getLocation();
-		String server = getServer();
 		RepositoryConnection con = repository.getConnection();
 		try {
-			builder.result(id, desc, loc, server);
+			builder.result(info.getId(), info.getDescription(), info.getLocation(), getServer(), con.size(),
+					Iterations.asList(con.getContextIDs()).size());
 			builder.end();
 		}
 		finally {
@@ -54,13 +52,13 @@ public class SummaryServlet extends TransformationServlet {
 	}
 
 	private String getServer() {
+		String result = null; // gracefully ignored by builder.result(...)
 		if (manager instanceof LocalRepositoryManager) {
-			return ((LocalRepositoryManager)manager).getBaseDir().toString();
+			result = ((LocalRepositoryManager)manager).getBaseDir().toString();
 		}
 		else if (manager instanceof RemoteRepositoryManager) {
-			return ((RemoteRepositoryManager)manager).getServerURL();
+			result = ((RemoteRepositoryManager)manager).getServerURL();
 		}
-		return null;
+		return result;
 	}
-
 }
