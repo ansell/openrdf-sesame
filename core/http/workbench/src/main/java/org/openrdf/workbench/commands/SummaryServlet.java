@@ -49,7 +49,7 @@ public class SummaryServlet extends TransformationServlet {
 	@Override
 	public void service(TupleResultBuilder builder, String xslPath)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException,
-		QueryResultHandlerException, ExecutionException
+		QueryResultHandlerException
 	{
 		builder.transform(xslPath, "summary.xsl");
 		builder.start("id", "description", "location", "server", "size", "contexts");
@@ -60,10 +60,8 @@ public class SummaryServlet extends TransformationServlet {
 			String numContexts = null;
 			try {
 				List<Future<String>> futures = getRepositoryStatistics(con);
-				size = getResult("Unexpected interruption while requesting repository size.",
-						"Timed out while requesting repository size.", futures.get(0));
-				numContexts = getResult("Unexpected interruption while requesting labeled contexts.",
-						"Timed out while requesting labeled contexts.", futures.get(1));
+				size = getResult("repository size.", futures.get(0));
+				numContexts = getResult(" labeled contexts.", futures.get(1));
 			}
 			catch (InterruptedException e) {
 				LOGGER.warn("Interrupted while requesting repository statistics.", e);
@@ -77,12 +75,21 @@ public class SummaryServlet extends TransformationServlet {
 		}
 	}
 
-	private String getResult(String defaultResult, String cancelledResult, Future<String> future)
-		throws ExecutionException
-	{
-		String result = defaultResult;
+	private String getResult(String itemRequested, Future<String> future) {
+		String result = "Unexpected interruption while requesting " + itemRequested;
 		try {
-			result = future.isCancelled() ? cancelledResult : future.get();
+			if (future.isCancelled()) {
+				result = "Timed out while requesting " + itemRequested;
+			}
+			else {
+				try {
+					result = future.get();
+				}
+				catch (ExecutionException e) {
+					LOGGER.warn("Exception occured during async request.", e);
+					result = "Exception occured while requesting " + itemRequested;
+				}
+			}
 		}
 		catch (InterruptedException e) {
 			LOGGER.error("Unexpected exception", e);
