@@ -17,13 +17,16 @@
 package org.openrdf.workbench.commands;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.Iterations;
 
@@ -41,6 +44,8 @@ public class SummaryServlet extends TransformationServlet {
 
 	private final ExecutorService executorService = Executors.newCachedThreadPool();
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(SummaryServlet.class);
+
 	@Override
 	public void service(TupleResultBuilder builder, String xslPath)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException,
@@ -50,8 +55,47 @@ public class SummaryServlet extends TransformationServlet {
 		builder.start("id", "description", "location", "server", "size", "contexts");
 		builder.link(Arrays.asList(INFO));
 		final RepositoryConnection con = repository.getConnection();
-		String size = "";
-		Future<String> future = executorService.submit(new Callable<String>() {
+		try {
+			String size = null;
+			String numContexts = null;
+			try {
+				List<Future<String>> futures = getRepositoryStatistics(con);
+				size = getResult("Unexpected interruption while requesting repository size.",
+						"Timed out while requesting repository size.", futures.get(0));
+				numContexts = getResult("Unexpected interruption while requesting labeled contexts.",
+						"Timed out while requesting labeled contexts.", futures.get(1));
+			}
+			catch (InterruptedException e) {
+				LOGGER.warn("Interrupted while requesting repository statistics.", e);
+			}
+			builder.result(info.getId(), info.getDescription(), info.getLocation(), getServer(), size,
+					numContexts);
+			builder.end();
+		}
+		finally {
+			con.close();
+		}
+	}
+
+	private String getResult(String defaultResult, String cancelledResult, Future<String> future)
+		throws ExecutionException
+	{
+		String result = defaultResult;
+		try {
+			result = future.isCancelled() ? cancelledResult : future.get();
+		}
+		catch (InterruptedException e) {
+			LOGGER.error("Unexpected exception", e);
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Future<String>> getRepositoryStatistics(final RepositoryConnection con)
+		throws InterruptedException
+	{
+		List<Future<String>> futures;
+		futures = executorService.invokeAll(Arrays.asList(new Callable<String>() {
 
 			@Override
 			public String call()
@@ -60,23 +104,17 @@ public class SummaryServlet extends TransformationServlet {
 				return Long.toString(con.size());
 			}
 
-		});
-		try {
-			size = future.get(2000, TimeUnit.MILLISECONDS);
-		} catch (TimeoutException e){
-			size = "Timed out while requesting repository size.";
-		} catch (InterruptedException e){
-			size = "Interrupted while requesting repository size.";
-		}
-		try {
+		}, new Callable<String>() {
 
-			builder.result(info.getId(), info.getDescription(), info.getLocation(), getServer(), size,
-					Iterations.asList(con.getContextIDs()).size());
-			builder.end();
-		}
-		finally {
-			con.close();
-		}
+			@Override
+			public String call()
+				throws RepositoryException
+			{
+				return Integer.toString(Iterations.asList(con.getContextIDs()).size());
+			}
+
+		}), 2000, TimeUnit.MILLISECONDS);
+		return futures;
 	}
 
 	private String getServer() {
