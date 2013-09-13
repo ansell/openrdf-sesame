@@ -61,7 +61,7 @@ public class SummaryServlet extends TransformationServlet {
 			try {
 				List<Future<String>> futures = getRepositoryStatistics(con);
 				size = getResult("repository size.", futures.get(0));
-				numContexts = getResult(" labeled contexts.", futures.get(1));
+				numContexts = getResult("labeled contexts.", futures.get(1));
 			}
 			catch (InterruptedException e) {
 				LOGGER.warn("Interrupted while requesting repository statistics.", e);
