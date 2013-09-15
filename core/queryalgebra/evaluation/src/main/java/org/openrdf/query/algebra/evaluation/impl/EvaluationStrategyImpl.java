@@ -539,16 +539,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			protected BindingSet convert(Statement st) {
 				QueryBindingSet result = new QueryBindingSet(bindings);
 
-				if (subjVar != null && !result.hasBinding(subjVar.getName())) {
+				if (subjVar != null && !subjVar.isConstant() && !result.hasBinding(subjVar.getName())) {
 					result.addBinding(subjVar.getName(), st.getSubject());
 				}
-				if (predVar != null && !result.hasBinding(predVar.getName())) {
+				if (predVar != null && !predVar.isConstant() && !result.hasBinding(predVar.getName())) {
 					result.addBinding(predVar.getName(), st.getPredicate());
 				}
-				if (objVar != null && !result.hasBinding(objVar.getName())) {
+				if (objVar != null && !objVar.isConstant() && !result.hasBinding(objVar.getName())) {
 					result.addBinding(objVar.getName(), st.getObject());
 				}
-				if (conVar != null && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
+				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
 					result.addBinding(conVar.getName(), st.getContext());
 				}
 
@@ -625,8 +625,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
 
-		// TODO handle existing bindings?
-
+		final QueryBindingSet b = new QueryBindingSet(bindings);
+		
 		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
 			public boolean hasNext()
@@ -638,7 +638,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			public BindingSet next()
 				throws QueryEvaluationException
 			{
-				return iter.next();
+				final QueryBindingSet result = new QueryBindingSet(b);
+				result.addAll(iter.next());
+				return result;
 			}
 
 			public void remove()

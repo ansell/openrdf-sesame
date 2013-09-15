@@ -765,6 +765,39 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES1073InverseSymmetricPattern() throws Exception {
+		URI a = f.createURI("http://example.org/a");
+		URI b1 = f.createURI("http://example.org/b1");
+		URI b2 = f.createURI("http://example.org/b2");
+		URI c1 = f.createURI("http://example.org/c1");
+		URI c2 = f.createURI("http://example.org/c2");
+		URI a2b = f.createURI("http://example.org/a2b");
+		URI b2c = f.createURI("http://example.org/b2c");
+		conn.add(a, a2b, b1);
+		conn.add(a, a2b, b2);
+		conn.add(b1, b2c, c1);
+		conn.add(b2, b2c, c2);
+		String query = "select * ";
+				query += "where{ ";
+            query += "?c1 ^<http://example.org/b2c>/^<http://example.org/a2b>/<http://example.org/a2b>/<http://example.org/b2c> ?c2 . ";
+				query += " } ";
+		TupleQueryResult qRes = conn.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		try {
+			assertTrue(qRes.hasNext());
+			int count = 0;
+			while (qRes.hasNext()) {
+				BindingSet r = qRes.next();
+				System.out.println(r);
+				count++;
+			}
+			assertEquals(4, count);
+		}
+		finally {
+			qRes.close();
+		}			
+	}
+	
+	@Test
 	public void testSES1898LeftJoinSemantics2()
 		throws Exception
 	{
@@ -922,6 +955,53 @@ public abstract class ComplexSPARQLQueryTest {
 		assertNotNull(y);
 		assertTrue(y instanceof Literal);
 		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+	}
+	
+	@Test
+	public void testValuesInOptional()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1692.trig");
+		StringBuilder query = new StringBuilder();
+		query.append(" PREFIX : <http://example.org/>\n");
+		query.append(" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+
+		int count = 0;
+		while (result.hasNext()) {
+			count++;
+			BindingSet bs = result.next();
+			System.out.println(bs);
+			URI a = (URI)bs.getValue("a");
+			assertNotNull(a);
+			Value isX = bs.getValue("isX");
+			Literal name = (Literal)bs.getValue("name");
+			assertNotNull(name);
+			if (a.stringValue().endsWith("a1")) {
+				assertNotNull(isX);
+			}
+			else if (a.stringValue().endsWith(("a2"))) {
+				assertNull(isX);
+			}
+		}
+		assertEquals(2, count);
 	}
 	
 	@Test
