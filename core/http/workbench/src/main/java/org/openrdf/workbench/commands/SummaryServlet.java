@@ -16,8 +16,19 @@
  */
 package org.openrdf.workbench.commands;
 
-import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -31,21 +42,32 @@ import org.openrdf.workbench.util.TupleResultBuilder;
 
 public class SummaryServlet extends TransformationServlet {
 
+	private final ExecutorService executorService = Executors.newCachedThreadPool();
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SummaryServlet.class);
+
 	@Override
 	public void service(TupleResultBuilder builder, String xslPath)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException,
 		QueryResultHandlerException
 	{
 		builder.transform(xslPath, "summary.xsl");
-		builder.start("id", "description", "location", "server");
+		builder.start("id", "description", "location", "server", "size", "contexts");
 		builder.link(Arrays.asList(INFO));
-		String id = info.getId();
-		String desc = info.getDescription();
-		URL loc = info.getLocation();
-		String server = getServer();
-		RepositoryConnection con = repository.getConnection();
+		final RepositoryConnection con = repository.getConnection();
 		try {
-			builder.result(id, desc, loc, server);
+			String size = null;
+			String numContexts = null;
+			try {
+				List<Future<String>> futures = getRepositoryStatistics(con);
+				size = getResult("repository size.", futures.get(0));
+				numContexts = getResult("labeled contexts.", futures.get(1));
+			}
+			catch (InterruptedException e) {
+				LOGGER.warn("Interrupted while requesting repository statistics.", e);
+			}
+			builder.result(info.getId(), info.getDescription(), info.getLocation(), getServer(), size,
+					numContexts);
 			builder.end();
 		}
 		finally {
@@ -53,14 +75,63 @@ public class SummaryServlet extends TransformationServlet {
 		}
 	}
 
-	private String getServer() {
-		if (manager instanceof LocalRepositoryManager) {
-			return ((LocalRepositoryManager)manager).getBaseDir().toString();
+	private String getResult(String itemRequested, Future<String> future) {
+		String result = "Unexpected interruption while requesting " + itemRequested;
+		try {
+			if (future.isCancelled()) {
+				result = "Timed out while requesting " + itemRequested;
+			}
+			else {
+				try {
+					result = future.get();
+				}
+				catch (ExecutionException e) {
+					LOGGER.warn("Exception occured during async request.", e);
+					result = "Exception occured while requesting " + itemRequested;
+				}
+			}
 		}
-		else if (manager instanceof RemoteRepositoryManager) {
-			return ((RemoteRepositoryManager)manager).getServerURL();
+		catch (InterruptedException e) {
+			LOGGER.error("Unexpected exception", e);
 		}
-		return null;
+		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	private List<Future<String>> getRepositoryStatistics(final RepositoryConnection con)
+		throws InterruptedException
+	{
+		List<Future<String>> futures;
+		futures = executorService.invokeAll(Arrays.asList(new Callable<String>() {
+
+			@Override
+			public String call()
+				throws RepositoryException
+			{
+				return Long.toString(con.size());
+			}
+
+		}, new Callable<String>() {
+
+			@Override
+			public String call()
+				throws RepositoryException
+			{
+				return Integer.toString(Iterations.asList(con.getContextIDs()).size());
+			}
+
+		}), 2000, TimeUnit.MILLISECONDS);
+		return futures;
+	}
+
+	private String getServer() {
+		String result = null; // gracefully ignored by builder.result(...)
+		if (manager instanceof LocalRepositoryManager) {
+			result = ((LocalRepositoryManager)manager).getBaseDir().toString();
+		}
+		else if (manager instanceof RemoteRepositoryManager) {
+			result = ((RemoteRepositoryManager)manager).getServerURL();
+		}
+		return result;
+	}
 }
