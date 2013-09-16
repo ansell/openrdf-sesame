@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.File;
+import java.io.IOException;
 
+import org.junit.Rule;
 import org.junit.Test;
-
-import info.aduna.io.FileUtil;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.sail.NotifyingSail;
@@ -38,39 +38,25 @@ public class NativeStoreTest extends RDFNotifyingStoreTest {
 	 * Variables *
 	 *-----------*/
 
-	private File dataDir;
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	@Override
-	public void setUp()
-		throws Exception
-	{
-		dataDir = FileUtil.createTempDir("nativestore");
-		super.setUp();
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		try {
-			super.tearDown();
-		}
-		finally {
-			FileUtil.deleteDir(dataDir);
-		}
-	}
-
-	@Override
 	protected NotifyingSail createSail()
 		throws SailException
 	{
-		NotifyingSail sail = new NativeStore(dataDir, "spoc,posc");
-		sail.initialize();
-		return sail;
+		try {
+			NotifyingSail sail = new NativeStore(tempDir.newFolder("nativestore"), "spoc,posc");
+			sail.initialize();
+			return sail;
+		}
+		catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 
 	// Test for SES-542
