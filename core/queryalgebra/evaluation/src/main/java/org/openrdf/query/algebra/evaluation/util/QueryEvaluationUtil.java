@@ -288,9 +288,21 @@ public class QueryEvaluationUtil {
 					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
 						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
 					}
+					boolean leftString = leftDatatype.equals(XMLSchema.STRING);
+					boolean rightString = rightDatatype.equals(XMLSchema.STRING);
+					boolean leftNumeric = XMLDatatypeUtil.isNumericDatatype(leftDatatype);
+					boolean rightNumeric = XMLDatatypeUtil.isNumericDatatype(rightDatatype);
+					boolean leftDate = XMLDatatypeUtil.isCalendarDatatype(leftDatatype);
+					boolean rightDate = XMLDatatypeUtil.isCalendarDatatype(rightDatatype);
 					
-					if(!leftDatatype.equals(rightDatatype)) {
-						throw new ValueExprEvaluationException("Unable to compare different supported types");
+					if(leftString != rightString) {
+						throw new ValueExprEvaluationException("Unable to compare strings with other supported types");
+					}
+					if(leftNumeric != rightNumeric) {
+						throw new ValueExprEvaluationException("Unable to compare numeric types with other supported types");
+					}
+					if(leftDate != rightDate) {
+						throw new ValueExprEvaluationException("Unable to compare date types with other supported types");
 					}
 				}
 				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
