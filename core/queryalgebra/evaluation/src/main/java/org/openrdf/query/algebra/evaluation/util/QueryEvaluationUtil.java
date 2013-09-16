@@ -148,18 +148,17 @@ public class QueryEvaluationUtil {
 		// - xsd:string
 		// - RDF term (equal and unequal only)
 
-		// FIXME: Confirm these rules work with RDF-1.1
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
+		boolean leftLangLit = Literals.isLanguageLiteral(leftLit);
+		boolean rightLangLit = Literals.isLanguageLiteral(rightLit);
+		
 		// for purposes of query evaluation in SPARQL, simple literals and
 		// string-typed literals with the same
 		// lexical value are considered equal.
 		URI commonDatatype = null;
-		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && XMLSchema.STRING.equals(rightDatatype)) {
-			commonDatatype = XMLSchema.STRING;
-		}
-		else if (QueryEvaluationUtil.isSimpleLiteral(rightLit) && XMLSchema.STRING.equals(leftDatatype)) {
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			commonDatatype = XMLSchema.STRING;
 		}
 
@@ -168,7 +167,7 @@ public class QueryEvaluationUtil {
 		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
-		else if ((leftDatatype != null && rightDatatype != null) || commonDatatype != null) {
+		else if ((!leftLangLit && !rightLangLit) || commonDatatype != null) {
 			if (commonDatatype == null) {
 				if (leftDatatype.equals(rightDatatype)) {
 					commonDatatype = leftDatatype;
@@ -275,7 +274,7 @@ public class QueryEvaluationUtil {
 			boolean literalsEqual = leftLit.equals(rightLit);
 
 			if (!literalsEqual) {
-				if (leftDatatype != null && rightDatatype != null && isSupportedDatatype(leftDatatype)
+				if (!leftLangLit && !rightLangLit && isSupportedDatatype(leftDatatype)
 						&& isSupportedDatatype(rightDatatype))
 				{
 					// left and right arguments have incompatible but supported
@@ -307,8 +306,7 @@ public class QueryEvaluationUtil {
 						throw new ValueExprEvaluationException("Unable to compare date types with other supported types");
 					}
 				}
-				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
-						&& leftLit.getLanguage() == null)
+				else if (!leftLangLit && !rightLangLit)
 				{
 					// For literals with unsupported datatypes we don't know if their
 					// values are equal
