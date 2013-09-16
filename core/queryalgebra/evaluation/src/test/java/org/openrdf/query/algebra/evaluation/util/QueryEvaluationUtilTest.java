@@ -151,13 +151,13 @@ public class QueryEvaluationUtilTest {
 		assertCompareFalse(arg1string, arg2en, EQ);
 		assertCompareFalse(arg1string, arg2cy, EQ);
 		assertCompareFalse(arg1string, arg2string, EQ);
-		assertCompareFalse(arg1string, arg2int, EQ);
+		assertCompareException(arg1string, arg2int, EQ);
 		assertCompareException(arg1string, arg2year, EQ);
 
 		assertCompareException(arg1int, arg2simple, EQ);
 		assertCompareFalse(arg1int, arg2en, EQ);
 		assertCompareFalse(arg1int, arg2cy, EQ);
-		assertCompareFalse(arg1int, arg2string, EQ);
+		assertCompareException(arg1int, arg2string, EQ);
 		assertCompareFalse(arg1int, arg2int, EQ);
 		assertCompareException(arg1int, arg2year, EQ);
 
@@ -192,13 +192,13 @@ public class QueryEvaluationUtilTest {
 		assertCompareTrue(arg1string, arg2en, NE);
 		assertCompareTrue(arg1string, arg2cy, NE);
 		assertCompareTrue(arg1string, arg2string, NE);
-		assertCompareTrue(arg1string, arg2int, NE);
+		assertCompareException(arg1string, arg2int, NE);
 		assertCompareException(arg1string, arg2year, NE);
 
 		assertCompareException(arg1int, arg2simple, NE);
 		assertCompareTrue(arg1int, arg2en, NE);
 		assertCompareTrue(arg1int, arg2cy, NE);
-		assertCompareTrue(arg1int, arg2string, NE);
+		assertCompareException(arg1int, arg2string, NE);
 		assertCompareTrue(arg1int, arg2int, NE);
 		assertCompareException(arg1int, arg2year, NE);
 
