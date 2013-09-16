@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -318,8 +319,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 				message.append("Missing bindings: \n");
 				for (BindingSet bs : missingBindings) {
-					message.append(bs);
-					message.append("\n");
+					printBindingSet(bs, message);
 				}
 
 				message.append("=============");
@@ -330,8 +330,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 			if (!unexpectedBindings.isEmpty()) {
 				message.append("Unexpected bindings: \n");
 				for (BindingSet bs : unexpectedBindings) {
-					message.append(bs);
-					message.append("\n");
+					printBindingSet(bs, message);
 				}
 
 				message.append("=============");
@@ -344,14 +343,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 				message.append(" =======================\n");
 				message.append("query result: \n");
 				for (BindingSet bs : queryBindings) {
-					message.append(bs);
-					message.append("\n");
+					printBindingSet(bs, message);
 				}
 				message.append(" =======================\n");
 				message.append("expected result: \n");
 				for (BindingSet bs : expectedBindings) {
-					message.append(bs);
-					message.append("\n");
+					printBindingSet(bs, message);
 				}
 				message.append(" =======================\n");
 
@@ -362,14 +359,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 				message.append(" =======================\n");
 				message.append("query result: \n");
 				for (BindingSet bs : queryBindings) {
-					message.append(bs);
-					message.append("\n");
+					printBindingSet(bs, message);
 				}
 				message.append(" =======================\n");
 				message.append("expected result: \n");
 				for (BindingSet bs : expectedBindings) {
-					message.append(bs);
-					message.append("\n");
+					printBindingSet(bs, message);
 				}
 				message.append(" =======================\n");
 
@@ -400,6 +395,19 @@ public abstract class SPARQLQueryTest extends TestCase {
 			System.out.print(message.toString());
 		}
 		*/
+	}
+
+	protected final void printBindingSet(BindingSet bs, StringBuilder appendable) {
+		List<String> names = new ArrayList<String>(bs.getBindingNames());
+		Collections.sort(names);
+
+		for (String name : names) {
+			if (bs.hasBinding(name)) {
+				appendable.append(bs.getBinding(name));
+				appendable.append(' ');
+			}
+		}
+		appendable.append("\n");
 	}
 
 	protected final void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)
