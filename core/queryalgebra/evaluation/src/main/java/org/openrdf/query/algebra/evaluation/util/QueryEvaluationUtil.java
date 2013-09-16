@@ -288,6 +288,10 @@ public class QueryEvaluationUtil {
 					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
 						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
 					}
+					
+					if(!leftDatatype.equals(rightDatatype)) {
+						throw new ValueExprEvaluationException("Unable to compare different supported types");
+					}
 				}
 				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
 						&& leftLit.getLanguage() == null)
