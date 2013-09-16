@@ -756,17 +756,6 @@ public abstract class SPARQLQueryTest extends TestCase {
 				}
 			}
 
-			// Three Open World Equality tests fail in RDF-1.1 if the only
-			// difference is in the number of results
-			if (!laxCardinality) {
-				if (testURI.stringValue().contains("open-world/manifest#open-eq-08")
-						|| testURI.stringValue().contains("open-world/manifest#open-eq-10")
-						|| testURI.stringValue().contains("open-world/manifest#open-eq-11"))
-				{
-					laxCardinality = true;
-				}
-			}
-
 			LOGGER.debug("testURI={} name={} queryFile={}", testURI.stringValue(), testName, queryFile);
 
 			// check if we should test for query result ordering
