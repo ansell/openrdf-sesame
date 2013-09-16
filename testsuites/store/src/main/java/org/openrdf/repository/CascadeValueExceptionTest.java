@@ -41,12 +41,24 @@ public abstract class CascadeValueExceptionTest {
 
 	private static String queryStrGT = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\" > \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
 
+	private static String queryStrAltLT = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\"^^<http://www.w3.org/2001/XMLSchema#string> < \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
+
+	private static String queryStrAltLE = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\"^^<http://www.w3.org/2001/XMLSchema#string> <= \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
+
+	private static String queryStrAltEQ = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\"^^<http://www.w3.org/2001/XMLSchema#string> = \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
+
+	private static String queryStrAltNE = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\"^^<http://www.w3.org/2001/XMLSchema#string> != \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
+
+	private static String queryStrAltGE = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\"^^<http://www.w3.org/2001/XMLSchema#string> >= \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
+
+	private static String queryStrAltGT = "SELECT * WHERE { ?s ?p ?o FILTER( !(\"2002\"^^<http://www.w3.org/2001/XMLSchema#string> > \"2007\"^^<http://www.w3.org/2001/XMLSchema#gYear>))}";
+
 	private RepositoryConnection conn;
 
 	private Repository repository;
 
 	@Test
-	public void testValueExceptionLessThan()
+	public void testValueExceptionLessThanPlain()
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrLT);
@@ -60,7 +72,7 @@ public abstract class CascadeValueExceptionTest {
 	}
 
 	@Test
-	public void testValueExceptionLessThanOrEqual()
+	public void testValueExceptionLessThanOrEqualPlain()
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrLE);
@@ -74,7 +86,7 @@ public abstract class CascadeValueExceptionTest {
 	}
 
 	@Test
-	public void testValueExceptionEqual()
+	public void testValueExceptionEqualPlain()
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrEQ);
@@ -88,7 +100,7 @@ public abstract class CascadeValueExceptionTest {
 	}
 
 	@Test
-	public void testValueExceptionNotEqual()
+	public void testValueExceptionNotEqualPlain()
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrNE);
@@ -102,7 +114,7 @@ public abstract class CascadeValueExceptionTest {
 	}
 
 	@Test
-	public void testValueExceptionGreaterThanOrEqual()
+	public void testValueExceptionGreaterThanOrEqualPlain()
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrGE);
@@ -116,7 +128,91 @@ public abstract class CascadeValueExceptionTest {
 	}
 
 	@Test
-	public void testValueExceptionGreaterThan()
+	public void testValueExceptionGreaterThanPlain()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrGT);
+		TupleQueryResult evaluate = query.evaluate();
+		try {
+			assertFalse(evaluate.hasNext());
+		}
+		finally {
+			evaluate.close();
+		}
+	}
+
+	@Test
+	public void testValueExceptionLessThanTyped()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrLT);
+		TupleQueryResult evaluate = query.evaluate();
+		try {
+			assertFalse(evaluate.hasNext());
+		}
+		finally {
+			evaluate.close();
+		}
+	}
+
+	@Test
+	public void testValueExceptionLessThanOrEqualTyped()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrLE);
+		TupleQueryResult evaluate = query.evaluate();
+		try {
+			assertFalse(evaluate.hasNext());
+		}
+		finally {
+			evaluate.close();
+		}
+	}
+
+	@Test
+	public void testValueExceptionEqualTyped()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrEQ);
+		TupleQueryResult evaluate = query.evaluate();
+		try {
+			assertFalse(evaluate.hasNext());
+		}
+		finally {
+			evaluate.close();
+		}
+	}
+
+	@Test
+	public void testValueExceptionNotEqualTyped()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrNE);
+		TupleQueryResult evaluate = query.evaluate();
+		try {
+			assertFalse(evaluate.hasNext());
+		}
+		finally {
+			evaluate.close();
+		}
+	}
+
+	@Test
+	public void testValueExceptionGreaterThanOrEqualTyped()
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrGE);
+		TupleQueryResult evaluate = query.evaluate();
+		try {
+			assertFalse(evaluate.hasNext());
+		}
+		finally {
+			evaluate.close();
+		}
+	}
+
+	@Test
+	public void testValueExceptionGreaterThanTyped()
 		throws Exception
 	{
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrGT);
