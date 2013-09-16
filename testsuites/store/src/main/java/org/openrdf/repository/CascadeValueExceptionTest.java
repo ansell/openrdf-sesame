@@ -145,7 +145,7 @@ public abstract class CascadeValueExceptionTest {
 	public void testValueExceptionLessThanTyped()
 		throws Exception
 	{
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrLT);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrAltLT);
 		TupleQueryResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
@@ -159,7 +159,7 @@ public abstract class CascadeValueExceptionTest {
 	public void testValueExceptionLessThanOrEqualTyped()
 		throws Exception
 	{
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrLE);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrAltLE);
 		TupleQueryResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
@@ -173,7 +173,7 @@ public abstract class CascadeValueExceptionTest {
 	public void testValueExceptionEqualTyped()
 		throws Exception
 	{
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrEQ);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrAltEQ);
 		TupleQueryResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
@@ -187,7 +187,7 @@ public abstract class CascadeValueExceptionTest {
 	public void testValueExceptionNotEqualTyped()
 		throws Exception
 	{
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrNE);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrAltNE);
 		TupleQueryResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
@@ -201,7 +201,7 @@ public abstract class CascadeValueExceptionTest {
 	public void testValueExceptionGreaterThanOrEqualTyped()
 		throws Exception
 	{
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrGE);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrAltGE);
 		TupleQueryResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
@@ -215,7 +215,7 @@ public abstract class CascadeValueExceptionTest {
 	public void testValueExceptionGreaterThanTyped()
 		throws Exception
 	{
-		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrGT);
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStrAltGT);
 		TupleQueryResult evaluate = query.evaluate();
 		try {
 			assertFalse(evaluate.hasNext());
