@@ -48,7 +48,7 @@ public abstract class HashFunctionTest {
 			Literal hash = getHashFunction().evaluate(f, f.createLiteral(getToHash()));
 
 			assertNotNull(hash);
-			assertNull(hash.getDatatype());
+			assertEquals(XMLSchema.STRING, hash.getDatatype());
 
 			assertEquals(hash.getLabel(), getExpectedDigest());
 		}
@@ -64,7 +64,7 @@ public abstract class HashFunctionTest {
 			Literal hash = getHashFunction().evaluate(f, f.createLiteral(getToHash(), XMLSchema.STRING));
 
 			assertNotNull(hash);
-			assertNull(hash.getDatatype());
+			assertEquals(XMLSchema.STRING, hash.getDatatype());
 
 			assertEquals(hash.getLabel(), getExpectedDigest());
 		}

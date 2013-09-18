@@ -29,10 +29,10 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 
 /**
- * 
  * @author James Leigh
  */
 public abstract class IdSequence {
@@ -140,10 +140,12 @@ public abstract class IdSequence {
 	protected long hashLiteralType(MessageDigest digest, Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
-			if (lit.getLanguage() != null)
+			if (Literals.isLanguageLiteral(lit)) {
 				return hash(digest, lit.getLanguage());
-			if (lit.getDatatype() != null)
+			}
+			else {
 				return hash(digest, lit.getDatatype().stringValue());
+			}
 		}
 		return 0;
 	}

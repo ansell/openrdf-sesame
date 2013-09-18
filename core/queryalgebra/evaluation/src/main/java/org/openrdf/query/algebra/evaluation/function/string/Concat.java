@@ -19,6 +19,7 @@ package org.openrdf.query.algebra.evaluation.function.string;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -56,7 +57,7 @@ public class Concat implements Function {
 
 				// verify that every literal argument has the same language tag. If
 				// not, the operator result should not use a language tag.
-				if (useLanguageTag && lit.getLanguage() != null) {
+				if (useLanguageTag && Literals.isLanguageLiteral(lit)) {
 					if (languageTag == null) {
 						languageTag = lit.getLanguage();
 					}

@@ -21,6 +21,8 @@ import java.math.BigInteger;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.openrdf.model.vocabulary.RDF;
+
 /**
  * An RDF literal consisting of a label (the value) and optionally a language
  * tag or a datatype (but not both).
@@ -39,16 +41,16 @@ public interface Literal extends Value {
 	/**
 	 * Gets the language tag for this literal, normalized to lower case.
 	 * 
-	 * @return The language tag for this literal, or <tt>null</tt> if it
-	 *         doesn't have one.
+	 * @return The language tag for this literal, or <tt>null</tt> if it doesn't
+	 *         have one.
 	 */
 	public String getLanguage();
 
 	/**
 	 * Gets the datatype for this literal.
 	 * 
-	 * @return The datatype for this literal, or <tt>null</tt> if it doesn't
-	 *         have one.
+	 * @return The datatype for this literal. If {@link #getLanguage()} returns a
+	 *         non-null value than this must return {@link RDF#LANGSTRING}.
 	 */
 	public URI getDatatype();
 
@@ -75,7 +77,8 @@ public interface Literal extends Value {
 	 * Returns the <tt>byte</tt> value of this literal.
 	 * 
 	 * @return The <tt>byte value of the literal.
-	 * @throws NumberFormatException If the literal cannot be represented by a <tt>byte</tt>.
+	 * @throws NumberFormatException
+	 *         If the literal cannot be represented by a <tt>byte</tt>.
 	 */
 	public byte byteValue();
 
@@ -102,7 +105,8 @@ public interface Literal extends Value {
 	 * 
 	 * @return The <tt>long</tt> value of the literal.
 	 * @throws NumberFormatException
-	 *         If the literal's label cannot be represented by to a <tt>long</tt>.
+	 *         If the literal's label cannot be represented by to a <tt>long</tt>
+	 *         .
 	 */
 	public long longValue();
 
@@ -147,7 +151,8 @@ public interface Literal extends Value {
 	 * 
 	 * @return The <tt>long</tt> value of the literal.
 	 * @throws IllegalArgumentException
-	 *         If the literal's label cannot be represented by a <tt>boolean</tt>.
+	 *         If the literal's label cannot be represented by a <tt>boolean</tt>
+	 *         .
 	 */
 	public boolean booleanValue();
 
@@ -155,9 +160,9 @@ public interface Literal extends Value {
 	 * Returns the {@link XMLGregorianCalendar} value of this literal. A calendar
 	 * representation can be given for literals whose label conforms to the
 	 * syntax of the following <a href="http://www.w3.org/TR/xmlschema-2/">XML
-	 * Schema datatypes</a>: <tt>dateTime</tt>, <tt>time</tt>,
-	 * <tt>date</tt>, <tt>gYearMonth</tt>, <tt>gMonthDay</tt>,
-	 * <tt>gYear</tt>, <tt>gMonth</tt> or <tt>gDay</tt>.
+	 * Schema datatypes</a>: <tt>dateTime</tt>, <tt>time</tt>, <tt>date</tt>,
+	 * <tt>gYearMonth</tt>, <tt>gMonthDay</tt>, <tt>gYear</tt>, <tt>gMonth</tt>
+	 * or <tt>gDay</tt>.
 	 * 
 	 * @return The calendar value of the literal.
 	 * @throws IllegalArgumentException

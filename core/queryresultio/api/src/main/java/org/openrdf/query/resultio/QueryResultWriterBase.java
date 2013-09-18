@@ -21,6 +21,7 @@ import java.util.Collections;
 
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.WriterConfig;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * Base class for {@link QueryResultWriter}s offering common functionality for
@@ -54,4 +55,7 @@ public abstract class QueryResultWriterBase implements QueryResultWriter {
 		return Collections.emptyList();
 	}
 
+	protected boolean xsdStringToPlainLiteral() {
+		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+	}
 }

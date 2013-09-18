@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 
@@ -95,11 +96,11 @@ public class QueryStringUtil {
 		sb.append(SPARQLUtil.encodeString(lit.getLabel()));
 		sb.append('"');
 
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}
-		else if (lit.getDatatype() != null) {
+		else {
 			sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');

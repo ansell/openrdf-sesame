@@ -1102,7 +1102,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				return literal;
 			}
 			else {
@@ -1123,7 +1123,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				return literal;
 			}
 			else {
@@ -1276,7 +1276,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Literal lit = (Literal)argValue;
 			URI datatype = lit.getDatatype();
 
-			return BooleanLiteralImpl.valueOf(datatype != null && XMLDatatypeUtil.isNumericDatatype(datatype));
+			return BooleanLiteralImpl.valueOf(XMLDatatypeUtil.isNumericDatatype(datatype));
 		}
 		else {
 			return BooleanLiteralImpl.FALSE;

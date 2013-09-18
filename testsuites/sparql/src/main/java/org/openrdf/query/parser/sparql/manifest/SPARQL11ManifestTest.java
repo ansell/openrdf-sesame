@@ -127,7 +127,7 @@ public class SPARQL11ManifestTest {
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
-			String subManifestFile = bindingSet.getValue("manifestFile").toString();
+			String subManifestFile = bindingSet.getValue("manifestFile").stringValue();
 
 			if (includeSubManifest(subManifestFile, excludedSubdirs)) {
 				suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory, approvedTestsOnly));
@@ -185,7 +185,7 @@ public class SPARQL11ManifestTest {
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
-			String subManifestFile = bindingSet.getValue("manifestFile").toString();
+			String subManifestFile = bindingSet.getValue("manifestFile").stringValue();
 
 			if (includeSubManifest(subManifestFile, excludedSubdirs)) {
 				suite.addTest(SPARQLUpdateConformanceTest.suite(subManifestFile, factory, approvedTestsOnly));

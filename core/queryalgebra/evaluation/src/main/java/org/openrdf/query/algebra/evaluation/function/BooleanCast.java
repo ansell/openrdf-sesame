@@ -57,7 +57,7 @@ public class BooleanCast implements Function {
 					return valueFactory.createLiteral(booleanValue, XMLSchema.BOOLEAN);
 				}
 			}
-			else if (datatype != null) {
+			else {
 				if (datatype.equals(XMLSchema.BOOLEAN)) {
 					return literal;
 				}

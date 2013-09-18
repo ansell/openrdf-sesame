@@ -28,6 +28,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
@@ -103,7 +104,7 @@ public class StrBeforeTest {
 			
 			assertEquals("foo", result.getLabel());
 			assertEquals("en", result.getLanguage());
-			assertEquals(null, result.getDatatype());
+			assertEquals(RDF.LANGSTRING, result.getDatatype());
 		}
 		catch (ValueExprEvaluationException e) {
 			fail(e.getMessage());
@@ -138,7 +139,7 @@ public class StrBeforeTest {
 			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
 			
 			assertEquals("foo", result.getLabel());
-			assertEquals(null, result.getDatatype());
+			assertEquals(XMLSchema.STRING, result.getDatatype());
 
 		}
 		catch (ValueExprEvaluationException e) {
@@ -175,7 +176,7 @@ public class StrBeforeTest {
 			fail("operand with incompatible datatype, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: \"10\"^^<http://www.w3.org/2001/XMLSchema#int>, \"b\"", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: \"10\"^^<http://www.w3.org/2001/XMLSchema#int>, \"b\"^^<http://www.w3.org/2001/XMLSchema#string>", e.getMessage());
 		}
 	}
 	
@@ -192,7 +193,7 @@ public class StrBeforeTest {
 			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: http://example.org/foobar, \"b\"", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: http://example.org/foobar, \"b\"^^<http://www.w3.org/2001/XMLSchema#string>", e.getMessage());
 		}
 	}
 	
@@ -223,7 +224,7 @@ public class StrBeforeTest {
 			fail("operand of incompatible type, should have resulted in error");
 		}
 		catch (ValueExprEvaluationException e) {
-			assertEquals("incompatible operands for STRBEFORE: \"foobar\", \"b\"@nl", e.getMessage());
+			assertEquals("incompatible operands for STRBEFORE: \"foobar\"^^<http://www.w3.org/2001/XMLSchema#string>, \"b\"@nl", e.getMessage());
 		}
 	}
 	
@@ -236,7 +237,7 @@ public class StrBeforeTest {
 			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
 			
 			assertEquals("foo", result.getLabel());
-			assertEquals(null, result.getDatatype());
+			assertEquals(RDF.LANGSTRING, result.getDatatype());
 			assertEquals("en", result.getLanguage());
 
 		}
@@ -254,7 +255,7 @@ public class StrBeforeTest {
 			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
 			
 			assertEquals("foo", result.getLabel());
-			assertEquals(null, result.getDatatype());
+			assertEquals(RDF.LANGSTRING, result.getDatatype());
 			assertEquals("nl", result.getLanguage());
 
 		}

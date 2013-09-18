@@ -35,6 +35,7 @@ import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -308,11 +309,11 @@ public class MemValueFactory extends ValueFactoryBase {
 		if (memLiteral == null) {
 			String label = literal.getLabel();
 			URI datatype = literal.getDatatype();
-			
-			if (literal.getLanguage() != null) {
+
+			if (Literals.isLanguageLiteral(literal)) {
 				memLiteral = new MemLiteral(this, label, literal.getLanguage());
 			}
-			else if (datatype != null) {
+			else {
 				try {
 					if (XMLDatatypeUtil.isIntegerDatatype(datatype)) {
 						memLiteral = new IntegerMemLiteral(this, label, literal.integerValue(), datatype);
@@ -340,9 +341,6 @@ public class MemValueFactory extends ValueFactoryBase {
 					// Unable to parse literal label to primitive type
 					memLiteral = new MemLiteral(this, label, datatype);
 				}
-			}
-			else {
-				memLiteral = new MemLiteral(this, label);
 			}
 
 			boolean wasNew = literalRegistry.add(memLiteral);
@@ -385,7 +383,7 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	@Override
 	public synchronized Literal createLiteral(String value) {
-		Literal tempLiteral = new LiteralImpl(value);
+		Literal tempLiteral = new LiteralImpl(value, XMLSchema.STRING);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
