@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.MemoryStore;
@@ -67,14 +66,14 @@ public class NotifyingSailConnectionWrapperTest {
 
 	TestListener listener = new TestListener();
 
+	MemoryStore memoryStore = new MemoryStore();
+
 	@Before
 	public void before()
 		throws SailException
 	{
-		MemoryStore memoryStore = new MemoryStore();
 		memoryStore.initialize();
-		NotifyingSailConnection connection = memoryStore.getConnection();
-		wrapper = new NotifyingSailConnectionWrapper(connection);
+		wrapper = new NotifyingSailConnectionWrapper(memoryStore.getConnection());
 		factory = memoryStore.getValueFactory();
 	}
 
@@ -83,6 +82,7 @@ public class NotifyingSailConnectionWrapperTest {
 		throws SailException
 	{
 		wrapper.close();
+		memoryStore.shutDown();
 	}
 
 	/**
