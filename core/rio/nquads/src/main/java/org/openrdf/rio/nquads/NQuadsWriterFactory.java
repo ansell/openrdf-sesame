@@ -38,17 +38,23 @@ public class NQuadsWriterFactory implements RDFWriterFactory {
 		return RDFFormat.NQUADS;
 	}
 
-	/**
-	 * Returns a new instance of {@link NQuadsWriter}.
-	 */
+	@Override
 	public RDFWriter getWriter(OutputStream out) {
 		return new NQuadsWriter(out);
 	}
 
-	/**
-	 * Returns a new instance of {@link NQuadsWriter}.
-	 */
+	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return this.getWriter(out);
+	}
+
+	@Override
 	public RDFWriter getWriter(Writer writer) {
 		return new NQuadsWriter(writer);
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+		return this.getWriter(writer);
 	}
 }

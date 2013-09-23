@@ -33,21 +33,28 @@ public class NTriplesWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#NTRIPLES}.
 	 */
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
 
-	/**
-	 * Returns a new instance of {@link NTriplesWriter}.
-	 */
+	@Override
 	public RDFWriter getWriter(OutputStream out) {
 		return new NTriplesWriter(out);
 	}
 
-	/**
-	 * Returns a new instance of {@link NTriplesWriter}.
-	 */
+	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return this.getWriter(out);
+	}
+
+	@Override
 	public RDFWriter getWriter(Writer writer) {
 		return new NTriplesWriter(writer);
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+		return this.getWriter(writer);
 	}
 }
