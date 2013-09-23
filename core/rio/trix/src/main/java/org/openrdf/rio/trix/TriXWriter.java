@@ -81,6 +81,19 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	/**
+	 * Creates a new TriXWriter that will write to the supplied OutputStream.
+	 * 
+	 * @param out
+	 *        The OutputStream to write the RDF/XML document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public TriXWriter(OutputStream out, String defaultBaseURI) {
+		this(new XMLWriter(out));
+	}
+
+	/**
 	 * Creates a new TriXWriter that will write to the supplied Writer.
 	 * 
 	 * @param writer
@@ -90,10 +103,22 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		this(new XMLWriter(writer));
 	}
 
+	/**
+	 * Creates a new TriXWriter that will write to the supplied Writer.
+	 * 
+	 * @param writer
+	 *        The Writer to write the RDF/XML document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public TriXWriter(Writer writer, String defaultBaseURI) {
+		this(new XMLWriter(writer));
+	}
+
 	protected TriXWriter(XMLWriter xmlWriter) {
 		this.xmlWriter = xmlWriter;
 		this.xmlWriter.setPrettyPrint(true);
-
 		writingStarted = false;
 		inActiveContext = false;
 		currentContext = null;
@@ -121,7 +146,7 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
 				xmlWriter.startDocument();
 			}
-			
+
 			xmlWriter.setAttribute("xmlns", NAMESPACE);
 			xmlWriter.startTag(ROOT_TAG);
 		}
@@ -223,7 +248,7 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	{
 		// TODO: Support xml:base setting here
 	}
-	
+
 	/**
 	 * Writes out the XML-representation for the supplied value.
 	 */
