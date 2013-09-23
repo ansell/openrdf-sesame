@@ -103,10 +103,12 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIX;
 	}
 
+	@Override
 	public void startRDF()
 		throws RDFHandlerException
 	{
@@ -131,6 +133,7 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void endRDF()
 		throws RDFHandlerException
 	{
@@ -155,10 +158,12 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String name) {
 		// ignore
 	}
 
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
@@ -200,6 +205,7 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{
@@ -211,6 +217,13 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+		// TODO: Support xml:base setting here
+	}
+	
 	/**
 	 * Writes out the XML-representation for the supplied value.
 	 */

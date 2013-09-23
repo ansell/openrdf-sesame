@@ -75,14 +75,14 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 	{
 		try {
 			if (this.writer != null) {
-				final JsonGenerator jg = RDFJSONUtility.JSON_FACTORY.createJsonGenerator(this.writer);
+				final JsonGenerator jg = RDFJSONUtility.JSON_FACTORY.createGenerator(this.writer);
 				RDFJSONWriter.modelToRdfJsonInternal(this.graph, this.getWriterConfig(), jg);
 
 				jg.close();
 				this.writer.flush();
 			}
 			else if (this.outputStream != null) {
-				final JsonGenerator jg = RDFJSONUtility.JSON_FACTORY.createJsonGenerator(this.outputStream);
+				final JsonGenerator jg = RDFJSONUtility.JSON_FACTORY.createGenerator(this.outputStream);
 				RDFJSONWriter.modelToRdfJsonInternal(this.graph, this.getWriterConfig(), jg);
 
 				jg.close();
@@ -137,6 +137,13 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 		throws RDFHandlerException
 	{
 		this.graph = new TreeModel();
+	}
+
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+		// ignore
 	}
 
 	/**
@@ -246,5 +253,4 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 		}
 		jg.writeEndObject();
 	}
-
 }

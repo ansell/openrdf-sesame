@@ -76,18 +76,21 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		this.baseURI = baseURI;
 	}
 
+	@Override
 	public boolean hasNext()
 		throws QueryEvaluationException
 	{
 		return queue.hasNext();
 	}
 
+	@Override
 	public Statement next()
 		throws QueryEvaluationException
 	{
 		return queue.next();
 	}
 
+	@Override
 	public void remove()
 		throws QueryEvaluationException
 	{
@@ -111,6 +114,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		}
 	}
 
+	@Override
 	public void run() {
 		try {
 			parser.setRDFHandler(this);
@@ -135,12 +139,14 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		}
 	}
 
+	@Override
 	public void startRDF()
 		throws RDFHandlerException
 	{
 		// no-op
 	}
 
+	@Override
 	public Map<String, String> getNamespaces() {
 		try {
 			namespacesReady.await();
@@ -151,18 +157,21 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		}
 	}
 
+	@Override
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{
 		// ignore
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String uri)
 		throws RDFHandlerException
 	{
 		namespaces.put(prefix, uri);
 	}
 
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
@@ -177,10 +186,18 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 			throw new RDFHandlerException("Result closed");
 	}
 
+	@Override
 	public void endRDF()
 		throws RDFHandlerException
 	{
 		namespacesReady.countDown();
+	}
+
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+			// ignore
 	}
 
 }

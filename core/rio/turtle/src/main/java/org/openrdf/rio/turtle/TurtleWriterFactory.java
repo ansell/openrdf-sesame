@@ -33,21 +33,28 @@ public class TurtleWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#TURTLE}.
 	 */
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TURTLE;
 	}
 
-	/**
-	 * Returns a new instance of {@link TurtleWriter}.
-	 */
+	@Override
 	public RDFWriter getWriter(OutputStream out) {
 		return new TurtleWriter(out);
 	}
 
-	/**
-	 * Returns a new instance of {@link TurtleWriter}.
-	 */
+	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return new TurtleWriter(out, defaultBaseURI);
+	}
+
+	@Override
 	public RDFWriter getWriter(Writer writer) {
 		return new TurtleWriter(writer);
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+		return new TurtleWriter(writer, defaultBaseURI);
 	}
 }

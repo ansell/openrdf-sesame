@@ -31,13 +31,11 @@ import org.openrdf.rio.turtle.TurtleWriter;
  * format. Note: the current implementation simply wraps a {@link TurtleWriter}
  * and writes documents in Turtle format, which is a subset of N3.
  */
-public class N3Writer extends RDFWriterBase implements RDFWriter {
+public class N3Writer extends TurtleWriter implements RDFWriter {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
-	private TurtleWriter ttlWriter;
 
 	/*--------------*
 	 * Constructors *
@@ -50,7 +48,11 @@ public class N3Writer extends RDFWriterBase implements RDFWriter {
 	 *        The OutputStream to write the N3 document to.
 	 */
 	public N3Writer(OutputStream out) {
-		ttlWriter = new TurtleWriter(out);
+		super(out);
+	}
+
+	public N3Writer(OutputStream out, String baseURI) {
+		super(out, baseURI);
 	}
 
 	/**
@@ -60,44 +62,18 @@ public class N3Writer extends RDFWriterBase implements RDFWriter {
 	 *        The Writer to write the N3 document to.
 	 */
 	public N3Writer(Writer writer) {
-		ttlWriter = new TurtleWriter(writer);
+		super(writer);
 	}
 
+	public N3Writer(Writer writer, String baseURI) {
+		super(writer, baseURI);
+	}
+	
 	/*---------*
 	 * Methods *
 	 *---------*/
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.N3;
-	}
-
-	public void startRDF()
-		throws RDFHandlerException
-	{
-		ttlWriter.startRDF();
-	}
-
-	public void endRDF()
-		throws RDFHandlerException
-	{
-		ttlWriter.endRDF();
-	}
-
-	public void handleNamespace(String prefix, String name)
-		throws RDFHandlerException
-	{
-		ttlWriter.handleNamespace(prefix, name);
-	}
-
-	public void handleStatement(Statement st)
-		throws RDFHandlerException
-	{
-		ttlWriter.handleStatement(st);
-	}
-
-	public void handleComment(String comment)
-		throws RDFHandlerException
-	{
-		ttlWriter.handleComment(comment);
 	}
 }

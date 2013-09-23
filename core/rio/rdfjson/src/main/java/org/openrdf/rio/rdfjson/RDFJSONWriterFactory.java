@@ -41,8 +41,18 @@ public class RDFJSONWriterFactory implements RDFWriterFactory {
 	}
 
 	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return this.getWriter(out);
+	}
+
+	@Override
 	public RDFWriter getWriter(final Writer writer) {
 		return new RDFJSONWriter(writer, this.getRDFFormat());
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+		return this.getWriter(writer);
 	}
 
 }

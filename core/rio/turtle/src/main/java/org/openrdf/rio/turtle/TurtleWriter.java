@@ -54,6 +54,9 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
+	/**
+	 * The default base URI to use if none are specified.
+	 */
 	private static final String DEFAULT_BASE_URI = "";
 
 	protected IndentingWriter writer;
@@ -79,6 +82,9 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 
 	/**
 	 * Creates a new TurtleWriter that will write to the supplied OutputStream.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
 	 * 
 	 * @param out
 	 *        The OutputStream to write the Turtle document to.
@@ -88,7 +94,28 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	/**
-	 * Creates a new TurtleWriter that will write to the supplied Writer.
+	 * Creates a new TurtleWriter that will write to the supplied OutputStream
+	 * using the specified default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
+	 * 
+	 * @param writer
+	 *        The Writer to write the Turtle document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public TurtleWriter(OutputStream out, String defaultBaseURI) {
+		this(new OutputStreamWriter(out, Charset.forName("UTF-8")), defaultBaseURI);
+	}
+
+	/**
+	 * Creates a new TurtleWriter that will write to the supplied Writer using
+	 * the default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
 	 * 
 	 * @param writer
 	 *        The Writer to write the Turtle document to.
@@ -97,6 +124,19 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		this(writer, DEFAULT_BASE_URI);
 	}
 
+	/**
+	 * Creates a new TurtleWriter that will write to the supplied Writer using
+	 * the specified default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
+	 * 
+	 * @param writer
+	 *        The Writer to write the Turtle document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
 	public TurtleWriter(Writer writer, String defaultBaseURI) {
 		this.writer = new IndentingWriter(writer);
 		if (defaultBaseURI == null) {

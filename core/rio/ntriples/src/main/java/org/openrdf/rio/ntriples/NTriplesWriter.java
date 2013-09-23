@@ -78,10 +78,12 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
 
+	@Override
 	public void startRDF()
 		throws RDFHandlerException
 	{
@@ -92,6 +94,7 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		writingStarted = true;
 	}
 
+	@Override
 	public void endRDF()
 		throws RDFHandlerException
 	{
@@ -110,10 +113,12 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String name) {
 		// N-Triples does not support namespace prefixes.
 	}
 
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
@@ -135,6 +140,7 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{
@@ -155,5 +161,12 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
 
 		return result;
+	}
+
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+		// ignore
 	}
 }
