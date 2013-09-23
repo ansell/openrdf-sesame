@@ -92,10 +92,12 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.RDFXML;
 	}
 
+	@Override
 	public void startRDF() {
 		if (writingStarted) {
 			throw new IllegalStateException("Document writing has already started");
@@ -149,6 +151,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void endRDF()
 		throws RDFHandlerException
 	{
@@ -180,6 +183,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String name) {
 		setNamespace(prefix, name);
 	}
@@ -219,6 +223,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		namespaceTable.put(name, prefix);
 	}
 
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
@@ -333,6 +338,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{
@@ -353,6 +359,13 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+		// TODO: Support xml:base setting here
+	}
+	
 	protected void flushPendingStatements()
 		throws IOException, RDFHandlerException
 	{
