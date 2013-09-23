@@ -33,21 +33,30 @@ public class BinaryRDFWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#BINARY}.
 	 */
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.BINARY;
 	}
 
-	/**
-	 * Returns a new instance of {@link BinaryRDFWriter}.
-	 */
+	@Override
 	public RDFWriter getWriter(OutputStream out) {
 		return new BinaryRDFWriter(out);
 	}
 
-	/**
-	 * Returns a new instance of {@link BinaryRDFWriter}.
-	 */
+	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return new BinaryRDFWriter(out);
+	}
+
+	@Override
 	public RDFWriter getWriter(Writer writer) {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException(
+				"Cannot write Binary RDF to a Writer as it is not a textual format");
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+		throw new UnsupportedOperationException(
+				"Cannot write Binary RDF to a Writer as it is not a textual format");
 	}
 }
