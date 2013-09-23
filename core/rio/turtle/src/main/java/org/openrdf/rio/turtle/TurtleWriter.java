@@ -54,6 +54,8 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
+	private static final String DEFAULT_BASE_URI = "";
+
 	protected IndentingWriter writer;
 
 	protected boolean writingStarted;
@@ -67,6 +69,10 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 
 	protected URI lastWrittenPredicate;
 
+	protected final String defaultBaseURI;
+
+	protected String lastBaseURI;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -78,7 +84,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 *        The OutputStream to write the Turtle document to.
 	 */
 	public TurtleWriter(OutputStream out) {
-		this(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+		this(new OutputStreamWriter(out, Charset.forName("UTF-8")), DEFAULT_BASE_URI);
 	}
 
 	/**
@@ -88,7 +94,13 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 *        The Writer to write the Turtle document to.
 	 */
 	public TurtleWriter(Writer writer) {
+		this(writer, DEFAULT_BASE_URI);
+	}
+
+	public TurtleWriter(Writer writer, String defaultBaseURI) {
 		this.writer = new IndentingWriter(writer);
+		this.defaultBaseURI = defaultBaseURI;
+		this.lastBaseURI = defaultBaseURI;
 		namespaceTable = new LinkedHashMap<String, String>();
 		writingStarted = false;
 		statementClosed = true;
@@ -100,10 +112,12 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TURTLE;
 	}
 
+	@Override
 	public void startRDF()
 		throws RDFHandlerException
 	{
@@ -131,6 +145,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void endRDF()
 		throws RDFHandlerException
 	{
@@ -150,6 +165,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String name)
 		throws RDFHandlerException
 	{
@@ -191,6 +207,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
@@ -248,6 +265,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{
@@ -270,6 +288,34 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
+	}
+
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+		try {
+			if (baseURI == null) {
+				this.lastBaseURI = defaultBaseURI;
+			}
+			else {
+				this.lastBaseURI = baseURI;
+			}
+			writeBaseURI(this.lastBaseURI);
+		}
+		catch (IOException e) {
+			throw new RDFHandlerException(e);
+		}
+	}
+
+	protected void writeBaseURI(String baseURI)
+		throws IOException
+	{
+		writer.write("@base ");
+		writer.write(" <");
+		writer.write(TurtleUtil.encodeURIString(baseURI));
+		writer.write("> .");
+		writer.writeEOL();
 	}
 
 	protected void writeCommentLine(String line)
@@ -344,6 +390,12 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write(prefix);
 			writer.write(":");
 			writer.write(uriString.substring(splitIdx));
+		}
+		else if (uriString.startsWith(this.lastBaseURI)) {
+			// Write relative URI
+			writer.write("<");
+			writer.write(TurtleUtil.encodeURIString(uriString.substring(this.lastBaseURI.length())));
+			writer.write(">");
 		}
 		else {
 			// Write full URI
