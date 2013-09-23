@@ -33,21 +33,28 @@ public class RDFXMLPrettyWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#RDFXML}.
 	 */
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.RDFXML;
 	}
 
-	/**
-	 * Returns a new instance of {@link RDFXMLPrettyWriter}.
-	 */
+	@Override
 	public RDFWriter getWriter(OutputStream out) {
 		return new RDFXMLPrettyWriter(out);
 	}
 
-	/**
-	 * Returns a new instance of {@link RDFXMLPrettyWriter}.
-	 */
+	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return new RDFXMLPrettyWriter(out);
+	}
+
+	@Override
 	public RDFWriter getWriter(Writer writer) {
+		return new RDFXMLPrettyWriter(writer);
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
 		return new RDFXMLPrettyWriter(writer);
 	}
 }
