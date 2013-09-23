@@ -323,6 +323,10 @@ public class TurtleParser extends RDFParserBase {
 		URI baseURI = parseURI();
 
 		setBaseURI(baseURI.toString());
+
+		if (rdfHandler != null) {
+			rdfHandler.handleBaseURI(baseURI.toString());
+		}
 	}
 
 	protected void parseTriples()
