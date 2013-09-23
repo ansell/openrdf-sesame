@@ -50,6 +50,11 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * Variables *
 	 *-----------*/
 
+	/**
+	 * The default base URI to use if none are specified.
+	 */
+	private static final String DEFAULT_BASE_URI = "";
+
 	protected Writer writer;
 
 	protected String defaultNamespace;
@@ -60,28 +65,77 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 	protected Resource lastWrittenSubject;
 
+	protected final String defaultBaseURI;
+
+	protected String lastBaseURI;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
 	/**
 	 * Creates a new RDFXMLWriter that will write to the supplied OutputStream.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
 	 * 
 	 * @param out
 	 *        The OutputStream to write the RDF/XML document to.
 	 */
 	public RDFXMLWriter(OutputStream out) {
-		this(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+		this(new OutputStreamWriter(out, Charset.forName("UTF-8")), DEFAULT_BASE_URI);
+	}
+
+	/**
+	 * Creates a new RDFXMLWriter that will write to the supplied OutputStream.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
+	 * 
+	 * @param out
+	 *        The OutputStream to write the RDF/XML document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public RDFXMLWriter(OutputStream out, String defaultBaseURI) {
+		this(new OutputStreamWriter(out, Charset.forName("UTF-8")), DEFAULT_BASE_URI);
 	}
 
 	/**
 	 * Creates a new RDFXMLWriter that will write to the supplied Writer.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
 	 * 
 	 * @param writer
 	 *        The Writer to write the RDF/XML document to.
 	 */
 	public RDFXMLWriter(Writer writer) {
+		this(writer, DEFAULT_BASE_URI);
+	}
+
+	/**
+	 * Creates a new RDFXMLWriter that will write to the supplied Writer.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
+	 * 
+	 * @param writer
+	 *        The Writer to write the RDF/XML document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public RDFXMLWriter(Writer writer, String defaultBaseURI) {
 		this.writer = writer;
+		if (defaultBaseURI == null) {
+			this.defaultBaseURI = DEFAULT_BASE_URI;
+		}
+		else {
+			this.defaultBaseURI = defaultBaseURI;
+		}
+		this.lastBaseURI = this.defaultBaseURI;
 		namespaceTable = new LinkedHashMap<String, String>();
 		writingStarted = false;
 		headerWritten = false;
@@ -365,7 +419,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	{
 		// TODO: Support xml:base setting here
 	}
-	
+
 	protected void flushPendingStatements()
 		throws IOException, RDFHandlerException
 	{

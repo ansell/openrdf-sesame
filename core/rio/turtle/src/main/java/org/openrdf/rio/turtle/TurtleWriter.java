@@ -145,7 +145,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		else {
 			this.defaultBaseURI = defaultBaseURI;
 		}
-		this.lastBaseURI = defaultBaseURI;
+		this.lastBaseURI = this.defaultBaseURI;
 		namespaceTable = new LinkedHashMap<String, String>();
 		writingStarted = false;
 		statementClosed = true;
