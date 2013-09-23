@@ -99,7 +99,12 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 
 	public TurtleWriter(Writer writer, String defaultBaseURI) {
 		this.writer = new IndentingWriter(writer);
-		this.defaultBaseURI = defaultBaseURI;
+		if (defaultBaseURI == null) {
+			this.defaultBaseURI = DEFAULT_BASE_URI;
+		}
+		else {
+			this.defaultBaseURI = defaultBaseURI;
+		}
 		this.lastBaseURI = defaultBaseURI;
 		namespaceTable = new LinkedHashMap<String, String>();
 		writingStarted = false;
@@ -391,7 +396,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write(":");
 			writer.write(uriString.substring(splitIdx));
 		}
-		else if (uriString.startsWith(this.lastBaseURI)) {
+		else if (this.lastBaseURI.length() > 0 && uriString.startsWith(this.lastBaseURI)) {
 			// Write relative URI
 			writer.write("<");
 			writer.write(TurtleUtil.encodeURIString(uriString.substring(this.lastBaseURI.length())));
