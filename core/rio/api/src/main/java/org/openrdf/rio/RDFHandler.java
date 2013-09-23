@@ -86,4 +86,27 @@ public interface RDFHandler {
 	 */
 	public void handleComment(String comment)
 		throws RDFHandlerException;
+
+	/**
+	 * Handles a change in the Base URI.
+	 * <p>
+	 * The statements sent to {@link #handleStatement(Statement)} will still
+	 * contain complete URIs, but this method can be used to signal that the
+	 * document contains a declaration that changes the default base URI in some
+	 * way.
+	 * 
+	 * @param baseURI
+	 *        The next base URI to handle. May be null to reset the Base URI to
+	 *        either a default or no base URI depending on the handler.
+	 * @throws RDFHandlerException
+	 *         If the RDF handler has encountered an unrecoverable error.
+	 * @since 2.8.0
+	 * @see <a
+	 *      href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-ID-xml-base">RDF/XML
+	 *      Relative URIs</a>
+	 * @see <a href="http://www.w3.org/TR/turtle/#relative-iri">Turtle Relative
+	 *      URIs</a>
+	 */
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException;
 }

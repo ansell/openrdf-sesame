@@ -22,8 +22,7 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
- * Base class for {@link RDFHandler}s with dummy implementations of all
- * methods.
+ * Base class for {@link RDFHandler}s with dummy implementations of all methods.
  */
 public class RDFHandlerBase implements RDFHandler {
 
@@ -48,6 +47,12 @@ public class RDFHandlerBase implements RDFHandler {
 	}
 
 	public void handleComment(String comment)
+		throws RDFHandlerException
+	{
+	}
+
+	@Override
+	public void handleBaseURI(String baseURI)
 		throws RDFHandlerException
 	{
 	}

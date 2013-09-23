@@ -102,4 +102,13 @@ public class RDFHandlerWrapper implements RDFHandler {
 			rdfHandler.handleComment(comment);
 		}
 	}
+
+	@Override
+	public void handleBaseURI(String baseURI)
+		throws RDFHandlerException
+	{
+		for (RDFHandler rdfHandler : rdfHandlers) {
+			rdfHandler.handleBaseURI(baseURI);
+		}
+	}
 }
