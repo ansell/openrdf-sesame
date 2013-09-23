@@ -49,6 +49,10 @@ public class TriGWriter extends TurtleWriter {
 
 	/**
 	 * Creates a new TriGWriter that will write to the supplied OutputStream.
+	 * using the default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
 	 * 
 	 * @param out
 	 *        The OutputStream to write the TriG document to.
@@ -58,13 +62,53 @@ public class TriGWriter extends TurtleWriter {
 	}
 
 	/**
-	 * Creates a new TriGWriter that will write to the supplied Writer.
+	 * Creates a new TriGWriter that will write to the supplied OutputStream.
+	 * using the specified default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
+	 * 
+	 * @param out
+	 *        The OutputStream to write the TriG document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public TriGWriter(OutputStream out, String defaultBaseURI) {
+		super(out, defaultBaseURI);
+	}
+
+	/**
+	 * Creates a new TriGWriter that will write to the supplied Writer. using the
+	 * default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
 	 * 
 	 * @param writer
 	 *        The Writer to write the TriG document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
 	 */
 	public TriGWriter(Writer writer) {
 		super(writer);
+	}
+
+	/**
+	 * Creates a new TriGWriter that will write to the supplied Writer. using the
+	 * specified default base URI.
+	 * <p>
+	 * The current base URI at any point in the document can be changed using
+	 * calls to {@link #handleBaseURI(String)}.
+	 * 
+	 * @param writer
+	 *        The Writer to write the TriG document to.
+	 * @param defaultBaseURI
+	 *        The default base URI.
+	 * @since 2.8.0
+	 */
+	public TriGWriter(Writer writer, String defaultBaseURI) {
+		super(writer, defaultBaseURI);
 	}
 
 	/*---------*
@@ -72,8 +116,7 @@ public class TriGWriter extends TurtleWriter {
 	 *---------*/
 
 	@Override
-	public RDFFormat getRDFFormat()
-	{
+	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIG;
 	}
 

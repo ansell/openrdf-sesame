@@ -33,21 +33,28 @@ public class TriGWriterFactory implements RDFWriterFactory {
 	/**
 	 * Returns {@link RDFFormat#TRIG}.
 	 */
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TRIG;
 	}
 
-	/**
-	 * Returns a new instance of {@link TriGWriter}.
-	 */
+	@Override
 	public RDFWriter getWriter(OutputStream out) {
 		return new TriGWriter(out);
 	}
 
-	/**
-	 * Returns a new instance of {@link TriGWriter}.
-	 */
+	@Override
+	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+		return new TriGWriter(out, defaultBaseURI);
+	}
+
+	@Override
 	public RDFWriter getWriter(Writer writer) {
 		return new TriGWriter(writer);
+	}
+
+	@Override
+	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+		return new TriGWriter(writer, defaultBaseURI);
 	}
 }
