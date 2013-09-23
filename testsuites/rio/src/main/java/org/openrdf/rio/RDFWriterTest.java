@@ -51,9 +51,12 @@ public abstract class RDFWriterTest {
 
 	protected RDFParserFactory rdfParserFactory;
 
+	private ValueFactoryImpl vf;
+
 	protected RDFWriterTest(RDFWriterFactory writerF, RDFParserFactory parserF) {
 		rdfWriterFactory = writerF;
 		rdfParserFactory = parserF;
+		vf = new ValueFactoryImpl();
 	}
 
 	@Test
@@ -75,7 +78,6 @@ public abstract class RDFWriterTest {
 	{
 		String ex = "http://example.org/";
 
-		ValueFactory vf = new ValueFactoryImpl();
 		BNode bnode = vf.createBNode("anon");
 		URI uri1 = vf.createURI(ex, "uri1");
 		URI uri2 = vf.createURI(ex, "uri2");
@@ -151,7 +153,6 @@ public abstract class RDFWriterTest {
 		String ns2 = "b:";
 		String ns3 = "c:";
 
-		ValueFactory vf = new ValueFactoryImpl();
 		URI uri1 = vf.createURI(ns1, "r1");
 		URI uri2 = vf.createURI(ns2, "r2");
 		URI uri3 = vf.createURI(ns3, "r3");
@@ -169,16 +170,14 @@ public abstract class RDFWriterTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		rdfParser.setValueFactory(vf);
-		StatementCollector stCollector = new StatementCollector();
-		rdfParser.setRDFHandler(stCollector);
+		Model model = new LinkedHashModel();
+		rdfParser.setRDFHandler(new StatementCollector(model));
 
 		rdfParser.parse(in, "foo:bar");
 
-		Collection<Statement> statements = stCollector.getStatements();
-		assertEquals("Unexpected number of statements", 1, statements.size());
+		assertEquals("Unexpected number of statements", 1, model.size());
 
-		Statement parsedSt = statements.iterator().next();
-		assertEquals("Written and parsed statements are not equal", st, parsedSt);
+		assertEquals("Written and parsed statements are not equal", st, model.iterator().next());
 	}
 
 	@Test
@@ -207,28 +206,86 @@ public abstract class RDFWriterTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		rdfParser.setValueFactory(vf);
-		StatementCollector stCollector = new StatementCollector();
-		rdfParser.setRDFHandler(stCollector);
+		Model model = new LinkedHashModel();
+		rdfParser.setRDFHandler(new StatementCollector(model));
 
 		rdfParser.parse(in, "foo:bar");
 
-		Collection<Statement> statements = stCollector.getStatements();
-		assertEquals("Unexpected number of statements", 1, statements.size());
+		assertEquals("Unexpected number of statements", 1, model.size());
 
-		Statement parsedSt = statements.iterator().next();
-		assertEquals("Written and parsed statements are not equal", st, parsedSt);
+		assertEquals("Written and parsed statements are not equal", st, model.iterator().next());
 	}
 
 	@Test
 	public void testDefaultNamespace()
 		throws Exception
 	{
+		Statement st = vf.createStatement(vf.createURI(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY);
+
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
 		rdfWriter.handleNamespace("", RDF.NAMESPACE);
 		rdfWriter.handleNamespace("rdf", RDF.NAMESPACE);
 		rdfWriter.startRDF();
-		rdfWriter.handleStatement(new StatementImpl(new URIImpl(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
+		rdfWriter.handleStatement(st);
 		rdfWriter.endRDF();
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		RDFParser rdfParser = rdfParserFactory.getParser();
+		rdfParser.setValueFactory(vf);
+		Model model = new LinkedHashModel();
+		rdfParser.setRDFHandler(new StatementCollector(model));
+
+		rdfParser.parse(in, "foo:bar");
+
+		assertEquals("Unexpected number of statements", 1, model.size());
+
+		assertEquals("Written and parsed statements are not equal", st, model.iterator().next());
+	}
+
+	@Test
+	public void testBaseURINull1()
+		throws Exception
+	{
+		testBaseURI("http://www.w3.org/", null);
+	}
+
+	@Test
+	public void testBaseURIPrefix()
+		throws Exception
+	{
+		testBaseURI("", "http://www.w3.org/");
+	}
+
+	@Test
+	public void testBaseURIFullURI()
+		throws Exception
+	{
+		testBaseURI("", RDF.TYPE.stringValue());
+	}
+
+	private void testBaseURI(String nextDefaultBaseURI, String nextBaseURI)
+		throws Exception
+	{
+		Statement st = vf.createStatement(vf.createURI(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY);
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out, nextDefaultBaseURI);
+		rdfWriter.handleBaseURI(nextBaseURI);
+		rdfWriter.startRDF();
+		rdfWriter.handleStatement(st);
+		rdfWriter.endRDF();
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		RDFParser rdfParser = rdfParserFactory.getParser();
+		rdfParser.setValueFactory(vf);
+		Model model = new LinkedHashModel();
+		rdfParser.setRDFHandler(new StatementCollector(model));
+
+		rdfParser.parse(in, nextDefaultBaseURI);
+
+		assertEquals("Unexpected number of statements", 1, model.size());
+
+		assertEquals("Written and parsed statements are not equal", st, model.iterator().next());
 	}
 }
