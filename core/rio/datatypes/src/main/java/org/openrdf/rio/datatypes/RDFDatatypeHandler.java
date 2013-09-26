@@ -46,7 +46,8 @@ public class RDFDatatypeHandler implements DatatypeHandler {
 		}
 
 		return org.openrdf.model.vocabulary.RDF.LANGSTRING.equals(datatypeUri)
-				|| org.openrdf.model.vocabulary.RDF.XMLLITERAL.equals(datatypeUri);
+				|| org.openrdf.model.vocabulary.RDF.XMLLITERAL.equals(datatypeUri)
+				|| org.openrdf.model.vocabulary.RDF.HTML.equals(datatypeUri);
 	}
 
 	@Override
