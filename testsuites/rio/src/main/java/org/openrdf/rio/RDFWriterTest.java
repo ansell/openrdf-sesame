@@ -24,10 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;

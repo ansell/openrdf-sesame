@@ -23,7 +23,7 @@ import org.openrdf.rio.RDFParser;
  * 
  * @author Peter Ansell
  */
-public class NQuadsParserTest extends NQuadsParserTestCase {
+public class NQuadsParserTest extends AbstractNQuadsParserTest {
 
 	@Override
 	protected RDFParser createRDFParser() {
