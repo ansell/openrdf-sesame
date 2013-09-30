@@ -20,34 +20,44 @@ import static org.openrdf.http.protocol.Protocol.ACCEPT_PARAM_NAME;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HeaderElement;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.ProxyHost;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.params.CookiePolicy;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.error.ErrorInfo;
@@ -110,6 +120,11 @@ public class HTTPClient {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * 
+	 */
+	private static final Charset UTF8 = Charset.forName("UTF-8");
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
@@ -122,13 +137,13 @@ public class HTTPClient {
 
 	private String updateURL;
 
-	private MultiThreadedHttpConnectionManager manager;
+	private final HttpClient httpClient;
 
-	protected HttpClient httpClient;
+	private final ExecutorService executor;
 
-	private ExecutorService executor = null;
+	private final HttpContext httpContext;
 
-	private AuthScope authScope;
+	private final HttpParams params = new BasicHttpParams();
 
 	private ParserConfig parserConfig = new ParserConfig();
 
@@ -138,56 +153,28 @@ public class HTTPClient {
 
 	private RDFFormat preferredRDFFormat = RDFFormat.TURTLE;
 
-	private Map<String, String> additionalHttpHeaders;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public HTTPClient() {
+	public HTTPClient(HttpClient client, ExecutorService executor) {
+		this.httpClient = client;
+		this.httpContext = new BasicHttpContext();
+		this.executor = executor;
 		valueFactory = ValueFactoryImpl.getInstance();
+		params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+		CookieStore cookieStore = new BasicCookieStore();
+		httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+		params.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.RFC_2109);
 
 		// parser used for processing server response data should be lenient
 		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
-
-		initialize();
 	}
 
 	/*-----------------*
 	 * Get/set methods *
 	 *-----------------*/
-
-	public void shutDown() {
-		manager.closeIdleConnections(0);
-		manager.shutdown();
-		executor.shutdown();
-		httpClient = null;
-	}
-
-	/**
-	 * (re)initializes the connection manager and HttpClient (if not already
-	 * done), for example after a shutdown has been invoked earlier. Invoking
-	 * this method multiple times will have no effect.
-	 */
-	public void initialize() {
-		if (httpClient == null) {
-			executor = Executors.newCachedThreadPool();
-
-			// Use MultiThreadedHttpConnectionManager to allow concurrent access on
-			// HttpClient
-			manager = new MultiThreadedHttpConnectionManager();
-
-			// Allow 20 concurrent connections to the same host (default is 2)
-			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-			params.setDefaultMaxConnectionsPerHost(20);
-			manager.setParams(params);
-
-			httpClient = new HttpClient(manager);
-
-			configureProxySettings(httpClient);
-		}
-	}
 
 	protected final HttpClient getHttpClient() {
 		return httpClient;
@@ -201,14 +188,14 @@ public class HTTPClient {
 		return valueFactory;
 	}
 
-	public void setQueryURL(String queryURL) {
+	protected void setQueryURL(String queryURL) {
 		if (queryURL == null) {
 			throw new IllegalArgumentException("queryURL must not be null");
 		}
 		this.queryURL = queryURL;
 	}
 
-	public void setUpdateURL(String updateURL) {
+	protected void setUpdateURL(String updateURL) {
 		if (updateURL == null) {
 			throw new IllegalArgumentException("updateURL must not be null");
 		}
@@ -301,37 +288,19 @@ public class HTTPClient {
 
 		if (username != null && password != null) {
 			logger.debug("Setting username '{}' and password for server at {}.", username, url);
-			try {
-				URL server = new URL(url);
-				authScope = new AuthScope(server.getHost(), AuthScope.ANY_PORT);
-				httpClient.getState().setCredentials(authScope,
-						new UsernamePasswordCredentials(username, password));
-				httpClient.getParams().setAuthenticationPreemptive(true);
-			}
-			catch (MalformedURLException e) {
-				logger.warn("Unable to set username and password for malformed URL {}", url);
-			}
+			java.net.URI requestURI = java.net.URI.create(url);
+			String host = requestURI.getHost();
+         int port = requestURI.getPort();
+         AuthScope scope = new AuthScope(host,port);
+			UsernamePasswordCredentials cred = new UsernamePasswordCredentials(username, password);
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			credsProvider.setCredentials(scope, cred);
+			httpContext.setAttribute(ClientContext.CREDS_PROVIDER, credsProvider);
+			params.setBooleanParameter(ClientPNames.HANDLE_AUTHENTICATION, true);
 		}
 		else {
-			authScope = null;
-			httpClient.getState().clearCredentials();
-			httpClient.getParams().setAuthenticationPreemptive(false);
+			httpContext.removeAttribute(ClientContext.CREDS_PROVIDER);
 		}
-	}
-
-	/**
-	 * @param additionalHttpHeaders
-	 *        The additionalHttpHeaders to set as key value pairs.
-	 */
-	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		this.additionalHttpHeaders = additionalHttpHeaders;
-	}
-
-	/**
-	 * @return Returns the additionalHttpHeaders.
-	 */
-	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders;
 	}
 
 	protected void execute(Runnable command) {
@@ -363,7 +332,7 @@ public class HTTPClient {
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
 		QueryInterruptedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 		return getBackgroundTupleQueryResult(method);
 	}
 
@@ -372,7 +341,7 @@ public class HTTPClient {
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 		getTupleQueryResult(method, handler);
 	}
 
@@ -381,16 +350,22 @@ public class HTTPClient {
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
 		QueryInterruptedException
 	{
-		HttpMethod method = getUpdateMethod(ql, update, baseURI, dataset, includeInferred, bindings);
+		HttpUriRequest method = getUpdateMethod(ql, update, baseURI, dataset, includeInferred, bindings);
 
 		try {
-			int httpCode = httpClient.executeMethod(method);
-
-			if (!is2xx(httpCode))
-				handleHTTPError(httpCode, method);
+			executeNoContent(method);
 		}
-		finally {
-			releaseConnection(method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (MalformedQueryException e) {
+			throw e;
+		}
+		catch (QueryInterruptedException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
@@ -408,7 +383,7 @@ public class HTTPClient {
 		QueryInterruptedException
 	{
 		try {
-			HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+			HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
 					bindings);
 			return getRDFBackground(method, false);
 		}
@@ -431,7 +406,7 @@ public class HTTPClient {
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
-		HttpMethod method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
 		getRDF(method, handler, false);
 	}
 
@@ -448,53 +423,51 @@ public class HTTPClient {
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
 		QueryInterruptedException
 	{
-		HttpMethodBase method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
 				bindings);
-		return getBoolean(method);
+		try {
+			return getBoolean(method);
+		}
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (MalformedQueryException e) {
+			throw e;
+		}
+		catch (QueryInterruptedException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
-	protected HttpMethodBase getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
-		PostMethod method = new PostMethod(getQueryURL());
-		setDoAuthentication(method);
+		HttpPost method = new HttpPost(getQueryURL());
 
-		method.setRequestHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
 
-		// functionality to provide custom http headers as required by the
-		// applications
-		if (this.additionalHttpHeaders != null) {
-			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
-				method.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
-		}
-
-		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
+		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 
 		return method;
 	}
 
-	protected HttpMethod getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
+	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 	{
-		PostMethod method = new PostMethod(getUpdateURL());
-		setDoAuthentication(method);
+		HttpPost method = new HttpPost(getUpdateURL());
 
-		method.setRequestHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
 				includeInferred, bindings);
 
-		// functionality to provide custom http headers as required by the
-		// applications
-		if (this.additionalHttpHeaders != null) {
-			for (Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
-				method.addRequestHeader(additionalHeader.getKey(), additionalHeader.getValue());
-		}
-
-		method.setRequestBody(queryParams.toArray(new NameValuePair[queryParams.size()]));
+		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 
 		return method;
 	}
@@ -505,31 +478,31 @@ public class HTTPClient {
 		// TODO there is a bunch of HttpRepository specific parameters here
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
-		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
-		queryParams.add(new NameValuePair(Protocol.QUERY_PARAM_NAME, query));
+		queryParams.add(new BasicNameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
+		queryParams.add(new BasicNameValuePair(Protocol.QUERY_PARAM_NAME, query));
 		if (baseURI != null) {
-			queryParams.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
+			queryParams.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
 		}
-		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
+		queryParams.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
 				Boolean.toString(includeInferred)));
 		if (maxQueryTime > 0) {
-			queryParams.add(new NameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
+			queryParams.add(new BasicNameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
 		}
 
 		if (dataset != null) {
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
 						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
+				queryParams.add(new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
 			}
 		}
 
 		for (int i = 0; i < bindings.length; i++) {
 			String paramName = Protocol.BINDING_PREFIX + bindings[i].getName();
 			String paramValue = Protocol.encodeValue(bindings[i].getValue());
-			queryParams.add(new NameValuePair(paramName, paramValue));
+			queryParams.add(new BasicNameValuePair(paramName, paramValue));
 		}
 
 		return queryParams;
@@ -540,28 +513,28 @@ public class HTTPClient {
 	{
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
-		queryParams.add(new NameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
-		queryParams.add(new NameValuePair(Protocol.UPDATE_PARAM_NAME, update));
+		queryParams.add(new BasicNameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
+		queryParams.add(new BasicNameValuePair(Protocol.UPDATE_PARAM_NAME, update));
 		if (baseURI != null) {
-			queryParams.add(new NameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
+			queryParams.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
 		}
-		queryParams.add(new NameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
+		queryParams.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
 				Boolean.toString(includeInferred)));
 
 		if (dataset != null) {
 			for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
+				queryParams.add(new BasicNameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
 			}
 			if (dataset.getDefaultInsertGraph() != null) {
-				queryParams.add(new NameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
 						String.valueOf(dataset.getDefaultInsertGraph())));
 			}
 			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
 						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new NameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
+				queryParams.add(new BasicNameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
 						String.valueOf(namedGraphURI)));
 			}
 		}
@@ -569,7 +542,7 @@ public class HTTPClient {
 		for (int i = 0; i < bindings.length; i++) {
 			String paramName = Protocol.BINDING_PREFIX + bindings[i].getName();
 			String paramValue = Protocol.encodeValue(bindings[i].getValue());
-			queryParams.add(new NameValuePair(paramName, paramValue));
+			queryParams.add(new BasicNameValuePair(paramName, paramValue));
 		}
 
 		return queryParams;
@@ -584,30 +557,29 @@ public class HTTPClient {
 	 * in the {@link BackgroundTupleResult} or (in the error-case) in this
 	 * method.
 	 */
-	protected BackgroundTupleResult getBackgroundTupleQueryResult(HttpMethod method)
-		throws RepositoryException, QueryInterruptedException, HttpException, MalformedQueryException,
+	protected BackgroundTupleResult getBackgroundTupleQueryResult(HttpUriRequest method)
+		throws RepositoryException, QueryInterruptedException, MalformedQueryException,
 		IOException
 	{
 
 		boolean submitted = false;
+
+		// Specify which formats we support
+		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
+		if (tqrFormats.isEmpty()) {
+			throw new RepositoryException("No tuple query result parsers have been registered");
+		}
+
+		// send the tuple query
+		HttpResponse response = sendTupleQueryViaHttp(method, tqrFormats);
 		try {
 
-			// Specify which formats we support
-			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-			if (tqrFormats.isEmpty()) {
-				throw new RepositoryException("No tuple query result parsers have been registered");
-			}
-
-			// send the tuple query
-			sendTupleQueryViaHttp(method, tqrFormats);
-
 			// if we get here, HTTP code is 200
-			String mimeType = getResponseMIMEType(method);
+			String mimeType = getResponseMIMEType(response);
 			try {
 				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 				TupleQueryResultParser parser = QueryResultIO.createParser(format, getValueFactory());
-				BackgroundTupleResult tRes = new BackgroundTupleResult(parser, method.getResponseBodyAsStream(),
-						method);
+				BackgroundTupleResult tRes = new BackgroundTupleResult(parser, response.getEntity().getContent());
 				execute(tRes);
 				submitted = true;
 				return tRes;
@@ -618,7 +590,7 @@ public class HTTPClient {
 		}
 		finally {
 			if (!submitted)
-				releaseConnection(method);
+				EntityUtils.consumeQuietly(response.getEntity());
 		}
 	}
 
@@ -627,28 +599,27 @@ public class HTTPClient {
 	 * {@link TupleQueryResultHandler}. All HTTP connections are closed and
 	 * released in this method
 	 */
-	protected void getTupleQueryResult(HttpMethod method, TupleQueryResultHandler handler)
+	protected void getTupleQueryResult(HttpUriRequest method, TupleQueryResultHandler handler)
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
+		// Specify which formats we support
+		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
+		if (tqrFormats.isEmpty()) {
+			throw new RepositoryException("No tuple query result parsers have been registered");
+		}
+
+		// send the tuple query
+		HttpResponse response = sendTupleQueryViaHttp(method, tqrFormats);
 		try {
 
-			// Specify which formats we support
-			Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
-			if (tqrFormats.isEmpty()) {
-				throw new RepositoryException("No tuple query result parsers have been registered");
-			}
-
-			// send the tuple query
-			sendTupleQueryViaHttp(method, tqrFormats);
-
 			// if we get here, HTTP code is 200
-			String mimeType = getResponseMIMEType(method);
+			String mimeType = getResponseMIMEType(response);
 			try {
 				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
 				TupleQueryResultParser parser = QueryResultIO.createParser(format, getValueFactory());
 				parser.setQueryResultHandler(handler);
-				parser.parseQueryResult(method.getResponseBodyAsStream());
+				parser.parseQueryResult(response.getEntity().getContent());
 			}
 			catch (UnsupportedQueryResultFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
@@ -666,7 +637,7 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			EntityUtils.consumeQuietly(response.getEntity());
 		}
 	}
 
@@ -683,9 +654,8 @@ public class HTTPClient {
 	 * @throws QueryInterruptedException
 	 * @throws MalformedQueryException
 	 */
-	private void sendTupleQueryViaHttp(HttpMethod method, Set<TupleQueryResultFormat> tqrFormats)
-		throws RepositoryException, HttpException, IOException, QueryInterruptedException,
-		MalformedQueryException
+	private HttpResponse sendTupleQueryViaHttp(HttpUriRequest method, Set<TupleQueryResultFormat> tqrFormats)
+		throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
 	{
 
 		for (TupleQueryResultFormat format : tqrFormats) {
@@ -704,18 +674,25 @@ public class HTTPClient {
 					acceptParam += ";q=0." + qValue;
 				}
 
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+				method.addHeader(ACCEPT_PARAM_NAME, acceptParam);
 			}
 		}
 
-		int httpCode = httpClient.executeMethod(method);
-
-		if (httpCode == HttpURLConnection.HTTP_OK) {
-			return; // everything OK, control flow can continue
+		try {
+			return executeOK(method);
 		}
-
-		// error handling + http abort
-		handleHTTPError(httpCode, method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (MalformedQueryException e) {
+			throw e;
+		}
+		catch (QueryInterruptedException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	/**
@@ -723,25 +700,25 @@ public class HTTPClient {
 	 * in the {@link BackgroundGraphResult} or (in the error-case) in this
 	 * method.
 	 */
-	protected BackgroundGraphResult getRDFBackground(HttpMethodBase method, boolean requireContext)
+	protected BackgroundGraphResult getRDFBackground(HttpUriRequest method, boolean requireContext)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
 
 		boolean submitted = false;
+
+		// Specify which formats we support using Accept headers
+		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+		if (rdfFormats.isEmpty()) {
+			throw new RepositoryException("No tuple RDF parsers have been registered");
+		}
+
+		// send the tuple query
+		HttpResponse response = sendGraphQueryViaHttp(method, requireContext, rdfFormats);
 		try {
 
-			// Specify which formats we support using Accept headers
-			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			if (rdfFormats.isEmpty()) {
-				throw new RepositoryException("No tuple RDF parsers have been registered");
-			}
-
-			// send the tuple query
-			sendGraphQueryViaHttp(method, requireContext, rdfFormats);
-
 			// if we get here, HTTP code is 200
-			String mimeType = getResponseMIMEType(method);
+			String mimeType = getResponseMIMEType(response);
 			try {
 				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
 				RDFParser parser = Rio.createParser(format, getValueFactory());
@@ -754,24 +731,26 @@ public class HTTPClient {
 				// defined not to have a charset
 				// This prevents errors caused by people erroneously attaching a
 				// charset to a binary formatted document
-				if (format.hasCharset()) {
+				HttpEntity entity = response.getEntity();
+				if (format.hasCharset() && entity != null && entity.getContentType() != null) {
 					// TODO copied from SPARQLGraphQuery repository, is this
 					// required?
-					String charset_str = method.getResponseCharSet();
 					try {
-						charset = Charset.forName(charset_str);
+						charset = ContentType.parse(entity.getContentType().getValue()).getCharset();
 					}
 					catch (IllegalCharsetNameException e) {
 						// work around for Joseki-3.2
 						// Content-Type: application/rdf+xml;
 						// charset=application/rdf+xml
-						charset = Charset.forName("UTF-8");
+					}
+					if (charset == null) {
+						charset = UTF8;
 					}
 				}
 
-				String baseURI = method.getURI().getURI();
-				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, method.getResponseBodyAsStream(),
-						charset, baseURI, method);
+				String baseURI = method.getURI().toASCIIString();
+				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, entity.getContent(),
+						charset, baseURI);
 				execute(gRes);
 				submitted = true;
 				return gRes;
@@ -782,7 +761,7 @@ public class HTTPClient {
 		}
 		finally {
 			if (!submitted)
-				releaseConnection(method);
+				EntityUtils.consumeQuietly(response.getEntity());
 		}
 
 	}
@@ -791,28 +770,28 @@ public class HTTPClient {
 	 * Parse the response in this thread using the provided {@link RDFHandler}.
 	 * All HTTP connections are closed and released in this method
 	 */
-	protected void getRDF(HttpMethod method, RDFHandler handler, boolean requireContext)
+	protected void getRDF(HttpUriRequest method, RDFHandler handler, boolean requireContext)
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
+		// Specify which formats we support using Accept headers
+		Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
+		if (rdfFormats.isEmpty()) {
+			throw new RepositoryException("No tuple RDF parsers have been registered");
+		}
+
+		// send the tuple query
+		HttpResponse response = sendGraphQueryViaHttp(method, requireContext, rdfFormats);
 		try {
-			// Specify which formats we support using Accept headers
-			Set<RDFFormat> rdfFormats = RDFParserRegistry.getInstance().getKeys();
-			if (rdfFormats.isEmpty()) {
-				throw new RepositoryException("No tuple RDF parsers have been registered");
-			}
 
-			// send the tuple query
-			sendGraphQueryViaHttp(method, requireContext, rdfFormats);
-
-			String mimeType = getResponseMIMEType(method);
+			String mimeType = getResponseMIMEType(response);
 			try {
 				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
 				RDFParser parser = Rio.createParser(format, getValueFactory());
 				parser.setParserConfig(getParserConfig());
 				parser.setParseErrorListener(new ParseErrorLogger());
 				parser.setRDFHandler(handler);
-				parser.parse(method.getResponseBodyAsStream(), method.getURI().getURI());
+				parser.parse(response.getEntity().getContent(), method.getURI().toASCIIString());
 			}
 			catch (UnsupportedRDFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
@@ -822,56 +801,62 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			releaseConnection(method);
+			EntityUtils.consumeQuietly(response.getEntity());
 		}
 	}
 
-	private void sendGraphQueryViaHttp(HttpMethod method, boolean requireContext, Set<RDFFormat> rdfFormats)
-		throws RepositoryException, HttpException, IOException, QueryInterruptedException,
-		MalformedQueryException
+	private HttpResponse sendGraphQueryViaHttp(HttpUriRequest method, boolean requireContext, Set<RDFFormat> rdfFormats)
+		throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
 	{
 
 		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext,
 				getPreferredRDFFormat());
 		for (String acceptParam : acceptParams) {
-			method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+			method.addHeader(ACCEPT_PARAM_NAME, acceptParam);
 		}
 
-		int httpCode = httpClient.executeMethod(method);
-
-		if (httpCode == HttpURLConnection.HTTP_OK) {
-			return; // everything OK, control flow can continue
+		try {
+			return executeOK(method);
 		}
-
-		// error handling + http abort
-		handleHTTPError(httpCode, method);
+		catch (RepositoryException e) {
+			throw e;
+		}
+		catch (MalformedQueryException e) {
+			throw e;
+		}
+		catch (QueryInterruptedException e) {
+			throw e;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	/**
 	 * Parse the response in this thread using a suitable
 	 * {@link BooleanQueryResultParser}. All HTTP connections are closed and
 	 * released in this method
+	 * @throws OpenRDFException 
 	 */
-	protected boolean getBoolean(HttpMethodBase method)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+	protected boolean getBoolean(HttpUriRequest method)
+		throws IOException, OpenRDFException
 	{
-		try {
-			// Specify which formats we support using Accept headers
-			Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
-			if (booleanFormats.isEmpty()) {
-				throw new RepositoryException("No boolean query result parsers have been registered");
-			}
+		// Specify which formats we support using Accept headers
+		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
+		if (booleanFormats.isEmpty()) {
+			throw new RepositoryException("No boolean query result parsers have been registered");
+		}
 
-			// send the tuple query
-			sendBooleanQueryViaHttp(method, booleanFormats);
+		// send the tuple query
+		HttpResponse response = sendBooleanQueryViaHttp(method, booleanFormats);
+		try {
 
 			// if we get here, HTTP code is 200
-			String mimeType = getResponseMIMEType(method);
+			String mimeType = getResponseMIMEType(response);
 			try {
 				BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
 				BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-				return parser.parse(method.getResponseBodyAsStream());
+				return parser.parse(response.getEntity().getContent());
 			}
 			catch (UnsupportedQueryResultFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
@@ -881,14 +866,13 @@ public class HTTPClient {
 			}
 		}
 		finally {
-			method.releaseConnection();
+			EntityUtils.consumeQuietly(response.getEntity());
 		}
 
 	}
 
-	private void sendBooleanQueryViaHttp(HttpMethod method, Set<BooleanQueryResultFormat> booleanFormats)
-		throws RepositoryException, HttpException, IOException, QueryInterruptedException,
-		MalformedQueryException
+	private HttpResponse sendBooleanQueryViaHttp(HttpUriRequest method, Set<BooleanQueryResultFormat> booleanFormats)
+		throws IOException, OpenRDFException
 	{
 
 		for (BooleanQueryResultFormat format : booleanFormats) {
@@ -907,71 +891,104 @@ public class HTTPClient {
 					acceptParam += ";q=0." + qValue;
 				}
 
-				method.addRequestHeader(ACCEPT_PARAM_NAME, acceptParam);
+				method.addHeader(ACCEPT_PARAM_NAME, acceptParam);
 			}
 		}
 
-		int httpCode = httpClient.executeMethod(method);
-
-		if (httpCode == HttpURLConnection.HTTP_OK) {
-			return; // everything OK, control flow can continue
-		}
-
-		// error handling + http abort
-		handleHTTPError(httpCode, method);
+		return executeOK(method);
 	}
 
 	/**
 	 * Convenience method to deal with HTTP level errors of tuple, graph and
 	 * boolean queries in the same way. This method aborts the HTTP connection.
 	 * 
-	 * @param httpCode
 	 * @param method
-	 * @throws MalformedQueryException
-	 * @throws QueryInterruptedException
-	 * @throws RepositoryException
+	 * @throws OpenRDFException 
 	 */
-	private void handleHTTPError(int httpCode, HttpMethod method)
-		throws MalformedQueryException, QueryInterruptedException, RepositoryException
+	protected HttpResponse executeOK(HttpUriRequest method)
+		throws IOException, OpenRDFException
 	{
+		boolean fail = true;
+		HttpResponse response = execute(method);
+
 		try {
-			switch (httpCode) {
-				case HttpURLConnection.HTTP_UNAUTHORIZED: // 401
-					throw new UnauthorizedException();
-				case HttpURLConnection.HTTP_UNAVAILABLE: // 503
-					throw new QueryInterruptedException();
-				default:
-					ErrorInfo errInfo = getErrorInfo(method);
-					// Throw appropriate exception
-					if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
-						throw new MalformedQueryException(errInfo.getErrorMessage());
-					}
-					else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
-						throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
-					}
-					else {
-						throw new RepositoryException(errInfo.getErrorMessage());
-					}
+			int httpCode = response.getStatusLine().getStatusCode();
+			if (httpCode == HttpURLConnection.HTTP_OK || httpCode == HttpURLConnection.HTTP_NOT_AUTHORITATIVE) {
+				fail = false;
+				return response; // everything OK, control flow can continue
+			} else {
+				// trying to contact a non-Sesame server?
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
+			}
+		} finally {
+			if (fail) {
+				EntityUtils.consumeQuietly(response.getEntity());
 			}
 		}
-		finally {
-			method.abort();
+	}
+
+	protected void executeNoContent(HttpUriRequest method)
+		throws IOException, OpenRDFException
+	{
+		HttpResponse response = execute(method);
+		try {
+			if (response.getStatusLine().getStatusCode() >= 300) {
+				// trying to contact a non-Sesame server?
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
+			}
+		} finally {
+			EntityUtils.consume(response.getEntity());
+		}
+	}
+
+	protected HttpResponse execute(HttpUriRequest method)
+		throws IOException, OpenRDFException
+	{
+		boolean consume = true;
+		method.setParams(params);
+		HttpResponse response = httpClient.execute(method, httpContext);
+
+		try {
+			int httpCode = response.getStatusLine().getStatusCode();
+			if (httpCode >= 200 && httpCode < 300 || httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
+				consume = false;
+				return response; // everything OK, control flow can continue
+			} else {
+				switch (httpCode) {
+					case HttpURLConnection.HTTP_UNAUTHORIZED: // 401
+						throw new UnauthorizedException();
+					case HttpURLConnection.HTTP_UNAVAILABLE: // 503
+						throw new QueryInterruptedException();
+					default:
+						ErrorInfo errInfo = getErrorInfo(response);
+						// Throw appropriate exception
+						if (errInfo.getErrorType() == ErrorType.MALFORMED_DATA) {
+							throw new RDFParseException(errInfo.getErrorMessage());
+						}
+						else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_FILE_FORMAT) {
+							throw new UnsupportedRDFormatException(errInfo.getErrorMessage());
+						}
+						else if (errInfo.getErrorType() == ErrorType.MALFORMED_QUERY) {
+							throw new MalformedQueryException(errInfo.getErrorMessage());
+						}
+						else if (errInfo.getErrorType() == ErrorType.UNSUPPORTED_QUERY_LANGUAGE) {
+							throw new UnsupportedQueryLanguageException(errInfo.getErrorMessage());
+						}
+						else {
+							throw new RepositoryException(errInfo.toString());
+						}
+				}
+			}
+		} finally {
+			if (consume) {
+				EntityUtils.consumeQuietly(response.getEntity());
+			}
 		}
 	}
 
 	/*-------------------------*
 	 * General utility methods *
 	 *-------------------------*/
-
-	/**
-	 * Checks whether the specified status code is in the 2xx-range, indicating a
-	 * successfull request.
-	 * 
-	 * @return <tt>true</tt> if the status code is in the 2xx range.
-	 */
-	protected boolean is2xx(int statusCode) {
-		return statusCode >= 200 && statusCode < 300;
-	}
 
 	/**
 	 * Gets the MIME type specified in the response headers of the supplied
@@ -983,10 +1000,10 @@ public class HTTPClient {
 	 *        The method to get the reponse MIME type from.
 	 * @return The response MIME type, or <tt>null</tt> if not available.
 	 */
-	protected String getResponseMIMEType(HttpMethod method)
+	protected String getResponseMIMEType(HttpResponse method)
 		throws IOException
 	{
-		Header[] headers = method.getResponseHeaders("Content-Type");
+		Header[] headers = method.getHeaders("Content-Type");
 
 		for (Header header : headers) {
 			HeaderElement[] headerElements = header.getElements();
@@ -1003,11 +1020,11 @@ public class HTTPClient {
 		return null;
 	}
 
-	protected ErrorInfo getErrorInfo(HttpMethod method)
+	protected ErrorInfo getErrorInfo(HttpResponse response)
 		throws RepositoryException
 	{
 		try {
-			ErrorInfo errInfo = ErrorInfo.parse(method.getResponseBodyAsString());
+			ErrorInfo errInfo = ErrorInfo.parse(EntityUtils.toString(response.getEntity()));
 			logger.warn("Server reports problem: {}", errInfo.getErrorMessage());
 			return errInfo;
 		}
@@ -1015,22 +1032,6 @@ public class HTTPClient {
 			logger.warn("Unable to retrieve error info from server");
 			throw new RepositoryException("Unable to retrieve error info from server", e);
 		}
-	}
-
-	protected final void setDoAuthentication(HttpMethod method) {
-		if (authScope != null && httpClient.getState().getCredentials(authScope) != null) {
-			method.setDoAuthentication(true);
-		}
-		else {
-			method.setDoAuthentication(false);
-		}
-	}
-
-	protected final void releaseConnection(HttpMethod method) {
-		if (Thread.currentThread().isInterrupted()) {
-			method.abort();
-		}
-		method.releaseConnection();
 	}
 
 	/**
@@ -1055,7 +1056,7 @@ public class HTTPClient {
 	 * Gets the http connection read timeout in milliseconds.
 	 */
 	public long getConnectionTimeout() {
-		return this.httpClient.getParams().getConnectionManagerTimeout();
+		return (long) params.getIntParameter(CoreConnectionPNames.SO_TIMEOUT, 0);
 	}
 
 	/**
@@ -1065,30 +1066,6 @@ public class HTTPClient {
 	 *        timeout in milliseconds. Zero sets to infinity.
 	 */
 	public void setConnectionTimeout(long timeout) {
-		this.httpClient.getParams().setConnectionManagerTimeout(timeout);
-	}
-
-	private static void configureProxySettings(HttpClient httpClient) {
-		String proxyHostName = System.getProperty("http.proxyHost");
-		if (proxyHostName != null && proxyHostName.length() > 0) {
-			int proxyPort = 80; // default
-			try {
-				proxyPort = Integer.parseInt(System.getProperty("http.proxyPort"));
-			}
-			catch (NumberFormatException e) {
-				// do nothing, revert to default
-			}
-			ProxyHost proxyHost = new ProxyHost(proxyHostName, proxyPort);
-			httpClient.getHostConfiguration().setProxyHost(proxyHost);
-
-			String proxyUser = System.getProperty("http.proxyUser");
-			if (proxyUser != null) {
-				String proxyPassword = System.getProperty("http.proxyPassword");
-				httpClient.getState().setProxyCredentials(
-						new AuthScope(proxyHost.getHostName(), proxyHost.getPort()),
-						new UsernamePasswordCredentials(proxyUser, proxyPassword));
-				httpClient.getParams().setAuthenticationPreemptive(true);
-			}
-		}
+		params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, (int) timeout);
 	}
 }

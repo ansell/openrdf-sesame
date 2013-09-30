@@ -25,7 +25,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
@@ -34,6 +33,7 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.http.client.HTTPClient;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -92,17 +92,20 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private static final String NAMEDGRAPHS = "SELECT DISTINCT ?_ WHERE { GRAPH ?_ { ?s ?p ?o } }";
 
+	private final HTTPClient client;
+
 	private StringBuffer sparqlTransaction;
 
 	private Object transactionLock = new Object();
 
-	public SPARQLConnection(SPARQLRepository repository) {
+	public SPARQLConnection(SPARQLRepository repository, HTTPClient client) {
 		super(repository);
+		this.client = client;
 	}
 
 	@Override
 	public String toString() {
-		return getRepository().getHTTPClient().getQueryURL();
+		return client.getQueryURL();
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
@@ -264,7 +267,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLBooleanQuery(getRepository().getHTTPClient(), base, query);
+			return new SPARQLBooleanQuery(client, base, query);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
@@ -273,7 +276,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLGraphQuery(getRepository().getHTTPClient(), base, query);
+			return new SPARQLGraphQuery(client, base, query);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
@@ -282,7 +285,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql))
-			return new SPARQLTupleQuery(getRepository().getHTTPClient(), base, query);
+			return new SPARQLTupleQuery(client, base, query);
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}
 
@@ -292,7 +295,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		synchronized (transactionLock) {
 			if (isActive()) {
 				synchronized (transactionLock) {
-					SPARQLUpdate transaction = new SPARQLUpdate(getRepository().getHTTPClient(), null,
+					SPARQLUpdate transaction = new SPARQLUpdate(client, null,
 							sparqlTransaction.toString());
 					try {
 						transaction.execute();
@@ -635,7 +638,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException, MalformedQueryException
 	{
 		if (SPARQL.equals(ql)) {
-			return new SPARQLUpdate(getRepository().getHTTPClient(), baseURI, update);
+			return new SPARQLUpdate(client, baseURI, update);
 		}
 		throw new UnsupportedQueryLanguageException("Unsupported query language " + ql);
 	}

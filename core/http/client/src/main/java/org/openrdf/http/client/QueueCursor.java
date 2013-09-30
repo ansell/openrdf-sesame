@@ -16,8 +16,6 @@
  */
 package org.openrdf.http.client;
 
-import info.aduna.iteration.LookAheadIteration;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -25,6 +23,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+
+import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.QueryEvaluationException;
 
@@ -86,8 +86,10 @@ public class QueueCursor<E> extends
 	/**
 	 * Adds another item to the queue, blocking while the queue is full.
 	 */
-	public void put(E st) throws InterruptedException {
-		queue.put(st);
+	public void put(E item) throws InterruptedException {
+		if (!done) {
+			queue.put(item);
+		}
 	}
 
 	/**
@@ -133,6 +135,10 @@ public class QueueCursor<E> extends
 
 	@Override
 	public void handleClose() throws QueryEvaluationException {
+		done = true;
+		do {
+			queue.clear(); // ensure extra room is available
+		} while (!queue.offer(afterLast));
 		checkException();
 	}
 

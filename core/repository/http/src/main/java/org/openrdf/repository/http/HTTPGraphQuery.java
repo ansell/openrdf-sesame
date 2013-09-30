@@ -41,8 +41,8 @@ import org.openrdf.rio.RDFHandlerException;
  */
 public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
-	public HTTPGraphQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
+	public HTTPGraphQuery(HTTPClient client, QueryLanguage ql, String queryString, String baseURI) {
+		super(client, ql, queryString, baseURI);
 	}
 
 	public GraphQueryResult evaluate()

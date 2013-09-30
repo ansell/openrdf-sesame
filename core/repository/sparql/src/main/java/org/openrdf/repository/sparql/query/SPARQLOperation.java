@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.client.HttpClient;
 
 import info.aduna.net.ParsedURI;
 

@@ -19,6 +19,8 @@ package org.openrdf.query.algebra.evaluation.function.string;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import info.aduna.iteration.CloseableIteration;
@@ -38,6 +40,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -46,6 +49,17 @@ import org.openrdf.query.impl.EmptyBindingSet;
  */
 public class RegexTest {
 	private ValueFactory vf = new ValueFactoryImpl();
+	private FederatedServiceResolverImpl serviceResolver;
+
+	@Before
+	public void setUp() {
+		serviceResolver = new FederatedServiceResolverImpl();
+	}
+
+	@After
+	public void tearDown() {
+		serviceResolver.shutDown();
+	}
 
 	@Test
 	public void testEvaluate1() throws QueryEvaluationException {
@@ -157,7 +171,7 @@ public class RegexTest {
 			{
 				return new EmptyIteration<Statement, QueryEvaluationException>();
 			}
-		});
+		}, serviceResolver);
 		ValueExpr expr = new Var("expr", args[0]);
 		ValueExpr pattern = new Var("pattern", args[1]);
 		ValueExpr flags = null;

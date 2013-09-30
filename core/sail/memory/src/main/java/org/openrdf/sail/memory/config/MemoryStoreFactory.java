@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.memory.config;
 
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
@@ -28,7 +30,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * 
  * @author Arjohn Kampman
  */
-public class MemoryStoreFactory implements SailFactory {
+public class MemoryStoreFactory implements SailFactory, FederatedServiceResolverClient {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -36,6 +38,8 @@ public class MemoryStoreFactory implements SailFactory {
 	 * @see SailFactory#getSailType()
 	 */
 	public static final String SAIL_TYPE = "openrdf:MemoryStore";
+
+	private FederatedServiceResolver serviceResolver;
 
 	/**
 	 * Returns the Sail's type: <tt>openrdf:MemoryStore</tt>.
@@ -46,6 +50,15 @@ public class MemoryStoreFactory implements SailFactory {
 
 	public SailImplConfig getConfig() {
 		return new MemoryStoreConfig();
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return serviceResolver;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.serviceResolver = resolver;
 	}
 
 	public Sail getSail(SailImplConfig config)
@@ -62,6 +75,7 @@ public class MemoryStoreFactory implements SailFactory {
 
 			memoryStore.setPersist(memConfig.getPersist());
 			memoryStore.setSyncDelay(memConfig.getSyncDelay());
+			memoryStore.setFederatedServiceResolver(getFederatedServiceResolver());
 		}
 
 		return memoryStore;
