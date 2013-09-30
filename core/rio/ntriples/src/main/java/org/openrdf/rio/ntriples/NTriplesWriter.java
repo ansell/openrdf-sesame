@@ -21,11 +21,16 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
@@ -121,7 +126,8 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 			writer.write(" ");
 			NTriplesUtil.append(st.getPredicate(), writer);
 			writer.write(" ");
-			NTriplesUtil.append(st.getObject(), writer);
+			NTriplesUtil.append(st.getObject(), writer,
+					getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL));
 			writer.write(" .\n");
 		}
 		catch (IOException e) {
@@ -140,5 +146,14 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		catch (IOException e) {
 			throw new RDFHandlerException(e);
 		}
+	}
+
+	@Override
+	public final Collection<RioSetting<?>> getSupportedSettings() {
+		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+
+		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
+
+		return result;
 	}
 }

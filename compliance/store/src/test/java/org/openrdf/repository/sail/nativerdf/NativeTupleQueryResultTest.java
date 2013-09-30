@@ -39,7 +39,7 @@ public class NativeTupleQueryResultTest extends TupleQueryResultTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

@@ -36,6 +36,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 
@@ -192,12 +193,13 @@ public class TransactionWriter {
 						xmlWriter.setAttribute(TransactionXMLConstants.NAME_ATT, binding.getName());
 
 						Literal literal = (Literal)binding.getValue();
-						if (literal.getLanguage() != null)
+						if (Literals.isLanguageLiteral(literal)) {
 							xmlWriter.setAttribute(TransactionXMLConstants.LANGUAGE_ATT, literal.getLanguage());
-
-						if (literal.getDatatype() != null)
+						}
+						else {
 							xmlWriter.setAttribute(TransactionXMLConstants.DATA_TYPE_ATT,
 									literal.getDatatype().stringValue());
+						}
 
 						xmlWriter.textElement(TransactionXMLConstants.BINDING_LITERAL,
 								binding.getValue().stringValue());
@@ -333,10 +335,10 @@ public class TransactionWriter {
 		throws IOException
 	{
 		if (literal != null) {
-			if (literal.getLanguage() != null) {
+			if (Literals.isLanguageLiteral(literal)) {
 				xmlWriter.setAttribute(TransactionXMLConstants.LANG_ATT, literal.getLanguage());
 			}
-			if (literal.getDatatype() != null) {
+			else {
 				xmlWriter.setAttribute(TransactionXMLConstants.DATATYPE_ATT, literal.getDatatype().toString());
 			}
 

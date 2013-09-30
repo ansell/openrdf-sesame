@@ -42,6 +42,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -59,7 +60,20 @@ public abstract class RDFWriterTest {
 	}
 
 	@Test
-	public void testRoundTrip()
+	public void testRoundTripWithXSDString()
+		throws RDFHandlerException, IOException, RDFParseException
+	{
+		roundTrip(true);
+	}
+
+	@Test
+	public void testRoundTripWithoutXSDString()
+		throws RDFHandlerException, IOException, RDFParseException
+	{
+		roundTrip(false);
+	}
+
+	private void roundTrip(boolean serialiseXSDString)
 		throws RDFHandlerException, IOException, RDFParseException
 	{
 		String ex = "http://example.org/";
@@ -88,6 +102,10 @@ public abstract class RDFWriterTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+		if (!serialiseXSDString) {
+			rdfWriter.getWriterConfig().set(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL, true);
+		}
+
 		rdfWriter.handleNamespace("ex", ex);
 		rdfWriter.startRDF();
 		rdfWriter.handleStatement(st1);

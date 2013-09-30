@@ -39,7 +39,7 @@ import org.openrdf.sail.SailLockedException;
  * semantics:
  * 
  * <pre>
- * Repository repository = new RepositoryImpl(new ForwardChainingRDFSInferencer(new MemoryStore()));
+ * Repository repository = new SailRepository(new ForwardChainingRDFSInferencer(new MemoryStore()));
  * repository.initialize();
  * </pre>
  * 
@@ -49,7 +49,7 @@ import org.openrdf.sail.SailLockedException;
  * Sail sailStack = new MemoryStore();
  * sailStack = new ForwardChainingRDFSInferencer(sailStack);
  * 
- * Repository repository = new Repository(sailStack);
+ * Repository repository = new SailRepository(sailStack);
  * repository.initialize();
  * </pre>
  * 

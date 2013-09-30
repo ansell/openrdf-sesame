@@ -170,8 +170,8 @@ public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements Tup
 
 		boolean quoted = false;
 
-		if (datatype != null
-				&& (XMLDatatypeUtil.isIntegerDatatype(datatype) || XMLDatatypeUtil.isDecimalDatatype(datatype) || XMLSchema.DOUBLE.equals(datatype)))
+		if (XMLDatatypeUtil.isIntegerDatatype(datatype) || XMLDatatypeUtil.isDecimalDatatype(datatype)
+				|| XMLSchema.DOUBLE.equals(datatype))
 		{
 			try {
 				String normalized = XMLDatatypeUtil.normalize(label, datatype);

@@ -116,7 +116,7 @@ public class RDFParserHelperTest {
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertNull(literal.getLanguage());
-		assertNull(literal.getDatatype());
+		assertEquals(XMLSchema.STRING, literal.getDatatype());
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class RDFParserHelperTest {
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertEquals(LANG_EN, literal.getLanguage());
-		assertNull(literal.getDatatype());
+		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class RDFParserHelperTest {
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
 		assertEquals(LANG_EN, literal.getLanguage());
-		assertNull(literal.getDatatype());
+		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 
 	/**

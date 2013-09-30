@@ -39,7 +39,7 @@ public class NativeSparqlOrderByTest extends SparqlOrderByTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

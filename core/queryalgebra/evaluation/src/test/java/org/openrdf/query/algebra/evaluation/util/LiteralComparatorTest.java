@@ -132,13 +132,13 @@ public class LiteralComparatorTest extends TestCase {
 	public void testLeftSimple()
 		throws Exception
 	{
-		assertTrue(cmp.compare(simple1, typed1) < 0);
+		assertTrue(cmp.compare(simple1, typed1) == 0);
 	}
 
 	public void testRightSimple()
 		throws Exception
 	{
-		assertTrue(cmp.compare(typed1, simple1) > 0);
+		assertTrue(cmp.compare(typed1, simple1) == 0);
 	}
 
 	public void testOrder()

@@ -34,6 +34,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.TreeModel;
+import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -76,14 +77,14 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 			if (this.writer != null) {
 				final JsonGenerator jg = RDFJSONUtility.JSON_FACTORY.createJsonGenerator(this.writer);
 				RDFJSONWriter.modelToRdfJsonInternal(this.graph, this.getWriterConfig(), jg);
-				
+
 				jg.close();
 				this.writer.flush();
 			}
 			else if (this.outputStream != null) {
 				final JsonGenerator jg = RDFJSONUtility.JSON_FACTORY.createJsonGenerator(this.outputStream);
 				RDFJSONWriter.modelToRdfJsonInternal(this.graph, this.getWriterConfig(), jg);
-				
+
 				jg.close();
 				this.outputStream.flush();
 			}
@@ -160,29 +161,28 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 		jg.writeStartObject();
 		if (object instanceof Literal) {
 			jg.writeObjectField(RDFJSONUtility.VALUE, object.stringValue());
-	
+
 			jg.writeObjectField(RDFJSONUtility.TYPE, RDFJSONUtility.LITERAL);
 			final Literal l = (Literal)object;
-	
-			if (l.getLanguage() != null) {
+
+			if (Literals.isLanguageLiteral(l)) {
 				jg.writeObjectField(RDFJSONUtility.LANG, l.getLanguage());
 			}
-	
-			if (l.getDatatype() != null) {
+			else {
 				jg.writeObjectField(RDFJSONUtility.DATATYPE, l.getDatatype().stringValue());
 			}
 		}
 		else if (object instanceof BNode) {
 			jg.writeObjectField(RDFJSONUtility.VALUE, resourceToString((BNode)object));
-	
+
 			jg.writeObjectField(RDFJSONUtility.TYPE, RDFJSONUtility.BNODE);
 		}
 		else if (object instanceof URI) {
 			jg.writeObjectField(RDFJSONUtility.VALUE, resourceToString((URI)object));
-	
+
 			jg.writeObjectField(RDFJSONUtility.TYPE, RDFJSONUtility.URI);
 		}
-	
+
 		if (contexts != null && !contexts.isEmpty()
 				&& !(contexts.size() == 1 && contexts.iterator().next() == null))
 		{
@@ -197,7 +197,7 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 			}
 			jg.writeEndArray();
 		}
-	
+
 		jg.writeEndObject();
 	}
 
@@ -237,7 +237,7 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 					// scenarios depending on the interpretation of the way contexts
 					// work
 					final Set<Resource> contexts = graph.filter(nextSubject, nextPredicate, nextObject).contexts();
-	
+
 					RDFJSONWriter.writeObject(nextObject, contexts, jg);
 				}
 				jg.writeEndArray();

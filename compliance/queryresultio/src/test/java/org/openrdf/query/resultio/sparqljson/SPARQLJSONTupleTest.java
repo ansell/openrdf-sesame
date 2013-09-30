@@ -27,6 +27,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -172,18 +173,17 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 				Literal name = (Literal)b.getValue("name");
 				assertEquals("Alice", name.stringValue());
 				assertNull(name.getLanguage());
-				assertNull(name.getDatatype());
+				assertEquals(XMLSchema.STRING, name.getDatatype());
 
 				Literal mbox = (Literal)b.getValue("mbox");
 				assertEquals("", mbox.stringValue());
-				assertNull(mbox.getDatatype());
 				assertNull(mbox.getLanguage());
+				assertEquals(XMLSchema.STRING, mbox.getDatatype());
 
 				Literal blurb = (Literal)b.getValue("blurb");
 				assertEquals("<p xmlns=\"http://www.w3.org/1999/xhtml\">My name is <b>alice</b></p>",
 						blurb.stringValue());
 				assertNull(blurb.getLanguage());
-				assertNotNull(blurb.getDatatype());
 				assertEquals(RDF.XMLLITERAL, blurb.getDatatype());
 			}
 			else if (value.getID().equals("r2")) {
@@ -196,7 +196,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 				Literal name = (Literal)b.getValue("name");
 				assertEquals("Bob", name.stringValue());
 				assertEquals("en", name.getLanguage());
-				assertNull(name.getDatatype());
+				assertEquals(RDF.LANGSTRING, name.getDatatype());
 
 				assertEquals("mailto:bob@work.example.org", b.getValue("mbox").stringValue());
 			}

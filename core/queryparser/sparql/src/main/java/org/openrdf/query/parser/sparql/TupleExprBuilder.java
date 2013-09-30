@@ -68,6 +68,7 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
+import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
@@ -88,7 +89,6 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
@@ -234,7 +234,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	GraphPattern graphPattern = new GraphPattern();
 
-	private int constantVarID = 1;
+	private int anonVarID = 1;
+
+	// private Map<ValueConstant, Var> mappedValueConstants = new
+	// HashMap<ValueConstant, Var>();
 
 	/*--------------*
 	 * Constructors *
@@ -248,12 +251,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	 * Methods *
 	 *---------*/
 
-	protected Var valueExpr2Var(ValueExpr valueExpr) {
+	/**
+	 * Maps the given valueExpr to a Var. If the supplied ValueExpr is a Var, the
+	 * object itself will be returned. If it is a ValueConstant, this method will
+	 * check if an existing variable mapping exists and return that mapped
+	 * variable, otherwise it will create and store a new mapping.
+	 * 
+	 * @param valueExpr
+	 * @return a Var for the given valueExpr.
+	 * @throws IllegalArgumentException
+	 *         if the supplied ValueExpr is null or of an unexpected type.
+	 */
+	protected Var mapValueExprToVar(ValueExpr valueExpr) {
 		if (valueExpr instanceof Var) {
 			return (Var)valueExpr;
 		}
 		else if (valueExpr instanceof ValueConstant) {
-			return createConstVar(((ValueConstant)valueExpr).getValue());
+			Var v = createConstVar(((ValueConstant)valueExpr).getValue());
+			return v;
 		}
 		else if (valueExpr == null) {
 			throw new IllegalArgumentException("valueExpr is null");
@@ -263,8 +278,57 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
+	/**
+	 * Retrieve the associated Value (if any) for the given valueExpr.
+	 * 
+	 * @param valueExpr
+	 * @return the value of the given ValueExpr, or null if no value exists.
+	 * @throws IllegalArgumentException
+	 *         if the supplied ValueExpr is null or of an unexpected type.
+	 */
+	protected Value getValueForExpr(ValueExpr valueExpr) {
+		if (valueExpr instanceof Var) {
+			return ((Var)valueExpr).getValue();
+		}
+		else if (valueExpr instanceof ValueConstant) {
+			ValueConstant vc = (ValueConstant)valueExpr;
+			return vc.getValue();
+		}
+		else if (valueExpr == null) {
+			throw new IllegalArgumentException("valueExpr is null");
+		}
+		else {
+			throw new IllegalArgumentException("valueExpr is a: " + valueExpr.getClass());
+		}
+	}
+
+	/**
+	 * Creates an (anonymous) Var representing a constant value. The variable
+	 * name will be derived from the actual value to guarantee uniqueness.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	private Var createConstVar(Value value) {
-		Var var = createAnonVar("-const-" + constantVarID++);
+		if (value == null) {
+			throw new IllegalArgumentException("value can not be null");
+		}
+
+		String uniqueStringForValue = value.stringValue();
+		
+		if (value instanceof Literal) {
+			// we need to append datatype and/or language tag to ensure a unique var name (see SES-1927)
+			Literal lit = (Literal)value;
+			if (lit.getDatatype() != null) {
+				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
+			}
+			if (lit.getLanguage() != null) {
+				uniqueStringForValue += "-" + lit.getLanguage();
+			}
+		}
+		
+		Var var = createAnonVar("-const-" + uniqueStringForValue);
+		var.setConstant(true);
 		var.setValue(value);
 		return var;
 	}
@@ -387,7 +451,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			// to the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
-				Var var = createAnonVar("-const-" + constantVarID++);
+				Var var = createAnonVar("-anon-" + anonVarID++);
 
 				// replace occurrence of the operator in the filter expression
 				// with the variable.
@@ -432,7 +496,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Extension extension = new Extension();
 
 				for (AggregateOperator operator : collector.getOperators()) {
-					Var var = createAnonVar("-const-" + constantVarID++);
+					Var var = createAnonVar("-anon-" + anonVarID++);
 
 					// replace occurrence of the operator in the order condition
 					// with the variable.
@@ -524,7 +588,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							ValueExpr expr = (ValueExpr)operator.getParentNode();
 
 							Extension anonymousExtension = new Extension();
-							Var anonVar = createConstVar(null);
+							Var anonVar = createAnonVar("_anon_" + anonVarID++);
 							expr.replaceChildNode(operator, anonVar);
 							anonymousExtension.addElement(new ExtensionElem(operator, anonVar.getName()));
 
@@ -905,7 +969,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		ProjectionElemList projectionElements = new ProjectionElemList();
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			ValueExpr resource = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
-			
+
 			if (resource instanceof Var) {
 				projectionElements.addElement(new ProjectionElem(((Var)resource).getName()));
 			}
@@ -916,12 +980,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				projectionElements.addElement(new ProjectionElem(alias));
 			}
 		}
-		
-		if (! e.getElements().isEmpty()) {
+
+		if (!e.getElements().isEmpty()) {
 			e.setArg(tupleExpr);
 			tupleExpr = e;
 		}
-		
+
 		Projection p = new Projection(tupleExpr, projectionElements);
 		return new DescribeOperator(p);
 
@@ -1102,7 +1166,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		String serviceExpressionString = node.getPatternString();
 
-		parentGP.addRequiredTE(new Service(valueExpr2Var(serviceRef), serviceExpr, serviceExpressionString,
+		parentGP.addRequiredTE(new Service(mapValueExprToVar(serviceRef), serviceExpr, serviceExpressionString,
 				node.getPrefixDeclarations(), node.getBaseURI(), node.isSilent()));
 
 		graphPattern = parentGP;
@@ -1139,7 +1203,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		ValueExpr newContext = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
 
-		graphPattern.setContextVar(valueExpr2Var(newContext));
+		graphPattern.setContextVar(mapValueExprToVar(newContext));
 		graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
 
 		node.jjtGetChild(1).jjtAccept(this, null);
@@ -1198,11 +1262,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		@SuppressWarnings("unchecked")
 		List<ValueExpr> objectList = (List<ValueExpr>)propListNode.getObjectList().jjtAccept(this, null);
 
-		Var subjVar = valueExpr2Var(subject);
-		Var predVar = valueExpr2Var(predicate);
+		Var subjVar = mapValueExprToVar(subject);
+		Var predVar = mapValueExprToVar(predicate);
 
 		for (ValueExpr object : objectList) {
-			Var objVar = valueExpr2Var(object);
+			Var objVar = mapValueExprToVar(object);
 			graphPattern.addRequiredSP(subjVar, predVar, objVar);
 		}
 
@@ -1298,7 +1362,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		ValueExpr subject = (ValueExpr)data;
-		Var subjVar = valueExpr2Var(subject);
+		Var subjVar = mapValueExprToVar(subject);
 
 		// check if we should invert subject and object.
 		boolean invertSequence = checkInverse(pathSeqNode);
@@ -1355,7 +1419,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Var[] objVarReplacement = null;
 				if (i == pathLength - 1) {
 					if (objectList.contains(subjVar)) { // See SES-1685
-						Var objVar = valueExpr2Var(objectList.get(objectList.indexOf(subjVar)));
+						Var objVar = mapValueExprToVar(objectList.get(objectList.indexOf(subjVar)));
 						objVarReplacement = new Var[] {
 								objVar,
 								createAnonVar(objVar.getName() + "-" + UUID.randomUUID().toString()) };
@@ -1398,7 +1462,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					TupleExpr te = graphPattern.buildTupleExpr();
 
 					for (ValueExpr object : objectList) {
-						Var objVar = valueExpr2Var(object);
+						Var objVar = mapValueExprToVar(object);
 						if (objVar.equals(subjVar)) { // see SES-1685
 							Var objVarReplacement = createAnonVar(objVar.getName() + "-"
 									+ UUID.randomUUID().toString());
@@ -1436,14 +1500,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			else {
 
 				ValueExpr pred = (ValueExpr)pathElement.jjtAccept(this, data);
-				Var predVar = valueExpr2Var(pred);
+				Var predVar = mapValueExprToVar(pred);
 
 				TupleExpr te;
 
 				if (i == pathLength - 1) {
 					// last element in the path, connect to list of defined objects
 					for (ValueExpr object : objectList) {
-						Var objVar = valueExpr2Var(object);
+						Var objVar = mapValueExprToVar(object);
 						boolean replaced = false;
 
 						if (objVar.equals(subjVar)) {
@@ -1470,7 +1534,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						}
 
 						if (replaced) {
-							SameTerm condition = new SameTerm(objVar, valueExpr2Var(object));
+							SameTerm condition = new SameTerm(objVar, mapValueExprToVar(object));
 							pathSequencePattern.addConstraint(condition);
 						}
 						pathSequencePattern.addRequiredTE(te);
@@ -1487,7 +1551,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 																						// inverted
 																						// sequence
 						for (ValueExpr object : objectList) {
-							Var objVar = valueExpr2Var(object);
+							Var objVar = mapValueExprToVar(object);
 							startVar = objVar;
 
 							if (pathElement.isInverse()) {
@@ -1506,8 +1570,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					else {
 
 						if (pathElement.isInverse()) {
+							final Var oldStartVar = startVar;
 							startVar = nextVar;
-							nextVar = subjVar;
+							nextVar = oldStartVar;
 						}
 
 						te = new StatementPattern(scope, startVar, predVar, nextVar, contextVar);
@@ -1627,7 +1692,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		for (ValueExpr objExpr : objectList) {
-			Var objVar = valueExpr2Var(objExpr);
+			Var objVar = mapValueExprToVar(objExpr);
 			VarReplacer replacer = new VarReplacer(objVar, replacementVar);
 			te.visit(replacer);
 		}
@@ -1805,11 +1870,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			@SuppressWarnings("unchecked")
 			List<ValueExpr> objectList = (List<ValueExpr>)propListNode.getObjectList().jjtAccept(this, null);
 
-			Var subjVar = valueExpr2Var(subject);
+			Var subjVar = mapValueExprToVar(subject);
 
-			Var predVar = valueExpr2Var(verbPath);
+			Var predVar = mapValueExprToVar(verbPath);
 			for (ValueExpr object : objectList) {
-				Var objVar = valueExpr2Var(object);
+				Var objVar = mapValueExprToVar(object);
 				graphPattern.addRequiredSP(subjVar, predVar, objVar);
 			}
 		}
@@ -1862,7 +1927,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		for (int i = 0; i < childCount; i++) {
 			ValueExpr childValue = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 
-			Var childVar = valueExpr2Var(childValue);
+			Var childVar = mapValueExprToVar(childValue);
 			graphPattern.addRequiredSP(listVar, createConstVar(RDF.FIRST), childVar);
 
 			Var nextListVar;
@@ -2356,7 +2421,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		for (int i = 0; i < numberOfBindingValues; i++) {
 			ValueExpr ve = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 			if (ve != null) {
-				Value v = valueExpr2Var(ve).getValue();
+				Value v = getValueForExpr(ve);
 				values[i] = v;
 			}
 		}
@@ -2536,7 +2601,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			ListMemberOperator listMemberOperator = new ListMemberOperator();
 			listMemberOperator.addArgument(leftArg);
 
-			for (int i = 0; i < listItemCount - 1; i++) {
+			for (int i = 0; i < listItemCount; i++) {
 				ValueExpr arg = (ValueExpr)node.jjtGetChild(i).jjtAccept(this, null);
 				listMemberOperator.addArgument(arg);
 			}

@@ -29,6 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.rio.RDFHandlerException;
@@ -46,13 +47,13 @@ import org.openrdf.rio.rdfxml.RDFXMLWriter;
  * is broken.
  * <p>
  * The abbreviations used are <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes">typed
- * node elements</a>, <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements">empty
- * property elements</a> and <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements">striped
- * syntax</a>. Note that these abbreviations require that statements are
- * written in the appropriate order.
+ * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes"
+ * >typed node elements</a>, <a href=
+ * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements"
+ * >empty property elements</a> and <a href=
+ * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-node-property-elements"
+ * >striped syntax</a>. Note that these abbreviations require that statements
+ * are written in the appropriate order.
  * <p>
  * Striped syntax means that when the object of a statement is the subject of
  * the next statement we can nest the descriptions in each other.
@@ -462,16 +463,15 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		}
 		else if (obj instanceof Literal) {
 			Literal objLit = (Literal)obj;
-
-			// language attribute
-			if (objLit.getLanguage() != null) {
-				writeAttribute("xml:lang", objLit.getLanguage());
-			}
-
 			// datatype attribute
 			boolean isXmlLiteral = false;
-			URI datatype = objLit.getDatatype();
-			if (datatype != null) {
+
+			// language attribute
+			if (Literals.isLanguageLiteral(objLit)) {
+				writeAttribute("xml:lang", objLit.getLanguage());
+			}
+			else {
+				URI datatype = objLit.getDatatype();
 				// Check if datatype is rdf:XMLLiteral
 				isXmlLiteral = datatype.equals(RDF.XMLLITERAL);
 

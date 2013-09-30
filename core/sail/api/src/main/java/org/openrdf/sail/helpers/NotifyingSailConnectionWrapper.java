@@ -20,10 +20,11 @@ import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
 
 /**
- * An implementation of the Transaction interface that wraps another Transaction
+ * An implementation of the {@link org.openrdf.sail.NotifyingSailConnection}
+ * interface that wraps another {@link org.openrdf.sail.NotifyingSailConnection}
  * object and forwards any method calls to the wrapped transaction.
  * 
- * @author jeen
+ * @author Jeen Broekstra
  */
 public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implements NotifyingSailConnection {
 
@@ -32,27 +33,39 @@ public class NotifyingSailConnectionWrapper extends SailConnectionWrapper implem
 	 *--------------*/
 
 	/**
-	 * Creates a new TransactionWrapper object that wraps the supplied
-	 * connection.
+	 * Creates a new {@link NotifyingSailConnectionWrapper} object that wraps the
+	 * supplied connection.
 	 */
 	public NotifyingSailConnectionWrapper(NotifyingSailConnection wrappedCon) {
 		super(wrappedCon);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
+	/*-----------------------*
+	 * SailConnectionWrapper *
+	 *-----------------------*/
 
 	@Override
 	public NotifyingSailConnection getWrappedConnection() {
 		return (NotifyingSailConnection)super.getWrappedConnection();
 	}
 
+	/*-------------------------*
+	 * NotifyingSailConnection *
+	 *-------------------------*/
+
+	/**
+	 * Adds the given listener to the wrapped connection.
+	 */
+	@Override
 	public void addConnectionListener(SailConnectionListener listener) {
 		getWrappedConnection().addConnectionListener(listener);
 	}
 
+	/**
+	 * Removes the given listener from the wrapped connection.
+	 */
+	@Override
 	public void removeConnectionListener(SailConnectionListener listener) {
-		getWrappedConnection().addConnectionListener(listener);
+		getWrappedConnection().removeConnectionListener(listener);
 	}
 }

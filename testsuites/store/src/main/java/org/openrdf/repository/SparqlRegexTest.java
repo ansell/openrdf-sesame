@@ -16,7 +16,12 @@
  */
 package org.openrdf.repository;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -26,7 +31,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class SparqlRegexTest extends TestCase {
+public abstract class SparqlRegexTest {
 
 	public String queryInline = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
 			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
@@ -54,6 +59,7 @@ public abstract class SparqlRegexTest extends TestCase {
 
 	private Literal hunt;
 
+	@Test
 	public void testInline()
 		throws Exception
 	{
@@ -64,6 +70,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testBinding()
 		throws Exception
 	{
@@ -75,6 +82,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testBindingFlags()
 		throws Exception
 	{
@@ -87,6 +95,7 @@ public abstract class SparqlRegexTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testExpr()
 		throws Exception
 	{
@@ -102,8 +111,8 @@ public abstract class SparqlRegexTest extends TestCase {
 		result.close();
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -134,8 +143,8 @@ public abstract class SparqlRegexTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

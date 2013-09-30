@@ -50,7 +50,7 @@ public class HTTPTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 	{
 		HTTPClient client = getHttpClient();
 		try {
-			return client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, getBindingsArray());
+			return client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
 		} 
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);

@@ -39,7 +39,7 @@ public class NativeCascadeValueExceptionTest extends CascadeValueExceptionTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

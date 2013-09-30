@@ -213,7 +213,8 @@
 		System and Environment Properties
 	</variable>
 	<variable name="repository-location.label">Location</variable>
-	<variable name="repository-size.label">Size</variable>
+	<variable name="repository-size.label">Number of Statements</variable>
+	<variable name="repository-contexts-size.label">Number of Labeled Contexts</variable>
 	<variable name="number-of-namespaces.label">Namespaces</variable>
 	<variable name="number-of-contexts.label">Contexts</variable>
 

@@ -126,7 +126,7 @@ public class ManifestTest {
 
 		while (manifestResults.hasNext()) {
 			BindingSet bindingSet = manifestResults.next();
-			String subManifestFile = bindingSet.getValue("manifestFile").toString();
+			String subManifestFile = bindingSet.getValue("manifestFile").stringValue();
 			suite.addTest(SPARQLQueryTest.suite(subManifestFile, factory));
 		}
 
