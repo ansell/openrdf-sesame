@@ -18,7 +18,7 @@ package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -34,14 +34,14 @@ import org.openrdf.repository.RepositoryException;
  */
 public class SPARQLBooleanQuery extends AbstractHTTPQuery implements BooleanQuery {
 
-	public SPARQLBooleanQuery(HTTPClient httpClient, String baseURI,
+	public SPARQLBooleanQuery(SparqlSession httpClient, String baseURI,
 			String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}
 
 	public boolean evaluate() throws QueryEvaluationException {
 		
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 
 		try {
 			return client.sendBooleanQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime,

@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
-import org.openrdf.http.client.SesameHTTPClient;
+import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
@@ -89,7 +89,7 @@ public class Connect implements Command {
 			// Ping server
 			final SesameClient client = new SesameClientImpl();
 			try {
-				SesameHTTPClient httpClient = client.createSesameSession(url);
+				SesameSession httpClient = client.createSesameSession(url);
 
 				if (user != null) {
 					httpClient.setUsernameAndPassword(user, pass);

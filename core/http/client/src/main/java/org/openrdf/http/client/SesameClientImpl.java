@@ -66,15 +66,15 @@ public class SesameClientImpl implements SesameClient {
 		return client;
 	}
 
-	public synchronized HTTPClient createSparqlSession(String queryEndpointUrl, String updateEndpointUrl) {
-		HTTPClient session = new HTTPClient(getHttpClient(), executor);
+	public synchronized SparqlSession createSparqlSession(String queryEndpointUrl, String updateEndpointUrl) {
+		SparqlSession session = new SparqlSession(getHttpClient(), executor);
 		session.setQueryURL(queryEndpointUrl);
 		session.setUpdateURL(updateEndpointUrl);
 		return session;
 	}
 
-	public synchronized SesameHTTPClient createSesameSession(String serverURL) {
-		SesameHTTPClient session = new SesameHTTPClient(getHttpClient(), executor);
+	public synchronized SesameSession createSesameSession(String serverURL) {
+		SesameSession session = new SesameSession(getHttpClient(), executor);
 		session.setServerURL(serverURL);
 		return session;
 	}

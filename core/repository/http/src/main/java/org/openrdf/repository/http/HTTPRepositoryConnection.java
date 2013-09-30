@@ -30,7 +30,7 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
-import org.openrdf.http.client.SesameHTTPClient;
+import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -107,7 +107,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
-	private final SesameHTTPClient client;
+	private final SesameSession client;
 
 	private boolean active;
 
@@ -121,7 +121,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Constructors *
 	 *--------------*/
 
-	public HTTPRepositoryConnection(HTTPRepository repository, SesameHTTPClient client) {
+	public HTTPRepositoryConnection(HTTPRepository repository, SesameSession client) {
 		super(repository);
 
 		this.client = client;

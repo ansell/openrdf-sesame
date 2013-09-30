@@ -77,17 +77,17 @@ import org.openrdf.rio.helpers.BasicParserSettings;
 
 
 /**
- * An {@link HTTPClient} subclass which bundles special functionality 
+ * An {@link SparqlSession} subclass which bundles special functionality 
  * for Sesame remote repositories.
  *
  * @author Andreas Schwarte
  */
-public class SesameHTTPClient extends HTTPClient {
+public class SesameSession extends SparqlSession {
 
 
 	private String serverURL;
 
-	public SesameHTTPClient(HttpClient client, ExecutorService executor) {
+	public SesameSession(HttpClient client, ExecutorService executor) {
 		super(client, executor);
 		
 		// we want to preserve bnode ids to allow Sesame API methods to match blank nodes.

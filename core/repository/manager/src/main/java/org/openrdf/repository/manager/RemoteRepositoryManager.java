@@ -27,7 +27,7 @@ import org.apache.http.client.HttpClient;
 
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
-import org.openrdf.http.client.SesameHTTPClient;
+import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -267,7 +267,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		List<RepositoryInfo> result = new ArrayList<RepositoryInfo>();
 
 		try {
-			SesameHTTPClient httpClient = getSesameClient().createSesameSession(serverURL);
+			SesameSession httpClient = getSesameClient().createSesameSession(serverURL);
 			httpClient.setUsernameAndPassword(username, password);
 			TupleQueryResult responseFromServer = httpClient.getRepositoryList();
 			while (responseFromServer.hasNext()) {
@@ -330,7 +330,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		boolean existingRepo = RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), repositoryID);
 
 		if (existingRepo) {
-			SesameHTTPClient httpClient = getSesameClient().createSesameSession(serverURL);
+			SesameSession httpClient = getSesameClient().createSesameSession(serverURL);
 			httpClient.setUsernameAndPassword(username, password);
 
 			try {

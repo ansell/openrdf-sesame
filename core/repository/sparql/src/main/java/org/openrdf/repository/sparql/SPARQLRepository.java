@@ -18,7 +18,7 @@ package org.openrdf.repository.sparql;
 
 import java.io.File;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.model.ValueFactory;
@@ -92,9 +92,9 @@ public class SPARQLRepository extends RepositoryBase {
 	 * 
 	 * @return a HTTPClient object.
 	 */
-	protected HTTPClient createHTTPClient() {
+	protected SparqlSession createHTTPClient() {
 		// initialize HTTP client
-		HTTPClient httpClient = getSesameClient().createSparqlSession(queryEndpointUrl, updateEndpointUrl);
+		SparqlSession httpClient = getSesameClient().createSparqlSession(queryEndpointUrl, updateEndpointUrl);
 		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		if (username != null) {

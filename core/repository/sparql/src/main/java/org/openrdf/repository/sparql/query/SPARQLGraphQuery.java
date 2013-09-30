@@ -18,7 +18,7 @@ package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -38,13 +38,13 @@ import org.openrdf.rio.RDFHandlerException;
  */
 public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
-	public SPARQLGraphQuery(HTTPClient httpClient, String baseURI,
+	public SPARQLGraphQuery(SparqlSession httpClient, String baseURI,
 			String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}
 
 	public GraphQueryResult evaluate() throws QueryEvaluationException {
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			// TODO getQueryString() already inserts bindings, use emptybindingset as last argument?
 			return client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
@@ -63,7 +63,7 @@ public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 	public void evaluate(RDFHandler handler) throws QueryEvaluationException,
 			RDFHandlerException {
 		
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime, handler,
 					getBindingsArray());

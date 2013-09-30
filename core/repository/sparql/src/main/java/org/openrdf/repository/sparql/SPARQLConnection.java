@@ -33,7 +33,7 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -92,13 +92,13 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private static final String NAMEDGRAPHS = "SELECT DISTINCT ?_ WHERE { GRAPH ?_ { ?s ?p ?o } }";
 
-	private final HTTPClient client;
+	private final SparqlSession client;
 
 	private StringBuffer sparqlTransaction;
 
 	private Object transactionLock = new Object();
 
-	public SPARQLConnection(SPARQLRepository repository, HTTPClient client) {
+	public SPARQLConnection(SPARQLRepository repository, SparqlSession client) {
 		super(repository);
 		this.client = client;
 	}

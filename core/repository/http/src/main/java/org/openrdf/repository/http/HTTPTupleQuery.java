@@ -18,7 +18,7 @@ package org.openrdf.repository.http;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -40,7 +40,7 @@ import org.openrdf.repository.RepositoryException;
  */
 public class HTTPTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 
-	public HTTPTupleQuery(HTTPClient client, QueryLanguage ql, String queryString, String baseURI) {
+	public HTTPTupleQuery(SparqlSession client, QueryLanguage ql, String queryString, String baseURI) {
 		super(client, ql, queryString, baseURI);
 	}
 
@@ -48,7 +48,7 @@ public class HTTPTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 	public TupleQueryResult evaluate()
 		throws QueryEvaluationException
 	{
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			return client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
 		} 
@@ -66,7 +66,7 @@ public class HTTPTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 	public void evaluate(TupleQueryResultHandler handler)
 		throws QueryEvaluationException, TupleQueryResultHandlerException
 	{
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			client.sendTupleQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime,
 					handler, getBindingsArray());

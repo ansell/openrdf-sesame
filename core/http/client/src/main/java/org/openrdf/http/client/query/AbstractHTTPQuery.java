@@ -18,7 +18,7 @@ package org.openrdf.http.client.query;
 
 import java.util.Iterator;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Query;
@@ -34,7 +34,7 @@ import org.openrdf.query.impl.AbstractQuery;
 public abstract class AbstractHTTPQuery extends AbstractQuery {
 
 	
-	private final HTTPClient httpClient;
+	private final SparqlSession httpClient;
 
 	protected final QueryLanguage queryLanguage;
 
@@ -49,7 +49,7 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 	 * @param queryString
 	 * @param baseURI
 	 */
-	public AbstractHTTPQuery(HTTPClient httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
+	public AbstractHTTPQuery(SparqlSession httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
 		super();
 		this.httpClient = httpClient;
 		this.queryLanguage = queryLanguage;
@@ -61,10 +61,10 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 	}
 	
 	/**
-	 * Return the {@link HTTPClient} to be used for all HTTP based interaction
+	 * Return the {@link SparqlSession} to be used for all HTTP based interaction
 	 * @return
 	 */
-	protected HTTPClient getHttpClient() {
+	protected SparqlSession getHttpClient() {
 		return httpClient;
 	}
 		

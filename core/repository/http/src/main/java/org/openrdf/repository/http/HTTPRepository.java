@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
-import org.openrdf.http.client.SesameHTTPClient;
+import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -169,9 +169,9 @@ public class HTTPRepository extends RepositoryBase {
 
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
-	 * supplied {@link TupleQueryResultFormat}, overriding the {@link HTTPClient}
+	 * supplied {@link TupleQueryResultFormat}, overriding the {@link SparqlSession}
 	 * 's default preference. Setting this parameter is not necessary in most
-	 * cases as the {@link HTTPClient} by default indicates a preference for the
+	 * cases as the {@link SparqlSession} by default indicates a preference for the
 	 * most compact and efficient format available.
 	 * 
 	 * @param format
@@ -194,9 +194,9 @@ public class HTTPRepository extends RepositoryBase {
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the {@link HTTPClient}'s default preference.
+	 * {@link RDFFormat}, overriding the {@link SparqlSession}'s default preference.
 	 * Setting this parameter is not necessary in most cases as the
-	 * {@link HTTPClient} by default indicates a preference for the most compact
+	 * {@link SparqlSession} by default indicates a preference for the most compact
 	 * and efficient format available.
 	 * <p>
 	 * Use with caution: if set to a format that does not support context
@@ -264,9 +264,9 @@ public class HTTPRepository extends RepositoryBase {
 	 * 
 	 * @return a HTTPClient object.
 	 */
-	protected SesameHTTPClient createHTTPClient() {
+	protected SesameSession createHTTPClient() {
 		// initialize HTTP client
-		SesameHTTPClient httpClient = getSesameClient().createSesameSession(serverURL);
+		SesameSession httpClient = getSesameClient().createSesameSession(serverURL);
 		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
 		if (repositoryURL != null) {
 			httpClient.setRepository(repositoryURL);

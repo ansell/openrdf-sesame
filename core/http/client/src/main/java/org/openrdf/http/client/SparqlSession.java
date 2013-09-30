@@ -85,6 +85,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 import org.openrdf.query.resultio.TupleQueryResultParserRegistry;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
@@ -107,14 +108,14 @@ import org.openrdf.rio.helpers.ParseErrorLogger;
  * queries the result is parsed in the current thread. All methods in this class
  * guarantee that HTTP connections are closed properly and returned to the
  * connection pool. Functionality specific to the Sesame HTTP protocol can be
- * found in {@link SesameHTTPClient} (which is used by Remote Repositories).
+ * found in {@link SesameSession} (which is used by Remote Repositories).
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
  * @author Andreas Schwarte
- * @see SesameHTTPClient
+ * @see SesameSession
  */
-public class HTTPClient {
+public class SparqlSession {
 
 	/*-----------*
 	 * Constants *
@@ -157,7 +158,7 @@ public class HTTPClient {
 	 * Constructors *
 	 *--------------*/
 
-	public HTTPClient(HttpClient client, ExecutorService executor) {
+	public SparqlSession(HttpClient client, ExecutorService executor) {
 		this.httpClient = client;
 		this.httpContext = new BasicHttpContext();
 		this.executor = executor;
@@ -856,7 +857,10 @@ public class HTTPClient {
 			try {
 				BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
 				BooleanQueryResultParser parser = QueryResultIO.createParser(format);
-				return parser.parse(response.getEntity().getContent());
+				QueryResultCollector results = new QueryResultCollector();
+				parser.setQueryResultHandler(results);
+				parser.parseQueryResult(response.getEntity().getContent());
+				return results.getBoolean();
 			}
 			catch (UnsupportedQueryResultFormatException e) {
 				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
