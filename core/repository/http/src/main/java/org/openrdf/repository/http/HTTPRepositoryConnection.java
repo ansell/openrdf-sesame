@@ -142,7 +142,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	@Override
 	public void setParserConfig(ParserConfig parserConfig) {
 		super.setParserConfig(parserConfig);
-		client.setParserConfig(parserConfig);
 	}
 
 	@Override
