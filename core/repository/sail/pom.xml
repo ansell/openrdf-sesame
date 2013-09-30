@@ -36,6 +36,11 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-queryalgebra-evaluation</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-query</artifactId>
 			<version>${project.version}</version>
 		</dependency>
