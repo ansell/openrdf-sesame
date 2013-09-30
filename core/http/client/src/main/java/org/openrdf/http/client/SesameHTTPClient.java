@@ -217,7 +217,7 @@ public class SesameHTTPClient extends HTTPClient {
 		try {
 			URIBuilder url = new URIBuilder(Protocol.getSizeLocation(getQueryURL()));
 			for (int i = 0; i < encodedContexts.length; i++) {
-				url.setParameter(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
+				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
 			}
 	
 			HttpUriRequest method = new HttpGet(url.build());
@@ -433,7 +433,7 @@ public class SesameHTTPClient extends HTTPClient {
 				url.setParameter(Protocol.OBJECT_PARAM_NAME, Protocol.encodeValue(obj));
 			}
 			for (String encodedContext : Protocol.encodeContexts(contexts)) {
-				url.setParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
+				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
 			url.setParameter(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred));
 	
@@ -575,7 +575,7 @@ public class SesameHTTPClient extends HTTPClient {
 	
 			// Set relevant query parameters
 			for (String encodedContext : Protocol.encodeContexts(contexts)) {
-				url.setParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
+				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
 			if (baseURI != null && baseURI.trim().length() != 0) {
 				String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
