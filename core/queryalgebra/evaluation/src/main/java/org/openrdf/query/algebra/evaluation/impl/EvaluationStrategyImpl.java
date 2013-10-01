@@ -37,7 +37,6 @@ import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -402,16 +401,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				throw e;
 			}
 		}
-		catch (OpenRDFException e) {
-			// suppress exceptions if silent
-			if (service.isSilent()) {
-				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
-			}
-			else {
-				throw new QueryEvaluationException(e);
-			}
-		}
-
 	}
 
 	private Set<Var> getBoundVariables(Service service) {
