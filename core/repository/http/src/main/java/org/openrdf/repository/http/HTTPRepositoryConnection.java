@@ -30,8 +30,7 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
-import org.openrdf.http.client.HTTPClient;
-import org.openrdf.http.client.SesameHTTPClient;
+import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
 import org.openrdf.http.protocol.transaction.operations.ClearOperation;
@@ -68,7 +67,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
@@ -109,6 +107,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
+	private final SesameSession client;
+
 	private boolean active;
 
 	/*
@@ -121,8 +121,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Constructors *
 	 *--------------*/
 
-	public HTTPRepositoryConnection(HTTPRepository repository) {
+	public HTTPRepositoryConnection(HTTPRepository repository, SesameSession client) {
 		super(repository);
+
+		this.client = client;
 
 		// parser used for locally processing input data to be sent to the server should be strict, and should preserve bnode ids.
 		setParserConfig(new ParserConfig());
@@ -136,6 +138,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	@Override
+	public void setParserConfig(ParserConfig parserConfig) {
+		super.setParserConfig(parserConfig);
+	}
 
 	@Override
 	public HTTPRepository getRepository() {
@@ -212,15 +219,15 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPTupleQuery(this, ql, queryString, baseURI);
+		return new HTTPTupleQuery(client, ql, queryString, baseURI);
 	}
 
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPGraphQuery(this, ql, queryString, baseURI);
+		return new HTTPGraphQuery(client, ql, queryString, baseURI);
 	}
 
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPBooleanQuery(this, ql, queryString, baseURI);
+		return new HTTPBooleanQuery(client, ql, queryString, baseURI);
 	}
 
 	public RepositoryResult<Resource> getContextIDs()
@@ -229,7 +236,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			List<Resource> contextList = new ArrayList<Resource>();
 
-			TupleQueryResult contextIDs = getRepository().getHTTPClient().getContextIDs();
+			TupleQueryResult contextIDs = client.getContextIDs();
 			try {
 				while (contextIDs.hasNext()) {
 					BindingSet bindingSet = contextIDs.next();
@@ -274,7 +281,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws RDFHandlerException, RepositoryException
 	{
 		try {
-			getRepository().getHTTPClient().getStatements(subj, pred, obj, includeInferred, handler, contexts);
+			client.getStatements(subj, pred, obj, includeInferred, handler, contexts);
 		}
 		catch (IOException e) {
 			throw new RepositoryException(e);
@@ -288,7 +295,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
-			return getRepository().getHTTPClient().size(contexts);
+			return client.size(contexts);
 		}
 		catch (IOException e) {
 			throw new RepositoryException(e);
@@ -301,7 +308,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		synchronized (txn) {
 			if (txn.size() > 0) {
 				try {
-					getRepository().getHTTPClient().sendTransaction(txn);
+					client.sendTransaction(txn);
 					txn.clear();
 				}
 				catch (IOException e) {
@@ -405,8 +412,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		// in the httpclient itself (and thus in the protocol).
 		if (!isActive()) {
 			// Send bytes directly to the server
-			SesameHTTPClient httpClient = getRepository().getHTTPClient();
-			httpClient.upload(in, baseURI, dataFormat, false, contexts);
+			client.upload(in, baseURI, dataFormat, false, contexts);
 		}
 		else {
 			// Parse files locally
@@ -422,8 +428,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		// in the httpclient itself (and thus in the protocol).
 		if (!isActive()) {
 			// Send bytes directly to the server
-			SesameHTTPClient httpClient = getRepository().getHTTPClient();
-			httpClient.upload(reader, baseURI, dataFormat, false, contexts);
+			client.upload(reader, baseURI, dataFormat, false, contexts);
 		}
 		else {
 			// Parse files locally
@@ -499,7 +504,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			List<Namespace> namespaceList = new ArrayList<Namespace>();
 
-			TupleQueryResult namespaces = getRepository().getHTTPClient().getNamespaces();
+			TupleQueryResult namespaces = client.getNamespaces();
 			try {
 				while (namespaces.hasNext()) {
 					BindingSet bindingSet = namespaces.next();
@@ -534,7 +539,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			throw new NullPointerException("prefix must not be null");
 		}
 		try {
-			return getRepository().getHTTPClient().getNamespace(prefix);
+			return client.getNamespace(prefix);
 		}
 		catch (IOException e) {
 			throw new RepositoryException(e);
@@ -562,7 +567,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
-		return new HTTPUpdate(this, ql, update, baseURI);
+		return new HTTPUpdate(this, client, ql, update, baseURI);
 	}
 
 	/**

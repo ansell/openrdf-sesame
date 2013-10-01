@@ -18,7 +18,7 @@ package org.openrdf.repository.sparql.query;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -39,7 +39,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 	// TODO there was some magic going on in SparqlOperation to get baseURI
 	// directly replaced within the query using BASE
 
-	public SPARQLTupleQuery(HTTPClient httpClient, String baseUri, String queryString) {
+	public SPARQLTupleQuery(SparqlSession httpClient, String baseUri, String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseUri);
 	}
 
@@ -47,7 +47,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 		throws QueryEvaluationException
 	{
 
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			return client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, getIncludeInferred(),
 					maxQueryTime, getBindingsArray());
@@ -67,7 +67,7 @@ public class SPARQLTupleQuery extends AbstractHTTPQuery implements TupleQuery {
 		throws QueryEvaluationException, TupleQueryResultHandlerException
 	{
 
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			client.sendTupleQuery(QueryLanguage.SPARQL, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime,
 					handler, getBindingsArray());

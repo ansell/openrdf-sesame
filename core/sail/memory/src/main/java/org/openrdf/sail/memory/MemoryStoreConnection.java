@@ -141,7 +141,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			}
 
 			TripleSource tripleSource = new MemTripleSource(store, includeInferred, snapshot, readMode);
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
+			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset, store.getFederatedServiceResolver());
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
 			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);

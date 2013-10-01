@@ -28,10 +28,13 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * 
@@ -40,6 +43,14 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
  */
 public class OrderComparatorTest extends TestCase {
 	class EvaluationStrategyStub implements EvaluationStrategy {
+
+		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service expr,
+				String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
+			throws QueryEvaluationException
+		{
+			throw new UnsupportedOperationException();
+		}
+
 		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
 				TupleExpr expr, BindingSet bindings)
 				throws QueryEvaluationException {
@@ -53,6 +64,12 @@ public class OrderComparatorTest extends TestCase {
 
 		public boolean isTrue(ValueExpr expr, BindingSet bindings)
 				throws ValueExprEvaluationException, QueryEvaluationException {
+			throw new UnsupportedOperationException();
+		}
+
+		public FederatedService getService(String serviceUrl)
+			throws QueryEvaluationException
+		{
 			throw new UnsupportedOperationException();
 		}
 	}

@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,8 @@ public abstract class RepositoryManager implements RepositoryResolver {
 
 	private final Map<String, Repository> initializedRepositories;
 
+	private HttpClient httpClient;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -91,6 +94,18 @@ public abstract class RepositoryManager implements RepositoryResolver {
 			return repo != null && repo.isInitialized();
 		}
 	}
+
+	/**
+	 * @return Returns the httpClient passed to {@link Repository} construction.
+	 */
+	public abstract HttpClient getHttpClient();
+
+	/**
+	 * Should be called before {@link #initialize()}.
+	 * 
+	 * @param httpClient The httpClient to use for remote/service calls.
+	 */
+	public abstract void setHttpClient(HttpClient httpClient);
 
 	/**
 	 * Initializes the repository manager.
