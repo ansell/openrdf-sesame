@@ -20,11 +20,10 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Service;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.query.InsertBindingSetCursor;
 
 /**
  * FederatedService to allow for customized evaluation of SERVICE expression. By
@@ -127,11 +126,11 @@ public interface FederatedService {
 	 * Method to perform any initializations, invoked after construction.
 	 */
 	public void initialize()
-		throws RepositoryException;
+		throws QueryEvaluationException;
 
 	/**
 	 * Method to perform any shutDown code, invoked at unregistering.
 	 */
 	public void shutdown()
-		throws RepositoryException;
+		throws QueryEvaluationException;
 }

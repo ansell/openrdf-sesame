@@ -68,7 +68,7 @@ public class OrderComparatorTest extends TestCase {
 		}
 
 		public FederatedService getService(String serviceUrl)
-			throws RepositoryException
+			throws QueryEvaluationException
 		{
 			throw new UnsupportedOperationException();
 		}

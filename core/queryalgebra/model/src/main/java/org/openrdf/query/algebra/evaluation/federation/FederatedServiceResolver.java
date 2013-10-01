@@ -16,7 +16,7 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.query.QueryEvaluationException;
 
 /**
  * The {@link FederatedServiceResolver} is used to manage a set of
@@ -42,6 +42,6 @@ public interface FederatedServiceResolver {
 	 * @throws RepositoryException
 	 */
 	FederatedService getService(String serviceUrl)
-		throws RepositoryException;
+		throws QueryEvaluationException;
 
 }

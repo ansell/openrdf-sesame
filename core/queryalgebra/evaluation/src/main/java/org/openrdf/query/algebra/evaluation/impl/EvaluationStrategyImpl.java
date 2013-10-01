@@ -37,6 +37,7 @@ import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -198,7 +199,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
 	 */
 	public FederatedService getService(String serviceUrl)
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
 		return serviceResolver.getService(serviceUrl);
 	}
@@ -307,7 +308,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			FederatedService fs = serviceResolver.getService(serviceUri);
 			return fs.evaluate(service, bindings, service.getBaseURI());
 		}
-		catch (RepositoryException e) {
+		catch (QueryEvaluationException e) {
 			// suppress exceptions if silent
 			if (service.isSilent()) {
 				return bindings;
@@ -401,7 +402,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				throw e;
 			}
 		}
-		catch (RepositoryException e) {
+		catch (OpenRDFException e) {
 			// suppress exceptions if silent
 			if (service.isSilent()) {
 				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);

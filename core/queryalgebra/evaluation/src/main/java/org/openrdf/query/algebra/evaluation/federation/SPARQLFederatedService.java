@@ -134,8 +134,8 @@ public class SPARQLFederatedService implements FederatedService {
 
 	/**
 	 * Evaluate the provided sparqlQueryString at the initialized
-	 * {@link SPARQLRepository} of this {@link FederatedService}. Insert
-	 * bindings into SELECT query and evaluate
+	 * {@link SPARQLRepository} of this {@link FederatedService}. Insert bindings
+	 * into SELECT query and evaluate
 	 */
 	public CloseableIteration<BindingSet, QueryEvaluationException> select(Service service,
 			Set<String> projectionVars, BindingSet bindings, String baseUri)
@@ -170,8 +170,8 @@ public class SPARQLFederatedService implements FederatedService {
 
 	/**
 	 * Evaluate the provided sparqlQueryString at the initialized
-	 * {@link SPARQLRepository} of this {@link FederatedService}. Insert bindings, send ask
-	 * query and return final result
+	 * {@link SPARQLRepository} of this {@link FederatedService}. Insert
+	 * bindings, send ask query and return final result
 	 */
 	public boolean ask(Service service, BindingSet bindings, String baseUri)
 		throws QueryEvaluationException
@@ -331,9 +331,14 @@ public class SPARQLFederatedService implements FederatedService {
 	}
 
 	public void initialize()
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
-		rep.initialize();
+		try {
+			rep.initialize();
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException(e);
+		}
 	}
 
 	public boolean isInitialized() {
@@ -351,11 +356,29 @@ public class SPARQLFederatedService implements FederatedService {
 	}
 
 	public void shutdown()
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
-		if (conn != null)
-			conn.close();
-		rep.shutDown();
+		boolean foundException = false;
+		try {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		catch (RepositoryException e) {
+			foundException = true;
+			throw new QueryEvaluationException(e);
+		}
+		finally {
+			try {
+				rep.shutDown();
+			}
+			catch (RepositoryException e) {
+				// Try not to clobber the initial exception that may be more useful
+				if (!foundException) {
+					throw new QueryEvaluationException(e);
+				}
+			}
+		}
 	}
 
 	protected RepositoryConnection getConnection()

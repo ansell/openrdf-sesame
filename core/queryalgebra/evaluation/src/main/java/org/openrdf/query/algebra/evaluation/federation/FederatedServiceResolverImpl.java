@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.repository.RepositoryException;
 
 /**
@@ -84,7 +85,7 @@ public class FederatedServiceResolverImpl implements FederatedServiceResolver {
 			try {
 				service.shutdown();
 			}
-			catch (RepositoryException e) {
+			catch (QueryEvaluationException e) {
 				// TODO issue a warning, otherwise ignore
 			}
 		}
@@ -101,7 +102,7 @@ public class FederatedServiceResolverImpl implements FederatedServiceResolver {
 	 * @throws RepositoryException
 	 */
 	public FederatedService getService(String serviceUrl)
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
 		FederatedService service;
 		synchronized (endpointToService) {
@@ -123,7 +124,7 @@ public class FederatedServiceResolverImpl implements FederatedServiceResolver {
 				try {
 					service.shutdown();
 				}
-				catch (RepositoryException e) {
+				catch (QueryEvaluationException e) {
 					// TODO issue a warning, otherwise ignore
 				}
 			}

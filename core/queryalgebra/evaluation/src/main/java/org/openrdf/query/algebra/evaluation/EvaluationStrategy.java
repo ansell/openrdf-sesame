@@ -48,7 +48,7 @@ public interface EvaluationStrategy extends FederatedServiceResolver {
 	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
 	 */
 	public FederatedService getService(String serviceUrl)
-		throws RepositoryException;
+		throws QueryEvaluationException;
 
 	/**
 	 * Evaluates the tuple expression against the supplied triple source with the
