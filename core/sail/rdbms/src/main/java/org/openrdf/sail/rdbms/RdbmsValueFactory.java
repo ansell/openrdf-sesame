@@ -29,6 +29,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
 import org.openrdf.sail.rdbms.managers.BNodeManager;
@@ -133,7 +134,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 
 	@Override
 	public RdbmsLiteral createLiteral(String label) {
-		return asRdbmsLiteral(vf.createLiteral(label));
+		return asRdbmsLiteral(vf.createLiteral(label, XMLSchema.STRING));
 	}
 
 	@Override

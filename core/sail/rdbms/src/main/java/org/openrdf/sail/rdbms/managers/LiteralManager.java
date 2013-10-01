@@ -25,6 +25,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.util.Literals;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
 import org.openrdf.sail.rdbms.model.RdbmsLiteral;
 import org.openrdf.sail.rdbms.schema.LiteralTable;
@@ -93,10 +94,7 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 		String label = literal.getLabel();
 		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
-		if (datatype == null && language == null) {
-			table.insertSimple(id, label);
-		}
-		else if (language != null) {
+		if (Literals.isLanguageLiteral(literal)) {
 			table.insertLanguage(id, label, language);
 		}
 		else {

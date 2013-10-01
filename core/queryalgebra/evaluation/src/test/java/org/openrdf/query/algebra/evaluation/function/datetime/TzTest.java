@@ -66,7 +66,7 @@ public class TzTest {
 			Literal result = tz.evaluate(f, f.createLiteral("2011-01-10T14:45:13.815-05:00", XMLSchema.DATETIME));
 
 			assertNotNull(result);
-			assertNull(result.getDatatype());
+			assertEquals(XMLSchema.STRING, result.getDatatype());
 
 			assertEquals("-05:00", result.getLabel());
 
@@ -76,7 +76,7 @@ public class TzTest {
 			fail(e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testEvaluate2() {
 		try {
@@ -84,7 +84,7 @@ public class TzTest {
 			Literal result = tz.evaluate(f, f.createLiteral("2011-01-10T14:45:13.815Z", XMLSchema.DATETIME));
 
 			assertNotNull(result);
-			assertNull(result.getDatatype());
+			assertEquals(XMLSchema.STRING, result.getDatatype());
 
 			assertEquals("Z", result.getLabel());
 
@@ -94,8 +94,7 @@ public class TzTest {
 			fail(e.getMessage());
 		}
 	}
-	
-	
+
 	@Test
 	public void testEvaluate3() {
 		try {
@@ -103,7 +102,7 @@ public class TzTest {
 			Literal result = tz.evaluate(f, f.createLiteral("2011-01-10T14:45:13.815", XMLSchema.DATETIME));
 
 			assertNotNull(result);
-			assertNull(result.getDatatype());
+			assertEquals(XMLSchema.STRING, result.getDatatype());
 
 			assertEquals("", result.getLabel());
 

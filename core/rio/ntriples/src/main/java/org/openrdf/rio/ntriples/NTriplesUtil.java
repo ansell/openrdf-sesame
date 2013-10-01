@@ -24,6 +24,9 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.util.Literals;
+import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 
 /**
  * Utility methods for N-Triples encoding/decoding.
@@ -220,11 +223,29 @@ public class NTriplesUtil {
 	 * Creates an N-Triples string for the supplied value.
 	 */
 	public static String toNTriplesString(Value value) {
+		// default to false. Users must call new method directly to remove
+		// xsd:string
+		return toNTriplesString(value, BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL.getDefaultValue());
+	}
+
+	/**
+	 * Creates an N-Triples string for the supplied value, optionally ignoring
+	 * the xsd:string datatype as it is implied for RDF-1.1.
+	 * 
+	 * @param lit
+	 *        The literal to write.
+	 * @param xsdStringToPlainLiteral
+	 *        True to omit serialising the xsd:string datatype and false to
+	 *        always serialise the datatype for literals.
+	 * @throws IOException
+	 * @since 2.8.0
+	 */
+	public static String toNTriplesString(Value value, boolean xsdStringToPlainLiteral) {
 		if (value instanceof Resource) {
 			return toNTriplesString((Resource)value);
 		}
 		else if (value instanceof Literal) {
-			return toNTriplesString((Literal)value);
+			return toNTriplesString((Literal)value, xsdStringToPlainLiteral);
 		}
 		else {
 			throw new IllegalArgumentException("Unknown value type: " + value.getClass());
@@ -234,11 +255,34 @@ public class NTriplesUtil {
 	public static void append(Value value, Appendable appendable)
 		throws IOException
 	{
+		// default to false. Users must call new method directly to remove
+		// xsd:string
+		append(value, appendable, BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL.getDefaultValue());
+	}
+
+	/**
+	 * Appends the N-Triples representation of the given {@link Value} to the
+	 * given {@link Appendable}, optionally not serialising the datatype a
+	 * {@link Literal} with the xsd:string datatype as it is implied for RDF-1.1.
+	 * 
+	 * @param value
+	 *        The value to write.
+	 * @param appendable
+	 *        The object to append to.
+	 * @param xsdStringToPlainLiteral
+	 *        True to omit serialising the xsd:string datatype and false to
+	 *        always serialise the datatype for literals.
+	 * @throws IOException
+	 * @since 2.8.0
+	 */
+	public static void append(Value value, Appendable appendable, boolean xsdStringToPlainLiteral)
+		throws IOException
+	{
 		if (value instanceof Resource) {
 			append((Resource)value, appendable);
 		}
 		else if (value instanceof Literal) {
-			append((Literal)value, appendable);
+			append((Literal)value, appendable, xsdStringToPlainLiteral);
 		}
 		else {
 			throw new IllegalArgumentException("Unknown value type: " + value.getClass());
@@ -307,9 +351,27 @@ public class NTriplesUtil {
 	 * Creates an N-Triples string for the supplied literal.
 	 */
 	public static String toNTriplesString(Literal lit) {
+		// default to false. Users must call new method directly to remove
+		// xsd:string
+		return toNTriplesString(lit, BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL.getDefaultValue());
+	}
+
+	/**
+	 * Creates an N-Triples string for the supplied literal, optionally ignoring
+	 * the xsd:string datatype as it is implied for RDF-1.1.
+	 * 
+	 * @param lit
+	 *        The literal to write.
+	 * @param xsdStringToPlainLiteral
+	 *        True to omit serialising the xsd:string datatype and false to
+	 *        always serialise the datatype for literals.
+	 * @throws IOException
+	 * @since 2.8.0
+	 */
+	public static String toNTriplesString(Literal lit, boolean xsdStringToPlainLiteral) {
 		try {
 			StringBuilder sb = new StringBuilder();
-			append(lit, sb);
+			append(lit, sb, xsdStringToPlainLiteral);
 			return sb.toString();
 		}
 		catch (IOException e) {
@@ -320,20 +382,49 @@ public class NTriplesUtil {
 	public static void append(Literal lit, Appendable appendable)
 		throws IOException
 	{
+		// default to false. Users must call new method directly to remove
+		// xsd:string
+		append(lit, appendable, BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL.getDefaultValue());
+	}
+
+	/**
+	 * Appends the N-Triples representation of the given {@link Literal} to the
+	 * given {@link Appendable}, optionally ignoring the xsd:string datatype as
+	 * it is implied for RDF-1.1.
+	 * 
+	 * @param lit
+	 *        The literal to write.
+	 * @param appendable
+	 *        The object to append to.
+	 * @param xsdStringToPlainLiteral
+	 *        True to omit serialising the xsd:string datatype and false to
+	 *        always serialise the datatype for literals.
+	 * @throws IOException
+	 * @since 2.8.0
+	 */
+	public static void append(Literal lit, Appendable appendable, boolean xsdStringToPlainLiteral)
+		throws IOException
+	{
 		// Do some character escaping on the label:
 		appendable.append("\"");
 		escapeString(lit.getLabel(), appendable);
 		appendable.append("\"");
 
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			appendable.append("@");
 			appendable.append(lit.getLanguage());
 		}
-		else if (lit.getDatatype() != null) {
+		else {
+			// SES-1917 : In RDF-1.1, all literals have a type, and if they are not
+			// language literals we display the type for backwards compatibility
 			// Append the literal's datatype
-			appendable.append("^^");
-			append(lit.getDatatype(), appendable);
+			URI datatype = lit.getDatatype();
+			boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral;
+			if (!ignoreDatatype) {
+				appendable.append("^^");
+				append(lit.getDatatype(), appendable);
+			}
 		}
 	}
 

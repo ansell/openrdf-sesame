@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -23,8 +25,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import info.aduna.iteration.Iterations;
 
@@ -39,7 +40,7 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class InferencingTest extends TestCase {
+public abstract class InferencingTest {
 
 	/*-----------*
 	 * Constants *
@@ -47,69 +48,17 @@ public class InferencingTest extends TestCase {
 
 	public static final String TEST_DIR_PREFIX = "/testcases/rdf-mt-inferencing";
 
-	/*-----------*
-	 * Variables *
-	 *-----------*/
-
-	protected Sail sailStack;
-
-	protected String inputData;
-
-	protected String outputData;
-
-	protected boolean isPositiveTest;
-
-	protected String name;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	/**
-	 * Creates a new inferencing test. This test can either be positive or
-	 * negative. For positive tests, all triples from <tt>outputData</tt> should
-	 * be present in the triples returned by the supplied RdfSchemaRepository
-	 * after the triples from <tt>intputData</tt> have been added to it. For
-	 * negative tests, none of the triples from <tt>outputData</tt> should be
-	 * present in the returned triples.
-	 * 
-	 * @param name
-	 *        The name of the test.
-	 * @param sailStack
-	 *        The sail stack to test.
-	 * @param inputData
-	 *        The URL of the (N-Triples) data containing the triples that should
-	 *        be added to the RdfSchemaRepository.
-	 * @param outputData
-	 *        The URL of the (N-Triples) data containing the triples that should
-	 *        or should not (depending on the value of <tt>isPositiveTest</tt> be
-	 *        present in the statements returned by the RdfSchemaRepository.
-	 * @param isPositiveTest
-	 *        Flag indicating whether this is a positive or a negative
-	 *        inferencing test; <tt>true</tt> for a positive test, <tt>false</tt>
-	 *        for a negative test.
-	 */
-	public InferencingTest(String name, Sail sailStack, String inputData, String outputData,
-			boolean isPositiveTest)
-	{
-		super(name);
-		int slashLoc = name.lastIndexOf('/');
-		this.name = name.substring(0, slashLoc) + "-" + name.substring(slashLoc + 1);
-
-		this.sailStack = sailStack;
-		this.inputData = inputData;
-		this.outputData = outputData;
-		this.isPositiveTest = isPositiveTest;
-	}
-
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	@Override
-	protected void runTest()
+	public void runTest(Sail sailStack, String subdir, String testName, boolean isPositiveTest)
 		throws Exception
 	{
+		final String name = subdir + "/" + testName;
+		final String inputData = TEST_DIR_PREFIX + "/" + name + "-in.nt";
+		final String outputData = TEST_DIR_PREFIX + "/" + name + "-out.nt";
+
 		Collection<? extends Statement> entailedStatements = null;
 		Collection<? extends Statement> expectedStatements = null;
 
@@ -174,17 +123,18 @@ public class InferencingTest extends TestCase {
 		boolean outputEntailed = ModelUtil.isSubset(expectedStatements, entailedStatements);
 
 		if (isPositiveTest && !outputEntailed) {
-			File dumpFile = dumpStatements(RepositoryUtil.difference(expectedStatements, entailedStatements));
+			File dumpFile = dumpStatements(name,
+					RepositoryUtil.difference(expectedStatements, entailedStatements));
 
 			fail("Incomplete entailment, difference between expected and entailed dumped to file " + dumpFile);
 		}
 		else if (!isPositiveTest && outputEntailed) {
-			File dumpFile = dumpStatements(expectedStatements);
+			File dumpFile = dumpStatements(name, expectedStatements);
 			fail("Erroneous entailment, unexpected statements dumped to file " + dumpFile);
 		}
 	}
 
-	private File dumpStatements(Collection<? extends Statement> statements)
+	private File dumpStatements(String name, Collection<? extends Statement> statements)
 		throws Exception
 	{
 		// Dump results to tmp file for debugging
@@ -212,33 +162,145 @@ public class InferencingTest extends TestCase {
 	 * Static methods *
 	 *----------------*/
 
-	public static void addTests(TestSuite suite, Sail sailStack) {
-		suite.addTest(createTestCase(sailStack, "subclassof", "test001", true));
-		suite.addTest(createTestCase(sailStack, "subclassof", "test002", true));
-		suite.addTest(createTestCase(sailStack, "subclassof", "test003", true));
-		suite.addTest(createTestCase(sailStack, "subclassof", "error001", false));
-		suite.addTest(createTestCase(sailStack, "subpropertyof", "test001", true));
-		suite.addTest(createTestCase(sailStack, "subpropertyof", "test002", true));
-		suite.addTest(createTestCase(sailStack, "subpropertyof", "test003", true));
-		suite.addTest(createTestCase(sailStack, "subpropertyof", "error001", false));
-		suite.addTest(createTestCase(sailStack, "domain", "test001", true));
-		suite.addTest(createTestCase(sailStack, "domain", "error001", false));
-		suite.addTest(createTestCase(sailStack, "range", "test001", true));
-		suite.addTest(createTestCase(sailStack, "range", "error001", false));
-		suite.addTest(createTestCase(sailStack, "type", "test001", true));
-		suite.addTest(createTestCase(sailStack, "type", "test002", true));
-		suite.addTest(createTestCase(sailStack, "type", "test003", true));
-		suite.addTest(createTestCase(sailStack, "type", "test004", true));
-		suite.addTest(createTestCase(sailStack, "type", "test005", true));
-		suite.addTest(createTestCase(sailStack, "type", "error001", false));
-		suite.addTest(createTestCase(sailStack, "type", "error002", false));
+	@Test
+	public void testSubClassOf001()
+		throws Exception
+	{
+		runTest(createSail(), "subclassof", "test001", true);
 	}
 
-	private static TestCase createTestCase(Sail sailStack, String subdir, String testName,
-			boolean isPositiveTest)
+	@Test
+	public void testSubClassOf002()
+		throws Exception
 	{
-		return new InferencingTest(subdir + "/" + testName, sailStack, TEST_DIR_PREFIX + "/" + subdir + "/"
-				+ testName + "-in.nt", TEST_DIR_PREFIX + "/" + subdir + "/" + testName + "-out.nt",
-				isPositiveTest);
+		runTest(createSail(), "subclassof", "test002", true);
 	}
+
+	@Test
+	public void testSubClassOf003()
+		throws Exception
+	{
+		runTest(createSail(), "subclassof", "test003", true);
+	}
+
+	@Test
+	public void testSubClassOfError001()
+		throws Exception
+	{
+		runTest(createSail(), "subclassof", "error001", false);
+	}
+
+	@Test
+	public void testSubPropertyOf001()
+		throws Exception
+	{
+		runTest(createSail(), "subpropertyof", "test001", true);
+	}
+
+	@Test
+	public void testSubPropertyOf002()
+		throws Exception
+	{
+		runTest(createSail(), "subpropertyof", "test002", true);
+	}
+
+	@Test
+	public void testSubPropertyOf003()
+		throws Exception
+	{
+		runTest(createSail(), "subpropertyof", "test003", true);
+	}
+
+	@Test
+	public void testSubPropertyOfError001()
+		throws Exception
+	{
+		runTest(createSail(), "subpropertyof", "error001", false);
+	}
+
+	@Test
+	public void testDomain001()
+		throws Exception
+	{
+		runTest(createSail(), "domain", "test001", true);
+	}
+
+	@Test
+	public void testDomainError001()
+		throws Exception
+	{
+		runTest(createSail(), "domain", "error001", false);
+	}
+
+	@Test
+	public void testRange001()
+		throws Exception
+	{
+		runTest(createSail(), "range", "test001", true);
+	}
+
+	@Test
+	public void testRangeError001()
+		throws Exception
+	{
+		runTest(createSail(), "range", "error001", false);
+	}
+
+	@Test
+	public void testType001()
+		throws Exception
+	{
+		runTest(createSail(), "type", "test001", true);
+	}
+
+	@Test
+	public void testType002()
+		throws Exception
+	{
+		runTest(createSail(), "type", "test002", true);
+	}
+
+	@Test
+	public void testType003()
+		throws Exception
+	{
+		runTest(createSail(), "type", "test003", true);
+	}
+
+	@Test
+	public void testType004()
+		throws Exception
+	{
+		runTest(createSail(), "type", "test004", true);
+	}
+
+	@Test
+	public void testType005()
+		throws Exception
+	{
+		runTest(createSail(), "type", "test005", true);
+	}
+
+	@Test
+	public void testTypeError001()
+		throws Exception
+	{
+		runTest(createSail(), "type", "error001", false);
+	}
+
+	@Test
+	public void testTypeError002()
+		throws Exception
+	{
+		runTest(createSail(), "type", "error002", false);
+	}
+
+	/**
+	 * Gets an instance of the Sail that should be tested. The returned
+	 * repository must not be initialized.
+	 * 
+	 * @return an uninitialized Sail.
+	 */
+	protected abstract Sail createSail();
+
 }

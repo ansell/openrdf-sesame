@@ -23,6 +23,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 
 /**
  * @author Michael Grove
@@ -56,10 +57,12 @@ public final class RenderUtils {
 		else if (theValue instanceof Literal) {
 			Literal aLit = (Literal)theValue;
 
-			aBuffer.append("\"\"\"").append(escape(aLit.getLabel())).append("\"\"\"").append(
-					aLit.getLanguage() != null ? "@" + aLit.getLanguage() : "");
+			aBuffer.append("\"\"\"").append(escape(aLit.getLabel())).append("\"\"\"");
 
-			if (aLit.getDatatype() != null) {
+			if (Literals.isLanguageLiteral(aLit)) {
+				aBuffer.append("@").append(aLit.getLanguage());
+			}
+			else {
 				aBuffer.append("^^<").append(aLit.getDatatype().toString()).append(">");
 			}
 		}
@@ -87,10 +90,12 @@ public final class RenderUtils {
 		else if (theValue instanceof Literal) {
 			Literal aLit = (Literal)theValue;
 
-			aBuffer.append("\"").append(escape(aLit.getLabel())).append("\"").append(
-					aLit.getLanguage() != null ? "@" + aLit.getLanguage() : "");
+			aBuffer.append("\"").append(escape(aLit.getLabel())).append("\"");
 
-			if (aLit.getDatatype() != null) {
+			if (Literals.isLanguageLiteral(aLit)) {
+				aBuffer.append("@").append(aLit.getLanguage());
+			}
+			else {
 				aBuffer.append("^^<").append(aLit.getDatatype().toString()).append(">");
 			}
 		}

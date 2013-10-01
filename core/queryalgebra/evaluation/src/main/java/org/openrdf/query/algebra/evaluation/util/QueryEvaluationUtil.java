@@ -23,6 +23,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -67,7 +68,7 @@ public class QueryEvaluationUtil {
 			String label = literal.getLabel();
 			URI datatype = literal.getDatatype();
 
-			if (datatype == null || datatype.equals(XMLSchema.STRING)) {
+			if (datatype.equals(XMLSchema.STRING)) {
 				return label.length() > 0;
 			}
 			else if (datatype.equals(XMLSchema.BOOLEAN)) {
@@ -150,14 +151,14 @@ public class QueryEvaluationUtil {
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();
 
+		boolean leftLangLit = Literals.isLanguageLiteral(leftLit);
+		boolean rightLangLit = Literals.isLanguageLiteral(rightLit);
+		
 		// for purposes of query evaluation in SPARQL, simple literals and
 		// string-typed literals with the same
 		// lexical value are considered equal.
 		URI commonDatatype = null;
-		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && XMLSchema.STRING.equals(rightDatatype)) {
-			commonDatatype = XMLSchema.STRING;
-		}
-		else if (QueryEvaluationUtil.isSimpleLiteral(rightLit) && XMLSchema.STRING.equals(leftDatatype)) {
+		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			commonDatatype = XMLSchema.STRING;
 		}
 
@@ -166,7 +167,7 @@ public class QueryEvaluationUtil {
 		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			compareResult = leftLit.getLabel().compareTo(rightLit.getLabel());
 		}
-		else if ((leftDatatype != null && rightDatatype != null) || commonDatatype != null) {
+		else if ((!leftLangLit && !rightLangLit) || commonDatatype != null) {
 			if (commonDatatype == null) {
 				if (leftDatatype.equals(rightDatatype)) {
 					commonDatatype = leftDatatype;
@@ -273,7 +274,7 @@ public class QueryEvaluationUtil {
 			boolean literalsEqual = leftLit.equals(rightLit);
 
 			if (!literalsEqual) {
-				if (leftDatatype != null && rightDatatype != null && isSupportedDatatype(leftDatatype)
+				if (!leftLangLit && !rightLangLit && isSupportedDatatype(leftDatatype)
 						&& isSupportedDatatype(rightDatatype))
 				{
 					// left and right arguments have incompatible but supported
@@ -288,9 +289,24 @@ public class QueryEvaluationUtil {
 					if (!XMLDatatypeUtil.isValidValue(rightLit.getLabel(), rightDatatype)) {
 						throw new ValueExprEvaluationException("not a valid datatype value: " + rightLit);
 					}
+					boolean leftString = leftDatatype.equals(XMLSchema.STRING);
+					boolean rightString = rightDatatype.equals(XMLSchema.STRING);
+					boolean leftNumeric = XMLDatatypeUtil.isNumericDatatype(leftDatatype);
+					boolean rightNumeric = XMLDatatypeUtil.isNumericDatatype(rightDatatype);
+					boolean leftDate = XMLDatatypeUtil.isCalendarDatatype(leftDatatype);
+					boolean rightDate = XMLDatatypeUtil.isCalendarDatatype(rightDatatype);
+					
+					if(leftString != rightString) {
+						throw new ValueExprEvaluationException("Unable to compare strings with other supported types");
+					}
+					if(leftNumeric != rightNumeric) {
+						throw new ValueExprEvaluationException("Unable to compare numeric types with other supported types");
+					}
+					if(leftDate != rightDate) {
+						throw new ValueExprEvaluationException("Unable to compare date types with other supported types");
+					}
 				}
-				else if (leftDatatype != null && rightLit.getLanguage() == null || rightDatatype != null
-						&& leftLit.getLanguage() == null)
+				else if (!leftLangLit && !rightLangLit)
 				{
 					// For literals with unsupported datatypes we don't know if their
 					// values are equal
@@ -326,7 +342,7 @@ public class QueryEvaluationUtil {
 	public static boolean isPlainLiteral(Value v) {
 		if (v instanceof Literal) {
 			Literal l = (Literal)v;
-			return (l.getDatatype() == null);
+			return (l.getDatatype().equals(XMLSchema.STRING));
 		}
 		return false;
 	}
@@ -348,13 +364,14 @@ public class QueryEvaluationUtil {
 
 	/**
 	 * Checks whether the supplied literal is a "simple literal". A
-	 * "simple literal" is a literal with no language tag nor datatype.
+	 * "simple literal" is a literal with no language tag and the datatype
+	 * {@link XMLSchema#STRING}.
 	 * 
 	 * @see <a href="http://www.w3.org/TR/sparql11-query/#simple_literal">SPARQL
 	 *      Simple Literal Documentation</a>
 	 */
 	public static boolean isSimpleLiteral(Literal l) {
-		return l.getLanguage() == null && l.getDatatype() == null;
+		return !Literals.isLanguageLiteral(l) && l.getDatatype().equals(XMLSchema.STRING);
 	}
 
 	/**
@@ -389,10 +406,20 @@ public class QueryEvaluationUtil {
 	 *      Argument Compatibility Rules</a>
 	 */
 	public static boolean compatibleArguments(Literal arg1, Literal arg2) {
-		boolean compatible = ((isSimpleLiteral(arg1) || XMLSchema.STRING.equals(arg1.getDatatype())) && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())))
-				|| (isPlainLiteral(arg1) && isPlainLiteral(arg2) && arg1.getLanguage() != null && arg1.getLanguage().equals(
-						arg2.getLanguage()))
-				|| (isPlainLiteral(arg1) && arg1.getLanguage() != null && (isSimpleLiteral(arg2) || XMLSchema.STRING.equals(arg2.getDatatype())));
+		boolean arg1Language = Literals.isLanguageLiteral(arg1);
+		boolean arg2Language = Literals.isLanguageLiteral(arg2);
+		boolean arg1Simple = isSimpleLiteral(arg1);
+		boolean arg2Simple = isSimpleLiteral(arg2);
+		// 1. The arguments are literals typed as xsd:string
+		// 2. The arguments are language literals with identical language tags
+		// 3. The first argument is a language literal and the second
+		// argument is a literal typed as xsd:string
+
+		boolean compatible =
+
+		(arg1Simple && arg2Simple)
+				|| (arg1Language && arg2Language && arg1.getLanguage().equals(arg2.getLanguage()))
+				|| (arg1Language && arg2Simple);
 
 		return compatible;
 	}
@@ -407,7 +434,7 @@ public class QueryEvaluationUtil {
 	 */
 	public static boolean isStringLiteral(Literal l) {
 		URI datatype = l.getDatatype();
-		return datatype == null || datatype.equals(XMLSchema.STRING);
+		return Literals.isLanguageLiteral(l) || datatype.equals(XMLSchema.STRING);
 	}
 
 	private static boolean isSupportedDatatype(URI datatype) {

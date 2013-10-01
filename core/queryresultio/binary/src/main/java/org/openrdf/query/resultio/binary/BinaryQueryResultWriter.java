@@ -49,6 +49,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -279,10 +280,10 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 
 		int marker = PLAIN_LITERAL_RECORD_MARKER;
 
-		if (language != null) {
+		if (Literals.isLanguageLiteral(literal)) {
 			marker = LANG_LITERAL_RECORD_MARKER;
 		}
-		else if (datatype != null) {
+		else {
 			String namespace = datatype.getNamespace();
 
 			if (!namespaceTable.containsKey(namespace)) {
@@ -296,11 +297,11 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		out.writeByte(marker);
 		writeString(label);
 
-		if (datatype != null) {
-			writeQName(datatype);
-		}
-		else if (language != null) {
+		if (Literals.isLanguageLiteral(literal)) {
 			writeString(language);
+		}
+		else {
+			writeQName(datatype);
 		}
 	}
 

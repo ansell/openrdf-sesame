@@ -16,47 +16,35 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
-import info.aduna.io.FileUtil;
-
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.repository.RepositoryException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.sail.CustomGraphQueryInferencerTest;
-import org.openrdf.sail.SailException;
+import org.openrdf.sail.NotifyingSail;
 
-public class NativeStoreCustomInferencingTest extends TestCase {
+public class NativeStoreCustomInferencingTest extends CustomGraphQueryInferencerTest {
 
-	public static Test suite()
-		throws SailException, IOException, MalformedQueryException, UnsupportedQueryLanguageException,
-		RepositoryException
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
+	public NativeStoreCustomInferencingTest(String resourceFolder, Expectation testData, QueryLanguage language)
 	{
-		final File dataDir = FileUtil.createTempDir("nativestore");
-		TestSuite suite = new TestSuite(NativeStoreCustomInferencingTest.class.getName()) {
+		super(resourceFolder, testData, language);
+	}
 
-			@Override
-			public void run(TestResult result) {
-				try {
-					super.run(result);
-				}
-				finally {
-					try {
-						FileUtil.deleteDir(dataDir);
-					}
-					catch (IOException e) {
-					}
-				}
-			}
-		};
-
-		CustomGraphQueryInferencerTest.addTests(suite, new NativeStore(dataDir, "spoc,posc"));
-		return suite;
+	@Override
+	protected NotifyingSail newSail() {
+		try {
+			return new NativeStore(tempDir.newFolder("nativestore"), "spoc,posc");
+		}
+		catch (IOException e) {
+			fail(e.getMessage());
+			throw new AssertionError(e);
+		}
 	}
 }

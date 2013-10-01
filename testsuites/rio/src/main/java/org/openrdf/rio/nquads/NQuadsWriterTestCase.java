@@ -141,7 +141,7 @@ public abstract class NQuadsWriterTestCase extends RDFWriterTest {
        String content = baos.toString();
        String[] lines = content.split("\n");
        Assert.assertEquals("Unexpected number of lines.", 1, lines.length);
-       Assert.assertEquals("<http://test.example.org/test/subject/1> <http://other.example.com/test/predicate/1> \"test literal\" .", lines[0] );
+       Assert.assertEquals("<http://test.example.org/test/subject/1> <http://other.example.com/test/predicate/1> \"test literal\"^^<http://www.w3.org/2001/XMLSchema#string> .", lines[0] );
    }
    
    @Test
@@ -159,6 +159,6 @@ public abstract class NQuadsWriterTestCase extends RDFWriterTest {
        String content = baos.toString();
        String[] lines = content.split("\n");
        Assert.assertEquals("Unexpected number of lines.", 1, lines.length);
-       Assert.assertTrue(lines[0].startsWith("<http://test.example.org/test/subject/1> <http://other.example.com/test/predicate/1> \"test literal\" _:"));
+       Assert.assertTrue(lines[0].startsWith("<http://test.example.org/test/subject/1> <http://other.example.com/test/predicate/1> \"test literal\"^^<http://www.w3.org/2001/XMLSchema#string> _:"));
    }	
 }
