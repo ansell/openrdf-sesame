@@ -24,5 +24,11 @@ package org.openrdf.query.algebra.evaluation.federation;
  */
 public interface FederatedServiceResolverClient {
 
+	/**
+	 * Sets the {@link FederatedServiceResolver} to use for this client.
+	 * 
+	 * @param resolver
+	 *        The resolver to use.
+	 */
 	void setFederatedServiceResolver(FederatedServiceResolver resolver);
 }

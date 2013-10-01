@@ -20,7 +20,6 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Service;
@@ -54,6 +53,7 @@ public interface FederatedService {
 	 *        the {@link QueryType}, either ASK or SELECT
 	 * @return <code>true</code> if at least one result exists
 	 * @throws QueryEvaluationException
+	 *         If there was an exception generated while evaluating the query.
 	 */
 	public boolean ask(Service service, BindingSet bindings, String baseUri)
 		throws QueryEvaluationException;
@@ -82,6 +82,7 @@ public interface FederatedService {
 	 * @param baseUri
 	 * @return an iteration over the results of the query
 	 * @throws QueryEvaluationException
+	 *         If there was an exception generated while evaluating the query.
 	 */
 	public CloseableIteration<BindingSet, QueryEvaluationException> select(Service service,
 			Set<String> projectionVars, BindingSet bindings, String baseUri)
@@ -112,6 +113,7 @@ public interface FederatedService {
 	 * @return the result of evaluating the query using bindings as constraints,
 	 *         the original bindings need to be inserted into the results!
 	 * @throws QueryEvaluationException
+	 *         If there was an exception generated while evaluating the query.
 	 */
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings, String baseUri)
@@ -124,12 +126,20 @@ public interface FederatedService {
 
 	/**
 	 * Method to perform any initializations, invoked after construction.
+	 * 
+	 * @throws QueryEvaluationException
+	 *         If there was an exception generated while initializing the
+	 *         service.
 	 */
 	public void initialize()
 		throws QueryEvaluationException;
 
 	/**
 	 * Method to perform any shutDown code, invoked at unregistering.
+	 * 
+	 * @throws QueryEvaluationException
+	 *         If there was an exception generated while shutting down the
+	 *         service.
 	 */
 	public void shutdown()
 		throws QueryEvaluationException;

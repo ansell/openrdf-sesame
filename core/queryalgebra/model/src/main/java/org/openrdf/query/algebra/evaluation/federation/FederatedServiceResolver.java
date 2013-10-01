@@ -39,7 +39,8 @@ public interface FederatedServiceResolver {
 	 * @param serviceUrl
 	 *        locator for the federation service
 	 * @return the {@link FederatedService}, created fresh if necessary
-	 * @throws RepositoryException
+	 * @throws QueryEvaluationException
+	 *         If there was an exception generated while retrieving the service.
 	 */
 	FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException;
