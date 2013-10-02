@@ -24,9 +24,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * Jackson.
  * 
  * @author Peter Ansell
- * @since 2.7.0
  */
-public class RDFJSONUtility {
+class RDFJSONUtility {
 
 	public static final String NULL = "null";
 
