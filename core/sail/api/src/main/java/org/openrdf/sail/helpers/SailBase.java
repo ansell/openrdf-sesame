@@ -17,7 +17,10 @@
 package org.openrdf.sail.helpers;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -49,7 +52,21 @@ public abstract class SailBase implements Sail {
 	 */
 	protected final static long DEFAULT_CONNECTION_TIMEOUT = 20000L;
 
+	/**
+	 * default transaction isolation level, set to
+	 * {@link IsolationLevel#READ_COMMITTED }.
+	 */
 	private IsolationLevel defaultIsolationLevel = IsolationLevel.READ_COMMITTED;
+
+	/**
+	 * list of supported isolation levels. By default set to include
+	 * {@link IsolationLevel#READ_COMMITTED} and
+	 * {@link IsolationLevel#REPEATABLE_READ}. Specific store implementations are
+	 * expected to alter this list according to their specific capabilities.
+	 */
+	private List<IsolationLevel> supportedIsolationLevels = Arrays.asList(new IsolationLevel[] {
+			IsolationLevel.READ_COMMITTED,
+			IsolationLevel.REPEATABLE_READ });
 
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and
@@ -300,10 +317,52 @@ public abstract class SailBase implements Sail {
 	}
 
 	/**
-	 * Retrieves the default {@link IsolationLevel} level on which
-	 * transactions in this Sail operate.
+	 * Appends the provided {@link IsolationLevel} to the SAIL's list of
+	 * supported isolation levels.
 	 * 
-	 * @since 2.8.0
+	 * @param level
+	 *        a supported IsolationLevel.
+	 * @since 2.8
+	 */
+	protected void addSupportedIsolationLevel(IsolationLevel level) {
+		this.supportedIsolationLevels.add(level);
+	}
+
+	/**
+	 * Removes all occurrences of the provided {@link IsolationLevel} in the list
+	 * of supported Isolation levels.
+	 * 
+	 * @param level
+	 *        the isolation level to remove.
+	 * @since 2.8
+	 */
+	protected void removeSupportedIsolationLevel(IsolationLevel level) {
+		while (this.supportedIsolationLevels.remove(level)) {
+		}
+	}
+
+	/**
+	 * Sets the list of supported {@link IsolationLevel}s for this SAIL. The list
+	 * is expected to be ordered in increasing complexity.
+	 * 
+	 * @param supportedIsolationLevels
+	 *        a list of supported isolation levels.
+	 * @since 2.8
+	 */
+	protected void setSUpportedIsolationLevels(List<IsolationLevel> supportedIsolationLevels) {
+		this.supportedIsolationLevels = supportedIsolationLevels;
+	}
+
+	@Override
+	public List<IsolationLevel> getSupportedIsolationLevels() {
+		return Collections.unmodifiableList(supportedIsolationLevels);
+	}
+
+	/**
+	 * Retrieves the default {@link IsolationLevel} level on which transactions
+	 * in this Sail operate.
+	 * 
+	 * @since 2.8
 	 * @return Returns the defaultIsolationLevel.
 	 */
 	public IsolationLevel getDefaultIsolationLevel() {
@@ -311,8 +370,8 @@ public abstract class SailBase implements Sail {
 	}
 
 	/**
-	 * Sets the default {@link IsolationLevel} level on which transactions
-	 * in this Sail operate.
+	 * Sets the default {@link IsolationLevel} level on which transactions in
+	 * this Sail operate.
 	 * 
 	 * @since 2.8.0
 	 * @param defaultIsolationLevel

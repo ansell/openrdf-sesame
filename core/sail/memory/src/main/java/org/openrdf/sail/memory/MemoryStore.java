@@ -18,9 +18,11 @@ package org.openrdf.sail.memory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,6 +34,7 @@ import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -76,6 +79,8 @@ public class MemoryStore extends NotifyingSailBase {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+
 
 	/**
 	 * Factory/cache for MemValue objects.
@@ -952,4 +957,5 @@ public class MemoryStore extends NotifyingSailBase {
 			}
 		}
 	}
+
 }

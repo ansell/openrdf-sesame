@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.helpers;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -187,9 +188,13 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void begin(IsolationLevel level)
 		throws SailException
 	{
-		if (level == null) {
-			level = this.sailBase.getDefaultIsolationLevel();
+		IsolationLevel compatibleLevel = getCompatibleIsolationLevel(level);
+		if (compatibleLevel == null) {
+			logger.warn("Isolation level {} not compatible with this Sail, falling back to {}", compatibleLevel,
+					this.sailBase.getDefaultIsolationLevel());
+			compatibleLevel = this.sailBase.getDefaultIsolationLevel();
 		}
+		this.isolationLevel = compatibleLevel;
 
 		connectionLock.readLock().lock();
 		try {
@@ -200,7 +205,7 @@ public abstract class SailConnectionBase implements SailConnection {
 				if (isActive()) {
 					throw new SailException("a transaction is already active on this connection.");
 				}
-				setTransactionIsolationLevel(level);
+
 				startTransactionInternal();
 				txnActive = true;
 			}
@@ -214,12 +219,32 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	}
 
-	private void setTransactionIsolationLevel(IsolationLevel level) {
-		this.transactionIsolationLevel = level != null ? level : IsolationLevel.READ_COMMITTED;
+	/**
+	 * Determines the closest compatible and supported isolation level for the
+	 * given level. Returns the level itself if it supported by this Sail.
+	 * Returns null if no compatible level can be found.
+	 */
+	private IsolationLevel getCompatibleIsolationLevel(IsolationLevel level) {
+		if (!this.sailBase.getSupportedIsolationLevels().contains(level)) {
+
+			IsolationLevel compatibleLevel = null;
+			// see we if we can find a compatible level that is supported
+			for (IsolationLevel supportedLevel : sailBase.getSupportedIsolationLevels()) {
+				if (getTransactionIsolation().isCompatibleWith(supportedLevel)) {
+					compatibleLevel = supportedLevel;
+					break;
+				}
+			}
+
+			return compatibleLevel;
+		}
+		else {
+			return level;
+		}
 	}
 
 	/**
-	 * Retrieve the currently specified {@link IsolationLevel} level.
+	 * Retrieve the currently set {@link IsolationLevel} level.
 	 * 
 	 * @return the current {@link IsolationLevel} level. If no transaction is
 	 *         active, this may be <code>null</code>.

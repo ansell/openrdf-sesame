@@ -358,7 +358,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		else {
 			throw new SailException("transaction isolation level " + getTransactionIsolation()
-					+ " not supported by memory store");
+					+ " not supported by memory store. ");
 		}
 	}
 

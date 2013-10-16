@@ -16,6 +16,9 @@
  */
 package org.openrdf;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Enumeration of Transaction Isolation levels supported by Sesame. Note that
  * Sesame stores are not required to support all levels, consult the
@@ -24,7 +27,6 @@ package org.openrdf;
  * 
  * @author Jeen Broekstra
  * @author James Leigh
- * 
  * @since 2.8.0
  */
 public enum IsolationLevel {
@@ -50,7 +52,7 @@ public enum IsolationLevel {
 	 * statements in this isolation level that are observed within a successful
 	 * transaction will remain observable by the transaction until the end.
 	 */
-	REPEATABLE_READ,
+	REPEATABLE_READ(READ_COMMITTED),
 
 	/**
 	 * Snapshot: in addition to {@link IsolationLevel#REPEATABLE_READ},
@@ -58,7 +60,7 @@ public enum IsolationLevel {
 	 * snapshot. This isolation level will observe either the complete effects of
 	 * other change-sets and their dependency or no effects of other change-sets.
 	 */
-	SNAPSHOT,
+	SNAPSHOT(REPEATABLE_READ, READ_COMMITTED),
 
 	/**
 	 * Serializable: in addition to {@link IsolationLevel#SNAPSHOT}, this
@@ -66,6 +68,25 @@ public enum IsolationLevel {
 	 * appear to occur either completely before or completely after a successful
 	 * serializable transaction.
 	 */
-	SERIALIZABLE
+	SERIALIZABLE(SNAPSHOT, REPEATABLE_READ, READ_COMMITTED);
 
+	private final List<IsolationLevel> compatibleLevels;
+
+	private IsolationLevel(IsolationLevel... compatibleLevels) {
+		this.compatibleLevels = Arrays.asList(compatibleLevels);
+	}
+
+	/**
+	 * Verifies if this transaction isolation level is compatible with the
+	 * supplied other isolation level - that is, if this transaction isolation
+	 * level offers at least the same guarantees as the other level.
+	 * 
+	 * @param otherLevel
+	 *        an other isolation level to check compatibility against.
+	 * @return true iff this isolation level is compatible with the supplied other
+	 *         isolation level, false otherwise.
+	 */
+	public boolean isCompatibleWith(IsolationLevel otherLevel) {
+		return compatibleLevels.contains(otherLevel);
+	}
 }

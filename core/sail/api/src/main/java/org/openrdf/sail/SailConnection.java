@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail;
 
+import java.util.Collection;
+
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
@@ -162,9 +164,9 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Begins a transaction with the specified {@link IsolationLevel}
-	 * level, requiring {@link #commit()} or {@link #rollback()} to be called to
-	 * close the transaction.
+	 * Begins a transaction with the specified {@link IsolationLevel} level,
+	 * requiring {@link #commit()} or {@link #rollback()} to be called to close
+	 * the transaction.
 	 * 
 	 * @param level
 	 *        the transaction isolation level on which this transaction operates.
@@ -176,6 +178,8 @@ public interface SailConnection {
 	 */
 	public void begin(IsolationLevel level)
 		throws SailException;
+
+
 
 	/**
 	 * Checks for an error state in the active transaction that would force the
