@@ -18,7 +18,7 @@ package org.openrdf.repository.http;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -41,14 +41,14 @@ import org.openrdf.rio.RDFHandlerException;
  */
 public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
-	public HTTPGraphQuery(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
+	public HTTPGraphQuery(SparqlSession client, QueryLanguage ql, String queryString, String baseURI) {
+		super(client, ql, queryString, baseURI);
 	}
 
 	public GraphQueryResult evaluate()
 			throws QueryEvaluationException
 		{
-			HTTPClient client = getHttpClient();
+			SparqlSession client = getHttpClient();
 			try {
 				return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
 			}
@@ -89,7 +89,7 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 	public void evaluate(RDFHandler handler)
 		throws QueryEvaluationException, RDFHandlerException
 	{
-		HTTPClient client = getHttpClient();
+		SparqlSession client = getHttpClient();
 		try {
 			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
 					getBindingsArray());

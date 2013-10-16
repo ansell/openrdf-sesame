@@ -26,8 +26,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.openrdf.IsolationLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -35,16 +41,13 @@ import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Union multiple (possibly remote) Repositories into a single RDF store.
  * 
  * @author James Leigh
  * @author Arjohn Kampman
  */
-public class Federation implements Sail, Executor {
+public class Federation implements Sail, Executor, FederatedServiceResolverClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Federation.class);
 
@@ -59,6 +62,10 @@ public class Federation implements Sail, Executor {
 	private boolean readOnly;
 
 	private File dataDir;
+
+	private FederatedServiceResolver serviceResolver;
+
+	private FederatedServiceResolverImpl serviceResolverImpl;
 
 	public File getDataDir() {
 		return dataDir;
@@ -114,6 +121,31 @@ public class Federation implements Sail, Executor {
 		this.readOnly = readOnly;
 	}
 
+	/**
+	 * @return Returns the SERVICE resolver.
+	 */
+	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
+		if (serviceResolver == null) {
+			if (serviceResolverImpl == null) {
+				serviceResolverImpl = new FederatedServiceResolverImpl();
+			}
+			return serviceResolver = serviceResolverImpl;
+		}
+		return serviceResolver;
+	}
+
+	/**
+	 * Overrides the {@link FederatedServiceResolver} used by this instance, but
+	 * the given resolver is not shutDown when this instance is.
+	 * 
+	 * @param reslover
+	 *        The SERVICE resolver to set.
+	 */
+	public synchronized void setFederatedServiceResolver(FederatedServiceResolver reslover) {
+		this.serviceResolver = reslover;
+	}
+
+	@Override
 	public void initialize()
 		throws SailException
 	{
@@ -139,6 +171,9 @@ public class Federation implements Sail, Executor {
 			}
 		}
 		executor.shutdown();
+		if (serviceResolverImpl != null) {
+			serviceResolverImpl.shutDown();
+		}
 	}
 
 	/**

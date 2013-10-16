@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.rdbms.config;
 
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
@@ -27,7 +29,7 @@ import org.openrdf.sail.rdbms.RdbmsStore;
  * 
  * @author James Leigh
  */
-public class RdbmsStoreFactory implements SailFactory {
+public class RdbmsStoreFactory implements SailFactory, FederatedServiceResolverClient {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -35,6 +37,8 @@ public class RdbmsStoreFactory implements SailFactory {
 	 * @see SailFactory#getSailType()
 	 */
 	public static final String SAIL_TYPE = "openrdf:RdbmsStore";
+
+	private FederatedServiceResolver serviceResolver;
 
 	/**
 	 * Returns the Sail's type: <tt>openrdf:RdbmsStore</tt>.
@@ -45,6 +49,15 @@ public class RdbmsStoreFactory implements SailFactory {
 
 	public RdbmsStoreConfig getConfig() {
 		return new RdbmsStoreConfig();
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return serviceResolver;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.serviceResolver = resolver;
 	}
 
 	public RdbmsStore getSail(SailImplConfig config)
@@ -65,6 +78,7 @@ public class RdbmsStoreFactory implements SailFactory {
 			RdbmsStore store = new RdbmsStore(jdbcDriver, url, user, password);
 
 			store.setMaxNumberOfTripleTables(rdbmsConfig.getMaxTripleTables());
+			store.setFederatedServiceResolver(getFederatedServiceResolver());
 
 			return store;
 		}

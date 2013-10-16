@@ -157,7 +157,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, NativeTripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset);
+		return new EvaluationStrategyImpl(tripleSource, dataset, nativeStore.getFederatedServiceResolver());
 	}
 
 	protected void replaceValues(TupleExpr tupleExpr)

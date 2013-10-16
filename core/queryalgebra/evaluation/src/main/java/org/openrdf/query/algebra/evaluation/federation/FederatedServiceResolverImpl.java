@@ -16,72 +16,49 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientImpl;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.repository.RepositoryException;
 
 /**
- * The {@link FederatedServiceManager} is used to manage a set of
+ * The {@link FederatedServiceResolverImpl} is used to manage a set of
  * {@link FederatedService} instances, which are used to evaluate SERVICE
  * expressions for particular service Urls.
  * <p>
  * Lookup can be done via the serviceUrl using the method
  * {@link #getService(String)}. If there is no service for the specified url, a
  * {@link SPARQLFederatedService} is created and registered for future use.
- * <p>
- * Note that this manager can be used to register custom
- * {@link FederatedService} implementations to provide custom behavior for
- * SERVICE evaluation.
- * <p>
- * The default behavior can be changed by extending from this class and setting
- * the implementation class via {@link #setImplementationClass(Class)}. The new
- * class must provide the default constructor.
  * 
  * @author Andreas Schwarte
+ * @author James Leigh
  */
-public class FederatedServiceManager {
+public class FederatedServiceResolverImpl implements FederatedServiceResolver {
 
-	/*
-	 * TODO maybe move to some other package ? 
-	 * TODO shutdown method ?
-	 */
-
-	private static Class<? extends FederatedServiceManager> implementationClass = FederatedServiceManager.class;
-
-	private static volatile FederatedServiceManager instance = null;
-
-	public static FederatedServiceManager getInstance() {
-		if (instance == null) {
-			try {
-				instance = implementationClass.newInstance();
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return instance;
-	}
-
-	public static synchronized void setImplementationClass(
-			Class<? extends FederatedServiceManager> implementationClass)
-	{
-		FederatedServiceManager.implementationClass = implementationClass;
-		try {
-			instance = implementationClass.newInstance();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public FederatedServiceManager() {
-		;
+	public FederatedServiceResolverImpl() {
+		super();
 	}
 
 	/**
 	 * Map service URL to the corresponding initialized {@link FederatedService}
 	 */
-	private ConcurrentHashMap<String, FederatedService> endpointToService = new ConcurrentHashMap<String, FederatedService>();
+	private Map<String, FederatedService> endpointToService = new HashMap<String, FederatedService>();
+
+	private SesameClient client;
+
+	public synchronized SesameClient getSesameClient() {
+		if (client == null) {
+			client = new SesameClientImpl();
+		}
+		return client;
+	}
+
+	public synchronized void setSesameClient(SesameClient client) {
+		this.client = client;
+	}
 
 	/**
 	 * Register the specified service to evaluate SERVICE expressions for the
@@ -90,7 +67,7 @@ public class FederatedServiceManager {
 	 * @param serviceUrl
 	 * @param service
 	 */
-	public void registerService(String serviceUrl, FederatedService service) {
+	public synchronized void registerService(String serviceUrl, FederatedService service) {
 		endpointToService.put(serviceUrl, service);
 	}
 
@@ -100,12 +77,15 @@ public class FederatedServiceManager {
 	 * @param serviceUrl
 	 */
 	public void unregisterService(String serviceUrl) {
-		FederatedService service = endpointToService.remove(serviceUrl);
-		if (service != null) {
+		FederatedService service;
+		synchronized (endpointToService) {
+			service = endpointToService.remove(serviceUrl);
+		}
+		if (service != null && service.isInitialized()) {
 			try {
 				service.shutdown();
 			}
-			catch (RepositoryException e) {
+			catch (QueryEvaluationException e) {
 				// TODO issue a warning, otherwise ignore
 			}
 		}
@@ -122,13 +102,18 @@ public class FederatedServiceManager {
 	 * @throws RepositoryException
 	 */
 	public FederatedService getService(String serviceUrl)
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
-		FederatedService service = endpointToService.get(serviceUrl);
-		if (service == null) {
-			service = new SPARQLFederatedService(serviceUrl);
+		FederatedService service;
+		synchronized (endpointToService) {
+			service = endpointToService.get(serviceUrl);
+			if (service == null) {
+				service = new SPARQLFederatedService(serviceUrl, getSesameClient());
+				endpointToService.put(serviceUrl, service);
+			}
+		}
+		if (!service.isInitialized()) {
 			service.initialize();
-			endpointToService.put(serviceUrl, service);
 		}
 		return service;
 	}
@@ -139,11 +124,19 @@ public class FederatedServiceManager {
 				try {
 					service.shutdown();
 				}
-				catch (RepositoryException e) {
+				catch (QueryEvaluationException e) {
 					// TODO issue a warning, otherwise ignore
 				}
 			}
 			endpointToService.clear();
+		}
+	}
+
+	public void shutDown() {
+		unregisterAll();
+		if (client != null) {
+			client.shutDown();
+			client = null;
 		}
 	}
 

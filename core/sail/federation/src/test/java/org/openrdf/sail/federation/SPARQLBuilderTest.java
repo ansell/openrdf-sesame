@@ -22,41 +22,33 @@ import org.openrdf.sail.memory.MemoryStore;
 
 @RunWith(Parameterized.class)
 public class SPARQLBuilderTest extends TestCase {
+
 	@Parameters(name = "{index}({0})-{2}:{3}")
 	public static Iterable<Object[]> data() {
-		return Arrays
-				.asList(new Object[][] {
-						{ "StatementPattern", "SELECT * WHERE {?s ?p ?o}", "",
-								"" },
-						{
-								"Join",
-								"SELECT * WHERE {?s ?p ?o; <urn:test:pred> ?obj}",
-								"", "" },
-						{
-								"Distinct",
-								"SELECT DISTINCT ?s WHERE {?s ?p ?o; <urn:test:pred> ?obj}",
-								"", "" },
-						{
-								"Optional",
-								"SELECT * WHERE {?s ?p ?o . OPTIONAL { ?s <urn:test:pred> ?obj}}",
-								"", "" },
-						{
-								"Filter",
-								"SELECT ?s WHERE {?s ?p ?o; <urn:test:pred> ?obj FILTER (str(?obj) = \"urn:test:obj\")}",
-								"", "" },
-						{
-								"Bindings",
-								"SELECT * WHERE {?s ?p ?o . OPTIONAL { ?s <urn:test:pred> ?obj}}",
-								"s", "urn:test:subj" } });
+		return Arrays.asList(new Object[][] {
+				{ "StatementPattern", "SELECT * WHERE {?s ?p ?o}", "", "" },
+				{ "Join", "SELECT * WHERE {?s ?p ?o; <urn:test:pred> ?obj}", "", "" },
+				{ "Distinct", "SELECT DISTINCT ?s WHERE {?s ?p ?o; <urn:test:pred> ?obj}", "", "" },
+				{ "Optional", "SELECT * WHERE {?s ?p ?o . OPTIONAL { ?s <urn:test:pred> ?obj}}", "", "" },
+				{
+						"Filter",
+						"SELECT ?s WHERE {?s ?p ?o; <urn:test:pred> ?obj FILTER (str(?obj) = \"urn:test:obj\")}",
+						"",
+						"" },
+				{
+						"Bindings",
+						"SELECT * WHERE {?s ?p ?o . OPTIONAL { ?s <urn:test:pred> ?obj}}",
+						"s",
+						"urn:test:subj" } });
 	}
 
 	private RepositoryConnection con;
+
 	private ValueFactory valueFactory;
 
 	private final String pattern, prefix, namespace;
 
-	public SPARQLBuilderTest(String name, String pattern, String prefix,
-			String namespace) {
+	public SPARQLBuilderTest(String name, String pattern, String prefix, String namespace) {
 		super();
 		assert !name.isEmpty();
 		this.pattern = pattern;
@@ -65,7 +57,9 @@ public class SPARQLBuilderTest extends TestCase {
 	}
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp()
+		throws Exception
+	{
 		Federation federation = new Federation();
 		federation.addMember(new SailRepository(new MemoryStore()));
 		Repository repository = new SailRepository(federation);
@@ -79,7 +73,9 @@ public class SPARQLBuilderTest extends TestCase {
 	}
 
 	@Test
-	public void test() throws OpenRDFException { // NOPMD
+	public void test()
+		throws OpenRDFException
+	{ // NOPMD
 		// Thrown exceptions are the only failure path.
 		TupleQuery tupleQuery = con.prepareTupleQuery(SPARQL, pattern);
 		if (!(prefix.isEmpty() || namespace.isEmpty())) {

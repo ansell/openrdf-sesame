@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.federation;
 
 import java.util.Collection;
+import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.SingletonIteration;
@@ -24,7 +25,6 @@ import info.aduna.iteration.SingletonIteration;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService.QueryType;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -39,19 +39,19 @@ public class ServiceFallbackIteration extends JoinExecutorBase<BindingSet> {
 
 	protected final Service service;
 
-	protected final String preparedQuery;
+	protected final Set<String> projectionVars;
 
 	protected final FederatedService federatedService;
 
 	protected final Collection<BindingSet> bindings;
 
-	public ServiceFallbackIteration(Service service, String preparedQuery, Collection<BindingSet> bindings,
+	public ServiceFallbackIteration(Service service, Set<String> projectionVars, Collection<BindingSet> bindings,
 			FederatedService federatedService)
 		throws QueryEvaluationException
 	{
 		super(null, null, EmptyBindingSet.getInstance());
 		this.service = service;
-		this.preparedQuery = preparedQuery;
+		this.projectionVars = projectionVars;
 		this.bindings = bindings;
 		this.federatedService = federatedService;
 		run();
@@ -69,8 +69,8 @@ public class ServiceFallbackIteration extends JoinExecutorBase<BindingSet> {
 		// iteration
 		for (BindingSet b : bindings) {
 			try {
-				CloseableIteration<BindingSet, QueryEvaluationException> result = federatedService.evaluate(
-						preparedQuery, b, service.getBaseURI(), QueryType.SELECT, service);
+				CloseableIteration<BindingSet, QueryEvaluationException> result = federatedService.select(
+						service, projectionVars, b, service.getBaseURI());
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				addResult(result);
 			} 

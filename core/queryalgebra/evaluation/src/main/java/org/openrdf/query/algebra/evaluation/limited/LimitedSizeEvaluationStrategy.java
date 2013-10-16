@@ -37,6 +37,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
@@ -63,8 +64,10 @@ public class LimitedSizeEvaluationStrategy extends EvaluationStrategyImpl {
 	/**
 	 * @param tripleSource
 	 */
-	public LimitedSizeEvaluationStrategy(TripleSource tripleSource, long maxSize) {
-		super(tripleSource);
+	public LimitedSizeEvaluationStrategy(TripleSource tripleSource, long maxSize,
+			FederatedServiceResolver serviceManager)
+	{
+		super(tripleSource, serviceManager);
 		this.maxSize = maxSize;
 	}
 
@@ -74,9 +77,9 @@ public class LimitedSizeEvaluationStrategy extends EvaluationStrategyImpl {
 	 * @param maxCollectionsSize
 	 */
 	public LimitedSizeEvaluationStrategy(TripleSource tripleSource, Dataset dataset,
-			int maxCollectionsSize)
+			int maxCollectionsSize, FederatedServiceResolver serviceManager)
 	{
-		super(tripleSource, dataset);
+		super(tripleSource, dataset, serviceManager);
 		this.maxSize = maxCollectionsSize;
 	}
 

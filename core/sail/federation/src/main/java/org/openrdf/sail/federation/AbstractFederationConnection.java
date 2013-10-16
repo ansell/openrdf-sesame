@@ -16,12 +16,6 @@
  */
 package org.openrdf.sail.federation;
 
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.DistinctIteration;
-import info.aduna.iteration.ExceptionConvertingIteration;
-import info.aduna.iteration.UnionIteration;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +23,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
+import info.aduna.iteration.DistinctIteration;
+import info.aduna.iteration.ExceptionConvertingIteration;
+import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
@@ -66,9 +69,6 @@ import org.openrdf.sail.federation.optimizers.QueryModelPruner;
 import org.openrdf.sail.federation.optimizers.QueryMultiJoinOptimizer;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.helpers.SailConnectionBase;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Unions the results from multiple {@link RepositoryConnection} into one
@@ -289,7 +289,8 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		throws SailException
 	{
 		TripleSource tripleSource = new FederationTripleSource(inf);
-		EvaluationStrategyImpl strategy = new FederationStrategy(federation, tripleSource, dataset);
+		EvaluationStrategyImpl strategy = new FederationStrategy(federation, tripleSource, dataset,
+				federation.getFederatedServiceResolver());
 		TupleExpr qry = optimize(query, dataset, bindings, strategy);
 		try {
 			return strategy.evaluate(qry, EmptyBindingSet.getInstance());

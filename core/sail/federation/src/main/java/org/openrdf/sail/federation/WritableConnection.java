@@ -35,10 +35,12 @@ import org.openrdf.sail.SailException;
  * @author James Leigh
  */
 class WritableConnection extends AbstractEchoWriteConnection {
+
 	private int addIndex;
 
-	public WritableConnection(Federation federation,
-			List<RepositoryConnection> members) throws SailException {
+	public WritableConnection(Federation federation, List<RepositoryConnection> members)
+		throws SailException
+	{
 		super(federation, members);
 		int size = members.size();
 		int rnd = (new Random().nextInt() % size + size) % size;
@@ -48,7 +50,8 @@ class WritableConnection extends AbstractEchoWriteConnection {
 				if (members.get(i % size).getRepository().isWritable()) {
 					addIndex = i % size;
 				}
-			} catch (RepositoryException e) {
+			}
+			catch (RepositoryException e) {
 				throw new SailException(e);
 			}
 		}
@@ -66,13 +69,16 @@ class WritableConnection extends AbstractEchoWriteConnection {
 	{
 		try {
 			member.add(subj, pred, obj, contexts);
-		} catch (RepositoryException e) {
+		}
+		catch (RepositoryException e) {
 			throw new SailException(e);
 		}
 	}
 
 	@Override
-	protected void clearInternal(Resource... contexts) throws SailException {
+	protected void clearInternal(Resource... contexts)
+		throws SailException
+	{
 		removeStatementsInternal(null, null, null, contexts);
 	}
 

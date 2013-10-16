@@ -30,9 +30,9 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
  * 
  * @author James Leigh
  */
-public class ParallelJoinCursor extends
-		LookAheadIteration<BindingSet, QueryEvaluationException> implements
-		Runnable {
+public class ParallelJoinCursor extends LookAheadIteration<BindingSet, QueryEvaluationException> implements
+		Runnable
+{
 
 	/*-----------*
 	 * Constants *
@@ -62,8 +62,9 @@ public class ParallelJoinCursor extends
 	 *--------------*/
 
 	public ParallelJoinCursor(EvaluationStrategy strategy,
-			CloseableIteration<BindingSet, QueryEvaluationException> leftIter,
-			TupleExpr rightArg) throws QueryEvaluationException {
+			CloseableIteration<BindingSet, QueryEvaluationException> leftIter, TupleExpr rightArg)
+		throws QueryEvaluationException
+	{
 		super();
 		this.strategy = strategy;
 		this.leftIter = leftIter;
@@ -80,20 +81,26 @@ public class ParallelJoinCursor extends
 			while (!closed && leftIter.hasNext()) {
 				rightQueue.put(strategy.evaluate(rightArg, leftIter.next()));
 			}
-		} catch (RuntimeException e) {
+		}
+		catch (RuntimeException e) {
 			rightQueue.toss(e);
-		} catch (QueryEvaluationException e) {
+		}
+		catch (QueryEvaluationException e) {
 			rightQueue.toss(e);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			// stop
-		} finally {
+		}
+		finally {
 			evaluationThread = null; // NOPMD
 			rightQueue.done();
 		}
 	}
 
 	@Override
-	public BindingSet getNextElement() throws QueryEvaluationException {
+	public BindingSet getNextElement()
+		throws QueryEvaluationException
+	{
 		BindingSet result = null;
 		while (rightIter != null || rightQueue.hasNext()) {
 			if (rightIter == null) {
@@ -102,7 +109,8 @@ public class ParallelJoinCursor extends
 			if (rightIter.hasNext()) {
 				result = rightIter.next();
 				break;
-			} else {
+			}
+			else {
 				rightIter.close();
 				rightIter = null; // NOPMD
 			}
@@ -112,7 +120,9 @@ public class ParallelJoinCursor extends
 	}
 
 	@Override
-	public void handleClose() throws QueryEvaluationException {
+	public void handleClose()
+		throws QueryEvaluationException
+	{
 		closed = true;
 		if (evaluationThread != null) {
 			evaluationThread.interrupt();
@@ -128,8 +138,7 @@ public class ParallelJoinCursor extends
 	@Override
 	public String toString() {
 		String left = leftIter.toString().replace("\n", "\n\t");
-		String right = (null == rightIter) ? rightArg.toString() : rightIter
-				.toString();
+		String right = (null == rightIter) ? rightArg.toString() : rightIter.toString();
 		return "ParallelJoin\n\t" + left + "\n\t" + right.replace("\n", "\n\t");
 	}
 }

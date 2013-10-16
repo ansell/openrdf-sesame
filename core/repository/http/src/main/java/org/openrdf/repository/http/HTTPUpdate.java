@@ -18,7 +18,7 @@ package org.openrdf.repository.http;
 
 import java.io.IOException;
 
-import org.openrdf.http.client.HTTPClient;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPUpdate;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.query.MalformedQueryException;
@@ -39,8 +39,9 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 
 	protected final HTTPRepositoryConnection httpCon;
 
-	public HTTPUpdate(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
-		super(con.getRepository().getHTTPClient(), ql, queryString, baseURI);
+	public HTTPUpdate(HTTPRepositoryConnection con, SparqlSession client, QueryLanguage ql, String queryString,
+			String baseURI) {
+		super(client, ql, queryString, baseURI);
 		this.httpCon = con;
 	}
 
@@ -52,7 +53,7 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 			// TODO have a look at this
 			if (httpCon.isAutoCommit()) {
 				// execute update immediately
-				HTTPClient client = httpCon.getRepository().getHTTPClient();
+				SparqlSession client = getHttpClient();
 				try {
 					client.sendUpdate(getQueryLanguage(), getQueryString(), getBaseURI(), dataset, includeInferred,
 							getBindingsArray());

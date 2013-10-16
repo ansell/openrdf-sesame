@@ -33,6 +33,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
@@ -66,9 +67,9 @@ public class RdbmsEvaluation extends EvaluationStrategyImpl {
 	private IdSequence ids;
 
 	public RdbmsEvaluation(QueryBuilderFactory factory, RdbmsTripleRepository triples, Dataset dataset,
-			IdSequence ids)
+			IdSequence ids, FederatedServiceResolver serviceManager)
 	{
-		super(new RdbmsTripleSource(triples), dataset);
+		super(new RdbmsTripleSource(triples), dataset, serviceManager);
 		this.factory = factory;
 		this.triples = triples;
 		this.vf = triples.getValueFactory();

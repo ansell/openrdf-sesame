@@ -73,22 +73,30 @@ class ReadOnlyConnection extends AbstractFederationConnection {
 	}
 
 	@Override
-	protected void clearInternal(Resource... contexts) throws SailException {
+	protected void clearInternal(Resource... contexts)
+		throws SailException
+	{
 		throw new SailReadOnlyException("");
 	}
 
 	@Override
-	protected void commitInternal() throws SailException {
+	protected void commitInternal()
+		throws SailException
+	{
 		// no-op
 	}
 
 	@Override
-	protected void rollbackInternal() throws SailException {
+	protected void rollbackInternal()
+		throws SailException
+	{
 		// no-op
 	}
 
 	@Override
-	protected void startTransactionInternal() throws SailException {
+	protected void startTransactionInternal()
+		throws SailException
+	{
 		// no-op
 	}
 }

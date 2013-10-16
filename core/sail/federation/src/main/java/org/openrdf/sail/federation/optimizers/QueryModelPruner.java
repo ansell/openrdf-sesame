@@ -47,18 +47,20 @@ public class QueryModelPruner implements QueryOptimizer {
 	 * Applies generally applicable optimizations: path expressions are sorted
 	 * from more to less specific.
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(new TreeSanitizer());
 	}
 
 	protected class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meetOther(QueryModelNode node) throws RuntimeException {
+		public void meetOther(QueryModelNode node)
+			throws RuntimeException
+		{
 			if (node instanceof NaryJoin) {
-				meetMultiJoin((NaryJoin) node);
-			} else {
+				meetMultiJoin((NaryJoin)node);
+			}
+			else {
 				super.meetOther(node);
 			}
 		}
