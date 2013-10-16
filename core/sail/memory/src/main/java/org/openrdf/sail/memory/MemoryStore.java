@@ -80,8 +80,6 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 * Variables *
 	 *-----------*/
 
-
-
 	/**
 	 * Factory/cache for MemValue objects.
 	 */
@@ -987,5 +985,4 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 			}
 		}
 	}
-
 }
