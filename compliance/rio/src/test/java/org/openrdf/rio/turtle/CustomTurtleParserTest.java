@@ -32,7 +32,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -48,7 +47,7 @@ import org.openrdf.rio.helpers.ParseErrorCollector;
 public class CustomTurtleParserTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(1000);
+	public Timeout timeout = new Timeout(10000);
 	
 	private ValueFactory vf;
 

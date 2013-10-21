@@ -16,6 +16,11 @@
  */
 package org.openrdf.sail.nativerdf.config;
 
+import org.apache.http.client.HttpClient;
+
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
@@ -28,7 +33,7 @@ import org.openrdf.sail.nativerdf.NativeStore;
  * 
  * @author Arjohn Kampman
  */
-public class NativeStoreFactory implements SailFactory {
+public class NativeStoreFactory implements SailFactory, FederatedServiceResolverClient {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -36,6 +41,8 @@ public class NativeStoreFactory implements SailFactory {
 	 * @see SailFactory#getSailType()
 	 */
 	public static final String SAIL_TYPE = "openrdf:NativeStore";
+
+	private FederatedServiceResolver serviceResolver;
 
 	/**
 	 * Returns the Sail's type: <tt>openrdf:NativeStore</tt>.
@@ -46,6 +53,15 @@ public class NativeStoreFactory implements SailFactory {
 
 	public SailImplConfig getConfig() {
 		return new NativeStoreConfig();
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return serviceResolver;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.serviceResolver = resolver;
 	}
 
 	public Sail getSail(SailImplConfig config)
@@ -62,6 +78,7 @@ public class NativeStoreFactory implements SailFactory {
 
 			nativeStore.setTripleIndexes(nativeConfig.getTripleIndexes());
 			nativeStore.setForceSync(nativeConfig.getForceSync());
+			nativeStore.setFederatedServiceResolver(getFederatedServiceResolver());
 
 			if (nativeConfig.getValueCacheSize() >= 0) {
 				nativeStore.setValueCacheSize(nativeConfig.getValueCacheSize());

@@ -133,17 +133,25 @@ public class Service extends UnaryTupleOperator {
 	}
 
 	/**
-	 * Returns the query string using the provided projection vars. Two cases are
-	 * considered: a) projectionVars available => SELECT query The variables are
-	 * inserted into the preparedSelectQueryString in the SELECT clause. b)
-	 * projectionVars empty => ASK query return preparedAskQueryString
+	 * Returns an ASK query string using no projection vars.
 	 * 
 	 * @param projectionVars
-	 * @return the query string, utilizing the given projection variables
+	 * @return ASK query string
 	 */
-	public String getQueryString(Set<String> projectionVars) {
+	public String getAskQueryString() {
+		return preparedAskQueryString;
+	}
+
+	/**
+	 * Returns a SELECT query string using the provided projection vars. The variables are
+	 * inserted into the preparedSelectQueryString in the SELECT clause.
+	 * 
+	 * @param projectionVars
+	 * @return SELECT query string, utilizing the given projection variables
+	 */
+	public String getSelectQueryString(Set<String> projectionVars) {
 		if (projectionVars.size() == 0)
-			return preparedAskQueryString;
+			return preparedSelectQueryString.replace("%PROJECTION_VARS%", "*");
 		StringBuilder sb = new StringBuilder();
 		for (String var : projectionVars)
 			sb.append(" ?").append(var);

@@ -21,8 +21,13 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.SPARQLFederatedService;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * Evaluates {@link TupleExpr}s and {@link ValueExpr}s.
@@ -30,7 +35,37 @@ import org.openrdf.query.algebra.ValueExpr;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public interface EvaluationStrategy {
+public interface EvaluationStrategy extends FederatedServiceResolver {
+
+	/**
+	 * Retrieve the {@link FederatedService} registered for serviceUrl. If there
+	 * is no service registered for serviceUrl, a new
+	 * {@link SPARQLFederatedService} is created and registered.
+	 * 
+	 * @param serviceUrl
+	 * @return
+	 * @throws RepositoryException
+	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
+	 */
+	public FederatedService getService(String serviceUrl)
+		throws QueryEvaluationException;
+
+	/**
+	 * Evaluates the tuple expression against the supplied triple source with the
+	 * specified set of variable bindings as input.
+	 * 
+	 * @param expr
+	 *        The Service Expression to evaluate
+	 * @param serviceUri TODO
+	 * @param bindings
+	 *        The variables bindings iterator to use for evaluating the
+	 *        expression, if applicable.
+	 * @return A closeable iterator over all of variable binding sets that match
+	 *         the tuple expression.
+	 */
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service expr,
+			String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
+		throws QueryEvaluationException;
 
 	/**
 	 * Evaluates the tuple expression against the supplied triple source with the
