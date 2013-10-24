@@ -16,15 +16,13 @@
  */
 package org.openrdf.rio.ntriples;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Collections;
 
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.LinkedHashModel;
@@ -34,10 +32,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
-import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -46,7 +41,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * 
  * @author Arjohn Kampman
  */
-public abstract class NTriplesParserTestCase extends TestCase {
+public abstract class AbstractNTriplesParserTest {
 
 	/*-----------*
 	 * Constants *

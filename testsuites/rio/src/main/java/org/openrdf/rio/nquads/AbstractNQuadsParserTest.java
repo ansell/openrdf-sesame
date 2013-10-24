@@ -17,6 +17,7 @@
 package org.openrdf.rio.nquads;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -25,10 +26,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -51,7 +52,7 @@ import org.openrdf.rio.helpers.StatementCollector;
  * 
  * @author Peter Ansell
  */
-public abstract class NQuadsParserTestCase extends TestCase {
+public abstract class AbstractNQuadsParserTest {
 
 	/*-----------*
 	 * Constants *
@@ -69,7 +70,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 
 	private TestRDFHandler rdfHandler;
 
-	@Override
+	@Before
 	public void setUp()
 		throws Exception
 	{
@@ -78,7 +79,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		parser.setRDFHandler(this.rdfHandler);
 	}
 
-	@Override
+	@After
 	public void tearDown()
 		throws Exception
 	{
@@ -95,7 +96,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		RDFParser nquadsParser = createRDFParser();
 		nquadsParser.setRDFHandler(new RDFHandlerBase());
 
-		InputStream in = NQuadsParserTestCase.class.getResourceAsStream(NQUADS_TEST_FILE);
+		InputStream in = AbstractNQuadsParserTest.class.getResourceAsStream(NQUADS_TEST_FILE);
 		try {
 			nquadsParser.parse(in, NQUADS_TEST_URL);
 		}
@@ -117,7 +118,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		RDFParser nquadsParser = createRDFParser();
 		nquadsParser.setRDFHandler(new RDFHandlerBase());
 
-		InputStream in = NQuadsParserTestCase.class.getResourceAsStream(NTRIPLES_TEST_FILE);
+		InputStream in = AbstractNQuadsParserTest.class.getResourceAsStream(NTRIPLES_TEST_FILE);
 		try {
 			nquadsParser.parse(in, NTRIPLES_TEST_URL);
 		}
@@ -519,7 +520,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		parser.setRDFHandler(rdfHandler);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				NQuadsParserTestCase.class.getResourceAsStream("/testcases/nquads/test1.nq")));
+				AbstractNQuadsParserTest.class.getResourceAsStream("/testcases/nquads/test1.nq")));
 		parser.parse(br, "http://test.base.uri");
 
 		rdfHandler.assertHandler(6);
@@ -538,7 +539,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		parser.setParseLocationListener(parseLocationListener);
 		parser.setRDFHandler(rdfHandler);
 
-		parser.parse(NQuadsParserTestCase.class.getResourceAsStream("/testcases/nquads/test2.nq"),
+		parser.parse(AbstractNQuadsParserTest.class.getResourceAsStream("/testcases/nquads/test2.nq"),
 				"http://test.base.uri");
 
 		rdfHandler.assertHandler(400);
