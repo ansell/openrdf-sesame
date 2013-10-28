@@ -331,6 +331,11 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * Tries to determine the appropriate RDF file format based on the a MIME
 	 * type that describes the content type.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link Rio#getParserFormatForMIMEType(String)} and
+	 * {@link Rio#getWriterFormatForMIMEType(String)} to find all dynamically
+	 * loaded parser and writer formats, respectively.
 	 * 
 	 * @param mimeType
 	 *        A MIME type, e.g. "application/rdf+xml".
@@ -347,6 +352,11 @@ public class RDFFormat extends FileFormat {
 	 * Tries to determine the appropriate RDF file format based on the a MIME
 	 * type that describes the content type. The supplied fallback format will be
 	 * returned when the MIME type was not recognized.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link Rio#getParserFormatForMIMEType(String, RDFFormat)} and
+	 * {@link Rio#getWriterFormatForMIMEType(String, RDFFormat)} to find all
+	 * dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param mimeType
 	 *        A file name.
@@ -362,6 +372,11 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * Tries to determine the appropriate RDF file format based on the extension
 	 * of a file name.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link Rio#getParserFormatForFileName(String)} and
+	 * {@link Rio#getWriterFormatForFileName(String)} to find all dynamically
+	 * loaded parser and writer formats, respectively.
 	 * 
 	 * @param fileName
 	 *        A file name.
@@ -378,6 +393,11 @@ public class RDFFormat extends FileFormat {
 	 * Tries to determine the appropriate RDF file format based on the extension
 	 * of a file name. The supplied fallback format will be returned when the
 	 * file name extension was not recognized.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link Rio#getParserFormatForFileName(String, RDFFormat)} and
+	 * {@link Rio#getWriterFormatForFileName(String, RDFFormat)} to find all
+	 * dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param fileName
 	 *        A file name.
@@ -408,6 +428,22 @@ public class RDFFormat extends FileFormat {
 		return null;
 	}
 
+	/**
+	 * Processes the supplied collection of {@link RDFFormat}s and assigns
+	 * quality values to each based on whether context must be supported and
+	 * whether the format is preferred.
+	 * 
+	 * @param rdfFormats
+	 *        The {@link RDFFormat}s to process.
+	 * @param requireContext
+	 *        True to decrease the quality value for formats where
+	 *        {@link RDFFormat#supportsContexts()} returns false.
+	 * @param preferredFormat
+	 *        The preferred RDFFormat. If it is not in the list then the quality
+	 *        of all formats will be processed as if they are not preferred.
+	 * @return A list of strings containing the content types and an attached
+	 *         q-value specifying the quality for the format for each type.
+	 */
 	public static List<String> getAcceptParams(Iterable<RDFFormat> rdfFormats, boolean requireContext,
 			RDFFormat preferredFormat)
 	{
@@ -488,6 +524,12 @@ public class RDFFormat extends FileFormat {
 	 * @param fileExtension
 	 *        The (default) file extension for the RDF file format, e.g.
 	 *        <tt>rdf</tt> for RDF/XML files.
+	 * @param supportsNamespaces
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        namespace/prefix information and <tt>false</tt> otherwise.
+	 * @param supportsContexts
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        contexts/named graphs and <tt>false</tt> otherwise.
 	 */
 	public RDFFormat(String name, String mimeType, Charset charset, String fileExtension,
 			boolean supportsNamespaces, boolean supportsContexts)
@@ -511,6 +553,12 @@ public class RDFFormat extends FileFormat {
 	 *        The RDF format's file extensions, e.g. <tt>rdf</tt> for RDF/XML
 	 *        files. The first item in the list is interpreted as the default
 	 *        file extension for the format.
+	 * @param supportsNamespaces
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        namespace/prefix information and <tt>false</tt> otherwise.
+	 * @param supportsContexts
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        contexts/named graphs and <tt>false</tt> otherwise.
 	 */
 	public RDFFormat(String name, String mimeType, Charset charset, Collection<String> fileExtensions,
 			boolean supportsNamespaces, boolean supportsContexts)
@@ -535,6 +583,12 @@ public class RDFFormat extends FileFormat {
 	 *        The RDF format's file extensions, e.g. <tt>rdf</tt> for RDF/XML
 	 *        files. The first item in the list is interpreted as the default
 	 *        file extension for the format.
+	 * @param supportsNamespaces
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        namespace/prefix information and <tt>false</tt> otherwise.
+	 * @param supportsContexts
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        contexts/named graphs and <tt>false</tt> otherwise.
 	 */
 	public RDFFormat(String name, Collection<String> mimeTypes, Charset charset,
 			Collection<String> fileExtensions, boolean supportsNamespaces, boolean supportsContexts)
@@ -559,6 +613,17 @@ public class RDFFormat extends FileFormat {
 	 *        The RDF format's file extensions, e.g. <tt>rdf</tt> for RDF/XML
 	 *        files. The first item in the list is interpreted as the default
 	 *        file extension for the format.
+	 * @param standardURI
+	 *        The standard URI that has been assigned to this format by a
+	 *        standards organisation or null if it does not currently have a
+	 *        standard URI.
+	 * @param supportsNamespaces
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        namespace/prefix information and <tt>false</tt> otherwise.
+	 * @param supportsContexts
+	 *        <tt>True</tt> if the RDFFormat supports the encoding of
+	 *        contexts/named graphs and <tt>false</tt> otherwise.
+	 * @since 2.8.0
 	 */
 	public RDFFormat(String name, Collection<String> mimeTypes, Charset charset,
 			Collection<String> fileExtensions, URI standardURI, boolean supportsNamespaces,
@@ -594,6 +659,7 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * @return True if a standard URI has been assigned to this format by a
 	 *         standards organisation.
+	 * @since 2.8.0
 	 */
 	public boolean hasStandardURI() {
 		return standardURI != null;
@@ -603,6 +669,7 @@ public class RDFFormat extends FileFormat {
 	 * @return The standard URI that has been assigned to this format by a
 	 *         standards organisation or null if it does not currently have a
 	 *         standard URI.
+	 * @since 2.8.0
 	 */
 	public URI getStandardURI() {
 		return standardURI;
