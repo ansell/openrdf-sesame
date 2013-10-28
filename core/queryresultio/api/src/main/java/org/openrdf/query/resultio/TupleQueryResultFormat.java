@@ -23,6 +23,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
+
 /**
  * Represents the concept of an tuple query result serialization format. Tuple
  * query result formats are identified by a {@link #getName() name} and can have
@@ -42,7 +45,8 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	 */
 	public static final TupleQueryResultFormat SPARQL = new TupleQueryResultFormat("SPARQL/XML",
 			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"),
-			Arrays.asList("srx", "xml"));
+			Arrays.asList("srx", "xml"), ValueFactoryImpl.getInstance().createURI(
+					"http://www.w3.org/ns/formats/SPARQL_Results_XML"));
 
 	/**
 	 * Binary RDF results table format.
@@ -55,19 +59,22 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	 */
 	public static final TupleQueryResultFormat JSON = new TupleQueryResultFormat("SPARQL/JSON", Arrays.asList(
 			"application/sparql-results+json", "application/json"), Charset.forName("UTF-8"), Arrays.asList(
-			"srj", "json"));
+			"srj", "json"), ValueFactoryImpl.getInstance().createURI(
+			"http://www.w3.org/ns/formats/SPARQL_Results_JSON"));
 
 	/**
 	 * SPARQL Query Result CSV Format.
 	 */
-	public static final TupleQueryResultFormat CSV = new TupleQueryResultFormat("SPARQL/CSV", "text/csv",
-			Charset.forName("UTF-8"), "csv");
+	public static final TupleQueryResultFormat CSV = new TupleQueryResultFormat("SPARQL/CSV",
+			Arrays.asList("text/csv"), Charset.forName("UTF-8"), Arrays.asList("csv"),
+			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/SPARQL_Results_CSV"));
 
 	/**
 	 * SPARQL Query Result TSV Format.
 	 */
 	public static final TupleQueryResultFormat TSV = new TupleQueryResultFormat("SPARQL/TSV",
-			"text/tab-separated-values", Charset.forName("UTF-8"), "tsv");
+			Arrays.asList("text/tab-separated-values"), Charset.forName("UTF-8"), Arrays.asList("tsv"),
+			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/SPARQL_Results_TSV"));
 
 	/*------------------*
 	 * Static variables *
@@ -130,6 +137,11 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	/**
 	 * Tries to determine the appropriate tuple file format based on the a MIME
 	 * type that describes the content type.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link QueryResultIO#getParserFormatForMIMEType(String)} and
+	 * {@link QueryResultIO#getWriterFormatForMIMEType(String)} to find all
+	 * dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param mimeType
 	 *        A MIME type, e.g. "application/sparql-results+xml".
@@ -146,6 +158,13 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	 * Tries to determine the appropriate tuple file format based on the a MIME
 	 * type that describes the content type. The supplied fallback format will be
 	 * returned when the MIME type was not recognized.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use
+	 * {@link QueryResultIO#getParserFormatForMIMEType(String, TupleQueryResultFormat)}
+	 * and
+	 * {@link QueryResultIO#getWriterFormatForMIMEType(String, TupleQueryResultFormat)}
+	 * to find all dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param mimeType
 	 *        a MIME type, e.g. "application/sparql-results+xml"
@@ -164,6 +183,11 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	/**
 	 * Tries to determine the appropriate tuple file format for a file, based on
 	 * the extension specified in a file name.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link QueryResultIO#getParserFormatForFileName(String)} and
+	 * {@link QueryResultIO#getWriterFormatForFileName(String)} to find all
+	 * dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param fileName
 	 *        A file name.
@@ -180,6 +204,13 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	 * Tries to determine the appropriate tuple file format for a file, based on
 	 * the extension specified in a file name. The supplied fallback format will
 	 * be returned when the file name extension was not recognized.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use
+	 * {@link QueryResultIO#getParserFormatForFileName(String, TupleQueryResultFormat)}
+	 * and
+	 * {@link QueryResultIO#getWriterFormatForFileName(String, TupleQueryResultFormat)}
+	 * to find all dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param fileName
 	 *        A file name.
@@ -253,5 +284,30 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 			Collection<String> fileExtensions)
 	{
 		super(name, mimeTypes, charset, fileExtensions);
+	}
+
+	/**
+	 * Creates a new TupleQueryResultFormat object.
+	 * 
+	 * @param name
+	 *        The name of the format, e.g. "SPARQL/XML".
+	 * @param mimeTypes
+	 *        The MIME types of the format, e.g.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
+	 * @param charset
+	 *        The default character encoding of the format. Specify <tt>null</tt>
+	 *        if not applicable.
+	 * @param fileExtensions
+	 *        The format's file extensions, e.g. <tt>srx</tt> for SPARQL/XML
+	 *        files. The first item in the list is interpreted as the default
+	 *        file extension for the format.
+	 * @since 2.8.0
+	 */
+	public TupleQueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
+			Collection<String> fileExtensions, URI standardURI)
+	{
+		super(name, mimeTypes, charset, fileExtensions, standardURI);
 	}
 }

@@ -101,6 +101,31 @@ public class QueryResultFormat extends FileFormat {
 	}
 
 	/**
+	 * @param name
+	 *        The name of the format, e.g. "SPARQL/XML".
+	 * @param mimeTypes
+	 *        The MIME types of the format, e.g.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
+	 * @param charset
+	 *        The default character encoding of the format. Specify <tt>null</tt>
+	 *        if not applicable.
+	 * @param fileExtensions
+	 *        The format's file extensions, e.g. <tt>srx</tt> for SPARQL/XML
+	 *        files. The first item in the list is interpreted as the default
+	 *        file extension for the format.
+	 * @since 2.8.0
+	 */
+	public QueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
+			Collection<String> fileExtensions, URI standardURI)
+	{
+		super(name, mimeTypes, charset, fileExtensions);
+
+		this.standardURI = standardURI;
+	}
+
+	/**
 	 * @return True if a standard URI has been assigned to this format by a
 	 *         standards organisation.
 	 * @since 2.8.0
