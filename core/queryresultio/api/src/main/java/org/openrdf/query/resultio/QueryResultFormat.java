@@ -21,6 +21,8 @@ import java.util.Collection;
 
 import info.aduna.lang.FileFormat;
 
+import org.openrdf.model.URI;
+
 /**
  * The base class of all file formats that represent the results of queries.
  * Currently this includes tuple and boolean queries.
@@ -31,20 +33,45 @@ import info.aduna.lang.FileFormat;
 public class QueryResultFormat extends FileFormat {
 
 	/**
-	 * @param name
-	 * @param mimeType
-	 * @param charset
-	 * @param fileExtension
+	 * A standard URI published by the W3C or another standards body to uniquely
+	 * denote this format.
+	 * 
+	 * @see <a href="http://www.w3.org/ns/formats/">Unique URIs for File
+	 *      Formats</a>
 	 */
-	public QueryResultFormat(String name, String mimeType, Charset charset, String fileExtension) {
-		super(name, mimeType, charset, fileExtension);
+	private URI standardURI;
+
+	/**
+	 * @param name
+	 *        The name of the format, e.g. "SPARQL/XML".
+	 * @param mimeType
+	 *        The MIME type of the format, e.g.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML file
+	 *        format.
+	 * @param charset
+	 *        The default character encoding of the format. Specify <tt>null</tt>
+	 *        if not applicable.
+	 * @param fileExt
+	 *        The (default) file extension for the format, e.g. <tt>srx</tt> for
+	 *        SPARQL/XML files.
+	 */
+	public QueryResultFormat(String name, String mimeType, Charset charset, String fileExt) {
+		super(name, mimeType, charset, fileExt);
 	}
 
 	/**
 	 * @param name
+	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeType
+	 *        The MIME type of the format, e.g.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
 	 * @param charset
+	 *        The default character encoding of the format. Specify <tt>null</tt>
+	 *        if not applicable.
 	 * @param fileExtensions
+	 *        The format's file extensions, e.g. <tt>srx</tt> for SPARQL/XML
+	 *        files. The first item in the list is interpreted as the default
+	 *        file extension for the format.
 	 */
 	public QueryResultFormat(String name, String mimeType, Charset charset, Collection<String> fileExtensions)
 	{
@@ -53,9 +80,19 @@ public class QueryResultFormat extends FileFormat {
 
 	/**
 	 * @param name
+	 *        The name of the format, e.g. "SPARQL/XML".
 	 * @param mimeTypes
+	 *        The MIME types of the format, e.g.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
 	 * @param charset
+	 *        The default character encoding of the format. Specify <tt>null</tt>
+	 *        if not applicable.
 	 * @param fileExtensions
+	 *        The format's file extensions, e.g. <tt>srx</tt> for SPARQL/XML
+	 *        files. The first item in the list is interpreted as the default
+	 *        file extension for the format.
 	 */
 	public QueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
 			Collection<String> fileExtensions)
@@ -63,4 +100,22 @@ public class QueryResultFormat extends FileFormat {
 		super(name, mimeTypes, charset, fileExtensions);
 	}
 
+	/**
+	 * @return True if a standard URI has been assigned to this format by a
+	 *         standards organisation.
+	 * @since 2.8.0
+	 */
+	public boolean hasStandardURI() {
+		return standardURI != null;
+	}
+
+	/**
+	 * @return The standard URI that has been assigned to this format by a
+	 *         standards organisation or null if it does not currently have a
+	 *         standard URI.
+	 * @since 2.8.0
+	 */
+	public URI getStandardURI() {
+		return standardURI;
+	}
 }
