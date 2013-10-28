@@ -419,27 +419,29 @@ public abstract class RDFParserBase implements RDFParser {
 	protected BNode createBNode(String nodeID)
 		throws RDFParseException
 	{
-		// Maybe the node ID has been used before:
-		BNode result = bNodeIDMap.get(nodeID);
+		BNode result;
+		// If we are preserving bnode identifiers then we do not cache here,
+		// although the ValueFactory may cache the result.
+		if (preserveBNodeIDs()) {
+			result = valueFactory.createBNode(nodeID);
+		}
+		else {
+			// Maybe the node ID has been used before:
+			result = bNodeIDMap.get(nodeID);
 
-		if (result == null) {
-			// This is a new node ID, create a new BNode object for it
-			try {
-				if (preserveBNodeIDs()) {
-					result = valueFactory.createBNode(nodeID);
-				}
-				else {
+			if (result == null) {
+				// This is a new node ID, create a new BNode object for it
+				try {
 					result = valueFactory.createBNode();
 				}
-			}
-			catch (Exception e) {
-				reportFatalError(e);
-			}
+				catch (Exception e) {
+					reportFatalError(e);
+				}
 
-			// Remember it, the nodeID might occur again.
-			bNodeIDMap.put(nodeID, result);
+				// Remember it, the nodeID might occur again.
+				bNodeIDMap.put(nodeID, result);
+			}
 		}
-
 		return result;
 	}
 
