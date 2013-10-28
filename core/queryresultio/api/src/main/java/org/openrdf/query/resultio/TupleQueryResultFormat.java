@@ -303,6 +303,10 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	 *        The format's file extensions, e.g. <tt>srx</tt> for SPARQL/XML
 	 *        files. The first item in the list is interpreted as the default
 	 *        file extension for the format.
+	 * @param standardURI
+	 *        The standard URI that has been assigned to this format by a
+	 *        standards organisation or null if it does not currently have a
+	 *        standard URI.
 	 * @since 2.8.0
 	 */
 	public TupleQueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
