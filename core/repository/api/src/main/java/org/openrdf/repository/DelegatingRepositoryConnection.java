@@ -18,7 +18,8 @@ package org.openrdf.repository;
 
 public interface DelegatingRepositoryConnection extends RepositoryConnection {
 
-	public RepositoryConnection getDelegate();
-	
+	public RepositoryConnection getDelegate()
+		throws RepositoryException;
+
 	public void setDelegate(RepositoryConnection delegate);
 }
