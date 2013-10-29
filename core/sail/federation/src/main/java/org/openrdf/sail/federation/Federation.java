@@ -25,7 +25,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,8 +216,8 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 	}
 
 	@Override
-	public List<IsolationLevel> getSupportedIsolationLevels() {
+	public List<IsolationLevels> getSupportedIsolationLevels() {
 		// TODO determine based on members?
-		return Arrays.asList(new IsolationLevel[] { IsolationLevel.NONE });
+		return Arrays.asList(new IsolationLevels[] { IsolationLevels.NONE });
 	}
 }

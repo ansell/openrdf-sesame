@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.IsolationLevel;
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;

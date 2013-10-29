@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -54,19 +54,19 @@ public abstract class SailBase implements Sail {
 
 	/**
 	 * default transaction isolation level, set to
-	 * {@link IsolationLevel#READ_COMMITTED }.
+	 * {@link IsolationLevels#READ_COMMITTED }.
 	 */
-	private IsolationLevel defaultIsolationLevel = IsolationLevel.READ_COMMITTED;
+	private IsolationLevels defaultIsolationLevel = IsolationLevels.READ_COMMITTED;
 
 	/**
 	 * list of supported isolation levels. By default set to include
-	 * {@link IsolationLevel#READ_COMMITTED} and
-	 * {@link IsolationLevel#REPEATABLE_READ}. Specific store implementations are
+	 * {@link IsolationLevels#READ_COMMITTED} and
+	 * {@link IsolationLevels#REPEATABLE_READ}. Specific store implementations are
 	 * expected to alter this list according to their specific capabilities.
 	 */
-	private List<IsolationLevel> supportedIsolationLevels = Arrays.asList(new IsolationLevel[] {
-			IsolationLevel.READ_COMMITTED,
-			IsolationLevel.REPEATABLE_READ });
+	private List<IsolationLevels> supportedIsolationLevels = Arrays.asList(new IsolationLevels[] {
+			IsolationLevels.READ_COMMITTED,
+			IsolationLevels.REPEATABLE_READ });
 
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and
@@ -317,67 +317,67 @@ public abstract class SailBase implements Sail {
 	}
 
 	/**
-	 * Appends the provided {@link IsolationLevel} to the SAIL's list of
+	 * Appends the provided {@link IsolationLevels} to the SAIL's list of
 	 * supported isolation levels.
 	 * 
 	 * @param level
 	 *        a supported IsolationLevel.
 	 * @since 2.8
 	 */
-	protected void addSupportedIsolationLevel(IsolationLevel level) {
+	protected void addSupportedIsolationLevel(IsolationLevels level) {
 		this.supportedIsolationLevels.add(level);
 	}
 
 	/**
-	 * Removes all occurrences of the provided {@link IsolationLevel} in the list
+	 * Removes all occurrences of the provided {@link IsolationLevels} in the list
 	 * of supported Isolation levels.
 	 * 
 	 * @param level
 	 *        the isolation level to remove.
 	 * @since 2.8
 	 */
-	protected void removeSupportedIsolationLevel(IsolationLevel level) {
+	protected void removeSupportedIsolationLevel(IsolationLevels level) {
 		while (this.supportedIsolationLevels.remove(level)) {
 		}
 	}
 
 	/**
-	 * Sets the list of supported {@link IsolationLevel}s for this SAIL. The list
+	 * Sets the list of supported {@link IsolationLevels}s for this SAIL. The list
 	 * is expected to be ordered in increasing complexity.
 	 * 
 	 * @param supportedIsolationLevels
 	 *        a list of supported isolation levels.
 	 * @since 2.8
 	 */
-	protected void setSUpportedIsolationLevels(List<IsolationLevel> supportedIsolationLevels) {
+	protected void setSUpportedIsolationLevels(List<IsolationLevels> supportedIsolationLevels) {
 		this.supportedIsolationLevels = supportedIsolationLevels;
 	}
 
 	@Override
-	public List<IsolationLevel> getSupportedIsolationLevels() {
+	public List<IsolationLevels> getSupportedIsolationLevels() {
 		return Collections.unmodifiableList(supportedIsolationLevels);
 	}
 
 	/**
-	 * Retrieves the default {@link IsolationLevel} level on which transactions
+	 * Retrieves the default {@link IsolationLevels} level on which transactions
 	 * in this Sail operate.
 	 * 
 	 * @since 2.8
 	 * @return Returns the defaultIsolationLevel.
 	 */
-	public IsolationLevel getDefaultIsolationLevel() {
+	public IsolationLevels getDefaultIsolationLevel() {
 		return defaultIsolationLevel;
 	}
 
 	/**
-	 * Sets the default {@link IsolationLevel} level on which transactions in
+	 * Sets the default {@link IsolationLevels} level on which transactions in
 	 * this Sail operate.
 	 * 
 	 * @since 2.8.0
 	 * @param defaultIsolationLevel
 	 *        The defaultIsolationLevel to set.
 	 */
-	public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
+	public void setDefaultIsolationLevel(IsolationLevels defaultIsolationLevel) {
 		if (defaultIsolationLevel == null) {
 			throw new IllegalArgumentException("default isolation level may not be null");
 		}

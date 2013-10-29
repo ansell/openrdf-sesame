@@ -593,7 +593,7 @@ public interface RepositoryConnection {
 	 * be called to end the transaction.
 	 * 
 	 * @param level
-	 *        The {@link IsolationLevel} level at which this transaction will
+	 *        The {@link IsolationLevel} at which this transaction will
 	 *        operate.
 	 * @throws RepositoryException
 	 *         If the connection could not start the transaction.

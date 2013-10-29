@@ -19,7 +19,7 @@ package org.openrdf.sail.helpers;
 import java.io.File;
 import java.util.List;
 
-import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
@@ -121,7 +121,7 @@ public class SailWrapper implements StackableSail {
 	}
 
 	@Override
-	public List<IsolationLevel> getSupportedIsolationLevels() {
+	public List<IsolationLevels> getSupportedIsolationLevels() {
 		verifyBaseSailSet();
 		return baseSail.getSupportedIsolationLevels();
 	}

@@ -33,7 +33,7 @@ import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.UnionIteration;
 
-import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -120,8 +120,8 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 			}
 
 			@Override
-			public List<IsolationLevel> getSupportedIsolationLevels() {
-				return Arrays.asList(new IsolationLevel[] { IsolationLevel.NONE });
+			public List<IsolationLevels> getSupportedIsolationLevels() {
+				return Arrays.asList(new IsolationLevels[] { IsolationLevels.NONE });
 			}
 		});
 		this.federation = federation;

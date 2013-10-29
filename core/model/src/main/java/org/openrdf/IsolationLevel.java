@@ -16,65 +16,16 @@
  */
 package org.openrdf;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
- * Enumeration of Transaction Isolation levels supported by Sesame. Note that
- * Sesame stores are not required to support all levels, consult the
- * documentatation for the specific SAIL implementation you are using to find
- * out which levels are supported.
+ * A Transaction Isolation Level. Defaul levels supported by Sesame are provided by
+ * {@link IsolationLevels}, third-party triplestore implementors may choose to
+ * add additional IsolationLevel implementations if their triplestore's
+ * isolation contract is different from what is provided by default.
  * 
  * @author Jeen Broekstra
- * @author James Leigh
- * @since 2.8.0
+ * @since 2.8
  */
-public enum IsolationLevel {
-
-	/** None: the lowest isolation level; transactions are not supported */
-	NONE,
-
-	/**
-	 * Read Uncommitted: transactions are suppported, but not isolated:
-	 * concurrent transactions may see each other's uncommitted data (so-called
-	 * 'dirty reads')
-	 */
-	READ_UNCOMMITTED,
-
-	/**
-	 * Read Committed: in this isolation level only statements that have been
-	 * committed (at some point) can be seen by the transaction.
-	 */
-	READ_COMMITTED,
-
-	/**
-	 * Repeatable Read: in addition to {@link IsolationLevel#READ_COMMITTED},
-	 * statements in this isolation level that are observed within a successful
-	 * transaction will remain observable by the transaction until the end.
-	 */
-	REPEATABLE_READ(READ_COMMITTED),
-
-	/**
-	 * Snapshot: in addition to {@link IsolationLevel#REPEATABLE_READ},
-	 * successful transactions in this isolation level will view a consistent
-	 * snapshot. This isolation level will observe either the complete effects of
-	 * other change-sets and their dependency or no effects of other change-sets.
-	 */
-	SNAPSHOT(REPEATABLE_READ, READ_COMMITTED),
-
-	/**
-	 * Serializable: in addition to {@link IsolationLevel#SNAPSHOT}, this
-	 * isolation level requires that all other successful transactions must
-	 * appear to occur either completely before or completely after a successful
-	 * serializable transaction.
-	 */
-	SERIALIZABLE(SNAPSHOT, REPEATABLE_READ, READ_COMMITTED);
-
-	private final List<IsolationLevel> compatibleLevels;
-
-	private IsolationLevel(IsolationLevel... compatibleLevels) {
-		this.compatibleLevels = Arrays.asList(compatibleLevels);
-	}
+public interface IsolationLevel {
 
 	/**
 	 * Verifies if this transaction isolation level is compatible with the
@@ -83,10 +34,8 @@ public enum IsolationLevel {
 	 * 
 	 * @param otherLevel
 	 *        an other isolation level to check compatibility against.
-	 * @return true iff this isolation level is compatible with the supplied other
-	 *         isolation level, false otherwise.
+	 * @return true iff this isolation level is compatible with the supplied
+	 *         other isolation level, false otherwise.
 	 */
-	public boolean isCompatibleWith(IsolationLevel otherLevel) {
-		return compatibleLevels.contains(otherLevel);
-	}
+	boolean isCompatibleWith(IsolationLevel otherLevel);
 }

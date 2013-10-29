@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.helpers;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -244,10 +243,10 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	/**
-	 * Retrieve the currently set {@link IsolationLevel} level.
+	 * Retrieve the currently set {@link IsolationLevel}.
 	 * 
-	 * @return the current {@link IsolationLevel} level. If no transaction is
-	 *         active, this may be <code>null</code>.
+	 * @return the current {@link IsolationLevel}. If no transaction is active,
+	 *         this may be <code>null</code>.
 	 */
 	protected IsolationLevel getTransactionIsolation() {
 		return this.transactionIsolationLevel;

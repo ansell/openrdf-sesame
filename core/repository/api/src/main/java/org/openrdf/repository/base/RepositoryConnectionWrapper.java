@@ -25,6 +25,7 @@ import java.net.URL;
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -540,7 +541,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().begin();
 	}
 
-	public void begin(IsolationLevel level)
+	public void begin(IsolationLevels level)
 		throws RepositoryException
 	{
 		getDelegate().begin(level);
