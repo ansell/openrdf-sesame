@@ -33,11 +33,14 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
@@ -361,6 +364,22 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		String label = lit.getLabel();
+		URI datatype = lit.getDatatype();
+
+		if (getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
+			if (XMLSchema.INTEGER.equals(datatype) || XMLSchema.DECIMAL.equals(datatype)
+					|| XMLSchema.DOUBLE.equals(datatype) || XMLSchema.BOOLEAN.equals(datatype))
+			{
+				try {
+					writer.write(XMLDatatypeUtil.normalize(label, datatype));
+					return; // done
+				}
+				catch (IllegalArgumentException e) {
+					// not a valid numeric typed literal. ignore error and write as
+					// quoted string instead.
+				}
+			}
+		}
 
 		if (label.indexOf('\n') != -1 || label.indexOf('\r') != -1 || label.indexOf('\t') != -1) {
 			// Write label as long string
@@ -380,11 +399,11 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write("@");
 			writer.write(lit.getLanguage());
 		}
-		else {
+		else if (!XMLSchema.STRING.equals(datatype) || !xsdStringToPlainLiteral()) {
 			// Append the literal's datatype (possibly written as an abbreviated
 			// URI)
 			writer.write("^^");
-			writeURI(lit.getDatatype());
+			writeURI(datatype);
 		}
 	}
 
@@ -401,5 +420,9 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			lastWrittenSubject = null;
 			lastWrittenPredicate = null;
 		}
+	}
+
+	private boolean xsdStringToPlainLiteral() {
+		return getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
 	}
 }
