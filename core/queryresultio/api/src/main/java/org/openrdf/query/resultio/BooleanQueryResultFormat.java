@@ -45,16 +45,14 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 */
 	public static final BooleanQueryResultFormat SPARQL = new BooleanQueryResultFormat("SPARQL/XML",
 			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"),
-			Arrays.asList("srx", "xml"), ValueFactoryImpl.getInstance().createURI(
-					"http://www.w3.org/ns/formats/SPARQL_Results_XML"));
+			Arrays.asList("srx", "xml"), SPARQL_RESULTS_XML_URI);
 
 	/**
 	 * SPARQL Query Results JSON Format.
 	 */
 	public static final BooleanQueryResultFormat JSON = new BooleanQueryResultFormat("SPARQL/JSON",
 			Arrays.asList("application/sparql-results+json", "application/json"), Charset.forName("UTF-8"),
-			Arrays.asList("srj", "json"), ValueFactoryImpl.getInstance().createURI(
-					"http://www.w3.org/ns/formats/SPARQL_Results_JSON"));
+			Arrays.asList("srj", "json"), SPARQL_RESULTS_JSON_URI);
 
 	/**
 	 * Plain text encoding using values "true" and "false" (case-insensitive).

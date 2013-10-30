@@ -22,6 +22,7 @@ import java.util.Collection;
 import info.aduna.lang.FileFormat;
 
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * The base class of all file formats that represent the results of queries.
@@ -31,6 +32,32 @@ import org.openrdf.model.URI;
  * @since 2.7.0
  */
 public class QueryResultFormat extends FileFormat {
+
+	/**
+	 * Local constant reused across boolean and tuple formats for SPARQL Results
+	 * XML.
+	 */
+	protected static final URI SPARQL_RESULTS_XML_URI = ValueFactoryImpl.getInstance().createURI(
+			"http://www.w3.org/ns/formats/SPARQL_Results_XML");
+
+	/**
+	 * Local constant reused across boolean and tuple formats for SPARQL Results
+	 * JSON.
+	 */
+	protected static final URI SPARQL_RESULTS_JSON_URI = ValueFactoryImpl.getInstance().createURI(
+			"http://www.w3.org/ns/formats/SPARQL_Results_JSON");
+
+	/**
+	 * Local constant for tuple formats for SPARQL Results CSV.
+	 */
+	protected static final URI SPARQL_RESULTS_CSV_URI = ValueFactoryImpl.getInstance().createURI(
+			"http://www.w3.org/ns/formats/SPARQL_Results_CSV");
+
+	/**
+	 * Local constant for tuple formats for SPARQL Results TSV.
+	 */
+	protected static final URI SPARQL_RESULTS_TSV_URI = ValueFactoryImpl.getInstance().createURI(
+			"http://www.w3.org/ns/formats/SPARQL_Results_TSV");
 
 	/**
 	 * A standard URI published by the W3C or another standards body to uniquely
