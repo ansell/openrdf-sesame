@@ -45,6 +45,10 @@ import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 
+/**
+ * @author Peter Ansell
+ * @author James Leigh
+ */
 public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {
 
 	@Override
