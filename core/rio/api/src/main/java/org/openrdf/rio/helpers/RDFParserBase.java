@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.UUID;
 
 import info.aduna.net.ParsedURI;
 
@@ -32,9 +32,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
-
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
@@ -108,11 +106,11 @@ public abstract class RDFParserBase implements RDFParser {
 	private ParsedURI baseURI;
 
 	/**
-	 * Mapping from blank node identifiers as used in the RDF document to the
-	 * object created for it by the ValueFactory. This mapping is used to return
-	 * identical BNode objects for recurring blank node identifiers.
+	 * Enables a consistent global mapping of blank node identifiers without
+	 * using a map, but concatenating this as a prefix for the blank node
+	 * identifiers supplied by the parser.
 	 */
-	private Map<String, BNode> bNodeIDMap;
+	private String nextBNodePrefix;
 
 	/**
 	 * Mapping from namespace prefixes to namespace names.
@@ -144,8 +142,8 @@ public abstract class RDFParserBase implements RDFParser {
 	 *        A ValueFactory.
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
-		bNodeIDMap = new HashMap<String, BNode>(16);
 		namespaceTable = new HashMap<String, String>(16);
+		nextBNodePrefix = UUID.randomUUID().toString();
 
 		setValueFactory(valueFactory);
 		setParserConfig(new ParserConfig());
@@ -343,7 +341,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	protected void clear() {
 		baseURI = null;
-		clearBNodeIDMap();
+		nextBNodePrefix = UUID.randomUUID().toString();
 		namespaceTable.clear();
 	}
 
@@ -352,9 +350,11 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Normally, this map is clear when the document has been parsed completely,
 	 * but subclasses can clear the map at other moments too, for example when a
 	 * bnode scope ends.
+	 * 
+	 * @deprecated Map is no longer used.
 	 */
+	@Deprecated
 	protected void clearBNodeIDMap() {
-		bNodeIDMap.clear();
 	}
 
 	/**
@@ -419,30 +419,18 @@ public abstract class RDFParserBase implements RDFParser {
 	protected BNode createBNode(String nodeID)
 		throws RDFParseException
 	{
-		BNode result;
-		// If we are preserving bnode identifiers then we do not cache here,
-		// although the ValueFactory may cache the result.
+		// If we are preserving blank node ids then we do not prefix them to make
+		// them globally unique
 		if (preserveBNodeIDs()) {
-			result = valueFactory.createBNode(nodeID);
+			return valueFactory.createBNode(nodeID);
 		}
 		else {
-			// Maybe the node ID has been used before:
-			result = bNodeIDMap.get(nodeID);
-
-			if (result == null) {
-				// This is a new node ID, create a new BNode object for it
-				try {
-					result = valueFactory.createBNode();
-				}
-				catch (Exception e) {
-					reportFatalError(e);
-				}
-
-				// Remember it, the nodeID might occur again.
-				bNodeIDMap.put(nodeID, result);
-			}
+			// Prefix the node ID with a unique UUID prefix to reduce
+			// cross-document clashes
+			// This is consistent as long as nextBNodePrefix is not modified
+			// between parser runs
+			return valueFactory.createBNode(nextBNodePrefix + nodeID);
 		}
-		return result;
 	}
 
 	/**
