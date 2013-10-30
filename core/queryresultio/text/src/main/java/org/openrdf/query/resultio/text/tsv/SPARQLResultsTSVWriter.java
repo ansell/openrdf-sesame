@@ -31,6 +31,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
@@ -79,7 +80,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 					writer.write("\t");
 				}
 			}
-			writer.write("\r\n");
+			writer.write("\n");
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -124,7 +125,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 					writer.write("\t");
 				}
 			}
-			writer.write("\r\n");
+			writer.write("\n");
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -183,7 +184,19 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 		String label = lit.getLabel();
 
 		URI datatype = lit.getDatatype();
-		boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
+
+		if (XMLSchema.INTEGER.equals(datatype) || XMLSchema.DECIMAL.equals(datatype)
+				|| XMLSchema.DOUBLE.equals(datatype) || XMLSchema.BOOLEAN.equals(datatype))
+		{
+			try {
+				writer.write(XMLDatatypeUtil.normalize(label, datatype));
+				return; // done
+			}
+			catch (IllegalArgumentException e) {
+				// not a valid numeric typed literal. ignore error and write as
+				// quoted string instead.
+			}
+		}
 
 		writer.write("\"");
 
@@ -196,9 +209,8 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 			writer.write("@");
 			writer.write(lit.getLanguage());
 		}
-		else if (!ignoreDatatype) {
-			// Append the literal's datatype (possibly written as an abbreviated
-			// URI)
+		else if (!XMLSchema.STRING.equals(datatype) || !xsdStringToPlainLiteral()) {
+			// Append the literal's datatype
 			writer.write("^^");
 			writeURI(datatype);
 		}
