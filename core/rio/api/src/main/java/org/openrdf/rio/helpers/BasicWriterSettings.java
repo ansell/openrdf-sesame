@@ -48,7 +48,7 @@ public class BasicWriterSettings {
 	 * it.
 	 */
 	public static final RioSetting<Boolean> XSD_STRING_TO_PLAIN_LITERAL = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.rdf10plainliterals", "RDF-1.0 compatible Plain Literals", Boolean.FALSE);
+			"org.openrdf.rio.rdf10plainliterals", "RDF-1.0 compatible Plain Literals", Boolean.TRUE);
 
 	/**
 	 * Boolean setting for writer to determine whether it should omit the
