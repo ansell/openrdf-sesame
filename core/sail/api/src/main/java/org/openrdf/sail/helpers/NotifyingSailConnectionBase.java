@@ -53,12 +53,14 @@ public abstract class NotifyingSailConnectionBase extends SailConnectionBase imp
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void addConnectionListener(SailConnectionListener listener) {
 		synchronized (listeners) {
 			listeners.add(listener);
 		}
 	}
 
+	@Override
 	public void removeConnectionListener(SailConnectionListener listener) {
 		synchronized (listeners) {
 			listeners.remove(listener);
