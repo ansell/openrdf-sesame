@@ -128,7 +128,12 @@ public abstract class ParsedQuery extends ParsedOperation {
 
 	@Override
 	public String toString() {
-		return tupleExpr.toString();
-	}
+		if (getDataset() != null) {
+			return getDataset().toString() + getTupleExpr().toString();
+		}
+		else {
+			return getTupleExpr().toString();
+		}
+ 	}
 
 }
