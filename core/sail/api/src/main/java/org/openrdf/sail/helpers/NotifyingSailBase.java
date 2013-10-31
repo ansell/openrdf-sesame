@@ -78,7 +78,6 @@ public abstract class NotifyingSailBase extends SailBase implements NotifyingSai
 	 * Notifies all registered SailChangedListener's of changes to the contents
 	 * of this Sail.
 	 */
-	@Override
 	public void notifySailChanged(SailChangedEvent event) {
 		synchronized (sailChangedListeners) {
 			for (SailChangedListener l : sailChangedListeners) {

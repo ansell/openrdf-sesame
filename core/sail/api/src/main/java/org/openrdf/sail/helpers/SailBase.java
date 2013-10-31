@@ -370,14 +370,14 @@ public abstract class SailBase implements Sail {
 	}
 
 	/**
-	 * Sets the default {@link IsolationLevels} level on which transactions in
-	 * this Sail operate.
+	 * Sets the default {@link IsolationLevel} on which transactions in this Sail
+	 * operate.
 	 * 
 	 * @since 2.8.0
 	 * @param defaultIsolationLevel
 	 *        The defaultIsolationLevel to set.
 	 */
-	public void setDefaultIsolationLevel(IsolationLevels defaultIsolationLevel) {
+	public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
 		if (defaultIsolationLevel == null) {
 			throw new IllegalArgumentException("default isolation level may not be null");
 		}
