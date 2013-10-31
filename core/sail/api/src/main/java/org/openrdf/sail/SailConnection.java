@@ -152,7 +152,8 @@ public interface SailConnection {
 	/**
 	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
 	 * be called to close the transaction. The transaction will use the default
-	 * {@link IsolationLevels} level for the SAIL.
+	 * {@link IsolationLevel} level for the SAIL, as returned by
+	 * {@link Sail#getDefaultIsolationLevel()}.
 	 * 
 	 * @since 2.7.0
 	 * @throws SailException
@@ -163,7 +164,7 @@ public interface SailConnection {
 		throws SailException;
 
 	/**
-	 * Begins a transaction with the specified {@link IsolationLevels} level,
+	 * Begins a transaction with the specified {@link IsolationLevel} level,
 	 * requiring {@link #commit()} or {@link #rollback()} to be called to close
 	 * the transaction.
 	 * 
@@ -177,8 +178,6 @@ public interface SailConnection {
 	 */
 	public void begin(IsolationLevel level)
 		throws SailException;
-
-
 
 	/**
 	 * Checks for an error state in the active transaction that would force the

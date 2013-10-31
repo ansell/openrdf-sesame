@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
@@ -56,15 +57,15 @@ public abstract class SailBase implements Sail {
 	 * default transaction isolation level, set to
 	 * {@link IsolationLevels#READ_COMMITTED }.
 	 */
-	private IsolationLevels defaultIsolationLevel = IsolationLevels.READ_COMMITTED;
+	private IsolationLevel defaultIsolationLevel = IsolationLevels.READ_COMMITTED;
 
 	/**
 	 * list of supported isolation levels. By default set to include
 	 * {@link IsolationLevels#READ_COMMITTED} and
-	 * {@link IsolationLevels#REPEATABLE_READ}. Specific store implementations are
-	 * expected to alter this list according to their specific capabilities.
+	 * {@link IsolationLevels#REPEATABLE_READ}. Specific store implementations
+	 * are expected to alter this list according to their specific capabilities.
 	 */
-	private List<IsolationLevels> supportedIsolationLevels = Arrays.asList(new IsolationLevels[] {
+	private List<IsolationLevel> supportedIsolationLevels = Arrays.asList(new IsolationLevel[] {
 			IsolationLevels.READ_COMMITTED,
 			IsolationLevels.REPEATABLE_READ });
 
@@ -129,6 +130,7 @@ public abstract class SailBase implements Sail {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void setDataDir(File dataDir) {
 		if (isInitialized()) {
 			throw new IllegalStateException("sail has already been initialized");
@@ -137,6 +139,7 @@ public abstract class SailBase implements Sail {
 		this.dataDir = dataDir;
 	}
 
+	@Override
 	public File getDataDir() {
 		return dataDir;
 	}
@@ -162,6 +165,7 @@ public abstract class SailBase implements Sail {
 		return initialized;
 	}
 
+	@Override
 	public void initialize()
 		throws SailException
 	{
@@ -189,6 +193,7 @@ public abstract class SailBase implements Sail {
 	{
 	}
 
+	@Override
 	public void shutDown()
 		throws SailException
 	{
@@ -261,6 +266,7 @@ public abstract class SailBase implements Sail {
 	protected abstract void shutDownInternal()
 		throws SailException;
 
+	@Override
 	public SailConnection getConnection()
 		throws SailException
 	{
@@ -329,43 +335,37 @@ public abstract class SailBase implements Sail {
 	}
 
 	/**
-	 * Removes all occurrences of the provided {@link IsolationLevels} in the list
-	 * of supported Isolation levels.
+	 * Removes all occurrences of the provided {@link IsolationLevels} in the
+	 * list of supported Isolation levels.
 	 * 
 	 * @param level
 	 *        the isolation level to remove.
 	 * @since 2.8
 	 */
-	protected void removeSupportedIsolationLevel(IsolationLevels level) {
+	protected void removeSupportedIsolationLevel(IsolationLevel level) {
 		while (this.supportedIsolationLevels.remove(level)) {
 		}
 	}
 
 	/**
-	 * Sets the list of supported {@link IsolationLevels}s for this SAIL. The list
-	 * is expected to be ordered in increasing complexity.
+	 * Sets the list of supported {@link IsolationLevels}s for this SAIL. The
+	 * list is expected to be ordered in increasing complexity.
 	 * 
 	 * @param supportedIsolationLevels
 	 *        a list of supported isolation levels.
 	 * @since 2.8
 	 */
-	protected void setSUpportedIsolationLevels(List<IsolationLevels> supportedIsolationLevels) {
+	protected void setSupportedIsolationLevels(List<IsolationLevel> supportedIsolationLevels) {
 		this.supportedIsolationLevels = supportedIsolationLevels;
 	}
 
 	@Override
-	public List<IsolationLevels> getSupportedIsolationLevels() {
+	public List<IsolationLevel> getSupportedIsolationLevels() {
 		return Collections.unmodifiableList(supportedIsolationLevels);
 	}
 
-	/**
-	 * Retrieves the default {@link IsolationLevels} level on which transactions
-	 * in this Sail operate.
-	 * 
-	 * @since 2.8
-	 * @return Returns the defaultIsolationLevel.
-	 */
-	public IsolationLevels getDefaultIsolationLevel() {
+	@Override
+	public IsolationLevel getDefaultIsolationLevel() {
 		return defaultIsolationLevel;
 	}
 

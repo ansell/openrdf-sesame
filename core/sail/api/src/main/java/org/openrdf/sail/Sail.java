@@ -42,14 +42,14 @@ public interface Sail {
 	 *         If this method is called when the Sail has already been
 	 *         initialized.
 	 */
-	public void setDataDir(File dataDir);
+	void setDataDir(File dataDir);
 
 	/**
 	 * Gets the Sail's data directory.
 	 * 
 	 * @see #setDataDir(File)
 	 */
-	public File getDataDir();
+	File getDataDir();
 
 	/**
 	 * Initializes the Sail. Care should be taken that required initialization
@@ -62,7 +62,7 @@ public interface Sail {
 	 * @throws IllegalStateException
 	 *         If the Sail has already been initialized.
 	 */
-	public void initialize()
+	void initialize()
 		throws SailException;
 
 	/**
@@ -75,14 +75,14 @@ public interface Sail {
 	 *         If the Sail object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	public void shutDown()
+	void shutDown()
 		throws SailException;
 
 	/**
 	 * Checks whether this Sail object is writable, i.e. if the data contained in
 	 * this Sail object can be changed.
 	 */
-	public boolean isWritable()
+	boolean isWritable()
 		throws SailException;
 
 	/**
@@ -97,7 +97,7 @@ public interface Sail {
 	 * @throws IllegalStateException
 	 *         If the Sail has not been initialized or has been shut down.
 	 */
-	public SailConnection getConnection()
+	SailConnection getConnection()
 		throws SailException;
 
 	/**
@@ -106,7 +106,7 @@ public interface Sail {
 	 * 
 	 * @return a ValueFactory object for this Sail object.
 	 */
-	public ValueFactory getValueFactory();
+	ValueFactory getValueFactory();
 
 	/**
 	 * Retrieve the {@link IsolationLevel}s supported by this SAIL, ordered by
@@ -115,7 +115,18 @@ public interface Sail {
 	 * @return a non-empty List of supported Isolation Levels, in order of
 	 *         increasing complexity. Every SAIL supports at least one
 	 *         {@link IsolationLevel}.
-	 * @since 2.8
+	 * @since 2.8.0
 	 */
-	public List<IsolationLevel> getSupportedIsolationLevels();
+	List<IsolationLevel> getSupportedIsolationLevels();
+
+	/**
+	 * Retrieves the default {@link IsolationLevel} level on which transactions
+	 * in this Sail operate.
+	 * 
+	 * @return the {@link IsolationLevel} that will be used with 
+	 *         {@link SailConnection#begin()}, for SAIL connections returned by 
+	 *         {@link #getConnection().
+	 * @since 2.8.0
+	 */
+	IsolationLevel getDefaultIsolationLevel();
 }
