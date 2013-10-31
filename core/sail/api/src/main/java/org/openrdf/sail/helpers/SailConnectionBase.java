@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -190,7 +191,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void begin(IsolationLevel level)
 		throws SailException
 	{
-		IsolationLevel compatibleLevel = getCompatibleIsolationLevel(level);
+		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(level,
+				this.sailBase.getSupportedIsolationLevels());
 		if (compatibleLevel == null) {
 			logger.warn("Isolation level {} not compatible with this Sail, falling back to {}", compatibleLevel,
 					this.sailBase.getDefaultIsolationLevel());
@@ -219,30 +221,6 @@ public abstract class SailConnectionBase implements SailConnection {
 			connectionLock.readLock().unlock();
 		}
 
-	}
-
-	/**
-	 * Determines the closest compatible and supported isolation level for the
-	 * given level. Returns the level itself if it supported by this Sail.
-	 * Returns null if no compatible level can be found.
-	 */
-	private IsolationLevel getCompatibleIsolationLevel(IsolationLevel level) {
-		if (!this.sailBase.getSupportedIsolationLevels().contains(level)) {
-
-			IsolationLevel compatibleLevel = null;
-			// see we if we can find a compatible level that is supported
-			for (IsolationLevel supportedLevel : sailBase.getSupportedIsolationLevels()) {
-				if (getTransactionIsolation().isCompatibleWith(supportedLevel)) {
-					compatibleLevel = supportedLevel;
-					break;
-				}
-			}
-
-			return compatibleLevel;
-		}
-		else {
-			return level;
-		}
 	}
 
 	/**

@@ -80,4 +80,49 @@ public enum IsolationLevels implements IsolationLevel {
 	public boolean isCompatibleWith(IsolationLevel otherLevel) {
 		return compatibleLevels.contains(otherLevel);
 	}
+
+	/**
+	 * Determines the first compatible isolation level in the list of supported
+	 * levels, for the given level. Returns the level itself if it is in the list
+	 * of supported levels. Returns null if no compatible level can be found.
+	 * 
+	 * @param level
+	 *        the {@link IsolationLevel} for which to determine a compatible
+	 *        level.
+	 * @param supportedLevels
+	 *        a list of supported isolation levels from which to select the
+	 *        closest compatible level.
+	 * @return the given level if it occurs in the list of supported levels.
+	 *         Otherwise, the first compatible level in the list of supported
+	 *         isolation levels, or <code>null</code> if no compatible level can
+	 *         be found.
+	 * @since 2.8.0
+	 * @throws IllegalArgumentException
+	 *         if either one of the input parameters is <code>null</code>.
+	 */
+	public static IsolationLevel getCompatibleIsolationLevel(IsolationLevel level,
+			List<? extends IsolationLevel> supportedLevels)
+	{
+		if (supportedLevels == null) {
+			throw new IllegalArgumentException("list of supported levels may not be null");
+		}
+		if (level == null) {
+			throw new IllegalArgumentException("level may not be null");
+		}
+		if (!supportedLevels.contains(level)) {
+			IsolationLevel compatibleLevel = null;
+			// see we if we can find a compatible level that is supported
+			for (IsolationLevel supportedLevel : supportedLevels) {
+				if (supportedLevel.isCompatibleWith(level)) {
+					compatibleLevel = supportedLevel;
+					break;
+				}
+			}
+
+			return compatibleLevel;
+		}
+		else {
+			return level;
+		}
+	}
 }
