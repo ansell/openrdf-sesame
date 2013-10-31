@@ -19,7 +19,7 @@ package org.openrdf.sail;
 import java.io.File;
 import java.util.List;
 
-import org.openrdf.IsolationLevels;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -109,12 +109,13 @@ public interface Sail {
 	public ValueFactory getValueFactory();
 
 	/**
-	 * Retrieve the {@link IsolationLevels}s supported by this SAIL.
+	 * Retrieve the {@link IsolationLevel}s supported by this SAIL, ordered by
+	 * increasing complexity.
 	 * 
 	 * @return a non-empty List of supported Isolation Levels, in order of
 	 *         increasing complexity. Every SAIL supports at least one
-	 *         {@link IsolationLevels}.
+	 *         {@link IsolationLevel}.
 	 * @since 2.8
 	 */
-	public List<IsolationLevels> getSupportedIsolationLevels();
+	public List<IsolationLevel> getSupportedIsolationLevels();
 }
