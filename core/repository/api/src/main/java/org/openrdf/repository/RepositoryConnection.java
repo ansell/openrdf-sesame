@@ -593,10 +593,12 @@ public interface RepositoryConnection {
 	 * be called to end the transaction.
 	 * 
 	 * @param level
-	 *        The {@link IsolationLevel} at which this transaction will
-	 *        operate.
+	 *        The {@link IsolationLevel} at which this transaction will operate.
 	 * @throws RepositoryException
-	 *         If the connection could not start the transaction.
+	 *         If the connection could not start the transaction. One possible
+	 *         reason this may happen is if the specified {@link IsolationLevel}
+	 *         is not supported by the store, and no compatible level could be
+	 *         found.
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
