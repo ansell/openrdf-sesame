@@ -148,6 +148,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public final boolean isOpen()
 		throws SailException
 	{
@@ -178,12 +179,14 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public void begin()
 		throws SailException
 	{
 		begin(this.sailBase.getDefaultIsolationLevel());
 	}
 
+	@Override
 	public void begin(IsolationLevel level)
 		throws SailException
 	{
@@ -252,12 +255,14 @@ public abstract class SailConnectionBase implements SailConnection {
 		return this.transactionIsolationLevel;
 	}
 
+	@Override
 	public boolean isActive()
 		throws UnknownSailTransactionStateException
 	{
 		return transactionActive();
 	}
 
+	@Override
 	public final void close()
 		throws SailException
 	{
@@ -339,6 +344,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
@@ -370,6 +376,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
@@ -383,6 +390,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
@@ -409,6 +417,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final long size(Resource... contexts)
 		throws SailException
 	{
@@ -450,6 +459,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		verifyIsActive();
 	}
 
+	@Override
 	public void prepare()
 		throws SailException
 	{
@@ -463,6 +473,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void commit()
 		throws SailException
 	{
@@ -486,6 +497,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void rollback()
 		throws SailException
 	{
@@ -513,6 +525,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
@@ -534,6 +547,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
@@ -555,6 +569,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public void startUpdate(UpdateContext op)
 		throws SailException
 	{
@@ -574,6 +589,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * The default implementation buffers added statements until the update
 	 * operation is complete.
 	 */
+	@Override
 	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
@@ -591,6 +607,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * The default implementation buffers removed statements until the update
 	 * operation is complete.
 	 */
+	@Override
 	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
@@ -607,6 +624,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public void endUpdate(UpdateContext op)
 		throws SailException
 	{
@@ -637,6 +655,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void clear(Resource... contexts)
 		throws SailException
 	{
@@ -658,6 +677,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException
 	{
@@ -671,6 +691,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final String getNamespace(String prefix)
 		throws SailException
 	{
@@ -687,6 +708,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void setNamespace(String prefix, String name)
 		throws SailException
 	{
@@ -714,6 +736,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void removeNamespace(String prefix)
 		throws SailException
 	{
@@ -738,6 +761,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
+	@Override
 	public final void clearNamespaces()
 		throws SailException
 	{
