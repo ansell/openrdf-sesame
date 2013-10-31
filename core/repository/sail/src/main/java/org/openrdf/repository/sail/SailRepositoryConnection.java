@@ -18,6 +18,7 @@ package org.openrdf.repository.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
@@ -89,6 +90,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return sailConnection;
 	}
 
+	@Override
 	public void begin()
 		throws RepositoryException
 	{
@@ -100,6 +102,19 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
+	public void begin(IsolationLevel level)
+		throws RepositoryException
+	{
+		try {
+			sailConnection.begin(level);
+		}
+		catch (SailException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	@Override
 	public void commit()
 		throws RepositoryException
 	{
@@ -111,6 +126,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public void rollback()
 		throws RepositoryException
 	{
@@ -147,6 +163,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public SailQuery prepareQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
@@ -166,6 +183,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public SailTupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
@@ -173,6 +191,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new SailTupleQuery(parsedQuery, this);
 	}
 
+	@Override
 	public SailGraphQuery prepareGraphQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
@@ -180,6 +199,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new SailGraphQuery(parsedQuery, this);
 	}
 
+	@Override
 	public SailBooleanQuery prepareBooleanQuery(QueryLanguage ql, String queryString, String baseURI)
 		throws MalformedQueryException
 	{
@@ -187,6 +207,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new SailBooleanQuery(parsedQuery, this);
 	}
 
+	@Override
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
@@ -195,6 +216,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new SailUpdate(parsedUpdate, this);
 	}
 
+	@Override
 	public RepositoryResult<Resource> getContextIDs()
 		throws RepositoryException
 	{
@@ -206,6 +228,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
@@ -229,6 +252,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return !hasStatement(null, null, null, false);
 	}
 
+	@Override
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
@@ -263,6 +287,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		handler.endRDF();
 	}
 
+	@Override
 	public long size(Resource... contexts)
 		throws RepositoryException
 	{
@@ -323,6 +348,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public void setNamespace(String prefix, String name)
 		throws RepositoryException
 	{
@@ -339,6 +365,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public void removeNamespace(String prefix)
 		throws RepositoryException
 	{
@@ -355,6 +382,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public void clearNamespaces()
 		throws RepositoryException
 	{
@@ -371,6 +399,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public RepositoryResult<Namespace> getNamespaces()
 		throws RepositoryException
 	{
@@ -382,6 +411,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	@Override
 	public String getNamespace(String prefix)
 		throws RepositoryException
 	{
@@ -403,6 +433,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		return new RepositoryResult<E>(new SailCloseableIteration<E>(sailIter));
 	}
 
+	@Override
 	public boolean isActive()
 		throws UnknownTransactionStateException
 	{
