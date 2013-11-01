@@ -212,12 +212,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		if (verifyData) {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
-		else {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
+		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);
 	}
 
 	/**
