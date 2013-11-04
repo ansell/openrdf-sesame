@@ -64,7 +64,7 @@ public class RDFXMLParserCustomTest {
 		}
 		catch (RDFParseException e) {
 			assertTrue(e.getMessage().contains(
-					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the application."));
+					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the "));
 		}
 	}
 
@@ -94,7 +94,7 @@ public class RDFXMLParserCustomTest {
 		}
 		catch (RDFParseException e) {
 			assertTrue(e.getMessage().contains(
-					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the application."));
+					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the "));
 		}
 	}
 
@@ -125,7 +125,7 @@ public class RDFXMLParserCustomTest {
 		}
 		catch (RDFParseException e) {
 			assertTrue(e.getMessage().contains(
-					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the application."));
+					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the "));
 		}
 	}
 
@@ -162,7 +162,7 @@ public class RDFXMLParserCustomTest {
 		}
 		catch (RDFParseException e) {
 			assertTrue(e.getMessage().contains(
-					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the application."));
+					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the"));
 		}
 	}
 }
