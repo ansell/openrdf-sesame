@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import info.aduna.net.ParsedURI;
@@ -212,12 +213,7 @@ public abstract class RDFParserBase implements RDFParser {
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		if (verifyData) {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
-		else {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
+		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);
 	}
 
 	/**
@@ -237,9 +233,19 @@ public abstract class RDFParserBase implements RDFParser {
 		return this.parserConfig.get(BasicParserSettings.PRESERVE_BNODE_IDS);
 	}
 
+	@Deprecated
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
 		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, stopAtFirstError);
+		if (!stopAtFirstError) {
+			getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
+		else {
+			// TODO: Add a ParserConfig.removeNonFatalError function to avoid this
+			Set<RioSetting<?>> set = new HashSet<RioSetting<?>>(getParserConfig().getNonFatalErrors());
+			set.remove(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			getParserConfig().setNonFatalErrors(set);
+		}
 	}
 
 	/**
