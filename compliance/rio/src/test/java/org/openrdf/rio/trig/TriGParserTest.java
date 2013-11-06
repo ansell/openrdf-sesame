@@ -16,8 +16,6 @@
  */
 package org.openrdf.rio.trig;
 
-import static org.junit.Assert.assertEquals;
-
 import org.openrdf.rio.RDFParser;
 
 /**
@@ -35,12 +33,4 @@ public class TriGParserTest extends TriGParserTestCase {
 	protected RDFParser createRDFParser() {
 		return new TriGParser();
 	}
-
-	@org.junit.Test
-	public void testSupportedSettings()
-		throws Exception
-	{
-		assertEquals(12, createRDFParser().getSupportedSettings().size());
-	}
-
 }
