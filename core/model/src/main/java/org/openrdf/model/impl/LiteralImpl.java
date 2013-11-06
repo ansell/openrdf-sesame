@@ -118,8 +118,8 @@ public class LiteralImpl implements Literal {
 	 *---------*/
 
 	protected void setLabel(String label) {
-		if(label == null) {
-			throw new NullPointerException("Literal label cannot be null");
+		if (label == null) {
+			throw new IllegalArgumentException("Literal label cannot be null");
 		}
 
 		this.label = label;
