@@ -130,8 +130,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	 */
 	private final BNode wildContext = ValueFactoryImpl.getInstance().createBNode();
 
-	private IsolationLevel isolationLevel;
-
 	private IsolationLevel transactionIsolationLevel;
 
 	/*--------------*
@@ -184,13 +182,17 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void begin()
 		throws SailException
 	{
-		begin(this.sailBase.getDefaultIsolationLevel());
+		begin(null);
 	}
 
 	@Override
 	public void begin(IsolationLevel level)
 		throws SailException
 	{
+		if (level == null) {
+			level = this.sailBase.getDefaultIsolationLevel();
+		}
+		
 		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(level,
 				this.sailBase.getSupportedIsolationLevels());
 		if (compatibleLevel == null) {
@@ -198,7 +200,7 @@ public abstract class SailConnectionBase implements SailConnection {
 					this.sailBase.getDefaultIsolationLevel());
 			compatibleLevel = this.sailBase.getDefaultIsolationLevel();
 		}
-		this.isolationLevel = compatibleLevel;
+		this.transactionIsolationLevel = compatibleLevel;
 
 		connectionLock.readLock().lock();
 		try {
