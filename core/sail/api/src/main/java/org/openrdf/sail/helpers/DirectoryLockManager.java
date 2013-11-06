@@ -57,6 +57,7 @@ public class DirectoryLockManager implements LockManager {
 		this.dir = dir;
 	}
 
+	@Override
 	public String getLocation() {
 		return dir.toString();
 	}
@@ -70,6 +71,7 @@ public class DirectoryLockManager implements LockManager {
 	 * 
 	 * @return <code>true</code> if the directory is already locked.
 	 */
+	@Override
 	public boolean isLocked() {
 		return getLockDir().exists();
 	}
@@ -79,6 +81,7 @@ public class DirectoryLockManager implements LockManager {
 	 * 
 	 * @return a newly acquired lock or null if the directory is already locked.
 	 */
+	@Override
 	public Lock tryLock() {
 		File lockDir = getLockDir();
 
@@ -127,6 +130,7 @@ public class DirectoryLockManager implements LockManager {
 	 * @throws SailLockedException
 	 *         if the directory is already locked.
 	 */
+	@Override
 	public Lock lockOrFail()
 		throws SailLockedException
 	{
@@ -156,6 +160,7 @@ public class DirectoryLockManager implements LockManager {
 	 * 
 	 * @return <code>true</code> if a lock was successfully revoked.
 	 */
+	@Override
 	public boolean revokeLock() {
 		File lockDir = getLockDir();
 		File lockedFile = new File(lockDir, LOCK_FILE_NAME);

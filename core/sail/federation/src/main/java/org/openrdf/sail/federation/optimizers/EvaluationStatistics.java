@@ -60,8 +60,7 @@ public class EvaluationStatistics {
 	 * Inner class CardinalityCalculator *
 	 *-----------------------------------*/
 
-	protected static class CardinalityCalculator extends
-			QueryModelVisitorBase<RuntimeException> {
+	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
 
 		protected double cardinality;
 
@@ -87,8 +86,7 @@ public class EvaluationStatistics {
 		protected double getCardinality(StatementPattern pattern) {
 			List<Var> vars = pattern.getVarList();
 			int constantVarCount = countConstantVars(vars);
-			double unboundVarFactor = (double) (vars.size() - constantVarCount)
-					/ vars.size();
+			double unboundVarFactor = (double)(vars.size() - constantVarCount) / vars.size();
 			return Math.pow(1000.0, unboundVarFactor);
 		}
 
@@ -107,8 +105,9 @@ public class EvaluationStatistics {
 		@Override
 		public void meetOther(QueryModelNode node) {
 			if (node instanceof NaryJoin) {
-				meetMultiJoin((NaryJoin) node);
-			} else {
+				meetMultiJoin((NaryJoin)node);
+			}
+			else {
 				super.meetOther(node);
 			}
 		}
@@ -126,7 +125,8 @@ public class EvaluationStatistics {
 		public void meet(Join node) {
 			double cost = 1;
 			for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(), // NOPMD
-					node.getRightArg() }) {
+					node.getRightArg() })
+			{
 				arg.visit(this);
 				cost *= this.cardinality;
 			}
@@ -146,7 +146,8 @@ public class EvaluationStatistics {
 		protected void meetBinaryTupleOperator(BinaryTupleOperator node) {
 			double cost = 0;
 			for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(), // NOPMD
-					node.getRightArg() }) {
+					node.getRightArg() })
+			{
 				arg.visit(this);
 				cost += cardinality;
 			}

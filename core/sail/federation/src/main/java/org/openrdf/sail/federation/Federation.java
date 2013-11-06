@@ -18,11 +18,15 @@ package org.openrdf.sail.federation;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,15 +50,23 @@ import org.openrdf.sail.SailException;
  * @author Arjohn Kampman
  */
 public class Federation implements Sail, Executor, FederatedServiceResolverClient {
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(Federation.class);
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(Federation.class);
+
 	private final List<Repository> members = new ArrayList<Repository>();
+
 	private final ExecutorService executor = Executors.newCachedThreadPool();
+
 	private PrefixHashSet localPropertySpace; // NOPMD
+
 	private boolean distinct;
+
 	private boolean readOnly;
+
 	private File dataDir;
+
 	private FederatedServiceResolver serviceResolver;
+
 	private FederatedServiceResolverImpl serviceResolverImpl;
 
 	public File getDataDir() {
@@ -69,7 +81,9 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 		return ValueFactoryImpl.getInstance();
 	}
 
-	public boolean isWritable() throws SailException {
+	public boolean isWritable()
+		throws SailException
+	{
 		return !isReadOnly();
 	}
 
@@ -87,7 +101,8 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 	public void setLocalPropertySpace(Collection<String> localPropertySpace) { // NOPMD
 		if (localPropertySpace.isEmpty()) {
 			this.localPropertySpace = null; // NOPMD
-		} else {
+		}
+		else {
 			this.localPropertySpace = new PrefixHashSet(localPropertySpace);
 		}
 	}
@@ -132,21 +147,28 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 		this.serviceResolver = reslover;
 	}
 
-	public void initialize() throws SailException {
+	@Override
+	public void initialize()
+		throws SailException
+	{
 		for (Repository member : members) {
 			try {
 				member.initialize();
-			} catch (RepositoryException e) {
+			}
+			catch (RepositoryException e) {
 				throw new SailException(e);
 			}
 		}
 	}
 
-	public void shutDown() throws SailException {
+	public void shutDown()
+		throws SailException
+	{
 		for (Repository member : members) {
 			try {
 				member.shutDown();
-			} catch (RepositoryException e) {
+			}
+			catch (RepositoryException e) {
 				throw new SailException(e);
 			}
 		}
@@ -163,19 +185,22 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 		executor.execute(command);
 	}
 
-	public SailConnection getConnection() throws SailException {
-		List<RepositoryConnection> connections = new ArrayList<RepositoryConnection>(
-				members.size());
+	public SailConnection getConnection()
+		throws SailException
+	{
+		List<RepositoryConnection> connections = new ArrayList<RepositoryConnection>(members.size());
 		try {
 			for (Repository member : members) {
 				connections.add(member.getConnection());
 			}
-			return readOnly ? new ReadOnlyConnection(this, connections)
-					: new WritableConnection(this, connections);
-		} catch (RepositoryException e) {
+			return readOnly ? new ReadOnlyConnection(this, connections) : new WritableConnection(this,
+					connections);
+		}
+		catch (RepositoryException e) {
 			closeAll(connections);
 			throw new SailException(e);
-		} catch (RuntimeException e) {
+		}
+		catch (RuntimeException e) {
 			closeAll(connections);
 			throw e;
 		}
@@ -185,9 +210,21 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 		for (RepositoryConnection con : connections) {
 			try {
 				con.close();
-			} catch (RepositoryException e) {
+			}
+			catch (RepositoryException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
 		}
+	}
+
+	@Override
+	public List<IsolationLevel> getSupportedIsolationLevels() {
+		// TODO determine based on members?
+		return Arrays.asList(new IsolationLevel[] { IsolationLevels.NONE });
+	}
+
+	@Override
+	public IsolationLevel getDefaultIsolationLevel() {
+		return IsolationLevels.NONE;
 	}
 }

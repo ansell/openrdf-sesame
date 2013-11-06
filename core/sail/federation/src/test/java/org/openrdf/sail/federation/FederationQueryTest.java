@@ -55,43 +55,26 @@ public class FederationQueryTest extends TestCase {
 
 	@Parameters(name = "{index}:{0}")
 	public static Iterable<Object[]> data() {
-		return Arrays
-				.asList(new Object[][] {
-						{ "JoinAA",
-								"{ ?person a:spouse ?spouse ; a:parentOf ?child }" },
-						{ "JoinAC", "{ ?person a:spouse ?spouse ; c:job ?job }" },
-						{ "JoinBB", "{ ?person b:name ?name ; b:desc ?desc }" },
-						{ "JoinBC",
-								"{ ?person b:name ?name ;  b:desc ?desc ; c:job ?job }" },
-						{ "JoinCC", "{ ?person c:livesIn ?home ; c:job ?job }" },
-						{ "LeftJoinAA",
-								"{ ?person a:spouse ?spouse OPTIONAL { ?person a:parentOf ?child }}" },
-						{ "LeftJoinAC",
-								"{ ?person a:spouse ?spouse OPTIONAL {?person c:job ?job }}" },
-						{ "LeftJoinAD",
-								"{ ?person a:spouse ?spouse OPTIONAL {?person d:worksIn ?work }}" },
-						{ "LeftJoinBB",
-								"{ ?person b:name ?name OPTIONAL { ?person b:desc ?desc }}" },
-						{ "LeftJoinBC",
-								"{ ?person b:name ?name OPTIONAL {?person c:job ?job }}" },
-						{ "LeftJoinBD",
-								"{ ?person b:name ?name OPTIONAL { ?person d:worksIn ?work }}" },
-						{ "LeftJoinCA",
-								"{ ?person c:livesIn ?home OPTIONAL {?person a:mother ?mother }}" },
-						{ "LeftJoinCB",
-								"{ ?person c:livesIn ?home OPTIONAL {?person b:desc ?desc }}" },
-						{ "LeftJoinCC",
-								"{ ?person c:livesIn ?home OPTIONAL {?person c:job ?job }}" },
-						{ "LeftJoinCD",
-								"{ ?person c:livesIn ?home OPTIONAL {?person d:worksIn ?work }}" },
-						{ "LeftJoinDA",
-								"{ ?person d:worksIn ?work OPTIONAL {?person a:mother ?mother }}" },
-						{ "UnionAA",
-								"{ {?person a:mother ?parent} UNION {?person a:father ?parent}}" },
-						{ "UnionCD",
-								"{ {?person c:livesIn ?town} UNION {?person d:worksIn ?town}}" },
-						{ "UnionAC",
-								"{ {?person a:parentOf ?child} UNION {?person c:job one:teacher}}" } });
+		return Arrays.asList(new Object[][] {
+				{ "JoinAA", "{ ?person a:spouse ?spouse ; a:parentOf ?child }" },
+				{ "JoinAC", "{ ?person a:spouse ?spouse ; c:job ?job }" },
+				{ "JoinBB", "{ ?person b:name ?name ; b:desc ?desc }" },
+				{ "JoinBC", "{ ?person b:name ?name ;  b:desc ?desc ; c:job ?job }" },
+				{ "JoinCC", "{ ?person c:livesIn ?home ; c:job ?job }" },
+				{ "LeftJoinAA", "{ ?person a:spouse ?spouse OPTIONAL { ?person a:parentOf ?child }}" },
+				{ "LeftJoinAC", "{ ?person a:spouse ?spouse OPTIONAL {?person c:job ?job }}" },
+				{ "LeftJoinAD", "{ ?person a:spouse ?spouse OPTIONAL {?person d:worksIn ?work }}" },
+				{ "LeftJoinBB", "{ ?person b:name ?name OPTIONAL { ?person b:desc ?desc }}" },
+				{ "LeftJoinBC", "{ ?person b:name ?name OPTIONAL {?person c:job ?job }}" },
+				{ "LeftJoinBD", "{ ?person b:name ?name OPTIONAL { ?person d:worksIn ?work }}" },
+				{ "LeftJoinCA", "{ ?person c:livesIn ?home OPTIONAL {?person a:mother ?mother }}" },
+				{ "LeftJoinCB", "{ ?person c:livesIn ?home OPTIONAL {?person b:desc ?desc }}" },
+				{ "LeftJoinCC", "{ ?person c:livesIn ?home OPTIONAL {?person c:job ?job }}" },
+				{ "LeftJoinCD", "{ ?person c:livesIn ?home OPTIONAL {?person d:worksIn ?work }}" },
+				{ "LeftJoinDA", "{ ?person d:worksIn ?work OPTIONAL {?person a:mother ?mother }}" },
+				{ "UnionAA", "{ {?person a:mother ?parent} UNION {?person a:father ?parent}}" },
+				{ "UnionCD", "{ {?person c:livesIn ?town} UNION {?person d:worksIn ?town}}" },
+				{ "UnionAC", "{ {?person a:parentOf ?child} UNION {?person c:job one:teacher}}" } });
 	}
 
 	private static final String PREFIX = "PREFIX shared:<urn:shared:>		# subject namespace in all members\n"
@@ -109,8 +92,7 @@ public class FederationQueryTest extends TestCase {
 
 	private RepositoryConnection reference;
 
-	private final ClassLoader classLoader = Thread.currentThread()
-			.getContextClassLoader();
+	private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 	private final String pattern;
 
@@ -121,20 +103,24 @@ public class FederationQueryTest extends TestCase {
 	}
 
 	@Test
-	public void test() throws OpenRDFException {
+	public void test()
+		throws OpenRDFException
+	{
 		assertQuery(pattern);
 	}
 
-	private void assertQuery(String qry) throws OpenRDFException {
-		TupleQueryResult expected = reference.prepareTupleQuery(SPARQL,
-				WHERE + qry).evaluate();
-		TupleQueryResult result = con.prepareTupleQuery(SPARQL, WHERE + qry)
-				.evaluate();
+	private void assertQuery(String qry)
+		throws OpenRDFException
+	{
+		TupleQueryResult expected = reference.prepareTupleQuery(SPARQL, WHERE + qry).evaluate();
+		TupleQueryResult result = con.prepareTupleQuery(SPARQL, WHERE + qry).evaluate();
 		compareTupleQueryResults(expected, result);
 	}
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp()
+		throws Exception
+	{
 		SailRepository ref = new SailRepository(new MemoryStore());
 		ref.initialize();
 		reference = ref.getConnection();
@@ -144,49 +130,43 @@ public class FederationQueryTest extends TestCase {
 		federation.addMember(createMember("1"));
 		federation.addMember(createMember("2"));
 		federation.addMember(createMember("3"));
-		federation.setLocalPropertySpace(Arrays.asList("urn:schema:b:",
-				"urn:schema:d:"));
+		federation.setLocalPropertySpace(Arrays.asList("urn:schema:b:", "urn:schema:d:"));
 		con = repo.getConnection();
 	}
 
 	private Repository createMember(String memberID)
-			throws RepositoryException, RDFParseException, IOException {
+		throws RepositoryException, RDFParseException, IOException
+	{
 		SailRepository member = new SailRepository(new MemoryStore());
 		member.initialize();
 		SailRepositoryConnection con = member.getConnection();
 		try {
-			String resource = "testcases/federation-member-" + memberID
-					+ ".ttl";
+			String resource = "testcases/federation-member-" + memberID + ".ttl";
 			con.add(classLoader.getResource(resource), "", RDFFormat.TURTLE);
-			reference.add(classLoader.getResource(resource), "",
-					RDFFormat.TURTLE);
-		} finally {
+			reference.add(classLoader.getResource(resource), "", RDFFormat.TURTLE);
+		}
+		finally {
 			con.close();
 		}
 		return member;
 	}
 
 	private void compareTupleQueryResults(TupleQueryResult expectedResult, TupleQueryResult queryResult)
-			throws QueryEvaluationException {
+		throws QueryEvaluationException
+	{
 		// Create MutableTupleQueryResult to be able to re-iterate over the
 		// results
-		MutableTupleQueryResult queryResultTable = new MutableTupleQueryResult(
-				queryResult);
-		MutableTupleQueryResult expectedTable = new MutableTupleQueryResult(
-				expectedResult);
+		MutableTupleQueryResult queryResultTable = new MutableTupleQueryResult(queryResult);
+		MutableTupleQueryResult expectedTable = new MutableTupleQueryResult(expectedResult);
 		if (!QueryResults.equals(expectedTable, queryResultTable)) {
 			queryResultTable.beforeFirst();
 			expectedTable.beforeFirst();
-			List<BindingSet> queryBindings = Iterations
-					.asList(queryResultTable);
-			List<BindingSet> expectedBindings = Iterations
-					.asList(expectedTable);
+			List<BindingSet> queryBindings = Iterations.asList(queryResultTable);
+			List<BindingSet> expectedBindings = Iterations.asList(expectedTable);
 
-			List<BindingSet> missingBindings = new ArrayList<BindingSet>(
-					expectedBindings);
+			List<BindingSet> missingBindings = new ArrayList<BindingSet>(expectedBindings);
 			missingBindings.removeAll(queryBindings);
-			List<BindingSet> unexpected = new ArrayList<BindingSet>(
-					queryBindings);
+			List<BindingSet> unexpected = new ArrayList<BindingSet>(queryBindings);
 			unexpected.removeAll(expectedBindings);
 			StringBuilder message = new StringBuilder(128);
 			message.append("\n============ ");

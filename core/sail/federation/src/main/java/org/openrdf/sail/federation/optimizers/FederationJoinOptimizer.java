@@ -49,8 +49,9 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
  * 
  * @author James Leigh
  */
-public class FederationJoinOptimizer extends
-		QueryModelVisitorBase<RepositoryException> implements QueryOptimizer {
+public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryException> implements
+		QueryOptimizer
+{
 
 	private final Collection<? extends RepositoryConnection> members;
 
@@ -58,9 +59,9 @@ public class FederationJoinOptimizer extends
 
 	private final boolean distinct;
 
-	public FederationJoinOptimizer(
-			Collection<? extends RepositoryConnection> members,
-			boolean distinct, PrefixHashSet localSpace) {
+	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean distinct,
+			PrefixHashSet localSpace)
+	{
 		super();
 		this.members = members;
 		this.localSpace = localSpace;
@@ -70,30 +71,36 @@ public class FederationJoinOptimizer extends
 	public void optimize(TupleExpr query, Dataset dataset, BindingSet bindings) {
 		try {
 			query.visit(this);
-		} catch (RepositoryException e) {
+		}
+		catch (RepositoryException e) {
 			throw new UndeclaredThrowableException(e);
 		}
 	}
 
 	@Override
-	public void meetOther(QueryModelNode node) throws RepositoryException {
+	public void meetOther(QueryModelNode node)
+		throws RepositoryException
+	{
 		if (node instanceof NaryJoin) {
-			meetMultiJoin((NaryJoin) node);
-		} else {
+			meetMultiJoin((NaryJoin)node);
+		}
+		else {
 			super.meetOther(node);
 		}
 	}
 
-	public void meetMultiJoin(NaryJoin node) throws RepositoryException {
+	public void meetMultiJoin(NaryJoin node)
+		throws RepositoryException
+	{
 		super.meetOther(node);
 		List<Owned<NaryJoin>> ows = new ArrayList<Owned<NaryJoin>>();
 		List<LocalJoin> vars = new ArrayList<LocalJoin>();
 		for (TupleExpr arg : node.getArgs()) {
 			RepositoryConnection member = getSingleOwner(arg);
-			if ((!ows.isEmpty())
-					&& ows.get(ows.size() - 1).getOwner() == member) {
+			if ((!ows.isEmpty()) && ows.get(ows.size() - 1).getOwner() == member) {
 				ows.get(ows.size() - 1).getOperation().addArg(arg.clone());
-			} else {
+			}
+			else {
 				ows.add(new Owned<NaryJoin>(member, new NaryJoin(arg.clone()))); // NOPMD
 			}
 		}
@@ -102,7 +109,8 @@ public class FederationJoinOptimizer extends
 			LocalJoin local = findLocalJoin(subj, vars);
 			if (local == null) {
 				vars.add(new LocalJoin(subj, new NaryJoin(arg.clone()))); // NOPMD
-			} else {
+			}
+			else {
 				local.getJoin().addArg(arg.clone());
 			}
 		}
@@ -110,7 +118,9 @@ public class FederationJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(LeftJoin node) throws RepositoryException {
+	public void meet(LeftJoin node)
+		throws RepositoryException
+	{
 		super.meet(node);
 		Var leftSubject = getLocalSubject(node.getLeftArg());
 		Var rightSubject = getLocalSubject(node.getRightArg());
@@ -122,18 +132,22 @@ public class FederationJoinOptimizer extends
 	}
 
 	@Override
-	public void meet(Union node) throws RepositoryException {
+	public void meet(Union node)
+		throws RepositoryException
+	{
 		super.meet(node);
 		List<Owned<TupleExpr>> ows = new ArrayList<Owned<TupleExpr>>();
 		for (TupleExpr arg : new TupleExpr[] { node.getLeftArg(), // NOPMD
-				node.getRightArg() }) {
+				node.getRightArg() })
+		{
 			RepositoryConnection member = getSingleOwner(arg);
 			int idx = ows.size() - 1;
 			if ((!ows.isEmpty()) && ows.get(idx).getOwner() == member) {
 				TupleExpr union = ows.get(idx).getOperation();
 				union = new Union(union, arg.clone()); // NOPMD
 				ows.get(idx).setOperation(union);
-			} else {
+			}
+			else {
 				ows.add(new Owned<TupleExpr>(member, arg.clone())); // NOPMD
 			}
 		}
@@ -142,7 +156,8 @@ public class FederationJoinOptimizer extends
 
 	@Override
 	protected void meetUnaryTupleOperator(UnaryTupleOperator node)
-			throws RepositoryException {
+		throws RepositoryException
+	{
 		super.meetUnaryTupleOperator(node);
 		RepositoryConnection owner = getSingleOwner(node.getArg());
 		if (owner != null) {
@@ -204,8 +219,7 @@ public class FederationJoinOptimizer extends
 		}
 	}
 
-	private class OwnerScanner extends
-			QueryModelVisitorBase<RepositoryException> {
+	private class OwnerScanner extends QueryModelVisitorBase<RepositoryException> {
 
 		private boolean shared;
 
@@ -215,7 +229,8 @@ public class FederationJoinOptimizer extends
 		 * If the argument can be sent to a single member.
 		 */
 		public RepositoryConnection getSingleOwner(TupleExpr arg)
-				throws RepositoryException {
+			throws RepositoryException
+		{
 			boolean pre_shared = shared;
 			RepositoryConnection pre_owner = owner;
 			try {
@@ -223,7 +238,8 @@ public class FederationJoinOptimizer extends
 				owner = null; // NOPMD
 				arg.visit(this);
 				return owner;
-			} finally {
+			}
+			finally {
 				// restore
 				shared = pre_shared;
 				owner = pre_owner;
@@ -231,47 +247,56 @@ public class FederationJoinOptimizer extends
 		}
 
 		@Override
-		public void meet(StatementPattern node) throws RepositoryException {
+		public void meet(StatementPattern node)
+			throws RepositoryException
+		{
 			super.meet(node);
-			Resource subj = (Resource) node.getSubjectVar().getValue();
-			URI pred = (URI) node.getPredicateVar().getValue();
+			Resource subj = (Resource)node.getSubjectVar().getValue();
+			URI pred = (URI)node.getPredicateVar().getValue();
 			Value obj = node.getObjectVar().getValue();
 			Resource[] ctx = getContexts(node.getContextVar());
 			RepositoryConnection member = getSingleOwner(subj, pred, obj, ctx);
 			if (member == null) {
 				multipleOwners();
-			} else {
+			}
+			else {
 				usedBy(member);
 			}
 		}
 
 		@Override
-		public void meetOther(QueryModelNode node) throws RepositoryException {
+		public void meetOther(QueryModelNode node)
+			throws RepositoryException
+		{
 			if (node instanceof OwnedTupleExpr) {
-				meetOwnedTupleExpr((OwnedTupleExpr) node);
-			} else {
+				meetOwnedTupleExpr((OwnedTupleExpr)node);
+			}
+			else {
 				super.meetOther(node);
 			}
 		}
 
 		private void meetOwnedTupleExpr(OwnedTupleExpr node)
-				throws RepositoryException {
+			throws RepositoryException
+		{
 			usedBy(node.getOwner());
 		}
 
 		private Resource[] getContexts(Var var) {
 			return (var == null || !var.hasValue()) ? new Resource[0]
-					: new Resource[] { (Resource) var.getValue() };
+					: new Resource[] { (Resource)var.getValue() };
 		}
 
-		private RepositoryConnection getSingleOwner(Resource subj, URI pred,
-				Value obj, Resource[] ctx) throws RepositoryException {
+		private RepositoryConnection getSingleOwner(Resource subj, URI pred, Value obj, Resource[] ctx)
+			throws RepositoryException
+		{
 			RepositoryConnection result = null;
 			for (RepositoryConnection member : members) {
 				if (member.hasStatement(subj, pred, obj, true, ctx)) {
 					if (result == null) {
 						result = member;
-					} else if (result != member) {
+					}
+					else if (result != member) {
 						result = null; // NOPMD
 						break;
 					}
@@ -284,7 +309,8 @@ public class FederationJoinOptimizer extends
 			if (!shared && owner == null) {
 				// first owner sensitive element
 				owner = member;
-			} else if (owner != member) { // NOPMD
+			}
+			else if (owner != member) { // NOPMD
 				multipleOwners();
 			}
 		}
@@ -296,8 +322,7 @@ public class FederationJoinOptimizer extends
 
 	}
 
-	private class LocalScanner extends
-			QueryModelVisitorBase<RepositoryException> {
+	private class LocalScanner extends QueryModelVisitorBase<RepositoryException> {
 
 		private boolean isLocal;
 
@@ -306,7 +331,9 @@ public class FederationJoinOptimizer extends
 		/**
 		 * If the argument can be sent as a group to the members.
 		 */
-		public Var getLocalSubject(TupleExpr arg) throws RepositoryException {
+		public Var getLocalSubject(TupleExpr arg)
+			throws RepositoryException
+		{
 			boolean local_stack = isLocal;
 			Var relative_stack = relative;
 			try {
@@ -314,7 +341,8 @@ public class FederationJoinOptimizer extends
 				relative = null; // NOPMD
 				arg.visit(this);
 				return relative;
-			} finally {
+			}
+			finally {
 				// restore
 				isLocal = local_stack;
 				relative = relative_stack;
@@ -322,13 +350,15 @@ public class FederationJoinOptimizer extends
 		}
 
 		@Override
-		public void meet(StatementPattern node) throws RepositoryException {
+		public void meet(StatementPattern node)
+			throws RepositoryException
+		{
 			super.meet(node);
-			URI pred = (URI) node.getPredicateVar().getValue();
-			if (pred != null && localSpace != null
-					&& localSpace.match(pred.stringValue())) {
+			URI pred = (URI)node.getPredicateVar().getValue();
+			if (pred != null && localSpace != null && localSpace.match(pred.stringValue())) {
 				local(node.getSubjectVar());
-			} else {
+			}
+			else {
 				notLocal();
 			}
 		}
@@ -336,7 +366,8 @@ public class FederationJoinOptimizer extends
 		private void local(Var subj) {
 			if (isLocal && relative == null) {
 				relative = subj;
-			} else if (!subj.equals(relative)) {
+			}
+			else if (!subj.equals(relative)) {
 				notLocal();
 			}
 		}
@@ -356,7 +387,8 @@ public class FederationJoinOptimizer extends
 		LocalJoin result = null;
 		if ((!vars.isEmpty()) && vars.get(vars.size() - 1).getVar() == subj) {
 			result = vars.get(vars.size() - 1);
-		} else {
+		}
+		else {
 			for (LocalJoin local : vars) {
 				if (subj != null && subj.equals(local.getVar())) {
 					result = local;
@@ -371,19 +403,23 @@ public class FederationJoinOptimizer extends
 	 * If the argument can be sent to a single member.
 	 */
 	private RepositoryConnection getSingleOwner(TupleExpr arg)
-			throws RepositoryException {
+		throws RepositoryException
+	{
 		return new OwnerScanner().getSingleOwner(arg);
 	}
 
 	/**
 	 * If the argument can be sent as a group to the members.
 	 */
-	private Var getLocalSubject(TupleExpr arg) throws RepositoryException {
+	private Var getLocalSubject(TupleExpr arg)
+		throws RepositoryException
+	{
 		return new LocalScanner().getLocalSubject(arg);
 	}
 
-	private void addOwners(NaryJoin node, List<Owned<NaryJoin>> ows,
-			List<LocalJoin> vars) throws RepositoryException {
+	private void addOwners(NaryJoin node, List<Owned<NaryJoin>> ows, List<LocalJoin> vars)
+		throws RepositoryException
+	{
 		boolean local = isLocal(vars);
 		if (ows.size() == 1) {
 			RepositoryConnection owner = ows.get(0).getOwner();
@@ -392,11 +428,13 @@ public class FederationJoinOptimizer extends
 				if (local) {
 					performReplacementsInNode(node, vars);
 				}
-			} else {
+			}
+			else {
 				// every element is used by the same owner
 				node.replaceWith(new OwnedTupleExpr(owner, node.clone()));
 			}
-		} else if (local) {
+		}
+		else if (local) {
 			QueryModelNodeBase replacement = new NaryJoin();
 			for (LocalJoin v : vars) {
 				Var var = v.getVar();
@@ -404,14 +442,16 @@ public class FederationJoinOptimizer extends
 				if (var == null) {
 					// each of these arguments could be anywhere
 					for (TupleExpr expr : join.getArgs()) {
-						((NaryJoin) replacement).addArg(expr);
+						((NaryJoin)replacement).addArg(expr);
 					}
-				} else {
+				}
+				else {
 					replacement = optimizeReplacementJoin(replacement, join);
 				}
 			}
 			node.replaceWith(replacement);
-		} else {
+		}
+		else {
 			NaryJoin replacement = generateReplacementFromOwnedJoins(ows);
 			node.replaceWith(replacement);
 		}
@@ -427,23 +467,25 @@ public class FederationJoinOptimizer extends
 				for (TupleExpr arg : join.getArgs()) {
 					replacement.addArg(arg);
 				}
-			} else {
+			}
+			else {
 				replacement.addArg(new OwnedTupleExpr(owner, join)); // NOPMD
 			}
 		}
 		return replacement;
 	}
 
-	private QueryModelNodeBase optimizeReplacementJoin(
-			QueryModelNodeBase candidate, NaryJoin join)
-			throws RepositoryException {
+	private QueryModelNodeBase optimizeReplacementJoin(QueryModelNodeBase candidate, NaryJoin join)
+		throws RepositoryException
+	{
 		boolean multipleOwners = false;
 		RepositoryConnection owner = null;
 		for (TupleExpr expr : join.getArgs()) {
 			RepositoryConnection connection = getSingleOwner(expr);
 			if (owner == null) {
 				owner = connection;
-			} else if (connection != null && owner != connection) { // NOPMD
+			}
+			else if (connection != null && owner != connection) { // NOPMD
 				multipleOwners = true;
 				owner = null; // NOPMD
 				break;
@@ -454,14 +496,16 @@ public class FederationJoinOptimizer extends
 			// no subject exists on multiple members,
 			// but in the same member
 			replacement = new EmptySet(); // NOPMD
-		} else if (owner == null) {
+		}
+		else if (owner == null) {
 			// these arguments might exist in any member,
 			// but they will only join with the same member.
-			addUnionOfMembers((NaryJoin) replacement, join);
-		} else {
+			addUnionOfMembers((NaryJoin)replacement, join);
+		}
+		else {
 			// there is only one member that can join all these
 			// arguments
-			addArg((NaryJoin) replacement, new OwnedTupleExpr(owner, join)); // NOPMD
+			addArg((NaryJoin)replacement, new OwnedTupleExpr(owner, join)); // NOPMD
 		}
 		return replacement;
 	}
@@ -484,13 +528,14 @@ public class FederationJoinOptimizer extends
 				TupleExpr union = null;
 				for (RepositoryConnection member : members) {
 					TupleExpr arg = new OwnedTupleExpr(member, e.getJoin() // NOPMD
-							.clone());
+					.clone());
 					union = union == null ? arg : new Union(union, arg); // NOPMD
 				}
 				if (union != null) {
 					replacement.addArg(union);
 				}
-			} else {
+			}
+			else {
 				for (TupleExpr expr : e.getJoin().getArgs()) {
 					replacement.addArg(expr);
 				}
@@ -503,8 +548,7 @@ public class FederationJoinOptimizer extends
 		boolean local = false;
 		if (vars.size() > 1 || vars.size() == 1 && vars.get(0).getVar() != null) {
 			for (LocalJoin e : vars) {
-				if (e.getVar() != null
-						&& e.getJoin().getNumberOfArguments() > 1) {
+				if (e.getVar() != null && e.getJoin().getNumberOfArguments() > 1) {
 					local = true;
 					break;
 				}
@@ -520,12 +564,12 @@ public class FederationJoinOptimizer extends
 		if (size > 0) {
 			TupleExpr expr = destination.getArg(size - 1);
 			if (expr instanceof OwnedTupleExpr) {
-				OwnedTupleExpr existing = (OwnedTupleExpr) expr;
+				OwnedTupleExpr existing = (OwnedTupleExpr)expr;
 				boolean sameOwner = newArg.getOwner() == existing.getOwner();
 				if (sameOwner && existing.getArg() instanceof NaryJoin) {
 					// recently added this owner
-					NaryJoin existingJoin = (NaryJoin) existing.getArg();
-					NaryJoin newJoin = (NaryJoin) newArg.getArg();
+					NaryJoin existingJoin = (NaryJoin)existing.getArg();
+					NaryJoin newJoin = (NaryJoin)newArg.getArg();
 					for (TupleExpr t : newJoin.getArgs()) {
 						existingJoin.addArg(t);
 					}
@@ -538,8 +582,9 @@ public class FederationJoinOptimizer extends
 		}
 	}
 
-	private void addOwners(LeftJoin node, RepositoryConnection leftOwner,
-			RepositoryConnection rightOwner, boolean local) {
+	private void addOwners(LeftJoin node, RepositoryConnection leftOwner, RepositoryConnection rightOwner,
+			boolean local)
+	{
 		if (leftOwner == null && rightOwner == null) {
 			if (local) {
 				TupleExpr union = null;
@@ -550,50 +595,55 @@ public class FederationJoinOptimizer extends
 				}
 				node.replaceWith(union);
 			}
-		} else if (leftOwner == rightOwner) { // NOPMD
+		}
+		else if (leftOwner == rightOwner) { // NOPMD
 			node.replaceWith(new OwnedTupleExpr(leftOwner, node.clone()));
-		} else {
+		}
+		else {
 			if (local) {
 				addDistinctOwnersLocal(node, leftOwner, rightOwner);
-			} else {
+			}
+			else {
 				addDistinctOwnersNonLocal(node, leftOwner, rightOwner);
 			}
 		}
 	}
 
-	private void addDistinctOwnersNonLocal(LeftJoin node,
-			RepositoryConnection leftOwner, RepositoryConnection rightOwner) {
+	private void addDistinctOwnersNonLocal(LeftJoin node, RepositoryConnection leftOwner,
+			RepositoryConnection rightOwner)
+	{
 		if (leftOwner != null) {
-			node.getLeftArg().replaceWith(
-					new OwnedTupleExpr(leftOwner, node.getLeftArg().clone()));
+			node.getLeftArg().replaceWith(new OwnedTupleExpr(leftOwner, node.getLeftArg().clone()));
 		}
 		if (rightOwner != null) {
-			node.getRightArg().replaceWith(
-					new OwnedTupleExpr(rightOwner, node.getRightArg().clone()));
+			node.getRightArg().replaceWith(new OwnedTupleExpr(rightOwner, node.getRightArg().clone()));
 		}
 	}
 
-	private void addDistinctOwnersLocal(LeftJoin node,
-			RepositoryConnection leftOwner, RepositoryConnection rightOwner) {
+	private void addDistinctOwnersLocal(LeftJoin node, RepositoryConnection leftOwner,
+			RepositoryConnection rightOwner)
+	{
 		if (rightOwner == null) {
 			node.replaceWith(new OwnedTupleExpr(leftOwner, node.clone()));
-		} else if (leftOwner == null) {
+		}
+		else if (leftOwner == null) {
 			TupleExpr union = null;
 			for (RepositoryConnection member : members) {
 				if (rightOwner == member) {
 					OwnedTupleExpr arg = new OwnedTupleExpr(member, // NOPMD
 							node.clone());
 					union = union == null ? arg : new Union(union, arg); // NOPMD
-				} else {
+				}
+				else {
 					OwnedTupleExpr arg = new OwnedTupleExpr(member, // NOPMD
 							node.getLeftArg().clone());
 					union = union == null ? arg : new Union(union, arg); // NOPMD
 				}
 			}
 			node.replaceWith(union);
-		} else {
-			node.replaceWith(new OwnedTupleExpr(leftOwner, node.getLeftArg()
-					.clone()));
+		}
+		else {
+			node.replaceWith(new OwnedTupleExpr(leftOwner, node.getLeftArg().clone()));
 		}
 	}
 
@@ -604,7 +654,8 @@ public class FederationJoinOptimizer extends
 				// every element is used by the same owner
 				node.replaceWith(new OwnedTupleExpr(owner, node.clone()));
 			}
-		} else {
+		}
+		else {
 			TupleExpr replacement = null;
 			for (Owned<TupleExpr> e : ows) {
 				RepositoryConnection owner = e.getOwner();
@@ -612,10 +663,10 @@ public class FederationJoinOptimizer extends
 				if (owner == null) {
 					// multiple owners
 					for (TupleExpr arg : getUnionArgs(union)) {
-						replacement = replacement == null ? arg.clone()
-								: new Union(replacement, arg.clone()); // NOPMD
+						replacement = replacement == null ? arg.clone() : new Union(replacement, arg.clone()); // NOPMD
 					}
-				} else {
+				}
+				else {
 					OwnedTupleExpr arg = new OwnedTupleExpr(owner, union); // NOPMD
 					replacement = replacement == null ? arg : new Union( // NOPMD
 							replacement, arg);
@@ -631,9 +682,10 @@ public class FederationJoinOptimizer extends
 
 	private List<TupleExpr> getUnionArgs(TupleExpr union, List<TupleExpr> list) {
 		if (union instanceof Union) {
-			getUnionArgs(((Union) union).getLeftArg(), list);
-			getUnionArgs(((Union) union).getLeftArg(), list);
-		} else {
+			getUnionArgs(((Union)union).getLeftArg(), list);
+			getUnionArgs(((Union)union).getLeftArg(), list);
+		}
+		else {
 			list.add(union);
 		}
 		return list;

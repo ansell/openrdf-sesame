@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -45,6 +46,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.repository.util.RDFLoader;
 import org.openrdf.rio.ParserConfig;
@@ -52,7 +54,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 /**
  * Abstract class implementing most 'convenience' methods in the
@@ -77,6 +78,8 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	private volatile boolean isOpen;
 
+	private IsolationLevel isolationLevel;
+
 	// private volatile boolean active;
 
 	protected RepositoryConnectionBase(Repository repository) {
@@ -98,6 +101,41 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 	public ValueFactory getValueFactory() {
 		return getRepository().getValueFactory();
+	}
+
+	@Override
+	public void begin(IsolationLevel level)
+		throws RepositoryException
+	{
+		setIsolationLevel(level);
+		begin();
+	}
+
+	@Override
+	public void setIsolationLevel(IsolationLevel level)
+		throws IllegalStateException
+	{
+		try {
+			if (isActive()) {
+				throw new IllegalStateException(
+						"Transaction isolation level can not be modified while transaction is active");
+			}
+			this.isolationLevel = level;
+		}
+		catch (UnknownTransactionStateException e) {
+			throw new IllegalStateException(
+					"Transaction isolation level can not be modified while transaction state is unknown", e);
+
+		}
+		catch (RepositoryException e) {
+			throw new IllegalStateException(
+					"Transaction isolation level can not be modified due to repository error", e);
+		}
+	}
+
+	@Override
+	public IsolationLevel getIsolationLevel() {
+		return this.isolationLevel;
 	}
 
 	public boolean isOpen()
@@ -220,7 +258,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -256,7 +294,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -292,7 +330,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -380,7 +418,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		}
 		catch (RDFHandlerException e) {
 			conditionalRollback(localTransaction);
-			
+
 			// RDFInserter only throws wrapped RepositoryExceptions
 			throw (RepositoryException)e.getCause();
 		}
@@ -467,7 +505,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		addWithoutCommit(subject, predicate, object, contexts);
-		
+
 		conditionalCommit(localTransaction);
 	}
 
@@ -527,7 +565,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		throws RepositoryException
 	{
 		boolean localTransaction = startLocalTransaction();
-		
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		removeWithoutCommit(st, contexts);
 

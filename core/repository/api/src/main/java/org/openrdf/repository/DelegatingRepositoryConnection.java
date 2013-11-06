@@ -20,6 +20,6 @@ public interface DelegatingRepositoryConnection extends RepositoryConnection {
 
 	public RepositoryConnection getDelegate()
 		throws RepositoryException;
-	
+
 	public void setDelegate(RepositoryConnection delegate);
 }

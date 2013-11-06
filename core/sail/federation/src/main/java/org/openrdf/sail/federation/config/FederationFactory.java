@@ -36,8 +36,9 @@ import org.openrdf.sail.federation.Federation;
  * @see FederationConfig
  * @author James Leigh
  */
-public class FederationFactory implements SailFactory,
-		RepositoryResolverClient, FederatedServiceResolverClient {
+public class FederationFactory implements SailFactory, RepositoryResolverClient,
+		FederatedServiceResolverClient
+{
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -70,28 +71,27 @@ public class FederationFactory implements SailFactory,
 		this.serviceResolver = resolver;
 	}
 
-	public Sail getSail(SailImplConfig config) throws SailConfigException {
+	public Sail getSail(SailImplConfig config)
+		throws SailConfigException
+	{
 		if (!SAIL_TYPE.equals(config.getType())) {
-			throw new SailConfigException("Invalid Sail type: "
-					+ config.getType());
+			throw new SailConfigException("Invalid Sail type: " + config.getType());
 		}
 		assert config instanceof FederationConfig;
-		FederationConfig cfg = (FederationConfig) config;
+		FederationConfig cfg = (FederationConfig)config;
 		Federation sail = new Federation();
 		for (RepositoryImplConfig member : cfg.getMembers()) {
-			RepositoryFactory factory = RepositoryRegistry.getInstance().get(
-					member.getType());
+			RepositoryFactory factory = RepositoryRegistry.getInstance().get(member.getType());
 			if (factory == null) {
-				throw new SailConfigException("Unsupported repository type: "
-						+ config.getType());
+				throw new SailConfigException("Unsupported repository type: " + config.getType());
 			}
 			if (factory instanceof RepositoryResolverClient) {
-				((RepositoryResolverClient) factory)
-						.setRepositoryResolver(resolver);
+				((RepositoryResolverClient)factory).setRepositoryResolver(resolver);
 			}
 			try {
 				sail.addMember(factory.getRepository(member));
-			} catch (RepositoryConfigException e) {
+			}
+			catch (RepositoryConfigException e) {
 				throw new SailConfigException(e);
 			}
 		}

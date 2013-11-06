@@ -54,10 +54,12 @@ public class DefaultSailChangedEvent implements SailChangedEvent {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public Sail getSail() {
 		return sail;
 	}
 
+	@Override
 	public boolean statementsAdded() {
 		return statementsAdded;
 	}
@@ -66,6 +68,7 @@ public class DefaultSailChangedEvent implements SailChangedEvent {
 		this.statementsAdded = statementsAdded;
 	}
 
+	@Override
 	public boolean statementsRemoved() {
 		return statementsRemoved;
 	}

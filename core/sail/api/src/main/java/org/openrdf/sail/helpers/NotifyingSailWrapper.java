@@ -69,11 +69,13 @@ public class NotifyingSailWrapper extends SailWrapper implements NotifyingSail {
 		return (NotifyingSailConnection)super.getConnection();
 	}
 
+	@Override
 	public void addSailChangedListener(SailChangedListener listener) {
 		verifyBaseSailSet();
 		getBaseSail().addSailChangedListener(listener);
 	}
 
+	@Override
 	public void removeSailChangedListener(SailChangedListener listener) {
 		verifyBaseSailSet();
 		getBaseSail().removeSailChangedListener(listener);

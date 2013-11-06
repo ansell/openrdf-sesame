@@ -60,12 +60,14 @@ public abstract class NotifyingSailBase extends SailBase implements NotifyingSai
 	protected abstract NotifyingSailConnection getConnectionInternal()
 		throws SailException;
 
+	@Override
 	public void addSailChangedListener(SailChangedListener listener) {
 		synchronized (sailChangedListeners) {
 			sailChangedListeners.add(listener);
 		}
 	}
 
+	@Override
 	public void removeSailChangedListener(SailChangedListener listener) {
 		synchronized (sailChangedListeners) {
 			sailChangedListeners.remove(listener);

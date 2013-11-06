@@ -24,6 +24,8 @@ import java.net.URL;
 
 import info.aduna.iteration.Iteration;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -73,12 +75,12 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		setDelegate(delegate);
 	}
 
-	public RepositoryConnection getDelegate()
-		throws RepositoryException
-	{
+	@Override
+	public RepositoryConnection getDelegate() {
 		return delegate;
 	}
 
+	@Override
 	public void setDelegate(RepositoryConnection delegate) {
 		this.delegate = delegate;
 		setParserConfig(delegate.getParserConfig());
@@ -149,13 +151,8 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	@Override
 	public void setParserConfig(ParserConfig parserConfig) {
 		super.setParserConfig(parserConfig);
-		try {
-			if (getDelegate() != null) {
-				getDelegate().setParserConfig(parserConfig);
-			}
-		}
-		catch (RepositoryException e) {
-			logger.error("Error while trying to configure parser", e);
+		if (getDelegate() != null) {
+			getDelegate().setParserConfig(parserConfig);
 		}
 	}
 
@@ -276,12 +273,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		super.close();
 	}
 
+	@Override
 	public void commit()
 		throws RepositoryException
 	{
 		getDelegate().commit();
 	}
 
+	@Override
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
@@ -294,24 +293,28 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
+	@Override
 	public RepositoryResult<Resource> getContextIDs()
 		throws RepositoryException
 	{
 		return getDelegate().getContextIDs();
 	}
 
+	@Override
 	public String getNamespace(String prefix)
 		throws RepositoryException
 	{
 		return getDelegate().getNamespace(prefix);
 	}
 
+	@Override
 	public RepositoryResult<Namespace> getNamespaces()
 		throws RepositoryException
 	{
 		return getDelegate().getNamespaces();
 	}
 
+	@Override
 	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
@@ -351,6 +354,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().isAutoCommit();
 	}
 
+	@Override
 	public boolean isActive()
 		throws UnknownTransactionStateException, RepositoryException
 	{
@@ -374,30 +378,35 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		return getDelegate().isOpen();
 	}
 
+	@Override
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareGraphQuery(ql, query, baseURI);
 	}
 
+	@Override
 	public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareQuery(ql, query, baseURI);
 	}
 
+	@Override
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareTupleQuery(ql, query, baseURI);
 	}
 
+	@Override
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{
 		return getDelegate().prepareBooleanQuery(ql, query, baseURI);
 	}
 
+	@Override
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws MalformedQueryException, RepositoryException
 	{
@@ -453,18 +462,21 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
+	@Override
 	public void removeNamespace(String prefix)
 		throws RepositoryException
 	{
 		getDelegate().removeNamespace(prefix);
 	}
 
+	@Override
 	public void clearNamespaces()
 		throws RepositoryException
 	{
 		getDelegate().clearNamespaces();
 	}
 
+	@Override
 	public void rollback()
 		throws RepositoryException
 	{
@@ -483,12 +495,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		getDelegate().setAutoCommit(autoCommit);
 	}
 
+	@Override
 	public void setNamespace(String prefix, String name)
 		throws RepositoryException
 	{
 		getDelegate().setNamespace(prefix, name);
 	}
 
+	@Override
 	public long size(Resource... contexts)
 		throws RepositoryException
 	{
@@ -540,10 +554,29 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 		}
 	}
 
+	@Override
 	public void begin()
 		throws RepositoryException
 	{
 		getDelegate().begin();
 	}
 
+	@Override
+	public void begin(IsolationLevel level)
+		throws RepositoryException
+	{
+		getDelegate().begin(level);
+	}
+
+	@Override
+	public void setIsolationLevel(IsolationLevel level)
+		throws IllegalStateException
+	{
+		getDelegate().setIsolationLevel(level);
+	}
+
+	@Override
+	public IsolationLevel getIsolationLevel() {
+		return getDelegate().getIsolationLevel();
+	}
 }
