@@ -36,6 +36,7 @@ import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorCollector;
@@ -56,6 +57,8 @@ public class CustomTurtleParserTest {
 
 	private ParseErrorCollector errors;
 
+	private RDFParser parser;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -67,6 +70,7 @@ public class CustomTurtleParserTest {
 		settingsNoVerifyLangTag = new ParserConfig();
 		settingsNoVerifyLangTag.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
 		errors = new ParseErrorCollector();
+		parser = Rio.createParser(RDFFormat.TURTLE);
 	}
 
 	@Test
@@ -190,5 +194,8 @@ public class CustomTurtleParserTest {
 		assertTrue("errLiteralString not found", str.contains(errLiteralString));		
 	}
 	
-	
+	@Test
+	public void testSupportedSettings() throws Exception {
+		assertEquals(11, parser.getSupportedSettings().size());
+	}
 }

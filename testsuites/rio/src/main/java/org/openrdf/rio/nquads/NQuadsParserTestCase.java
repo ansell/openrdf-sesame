@@ -16,6 +16,7 @@
  */
 package org.openrdf.rio.nquads;
 
+import static org.junit.Assert.*;
 import static org.hamcrest.core.Is.is;
 
 import java.io.BufferedReader;
@@ -25,10 +26,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -50,7 +51,7 @@ import org.openrdf.rio.helpers.StatementCollector;
  * 
  * @author Peter Ansell
  */
-public abstract class NQuadsParserTestCase extends TestCase {
+public abstract class NQuadsParserTestCase {
 
 	/*-----------*
 	 * Constants *
@@ -68,7 +69,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 
 	private TestRDFHandler rdfHandler;
 
-	@Override
+	@Before
 	public void setUp()
 		throws Exception
 	{
@@ -77,7 +78,7 @@ public abstract class NQuadsParserTestCase extends TestCase {
 		parser.setRDFHandler(this.rdfHandler);
 	}
 
-	@Override
+	@After
 	public void tearDown()
 		throws Exception
 	{
@@ -724,6 +725,13 @@ public abstract class NQuadsParserTestCase extends TestCase {
 			Assert.assertTrue("Never ended.", ended);
 			Assert.assertEquals("Unexpected number of statements.", expected, getStatements().size());
 		}
+	}
+
+	@Test
+	public void testSupportedSettings()
+		throws Exception
+	{
+		assertEquals(12, parser.getSupportedSettings().size());
 	}
 
 	protected abstract RDFParser createRDFParser();

@@ -203,11 +203,27 @@ public abstract class RDFParserBase implements RDFParser {
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
+		// Supported in RDFParserHelper.createLiteral
 		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		result.add(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		result.add(BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
-		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		result.add(BasicParserSettings.DATATYPE_HANDLERS);
 
+		// Supported in RDFParserHelper.createLiteral
+		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+		result.add(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+		result.add(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+		result.add(BasicParserSettings.LANGUAGE_HANDLERS);
+
+		// Supported in RDFParserBase.resolveURI
+		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		
+		// Supported in RDFParserBase.createBNode(String)
+		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
+		
+		// Supported in RDFParserBase.getNamespace
+		result.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
+		
 		return result;
 	}
 
@@ -378,9 +394,11 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-						+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
+			if (getParserConfig().get(BasicParserSettings.VERIFY_RELATIVE_URIS)) {
+				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+							+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
+				}
 			}
 
 			uri = baseURI.resolve(uri);

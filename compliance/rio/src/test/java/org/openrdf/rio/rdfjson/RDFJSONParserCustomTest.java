@@ -16,23 +16,25 @@
  */
 package org.openrdf.rio.rdfjson;
 
-import org.openrdf.rio.RDFParser;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 
 /**
- * JUnit test for the RDF/JSON parser.
+ * Custom (non-manifest) tests for RDF/JSON parser.
  * 
  * @author Peter Ansell
  */
-public class RDFJSONParserTest extends RDFJSONParserTestCase {
+public class RDFJSONParserCustomTest {
 
-	public static junit.framework.Test suite()
+	@Test
+	public void testSupportedSettings()
 		throws Exception
 	{
-		return new RDFJSONParserTest().createTestSuite();
+		assertEquals(17, Rio.createParser(RDFFormat.RDFJSON).getSupportedSettings().size());
 	}
 
-	@Override
-	protected RDFParser createRDFParser() {
-		return new RDFJSONParser();
-	}
 }
