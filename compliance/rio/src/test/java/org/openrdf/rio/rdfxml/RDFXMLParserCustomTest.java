@@ -165,4 +165,11 @@ public class RDFXMLParserCustomTest {
 					"The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the application."));
 		}
 	}
+	
+	@Test
+	public void testSupportedSettings()
+		throws Exception
+	{
+		assertEquals(21, Rio.createParser(RDFFormat.RDFXML).getSupportedSettings().size());
+	}
 }

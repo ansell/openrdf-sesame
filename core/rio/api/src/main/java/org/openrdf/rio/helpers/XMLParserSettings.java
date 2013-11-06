@@ -27,12 +27,13 @@ import org.openrdf.rio.RioSetting;
  * ParserSettings for the XML parser features.
  * 
  * @author Michael Grove
+ * @author Peter Ansell
  * @see XMLConstants
  * @see <a href="http://xerces.apache.org/xerces-j/features.html">Apache XML
  *      Project - Features</a>
  * @since 2.7.0
  */
-public class XMLParserSettings {
+public final class XMLParserSettings {
 
 	/**
 	 * Parser setting for the secure processing feature of XML parsers to avoid
@@ -63,6 +64,9 @@ public class XMLParserSettings {
 	/**
 	 * Parser setting to customise the XMLReader that is used by an XML based Rio
 	 * parser.
+	 * <p>
+	 * IMPORTANT: The XMLReader must not be shared across different readers, so
+	 * this setting must be reset for each parse operation.
 	 * <p>
 	 * Defaults to null, This settings is only useful if
 	 * {@link RioConfig#isSet(RioSetting)} returns true.
@@ -137,6 +141,18 @@ public class XMLParserSettings {
 	 */
 	public static final RioSetting<Boolean> FAIL_ON_MISMATCHED_TAGS = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.failonmismatchedtags", "Fail on mismatched tags", true);
+
+	/**
+	 * Flag indicating whether the parser parses stand-alone RDF documents. In
+	 * stand-alone documents, the rdf:RDF element is optional if it contains just
+	 * one element.
+	 * <p>
+	 * Defaults to true
+	 * 
+	 * @since 2.7.8
+	 */
+	public static final RioSetting<Boolean> PARSE_STANDALONE_DOCUMENTS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.parsestandalonedocuments", "Parse standalone documents", true);
 
 	/**
 	 * Private constructor
