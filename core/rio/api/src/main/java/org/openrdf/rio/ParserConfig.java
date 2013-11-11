@@ -171,23 +171,24 @@ public class ParserConfig extends RioConfig implements Serializable {
 	}
 
 	/**
-	 * @deprecated All non-fatal errors must be specified using
-	 *             {@link #setNonFatalErrors(Set)} and checked using
+	 * @deprecated All non-fatal verification errors must be specified using
+	 *             {@link #addNonFatalErrors(RioSetting)} and checked using
 	 *             {@link #isNonFatalError(RioSetting)}.
 	 */
 	@Deprecated
 	public boolean verifyData() {
-		return true;
+		return get(BasicParserSettings.VERIFY_RELATIVE_URIS);
 	}
 
 	/**
 	 * @deprecated All non-fatal errors must be specified using
-	 *             {@link #setNonFatalErrors(Set)} and checked using
+	 *             {@link #setNonFatalErrors(Set)} or
+	 *             {@link #addNonFatalError(RioSetting)} and checked using
 	 *             {@link #isNonFatalError(RioSetting)}.
 	 */
 	@Deprecated
 	public boolean stopAtFirstError() {
-		return true;
+		return getNonFatalErrors().isEmpty();
 	}
 
 	/**

@@ -340,28 +340,30 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		try {
-			nativeStore.getValueStore().sync();
-			nativeStore.getNamespaceStore().sync();
-			nativeStore.getTripleStore().commit();
+		// SES-1949 check necessary to avoid empty/read-only transactions messing
+		// up concurrent transactions
+		if (txnLockAcquired) {
+			try {
+				nativeStore.getValueStore().sync();
+				nativeStore.getNamespaceStore().sync();
+				nativeStore.getTripleStore().commit();
 
-			if (txnLockAcquired) {
 				txnLock.release();
+				txnLockAcquired = false;
 			}
-			txnLockAcquired = false;
-		}
-		catch (IOException e) {
-			throw new SailException(e);
-		}
-		catch (RuntimeException e) {
-			logger.error("Encountered an unexpected problem while trying to commit", e);
-			throw e;
-		}
+			catch (IOException e) {
+				throw new SailException(e);
+			}
+			catch (RuntimeException e) {
+				logger.error("Encountered an unexpected problem while trying to commit", e);
+				throw e;
+			}
 
-		nativeStore.notifySailChanged(sailChangedEvent);
+			nativeStore.notifySailChanged(sailChangedEvent);
 
-		// create a fresh event object.
-		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
+			// create a fresh event object.
+			sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
+		}
 	}
 
 	@Override

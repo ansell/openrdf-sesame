@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import info.aduna.net.ParsedURI;
@@ -202,22 +203,33 @@ public abstract class RDFParserBase implements RDFParser {
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
+		// Supported in RDFParserHelper.createLiteral
 		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		result.add(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		result.add(BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
-		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		result.add(BasicParserSettings.DATATYPE_HANDLERS);
 
+		// Supported in RDFParserHelper.createLiteral
+		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+		result.add(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+		result.add(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+		result.add(BasicParserSettings.LANGUAGE_HANDLERS);
+
+		// Supported in RDFParserBase.resolveURI
+		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		
+		// Supported in RDFParserBase.createBNode(String)
+		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
+		
+		// Supported in RDFParserBase.getNamespace
+		result.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
+		
 		return result;
 	}
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		if (verifyData) {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
-		else {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
+		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);
 	}
 
 	/**
@@ -237,9 +249,19 @@ public abstract class RDFParserBase implements RDFParser {
 		return this.parserConfig.get(BasicParserSettings.PRESERVE_BNODE_IDS);
 	}
 
+	@Deprecated
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
 		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, stopAtFirstError);
+		if (!stopAtFirstError) {
+			getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
+		else {
+			// TODO: Add a ParserConfig.removeNonFatalError function to avoid this
+			Set<RioSetting<?>> set = new HashSet<RioSetting<?>>(getParserConfig().getNonFatalErrors());
+			set.remove(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			getParserConfig().setNonFatalErrors(set);
+		}
 	}
 
 	/**
@@ -372,9 +394,11 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-						+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
+			if (getParserConfig().get(BasicParserSettings.VERIFY_RELATIVE_URIS)) {
+				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+							+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
+				}
 			}
 
 			uri = baseURI.resolve(uri);

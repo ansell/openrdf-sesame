@@ -16,6 +16,7 @@
  */
 package org.openrdf.rio.nquads;
 
+import static org.junit.Assert.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.fail;
 
@@ -726,6 +727,13 @@ public abstract class AbstractNQuadsParserTest {
 			Assert.assertTrue("Never ended.", ended);
 			Assert.assertEquals("Unexpected number of statements.", expected, getStatements().size());
 		}
+	}
+
+	@Test
+	public void testSupportedSettings()
+		throws Exception
+	{
+		assertEquals(12, parser.getSupportedSettings().size());
 	}
 
 	protected abstract RDFParser createRDFParser();

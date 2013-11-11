@@ -14,25 +14,27 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio.rdfjson;
+package org.openrdf.rio.trig;
 
-import org.openrdf.rio.RDFParser;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 
 /**
- * JUnit test for the RDF/JSON parser.
+ * Custom (non-manifest) tests for TriG parser.
  * 
  * @author Peter Ansell
  */
-public class RDFJSONParserTest extends RDFJSONParserTestCase {
+public class TriGParserCustomTest {
 
-	public static junit.framework.Test suite()
+	@Test
+	public void testSupportedSettings()
 		throws Exception
 	{
-		return new RDFJSONParserTest().createTestSuite();
+		assertEquals(11, Rio.createParser(RDFFormat.TRIG).getSupportedSettings().size());
 	}
 
-	@Override
-	protected RDFParser createRDFParser() {
-		return new RDFJSONParser();
-	}
 }

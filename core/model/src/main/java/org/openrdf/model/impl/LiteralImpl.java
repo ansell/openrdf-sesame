@@ -107,8 +107,6 @@ public class LiteralImpl implements Literal {
 	 * parameters.
 	 */
 	private LiteralImpl(String label, String language, URI datatype) {
-		assert label != null;
-
 		setLabel(label);
 		if (language != null) {
 			setLanguage(language.toLowerCase());
@@ -126,6 +124,10 @@ public class LiteralImpl implements Literal {
 	 *---------*/
 
 	protected void setLabel(String label) {
+		if (label == null) {
+			throw new IllegalArgumentException("Literal label cannot be null");
+		}
+
 		this.label = label;
 	}
 

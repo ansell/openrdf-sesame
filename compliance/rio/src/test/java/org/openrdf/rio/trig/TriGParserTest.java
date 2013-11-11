@@ -16,8 +16,6 @@
  */
 package org.openrdf.rio.trig;
 
-import junit.framework.Test;
-
 import org.openrdf.rio.RDFParser;
 
 /**
@@ -25,7 +23,7 @@ import org.openrdf.rio.RDFParser;
  */
 public class TriGParserTest extends TriGParserTestCase {
 
-	public static Test suite()
+	public static junit.framework.Test suite()
 		throws Exception
 	{
 		return new TriGParserTest().createTestSuite();
@@ -35,5 +33,4 @@ public class TriGParserTest extends TriGParserTestCase {
 	protected RDFParser createRDFParser() {
 		return new TriGParser();
 	}
-
 }

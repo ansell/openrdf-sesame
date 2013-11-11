@@ -193,5 +193,12 @@ public abstract class AbstractNTriplesParserTest {
 		}
 	}
 
+	@Test
+	public void testSupportedSettings()
+		throws Exception
+	{
+		assertEquals(12, createRDFParser().getSupportedSettings().size());
+	}
+
 	protected abstract RDFParser createRDFParser();
 }

@@ -16,13 +16,17 @@
  */
 package org.openrdf.rio;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import java.util.Collections;
+import java.util.HashSet;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
 
 /**
  * Test for ParserConfig to verify that the core operations succeed and are
@@ -98,4 +102,218 @@ public class ParserConfigTest {
 		assertTrue(testConfig.isPreserveBNodeIDs());
 	}
 
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#ParserConfig(boolean, boolean, boolean, org.openrdf.rio.RDFParser.DatatypeHandling)}
+	 * .
+	 */
+	@Ignore("TODO: Implement me")
+	@Test
+	public final void testParserConfigBooleanBooleanBooleanDatatypeHandling() {
+		fail("Not yet implemented");
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.rio.ParserConfig#useDefaults()}.
+	 */
+	@Test
+	public final void testUseDefaults() {
+		ParserConfig testConfig = new ParserConfig();
+
+		// Test the initial state and add a non-fatal error first
+		assertNotNull(testConfig.getNonFatalErrors());
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+		testConfig.addNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS);
+		assertFalse(testConfig.getNonFatalErrors().isEmpty());
+		assertTrue(testConfig.isNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS));
+
+		// Test useDefaults
+		testConfig.useDefaults();
+
+		// Verify that the non fatal errors are empty again
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+		assertFalse(testConfig.isNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#setNonFatalErrors(java.util.Set)}.
+	 */
+	@Test
+	public final void testSetNonFatalErrors() {
+		ParserConfig testConfig = new ParserConfig();
+
+		// Test that the defaults exist and are empty
+		assertNotNull(testConfig.getNonFatalErrors());
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+
+		// Test that we can add to the default before calling setNonFatalErrors
+		// (SES-1801)
+		testConfig.addNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS);
+		assertFalse(testConfig.getNonFatalErrors().isEmpty());
+		assertTrue(testConfig.getNonFatalErrors().contains(BasicParserSettings.PRESERVE_BNODE_IDS));
+		assertFalse(testConfig.getNonFatalErrors().contains(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+
+		// Test with a non-empty set that we remove the previous setting
+		testConfig.setNonFatalErrors(Collections.<RioSetting<?>> singleton(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+		assertNotNull(testConfig.getNonFatalErrors());
+		assertFalse(testConfig.getNonFatalErrors().isEmpty());
+		assertFalse(testConfig.getNonFatalErrors().contains(BasicParserSettings.PRESERVE_BNODE_IDS));
+		assertTrue(testConfig.getNonFatalErrors().contains(BasicParserSettings.VERIFY_DATATYPE_VALUES));
+
+		// Test with an empty set
+		testConfig.setNonFatalErrors(new HashSet<RioSetting<?>>());
+		assertNotNull(testConfig.getNonFatalErrors());
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#addNonFatalError(org.openrdf.rio.RioSetting)}
+	 * .
+	 */
+	@Test
+	public final void testAddNonFatalError() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+		testConfig.addNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS);
+		assertTrue(testConfig.getNonFatalErrors().contains(BasicParserSettings.PRESERVE_BNODE_IDS));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#isNonFatalError(org.openrdf.rio.RioSetting)}
+	 * .
+	 */
+	@Test
+	public final void testIsNonFatalError() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+
+		assertFalse(testConfig.isNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS));
+
+		testConfig.addNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS);
+
+		assertTrue(testConfig.isNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS));
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.rio.ParserConfig#getNonFatalErrors()}.
+	 */
+	@Test
+	public final void testGetNonFatalErrors() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertTrue(testConfig.getNonFatalErrors().isEmpty());
+
+		testConfig.addNonFatalError(BasicParserSettings.PRESERVE_BNODE_IDS);
+
+		assertFalse(testConfig.getNonFatalErrors().isEmpty());
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.rio.ParserConfig#verifyData()}.
+	 */
+	@Test
+	public final void testVerifyData() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertTrue(testConfig.verifyData());
+
+		testConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, false);
+
+		assertFalse(testConfig.verifyData());
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.rio.ParserConfig#stopAtFirstError()}.
+	 * Test specifically for SES-1947
+	 */
+	@Test
+	public final void testStopAtFirstError() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertTrue(testConfig.stopAtFirstError());
+
+		testConfig.addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+
+		assertFalse(testConfig.stopAtFirstError());
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.rio.ParserConfig#isPreserveBNodeIDs()}.
+	 */
+	@Test
+	public final void testIsPreserveBNodeIDs() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertFalse(testConfig.isPreserveBNodeIDs());
+
+		testConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+
+		assertTrue(testConfig.isPreserveBNodeIDs());
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.rio.ParserConfig#datatypeHandling()}.
+	 */
+	@Test
+	public final void testDatatypeHandling() {
+		ParserConfig testConfig = new ParserConfig();
+
+		try {
+			testConfig.datatypeHandling();
+			fail("Did not receive expected exception");
+		}
+		catch (Exception e) {
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#get(org.openrdf.rio.RioSetting)}.
+	 */
+	@Test
+	public final void testGet() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertTrue(testConfig.get(BasicParserSettings.VERIFY_RELATIVE_URIS));
+
+		testConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, false);
+
+		assertFalse(testConfig.get(BasicParserSettings.VERIFY_RELATIVE_URIS));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#set(org.openrdf.rio.RioSetting, java.lang.Object)}
+	 * .
+	 */
+	@Test
+	public final void testSet() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertFalse(testConfig.isSet(BasicParserSettings.VERIFY_RELATIVE_URIS));
+
+		testConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, false);
+
+		assertTrue(testConfig.isSet(BasicParserSettings.VERIFY_RELATIVE_URIS));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.rio.ParserConfig#isSet(org.openrdf.rio.RioSetting)}.
+	 */
+	@Test
+	public final void testIsSet() {
+		ParserConfig testConfig = new ParserConfig();
+
+		assertFalse(testConfig.isSet(BasicParserSettings.PRESERVE_BNODE_IDS));
+
+		testConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+
+		assertTrue(testConfig.isSet(BasicParserSettings.PRESERVE_BNODE_IDS));
+	}
 }

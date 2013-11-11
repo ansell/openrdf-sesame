@@ -19,6 +19,7 @@ package org.openrdf.rio.rdfjson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,6 +42,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFJSONParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
@@ -189,7 +191,7 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 				}
 			}
 		}
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -375,6 +377,20 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 				reportFatalError("No predicate for object: subject=" + subjStr, jp.getCurrentLocation());
 			}
 		}
+	}
+
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+
+		result.add(RDFJSONParserSettings.FAIL_ON_MULTIPLE_OBJECT_DATATYPES);
+		result.add(RDFJSONParserSettings.FAIL_ON_MULTIPLE_OBJECT_LANGUAGES);
+		result.add(RDFJSONParserSettings.FAIL_ON_MULTIPLE_OBJECT_TYPES);
+		result.add(RDFJSONParserSettings.FAIL_ON_MULTIPLE_OBJECT_VALUES);
+		result.add(RDFJSONParserSettings.FAIL_ON_UNKNOWN_PROPERTY);
+		result.add(RDFJSONParserSettings.SUPPORT_GRAPHS_EXTENSION);
+
+		return result;
 	}
 
 }
