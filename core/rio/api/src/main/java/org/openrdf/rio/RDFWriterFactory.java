@@ -48,8 +48,8 @@ public interface RDFWriterFactory {
 	 * 
 	 * @param out
 	 *        The OutputStream to write the RDF to.
-	 * @param defaultBaseURI
-	 *        An optional base URI to use as the default base URI for the
+	 * @param baseURI
+	 *        An optional base URI to use as the initial base URI for the
 	 *        resulting RDFWriter. If null, then the default, if any, base URI,
 	 *        for the given format must be used.
 	 * @since 2.8.0
@@ -75,8 +75,8 @@ public interface RDFWriterFactory {
 	 * 
 	 * @param writer
 	 *        The Writer to write the RDF to.
-	 * @param defaultBaseURI
-	 *        An optional base URI to use as the default base URI for the
+	 * @param baseURI
+	 *        An optional base URI to use as the initial base URI for the
 	 *        resulting RDFWriter. If null, then the default, if any, base URI,
 	 *        for the given format must be used.
 	 * @throws UnsupportedOperationException
