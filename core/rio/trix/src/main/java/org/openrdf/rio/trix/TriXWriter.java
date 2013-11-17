@@ -85,11 +85,11 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	 * 
 	 * @param out
 	 *        The OutputStream to write the RDF/XML document to.
-	 * @param defaultBaseURI
+	 * @param baseURI
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public TriXWriter(OutputStream out, String defaultBaseURI) {
+	public TriXWriter(OutputStream out, URI baseURI) {
 		this(new XMLWriter(out));
 	}
 
@@ -108,11 +108,11 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	 * 
 	 * @param writer
 	 *        The Writer to write the RDF/XML document to.
-	 * @param defaultBaseURI
+	 * @param baseURI
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public TriXWriter(Writer writer, String defaultBaseURI) {
+	public TriXWriter(Writer writer, URI baseURI) {
 		this(new XMLWriter(writer));
 	}
 
@@ -243,7 +243,7 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 		// TODO: Support xml:base setting here

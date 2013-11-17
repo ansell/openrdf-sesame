@@ -19,6 +19,7 @@ package org.openrdf.rio.rdfjson;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import org.openrdf.model.URI;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
@@ -41,7 +42,7 @@ public class RDFJSONWriterFactory implements RDFWriterFactory {
 	}
 
 	@Override
-	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
+	public RDFWriter getWriter(OutputStream out, URI baseURI) {
 		return this.getWriter(out);
 	}
 
@@ -51,7 +52,7 @@ public class RDFJSONWriterFactory implements RDFWriterFactory {
 	}
 
 	@Override
-	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
+	public RDFWriter getWriter(Writer writer, URI baseURI) {
 		return this.getWriter(writer);
 	}
 

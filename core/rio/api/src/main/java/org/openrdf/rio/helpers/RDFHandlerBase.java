@@ -17,7 +17,7 @@
 package org.openrdf.rio.helpers;
 
 import org.openrdf.model.Statement;
-
+import org.openrdf.model.URI;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
@@ -52,7 +52,7 @@ public class RDFHandlerBase implements RDFHandler {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 	}

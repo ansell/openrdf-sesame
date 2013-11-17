@@ -140,7 +140,7 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 		// ignore

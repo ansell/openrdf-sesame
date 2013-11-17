@@ -17,6 +17,7 @@
 package org.openrdf.rio;
 
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 
 /**
  * An interface defining methods related to RDF data handling.
@@ -91,13 +92,13 @@ public interface RDFHandler {
 	 * Handles a change in the Base URI.
 	 * <p>
 	 * The statements sent to {@link #handleStatement(Statement)} will still
-	 * contain complete URIs, but this method can be used to signal that the
+	 * contain complete URIs, but this method MAY be used to signal that the
 	 * document contains a declaration that changes the default base URI in some
 	 * way.
 	 * 
 	 * @param baseURI
-	 *        The next base URI to handle. May be null to reset the Base URI to
-	 *        either a default or no base URI depending on the handler.
+	 *        The next base URI to handle. If null, the handler MAY reset the
+	 *        Base URI to either a default or no base URI.
 	 * @throws RDFHandlerException
 	 *         If the RDF handler has encountered an unrecoverable error.
 	 * @since 2.8.0
@@ -107,6 +108,6 @@ public interface RDFHandler {
 	 * @see <a href="http://www.w3.org/TR/turtle/#relative-iri">Turtle Relative
 	 *      URIs</a>
 	 */
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException;
 }

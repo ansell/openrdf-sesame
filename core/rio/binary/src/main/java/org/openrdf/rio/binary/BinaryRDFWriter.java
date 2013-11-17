@@ -167,12 +167,12 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 		// Binary RDF does not support signalling the Base URI
 	}
-	
+
 	/** Writes the first statement from the statement queue */
 	private void writeStatement()
 		throws RDFHandlerException, IOException

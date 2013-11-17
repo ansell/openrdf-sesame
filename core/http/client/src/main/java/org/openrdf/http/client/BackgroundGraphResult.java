@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import info.aduna.iteration.IterationWrapper;
 
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.rio.RDFHandler;
@@ -194,7 +195,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 			// ignore

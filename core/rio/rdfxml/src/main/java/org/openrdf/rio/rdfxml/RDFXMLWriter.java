@@ -32,6 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
@@ -53,7 +54,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	/**
 	 * The default base URI to use if none are specified.
 	 */
-	private static final String DEFAULT_BASE_URI = "";
+	private static final URI DEFAULT_BASE_URI = ValueFactoryImpl.getInstance().createURI("http://example/");
 
 	protected Writer writer;
 
@@ -65,9 +66,9 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 	protected Resource lastWrittenSubject;
 
-	protected final String defaultBaseURI;
+	protected final URI defaultBaseURI;
 
-	protected String lastBaseURI;
+	protected URI lastBaseURI;
 
 	/*--------------*
 	 * Constructors *
@@ -94,11 +95,11 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * 
 	 * @param out
 	 *        The OutputStream to write the RDF/XML document to.
-	 * @param defaultBaseURI
+	 * @param baseURI
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public RDFXMLWriter(OutputStream out, String defaultBaseURI) {
+	public RDFXMLWriter(OutputStream out, URI baseURI) {
 		this(new OutputStreamWriter(out, Charset.forName("UTF-8")), DEFAULT_BASE_URI);
 	}
 
@@ -127,13 +128,13 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public RDFXMLWriter(Writer writer, String defaultBaseURI) {
+	public RDFXMLWriter(Writer writer, URI baseURI) {
 		this.writer = writer;
-		if (defaultBaseURI == null) {
+		if (baseURI == null) {
 			this.defaultBaseURI = DEFAULT_BASE_URI;
 		}
 		else {
-			this.defaultBaseURI = defaultBaseURI;
+			this.defaultBaseURI = baseURI;
 		}
 		this.lastBaseURI = this.defaultBaseURI;
 		namespaceTable = new LinkedHashMap<String, String>();
@@ -414,7 +415,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 		// TODO: Support xml:base setting here

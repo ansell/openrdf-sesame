@@ -19,6 +19,7 @@ package org.openrdf.rio.trig;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import org.openrdf.model.URI;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
@@ -44,8 +45,8 @@ public class TriGWriterFactory implements RDFWriterFactory {
 	}
 
 	@Override
-	public RDFWriter getWriter(OutputStream out, String defaultBaseURI) {
-		return new TriGWriter(out, defaultBaseURI);
+	public RDFWriter getWriter(OutputStream out, URI baseURI) {
+		return new TriGWriter(out, baseURI);
 	}
 
 	@Override
@@ -54,7 +55,7 @@ public class TriGWriterFactory implements RDFWriterFactory {
 	}
 
 	@Override
-	public RDFWriter getWriter(Writer writer, String defaultBaseURI) {
-		return new TriGWriter(writer, defaultBaseURI);
+	public RDFWriter getWriter(Writer writer, URI baseURI) {
+		return new TriGWriter(writer, baseURI);
 	}
 }

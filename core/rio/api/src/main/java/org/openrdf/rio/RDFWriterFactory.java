@@ -19,6 +19,8 @@ package org.openrdf.rio;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import org.openrdf.model.URI;
+
 /**
  * A RDFWriterFactory returns {@link RDFWriter}s for a specific RDF format.
  * 
@@ -52,7 +54,7 @@ public interface RDFWriterFactory {
 	 *        for the given format must be used.
 	 * @since 2.8.0
 	 */
-	public RDFWriter getWriter(OutputStream out, String defaultBaseURI);
+	public RDFWriter getWriter(OutputStream out, URI defaultBaseURI);
 
 	/**
 	 * Returns an RDFWriter instance that will write to the supplied writer.
@@ -82,5 +84,5 @@ public interface RDFWriterFactory {
 	 *         {@link java.io.Writer}
 	 * @since 2.8.0
 	 */
-	public RDFWriter getWriter(Writer writer, String defaultBaseURI);
+	public RDFWriter getWriter(Writer writer, URI defaultBaseURI);
 }

@@ -247,27 +247,27 @@ public abstract class RDFWriterTest {
 	public void testBaseURINull1()
 		throws Exception
 	{
-		testBaseURI("http://www.w3.org/", null);
+		testBaseURI(ValueFactoryImpl.getInstance().createURI("http://www.w3.org/"), null);
 	}
 
 	@Test
 	public void testBaseURIPrefix()
 		throws Exception
 	{
-		testBaseURI("", "http://www.w3.org/");
+		testBaseURI(null, ValueFactoryImpl.getInstance().createURI("http://www.w3.org/"));
 	}
 
 	@Test
 	public void testBaseURIFullURI()
 		throws Exception
 	{
-		testBaseURI("", RDF.TYPE.stringValue());
+		testBaseURI(null, ValueFactoryImpl.getInstance().createURI("http://example.org/"));
 	}
 
-	private void testBaseURI(String nextDefaultBaseURI, String nextBaseURI)
+	private void testBaseURI(URI nextDefaultBaseURI, URI nextBaseURI)
 		throws Exception
 	{
-		Statement st = vf.createStatement(vf.createURI(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY);
+		Statement st = vf.createStatement(vf.createURI("http://example.org/test"), RDF.TYPE, OWL.ONTOLOGY);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out, nextDefaultBaseURI);
@@ -282,7 +282,13 @@ public abstract class RDFWriterTest {
 		Model model = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(model));
 
-		rdfParser.parse(in, nextDefaultBaseURI);
+		// RDFParser.parse does not allow null base URIs
+		if (nextDefaultBaseURI == null) {
+			rdfParser.parse(in, "");
+		}
+		else {
+			rdfParser.parse(in, nextDefaultBaseURI.toString());
+		}
 
 		assertEquals("Unexpected number of statements", 1, model.size());
 

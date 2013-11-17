@@ -34,6 +34,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -57,7 +58,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	/**
 	 * The default base URI to use if none are specified.
 	 */
-	private static final String DEFAULT_BASE_URI = "";
+	private static final URI DEFAULT_BASE_URI = ValueFactoryImpl.getInstance().createURI("http://example/");
 
 	protected IndentingWriter writer;
 
@@ -72,9 +73,9 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 
 	protected URI lastWrittenPredicate;
 
-	protected final String defaultBaseURI;
+	protected final URI defaultBaseURI;
 
-	protected String lastBaseURI;
+	protected URI lastBaseURI;
 
 	/*--------------*
 	 * Constructors *
@@ -106,7 +107,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public TurtleWriter(OutputStream out, String defaultBaseURI) {
+	public TurtleWriter(OutputStream out, URI defaultBaseURI) {
 		this(new OutputStreamWriter(out, Charset.forName("UTF-8")), defaultBaseURI);
 	}
 
@@ -137,7 +138,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public TurtleWriter(Writer writer, String defaultBaseURI) {
+	public TurtleWriter(Writer writer, URI defaultBaseURI) {
 		this.writer = new IndentingWriter(writer);
 		if (defaultBaseURI == null) {
 			this.defaultBaseURI = DEFAULT_BASE_URI;
@@ -336,7 +337,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 		try {
@@ -353,12 +354,12 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
-	protected void writeBaseURI(String baseURI)
+	protected void writeBaseURI(URI baseURI)
 		throws IOException
 	{
 		writer.write("@base ");
 		writer.write(" <");
-		writer.write(TurtleUtil.encodeURIString(baseURI));
+		writer.write(TurtleUtil.encodeURIString(baseURI.stringValue()));
 		writer.write("> .");
 		writer.writeEOL();
 	}
@@ -436,10 +437,10 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 			writer.write(":");
 			writer.write(uriString.substring(splitIdx));
 		}
-		else if (this.lastBaseURI.length() > 0 && uriString.startsWith(this.lastBaseURI)) {
+		else if (this.lastBaseURI != null && uriString.startsWith(this.lastBaseURI.stringValue())) {
 			// Write relative URI
 			writer.write("<");
-			writer.write(TurtleUtil.encodeURIString(uriString.substring(this.lastBaseURI.length())));
+			writer.write(TurtleUtil.encodeURIString(uriString.substring(this.lastBaseURI.stringValue().length())));
 			writer.write(">");
 		}
 		else {

@@ -22,6 +22,7 @@ import java.io.Writer;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.turtle.TurtleWriter;
@@ -74,7 +75,7 @@ public class TriGWriter extends TurtleWriter {
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public TriGWriter(OutputStream out, String defaultBaseURI) {
+	public TriGWriter(OutputStream out, URI defaultBaseURI) {
 		super(out, defaultBaseURI);
 	}
 
@@ -107,7 +108,7 @@ public class TriGWriter extends TurtleWriter {
 	 *        The default base URI.
 	 * @since 2.8.0
 	 */
-	public TriGWriter(Writer writer, String defaultBaseURI) {
+	public TriGWriter(Writer writer, URI defaultBaseURI) {
 		super(writer, defaultBaseURI);
 	}
 

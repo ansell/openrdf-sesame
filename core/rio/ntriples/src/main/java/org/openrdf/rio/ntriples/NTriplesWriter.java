@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -164,7 +165,7 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 	}
 
 	@Override
-	public void handleBaseURI(String baseURI)
+	public void handleBaseURI(URI baseURI)
 		throws RDFHandlerException
 	{
 		// ignore

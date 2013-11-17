@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -51,7 +52,7 @@ public class N3Writer extends TurtleWriter implements RDFWriter {
 		super(out);
 	}
 
-	public N3Writer(OutputStream out, String baseURI) {
+	public N3Writer(OutputStream out, URI baseURI) {
 		super(out, baseURI);
 	}
 
@@ -65,7 +66,7 @@ public class N3Writer extends TurtleWriter implements RDFWriter {
 		super(writer);
 	}
 
-	public N3Writer(Writer writer, String baseURI) {
+	public N3Writer(Writer writer, URI baseURI) {
 		super(writer, baseURI);
 	}
 	

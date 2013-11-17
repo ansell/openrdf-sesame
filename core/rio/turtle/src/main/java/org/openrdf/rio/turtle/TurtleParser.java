@@ -325,7 +325,7 @@ public class TurtleParser extends RDFParserBase {
 		setBaseURI(baseURI.toString());
 
 		if (rdfHandler != null) {
-			rdfHandler.handleBaseURI(baseURI.toString());
+			rdfHandler.handleBaseURI(baseURI);
 		}
 	}
 
