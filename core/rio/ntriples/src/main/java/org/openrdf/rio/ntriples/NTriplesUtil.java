@@ -468,16 +468,28 @@ public class NTriplesUtil {
 				sb.append('\t');
 				startIdx = backSlashIdx + 2;
 			}
-			else if (c == 'r') {
-				sb.append('\r');
+			else if (c == 'b') {
+				sb.append('\b');
 				startIdx = backSlashIdx + 2;
 			}
 			else if (c == 'n') {
 				sb.append('\n');
 				startIdx = backSlashIdx + 2;
 			}
+			else if (c == 'r') {
+				sb.append('\r');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == 'f') {
+				sb.append('\f');
+				startIdx = backSlashIdx + 2;
+			}
 			else if (c == '"') {
 				sb.append('"');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == '\'') {
+				sb.append('\'');
 				startIdx = backSlashIdx + 2;
 			}
 			else if (c == '\\') {

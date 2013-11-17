@@ -193,6 +193,18 @@ public abstract class NTriplesParserTestCase {
 	}
 
 	@Test
+	public void testEscapes()
+		throws Exception
+	{
+		RDFParser ntriplesParser = createRDFParser();
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
+		ntriplesParser.parse(new StringReader("<urn:test:subject> <urn:test:predicate> \" \\t \\b \\n \\r \\f \\\" \\' \\\\ \" . "), "http://example/");
+		assertEquals(1, model.size());
+		assertEquals(" \t \b \n \r \f \" \' \\ ", model.objectString());
+	}
+
+	@Test
 	public void testSupportedSettings()
 		throws Exception
 	{
