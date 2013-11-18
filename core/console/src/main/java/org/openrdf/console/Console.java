@@ -62,6 +62,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
 
 	private static final String APP_NAME = "OpenRDF Sesame console";
+    private static boolean exitOnError;
 
 	/*-----------*
 	 * Constants *
@@ -109,8 +110,10 @@ public class Console implements ConsoleState, ConsoleParameters {
 				"always answer yes to (suppressed) confirmation prompts");
 		Option cautiousOption = new Option("c", "cautious", false,
 				"always answer no to (suppressed) confirmation prompts");
+        Option batchMode = new Option("b", "batch", false,
+                "Execute the commands in batch mode. In this mode the console will exit on the first error");
 		final Options options = new Options();
-		OptionGroup cautionGroup = new OptionGroup().addOption(cautiousOption).addOption(forceOption);
+		OptionGroup cautionGroup = new OptionGroup().addOption(cautiousOption).addOption(forceOption).addOption(batchMode);
 		OptionGroup locationGroup = new OptionGroup().addOption(serverURLOption).addOption(dirOption);
 		options.addOptionGroup(locationGroup).addOptionGroup(cautionGroup);
 		options.addOption(helpOption).addOption(versionOption).addOption(echoOption).addOption(quietOption);
@@ -118,6 +121,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		handleInfoOptions(console, helpOption, versionOption, options, commandLine);
 		console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
 		console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
+        exitOnError = commandLine.hasOption(batchMode.getOpt());
 		String location = handleOptionGroups(console, serverURLOption, dirOption, forceOption, cautiousOption,
 				options, cautionGroup, locationGroup, commandLine);
 		final String[] otherArgs = commandLine.getArgs();
@@ -259,7 +263,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		consoleIO.writeln();
 		consoleIO.writeln("Commands end with '.' at the end of a line");
 		consoleIO.writeln("Type 'help.' for help");
-
+        int exitCode = 0;
 		try {
 			boolean exitFlag = false;
 			while (!exitFlag) {
@@ -269,13 +273,20 @@ public class Console implements ConsoleState, ConsoleParameters {
 					break;
 				}
 				exitFlag = executeCommand(command);
+                if(exitOnError && consoleIO.wasErrorWritten()) {
+                    exitCode = 2;
+                    exitFlag = true;
+                }
 			}
 		}
 		finally {
 			disconnect.execute(false);
 		}
-		consoleIO.writeln("Bye");
-	}
+        if(exitCode != 0) {
+            System.exit(exitCode);
+        }
+        consoleIO.writeln("Bye");
+    }
 
 	private boolean executeCommand(final String command)
 		throws IOException
