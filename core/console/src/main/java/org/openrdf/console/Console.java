@@ -102,7 +102,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		final Option helpOption = new Option("h", "help", false, "print this help");
 		final Option versionOption = new Option("v", "version", false, "print version information");
 		final Option serverURLOption = new Option("s", "serverURL", true,
-				"URL of Sesame server to connect to, e.g. http://localhost:8080/openrdf-sesame/");
+				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
 		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		Option echoOption = new Option("e", "echo", false,
 				"echoes input back to stdout, useful for logging script sessions");
