@@ -102,7 +102,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		final Option helpOption = new Option("h", "help", false, "print this help");
 		final Option versionOption = new Option("v", "version", false, "print version information");
 		final Option serverURLOption = new Option("s", "serverURL", true,
-				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
+				"URL of Sesame server to connect to, e.g. http://localhost:8080/openrdf-sesame/");
 		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
 		Option echoOption = new Option("e", "echo", false,
 				"echoes input back to stdout, useful for logging script sessions");
@@ -111,11 +111,11 @@ public class Console implements ConsoleState, ConsoleParameters {
 				"always answer yes to (suppressed) confirmation prompts");
 		Option cautiousOption = new Option("c", "cautious", false,
 				"always answer no to (suppressed) confirmation prompts");
-		Option batchMode = new Option("b", "batch", false,
-				"Execute the commands in batch mode. In this mode the console will exit on the first error");
+		Option exitOnErrorMode = new Option("x", "exitOnError", false,
+				"immediately exit the console on the first error");
 		final Options options = new Options();
 		OptionGroup cautionGroup = new OptionGroup().addOption(cautiousOption).addOption(forceOption).addOption(
-				batchMode);
+				exitOnErrorMode);
 		OptionGroup locationGroup = new OptionGroup().addOption(serverURLOption).addOption(dirOption);
 		options.addOptionGroup(locationGroup).addOptionGroup(cautionGroup);
 		options.addOption(helpOption).addOption(versionOption).addOption(echoOption).addOption(quietOption);
@@ -123,7 +123,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		handleInfoOptions(console, helpOption, versionOption, options, commandLine);
 		console.consoleIO.setEcho(commandLine.hasOption(echoOption.getOpt()));
 		console.consoleIO.setQuiet(commandLine.hasOption(quietOption.getOpt()));
-		exitOnError = commandLine.hasOption(batchMode.getOpt());
+		exitOnError = commandLine.hasOption(exitOnErrorMode.getOpt());
 		String location = handleOptionGroups(console, serverURLOption, dirOption, forceOption, cautiousOption,
 				options, cautionGroup, locationGroup, commandLine);
 		final String[] otherArgs = commandLine.getArgs();
