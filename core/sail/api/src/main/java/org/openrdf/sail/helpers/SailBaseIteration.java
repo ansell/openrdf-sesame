@@ -16,9 +16,6 @@
  */
 package org.openrdf.sail.helpers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.IterationWrapper;
 
@@ -30,11 +27,7 @@ import info.aduna.iteration.IterationWrapper;
  */
 class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
 	private final SailConnectionBase connection;
-
-	private final Throwable creatorTrace;
 
 	/**
 	 * Creates a new memory-store specific iteration object.
@@ -50,8 +43,6 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 	{
 		super(iter);
 		this.connection = connection;
-
-		this.creatorTrace = SailBase.debugEnabled() ? new Throwable() : null;
 	}
 
 	@Override
@@ -74,26 +65,5 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 	{
 		super.handleClose();
 		connection.iterationClosed(this);
-	}
-
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		if (!isClosed()) {
-			forceClose();
-		}
-
-		super.finalize();
-	}
-
-	protected void forceClose()
-		throws E
-	{
-		if (creatorTrace != null) {
-			logger.warn("Forced closing of unclosed iteration that was created in:", creatorTrace);
-		}
-
-		close();
 	}
 }
