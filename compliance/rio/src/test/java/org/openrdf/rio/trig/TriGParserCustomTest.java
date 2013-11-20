@@ -34,7 +34,7 @@ public class TriGParserCustomTest {
 	public void testSupportedSettings()
 		throws Exception
 	{
-		assertEquals(11, Rio.createParser(RDFFormat.TRIG).getSupportedSettings().size());
+		assertEquals(12, Rio.createParser(RDFFormat.TRIG).getSupportedSettings().size());
 	}
 
 }
