@@ -57,7 +57,7 @@ public abstract class TurtleParserTestCase {
 	/**
 	 * Base directory for W3C Turtle tests
 	 */
-	private static String TEST_AFS_FILE_BASE_PATH = "/testcases/turtle/tests-ttl-20131121/";
+	private static String TEST_AFS_FILE_BASE_PATH = "/testcases/turtle/tests-ttl-w3c-20131121/";
 
 	private static String TEST_AFS_MANIFEST_URL = TEST_AFS_FILE_BASE_PATH + "manifest.ttl";
 
