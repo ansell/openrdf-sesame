@@ -1,0 +1,61 @@
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
+ *
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+package org.openrdf.workbench.commands;
+
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.junit.Test;
+
+import org.openrdf.model.URI;
+import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.workbench.base.TransformationServlet;
+import org.openrdf.workbench.util.WorkbenchRequest;
+
+/**
+ * Unit and regression tests for {@link RemoteServlet}.
+ * 
+ * @author Dale Visser
+ */
+public class TestRemoveServlet {
+
+	private final RemoveServlet servlet = new RemoveServlet();
+
+	@Test
+	public void testSES1958regression()
+		throws RepositoryException, QueryResultHandlerException, IOException
+	{
+		WorkbenchRequest request = mock(WorkbenchRequest.class);
+		when(request.isParameterPresent(TransformationServlet.CONTEXT)).thenReturn(true);
+		when(request.getParameter(TransformationServlet.CONTEXT)).thenReturn("<http://foo.org/bar>");
+		Repository repository = mock(Repository.class);
+		servlet.setRepository(repository);
+		RepositoryConnection connection = mock(RepositoryConnection.class);
+		when(repository.getConnection()).thenReturn(connection);
+		servlet.doPost(request, mock(HttpServletResponse.class), "");
+		verify(connection).clear(isA(URI.class));
+	}
+}
