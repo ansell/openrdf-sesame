@@ -66,4 +66,11 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 		super.handleClose();
 		connection.iterationClosed(this);
 	}
+
+	@Deprecated
+	protected void forceClose()
+		throws E
+	{
+		close();
+	}
 }
