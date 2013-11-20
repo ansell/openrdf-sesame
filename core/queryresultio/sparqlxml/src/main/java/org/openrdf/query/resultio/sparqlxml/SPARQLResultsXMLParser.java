@@ -81,7 +81,7 @@ public class SPARQLResultsXMLParser extends SPARQLXMLParserBase implements Tuple
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		try {
-			parseQueryResultInternal(in);
+			parseQueryResultInternal(in, false, true);
 		}
 		catch (QueryResultHandlerException e) {
 			if (e instanceof TupleQueryResultHandlerException) {

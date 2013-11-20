@@ -67,7 +67,7 @@ public class RepositoryListController extends AbstractController {
 	public RepositoryListController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD });
 	}
 
 	public void setRepositoryManager(RepositoryManager repMan) {
@@ -78,60 +78,68 @@ public class RepositoryListController extends AbstractController {
 	protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
-		Repository systemRepository = repositoryManager.getSystemRepository();
-		ValueFactory vf = systemRepository.getValueFactory();
+		Map<String, Object> model = new HashMap<String, Object>();
 
-		try {
-			RepositoryConnection con = systemRepository.getConnection();
+		if (METHOD_GET.equals(request.getMethod())) {
+			Repository systemRepository = repositoryManager.getSystemRepository();
+			ValueFactory vf = systemRepository.getValueFactory();
+
 			try {
-				// FIXME: The query result is cached here as we need to close the
-				// connection before returning. Would be much better to stream the
-				// query result directly to the client.
-
-				List<String> bindingNames = new ArrayList<String>();
-				List<BindingSet> bindingSets = new ArrayList<BindingSet>();
-
-				TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, REPOSITORY_LIST_QUERY).evaluate();
+				RepositoryConnection con = systemRepository.getConnection();
 				try {
-					// Determine the repository's URI
-					StringBuffer requestURL = request.getRequestURL();
-					if (requestURL.charAt(requestURL.length() - 1) != '/') {
-						requestURL.append('/');
+					// FIXME: The query result is cached here as we need to close the
+					// connection before returning. Would be much better to stream
+					// the
+					// query result directly to the client.
+
+					List<String> bindingNames = new ArrayList<String>();
+					List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+
+					TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL,
+							REPOSITORY_LIST_QUERY).evaluate();
+					try {
+						// Determine the repository's URI
+						StringBuffer requestURL = request.getRequestURL();
+						if (requestURL.charAt(requestURL.length() - 1) != '/') {
+							requestURL.append('/');
+						}
+						String namespace = requestURL.toString();
+
+						while (queryResult.hasNext()) {
+							QueryBindingSet bindings = new QueryBindingSet(queryResult.next());
+
+							String id = bindings.getValue("id").stringValue();
+							bindings.addBinding("uri", vf.createURI(namespace, id));
+
+							bindingSets.add(bindings);
+						}
+
+						bindingNames.add("uri");
+						bindingNames.addAll(queryResult.getBindingNames());
 					}
-					String namespace = requestURL.toString();
-
-					while (queryResult.hasNext()) {
-						QueryBindingSet bindings = new QueryBindingSet(queryResult.next());
-
-						String id = bindings.getValue("id").stringValue();
-						bindings.addBinding("uri", vf.createURI(namespace, id));
-
-						bindingSets.add(bindings);
+					finally {
+						queryResult.close();
 					}
+					model.put(QueryResultView.QUERY_RESULT_KEY,
+							new TupleQueryResultImpl(bindingNames, bindingSets));
 
-					bindingNames.add("uri");
-					bindingNames.addAll(queryResult.getBindingNames());
 				}
 				finally {
-					queryResult.close();
+					con.close();
 				}
-
-				TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(request, response,
-						TupleQueryResultWriterRegistry.getInstance());
-
-				Map<String, Object> model = new HashMap<String, Object>();
-				model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(bindingNames, bindingSets));
-				model.put(QueryResultView.FILENAME_HINT_KEY, "repositories");
-				model.put(QueryResultView.FACTORY_KEY, factory);
-
-				return new ModelAndView(TupleQueryResultView.getInstance(), model);
 			}
-			finally {
-				con.close();
+			catch (RepositoryException e) {
+				throw new ServerHTTPException(e.getMessage(), e);
 			}
 		}
-		catch (RepositoryException e) {
-			throw new ServerHTTPException(e.getMessage(), e);
-		}
+		
+		TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(request, response,
+				TupleQueryResultWriterRegistry.getInstance());
+
+		model.put(QueryResultView.FILENAME_HINT_KEY, "repositories");
+		model.put(QueryResultView.FACTORY_KEY, factory);
+		model.put(QueryResultView.HEADERS_ONLY, METHOD_HEAD.equals(request.getMethod()));
+
+		return new ModelAndView(TupleQueryResultView.getInstance(), model);
 	}
 }

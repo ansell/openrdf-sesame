@@ -36,6 +36,13 @@ public abstract class AbstractQueryResultIOBooleanTest extends AbstractQueryResu
 	 */
 	protected abstract BooleanQueryResultFormat getBooleanFormat();
 
+	/**
+	 * @return The {@link TupleQueryResultFormat} that may be parsed by the same
+	 *         parser as the one for {@link #getBooleanFormat()}, or null if this
+	 *         functionality is not supported.
+	 */
+	protected abstract TupleQueryResultFormat getMatchingTupleFormatOrNull();
+
 	@Test
 	public final void testBooleanNoLinks()
 		throws Exception
@@ -119,4 +126,34 @@ public abstract class AbstractQueryResultIOBooleanTest extends AbstractQueryResu
 		doInvalidBooleanAfterStartQueryResult(getBooleanFormat(), false,
 				Arrays.asList("info", "alternate", "other", "another"));
 	}
+
+	@Test
+	public final void testBooleanNoHandler()
+		throws Exception
+	{
+		doBooleanNoHandler(getBooleanFormat(), true);
+		doBooleanNoHandler(getBooleanFormat(), false);
+	}
+
+	@Test
+	public final void testBooleanParseNoHandlerOnTupleResultsNoResults()
+		throws Exception
+	{
+		doBooleanParseNoHandlerOnTupleResults(getBooleanFormat(), createTupleNoBindingSets(), getMatchingTupleFormatOrNull());
+	}
+	
+	@Test
+	public final void testBooleanParseNoHandlerOnTupleResultsSingleVarMultipleBindingSets()
+		throws Exception
+	{
+		doBooleanParseNoHandlerOnTupleResults(getBooleanFormat(), createTupleSingleVarMultipleBindingSets(), getMatchingTupleFormatOrNull());
+	}
+	
+	@Test
+	public final void testBooleanParseNoHandlerOnTupleResultsMultipleBindingsMultipleBindingSets()
+		throws Exception
+	{
+		doBooleanParseNoHandlerOnTupleResults(getBooleanFormat(), createTupleMultipleBindingSets(), getMatchingTupleFormatOrNull());
+	}
+	
 }

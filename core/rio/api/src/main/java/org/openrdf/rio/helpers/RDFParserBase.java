@@ -21,7 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Set;
+import java.util.UUID;
 
 import info.aduna.net.ParsedURI;
 
@@ -32,9 +33,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.ValueFactoryImpl;
-
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
@@ -108,11 +107,11 @@ public abstract class RDFParserBase implements RDFParser {
 	private ParsedURI baseURI;
 
 	/**
-	 * Mapping from blank node identifiers as used in the RDF document to the
-	 * object created for it by the ValueFactory. This mapping is used to return
-	 * identical BNode objects for recurring blank node identifiers.
+	 * Enables a consistent global mapping of blank node identifiers without
+	 * using a map, but concatenating this as a prefix for the blank node
+	 * identifiers supplied by the parser.
 	 */
-	private Map<String, BNode> bNodeIDMap;
+	private String nextBNodePrefix;
 
 	/**
 	 * Mapping from namespace prefixes to namespace names.
@@ -144,8 +143,8 @@ public abstract class RDFParserBase implements RDFParser {
 	 *        A ValueFactory.
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
-		bNodeIDMap = new HashMap<String, BNode>(16);
 		namespaceTable = new HashMap<String, String>(16);
+		nextBNodePrefix = UUID.randomUUID().toString();
 
 		setValueFactory(valueFactory);
 		setParserConfig(new ParserConfig());
@@ -204,22 +203,33 @@ public abstract class RDFParserBase implements RDFParser {
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		Collection<RioSetting<?>> result = new HashSet<RioSetting<?>>();
 
+		// Supported in RDFParserHelper.createLiteral
 		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		result.add(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		result.add(BasicParserSettings.NORMALIZE_DATATYPE_VALUES);
-		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		result.add(BasicParserSettings.DATATYPE_HANDLERS);
 
+		// Supported in RDFParserHelper.createLiteral
+		result.add(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES);
+		result.add(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+		result.add(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS);
+		result.add(BasicParserSettings.LANGUAGE_HANDLERS);
+
+		// Supported in RDFParserBase.resolveURI
+		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
+		
+		// Supported in RDFParserBase.createBNode(String)
+		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
+		
+		// Supported in RDFParserBase.getNamespace
+		result.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
+		
 		return result;
 	}
 
 	@Override
 	public void setVerifyData(boolean verifyData) {
-		if (verifyData) {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
-		else {
-			this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, true);
-		}
+		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);
 	}
 
 	/**
@@ -239,9 +249,19 @@ public abstract class RDFParserBase implements RDFParser {
 		return this.parserConfig.get(BasicParserSettings.PRESERVE_BNODE_IDS);
 	}
 
+	@Deprecated
 	@Override
 	public void setStopAtFirstError(boolean stopAtFirstError) {
 		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, stopAtFirstError);
+		if (!stopAtFirstError) {
+			getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+		}
+		else {
+			// TODO: Add a ParserConfig.removeNonFatalError function to avoid this
+			Set<RioSetting<?>> set = new HashSet<RioSetting<?>>(getParserConfig().getNonFatalErrors());
+			set.remove(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			getParserConfig().setNonFatalErrors(set);
+		}
 	}
 
 	/**
@@ -343,7 +363,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	protected void clear() {
 		baseURI = null;
-		clearBNodeIDMap();
+		nextBNodePrefix = UUID.randomUUID().toString();
 		namespaceTable.clear();
 	}
 
@@ -352,9 +372,11 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Normally, this map is clear when the document has been parsed completely,
 	 * but subclasses can clear the map at other moments too, for example when a
 	 * bnode scope ends.
+	 * 
+	 * @deprecated Map is no longer used.
 	 */
+	@Deprecated
 	protected void clearBNodeIDMap() {
-		bNodeIDMap.clear();
 	}
 
 	/**
@@ -372,9 +394,11 @@ public abstract class RDFParserBase implements RDFParser {
 				reportFatalError("Unable to resolve URIs, no base URI has been set");
 			}
 
-			if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
-				reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
-						+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
+			if (getParserConfig().get(BasicParserSettings.VERIFY_RELATIVE_URIS)) {
+				if (uri.isRelative() && !uri.isSelfReference() && baseURI.isOpaque()) {
+					reportError("Relative URI '" + uriSpec + "' cannot be resolved using the opaque base URI '"
+							+ baseURI + "'", BasicParserSettings.VERIFY_RELATIVE_URIS);
+				}
 			}
 
 			uri = baseURI.resolve(uri);
@@ -419,28 +443,18 @@ public abstract class RDFParserBase implements RDFParser {
 	protected BNode createBNode(String nodeID)
 		throws RDFParseException
 	{
-		// Maybe the node ID has been used before:
-		BNode result = bNodeIDMap.get(nodeID);
-
-		if (result == null) {
-			// This is a new node ID, create a new BNode object for it
-			try {
-				if (preserveBNodeIDs()) {
-					result = valueFactory.createBNode(nodeID);
-				}
-				else {
-					result = valueFactory.createBNode();
-				}
-			}
-			catch (Exception e) {
-				reportFatalError(e);
-			}
-
-			// Remember it, the nodeID might occur again.
-			bNodeIDMap.put(nodeID, result);
+		// If we are preserving blank node ids then we do not prefix them to make
+		// them globally unique
+		if (preserveBNodeIDs()) {
+			return valueFactory.createBNode(nodeID);
 		}
-
-		return result;
+		else {
+			// Prefix the node ID with a unique UUID prefix to reduce
+			// cross-document clashes
+			// This is consistent as long as nextBNodePrefix is not modified
+			// between parser runs
+			return valueFactory.createBNode(nextBNodePrefix + nodeID);
+		}
 	}
 
 	/**
@@ -451,6 +465,22 @@ public abstract class RDFParserBase implements RDFParser {
 	{
 		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
 				valueFactory);
+	}
+
+	/**
+	 * Creates a {@link Literal} object with the supplied parameters, using the
+	 * lineNo and columnNo to enhance error messages or exceptions that may be
+	 * generated during the creation of the literal.
+	 * 
+	 * @since 2.7.4
+	 * @see org.openrdf.rio.helpers.RDFParserHelper#createLiteral(String, String,
+	 *      URI, ParserConfig, ParseErrorListener, ValueFactory, int, int)
+	 */
+	protected Literal createLiteral(String label, String lang, URI datatype, int lineNo, int columnNo)
+		throws RDFParseException
+	{
+		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
+				valueFactory, lineNo, columnNo);
 	}
 
 	/**

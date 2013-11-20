@@ -91,7 +91,9 @@ public class BinaryRDFParser extends RDFParserBase {
 			reportFatalError("Incompatible format version: " + formatVersion);
 		}
 
-		rdfHandler.startRDF();
+		if(rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
 
 		loop: while (true) {
 			int recordType = this.in.readByte();
@@ -116,7 +118,9 @@ public class BinaryRDFParser extends RDFParserBase {
 			}
 		}
 
-		rdfHandler.endRDF();
+		if(rdfHandler != null) {
+			rdfHandler.endRDF();
+		}
 	}
 
 	private void readNamespaceDecl()
@@ -124,14 +128,18 @@ public class BinaryRDFParser extends RDFParserBase {
 	{
 		String prefix = readString();
 		String namespace = readString();
-		rdfHandler.handleNamespace(prefix, namespace);
+		if(rdfHandler != null) {
+			rdfHandler.handleNamespace(prefix, namespace);
+		}
 	}
 
 	private void readComment()
 		throws IOException, RDFHandlerException
 	{
 		String comment = readString();
-		rdfHandler.handleComment(comment);
+		if(rdfHandler != null) {
+			rdfHandler.handleComment(comment);
+		}
 	}
 
 	private void readValueDecl()
@@ -186,7 +194,9 @@ public class BinaryRDFParser extends RDFParserBase {
 		}
 
 		Statement st = createStatement(subj, pred, obj, context);
-		rdfHandler.handleStatement(st);
+		if(rdfHandler != null) {
+			rdfHandler.handleStatement(st);
+		}
 	}
 
 	private Value readValue()
@@ -239,7 +249,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		String label = readString();
-		return createLiteral(label, null, null);
+		return createLiteral(label, null, null, -1, -1);
 	}
 
 	private Literal readLangLiteral()
@@ -247,7 +257,7 @@ public class BinaryRDFParser extends RDFParserBase {
 	{
 		String label = readString();
 		String language = readString();
-		return createLiteral(label, language, null);
+		return createLiteral(label, language, null, -1, -1);
 	}
 
 	private Literal readDatatypeLiteral()
@@ -256,7 +266,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		String label = readString();
 		String datatype = readString();
 		URI dtUri = createURI(datatype);
-		return createLiteral(label, null, dtUri);
+		return createLiteral(label, null, dtUri, -1, -1);
 	}
 
 	private String readString()

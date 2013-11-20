@@ -76,7 +76,9 @@ public class NQuadsParser extends NTriplesParser {
 			throw new IllegalArgumentException("base URI can not be 'null'");
 		}
 
-		rdfHandler.startRDF();
+		if(rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
 
 		this.reader = reader;
 		lineNo = 1;
@@ -107,7 +109,9 @@ public class NQuadsParser extends NTriplesParser {
 			clear();
 		}
 
-		rdfHandler.endRDF();
+		if(rdfHandler != null) {
+			rdfHandler.endRDF();
+		}
 	}
 
 	private int parseQuad(int c)
@@ -156,7 +160,9 @@ public class NQuadsParser extends NTriplesParser {
 
 		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object, context);
-			rdfHandler.handleStatement(st);
+			if(rdfHandler != null) {
+				rdfHandler.handleStatement(st);
+			}
 		}
 
 		subject = null;

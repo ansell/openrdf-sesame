@@ -16,14 +16,17 @@
  */
 package org.openrdf.model.util;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 import java.net.URL;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -33,28 +36,32 @@ import org.openrdf.rio.helpers.StatementCollector;
 /**
  * @author Arjohn Kampman
  */
-public class ModelEqualityTest extends TestCase {
+public class ModelEqualityTest {
 
 	public static final String TESTCASES_DIR = "/testcases/model/equality/";
 
+	@Test
 	public void testTest001()
 		throws Exception
 	{
 		testFilesEqual("test001a.ttl", "test001b.ttl");
 	}
 
+	@Test
 	public void testFoafExampleAdvanced()
 		throws Exception
 	{
 		testFilesEqual("foaf-example-advanced.rdf", "foaf-example-advanced.rdf");
 	}
 
+	@Test
 	public void testSparqlGraph11()
 		throws Exception
 	{
 		testFilesEqual("sparql-graph-11.ttl", "sparql-graph-11.ttl");
 	}
 
+	@Test
 	public void testBlankNodeGraphs()
 		throws Exception
 	{
@@ -95,14 +102,14 @@ public class ModelEqualityTest extends TestCase {
 		assertTrue(modelsEqual);
 	}
 
-	private Set<Statement> loadModel(String fileName)
+	private Model loadModel(String fileName)
 		throws Exception
 	{
 		URL modelURL = this.getClass().getResource(TESTCASES_DIR + fileName);
 		assertNotNull("Test file not found: " + fileName, modelURL);
 
-		Set<Statement> model = new LinkedHashSet<Statement>();
-
+		Model model = new LinkedHashModel();
+		
 		RDFFormat rdfFormat = Rio.getParserFormatForFileName(fileName);
 		assertNotNull("Unable to determine RDF format for file: " + fileName, rdfFormat);
 

@@ -58,6 +58,9 @@ public abstract class QueryResultView implements View {
 	 */
 	public static final String FILENAME_HINT_KEY = "filenameHint";
 
+	
+	public static final String HEADERS_ONLY = "headersOnly";
+	
 	protected void setContentType(HttpServletResponse response, FileFormat fileFormat)
 		throws IOException
 	{

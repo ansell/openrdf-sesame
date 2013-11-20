@@ -42,7 +42,7 @@ public class ProtocolController extends AbstractController {
 	public ProtocolController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD });
 	}
 
 	@Override

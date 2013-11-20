@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.TupleExprs;
 
 /**
  * A natural join between two tuple expressions.
@@ -44,8 +45,15 @@ public class Join extends BinaryTupleOperator {
 	 * Methods *
 	 *---------*/
 
+	/**
+	 * @deprecated Since 2.7.3. Use
+	 *             {@link TupleExprs#containsProjection(TupleExpr)} instead.
+	 * @return <code>true</code> if the right argument of this Join contains a
+	 *         projection, <code>false</code> otherwise.
+	 */
+	@Deprecated
 	public boolean hasSubSelectInRightArg() {
-		return containsProjection(rightArg);
+		return TupleExprs.containsProjection(rightArg);
 	}
 
 	public Set<String> getBindingNames() {
@@ -83,37 +91,4 @@ public class Join extends BinaryTupleOperator {
 		return (Join)super.clone();
 	}
 
-	private boolean containsProjection(TupleExpr t) {
-		@SuppressWarnings("serial")
-		class VisitException extends Exception {
-		}
-		final boolean[] result = new boolean[1];
-		try {
-			t.visit(new QueryModelVisitorBase<VisitException>() {
-
-				@Override
-				public void meet(Projection node)
-					throws VisitException
-				{
-					result[0] = true;
-					throw new VisitException();
-				}
-
-				@Override
-				public void meet(Join node)
-					throws VisitException
-				{
-					// projections already inside a Join need not be
-					// taken into account
-					result[0] = false;
-					throw new VisitException();
-				}
-			});
-		}
-		catch (VisitException ex) {
-			// Do nothing. We have thrown this exception on the first successful
-			// meeting of Projection.
-		}
-		return result[0];
-	}
 }

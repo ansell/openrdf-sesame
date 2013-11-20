@@ -35,6 +35,10 @@
 									Direct Type
 									Hierarchy
 								</option>
+								<option value="memory-customrule">
+									In Memory Store Custom Graph Query
+									Inference
+								</option>
 								<option value="native">
 									Native Java Store
 								</option>
@@ -45,6 +49,10 @@
 									Native Java Store RDF Schema and
 									Direct Type
 									Hierarchy
+								</option>
+								<option value="native-customrule">
+									Native Java Store Custom
+									Graph Query Inference
 								</option>
 								<option value="mysql">
 									MySql RDF Store

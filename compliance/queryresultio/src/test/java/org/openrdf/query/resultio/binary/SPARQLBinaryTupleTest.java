@@ -17,11 +17,10 @@
 package org.openrdf.query.resultio.binary;
 
 import org.openrdf.query.resultio.AbstractQueryResultIOTupleTest;
+import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
 /**
- * 
- *
  * @author Peter Ansell
  */
 public class SPARQLBinaryTupleTest extends AbstractQueryResultIOTupleTest {
@@ -36,4 +35,8 @@ public class SPARQLBinaryTupleTest extends AbstractQueryResultIOTupleTest {
 		return TupleQueryResultFormat.BINARY;
 	}
 
+	@Override
+	protected BooleanQueryResultFormat getMatchingBooleanFormatOrNull() {
+		return null;
+	}
 }

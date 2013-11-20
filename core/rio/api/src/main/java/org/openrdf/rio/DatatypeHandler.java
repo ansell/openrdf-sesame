@@ -67,6 +67,15 @@ public interface DatatypeHandler {
 	public static final String VIRTUOSOGEOMETRY = "org.openrdf.rio.datatypes.virtuosogeometry";
 
 	/**
+	 * Identifier for datatypes defined in the GeoSPARQL vocabulary.
+	 * 
+	 * @see <a
+	 *      href="http://www.opengeospatial.org/standards/geosparql">GeoSPARQL</a>
+	 * @since 2.7.4
+	 */
+	public static final String GEOSPARQL = "org.openrdf.rio.datatypes.geosparql";
+
+	/**
 	 * Checks if the given datatype URI is recognized by this datatype handler.
 	 * 
 	 * @param datatypeUri

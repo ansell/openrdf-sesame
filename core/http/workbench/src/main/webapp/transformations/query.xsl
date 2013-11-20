@@ -55,7 +55,9 @@
 								<xsl:value-of select="$query" />
 							</textarea>
 						</td>
-						<td></td>
+						<td>
+							<input type="hidden" name="ref" value="text" />
+						</td>
 					</tr>
 					<tr>
 						<td></td>

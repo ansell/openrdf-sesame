@@ -34,6 +34,8 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MultiProjection;
+import org.openrdf.query.algebra.Order;
+import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
@@ -70,6 +72,8 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	protected List<String> mProjectionVars = new ArrayList<String>();
 
 	private List<Group> mQueryAtoms = new ArrayList<Group>();
+
+	private List<OrderElem> mOrderByElems = new ArrayList<OrderElem>();
 
 	/**
 	 * the current limit on the number of results
@@ -135,6 +139,20 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 			aRoot = aCurr = aSlice;
 		}
 
+		if (mOrderByElems != null && !mOrderByElems.isEmpty()) {
+			Order aOrder = new Order();
+
+			aOrder.addElements(mOrderByElems);
+
+			if (aRoot == null) {
+				aRoot = aCurr = aOrder;
+			}
+			else {
+				aCurr.setArg(aOrder);
+				aCurr = aOrder;
+			}
+		}
+
 		if (mDistinct) {
 			Distinct aDistinct = new Distinct();
 
@@ -153,7 +171,6 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 			if (aRoot == null) {
 				aRoot = aCurr = aReduced;
 			}
-
 			else {
 				aCurr.setArg(aReduced);
 				aCurr = aReduced;
@@ -580,6 +597,42 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 		else {
 			return theExpr;
 		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public QueryBuilder<T> orderBy(String... theNames) {
+		return this.orderByAsc(theNames);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public QueryBuilder<T> orderByAsc(String... theNames) {
+		// null safe
+		if (theNames != null) {
+			for (String aName : theNames) {
+				mOrderByElems.add(new OrderElem(new Var(aName), true));
+			}
+		}
+		return this;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public QueryBuilder<T> orderByDesc(String... theNames) {
+		// null safe
+		if (theNames != null) {
+			for (String aName : theNames) {
+				mOrderByElems.add(new OrderElem(new Var(aName), false));
+			}
+		}
+		return this;
 	}
 
 }

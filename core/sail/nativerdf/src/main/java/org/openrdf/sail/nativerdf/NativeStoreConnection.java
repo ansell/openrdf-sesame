@@ -295,11 +295,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void startTransactionInternal() throws SailException
+	protected void startTransactionInternal()
+		throws SailException
 	{
-		// we do nothing, but delay obtaining transaction locks until the first write operation.
+		// we do nothing, but delay obtaining transaction locks until the first
+		// write operation.
 	}
-	
+
 	private void acquireExclusiveTransactionLock()
 		throws SailException
 	{
@@ -328,28 +330,30 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		try {
-			nativeStore.getValueStore().sync();
-			nativeStore.getNamespaceStore().sync();
-			nativeStore.getTripleStore().commit();
+		// SES-1949 check necessary to avoid empty/read-only transactions messing
+		// up concurrent transactions
+		if (txnLockAcquired) {
+			try {
+				nativeStore.getValueStore().sync();
+				nativeStore.getNamespaceStore().sync();
+				nativeStore.getTripleStore().commit();
 
-			if (txnLockAcquired) {
 				txnLock.release();
+				txnLockAcquired = false;
 			}
-			txnLockAcquired = false;
-		}
-		catch (IOException e) {
-			throw new SailException(e);
-		}
-		catch (RuntimeException e) {
-			logger.error("Encountered an unexpected problem while trying to commit", e);
-			throw e;
-		}
+			catch (IOException e) {
+				throw new SailException(e);
+			}
+			catch (RuntimeException e) {
+				logger.error("Encountered an unexpected problem while trying to commit", e);
+				throw e;
+			}
 
-		nativeStore.notifySailChanged(sailChangedEvent);
+			nativeStore.notifySailChanged(sailChangedEvent);
 
-		// create a fresh event object.
-		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
+			// create a fresh event object.
+			sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
+		}
 	}
 
 	@Override
@@ -368,7 +372,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			throw e;
 		}
 		finally {
-			if (txnLockAcquired) { 
+			if (txnLockAcquired) {
 				txnLock.release();
 			}
 			txnLockAcquired = false;
@@ -407,7 +411,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		acquireExclusiveTransactionLock();
-		
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		boolean result = false;
@@ -495,7 +499,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		throws SailException
 	{
 		acquireExclusiveTransactionLock();
-		
+
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		try {
@@ -637,6 +641,5 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		acquireExclusiveTransactionLock();
 		nativeStore.getNamespaceStore().clear();
 	}
-
 
 }

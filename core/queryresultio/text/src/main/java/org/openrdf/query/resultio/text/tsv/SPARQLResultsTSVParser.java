@@ -46,8 +46,6 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
  */
 public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implements TupleQueryResultParser {
 
-	private List<String> bindingNames;
-
 	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.TSV;
@@ -61,6 +59,8 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 
 		BufferedReader reader = new BufferedReader(r);
 
+		List<String> bindingNames = null;
+
 		String nextLine;
 		while ((nextLine = reader.readLine()) != null) {
 			if (bindingNames == null) {
@@ -71,7 +71,9 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 					// strip the '?' prefix
 					bindingNames.add(name.substring(1));
 				}
-				handler.startQueryResult(bindingNames);
+				if (handler != null) {
+					handler.startQueryResult(bindingNames);
+				}
 			}
 			else {
 				// process solution
@@ -128,8 +130,14 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 				}
 
 				BindingSet bindingSet = new ListBindingSet(bindingNames, values.toArray(new Value[values.size()]));
-				handler.handleSolution(bindingSet);
+				if (handler != null) {
+					handler.handleSolution(bindingSet);
+				}
 			}
+		}
+
+		if (bindingNames != null && handler != null) {
+			handler.endQueryResult();
 		}
 	}
 

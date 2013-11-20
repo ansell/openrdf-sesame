@@ -162,6 +162,15 @@ public class XMLDatatypeUtil {
 	 * Value checking *
 	 *----------------*/
 
+	/**
+	 * Verifies if the supplied lexical value is valid for the given datatype.
+	 * 
+	 * @param value
+	 *        a lexical value
+	 * @param datatype
+	 *        an XML Schema datatatype.
+	 * @return true if the supplied lexical value is valid, false otherwise.
+	 */
 	public static boolean isValidValue(String value, URI datatype) {
 		boolean result = true;
 
@@ -476,7 +485,7 @@ public class XMLDatatypeUtil {
 	 */
 	public static boolean isValidTime(String value) {
 
-		String regex = "\\d\\d:\\d\\d:\\d\\d(Z|(\\+|-)\\d\\d:\\d\\d)?";
+		String regex = "\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(Z|(\\+|-)\\d\\d:\\d\\d)?";
 
 		if (value.matches(regex)) {
 			return isValidCalendarValue(value);
@@ -1085,10 +1094,10 @@ public class XMLDatatypeUtil {
 	}
 
 	/**
-	 * Normalizes a floating point number to its canonical representation.
+	 * Normalizes a floating point lexical value to its canonical representation.
 	 * 
 	 * @param value
-	 *        The value to normalize.
+	 *        The lexical value to normalize.
 	 * @param minMantissa
 	 *        A normalized decimal indicating the lowest value that the mantissa
 	 *        may have.
@@ -1103,13 +1112,18 @@ public class XMLDatatypeUtil {
 	 *        may have.
 	 * @return The canonical representation of <tt>value</tt>.
 	 * @throws IllegalArgumentException
-	 *         If the supplied value is not a legal floating point number.
+	 *         If the supplied value is not a legal floating point lexical value.
 	 */
 	private static String normalizeFPNumber(String value, String minMantissa, String maxMantissa,
 			String minExponent, String maxExponent)
 	{
 		value = collapseWhiteSpace(value);
 
+		if (value.contains(" ")) {
+			// floating point lexical value can not contain spaces after collapse
+			throwIAE("No space allowed in floating point lexical value (" + value + ")");
+		}
+		
 		// handle special values
 		if (value.equals("INF") || value.equals("-INF") || value.equals("NaN")) {
 			return value;
@@ -1131,28 +1145,6 @@ public class XMLDatatypeUtil {
 		else {
 			mantissa = normalizeDecimal(value.substring(0, eIdx));
 			exponent = normalizeInteger(value.substring(eIdx + 1));
-		}
-
-		// Check lower and upper bounds, if applicable
-		if (minMantissa != null) {
-			if (compareCanonicalDecimals(mantissa, minMantissa) < 0) {
-				throwIAE("Mantissa smaller than minimum value (" + minMantissa + ")");
-			}
-		}
-		if (maxMantissa != null) {
-			if (compareCanonicalDecimals(mantissa, maxMantissa) > 0) {
-				throwIAE("Mantissa larger than maximum value (" + maxMantissa + ")");
-			}
-		}
-		if (minExponent != null) {
-			if (compareCanonicalIntegers(exponent, minExponent) < 0) {
-				throwIAE("Exponent smaller than minimum value (" + minExponent + ")");
-			}
-		}
-		if (maxExponent != null) {
-			if (compareCanonicalIntegers(exponent, maxExponent) > 0) {
-				throwIAE("Exponent larger than maximum value (" + maxExponent + ")");
-			}
 		}
 
 		// Normalize mantissa to one non-zero digit before the dot
@@ -1230,6 +1222,29 @@ public class XMLDatatypeUtil {
 			}
 			catch (NumberFormatException e) {
 				throw new RuntimeException("NumberFormatException: " + e.getMessage());
+			}
+		}
+
+		// Check lower and upper bounds of canonicalized representation, if
+		// applicable
+		if (minMantissa != null) {
+			if (compareCanonicalDecimals(mantissa, minMantissa) < 0) {
+				throwIAE("Mantissa smaller than minimum value (" + minMantissa + ")");
+			}
+		}
+		if (maxMantissa != null) {
+			if (compareCanonicalDecimals(mantissa, maxMantissa) > 0) {
+				throwIAE("Mantissa larger than maximum value (" + maxMantissa + ")");
+			}
+		}
+		if (minExponent != null) {
+			if (compareCanonicalIntegers(exponent, minExponent) < 0) {
+				throwIAE("Exponent smaller than minimum value (" + minExponent + ")");
+			}
+		}
+		if (maxExponent != null) {
+			if (compareCanonicalIntegers(exponent, maxExponent) > 0) {
+				throwIAE("Exponent larger than maximum value (" + maxExponent + ")");
 			}
 		}
 

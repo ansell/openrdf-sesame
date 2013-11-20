@@ -183,7 +183,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * <tt>rdf:Description</tt>.
 	 */
 	public void setParseStandAloneDocuments(boolean standAloneDocs) {
-		saxFilter.setParseStandAloneDocuments(standAloneDocs);
+		getParserConfig().set(XMLParserSettings.PARSE_STANDALONE_DOCUMENTS, standAloneDocs);
 	}
 
 	/**
@@ -193,7 +193,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * @see #setParseStandAloneDocuments
 	 */
 	public boolean getParseStandAloneDocuments() {
-		return saxFilter.getParseStandAloneDocuments();
+		return getParserConfig().get(XMLParserSettings.PARSE_STANDALONE_DOCUMENTS);
 	}
 
 	/**
@@ -274,7 +274,10 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	{
 		try {
 			documentURI = inputSource.getSystemId();
-
+			
+			saxFilter.setParseStandAloneDocuments(getParserConfig().get(
+					XMLParserSettings.PARSE_STANDALONE_DOCUMENTS));
+			
 			// saxFilter.clear();
 			saxFilter.setDocumentURI(documentURI);
 
@@ -300,7 +303,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					reportWarning(String.format("%s is not a recognized SAX feature.", aSetting.getKey()));
 				}
 				catch (SAXNotSupportedException e) {
-					reportWarning(String.format("%s is not a supportd SAX feature.", aSetting.getKey()));
+					reportWarning(String.format("%s is not a supported SAX feature.", aSetting.getKey()));
 				}
 			}
 
@@ -314,7 +317,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					reportWarning(String.format("%s is not a recognized SAX property.", aSetting.getKey()));
 				}
 				catch (SAXNotSupportedException e) {
-					reportWarning(String.format("%s is not a supportd SAX property.", aSetting.getKey()));
+					reportWarning(String.format("%s is not a supported SAX property.", aSetting.getKey()));
 				}
 			}
 
@@ -330,7 +333,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					reportWarning(String.format("%s is not a recognized SAX feature.", aSetting.getKey()));
 				}
 				catch (SAXNotSupportedException e) {
-					reportWarning(String.format("%s is not a supportd SAX feature.", aSetting.getKey()));
+					reportWarning(String.format("%s is not a supported SAX feature.", aSetting.getKey()));
 				}
 			}
 
@@ -346,7 +349,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					reportWarning(String.format("%s is not a recognized SAX property.", aSetting.getKey()));
 				}
 				catch (SAXNotSupportedException e) {
-					reportWarning(String.format("%s is not a supportd SAX property.", aSetting.getKey()));
+					reportWarning(String.format("%s is not a supported SAX property.", aSetting.getKey()));
 				}
 			}
 
@@ -452,15 +455,21 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	@Override
 	public Collection<RioSetting<?>> getSupportedSettings() {
 		// Override to add RDF/XML specific supported settings
-		Set<RioSetting<?>> results = new HashSet<RioSetting<?>>();
+		Set<RioSetting<?>> results = new HashSet<RioSetting<?>>(super.getSupportedSettings());
 
-		results.addAll(super.getSupportedSettings());
 		results.addAll(getCompulsoryXmlPropertySettings());
 		results.addAll(getCompulsoryXmlFeatureSettings());
 		results.addAll(getOptionalXmlPropertySettings());
 		results.addAll(getOptionalXmlFeatureSettings());
 
 		results.add(XMLParserSettings.CUSTOM_XML_READER);
+		results.add(XMLParserSettings.FAIL_ON_DUPLICATE_RDF_ID);
+		results.add(XMLParserSettings.FAIL_ON_INVALID_NCNAME);
+		results.add(XMLParserSettings.FAIL_ON_INVALID_QNAME);
+		results.add(XMLParserSettings.FAIL_ON_MISMATCHED_TAGS);
+		results.add(XMLParserSettings.FAIL_ON_NON_STANDARD_ATTRIBUTES);
+		results.add(XMLParserSettings.FAIL_ON_SAX_NON_FATAL_ERRORS);
+		results.add(XMLParserSettings.PARSE_STANDALONE_DOCUMENTS);
 
 		return results;
 	}
@@ -478,13 +487,17 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	void startDocument()
 		throws RDFParseException, RDFHandlerException
 	{
-		rdfHandler.startRDF();
+		if (rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
 	}
 
 	void endDocument()
 		throws RDFParseException, RDFHandlerException
 	{
-		rdfHandler.endRDF();
+		if (rdfHandler != null) {
+			rdfHandler.endRDF();
+		}
 	}
 
 	/*-----------------------------*
@@ -1210,7 +1223,22 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subject, predicate, object);
-		rdfHandler.handleStatement(st);
+		if (rdfHandler != null) {
+			rdfHandler.handleStatement(st);
+		}
+	}
+
+	@Override
+	protected Literal createLiteral(String label, String lang, URI datatype)
+		throws RDFParseException
+	{
+		Locator locator = saxFilter.getLocator();
+		if (locator != null) {
+			return createLiteral(label, lang, datatype, locator.getLineNumber(), locator.getColumnNumber());
+		}
+		else {
+			return createLiteral(label, lang, datatype, -1, -1);
+		}
 	}
 
 	/**

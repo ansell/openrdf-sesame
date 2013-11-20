@@ -121,7 +121,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 			Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
 
 			if (algebraExpr instanceof ValueExpr) { // named graph identifier
-				Var contextVar = valueExpr2Var((ValueExpr)algebraExpr);
+				Var contextVar = mapValueExprToVar((ValueExpr)algebraExpr);
 				graphPattern.setContextVar(contextVar);
 				graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
 			}
@@ -222,7 +222,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
 
 		if (algebraExpr instanceof ValueExpr) { // named graph identifier
-			Var contextVar = valueExpr2Var((ValueExpr)algebraExpr);
+			Var contextVar = mapValueExprToVar((ValueExpr)algebraExpr);
 			graphPattern.setContextVar(contextVar);
 			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
 		}
@@ -319,7 +319,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 
 		ValueExpr contextNode = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, data);
 
-		Var contextVar = valueExpr2Var(contextNode);
+		Var contextVar = mapValueExprToVar(contextNode);
 		graphPattern.setContextVar(contextVar);
 		graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
 
@@ -526,7 +526,7 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		}
 
 		if (with != null) {
-			graphPattern.setContextVar(valueExpr2Var(with));
+			graphPattern.setContextVar(mapValueExprToVar(with));
 			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
 		}
 

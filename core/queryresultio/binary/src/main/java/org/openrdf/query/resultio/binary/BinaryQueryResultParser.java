@@ -115,9 +115,6 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 		if (in == null) {
 			throw new IllegalArgumentException("Input stream can not be 'null'");
 		}
-		if (handler == null) {
-			throw new IllegalArgumentException("listener can not be 'null'");
-		}
 
 		this.in = new DataInputStream(in);
 
@@ -152,8 +149,10 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 		}
 		columnHeaders = Collections.unmodifiableList(columnHeaders);
 
-		handler.startQueryResult(columnHeaders);
-
+		if(handler != null) {
+			handler.startQueryResult(columnHeaders);
+		}
+		
 		// Read value tuples
 		List<Value> currentTuple = new ArrayList<Value>(columnCount);
 		List<Value> previousTuple = Collections.nCopies(columnCount, (Value)null);
@@ -168,7 +167,9 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 				processNamespace();
 			}
 			else if (recordTypeMarker == EMPTY_ROW_RECORD_MARKER) {
-				handler.handleSolution(EmptyBindingSet.getInstance());
+				if(handler != null) {
+					handler.handleSolution(EmptyBindingSet.getInstance());
+				}
 			}
 			else {
 				Value value = null;
@@ -202,14 +203,18 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 					previousTuple = Collections.unmodifiableList(currentTuple);
 					currentTuple = new ArrayList<Value>(columnCount);
 
-					handler.handleSolution(new ListBindingSet(columnHeaders, previousTuple));
+					if(handler != null) {
+						handler.handleSolution(new ListBindingSet(columnHeaders, previousTuple));
+					}
 				}
 			}
 
 			recordTypeMarker = this.in.readByte();
 		}
 
-		handler.endQueryResult();
+		if(handler != null) {
+			handler.endQueryResult();
+		}
 	}
 
 	private void processError()

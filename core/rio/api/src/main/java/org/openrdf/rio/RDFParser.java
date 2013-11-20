@@ -141,9 +141,8 @@ public interface RDFParser {
 	 * the data (default value is <tt>true</tt>).
 	 * 
 	 * @deprecated Since 2.7.0. Use {@link #getParserConfig()} with
-	 *             {@link ParserConfig#setNonFatalErrors(java.util.Set)} to
-	 *             select which errors will not always fail the parse
-	 *             prematurely.
+	 *             {@link ParserConfig#addNonFatalError(RioSetting)} to select
+	 *             which errors will not always fail the parse prematurely.
 	 */
 	@Deprecated
 	public void setStopAtFirstError(boolean stopAtFirstError);

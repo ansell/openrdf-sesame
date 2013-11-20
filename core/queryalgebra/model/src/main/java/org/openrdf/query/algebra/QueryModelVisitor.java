@@ -66,6 +66,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(CompareAny node)
 		throws X;
 
+	public void meet(DescribeOperator node)
+			throws X;
+
 	public void meet(Copy copy)
 			throws X;
 
@@ -245,6 +248,12 @@ public interface QueryModelVisitor<X extends Exception> {
 
 	public void meet(ValueConstant node)
 		throws X;
+
+	/**
+	 * @since 2.7.4
+	 */
+	public void meet(ListMemberOperator node)
+			throws X;
 
 	public void meet(Var node)
 		throws X;

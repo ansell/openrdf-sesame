@@ -39,6 +39,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.Binding;
+import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.DatasetImpl;
 
 /**
@@ -55,6 +57,8 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 	private List<TransactionOperation> txn;
 
 	private List<Value> parsedValues = new ArrayList<Value>();
+
+	private List<Binding> bindings;
 
 	private SPARQLUpdateOperation currentSPARQLUpdate = null;
 
@@ -155,6 +159,50 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.GRAPH_TAG.equals(tagName)) {
 			parsedValues.add(valueFactory.createURI(text));
 		}
+		else if (TransactionXMLConstants.BINDINGS.equals(tagName)) {
+			if (bindings != null) {
+				throw new SAXException("unexpected start of SPARQL Update operation bindings");
+			}
+
+			bindings = new ArrayList<Binding>();
+		}
+		else if (TransactionXMLConstants.BINDING_URI.equals(tagName)
+				|| TransactionXMLConstants.BINDING_BNODE.equals(tagName)
+				|| TransactionXMLConstants.BINDING_LITERAL.equals(tagName))
+		{
+			if (bindings == null) {
+				throw new SAXException("unexpected start of SPARQL Update operation binding (without <bindings>)");
+			}
+
+			String value = text;
+			String name = atts.get(TransactionXMLConstants.NAME_ATT);
+
+			if (name != null && value != null) {
+				Value v;
+
+				if (TransactionXMLConstants.BINDING_URI.equals(tagName)) {
+					v = valueFactory.createURI(value);
+				}
+				else if (TransactionXMLConstants.BINDING_BNODE.equals(tagName)) {
+					v = valueFactory.createBNode(value);
+				}
+				else {
+					String language = atts.get(TransactionXMLConstants.LANGUAGE_ATT);
+					String dataType = atts.get(TransactionXMLConstants.DATA_TYPE_ATT);
+
+					if (language != null) {
+						v = valueFactory.createLiteral(value, language);
+					}
+					else if (dataType != null) {
+						v = valueFactory.createLiteral(value, valueFactory.createURI(dataType));
+					}
+					else {
+						v = valueFactory.createLiteral(value);
+					}
+				}
+				bindings.add(new BindingImpl(name, v));
+			}
+		}
 	}
 
 	@Override
@@ -210,6 +258,12 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.DATASET_TAG.equals(tagName)) {
 			currentSPARQLUpdate.setDataset(currentDataset);
 			currentDataset = null;
+		}
+		else if (TransactionXMLConstants.BINDINGS.equals(tagName)) {
+			Binding b[] = bindings.toArray(new Binding[0]);
+			currentSPARQLUpdate.setBindings(b);
+			bindings.clear();
+			bindings = null;
 		}
 	}
 

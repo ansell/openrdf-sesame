@@ -56,7 +56,7 @@ public class NamespaceController extends AbstractController {
 	public NamespaceController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_GET, "PUT", "DELETE" });
+		setSupportedMethods(new String[] { METHOD_GET, METHOD_HEAD, "PUT", "DELETE" });
 	}
 
 	@Override
@@ -67,31 +67,43 @@ public class NamespaceController extends AbstractController {
 		String[] pathInfo = pathInfoStr.substring(1).split("/");
 		String prefix = pathInfo[pathInfo.length - 1];
 
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-
 		String reqMethod = request.getMethod();
+
+		if (METHOD_HEAD.equals(reqMethod)) {
+			logger.info("HEAD namespace for prefix {}", prefix);
+
+			Map<String, Object> model = new HashMap<String, Object>();
+			return new ModelAndView(SimpleResponseView.getInstance(), model);
+		}
+
 		if (METHOD_GET.equals(reqMethod)) {
 			logger.info("GET namespace for prefix {}", prefix);
-			return getExportNamespaceResult(repositoryCon, prefix);
+			return getExportNamespaceResult(request, prefix);
 		}
+
 		else if ("PUT".equals(reqMethod)) {
 			logger.info("PUT prefix {}", prefix);
-			return getUpdateNamespaceResult(repositoryCon, prefix, request);
+			return getUpdateNamespaceResult(request, prefix);
 		}
 		else if ("DELETE".equals(reqMethod)) {
 			logger.info("DELETE prefix {}", prefix);
-			return getRemoveNamespaceResult(repositoryCon, prefix);
+			return getRemoveNamespaceResult(request, prefix);
 		}
 		else {
 			throw new ServerHTTPException("Unexpected request method: " + reqMethod);
 		}
 	}
 
-	private ModelAndView getExportNamespaceResult(RepositoryConnection repositoryCon, String prefix)
+	private ModelAndView getExportNamespaceResult(HttpServletRequest request, String prefix)
 		throws ServerHTTPException, ClientHTTPException
 	{
 		try {
-			String namespace = repositoryCon.getNamespace(prefix);
+			String namespace = null;
+
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				namespace = repositoryCon.getNamespace(prefix);
+			}
 
 			if (namespace == null) {
 				throw new ClientHTTPException(SC_NOT_FOUND, "Undefined prefix: " + prefix);
@@ -107,8 +119,7 @@ public class NamespaceController extends AbstractController {
 		}
 	}
 
-	private ModelAndView getUpdateNamespaceResult(RepositoryConnection repositoryCon, String prefix,
-			HttpServletRequest request)
+	private ModelAndView getUpdateNamespaceResult(HttpServletRequest request, String prefix)
 		throws IOException, ClientHTTPException, ServerHTTPException
 	{
 		String namespace = IOUtil.readString(request.getReader());
@@ -120,7 +131,10 @@ public class NamespaceController extends AbstractController {
 		// FIXME: perform some sanity checks on the namespace string
 
 		try {
-			repositoryCon.setNamespace(prefix, namespace);
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				repositoryCon.setNamespace(prefix, namespace);
+			}
 		}
 		catch (RepositoryException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
@@ -129,11 +143,14 @@ public class NamespaceController extends AbstractController {
 		return new ModelAndView(EmptySuccessView.getInstance());
 	}
 
-	private ModelAndView getRemoveNamespaceResult(RepositoryConnection repositoryCon, String prefix)
+	private ModelAndView getRemoveNamespaceResult(HttpServletRequest request, String prefix)
 		throws ServerHTTPException
 	{
 		try {
-			repositoryCon.removeNamespace(prefix);
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				repositoryCon.removeNamespace(prefix);
+			}
 		}
 		catch (RepositoryException e) {
 			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);

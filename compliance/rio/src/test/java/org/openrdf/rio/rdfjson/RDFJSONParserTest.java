@@ -16,17 +16,16 @@
  */
 package org.openrdf.rio.rdfjson;
 
-import junit.framework.Test;
-
 import org.openrdf.rio.RDFParser;
 
 /**
  * JUnit test for the RDF/JSON parser.
+ * 
  * @author Peter Ansell
  */
 public class RDFJSONParserTest extends RDFJSONParserTestCase {
 
-	public static Test suite()
+	public static junit.framework.Test suite()
 		throws Exception
 	{
 		return new RDFJSONParserTest().createTestSuite();

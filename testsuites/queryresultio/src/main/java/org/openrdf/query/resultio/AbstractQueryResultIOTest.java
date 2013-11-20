@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import org.openrdf.model.impl.BNodeImpl;
@@ -39,6 +40,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
@@ -461,7 +463,79 @@ public abstract class AbstractQueryResultIOTest {
 		finally {
 			input.close();
 		}
+	}
 
+	/**
+	 * Tests that parsing a tuple results set without specifying a
+	 * {@link TupleQueryResultHandler} does not throw any exceptions.
+	 * 
+	 * @param format
+	 * @param input
+	 * @throws QueryResultParseException
+	 * @throws IOException
+	 * @throws TupleQueryResultHandlerException
+	 * @throws QueryEvaluationException
+	 * @throws UnsupportedQueryResultFormatException
+	 */
+	protected void doTupleNoHandler(TupleQueryResultFormat format, TupleQueryResult input,
+			TupleQueryResult expected)
+		throws QueryResultParseException, IOException, TupleQueryResultHandlerException,
+		UnsupportedQueryResultFormatException, QueryEvaluationException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		QueryResultIO.write(input, format, out);
+		out.flush();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResultParser parser = QueryResultIO.createParser(format);
+		// This should perform a full parse to verify the document, even though
+		// the handler is not set
+		parser.parse(in);
+	}
+
+	/**
+	 * Tests that the parser returned for a TupleQueryResultFormat is not able to
+	 * parse a BooleanQueryResultFormat using the deprecated
+	 * {@link TupleQueryResultParser#parse(java.io.InputStream)} method, and that
+	 * it does indeed through an exception of type
+	 * {@link QueryResultParseException}.
+	 * 
+	 * @param format
+	 * @param tqr
+	 * @param matchingBooleanFormat
+	 *        A BooleanQueryResultFormat that matches the given
+	 *        TupleQueryResultFormat .
+	 * @throws IOException
+	 * @throws QueryEvaluationException
+	 * @throws UnsupportedQueryResultFormatException
+	 * @throws QueryResultHandlerException
+	 * @see SES-1860
+	 */
+	protected void doTupleParseNoHandlerOnBooleanResults(TupleQueryResultFormat format, boolean input,
+			BooleanQueryResultFormat matchingBooleanFormat)
+		throws UnsupportedQueryResultFormatException, QueryResultHandlerException, IOException
+	{
+		if (matchingBooleanFormat == null) {
+			// This test is not supported for this boolean format
+			return;
+		}
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		BooleanQueryResultWriter writer = QueryResultIO.createWriter(matchingBooleanFormat, out);
+		// Test for handling when handler is not set
+		writer.handleBoolean(input);
+
+		// System.out.println("output: " + out.toString("UTF-8"));
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		TupleQueryResultParser parser = QueryResultIO.createParser(format);
+
+		try {
+			parser.parse(in);
+			Assert.fail("Did not find expected parse exception");
+		}
+		catch (QueryResultParseException expected) {
+
+		}
 	}
 
 	protected void doBooleanNoLinks(BooleanQueryResultFormat format, boolean input)
@@ -606,4 +680,67 @@ public abstract class AbstractQueryResultIOTest {
 
 		assertEquals(output, input);
 	}
+
+	/**
+	 * Tests that parsing a boolean without specifying a
+	 * {@link BooleanQueryResultHandler} does not throw any exceptions.
+	 * 
+	 * @param format
+	 * @param input
+	 * @throws QueryResultParseException
+	 * @throws IOException
+	 */
+	protected void doBooleanNoHandler(BooleanQueryResultFormat format, boolean input)
+		throws QueryResultParseException, IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		QueryResultIO.write(input, format, out);
+		out.flush();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+		assertEquals(input, parser.parse(in));
+	}
+
+	/**
+	 * Tests that the parser returned for a BooleanQueryResultFormat is not able
+	 * to parse a TupleQueryResultFormat using the deprecated
+	 * {@link BooleanQueryResultParser#parse(java.io.InputStream)} method, and
+	 * that it does indeed through an exception of type
+	 * {@link QueryResultParseException}.
+	 * 
+	 * @param format
+	 * @param tqr
+	 * @param matchingTupleFormat
+	 *        A TupleQueryResultFormat that matches the given
+	 *        BooleanQueryResultFormat.
+	 * @throws IOException
+	 * @throws QueryEvaluationException
+	 * @throws UnsupportedQueryResultFormatException
+	 * @throws TupleQueryResultHandlerException
+	 * @see SES-1860
+	 */
+	protected void doBooleanParseNoHandlerOnTupleResults(BooleanQueryResultFormat format,
+			TupleQueryResult tqr, TupleQueryResultFormat matchingTupleFormat)
+		throws TupleQueryResultHandlerException, UnsupportedQueryResultFormatException,
+		QueryEvaluationException, IOException
+	{
+		if (matchingTupleFormat == null) {
+			// This test is not supported for this boolean format
+			return;
+		}
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+		QueryResultIO.write(tqr, matchingTupleFormat, out);
+		out.flush();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+		try {
+			parser.parse(in);
+			Assert.fail("Did not find expected parse exception");
+		}
+		catch (QueryResultParseException e) {
+
+		}
+	}
+
 }

@@ -59,6 +59,8 @@ public class ExportStatementsView implements View {
 
 	public static final String FACTORY_KEY = "factory";
 
+	public static final String HEADERS_ONLY = "headersOnly";
+
 	private static final ExportStatementsView INSTANCE = new ExportStatementsView();
 
 	public static ExportStatementsView getInstance() {
@@ -76,13 +78,13 @@ public class ExportStatementsView implements View {
 	public void render(Map model, HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
-		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-
 		Resource subj = (Resource)model.get(SUBJECT_KEY);
 		URI pred = (URI)model.get(PREDICATE_KEY);
 		Value obj = (Value)model.get(OBJECT_KEY);
 		Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
 		boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);
+
+		boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
 
 		RDFWriterFactory rdfWriterFactory = (RDFWriterFactory)model.get(FACTORY_KEY);
 
@@ -107,8 +109,12 @@ public class ExportStatementsView implements View {
 			}
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
-			repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
-
+			if (!headersOnly) {
+				RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+				synchronized (repositoryCon) {
+					repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+				}
+			}
 			out.close();
 		}
 		catch (RDFHandlerException e) {

@@ -193,7 +193,9 @@ public class TurtleParser extends RDFParserBase {
 			throw new IllegalArgumentException("base URI must not be 'null'");
 		}
 
-		rdfHandler.startRDF();
+		if (rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
 
 		lineReader = new LineNumberReader(reader);
 		// Start counting lines at 1:
@@ -219,7 +221,9 @@ public class TurtleParser extends RDFParserBase {
 			clear();
 		}
 
-		rdfHandler.endRDF();
+		if (rdfHandler != null) {
+			rdfHandler.endRDF();
+		}
 	}
 
 	protected void parseStatement()
@@ -339,7 +343,9 @@ public class TurtleParser extends RDFParserBase {
 
 		setNamespace(prefixStr, namespaceStr);
 
-		rdfHandler.handleNamespace(prefixStr, namespaceStr);
+		if (rdfHandler != null) {
+			rdfHandler.handleNamespace(prefixStr, namespaceStr);
+		}
 	}
 
 	protected void parseBase()
@@ -675,6 +681,12 @@ public class TurtleParser extends RDFParserBase {
 
 			c = read();
 			while (!TurtleUtil.isWhitespace(c)) {
+				// SES-1887 : Flexibility introduced for SES-1985 and SES-1821 needs
+				// to be counterbalanced against legitimate situations where Turtle
+				// language tags do not need whitespace following the language tag
+				if (c == '.' || c == ';' || c == ',' || c == ')' || c == ']' || c == -1) {
+					break;
+				}
 				if (verifyLanguageTag && !TurtleUtil.isLanguageChar(c)) {
 					reportError("Illegal language tag char: '" + (char)c + "'",
 							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
@@ -685,7 +697,7 @@ public class TurtleParser extends RDFParserBase {
 
 			unread(c);
 
-			return createLiteral(label, lang.toString(), null);
+			return createLiteral(label, lang.toString(), null, lineReader.getLineNumber(), -1);
 		}
 		else if (c == '^') {
 			read();
@@ -696,7 +708,7 @@ public class TurtleParser extends RDFParserBase {
 			// Read datatype
 			Value datatype = parseValue();
 			if (datatype instanceof URI) {
-				return createLiteral(label, null, (URI)datatype);
+				return createLiteral(label, null, (URI)datatype, lineReader.getLineNumber(), -1);
 			}
 			else {
 				reportFatalError("Illegal datatype value: " + datatype);
@@ -704,7 +716,7 @@ public class TurtleParser extends RDFParserBase {
 			}
 		}
 		else {
-			return createLiteral(label, null, null);
+			return createLiteral(label, null, null, lineReader.getLineNumber(), -1);
 		}
 	}
 
@@ -918,7 +930,7 @@ public class TurtleParser extends RDFParserBase {
 		// return createLiteral(label, null, datatype);
 
 		// Return result as a typed literal
-		return createLiteral(value.toString(), null, datatype);
+		return createLiteral(value.toString(), null, datatype, lineReader.getLineNumber(), -1);
 	}
 
 	protected URI parseURI()
@@ -1020,7 +1032,7 @@ public class TurtleParser extends RDFParserBase {
 				String value = prefix.toString();
 
 				if (value.equals("true") || value.equals("false")) {
-					return createLiteral(value, null, XMLSchema.BOOLEAN);
+					return createLiteral(value, null, XMLSchema.BOOLEAN, lineReader.getLineNumber(), -1);
 				}
 			}
 			else {
@@ -1134,7 +1146,9 @@ public class TurtleParser extends RDFParserBase {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj);
-		rdfHandler.handleStatement(st);
+		if (rdfHandler != null) {
+			rdfHandler.handleStatement(st);
+		}
 	}
 
 	/**
@@ -1216,7 +1230,9 @@ public class TurtleParser extends RDFParserBase {
 				unread(c);
 			}
 		}
-		rdfHandler.handleComment(comment.toString());
+		if (rdfHandler != null) {
+			rdfHandler.handleComment(comment.toString());
+		}
 		reportLocation();
 	}
 

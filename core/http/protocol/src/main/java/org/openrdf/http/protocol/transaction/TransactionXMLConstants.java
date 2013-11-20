@@ -44,7 +44,7 @@ interface TransactionXMLConstants {
 	public static final String LITERAL_TAG = "literal";
 
 	public static final String ENCODING_ATT = "encoding";
-	
+
 	public static final String LANG_ATT = "xml:lang";
 
 	public static final String DATATYPE_ATT = "datatype";
@@ -70,27 +70,27 @@ interface TransactionXMLConstants {
 	 * @since 2.7.0
 	 */
 	public static final String UPDATE_STRING_TAG = "updateString";
-	
+
 	/**
 	 * @since 2.7.0
 	 */
 	public static final String BASE_URI_ATT = "baseURI";
-	
+
 	/**
 	 * @since 2.7.0
 	 */
 	public static final String INCLUDE_INFERRED_ATT = "includeInferred";
-	
+
 	/**
 	 * @since 2.7.0
 	 */
 	public static final String DATASET_TAG = "dataset";
 
-	/** 
+	/**
 	 * @since 2.7.0
 	 */
 	public static final String GRAPH_TAG = "graph";
-	
+
 	/**
 	 * @since 2.7.0
 	 */
@@ -105,9 +105,21 @@ interface TransactionXMLConstants {
 	 * @since 2.7.0
 	 */
 	public static final String DEFAULT_REMOVE_GRAPHS_TAG = "defaultRemoveGraphs";
-	
+
 	/**
 	 * @since 2.7.0
 	 */
 	public static final String DEFAULT_INSERT_GRAPH = "defaultInsertGraph";
+
+	public static final String BINDINGS = "bindings";
+
+	public static final String BINDING_URI = "binding_uri";
+
+	public static final String BINDING_BNODE = "binding_bnode";
+
+	public static final String BINDING_LITERAL = "binding_literal";
+
+	public static final String LANGUAGE_ATT = "language";
+
+	public static final String DATA_TYPE_ATT = "dataType";
 }
