@@ -49,7 +49,7 @@ import org.openrdf.rio.helpers.ParseErrorCollector;
 public class CustomTurtleParserTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(1000);
+	public Timeout timeout = new Timeout(100000);
 	
 	private ValueFactory vf;
 
@@ -196,6 +196,6 @@ public class CustomTurtleParserTest {
 	
 	@Test
 	public void testSupportedSettings() throws Exception {
-		assertEquals(11, parser.getSupportedSettings().size());
+		assertEquals(12, parser.getSupportedSettings().size());
 	}
 }
