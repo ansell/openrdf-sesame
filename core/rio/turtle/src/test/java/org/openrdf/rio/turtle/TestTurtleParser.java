@@ -114,4 +114,41 @@ public class TestTurtleParser {
 			System.out.println(st);
 		}
 	}
+	
+	@Test
+	public void testUTF8Parsing() throws Exception {
+		URL url = new URL("http://www.w3.org/2013/TurtleTests/LITERAL2_WITH_UTF8_boundaries.ttl");
+		
+		parser.parse(url.openStream(), baseURI);
+		
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+		
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(1, statementCollector.getStatements().size());
+		
+		for (Statement st: statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
+
+	@Test
+	public void testUTF8ParsingNTriples() throws Exception {
+		URL url = new URL("http://www.w3.org/2013/TurtleTests/LITERAL_WITH_UTF8_boundaries.nt");
+		
+		parser.parse(url.openStream(), baseURI);
+		
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+		
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(1, statementCollector.getStatements().size());
+		
+		for (Statement st: statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
+
 }
