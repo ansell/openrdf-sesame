@@ -16,10 +16,11 @@
  */
 package org.openrdf.workbench.commands;
 
-import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.openrdf.workbench.base.TransformationServlet.CONTEXT;
 
 import java.io.IOException;
 
@@ -28,11 +29,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.workbench.base.TransformationServlet;
+import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
 /**
@@ -46,16 +48,17 @@ public class TestRemoveServlet {
 
 	@Test
 	public void testSES1958regression()
-		throws RepositoryException, QueryResultHandlerException, IOException
+		throws RepositoryException, QueryResultHandlerException, IOException, BadRequestException
 	{
 		WorkbenchRequest request = mock(WorkbenchRequest.class);
-		when(request.isParameterPresent(TransformationServlet.CONTEXT)).thenReturn(true);
-		when(request.getParameter(TransformationServlet.CONTEXT)).thenReturn("<http://foo.org/bar>");
+		when(request.isParameterPresent(CONTEXT)).thenReturn(true);
+		URI context = ValueFactoryImpl.getInstance().createURI("<http://foo.org/bar>");
+		when(request.getResource(CONTEXT)).thenReturn(context);
 		Repository repository = mock(Repository.class);
 		servlet.setRepository(repository);
 		RepositoryConnection connection = mock(RepositoryConnection.class);
 		when(repository.getConnection()).thenReturn(connection);
 		servlet.doPost(request, mock(HttpServletResponse.class), "");
-		verify(connection).clear(isA(URI.class));
+		verify(connection).clear(eq(context));
 	}
 }
