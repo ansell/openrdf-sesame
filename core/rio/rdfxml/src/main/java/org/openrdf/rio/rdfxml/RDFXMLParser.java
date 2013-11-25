@@ -879,7 +879,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 					if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
 						datatypeString = datatypeString.intern();
 					}
-					dtURI = createURI(datatype.getValue());
+					dtURI = createURI(datatypeString);
 				}
 
 				Literal lit = createLiteral("", xmlLang, dtURI);
