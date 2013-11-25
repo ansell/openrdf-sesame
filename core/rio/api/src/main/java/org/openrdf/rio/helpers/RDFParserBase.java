@@ -335,7 +335,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	protected void setNamespace(String prefix, String namespace) {
 		if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
-			namespaceTable.put(prefix.intern(), namespace);
+			namespaceTable.put(prefix.intern(), namespace.intern());
 		}
 		else {
 			namespaceTable.put(prefix, namespace);
