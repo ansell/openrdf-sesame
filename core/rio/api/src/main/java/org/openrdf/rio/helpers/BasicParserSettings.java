@@ -201,6 +201,20 @@ public class BasicParserSettings {
 	public static final RioSetting<Long> LARGE_LITERALS_LIMIT = new RioSettingImpl<Long>(
 			"org.openrdf.rio.largeliteralslimit", "Size limit for large literals", 1048576L);
 
+	/**
+	 * Boolean setting for parser to determine whether parser should use
+	 * {@link String#intern()} to optimise memory usage for namespace prefixes,
+	 * language tags, and datatype URIs, where implemented.
+	 * <p>
+	 * Set this to false to avoid using string interning where applicable.
+	 * <p>
+	 * Defaults to true.
+	 * 
+	 * @since 2.7.9
+	 */
+	public static final RioSetting<Boolean> INTERN_STRINGS = new RioSettingImpl<Boolean>(
+			"org.openrdf.rio.internstrings", "Use String.intern for common strings", Boolean.TRUE);
+
 	static {
 		List<DatatypeHandler> defaultDatatypeHandlers = new ArrayList<DatatypeHandler>(4);
 		try {
