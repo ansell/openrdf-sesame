@@ -170,11 +170,13 @@ public class CustomTurtleParserTest {
 	}
 
 	@Test
-	public void testLiteralWithNewlines() throws Exception {
+	public void testLiteralWithNewlines()
+		throws Exception
+	{
 		String namespace = "http://www.foo.com/bar#";
 		String okLiteralString = "Literal \n without \n new line at the beginning. \n ";
 		String errLiteralString = "\n Literal \n with \n new line at the beginning. \n ";
-	
+
 		URI mySubject = vf.createURI(namespace, "Subject");
 		URI myPredicate = vf.createURI(namespace, "Predicate");
 		Literal myOkObject = vf.createLiteral(okLiteralString);
@@ -185,17 +187,19 @@ public class CustomTurtleParserTest {
 		model.add(mySubject, myPredicate, myOkObject);
 		model.add(mySubject, myPredicate, myErrObject);
 		Rio.write(model, out, RDFFormat.TURTLE);
-		
+
 		String str = out.toString();
-		
+
 		System.err.println(str);
-		
+
 		assertTrue("okLiteralString not found", str.contains(okLiteralString));
-		assertTrue("errLiteralString not found", str.contains(errLiteralString));		
+		assertTrue("errLiteralString not found", str.contains(errLiteralString));
 	}
-	
+
 	@Test
-	public void testSupportedSettings() throws Exception {
-		assertEquals(11, parser.getSupportedSettings().size());
+	public void testSupportedSettings()
+		throws Exception
+	{
+		assertEquals(12, parser.getSupportedSettings().size());
 	}
 }

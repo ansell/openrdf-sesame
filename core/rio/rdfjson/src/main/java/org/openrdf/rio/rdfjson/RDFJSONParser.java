@@ -42,6 +42,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFJSONParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
@@ -318,6 +319,9 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 							object = this.createLiteral(nextValue, nextLanguage, null, jp.getCurrentLocation());
 						}
 						else if (nextDatatype != null) {
+							if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+								nextDatatype = nextDatatype.intern();
+							}
 							object = this.createLiteral(nextValue, null, this.createURI(nextDatatype),
 									jp.getCurrentLocation());
 						}

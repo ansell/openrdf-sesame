@@ -34,7 +34,7 @@ public class RDFJSONParserCustomTest {
 	public void testSupportedSettings()
 		throws Exception
 	{
-		assertEquals(17, Rio.createParser(RDFFormat.RDFJSON).getSupportedSettings().size());
+		assertEquals(18, Rio.createParser(RDFFormat.RDFJSON).getSupportedSettings().size());
 	}
 
 }

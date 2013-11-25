@@ -144,6 +144,10 @@ public class RDFParserHelper {
 		Literal result = null;
 		String workingLabel = label;
 		String workingLang = lang;
+		if (workingLang != null && parserConfig.get(BasicParserSettings.INTERN_STRINGS)) {
+			workingLang = lang.intern();
+		}
+
 		URI workingDatatype = datatype;
 
 		// In RDF-1.1 we must do lang check first as language literals will all

@@ -1021,6 +1021,9 @@ public class TurtleParser extends RDFParserBase {
 		// Unread last character
 		unread(c);
 
+		if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+			namespace = namespace.intern();
+		}
 		// Note: namespace has already been resolved
 		return createURI(namespace + localName.toString());
 	}

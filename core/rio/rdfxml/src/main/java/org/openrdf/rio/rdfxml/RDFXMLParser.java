@@ -57,6 +57,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 import org.openrdf.rio.helpers.XMLParserSettings;
 
@@ -274,10 +275,10 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	{
 		try {
 			documentURI = inputSource.getSystemId();
-			
+
 			saxFilter.setParseStandAloneDocuments(getParserConfig().get(
 					XMLParserSettings.PARSE_STANDALONE_DOCUMENTS));
-			
+
 			// saxFilter.clear();
 			saxFilter.setDocumentURI(documentURI);
 
@@ -660,6 +661,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 				className = buildResourceFromLocalName(localName);
 			}
 			else {
+				if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+					namespaceURI = namespaceURI.intern();
+				}
 				className = createURI(namespaceURI + localName);
 			}
 			reportStatement(nodeResource, RDF.TYPE, className);
@@ -773,6 +777,9 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			propURI = buildResourceFromLocalName(localName);
 		}
 		else {
+			if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+				namespaceURI = namespaceURI.intern();
+			}
 			propURI = createURI(namespaceURI + localName);
 		}
 
@@ -868,6 +875,10 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 
 				URI dtURI = null;
 				if (datatype != null) {
+					String datatypeString = datatype.getValue();
+					if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+						datatypeString = datatypeString.intern();
+					}
 					dtURI = createURI(datatype.getValue());
 				}
 

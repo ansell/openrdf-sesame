@@ -48,6 +48,7 @@ import org.openrdf.model.Value;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
 /**
@@ -91,7 +92,7 @@ public class BinaryRDFParser extends RDFParserBase {
 			reportFatalError("Incompatible format version: " + formatVersion);
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.startRDF();
 		}
 
@@ -118,7 +119,7 @@ public class BinaryRDFParser extends RDFParserBase {
 			}
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -128,7 +129,7 @@ public class BinaryRDFParser extends RDFParserBase {
 	{
 		String prefix = readString();
 		String namespace = readString();
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleNamespace(prefix, namespace);
 		}
 	}
@@ -137,7 +138,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		throws IOException, RDFHandlerException
 	{
 		String comment = readString();
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleComment(comment);
 		}
 	}
@@ -194,7 +195,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		}
 
 		Statement st = createStatement(subj, pred, obj, context);
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
 	}
@@ -265,6 +266,9 @@ public class BinaryRDFParser extends RDFParserBase {
 	{
 		String label = readString();
 		String datatype = readString();
+		if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+			datatype = datatype.intern();
+		}
 		URI dtUri = createURI(datatype);
 		return createLiteral(label, null, dtUri, -1, -1);
 	}

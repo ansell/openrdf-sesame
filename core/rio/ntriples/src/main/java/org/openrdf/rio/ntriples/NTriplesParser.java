@@ -167,7 +167,7 @@ public class NTriplesParser extends RDFParserBase {
 			throw new IllegalArgumentException("base URI can not be 'null'");
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.startRDF();
 		}
 
@@ -200,7 +200,7 @@ public class NTriplesParser extends RDFParserBase {
 			clear();
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -315,7 +315,7 @@ public class NTriplesParser extends RDFParserBase {
 
 		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object);
-			if(rdfHandler != null) {
+			if (rdfHandler != null) {
 				rdfHandler.handleStatement(st);
 			}
 		}
@@ -570,6 +570,9 @@ public class NTriplesParser extends RDFParserBase {
 
 		URI dtURI = null;
 		if (datatype != null) {
+			if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+				datatype = datatype.intern();
+			}
 			dtURI = createURI(datatype);
 		}
 

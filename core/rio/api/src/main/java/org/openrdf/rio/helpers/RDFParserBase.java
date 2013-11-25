@@ -217,13 +217,17 @@ public abstract class RDFParserBase implements RDFParser {
 
 		// Supported in RDFParserBase.resolveURI
 		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
-		
+
 		// Supported in RDFParserBase.createBNode(String)
 		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
-		
+
 		// Supported in RDFParserBase.getNamespace
 		result.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
-		
+
+		// Supported in RDFParserBase.setNamespace and
+		// RDFParserHelper.createLiteral
+		result.add(BasicParserSettings.INTERN_STRINGS);
+
 		return result;
 	}
 
@@ -330,7 +334,12 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Associates the specified prefix to the specified namespace.
 	 */
 	protected void setNamespace(String prefix, String namespace) {
-		namespaceTable.put(prefix, namespace);
+		if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
+			namespaceTable.put(prefix.intern(), namespace);
+		}
+		else {
+			namespaceTable.put(prefix, namespace);
+		}
 	}
 
 	/**

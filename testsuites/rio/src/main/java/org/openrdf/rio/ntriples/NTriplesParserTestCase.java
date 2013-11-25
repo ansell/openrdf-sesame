@@ -208,7 +208,7 @@ public abstract class NTriplesParserTestCase {
 	public void testSupportedSettings()
 		throws Exception
 	{
-		assertEquals(12, createRDFParser().getSupportedSettings().size());
+		assertEquals(13, createRDFParser().getSupportedSettings().size());
 	}
 
 	protected abstract RDFParser createRDFParser();
