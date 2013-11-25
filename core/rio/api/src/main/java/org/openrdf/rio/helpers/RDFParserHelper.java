@@ -149,6 +149,9 @@ public class RDFParserHelper {
 		}
 
 		URI workingDatatype = datatype;
+		if (workingDatatype != null && parserConfig.get(BasicParserSettings.INTERN_STRINGS)) {
+			workingDatatype = valueFactory.createURI(workingDatatype.stringValue().intern());
+		}
 
 		// In RDF-1.1 we must do lang check first as language literals will all
 		// have datatype RDF.LANGSTRING, but only language literals would have a
