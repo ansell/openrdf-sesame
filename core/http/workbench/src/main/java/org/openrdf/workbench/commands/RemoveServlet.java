@@ -17,7 +17,6 @@
 package org.openrdf.workbench.commands;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
@@ -53,7 +52,7 @@ public class RemoveServlet extends TransformationServlet {
 				Resource subj = req.getResource("subj");
 				URI pred = req.getURI("pred");
 				Value obj = req.getValue("obj");
-				if (subj == null && pred == null && obj == null) {
+				if (subj == null && pred == null && obj == null && !req.isParameterPresent(CONTEXT)) {
 					throw new BadRequestException("No values");
 				}
 				remove(con, subj, pred, obj, req);
@@ -83,21 +82,17 @@ public class RemoveServlet extends TransformationServlet {
 		}
 	}
 
-	/**
-	 * @param con
-	 * @param subj
-	 * @param pred
-	 * @param obj
-	 * @param req
-	 * @throws BadRequestException
-	 * @throws RepositoryException
-	 */
 	private void remove(RepositoryConnection con, Resource subj, URI pred, Value obj, WorkbenchRequest req)
 		throws BadRequestException, RepositoryException
 	{
 		if (req.isParameterPresent(CONTEXT)) {
 			Resource ctx = req.getResource(CONTEXT);
-			con.remove(subj, pred, obj, ctx);
+			if (subj == null && pred == null && obj == null) {
+				con.clear(ctx);
+			}
+			else {
+				con.remove(subj, pred, obj, ctx);
+			}
 		}
 		else {
 			con.remove(subj, pred, obj);
