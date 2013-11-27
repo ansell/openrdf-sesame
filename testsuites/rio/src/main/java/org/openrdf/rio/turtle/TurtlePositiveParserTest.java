@@ -27,6 +27,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 
 public class TurtlePositiveParserTest extends TestCase {
@@ -101,8 +102,30 @@ public class TurtlePositiveParserTest extends TestCase {
 			return;
 		}
 
-		targetParser.parse(in, baseURL);
-		in.close();
+		ParseErrorCollector el = new ParseErrorCollector();
+		targetParser.setParseErrorListener(el);
+
+		try {
+			targetParser.parse(in, baseURL);
+		}
+		finally {
+			in.close();
+
+			if (!el.getFatalErrors().isEmpty()) {
+				System.err.println("[Turtle] Input file had fatal parsing errors: ");
+				System.err.println(el.getFatalErrors());
+			}
+
+			if (!el.getErrors().isEmpty()) {
+				System.err.println("[Turtle] Input file had parsing errors: ");
+				System.err.println(el.getErrors());
+			}
+
+			if (!el.getWarnings().isEmpty()) {
+				System.err.println("[Turtle] Input file had parsing warnings: ");
+				System.err.println(el.getWarnings());
+			}
+		}
 
 		if (outputURL != null) {
 			// Parse expected output data
@@ -113,8 +136,12 @@ public class TurtlePositiveParserTest extends TestCase {
 			ntriplesParser.setRDFHandler(outputCollector);
 
 			in = this.getClass().getResourceAsStream(outputURL);
-			ntriplesParser.parse(in, baseURL);
-			in.close();
+			try {
+				ntriplesParser.parse(in, baseURL);
+			}
+			finally {
+				in.close();
+			}
 
 			// Check equality of the two models
 			if (!ModelUtil.equals(inputCollection, outputCollection)) {

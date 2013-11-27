@@ -37,9 +37,6 @@ public class TurtleParserTest extends TurtleParserTestCase {
 	@Override
 	protected RDFParser createTurtleParser() {
 		RDFParser result = new TurtleParser();
-		// Unset support for case-insensitive directives to make compliance test
-		// pass
-		result.getParserConfig().set(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES, false);
 		return result;
 	}
 

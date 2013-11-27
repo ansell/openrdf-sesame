@@ -17,18 +17,12 @@
 package org.openrdf.rio.turtle;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import junit.framework.TestSuite;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
@@ -36,7 +30,6 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -52,18 +45,18 @@ public abstract class TurtleParserTestCase {
 	/**
 	 * Base URL for W3C Tutle tests.
 	 */
-	protected static String TESTS_AFS_BASE_URL = "http://www.w3.org/2013/TurtleTests/";
-	
+	protected static String TESTS_W3C_BASE_URL = "http://www.w3.org/2013/TurtleTests/";
+
 	/**
 	 * Base directory for W3C Turtle tests
 	 */
-	private static String TEST_AFS_FILE_BASE_PATH = "/testcases/turtle/tests-ttl-w3c-20131121/";
+	private static String TEST_W3C_FILE_BASE_PATH = "/testcases/turtle/tests-ttl-w3c-20131121/";
 
-	private static String TEST_AFS_MANIFEST_URL = TEST_AFS_FILE_BASE_PATH + "manifest.ttl";
+	private static String TEST_W3C_MANIFEST_URL = TEST_W3C_FILE_BASE_PATH + "manifest.ttl";
 
-	private static String TEST_AFS_MANIFEST_URI_BASE = "http://www.w3.org/2013/TurtleTests/manifest.ttl#";
+	private static String TEST_W3C_MANIFEST_URI_BASE = "http://www.w3.org/2013/TurtleTests/manifest.ttl#";
 
-	private static String TEST_AFS_TEST_URI_BASE = "http://www.w3.org/2013/TurtleTests/";
+	private static String TEST_W3C_TEST_URI_BASE = "http://www.w3.org/2013/TurtleTests/";
 
 	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
 
@@ -96,51 +89,56 @@ public abstract class TurtleParserTestCase {
 		TestSuite suite = new TestSuite(TurtleParserTestCase.class.getName());
 
 		// Add the N-Triples test
-//		URI testUri = ValueFactoryImpl.getInstance().createURI(
-//				"http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt");
-//		String testName = "original-N-Triples-tests-using-Turtle-Parser";
-//		String inputURL = NTRIPLES_TEST_FILE;
-//		String outputURL = inputURL;
-//		String baseURL = NTRIPLES_TEST_URL;
-//		suite.addTest(new TurtlePositiveParserTest(testUri, testName, inputURL, outputURL, baseURL,
-//				createTurtleParser(), createNTriplesParser()));
+		// URI testUri = ValueFactoryImpl.getInstance().createURI(
+		// "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt");
+		// String testName = "original-N-Triples-tests-using-Turtle-Parser";
+		// String inputURL = NTRIPLES_TEST_FILE;
+		// String outputURL = inputURL;
+		// String baseURL = NTRIPLES_TEST_URL;
+		// suite.addTest(new TurtlePositiveParserTest(testUri, testName, inputURL,
+		// outputURL, baseURL,
+		// createTurtleParser(), createNTriplesParser()));
 
-		// Add the manifest for AFS test cases to a repository and query it
+		// Add the manifest for W3C test cases to a repository and query it
 		Repository afsRepository = new SailRepository(new MemoryStore());
 		afsRepository.initialize();
 		RepositoryConnection afsCon = afsRepository.getConnection();
 
-		InputStream inputStream = this.getClass().getResourceAsStream(TEST_AFS_MANIFEST_URL);
-		afsCon.add(inputStream, TEST_AFS_MANIFEST_URI_BASE, RDFFormat.TURTLE);
+		InputStream inputStream = this.getClass().getResourceAsStream(TEST_W3C_MANIFEST_URL);
+		afsCon.add(inputStream, TEST_W3C_MANIFEST_URI_BASE, RDFFormat.TURTLE);
 
-		parsePositiveTurtleSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-				TEST_AFS_TEST_URI_BASE, afsCon);
-		parseNegativeTurtleSyntaxTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-				TEST_AFS_TEST_URI_BASE, afsCon);
-		parsePositiveTurtleEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-				TEST_AFS_TEST_URI_BASE, afsCon);
-		parseNegativeTurtleEvalTests(suite, TEST_AFS_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-				TEST_AFS_TEST_URI_BASE, afsCon);
+		parsePositiveTurtleSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, afsCon);
+		parseNegativeTurtleSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, afsCon);
+		parsePositiveTurtleEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, afsCon);
+		parseNegativeTurtleEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, afsCon);
 
 		afsCon.close();
 		afsRepository.shutDown();
 
 		// Add the manifest for ntriples test cases using ntriples parser to a
 		// repository and query it
-//		Repository coverageRepository = new SailRepository(new MemoryStore());
-//		coverageRepository.initialize();
-//		RepositoryConnection ntriplesCon = coverageRepository.getConnection();
-//
-//		InputStream coverageInputStream = this.getClass().getResourceAsStream(TURTLE_NTRIPLES_MANIFEST_URL);
-//		ntriplesCon.add(coverageInputStream, TURTLE_NTRIPLES_MANIFEST_URI_BASE, RDFFormat.TURTLE);
-//
-//		parsePositiveNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-//				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
-//		parseNegativeNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH, TESTS_AFS_BASE_URL,
-//				TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
-//
-//		ntriplesCon.close();
-//		coverageRepository.shutDown();
+		// Repository coverageRepository = new SailRepository(new MemoryStore());
+		// coverageRepository.initialize();
+		// RepositoryConnection ntriplesCon = coverageRepository.getConnection();
+		//
+		// InputStream coverageInputStream =
+		// this.getClass().getResourceAsStream(TURTLE_NTRIPLES_MANIFEST_URL);
+		// ntriplesCon.add(coverageInputStream, TURTLE_NTRIPLES_MANIFEST_URI_BASE,
+		// RDFFormat.TURTLE);
+		//
+		// parsePositiveNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH,
+		// TESTS_AFS_BASE_URL,
+		// TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
+		// parseNegativeNTriplesSyntaxTests(suite, TURTLE_NTRIPLES_FILE_BASE_PATH,
+		// TESTS_AFS_BASE_URL,
+		// TURTLE_NTRIPLES_TEST_URI_BASE, ntriplesCon);
+		//
+		// ntriplesCon.close();
+		// coverageRepository.shutDown();
 
 		return suite;
 	}
