@@ -28,15 +28,12 @@ public class TurtleParserSettings {
 
 	/**
 	 * Allows the Turtle parser to recognise <tt>@BASE</tt> and <tt>@PREFIX</tt>
-	 * in a similar way to the SPARQL case insensitive directives. This feature
-	 * was requested before the Turtle Last Call period was complete, but a
-	 * response was not given, so it is on by default for Sesame users, but may
-	 * be turned off for full compliance.
+	 * in a similar way to the SPARQL case insensitive directives. 
 	 * <p>
-	 * Defaults to true.
+	 * Defaults to false.
 	 */
 	public static final RioSetting<Boolean> CASE_INSENSITIVE_DIRECTIVES = new RioSettingImpl<Boolean>(
 			"org.openrdf.rio.turtle.caseinsensitivedirectives",
-			"Allows case-insensitive directives to be recognised", Boolean.TRUE);
+			"Allows case-insensitive directives to be recognised", Boolean.FALSE);
 
 }
