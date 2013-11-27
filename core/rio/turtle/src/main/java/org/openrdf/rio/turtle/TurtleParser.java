@@ -267,32 +267,22 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		// HACK: W3C are refusing to change the specification to include
-		// case-insensitive support for the old directives, even after this
-		// support is there for the SPARQL directives that will never practically
-		// be used
-		if (directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("@prefix")) {
-			// Specifically fail if we are in compliance mode for this aspect
-			if (!directive.equalsIgnoreCase("prefix")) {
-				if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)
-						&& !directive.equals("@prefix"))
-				{
-					reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
-				}
-			}
-
+		if (directive.equalsIgnoreCase("prefix") || directive.equals("@prefix")) {
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("base") || directive.equalsIgnoreCase("@base")) {
-			// Specifically fail if we are in compliance mode for this aspect
-			if (!directive.equalsIgnoreCase("base")) {
-				if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)
-						&& !directive.equals("@base"))
-				{
-					reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
-				}
+		else if (directive.equalsIgnoreCase("base") || directive.equals("@base")) {
+			parseBase();
+		}
+		else if (directive.equalsIgnoreCase("@prefix")) {
+			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
+				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
 			}
-
+			parsePrefixID();
+		}
+		else if (directive.equalsIgnoreCase("@base")) {
+			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
+				reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
+			}
 			parseBase();
 		}
 		else if (directive.length() == 0) {
