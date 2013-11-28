@@ -38,7 +38,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -522,38 +522,37 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
 
-		try
-		{
+		try {
 			con.begin();
 			Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-	
+
 			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 			operation.execute();
-	
+
 			// update should be visible to own connection.
 			assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 			assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 			assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 			assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-	
+
 			RepositoryConnection con2 = rep.getConnection();
 			try {
 				// update should not yet be visible to separate connection
 				assertFalse(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 				assertFalse(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 				assertTrue(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 				assertTrue(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-	
+
 				con.commit();
-	
+
 				// after commit, update should be visible to separate connection.
 				assertTrue(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 				assertTrue(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 				assertFalse(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 				assertFalse(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 			}
@@ -562,7 +561,7 @@ public abstract class SPARQLUpdateTest {
 			}
 		}
 		catch (Exception e) {
-			if(con.isActive()) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 		}
@@ -605,14 +604,14 @@ public abstract class SPARQLUpdateTest {
 			operation.execute();
 
 			con.commit();
-			
+
 			// update should not have resulted in any inserts: where clause is
 			// empty.
 			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 		}
 		catch (Exception e) {
-			if(con.isActive()) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 		}
@@ -791,14 +790,14 @@ public abstract class SPARQLUpdateTest {
 
 		URI book1 = f.createURI(EX_NS, "book1");
 
-		assertFalse(con.hasStatement(book1, DCTERMS.TITLE, f.createLiteral("book 1"), true));
-		assertFalse(con.hasStatement(book1, DCTERMS.CREATOR, f.createLiteral("Ringo"), true));
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
+		assertFalse(con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
 
 		operation.execute();
 
 		String msg = "two new statements about ex:book1 should have been inserted";
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.TITLE, f.createLiteral("book 1"), true));
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.CREATOR, f.createLiteral("Ringo"), true));
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
+		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
 	}
 
 	@Test
@@ -813,16 +812,16 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertFalse(con.hasStatement(null, DCTERMS.TITLE, f.createLiteral("book 1"), true));
-		assertFalse(con.hasStatement(null, DCTERMS.CREATOR, f.createLiteral("Ringo"), true));
+		assertFalse(con.hasStatement(null, DC.TITLE, f.createLiteral("book 1"), true));
+		assertFalse(con.hasStatement(null, DC.CREATOR, f.createLiteral("Ringo"), true));
 
 		operation.execute();
 
-		RepositoryResult<Statement> titleStatements = con.getStatements(null, DCTERMS.TITLE,
+		RepositoryResult<Statement> titleStatements = con.getStatements(null, DC.TITLE,
 				f.createLiteral("book 1"), true);
 		assertNotNull(titleStatements);
 
-		RepositoryResult<Statement> creatorStatements = con.getStatements(null, DCTERMS.CREATOR,
+		RepositoryResult<Statement> creatorStatements = con.getStatements(null, DC.CREATOR,
 				f.createLiteral("Ringo"), true);
 		assertNotNull(creatorStatements);
 
@@ -868,16 +867,16 @@ public abstract class SPARQLUpdateTest {
 		URI book1 = f.createURI(EX_NS, "book1");
 		URI book2 = f.createURI(EX_NS, "book2");
 
-		assertFalse(con.hasStatement(book1, DCTERMS.TITLE, f.createLiteral("book 1"), true));
-		assertFalse(con.hasStatement(book1, DCTERMS.CREATOR, f.createLiteral("Ringo"), true));
-		assertFalse(con.hasStatement(book2, DCTERMS.CREATOR, f.createLiteral("George"), true));
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
+		assertFalse(con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
+		assertFalse(con.hasStatement(book2, DC.CREATOR, f.createLiteral("George"), true));
 
 		operation.execute();
 
 		String msg = "newly inserted statement missing";
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.TITLE, f.createLiteral("book 1"), true));
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.CREATOR, f.createLiteral("Ringo"), true));
-		assertTrue(msg, con.hasStatement(book2, DCTERMS.CREATOR, f.createLiteral("George"), true));
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true));
+		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true));
+		assertTrue(msg, con.hasStatement(book2, DC.CREATOR, f.createLiteral("George"), true));
 	}
 
 	@Test
@@ -894,14 +893,14 @@ public abstract class SPARQLUpdateTest {
 
 		URI book1 = f.createURI(EX_NS, "book1");
 
-		assertFalse(con.hasStatement(book1, DCTERMS.TITLE, f.createLiteral("book 1"), true, graph1));
-		assertFalse(con.hasStatement(book1, DCTERMS.CREATOR, f.createLiteral("Ringo"), true, graph1));
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true, graph1));
+		assertFalse(con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true, graph1));
 
 		operation.execute();
 
 		String msg = "two new statements about ex:book1 should have been inserted in graph1";
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.TITLE, f.createLiteral("book 1"), true, graph1));
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.CREATOR, f.createLiteral("Ringo"), true, graph1));
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1"), true, graph1));
+		assertTrue(msg, con.hasStatement(book1, DC.CREATOR, f.createLiteral("Ringo"), true, graph1));
 	}
 
 	@Test
@@ -1062,11 +1061,11 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertFalse(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertFalse(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, (Resource)null));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
@@ -1119,13 +1118,13 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
 
 	}
 
@@ -1141,11 +1140,11 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 	}
 
 	@Test
@@ -1160,11 +1159,11 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, (Resource)null));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, graph1));
 	}
@@ -1217,14 +1216,14 @@ public abstract class SPARQLUpdateTest {
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		URI graph3 = f.createURI(EX_NS, "graph3");
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		assertTrue(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph1));
 		operation.execute();
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, graph3));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, graph3));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, graph3));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, graph3));
 		assertTrue(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph1));
 		assertFalse(con.hasStatement(alice, FOAF.KNOWS, bob, false, graph3));
 	}
@@ -1241,11 +1240,11 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 	}
 
 	@Test
@@ -1260,11 +1259,11 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertFalse(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertFalse(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		assertTrue(con.hasStatement(bob, FOAF.NAME, null, false, (Resource)null));
 		assertFalse(con.hasStatement(null, null, null, false, graph1));
 	}
@@ -1296,13 +1295,13 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertFalse(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertFalse(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertFalse(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertFalse(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, f.createURI(EX_NS, "graph3")));
 
 	}
 
@@ -1317,11 +1316,11 @@ public abstract class SPARQLUpdateTest {
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 		operation.execute();
-		assertTrue(con.hasStatement(graph1, DCTERMS.PUBLISHER, null, false, (Resource)null));
-		assertTrue(con.hasStatement(graph2, DCTERMS.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph1, DC.PUBLISHER, null, false, (Resource)null));
+		assertTrue(con.hasStatement(graph2, DC.PUBLISHER, null, false, (Resource)null));
 	}
 
 	@Test
@@ -1596,8 +1595,8 @@ public abstract class SPARQLUpdateTest {
 
 		msg = "statements about book1 should have been added to bookStore2";
 		assertTrue(msg, con.hasStatement(book1, RDF.TYPE, null, true, bookStore2));
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.DATE, null, true, bookStore2));
-		assertTrue(msg, con.hasStatement(book1, DCTERMS.TITLE, null, true, bookStore2));
+		assertTrue(msg, con.hasStatement(book1, DC.DATE, null, true, bookStore2));
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, null, true, bookStore2));
 	}
 
 	/*
@@ -1656,7 +1655,7 @@ public abstract class SPARQLUpdateTest {
 		StringBuilder declarations = new StringBuilder();
 		declarations.append("PREFIX rdf: <" + RDF.NAMESPACE + "> \n");
 		declarations.append("PREFIX rdfs: <" + RDFS.NAMESPACE + "> \n");
-		declarations.append("PREFIX dc: <" + DCTERMS.NAMESPACE + "> \n");
+		declarations.append("PREFIX dc: <" + DC.NAMESPACE + "> \n");
 		declarations.append("PREFIX foaf: <" + FOAF.NAMESPACE + "> \n");
 		declarations.append("PREFIX ex: <" + EX_NS + "> \n");
 		declarations.append("PREFIX xsd: <" + XMLSchema.NAMESPACE + "> \n");
