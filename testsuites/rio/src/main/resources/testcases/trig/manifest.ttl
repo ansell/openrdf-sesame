@@ -25,6 +25,12 @@
         mf:result  <example3.out>
      ]
 
+     [  mf:name      "Example Document 3 (With graph recognition)" ;
+        rdfs:comment "Example Document 3 from TriG spec (With graph recognition)" ;
+        mf:action [ qt:data   <example3.trig> ] ;
+        mf:result  <example3.nq>
+     ]
+
      [  mf:name      "Empty graphs" ;
         rdfs:comment "Several encodings of empty graphs" ;
         mf:action [ qt:data   <test-01.trig> ] ;
