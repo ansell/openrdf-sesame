@@ -26,7 +26,7 @@
      ]
 
      [  mf:name      "Example Document 3 (With graph recognition)" ;
-        rdfs:comment "Example Document 3 from TriG spec" ;
+        rdfs:comment "Example Document 3 from TriG spec (With graph recognition)" ;
         mf:action [ qt:data   <example3.trig> ] ;
         mf:result  <example3.nq>
      ]
