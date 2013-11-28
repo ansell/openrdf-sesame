@@ -200,6 +200,6 @@ public class CustomTurtleParserTest {
 	public void testSupportedSettings()
 		throws Exception
 	{
-		assertEquals(12, parser.getSupportedSettings().size());
+		assertEquals(13, parser.getSupportedSettings().size());
 	}
 }
