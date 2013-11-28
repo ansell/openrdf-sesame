@@ -18,6 +18,9 @@ package org.openrdf.rio.turtle;
 
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.aduna.text.ASCIIUtil;
 import info.aduna.text.StringUtil;
 
@@ -28,6 +31,8 @@ import info.aduna.text.StringUtil;
  *      Language</a>
  */
 public class TurtleUtil {
+
+	private static final Logger logger = LoggerFactory.getLogger(TurtleUtil.class);
 
 	public static final char[] LOCAL_ESCAPED_CHARS = new char[] {
 			'_',
@@ -165,7 +170,7 @@ public class TurtleUtil {
 	public static boolean isNameChar(int c) {
 		return isPN_CHARS(c) || c == '.' || c == ':' | c == '\\' || c == '%';
 	}
-	
+
 	public static boolean isNameEndChar(int c) {
 		return isPN_CHARS(c) || c == ':';
 	}
@@ -175,7 +180,7 @@ public class TurtleUtil {
 	}
 
 	public static boolean isPrefixChar(int c) {
-		return isPN_CHARS_BASE(c) || isPN_CHARS(c) || c == '.'; 
+		return isPN_CHARS_BASE(c) || isPN_CHARS(c) || c == '.';
 	}
 
 	public static boolean isLanguageStartChar(int c) {
@@ -199,28 +204,28 @@ public class TurtleUtil {
 	public static boolean isPN_PREFIX(String prefix) {
 		// Empty prefixes are not legal, they should always have a colon
 		if (prefix.length() == 0) {
-			System.err.println("PN_PREFIX was not valid (empty)");
+			logger.debug("PN_PREFIX was not valid (empty)");
 			return false;
 		}
 
 		if (!isPN_CHARS_BASE(prefix.charAt(0))) {
-			System.err.println("PN_PREFIX was not valid (start character invalid) i=" + 0 + " nextchar="
-					+ prefix.charAt(0) + " prefix=" + prefix);
+			logger.debug("PN_PREFIX was not valid (start character invalid) i=0 nextchar={} prefix=",
+					prefix.charAt(0), prefix);
 			return false;
 		}
 
 		for (int i = 1; i < prefix.length(); i++) {
 			if (!isPN_CHARS(prefix.charAt(i)) || (prefix.charAt(i) == '.' && i < (prefix.length() - 1))) {
-				System.err.println("PN_PREFIX was not valid (intermediate character invalid) i=" + i
-						+ " nextchar=" + prefix.charAt(i) + " prefix=" + prefix);
+				logger.debug("PN_PREFIX was not valid (intermediate character invalid) i=" + i
+						+ " nextchar={} prefix={}", prefix.charAt(i), prefix);
 				return false;
 			}
 
 			// Check if the percent encoding was less than two characters from the
 			// end of the prefix, in which case it is invalid
 			if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
-				System.err.println("PN_PREFIX was not valid (percent encoding) i=" + i + " nextchar="
-						+ prefix.charAt(i) + " prefix=" + prefix);
+				logger.debug("PN_PREFIX was not valid (percent encoding) i=" + i + " nextchar={} prefix={}",
+						prefix.charAt(i), prefix);
 				return false;
 			}
 		}
@@ -228,38 +233,40 @@ public class TurtleUtil {
 		return true;
 	}
 
-//	public static boolean isLegalPrefix(String prefix) {
-//		// Empty prefixes are not legal, they should always have a colon
-//		if (prefix.length() == 0) {
-//			System.err.println("prefix was not valid (empty)");
-//			return false;
-//		}
-//		if (!isPrefixStartChar(prefix.charAt(0))) {
-//			System.err.println("prefix was not valid (start character invalid) i=" + 0 + " nextchar="
-//					+ prefix.charAt(0) + " prefix=" + prefix);
-//			return false;
-//		}
-//
-//		for (int i = 1; i < prefix.length(); i++) {
-//			if (!isPrefixChar(prefix.charAt(i))) {
-//				System.err.println("prefix was not valid (intermediate character invalid) i=" + i + " nextchar="
-//						+ prefix.charAt(i) + " prefix=" + prefix);
-//				return false;
-//			}
-//
-//			// Check if the percent encoding was less than two characters from the
-//			// end of the prefix, in which case it is invalid
-//			if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
-//				System.err.println("prefix was not valid i=" + i + " nextchar=" + prefix.charAt(i) + " prefix="
-//						+ prefix);
-//				return false;
-//			}
-//		}
-//
-//		return true;
-//	}
+	// public static boolean isLegalPrefix(String prefix) {
+	// // Empty prefixes are not legal, they should always have a colon
+	// if (prefix.length() == 0) {
+	// System.err.println("prefix was not valid (empty)");
+	// return false;
+	// }
+	// if (!isPrefixStartChar(prefix.charAt(0))) {
+	// System.err.println("prefix was not valid (start character invalid) i=" + 0
+	// + " nextchar="
+	// + prefix.charAt(0) + " prefix=" + prefix);
+	// return false;
+	// }
+	//
+	// for (int i = 1; i < prefix.length(); i++) {
+	// if (!isPrefixChar(prefix.charAt(i))) {
+	// System.err.println("prefix was not valid (intermediate character invalid) i="
+	// + i + " nextchar="
+	// + prefix.charAt(i) + " prefix=" + prefix);
+	// return false;
+	// }
+	//
+	// // Check if the percent encoding was less than two characters from the
+	// // end of the prefix, in which case it is invalid
+	// if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
+	// System.err.println("prefix was not valid i=" + i + " nextchar=" +
+	// prefix.charAt(i) + " prefix="
+	// + prefix);
+	// return false;
+	// }
+	// }
+	//
+	// return true;
+	// }
 
-	
 	public static boolean isPLX_START(String name) {
 		if (name.length() >= 3 && isPERCENT(name.substring(0, 3))) {
 			return true;
@@ -359,9 +366,9 @@ public class TurtleUtil {
 		return true;
 	}
 
-//	public static boolean isLegalName(String name) {
-//		return isPN_LOCAL(name);
-//	}
+	// public static boolean isLegalName(String name) {
+	// return isPN_LOCAL(name);
+	// }
 
 	/**
 	 * Encodes the supplied string for inclusion as a 'normal' string in a Turtle
