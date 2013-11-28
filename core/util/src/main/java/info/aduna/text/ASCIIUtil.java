@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
- 
+
 package info.aduna.text;
 
 /**
@@ -24,6 +24,7 @@ public class ASCIIUtil {
 
 	/**
 	 * Checks whether the supplied character is a letter or number.
+	 * 
 	 * @see #isLetter
 	 * @see #isNumber
 	 */
@@ -49,7 +50,7 @@ public class ASCIIUtil {
 	 * Checks whether the supplied character is an lower-case letter.
 	 */
 	public static boolean isLowerCaseLetter(int c) {
-		return (c >= 97 && c <= 122);  // a - z
+		return (c >= 97 && c <= 122); // a - z
 	}
 
 	/**
@@ -57,5 +58,23 @@ public class ASCIIUtil {
 	 */
 	public static boolean isNumber(int c) {
 		return (c >= 48 && c <= 57); // 0 - 9
+	}
+
+	/**
+	 * Check whether the supplied character is a Hexadecimal character.
+	 * 
+	 * @param c
+	 * @return
+	 */
+	public static boolean isHex(int c) {
+		return isNumber(c) || isUpperCaseHexLetter(c) || isLowerCaseHexLetter(c);
+	}
+
+	private static boolean isUpperCaseHexLetter(int c) {
+		return (c >= 65 && c <= 70);
+	}
+
+	private static boolean isLowerCaseHexLetter(int c) {
+		return (c >= 97 && c <= 102);
 	}
 }

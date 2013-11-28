@@ -24,6 +24,9 @@ import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.io.input.BOMInputStream;
 
@@ -45,6 +48,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.TurtleParserSettings;
 
 /**
  * RDF parser for <a href="http://www.dajobe.org/2004/01/turtle/">Turtle</a>
@@ -113,6 +117,13 @@ public class TurtleParser extends RDFParserBase {
 
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.TURTLE;
+	}
+
+	@Override
+	public Collection<RioSetting<?>> getSupportedSettings() {
+		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
+		result.add(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES);
+		return result;
 	}
 
 	/**
@@ -256,10 +267,22 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		if (directive.equalsIgnoreCase("prefix") || directive.equalsIgnoreCase("@prefix")) {
+		if (directive.equalsIgnoreCase("prefix") || directive.equals("@prefix")) {
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("base") || directive.equalsIgnoreCase("@base")) {
+		else if (directive.equalsIgnoreCase("base") || directive.equals("@base")) {
+			parseBase();
+		}
+		else if (directive.equalsIgnoreCase("@prefix")) {
+			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
+				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
+			}
+			parsePrefixID();
+		}
+		else if (directive.equalsIgnoreCase("@base")) {
+			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
+				reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
+			}
 			parseBase();
 		}
 		else if (directive.length() == 0) {
@@ -920,6 +943,10 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 
+			if (c == ' ') {
+				reportFatalError("IRI included an unencoded space: '" + c + "'");
+			}
+
 			uriBuf.append((char)c);
 
 			if (c == '\\') {
@@ -928,8 +955,15 @@ public class TurtleParser extends RDFParserBase {
 				if (c == -1) {
 					throwEOFException();
 				}
+				if (c != 'u' && c != 'U') {
+					reportFatalError("IRI includes string escapes: '\\" + c + "'");
+				}
 				uriBuf.append((char)c);
 			}
+		}
+
+		if (c == '.') {
+			reportFatalError("IRI must not end in a '.'");
 		}
 
 		String uri = uriBuf.toString();
@@ -975,9 +1009,11 @@ public class TurtleParser extends RDFParserBase {
 			StringBuilder prefix = new StringBuilder(8);
 			prefix.append((char)c);
 
+			int previousChar = c;
 			c = read();
 			while (TurtleUtil.isPrefixChar(c)) {
 				prefix.append((char)c);
+				previousChar = c;
 				c = read();
 			}
 
@@ -987,6 +1023,12 @@ public class TurtleParser extends RDFParserBase {
 
 				if (value.equals("true") || value.equals("false")) {
 					return createLiteral(value, null, XMLSchema.BOOLEAN, lineReader.getLineNumber(), -1);
+				}
+			}
+			else {
+				if (previousChar == '.') {
+					// '.' is a legal prefix name char, but can not appear at the end
+					reportFatalError("prefix can not end with with '.'");
 				}
 			}
 
@@ -1006,6 +1048,7 @@ public class TurtleParser extends RDFParserBase {
 				localName.append((char)c);
 			}
 
+			int previousChar = c;
 			c = read();
 			while (TurtleUtil.isNameChar(c)) {
 				if (c == '\\') {
@@ -1014,12 +1057,28 @@ public class TurtleParser extends RDFParserBase {
 				else {
 					localName.append((char)c);
 				}
+				previousChar = c;
 				c = read();
 			}
+
+			// Unread last character
+			unread(c);
+
+			if (previousChar == '.') {
+				// '.' is a legal name char, but can not appear at the end, so is
+				// not actually part of the name
+				unread(previousChar);
+				localName.deleteCharAt(localName.length() - 1);
+			}
+		}
+		else {
+			// Unread last character
+			unread(c);
 		}
 
-		// Unread last character
-		unread(c);
+		// if (c == '.') {
+		// reportFatalError("Blank node identifier must not end in a '.'");
+		// }
 
 		if (getParserConfig().get(BasicParserSettings.INTERN_STRINGS)) {
 			namespace = namespace.intern();

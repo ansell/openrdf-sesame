@@ -50,7 +50,7 @@ public class CustomTurtleParserTest {
 
 	@Rule
 	public Timeout timeout = new Timeout(1000);
-	
+
 	private ValueFactory vf;
 
 	private ParserConfig settingsNoVerifyLangTag;

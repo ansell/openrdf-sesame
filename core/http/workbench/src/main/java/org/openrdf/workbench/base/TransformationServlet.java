@@ -48,7 +48,7 @@ public abstract class TransformationServlet extends BaseRepositoryServlet {
 		NON_VERIFYING_PARSER_CONFIG.set(BasicParserSettings.VERIFY_RELATIVE_URIS, false);
 	}
 	
-	protected static final String CONTEXT = "context";
+	public static final String CONTEXT = "context";
 
 	protected static final String INFO = "info";
 
