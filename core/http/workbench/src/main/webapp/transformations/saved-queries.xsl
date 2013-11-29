@@ -12,7 +12,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql/sparql:results">
-		<script src="../../scripts/saved-queries.js" type="text/javascript"></script>
 		<xsl:for-each select="sparql:result">
 			<xsl:variable name="queryLn"
 				select="normalize-space(sparql:binding[@name='queryLn'])" />
@@ -122,5 +121,6 @@
 				</pre>
 			</div>
 		</xsl:for-each>
+		<script src="../../scripts/saved-queries.js" type="text/javascript"></script>
 	</xsl:template>
 </xsl:stylesheet>

@@ -51,8 +51,6 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/paging.js" type="text/javascript">  </script>
-		<script src="../../scripts/explore.js" type="text/javascript">  </script>
 		<xsl:if test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
 		<p id="result-limited">
 			<xsl:value-of select="$result-limited.desc" />
@@ -212,6 +210,8 @@
 				<xsl:apply-templates select="*" />
 			</table>
 		</xsl:if>
+		<script src="../../scripts/paging.js" type="text/javascript">  </script>
+		<script src="../../scripts/explore.js" type="text/javascript">  </script>
 	</xsl:template>
 
 </xsl:stylesheet>
