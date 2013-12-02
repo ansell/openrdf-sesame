@@ -765,7 +765,9 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSES1073InverseSymmetricPattern() throws Exception {
+	public void testSES1073InverseSymmetricPattern()
+		throws Exception
+	{
 		URI a = f.createURI("http://example.org/a");
 		URI b1 = f.createURI("http://example.org/b1");
 		URI b2 = f.createURI("http://example.org/b2");
@@ -778,9 +780,9 @@ public abstract class ComplexSPARQLQueryTest {
 		conn.add(b1, b2c, c1);
 		conn.add(b2, b2c, c2);
 		String query = "select * ";
-				query += "where{ ";
-            query += "?c1 ^<http://example.org/b2c>/^<http://example.org/a2b>/<http://example.org/a2b>/<http://example.org/b2c> ?c2 . ";
-				query += " } ";
+		query += "where{ ";
+		query += "?c1 ^<http://example.org/b2c>/^<http://example.org/a2b>/<http://example.org/a2b>/<http://example.org/b2c> ?c2 . ";
+		query += " } ";
 		TupleQueryResult qRes = conn.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
 		try {
 			assertTrue(qRes.hasNext());
@@ -794,9 +796,50 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 		finally {
 			qRes.close();
-		}			
+		}
 	}
-	
+
+	@Test
+	public void testSES1970CountDistinctWildcard()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses1970.trig");
+
+		String query = "SELECT (COUNT(DISTINCT *) AS ?c) {?s ?p ?o }";
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			assertTrue(result.hasNext());
+			BindingSet s = result.next();
+			Literal count = (Literal)s.getValue("c");
+			assertNotNull(count);
+
+			assertEquals(3, count.intValue());
+			
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+
 	@Test
 	public void testSES1898LeftJoinSemantics2()
 		throws Exception
@@ -885,7 +928,7 @@ public abstract class ComplexSPARQLQueryTest {
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
 		assertTrue(result.hasNext());
-		
+
 		BindingSet bs = result.next();
 		Value y = bs.getValue("y");
 		assertNotNull(y);
@@ -893,7 +936,7 @@ public abstract class ComplexSPARQLQueryTest {
 		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
 
 	}
-	
+
 	@Test
 	public void testInComparison2()
 		throws Exception
@@ -920,7 +963,7 @@ public abstract class ComplexSPARQLQueryTest {
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
 		assertFalse(result.hasNext());
-		
+
 	}
 
 	@Test
@@ -949,14 +992,14 @@ public abstract class ComplexSPARQLQueryTest {
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
 		assertTrue(result.hasNext());
-		
+
 		BindingSet bs = result.next();
 		Value y = bs.getValue("y");
 		assertNotNull(y);
 		assertTrue(y instanceof Literal);
 		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
 	}
-	
+
 	@Test
 	public void testValuesInOptional()
 		throws Exception
@@ -1003,7 +1046,7 @@ public abstract class ComplexSPARQLQueryTest {
 		}
 		assertEquals(2, count);
 	}
-	
+
 	@Test
 	public void testSameTermRepeatInUnion()
 		throws Exception
