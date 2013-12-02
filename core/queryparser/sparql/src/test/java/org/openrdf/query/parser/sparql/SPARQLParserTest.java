@@ -22,11 +22,18 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.openrdf.query.algebra.Extension;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.Projection;
+import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryTupleOperator;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.sparql.ast.ParseException;
 import org.openrdf.query.parser.sparql.ast.TokenMgrError;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
@@ -154,5 +161,40 @@ public class SPARQLParserTest {
 		
 		assertFalse(leftArg.getObjectVar().equals(rightArg.getObjectVar()));
 		assertNotEquals(leftArg.getObjectVar().getName(), rightArg.getObjectVar().getName());
+	}
+	
+	@Test
+	public void testSES1953UnequalLiteralAndURIConstants() throws Exception 
+	{
+		StringBuilder qb = new StringBuilder();
+		qb.append("INSERT DATA {graph <urn:s3> {<urn:s> <urn:label> \"urn:s3\". } } ");
+		
+		ParsedUpdate u = parser.parseUpdate(qb.toString(), null);
+
+		UpdateExpr ue = u.getUpdateExprs().get(0);
+		
+		assertNotNull(ue);
+		InsertData id = (InsertData)ue;
+		
+		TupleExpr te = id.getInsertExpr();
+		assertNotNull(te);
+		
+		UnaryTupleOperator uto = (UnaryTupleOperator)te;
+		Projection p = (Projection)uto.getArg();
+
+		ProjectionElem contextElem = null;
+		ProjectionElem objectElem = null;
+		for (ProjectionElem elem: p.getProjectionElemList().getElements()) {
+			if ("context".equals(elem.getTargetName())) {
+				contextElem = elem;
+			}
+			else if ("object".equals(elem.getTargetName())) {
+				objectElem = elem;
+			}
+		}
+		assertNotNull(contextElem);
+		assertNotNull(objectElem);
+		assertNotEquals(objectElem, contextElem);
+		assertNotEquals(objectElem.getSourceName(), contextElem.getSourceName());
 	}
 }
