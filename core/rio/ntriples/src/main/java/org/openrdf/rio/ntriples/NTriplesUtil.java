@@ -293,13 +293,21 @@ public class NTriplesUtil {
 	 * Creates an N-Triples string for the supplied bNode.
 	 */
 	public static String toNTriplesString(BNode bNode) {
-		return "_:" + bNode.getID();
+		if (isLetter(bNode.getID().charAt(0))) {
+			return "_:" + bNode.getID();
+		}
+		else {
+			return "_:a" + bNode.getID();
+		}
 	}
 
 	public static void append(BNode bNode, Appendable appendable)
 		throws IOException
 	{
 		appendable.append("_:");
+		if (!isLetter(bNode.getID().charAt(0))) {
+			appendable.append("a");
+		}
 		appendable.append(bNode.getID());
 	}
 
