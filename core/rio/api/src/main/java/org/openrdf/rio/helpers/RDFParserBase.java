@@ -363,7 +363,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	protected void clear() {
 		baseURI = null;
-		nextBNodePrefix = UUID.randomUUID().toString();
+		nextBNodePrefix = UUID.randomUUID().toString().replaceAll("-", "");
 		namespaceTable.clear();
 	}
 
