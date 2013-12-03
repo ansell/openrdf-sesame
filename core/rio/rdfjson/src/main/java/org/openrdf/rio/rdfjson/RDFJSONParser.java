@@ -101,6 +101,7 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 			}
 		}
 		finally {
+			clear();
 			if (jp != null) {
 				try {
 					jp.close();

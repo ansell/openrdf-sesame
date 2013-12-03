@@ -96,27 +96,32 @@ public class BinaryRDFParser extends RDFParserBase {
 			rdfHandler.startRDF();
 		}
 
-		loop: while (true) {
-			int recordType = this.in.readByte();
+		try {
+			loop: while (true) {
+				int recordType = this.in.readByte();
 
-			switch (recordType) {
-				case END_OF_DATA:
-					break loop;
-				case STATEMENT:
-					readStatement();
-					break;
-				case VALUE_DECL:
-					readValueDecl();
-					break;
-				case NAMESPACE_DECL:
-					readNamespaceDecl();
-					break;
-				case COMMENT:
-					readComment();
-					break;
-				default:
-					reportFatalError("Invalid record type: " + recordType);
+				switch (recordType) {
+					case END_OF_DATA:
+						break loop;
+					case STATEMENT:
+						readStatement();
+						break;
+					case VALUE_DECL:
+						readValueDecl();
+						break;
+					case NAMESPACE_DECL:
+						readNamespaceDecl();
+						break;
+					case COMMENT:
+						readComment();
+						break;
+					default:
+						reportFatalError("Invalid record type: " + recordType);
+				}
 			}
+		}
+		finally {
+			clear();
 		}
 
 		if (rdfHandler != null) {
