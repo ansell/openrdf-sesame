@@ -67,6 +67,7 @@ public abstract class RDFWriterTest {
 		ValueFactory vf = new ValueFactoryImpl();
 		BNode bnode = vf.createBNode("anon");
 		BNode bnodeNumeric = vf.createBNode("123");
+		BNode bnodeDashes = vf.createBNode("a-b");
 		URI uri1 = vf.createURI(ex, "uri1");
 		URI uri2 = vf.createURI(ex, "uri2");
 		Literal plainLit = vf.createLiteral("plain");
@@ -80,13 +81,14 @@ public abstract class RDFWriterTest {
 
 		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
 		Statement st2 = vf.createStatement(bnodeNumeric, uri1, plainLit);
-		Statement st3 = vf.createStatement(uri1, uri2, langLit, uri2);
-		Statement st4 = vf.createStatement(uri1, uri2, dtLit);
-		Statement st5 = vf.createStatement(uri1, uri2, litWithNewlineAtEnd);
-		Statement st6 = vf.createStatement(uri1, uri2, litWithNewlineAtStart);
-		Statement st7 = vf.createStatement(uri1, uri2, litWithMultipleNewlines);
-		Statement st8 = vf.createStatement(uri1, uri2, litWithSingleQuotes);
-		Statement st9 = vf.createStatement(uri1, uri2, litWithDoubleQuotes);
+		Statement st3 = vf.createStatement(bnodeDashes, uri1, plainLit);
+		Statement st4 = vf.createStatement(uri1, uri2, langLit, uri2);
+		Statement st5 = vf.createStatement(uri1, uri2, dtLit);
+		Statement st6 = vf.createStatement(uri1, uri2, litWithNewlineAtEnd);
+		Statement st7 = vf.createStatement(uri1, uri2, litWithNewlineAtStart);
+		Statement st8 = vf.createStatement(uri1, uri2, litWithMultipleNewlines);
+		Statement st9 = vf.createStatement(uri1, uri2, litWithSingleQuotes);
+		Statement st10 = vf.createStatement(uri1, uri2, litWithDoubleQuotes);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
@@ -101,6 +103,7 @@ public abstract class RDFWriterTest {
 		rdfWriter.handleStatement(st7);
 		rdfWriter.handleStatement(st8);
 		rdfWriter.handleStatement(st9);
+		rdfWriter.handleStatement(st10);
 		rdfWriter.endRDF();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -115,20 +118,21 @@ public abstract class RDFWriterTest {
 
 		rdfParser.parse(in, "foo:bar");
 
-		assertEquals("Unexpected number of statements", 9, model.size());
-		// assertTrue(statements.contains(st1));
+		assertEquals("Unexpected number of statements", 10, model.size());
+		// Test for three unique statements for blank nodes
+		assertEquals(3, model.filter(null, uri1, plainLit).size());
 		if (rdfParser.getRDFFormat().supportsContexts()) {
-			assertTrue(model.contains(st3));
+			assertTrue(model.contains(st4));
 		}
 		else {
 			assertTrue(model.contains(vf.createStatement(uri1, uri2, langLit)));
 		}
-		assertTrue(model.contains(st4));
-		assertTrue("missing statement with literal ending with newline", model.contains(st5));
-		assertTrue("missing statement with literal starting with newline", model.contains(st6));
-		assertTrue("missing statement with literal containing multiple newlines", model.contains(st7));
-		assertTrue("missing statement with single quotes", model.contains(st8));
-		assertTrue("missing statement with double quotes", model.contains(st9));
+		assertTrue(model.contains(st5));
+		assertTrue("missing statement with literal ending with newline", model.contains(st6));
+		assertTrue("missing statement with literal starting with newline", model.contains(st7));
+		assertTrue("missing statement with literal containing multiple newlines", model.contains(st8));
+		assertTrue("missing statement with single quotes", model.contains(st9));
+		assertTrue("missing statement with double quotes", model.contains(st10));
 	}
 
 	@Test
