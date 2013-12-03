@@ -91,34 +91,39 @@ public class BinaryRDFParser extends RDFParserBase {
 			reportFatalError("Incompatible format version: " + formatVersion);
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.startRDF();
 		}
 
-		loop: while (true) {
-			int recordType = this.in.readByte();
+		try {
+			loop: while (true) {
+				int recordType = this.in.readByte();
 
-			switch (recordType) {
-				case END_OF_DATA:
-					break loop;
-				case STATEMENT:
-					readStatement();
-					break;
-				case VALUE_DECL:
-					readValueDecl();
-					break;
-				case NAMESPACE_DECL:
-					readNamespaceDecl();
-					break;
-				case COMMENT:
-					readComment();
-					break;
-				default:
-					reportFatalError("Invalid record type: " + recordType);
+				switch (recordType) {
+					case END_OF_DATA:
+						break loop;
+					case STATEMENT:
+						readStatement();
+						break;
+					case VALUE_DECL:
+						readValueDecl();
+						break;
+					case NAMESPACE_DECL:
+						readNamespaceDecl();
+						break;
+					case COMMENT:
+						readComment();
+						break;
+					default:
+						reportFatalError("Invalid record type: " + recordType);
+				}
 			}
 		}
+		finally {
+			clear();
+		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -128,7 +133,7 @@ public class BinaryRDFParser extends RDFParserBase {
 	{
 		String prefix = readString();
 		String namespace = readString();
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleNamespace(prefix, namespace);
 		}
 	}
@@ -137,7 +142,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		throws IOException, RDFHandlerException
 	{
 		String comment = readString();
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleComment(comment);
 		}
 	}
@@ -194,7 +199,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		}
 
 		Statement st = createStatement(subj, pred, obj, context);
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
 	}
