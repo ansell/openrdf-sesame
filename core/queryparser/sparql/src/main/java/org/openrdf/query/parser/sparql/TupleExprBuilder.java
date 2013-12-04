@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -317,6 +318,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		String uniqueStringForValue = value.stringValue();
 		
 		if (value instanceof Literal) {
+			uniqueStringForValue += "-lit";
+			
 			// we need to append datatype and/or language tag to ensure a unique var name (see SES-1927)
 			Literal lit = (Literal)value;
 			if (lit.getDatatype() != null) {
@@ -325,6 +328,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			if (lit.getLanguage() != null) {
 				uniqueStringForValue += "-" + lit.getLanguage();
 			}
+		}
+		else if (value instanceof BNode) {
+			uniqueStringForValue += "-node";
+		}
+		else {
+			uniqueStringForValue += "-uri";
 		}
 		
 		Var var = createAnonVar("-const-" + uniqueStringForValue);
