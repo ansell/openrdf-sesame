@@ -20,17 +20,6 @@
 	</xsl:template>
 
 	<xsl:template match="sparql:sparql">
-		<script type="text/javascript">
-			<![CDATA[
-			function updatePrefix() {
-				var prefix = document.getElementById('prefix');
-				var namespace = document.getElementById('namespace');
-				var select = document.getElementById('prefix-select');
-				prefix.value = select.options[select.selectedIndex].text;
-				namespace.value = select.value;
-			}
-			]]>
-		</script>
 		<form action="namespaces" method="post">
 			<table class="dataentry">
 				<tbody>
@@ -82,6 +71,17 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
+		<script type="text/javascript">
+			<![CDATA[
+			function updatePrefix() {
+				var prefix = document.getElementById('prefix');
+				var namespace = document.getElementById('namespace');
+				var select = document.getElementById('prefix-select');
+				prefix.value = select.options[select.selectedIndex].text;
+				namespace.value = select.value;
+			}
+			]]>
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>

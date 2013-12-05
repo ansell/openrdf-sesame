@@ -12,8 +12,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/update.js" type="text/javascript">
-		</script>
 		<form action="update" method="POST" onsubmit="return doSubmit()">
 			<table class="dataentry">
 				<tbody>
@@ -66,6 +64,8 @@
 </xsl:text>
 			</xsl:for-each>
 		</pre>
+		<script src="../../scripts/update.js" type="text/javascript">
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>

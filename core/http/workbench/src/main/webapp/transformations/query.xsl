@@ -16,8 +16,6 @@
 			select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
 		<xsl:variable name="query"
 			select="sparql:results/sparql:result/sparql:binding[@name='query']" />
-		<script src="../../scripts/query.js" type="text/javascript">
-		</script>
 		<form action="query" method="POST" onsubmit="return doSubmit()">
 			<input type="hidden" name="action" id="action" />
 			<table class="dataentry">
@@ -139,5 +137,7 @@ USING NAMESPACE</xsl:text>
 				</xsl:choose>
 			</xsl:for-each>
 		</pre>
+		<script src="../../scripts/query.js" type="text/javascript">
+		</script>
 	</xsl:template>
 </xsl:stylesheet>

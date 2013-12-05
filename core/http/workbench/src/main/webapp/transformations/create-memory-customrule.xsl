@@ -15,8 +15,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/create.js" type="text/javascript">
-		</script>
 		<form action="create" method="post">
 			<table class="dataentry">
 				<tbody>
@@ -89,8 +87,8 @@
 							<xsl:value-of select="$matcher-query.label" />
 						</th>
 						<td>
-							<textarea id="matcherQuery" name="Matcher query (optional)" rows="8" cols="80"
-								wrap="hard">
+							<textarea id="matcherQuery" name="Matcher query (optional)"
+								rows="8" cols="80" wrap="hard">
 							</textarea>
 						</td>
 					</tr>
@@ -130,6 +128,8 @@
 				</tbody>
 			</table>
 		</form>
+		<script src="../../scripts/create.js" type="text/javascript">
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>

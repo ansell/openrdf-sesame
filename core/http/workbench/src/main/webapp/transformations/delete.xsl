@@ -15,8 +15,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/delete.js" type="text/javascript">
-		</script>
 		<form action="delete" method="post" onsubmit="return checkIsSafeToDelete();">
 			<table class="dataentry">
 				<tbody>
@@ -49,6 +47,8 @@
 				</tbody>
 			</table>
 		</form>
+		<script src="../../scripts/delete.js" type="text/javascript">
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>
