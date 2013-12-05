@@ -18,16 +18,16 @@
 
 	<target name="mvn">
 		<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" failonerror="true">
-			<env key="MAVEN_OPTS" value="-Xmx512m -XX:MaxPermSize=128m"/>
+			<env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
 
 		<exec os="Linux" executable="mvn" failonerror="true">
-			<env key="MAVEN_OPTS" value="-Xmx512m -XX:MaxPermSize=128m"/>
+			<env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
 		<exec os="Mac OS X" executable="mvn" failonerror="true">
-			<env key="MAVEN_OPTS" value="-Xmx512m -XX:MaxPermSize=128m"/>
+			<env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
 	</target>
