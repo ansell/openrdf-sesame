@@ -27,7 +27,7 @@
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
 		<exec os="Mac OS X" executable="mvn" failonerror="true">
-			<env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
+			<env key="MAVEN_OPTS" value="-Xmx2048m -XX:MaxPermSize=512m"/>
 			<arg line="clean source:jar package site assembly:assembly" />
 		</exec>
 	</target>
