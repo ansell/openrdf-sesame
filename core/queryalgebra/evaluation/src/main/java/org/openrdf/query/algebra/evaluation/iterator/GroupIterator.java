@@ -76,11 +76,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private final BindingSet parentBindings;
 
 	private final Group group;
-	
+
 	private boolean initialized = false;
 
 	private final Object lock = new Object();
-	
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -98,9 +98,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 *---------*/
 
 	@Override
-	public boolean hasNext() throws QueryEvaluationException {
+	public boolean hasNext()
+		throws QueryEvaluationException
+	{
 		if (!initialized) {
-			synchronized(lock) {
+			synchronized (lock) {
 				if (!initialized) {
 					super.setIterator(createIterator());
 					initialized = true;
@@ -111,9 +113,11 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	}
 
 	@Override
-	public BindingSet next() throws QueryEvaluationException {
+	public BindingSet next()
+		throws QueryEvaluationException
+	{
 		if (!initialized) {
-			synchronized(lock) {
+			synchronized (lock) {
 				if (!initialized) {
 					super.setIterator(createIterator());
 					initialized = true;
@@ -122,7 +126,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 		return super.next();
 	}
-	
+
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{
@@ -322,17 +326,17 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 	private abstract class Aggregate {
 
-		private final Set<Value> distinct;
+		private final Set<Value> distinctValues;
 
 		private final ValueExpr arg;
 
 		public Aggregate(AggregateOperatorBase operator) {
 			this.arg = operator.getArg();
 			if (operator.isDistinct()) {
-				distinct = new HashSet<Value>();
+				distinctValues = new HashSet<Value>();
 			}
 			else {
-				distinct = null;
+				distinctValues = null;
 			}
 		}
 
@@ -342,8 +346,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public abstract void processAggregate(BindingSet bindingSet)
 			throws QueryEvaluationException;
 
-		protected boolean distinct(Value value) {
-			return distinct == null || distinct.add(value);
+		protected boolean distinctValue(Value value) {
+			return distinctValues == null || distinctValues.add(value);
 		}
 
 		protected ValueExpr getArg() {
@@ -366,8 +370,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		private long count = 0;
 
+		private final Set<BindingSet> distinctBindingSets;
+
 		public CountAggregate(Count operator) {
 			super(operator);
+
+			// for a wildcarded count with a DISTINCT clause we need to filter on
+			// distinct bindingsets rather than individual values.
+			if (operator.isDistinct() && getArg() == null) {
+				distinctBindingSets = new HashSet<BindingSet>();
+			}
+			else {
+				distinctBindingSets = null;
+			}
 		}
 
 		@Override
@@ -376,15 +391,22 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		{
 			if (getArg() != null) {
 				Value value = evaluate(s);
-				if (value != null && distinct(value)) {
+				if (value != null && distinctValue(value)) {
 					count++;
 				}
 			}
 			else {
-				count++;
+				// wildcard count
+				if (distinctBindingSet(s)) {
+					count++;
+				}
 			}
 		}
 
+		protected boolean distinctBindingSet(BindingSet s) {
+			return this.distinctBindingSets == null || distinctBindingSets.add(s);
+		}
+		
 		@Override
 		public Value getValue() {
 			return vf.createLiteral(Long.toString(count), XMLSchema.INTEGER);
@@ -406,7 +428,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException
 		{
 			Value v = evaluate(s);
-			if (distinct(v)) {
+			if (distinctValue(v)) {
 				if (min == null) {
 					min = v;
 				}
@@ -437,7 +459,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException
 		{
 			Value v = evaluate(s);
-			if (distinct(v)) {
+			if (distinctValue(v)) {
 				if (max == null) {
 					max = v;
 				}
@@ -473,7 +495,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 
 			Value v = evaluate(s);
-			if (distinct(v)) {
+			if (distinctValue(v)) {
 				if (v instanceof Literal) {
 					Literal nextLiteral = (Literal)v;
 					if (nextLiteral.getDatatype() != null
@@ -526,7 +548,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 
 			Value v = evaluate(s);
-			if (distinct(v)) {
+			if (distinctValue(v)) {
 				if (v instanceof Literal) {
 					Literal nextLiteral = (Literal)v;
 					// check if the literal is numeric.
@@ -571,6 +593,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	private class SampleAggregate extends Aggregate {
 
 		private Value sample = null;
+
 		private Random random;
 
 		public SampleAggregate(Sample operator) {
@@ -582,7 +605,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void processAggregate(BindingSet s)
 			throws QueryEvaluationException
 		{
-			// we flip a coin to determine if we keep the current value or set a new value to report.
+			// we flip a coin to determine if we keep the current value or set a
+			// new value to report.
 			if (sample == null || random.nextFloat() < 0.5f) {
 				sample = evaluate(s);
 			}
@@ -616,7 +640,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException
 		{
 			Value v = evaluate(s);
-			if (v != null && distinct(v)) {
+			if (v != null && distinctValue(v)) {
 				concatenated.append(v.stringValue());
 				concatenated.append(separator);
 			}

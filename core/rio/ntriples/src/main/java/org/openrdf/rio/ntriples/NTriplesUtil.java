@@ -337,14 +337,36 @@ public class NTriplesUtil {
 	 * Creates an N-Triples string for the supplied bNode.
 	 */
 	public static String toNTriplesString(BNode bNode) {
-		return "_:" + bNode.getID();
+		try {
+			StringBuilder result = new StringBuilder(bNode.getID().length() + 1);
+			append(bNode, result);
+			return result.toString();
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Should not receive IOException with StringBuilder", e);
+		}
 	}
 
 	public static void append(BNode bNode, Appendable appendable)
 		throws IOException
 	{
+		String nextId = bNode.getID();
 		appendable.append("_:");
-		appendable.append(bNode.getID());
+
+		if (nextId.isEmpty() || !isLetter(nextId.charAt(0))) {
+			appendable.append("a");
+		}
+
+		for (int i = 0; i < nextId.length(); i++) {
+			if (isLetterOrNumber(nextId.charAt(i))) {
+				appendable.append(bNode.getID().charAt(i));
+			}
+			else {
+				// Append the position, modulus 10, to ensure that a single
+				// character is printed for each invalid character
+				appendable.append(Integer.toString(i % 10));
+			}
+		}
 	}
 
 	/**
@@ -559,16 +581,28 @@ public class NTriplesUtil {
 				sb.append('\t');
 				startIdx = backSlashIdx + 2;
 			}
-			else if (c == 'r') {
-				sb.append('\r');
+			else if (c == 'b') {
+				sb.append('\b');
 				startIdx = backSlashIdx + 2;
 			}
 			else if (c == 'n') {
 				sb.append('\n');
 				startIdx = backSlashIdx + 2;
 			}
+			else if (c == 'r') {
+				sb.append('\r');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == 'f') {
+				sb.append('\f');
+				startIdx = backSlashIdx + 2;
+			}
 			else if (c == '"') {
 				sb.append('"');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == '\'') {
+				sb.append('\'');
 				startIdx = backSlashIdx + 2;
 			}
 			else if (c == '\\') {

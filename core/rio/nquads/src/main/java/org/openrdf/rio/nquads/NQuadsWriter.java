@@ -16,6 +16,7 @@
  */
 package org.openrdf.rio.nquads;
 
+import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.ntriples.NTriplesUtil;
@@ -41,6 +42,11 @@ public class NQuadsWriter extends NTriplesWriter {
 
 	public NQuadsWriter(Writer writer) {
 		super(writer);
+	}
+
+	@Override
+	public RDFFormat getRDFFormat() {
+		return RDFFormat.NQUADS;
 	}
 
 	@Override

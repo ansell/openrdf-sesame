@@ -105,11 +105,11 @@ public class TriXParser extends RDFParserBase {
 	private void parse(Object inputStreamOrReader)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
+		if (rdfHandler != null) {
+			rdfHandler.startRDF();
+		}
+
 		try {
-			if(rdfHandler != null) {
-				rdfHandler.startRDF();
-			}
-			
 			SimpleSAXParser saxParser = new SimpleSAXParser();
 			saxParser.setPreserveWhitespace(true);
 			saxParser.setListener(new TriXSAXHandler());
@@ -119,10 +119,6 @@ public class TriXParser extends RDFParserBase {
 			}
 			else {
 				saxParser.parse((Reader)inputStreamOrReader);
-			}
-
-			if(rdfHandler != null) {
-				rdfHandler.endRDF();
 			}
 		}
 		catch (SAXParseException e) {
@@ -150,6 +146,13 @@ public class TriXParser extends RDFParserBase {
 			else {
 				reportFatalError(wrappedExc);
 			}
+		}
+		finally {
+			clear();
+		}
+		
+		if (rdfHandler != null) {
+			rdfHandler.endRDF();
 		}
 	}
 
@@ -287,7 +290,7 @@ public class TriXParser extends RDFParserBase {
 				obj = valueList.get(2);
 
 				Statement st = createStatement(subj, pred, obj, currentContext);
-				if(rdfHandler != null) {
+				if (rdfHandler != null) {
 					rdfHandler.handleStatement(st);
 				}
 			}

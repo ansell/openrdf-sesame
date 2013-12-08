@@ -158,7 +158,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 				// Namespace not yet mapped to a prefix, try to give it the
 				// specified prefix
 
-				boolean isLegalPrefix = prefix.length() == 0 || TurtleUtil.isLegalPrefix(prefix);
+				boolean isLegalPrefix = prefix.length() == 0 || TurtleUtil.isPN_PREFIX(prefix);
 
 				if (!isLegalPrefix || namespaceTable.containsValue(prefix)) {
 					// Specified prefix is not legal or the prefix is already in use,

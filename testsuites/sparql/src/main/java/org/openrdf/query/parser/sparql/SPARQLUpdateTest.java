@@ -522,38 +522,37 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("DELETE { ?x foaf:name ?y } INSERT {?x rdfs:label ?y . } WHERE {?x foaf:name ?y }");
 
-		try
-		{
+		try {
 			con.begin();
 			Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-	
+
 			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 			operation.execute();
-	
+
 			// update should be visible to own connection.
 			assertTrue(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 			assertTrue(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 			assertFalse(con.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 			assertFalse(con.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-	
+
 			RepositoryConnection con2 = rep.getConnection();
 			try {
 				// update should not yet be visible to separate connection
 				assertFalse(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 				assertFalse(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 				assertTrue(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 				assertTrue(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
-	
+
 				con.commit();
-	
+
 				// after commit, update should be visible to separate connection.
 				assertTrue(con2.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 				assertTrue(con2.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
-	
+
 				assertFalse(con2.hasStatement(bob, FOAF.NAME, f.createLiteral("Bob"), true));
 				assertFalse(con2.hasStatement(alice, FOAF.NAME, f.createLiteral("Alice"), true));
 			}
@@ -562,7 +561,7 @@ public abstract class SPARQLUpdateTest {
 			}
 		}
 		catch (Exception e) {
-			if(con.isActive()) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 		}
@@ -605,14 +604,14 @@ public abstract class SPARQLUpdateTest {
 			operation.execute();
 
 			con.commit();
-			
+
 			// update should not have resulted in any inserts: where clause is
 			// empty.
 			assertFalse(con.hasStatement(bob, RDFS.LABEL, f.createLiteral("Bob"), true));
 			assertFalse(con.hasStatement(alice, RDFS.LABEL, f.createLiteral("Alice"), true));
 		}
 		catch (Exception e) {
-			if(con.isActive()) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 		}

@@ -15,8 +15,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/create.js" type="text/javascript">
-		</script>
 		<form action="create" method="post">
 			<table class="dataentry">
 				<tbody>
@@ -91,6 +89,8 @@
 				</tbody>
 			</table>
 		</form>
+		<script src="../../scripts/create.js" type="text/javascript">
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>

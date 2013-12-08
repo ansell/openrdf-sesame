@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.InputStream;
 import java.io.StringReader;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Model;
@@ -191,6 +192,32 @@ public abstract class AbstractNTriplesParserTest {
 			conn.close();
 			repo.shutDown();
 		}
+	}
+
+	@Test
+	public void testEscapes()
+		throws Exception
+	{
+		RDFParser ntriplesParser = createRDFParser();
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
+		ntriplesParser.parse(new StringReader(
+				"<urn:test:subject> <urn:test:predicate> \" \\t \\b \\n \\r \\f \\\" \\' \\\\ \" . "),
+				"http://example/");
+		assertEquals(1, model.size());
+		assertEquals(" \t \b \n \r \f \" \' \\ ", model.objectString());
+	}
+
+	@Ignore("Uncomment when implementing SES-1894")
+	@Test
+	public void testBlankNodeIdentifiersRDF11()
+		throws Exception
+	{
+		RDFParser ntriplesParser = createRDFParser();
+		Model model = new LinkedHashModel();
+		ntriplesParser.setRDFHandler(new StatementCollector(model));
+		ntriplesParser.parse(new StringReader("_:123 <urn:test:predicate> _:456 ."), "http://example/");
+		assertEquals(1, model.size());
 	}
 
 	@Test

@@ -144,7 +144,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
 		namespaceTable = new HashMap<String, String>(16);
-		nextBNodePrefix = UUID.randomUUID().toString();
+		nextBNodePrefix = UUID.randomUUID().toString().replaceAll("-", "");
 
 		setValueFactory(valueFactory);
 		setParserConfig(new ParserConfig());
@@ -217,13 +217,13 @@ public abstract class RDFParserBase implements RDFParser {
 
 		// Supported in RDFParserBase.resolveURI
 		result.add(BasicParserSettings.VERIFY_RELATIVE_URIS);
-		
+
 		// Supported in RDFParserBase.createBNode(String)
 		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
-		
+
 		// Supported in RDFParserBase.getNamespace
 		result.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
-		
+
 		return result;
 	}
 
@@ -363,7 +363,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	protected void clear() {
 		baseURI = null;
-		nextBNodePrefix = UUID.randomUUID().toString();
+		nextBNodePrefix = UUID.randomUUID().toString().replaceAll("-", "");
 		namespaceTable.clear();
 	}
 

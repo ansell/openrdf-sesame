@@ -26,10 +26,17 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -39,8 +46,12 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RepositoryUtil;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.ContextStatementCollector;
+import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
@@ -49,6 +60,8 @@ import org.openrdf.sail.memory.MemoryStore;
  * JUnit test for the TriG parser.
  */
 public abstract class TriGParserTestCase {
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
 	 * Constants *
@@ -125,6 +138,8 @@ public abstract class TriGParserTestCase {
 		con.close();
 		repository.shutDown();
 
+		logger.warn("Found {} TriG tests to execute", suite.countTestCases());
+
 		return suite;
 	}
 
@@ -168,28 +183,89 @@ public abstract class TriGParserTestCase {
 			throws Exception
 		{
 			// Parse input data
-			RDFParser turtleParser = createRDFParser();
-			turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			RDFParser trigParser = createRDFParser();
+			// trigParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
 
-			Set<Statement> inputCollection = new LinkedHashSet<Statement>();
-			StatementCollector inputCollector = new StatementCollector(inputCollection);
-			turtleParser.setRDFHandler(inputCollector);
+			Model inputCollection = new LinkedHashModel();
+			RDFHandler inputCollector;
+
+			if (outputURL.toString().endsWith(".nq")) {
+				inputCollector = new StatementCollector(inputCollection);
+			}
+			else {
+				// Force context to null if the output is not given in N-Quads
+				inputCollector = new ContextStatementCollector(inputCollection, ValueFactoryImpl.getInstance(),
+						(Resource)null);
+			}
+			trigParser.setRDFHandler(inputCollector);
+			ParseErrorCollector el = new ParseErrorCollector();
+			trigParser.setParseErrorListener(el);
 
 			InputStream in = inputURL.openStream();
-			turtleParser.parse(in, base(baseURL));
-			in.close();
+			try {
+				trigParser.parse(in, base(baseURL));
+			}
+			finally {
+				in.close();
+				
+				if (!el.getFatalErrors().isEmpty()) {
+					System.err.println("[TriG] Input file had fatal parsing errors: ");
+					System.err.println(el.getFatalErrors());
+				}
+
+				if (!el.getErrors().isEmpty()) {
+					System.err.println("[TriG] Input file had parsing errors: ");
+					System.err.println(el.getErrors());
+				}
+
+				if (!el.getWarnings().isEmpty()) {
+					System.err.println("[TriG] Input file had parsing warnings: ");
+					System.err.println(el.getWarnings());
+				}
+			}
+
+			Model outputCollection = new LinkedHashModel();
+			RDFHandler outputCollector;
+
+			RDFParser parser;
+			if (outputURL.toString().endsWith(".nq")) {
+				parser = Rio.createParser(RDFFormat.NQUADS);
+				outputCollector = new StatementCollector(outputCollection);
+			}
+			else {
+				parser = Rio.createParser(RDFFormat.NTRIPLES);
+				// Force context to null if the output is not given in N-Quads
+				outputCollector = new ContextStatementCollector(outputCollection, ValueFactoryImpl.getInstance(),
+						(Resource)null);
+			}
+			// parser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
+			parser.setRDFHandler(outputCollector);
+
+			el = new ParseErrorCollector();
+			parser.setParseErrorListener(el);
 
 			// Parse expected output data
-			NTriplesParser ntriplesParser = new NTriplesParser();
-			ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-			Set<Statement> outputCollection = new LinkedHashSet<Statement>();
-			StatementCollector outputCollector = new StatementCollector(outputCollection);
-			ntriplesParser.setRDFHandler(outputCollector);
-
 			in = outputURL.openStream();
-			ntriplesParser.parse(in, base(baseURL));
-			in.close();
+			try {
+				parser.parse(in, base(baseURL));
+			}
+			finally {
+				in.close();
+				if (!el.getFatalErrors().isEmpty()) {
+					System.err.println("[TriG] Expected output file had fatal parsing errors: ");
+					System.err.println(el.getFatalErrors());
+				}
+
+				if (!el.getErrors().isEmpty()) {
+					System.err.println("[TriG] Expected output file had parsing errors: ");
+					System.err.println(el.getErrors());
+				}
+
+				if (!el.getWarnings().isEmpty()) {
+					System.err.println("[TriG] Expected output file had parsing warnings: ");
+					System.err.println(el.getWarnings());
+				}
+			}
 
 			// Check equality of the two models
 			if (!ModelUtil.equals(inputCollection, outputCollection)) {
@@ -200,15 +276,22 @@ public abstract class TriGParserTestCase {
 
 				System.err.println("===models not equal===");
 				if (!missingStatements.isEmpty()) {
-					System.err.println("Missing statements   : " + missingStatements);
+					System.err.println("Missing statements : ");
+					for (Statement nextMissingStatement : missingStatements) {
+						System.err.println(nextMissingStatement.toString());
+					}
 				}
 				if (!unexpectedStatements.isEmpty()) {
-					System.err.println("Unexpected statements: " + unexpectedStatements);
+					System.err.println("Unexpected statements : ");
+					for (Statement nextUnexpectedStatement : unexpectedStatements) {
+						System.err.println(nextUnexpectedStatement.toString());
+					}
 				}
 				System.err.println("======================");
 
 				fail("models not equal");
 			}
+
 		}
 
 	} // end inner class PositiveParserTest
@@ -270,7 +353,8 @@ public abstract class TriGParserTestCase {
 	} // end inner class NegativeParserTest
 
 	private static URL url(String uri)
-			throws MalformedURLException {
+		throws MalformedURLException
+	{
 		if (!uri.startsWith("injar:"))
 			return new URL(uri);
 		int start = uri.indexOf(':') + 3;
@@ -279,7 +363,8 @@ public abstract class TriGParserTestCase {
 		try {
 			String jar = URLDecoder.decode(encoded, "UTF-8");
 			return new URL("jar:" + jar + '!' + uri.substring(end));
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}
@@ -293,7 +378,8 @@ public abstract class TriGParserTestCase {
 		try {
 			String encoded = URLEncoder.encode(jar, "UTF-8");
 			return "injar://" + encoded + uri.substring(end + 1);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			throw new AssertionError(e);
 		}
 	}

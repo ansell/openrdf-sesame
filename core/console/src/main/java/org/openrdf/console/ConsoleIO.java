@@ -43,6 +43,8 @@ class ConsoleIO {
 
 	private boolean cautious = false;
 
+	private boolean errorWritten;
+
 	ConsoleIO(BufferedReader input, PrintStream out, PrintStream err, ConsoleState info) {
 		this.input = input;
 		this.out = out;
@@ -126,6 +128,7 @@ class ConsoleIO {
 
 	protected void writeError(final String errMsg) {
 		err.println(errMsg);
+		errorWritten = true;
 	}
 
 	protected void writeUnopenedError() {
@@ -195,5 +198,9 @@ class ConsoleIO {
 	 */
 	public void setCautious() {
 		this.cautious = true;
+	}
+
+	public boolean wasErrorWritten() {
+		return errorWritten;
 	}
 }

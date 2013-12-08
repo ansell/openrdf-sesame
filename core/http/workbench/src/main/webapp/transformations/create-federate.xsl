@@ -15,9 +15,6 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/create.js" type="text/javascript"></script>
-		<script src="../../scripts/create-federate.js" type="text/javascript">
-		</script>
 		<form action="create" method="post">
 			<table class="dataentry">
 				<tbody>
@@ -42,7 +39,8 @@
 						</td>
 						<td>
 							<span id="recurse-message" class="error" style="display: none;">
-								Federation ID may not match an existing ID.
+								Federation ID
+								may not match an existing ID.
 							</span>
 						</td>
 					</tr>
@@ -97,6 +95,9 @@
 				</tbody>
 			</table>
 		</form>
+		<script src="../../scripts/create.js" type="text/javascript"></script>
+		<script src="../../scripts/create-federate.js" type="text/javascript">
+		</script>
 	</xsl:template>
 
 	<xsl:template match="sparql:binding[@name='id']">
