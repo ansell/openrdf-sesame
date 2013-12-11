@@ -62,7 +62,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<slf4j.version>1.7.5</slf4j.version>
-		<logback.version>0.9.28</logback.version>
+		<logback.version>1.0.13</logback.version>
 		<spring.version>2.5.6</spring.version>
 	</properties>
 
