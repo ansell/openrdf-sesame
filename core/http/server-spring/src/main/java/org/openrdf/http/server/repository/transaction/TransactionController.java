@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
+import info.aduna.webapp.views.EmptySuccessView;
 import info.aduna.webapp.views.SimpleResponseView;
 
 import org.openrdf.http.server.ClientHTTPException;
@@ -53,11 +54,11 @@ public class TransactionController extends AbstractController {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final Map<UUID, RepositoryConnection> activeConnections = new HashMap<UUID, RepositoryConnection>();
-	
+
 	public TransactionController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { METHOD_POST });
+		setSupportedMethods(new String[] { "PUT", "DELETE" });
 	}
 
 	@Override
@@ -66,30 +67,41 @@ public class TransactionController extends AbstractController {
 	{
 		ModelAndView result;
 
-		Repository repository = RepositoryInterceptor.getRepository(request);
-
 		String reqMethod = request.getMethod();
+		UUID transactionId = getTransactionID(request);
+		logger.debug("transaction id: {}", transactionId);
+		RepositoryConnection connection = ActiveTransactionRegistry.getTransactionConnection(transactionId);
 
-	  if (METHOD_POST.equals(reqMethod)) {
-			logger.info("POST transaction");
-			result = startTransaction(repository, request, response);
-			logger.info("POST transaction request finished.");
+		try {
+			if ("PUT".equals(reqMethod)) {
+				logger.info("PUT transaction");
+				result = processTransactionOperation(connection, request, response);
+				logger.info("PUT transaction request finished.");
+			}
+			else if ("DELETE".equals(reqMethod)) {
+				logger.info("DELETE transaction");
+
+				connection.rollback();
+				ActiveTransactionRegistry.deregister(transactionId, connection);
+				connection.close();
+
+				result = new ModelAndView(EmptySuccessView.getInstance());
+				logger.info("PUT transaction request finished.");
+			}
+			else {
+				throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
+						+ reqMethod);
+			}
 		}
-		else {
-			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
-					+ reqMethod);
+		finally {
+			ActiveTransactionRegistry.returnTransactionConnection(transactionId);
 		}
 		return result;
 	}
 
-	
 	private UUID getTransactionID(HttpServletRequest request)
 		throws ClientHTTPException
 	{
-		String requestURL = request.getRequestURL().toString();
-
-		String queryString = request.getQueryString();
-
 		String pathInfoStr = request.getPathInfo();
 		logger.debug("path info: {}", pathInfoStr);
 
@@ -102,29 +114,24 @@ public class TransactionController extends AbstractController {
 				logger.debug("txnID is '{}'", txnID);
 			}
 		}
-		
+
 		return txnID;
 	}
 
-	private ModelAndView startTransaction(Repository repository, HttpServletRequest request,
+	private ModelAndView processTransactionOperation(RepositoryConnection conn, HttpServletRequest request,
 			HttpServletResponse response)
 		throws IOException, ClientHTTPException, ServerHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 		Map<String, Object> model = new HashMap<String, Object>();
-		
+
 		try {
-			RepositoryConnection conn = repository.getConnection();
-			conn.begin();
-			UUID txnId = UUID.randomUUID();
-			
-			activeConnections.put(txnId, conn);
+			// TODO read and execute transaction operation.
 			model.put(SimpleResponseView.SC_KEY, SC_CREATED);
-			model.put(SimpleResponseView.CONTENT_KEY, txnId.toString());
 			return new ModelAndView(SimpleResponseView.getInstance(), model);
 		}
-		catch (RepositoryException e) {
-			throw new ServerHTTPException("Transaction start error: " + e.getMessage(), e);
+		catch (Exception e) {
+			throw new ServerHTTPException("Transaction error: " + e.getMessage(), e);
 		}
 	}
 

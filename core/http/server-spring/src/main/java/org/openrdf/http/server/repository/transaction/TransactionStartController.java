@@ -53,7 +53,7 @@ import org.openrdf.repository.RepositoryException;
 public class TransactionStartController extends AbstractController {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
 	public TransactionStartController()
 		throws ApplicationContextException
 	{
@@ -70,7 +70,7 @@ public class TransactionStartController extends AbstractController {
 
 		String reqMethod = request.getMethod();
 
-	  if (METHOD_POST.equals(reqMethod)) {
+		if (METHOD_POST.equals(reqMethod)) {
 			logger.info("POST transaction");
 			result = startTransaction(repository, request, response);
 			logger.info("POST transaction request finished.");
@@ -82,7 +82,6 @@ public class TransactionStartController extends AbstractController {
 		return result;
 	}
 
-	
 	private UUID getTransactionID(HttpServletRequest request)
 		throws ClientHTTPException
 	{
@@ -102,7 +101,7 @@ public class TransactionStartController extends AbstractController {
 				logger.debug("txnID is '{}'", txnID);
 			}
 		}
-		
+
 		return txnID;
 	}
 
@@ -112,17 +111,19 @@ public class TransactionStartController extends AbstractController {
 	{
 		ProtocolUtil.logRequestParameters(request);
 		Map<String, Object> model = new HashMap<String, Object>();
-		
+
 		try {
 			RepositoryConnection conn = repository.getConnection();
 			conn.begin();
 			UUID txnId = UUID.randomUUID();
-			
+
 			ActiveTransactionRegistry.register(txnId, conn);
 			model.put(SimpleResponseView.SC_KEY, SC_CREATED);
 			final StringBuffer txnURL = request.getRequestURL();
 			txnURL.append("/" + txnId.toString());
-			model.put(SimpleResponseView.CONTENT_KEY, txnURL.toString());
+			Map<String, String> customHeaders = new HashMap<String, String>();
+			customHeaders.put("Location", txnURL.toString());
+			model.put(SimpleResponseView.CUSTOM_HEADERS_KEY, customHeaders);
 			return new ModelAndView(SimpleResponseView.getInstance(), model);
 		}
 		catch (RepositoryException e) {

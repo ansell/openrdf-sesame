@@ -17,37 +17,70 @@
 package org.openrdf.http.server.repository.transaction;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.openrdf.repository.RepositoryConnection;
 
-
 /**
- *
  * @author jeen
  */
 public class ActiveTransactionRegistry {
 
 	private static final Map<UUID, RepositoryConnection> activeConnections = new HashMap<UUID, RepositoryConnection>();
 
-	public static synchronized void register(UUID transactionId, RepositoryConnection conn) throws IllegalArgumentException {
-		if (activeConnections.containsKey(transactionId)) {
-			throw new IllegalArgumentException("transaction with id " + transactionId.toString() + " already registered.");
+	private static final Set<UUID> checkedOutTransactions = new HashSet<UUID>();
+
+	public static void register(UUID transactionId, RepositoryConnection conn)
+		throws IllegalArgumentException
+	{
+		synchronized (activeConnections) {
+			if (activeConnections.containsKey(transactionId)) {
+				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+						+ " already registered.");
+			}
+			activeConnections.put(transactionId, conn);
 		}
-		activeConnections.put(transactionId, conn);
 	}
-	
-	public static synchronized void deregister(UUID transactionId, RepositoryConnection conn) throws IllegalArgumentException {
-		if (! activeConnections.containsKey(transactionId)) {
-			throw new IllegalArgumentException("transaction with id " + transactionId.toString() + " not registered.");
+
+	public static void deregister(UUID transactionId, RepositoryConnection conn)
+		throws IllegalArgumentException
+	{
+		synchronized (activeConnections) {
+			if (!activeConnections.containsKey(transactionId)) {
+				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+						+ " not registered.");
+			}
+			activeConnections.remove(transactionId);
 		}
-		activeConnections.remove(transactionId);
 	}
-	
-	public static synchronized RepositoryConnection getTransactionConnection(UUID transactionId) {
-		return activeConnections.get(transactionId);
+
+	public static RepositoryConnection getTransactionConnection(UUID transactionId)
+		throws InterruptedException
+	{
+
+		RepositoryConnection conn = null;
+
+		synchronized (activeConnections) {
+			while (checkedOutTransactions.contains(transactionId)) {
+				// TODO limit?
+				Thread.sleep(60);
+			}
+
+			synchronized (checkedOutTransactions) {
+				conn = activeConnections.get(transactionId);
+				checkedOutTransactions.add(transactionId);
+			}
+		}
+
+		return conn;
 	}
-	
-	
+
+	public static void returnTransactionConnection(UUID transactionId) {
+		synchronized (checkedOutTransactions) {
+			checkedOutTransactions.remove(transactionId);
+		}
+	}
 }
