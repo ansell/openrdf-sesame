@@ -174,9 +174,9 @@ public class QueryStorage {
 		try {
 			con = repository.getConnection();
 
-			// Manufacture an unlikely unique statement to retrieve.
+			// Manufacture an unlikely unique statement to check.
 			URI uri = con.getValueFactory().createURI("urn:uuid:" + UUID.randomUUID());
-			con.getStatements(uri, uri, uri, false, uri);
+			con.hasStatement(uri, uri, uri, false, uri);
 		}
 		catch (RepositoryException re) {
 			rval = false;
