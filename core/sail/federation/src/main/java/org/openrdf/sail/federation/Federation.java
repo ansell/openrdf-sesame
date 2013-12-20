@@ -219,7 +219,6 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 
 	@Override
 	public List<IsolationLevel> getSupportedIsolationLevels() {
-		// TODO determine based on members?
 		return Arrays.asList(new IsolationLevel[] { IsolationLevels.NONE });
 	}
 
