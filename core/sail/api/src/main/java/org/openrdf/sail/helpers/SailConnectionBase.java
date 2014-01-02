@@ -19,8 +19,8 @@ package org.openrdf.sail.helpers;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -519,11 +519,11 @@ public abstract class SailConnectionBase implements SailConnection {
 		if (op.getUpdateExpr() instanceof Modify) {
 			synchronized (removed) {
 				assert !removed.containsKey(op);
-				removed.put(op, new TreeSet<Statement>());
+				removed.put(op, new LinkedList<Statement>());
 			}
 			synchronized (added) {
 				assert !added.containsKey(op);
-				added.put(op, new TreeSet<Statement>());
+				added.put(op, new LinkedList<Statement>());
 			}
 		}
 	}
