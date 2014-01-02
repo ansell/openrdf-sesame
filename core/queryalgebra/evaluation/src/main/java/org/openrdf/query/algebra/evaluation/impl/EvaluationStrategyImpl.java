@@ -120,8 +120,8 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService.QueryType;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.SPARQLFederatedService;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
@@ -169,17 +169,38 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	protected final Dataset dataset;
 
+	protected final FederatedServiceResolver serviceResolver;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public EvaluationStrategyImpl(TripleSource tripleSource) {
-		this(tripleSource, null);
+	public EvaluationStrategyImpl(TripleSource tripleSource, FederatedServiceResolver serviceResolver) {
+		this(tripleSource, null, serviceResolver);
 	}
 
-	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset) {
+	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset,
+			FederatedServiceResolver serviceResolver)
+	{
 		this.tripleSource = tripleSource;
 		this.dataset = dataset;
+		this.serviceResolver = serviceResolver;
+	}
+
+	/**
+	 * Retrieve the {@link FederatedService} registered for serviceUrl. If there
+	 * is no service registered for serviceUrl, a new
+	 * {@link SPARQLFederatedService} is created and registered.
+	 * 
+	 * @param serviceUrl
+	 * @return
+	 * @throws RepositoryException
+	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
+	 */
+	public FederatedService getService(String serviceUrl)
+		throws QueryEvaluationException
+	{
+		return serviceResolver.getService(serviceUrl);
 	}
 
 	/*---------*
@@ -279,6 +300,25 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
+			String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
+		throws QueryEvaluationException
+	{
+		try {
+			FederatedService fs = serviceResolver.getService(serviceUri);
+			return fs.evaluate(service, bindings, service.getBaseURI());
+		}
+		catch (QueryEvaluationException e) {
+			// suppress exceptions if silent
+			if (service.isSilent()) {
+				return bindings;
+			}
+			else {
+				throw new QueryEvaluationException(e);
+			}
+		}
+	}
+
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			BindingSet bindings)
 		throws QueryEvaluationException
 	{
@@ -298,7 +338,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		try {
 
-			FederatedService fs = FederatedServiceManager.getInstance().getService(serviceUri);
+			FederatedService fs = serviceResolver.getService(serviceUri);
 
 			// create a copy of the free variables, and remove those for which
 			// bindings are available (we can set them as constraints!)
@@ -320,17 +360,21 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 			String baseUri = service.getBaseURI();
 
-			// depending on freeVars.size: either SELECT or ASK query
-			String queryString = service.getQueryString(freeVars);
-
 			// special case: no free variables => perform ASK query
 			if (freeVars.size() == 0) {
-				return fs.evaluate(queryString, bindings, baseUri, QueryType.ASK, service);
+				boolean exists = fs.ask(service, bindings, baseUri);
+
+				// check if triples are available (with inserted bindings)
+				if (exists)
+					return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
+				else
+					return new EmptyIteration<BindingSet, QueryEvaluationException>();
+
 			}
 
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.evaluate(queryString, bindings,
-					baseUri, QueryType.SELECT, service);
+			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars, bindings,
+					baseUri);
 
 			if (service.isSilent())
 				return new SilentIteration(result);
@@ -357,16 +401,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				throw e;
 			}
 		}
-		catch (RepositoryException e) {
-			// suppress exceptions if silent
-			if (service.isSilent()) {
-				return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
-			}
-			else {
-				throw new QueryEvaluationException(e);
-			}
-		}
-
 	}
 
 	private Set<Var> getBoundVariables(Service service) {
@@ -1102,7 +1136,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				return literal;
 			}
 			else {
@@ -1123,7 +1157,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			if (QueryEvaluationUtil.isSimpleLiteral(literal) && literal.getDatatype() == null) {
+			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				return literal;
 			}
 			else {
@@ -1276,7 +1310,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			Literal lit = (Literal)argValue;
 			URI datatype = lit.getDatatype();
 
-			return BooleanLiteralImpl.valueOf(datatype != null && XMLDatatypeUtil.isNumericDatatype(datatype));
+			return BooleanLiteralImpl.valueOf(XMLDatatypeUtil.isNumericDatatype(datatype));
 		}
 		else {
 			return BooleanLiteralImpl.FALSE;

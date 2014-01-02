@@ -36,6 +36,9 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -63,7 +66,7 @@ import org.openrdf.sail.memory.model.TxnStatus;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStore extends NotifyingSailBase {
+public class MemoryStore extends NotifyingSailBase implements FederatedServiceResolverClient {
 
 	/*-----------*
 	 * Constants *
@@ -177,6 +180,10 @@ public class MemoryStore extends NotifyingSailBase {
 	 */
 	private final Object snapshotCleanupThreadSemaphore = new Object();
 
+	private FederatedServiceResolver serviceResolver;
+
+	private FederatedServiceResolverImpl serviceResolverImpl;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -249,6 +256,29 @@ public class MemoryStore extends NotifyingSailBase {
 	 */
 	public long getSyncDelay() {
 		return syncDelay;
+	}
+
+	/**
+	 * @return Returns the SERVICE resolver.
+	 */
+	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
+		if (serviceResolver == null) {
+			if (serviceResolverImpl == null) {
+				serviceResolverImpl = new FederatedServiceResolverImpl();
+			}
+			return serviceResolver = serviceResolverImpl;
+		}
+		return serviceResolver;
+	}
+
+	/**
+	 * Overrides the {@link FederatedServiceResolver} used by this instance, but
+	 * the given resolver is not shutDown when this instance is.
+	 * 
+	 * @param reslover The SERVICE resolver to set.
+	 */
+	public synchronized void setFederatedServiceResolver(FederatedServiceResolver reslover) {
+		this.serviceResolver = reslover;
 	}
 
 	/**
@@ -354,6 +384,9 @@ public class MemoryStore extends NotifyingSailBase {
 				stLock.release();
 				if (dirLock != null) {
 					dirLock.release();
+				}
+				if (serviceResolverImpl != null) {
+					serviceResolverImpl.shutDown();
 				}
 			}
 		}

@@ -43,21 +43,24 @@ public class RepositoryTripleSource implements TripleSource {
 		this.repo = repo;
 	}
 
-	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(
-			Resource subj, URI pred, Value obj, Resource... contexts)
-			throws QueryEvaluationException {
+	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
+			URI pred, Value obj, Resource... contexts)
+		throws QueryEvaluationException
+	{
 		RepositoryResult<Statement> result;
 		try {
 			result = repo.getStatements(subj, pred, obj, true, contexts);
-		} catch (RepositoryException e) {
+		}
+		catch (RepositoryException e) {
 			throw new QueryEvaluationException(e);
 		}
-		return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(result){
+		return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(result) {
 
 			@Override
 			protected QueryEvaluationException convert(Exception exception) {
 				return new QueryEvaluationException(exception);
-			}};
+			}
+		};
 	}
 
 	public ValueFactory getValueFactory() {

@@ -60,8 +60,7 @@ public class QueryMultiJoinOptimizer implements QueryOptimizer {
 	 * 
 	 * @throws StoreException
 	 */
-	public void optimize(TupleExpr tupleExpr, Dataset dataset,
-			BindingSet bindings) {
+	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(new JoinVisitor());
 	}
 
@@ -70,8 +69,7 @@ public class QueryMultiJoinOptimizer implements QueryOptimizer {
 		private Set<String> boundVars = new HashSet<String>();
 
 		@Override
-		public void meet(LeftJoin leftJoin)
-		{
+		public void meet(LeftJoin leftJoin) {
 			leftJoin.getLeftArg().visit(this);
 
 			Set<String> origBoundVars = boundVars;
@@ -87,21 +85,25 @@ public class QueryMultiJoinOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meetOther(QueryModelNode node) throws RuntimeException {
+		public void meetOther(QueryModelNode node)
+			throws RuntimeException
+		{
 			if (node instanceof NaryJoin) {
-				meetJoin((NaryJoin) node);
-			} else {
+				meetJoin((NaryJoin)node);
+			}
+			else {
 				super.meetOther(node);
 			}
 		}
 
 		@Override
-		public void meet(Join node) throws RuntimeException {
+		public void meet(Join node)
+			throws RuntimeException
+		{
 			meetJoin(node);
 		}
 
-		public void meetJoin(TupleExpr node)
-		{
+		public void meetJoin(TupleExpr node) {
 			Set<String> origBoundVars = boundVars;
 			try {
 				boundVars = new HashSet<String>(boundVars);

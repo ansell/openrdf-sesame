@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,16 +114,14 @@ public abstract class AbstractQueryResultIOTest {
 		MapBindingSet solution7 = new MapBindingSet(bindingNames.size());
 		solution7.addBinding("a", new LiteralImpl("space at the end         ", XMLSchema.STRING));
 
-		// TODO: Enable double-quoted string with no datatype test
 		MapBindingSet solution8 = new MapBindingSet(bindingNames.size());
 		solution8.addBinding("a", new LiteralImpl("\"\"double-quoted string with no datatype"));
 
-		// TODO: Enable newline test
 		MapBindingSet solution9 = new MapBindingSet(bindingNames.size());
 		solution9.addBinding("a", new LiteralImpl("newline at the end \n", XMLSchema.STRING));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
-				solution5, solution6, solution7);// , solution8, solution9);
+				solution5, solution6, solution7 , solution8, solution9);
 
 		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
 
@@ -144,22 +143,17 @@ public abstract class AbstractQueryResultIOTest {
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
 		solution3.addBinding("a", new URIImpl("http://example.org/test/ns/bindingA"));
 		solution3.addBinding("b", new LiteralImpl("http://example.com/other/ns/bindingB"));
-		solution3.addBinding("c", new URIImpl("http://example.com/other/ns/bindingC"));
+		solution3.addBinding("c", new URIImpl("http://example.com/other/ns/binding,C"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
-		// TODO: Enable newline test
-		// solution4.addBinding("a", new
-		// LiteralImpl("string with newline at the end       \n"));
+		solution4.addBinding("a", new LiteralImpl("string with newline at the end       \n"));
 		solution4.addBinding("b", new LiteralImpl("string with space at the end         "));
 		solution4.addBinding("c", new LiteralImpl("    "));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
 		solution5.addBinding("a", new LiteralImpl("''single-quoted string"));
-		// TODO: Double quote test fails with TSV when there are multiple bindings
-		// in the same line
-		// solution5.addBinding("b", new LiteralImpl("\"\"double-quoted string"));
-		// solution5.addBinding("c", new
-		// LiteralImpl("		unencoded tab characters followed by encoded \t\t"));
+		solution5.addBinding("b", new LiteralImpl("\"\"double-quoted string"));
+		solution5.addBinding("c", new LiteralImpl("		unencoded tab characters followed by encoded \t\t"));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5);
@@ -218,7 +212,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 	}
 
 	protected void doTupleLinksAndStylesheet(TupleQueryResultFormat format, TupleQueryResult input,
@@ -239,7 +233,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 	}
 
 	protected void doTupleLinksAndStylesheetAndNamespaces(TupleQueryResultFormat format,
@@ -264,7 +258,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 	}
 
 	/**
@@ -299,14 +293,14 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 
 		// only do this additional test if sesame q:qname is supported by this
 		// writer
 		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			assertTrue(result.contains("test:bindingA"));
 			assertFalse(result.contains("other:bindingB"));
-			assertTrue(result.contains("other:bindingC"));
+			assertTrue(result.contains("other:binding,C"));
 		}
 
 	}
@@ -345,14 +339,14 @@ public abstract class AbstractQueryResultIOTest {
 			ByteArrayInputStream in = new ByteArrayInputStream(result.getBytes("UTF-8"));
 			TupleQueryResult output = QueryResultIO.parse(in, format);
 
-			assertTrue(QueryResults.equals(expected, output));
+			assertQueryResultsEqual(expected, output);
 		}
 	}
 
 	protected void doTupleNoLinks(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected)
-		throws IOException, QueryResultParseException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
+		QueryEvaluationException, QueryResultHandlerException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.write(input, format, out);
@@ -363,7 +357,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 	}
 
 	protected void doTupleStylesheet(TupleQueryResultFormat format, TupleQueryResult input,
@@ -381,7 +375,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 	}
 
 	protected void doTupleLinksAndStylesheetNoStarts(TupleQueryResultFormat format, TupleQueryResult input,
@@ -401,7 +395,7 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
-		assertTrue(QueryResults.equals(expected, output));
+		assertQueryResultsEqual(expected, output);
 	}
 
 	protected void doTupleLinksAndStylesheetMultipleEndHeaders(TupleQueryResultFormat format,
@@ -433,6 +427,13 @@ public abstract class AbstractQueryResultIOTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TupleQueryResult output = QueryResultIO.parse(in, format);
 
+		assertQueryResultsEqual(expected, output);
+	}
+
+	protected void assertQueryResultsEqual(TupleQueryResult expected, TupleQueryResult output)
+		throws QueryEvaluationException, TupleQueryResultHandlerException, QueryResultHandlerException,
+		UnsupportedEncodingException
+	{
 		assertTrue(QueryResults.equals(expected, output));
 	}
 

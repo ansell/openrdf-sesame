@@ -25,6 +25,7 @@ import java.net.URL;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -551,17 +552,59 @@ public interface RepositoryConnection {
 		throws UnknownTransactionStateException, RepositoryException;
 
 	/**
+	 * Sets the transaction isolation level for the next transaction(s) on this
+	 * connection. If the level is set to a value that is not supported by the
+	 * underlying repository, this method will still succeed but a subsequent
+	 * call to {@link #begin()} will result in an exception.
+	 * 
+	 * @param level
+	 *        the transaction isolation level to set.
+	 * @throws IllegalStateException
+	 *         if the method is called while a transaction is already active.
+	 * @since 2.8.0
+	 */
+	public void setIsolationLevel(IsolationLevel level)
+		throws IllegalStateException;
+
+	/**
+	 * Retrieves the current transaction isolation level of the connection.
+	 * 
+	 * @return the current transaction isolation level.
+	 * @since 2.8.0
+	 */
+	public IsolationLevel getIsolationLevel();
+
+	/**
 	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
 	 * be called to end the transaction.
 	 * 
 	 * @throws RepositoryException
-	 *         If the connection could not start a transaction.
+	 *         If the connection could not start the transaction.
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
 	 * @since 2.7.0
 	 */
 	public void begin()
+		throws RepositoryException;
+
+	/**
+	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
+	 * be called to end the transaction.
+	 * 
+	 * @param level
+	 *        The {@link IsolationLevel} at which this transaction will operate.
+	 * @throws RepositoryException
+	 *         If the connection could not start the transaction. One possible
+	 *         reason this may happen is if the specified {@link IsolationLevel}
+	 *         is not supported by the store, and no compatible level could be
+	 *         found.
+	 * @see #isActive()
+	 * @see #commit()
+	 * @see #rollback()
+	 * @since 2.8.0
+	 */
+	public void begin(IsolationLevel level)
 		throws RepositoryException;
 
 	/**

@@ -23,7 +23,7 @@ import org.openrdf.rio.RDFParser;
  * 
  * @author Arjohn Kampman
  */
-public class NTriplesParserTest extends NTriplesParserTestCase {
+public class NTriplesParserTest extends AbstractNTriplesParserTest {
 
 	@Override
 	protected RDFParser createRDFParser() {

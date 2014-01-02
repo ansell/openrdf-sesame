@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
 
@@ -19,47 +17,29 @@
 	<xsl:include href="table.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script type="text/javascript">
-			<![CDATA[
-			function addGraphParam(name) {
-				var value = document.getElementById(name).value;
-				var url = document.location.href;
-				if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
-					document.location.href = url + decodeURIComponent('%26') + name + '=' + encodeURIComponent(value);
-				} else {
-					document.location.href = url + ';' + name + '=' + encodeURIComponent(value);
-				}
-			}
-			]]>
-		</script>
 		<form>
 			<table class="dataentry">
 				<tbody>
 					<tr>
 						<th>
-							<xsl:value-of
-								select="$download-format.label" />
+							<xsl:value-of select="$download-format.label" />
 						</th>
 						<td>
 							<select id="Accept" name="Accept">
 								<xsl:for-each
 									select="$info//sparql:binding[@name='graph-download-format']">
-									<option
-										value="{substring-before(sparql:literal, ' ')}">
+									<option value="{substring-before(sparql:literal, ' ')}">
 										<xsl:if
 											test="$info//sparql:binding[@name='default-Accept']/sparql:literal = substring-before(sparql:literal, ' ')">
-											<xsl:attribute
-												name="selected">true</xsl:attribute>
+											<xsl:attribute name="selected">true</xsl:attribute>
 										</xsl:if>
-										<xsl:value-of
-											select="substring-after(sparql:literal, ' ')" />
+										<xsl:value-of select="substring-after(sparql:literal, ' ')" />
 									</option>
 								</xsl:for-each>
 							</select>
 						</td>
 						<td>
-							<input type="submit"
-								onclick="addGraphParam('Accept');return false"
+							<input type="submit" onclick="addGraphParam('Accept');return false"
 								value="{$download.label}" />
 						</td>
 					</tr>
@@ -83,8 +63,7 @@
 						<td id="result-limited">
 							<xsl:if
 								test="$info//sparql:binding[@name='default-limit']/sparql:literal = count(//sparql:result)">
-								<xsl:value-of
-									select="$result-limited.desc" />
+								<xsl:value-of select="$result-limited.desc" />
 							</xsl:if>
 						</td>
 					</tr>
@@ -94,6 +73,19 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
+		<script type="text/javascript">
+			<![CDATA[
+			function addGraphParam(name) {
+				var value = document.getElementById(name).value;
+				var url = document.location.href;
+				if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
+					document.location.href = url + decodeURIComponent('%26') + name + '=' + encodeURIComponent(value);
+				} else {
+					document.location.href = url + ';' + name + '=' + encodeURIComponent(value);
+				}
+			}
+			]]>
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>

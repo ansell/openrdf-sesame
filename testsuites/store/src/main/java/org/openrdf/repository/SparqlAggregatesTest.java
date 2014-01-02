@@ -16,10 +16,17 @@
  */
 package org.openrdf.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
@@ -27,7 +34,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class SparqlAggregatesTest extends TestCase {
+public abstract class SparqlAggregatesTest {
 
 	public String selectNameMbox = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
 			+ " WHERE { ?x foaf:name  ?name; foaf:mbox  ?mbox }";
@@ -54,6 +61,7 @@ public abstract class SparqlAggregatesTest extends TestCase {
 
 	private ValueFactory vf;
 
+	@Test
 	public void testSelect()
 		throws Exception
 	{
@@ -66,6 +74,7 @@ public abstract class SparqlAggregatesTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testConcat()
 		throws Exception
 	{
@@ -78,6 +87,7 @@ public abstract class SparqlAggregatesTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testConcatOptional()
 		throws Exception
 	{
@@ -91,6 +101,7 @@ public abstract class SparqlAggregatesTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testCount()
 		throws Exception
 	{
@@ -103,6 +114,7 @@ public abstract class SparqlAggregatesTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testCountOptional()
 		throws Exception
 	{
@@ -119,8 +131,8 @@ public abstract class SparqlAggregatesTest extends TestCase {
 		result.close();
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -150,8 +162,8 @@ public abstract class SparqlAggregatesTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

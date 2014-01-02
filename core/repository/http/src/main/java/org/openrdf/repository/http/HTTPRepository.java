@@ -18,9 +18,14 @@ package org.openrdf.repository.http;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.openrdf.http.client.HTTPClient;
-import org.openrdf.http.client.SesameHTTPClient;
+import org.openrdf.http.client.SparqlSession;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientImpl;
+import org.openrdf.http.client.SesameSession;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -54,7 +59,13 @@ public class HTTPRepository extends RepositoryBase {
 	/**
 	 * The HTTP client that takes care of the client-server communication.
 	 */
-	private final HTTPClient httpClient;
+	private SesameClient client;
+	private String username;
+	private String password;
+	private String serverURL;
+	private String repositoryURL;
+	private RDFFormat rdfFormat;
+	private TupleQueryResultFormat tupleFormat;
 
 	private File dataDir;
 
@@ -64,18 +75,26 @@ public class HTTPRepository extends RepositoryBase {
 
 	private HTTPRepository() {
 		super();
-		httpClient = new SesameHTTPClient();
-		httpClient.setValueFactory(new ValueFactoryImpl());
 	}
 
 	public HTTPRepository(final String serverURL, final String repositoryID) {
 		this();
-		getHTTPClient().setRepository(serverURL, repositoryID);
+		this.serverURL = serverURL;
+		this.repositoryURL = Protocol.getRepositoryLocation(serverURL, repositoryID);
 	}
 
 	public HTTPRepository(final String repositoryURL) {
 		this();
-		getHTTPClient().setRepository(repositoryURL);
+		// Try to parse the server URL from the repository URL
+		Pattern urlPattern = Pattern.compile("(.*)/" + Protocol.REPOSITORIES + "/[^/]*/?");
+		Matcher matcher = urlPattern.matcher(repositoryURL);
+
+		if (matcher.matches() && matcher.groupCount() == 1) {
+			this.serverURL = matcher.group(1);
+		} else {
+			throw new IllegalArgumentException("URL must be to a Sesame Repository (not just the server)");
+		}
+		this.repositoryURL = repositoryURL;
 	}
 
 	/* ---------------*
@@ -90,14 +109,25 @@ public class HTTPRepository extends RepositoryBase {
 		return dataDir;
 	}
 
+	public synchronized SesameClient getSesameClient() {
+		if (client == null) {
+			client = new SesameClientImpl();
+		}
+		return client;
+	}
+
+	public synchronized  void setSesameClient(SesameClient client) {
+		this.client = client;
+	}
+
 	public ValueFactory getValueFactory() {
-		return httpClient.getValueFactory();
+		return ValueFactoryImpl.getInstance();
 	}
 
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
-		return new HTTPRepositoryConnection(this);
+		return new HTTPRepositoryConnection(this, createHTTPClient());
 	}
 
 	public boolean isWritable()
@@ -108,10 +138,10 @@ public class HTTPRepository extends RepositoryBase {
 		}
 
 		boolean isWritable = false;
-		final String repositoryURL = getHTTPClient().getRepositoryURL();
+		final String repositoryURL = createHTTPClient().getRepositoryURL();
 
 		try {
-			final TupleQueryResult repositoryList = getHTTPClient().getRepositoryList();
+			final TupleQueryResult repositoryList = createHTTPClient().getRepositoryList();
 			try {
 				while (repositoryList.hasNext()) {
 					final BindingSet bindingSet = repositoryList.next();
@@ -139,9 +169,9 @@ public class HTTPRepository extends RepositoryBase {
 
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
-	 * supplied {@link TupleQueryResultFormat}, overriding the {@link HTTPClient}
+	 * supplied {@link TupleQueryResultFormat}, overriding the {@link SparqlSession}
 	 * 's default preference. Setting this parameter is not necessary in most
-	 * cases as the {@link HTTPClient} by default indicates a preference for the
+	 * cases as the {@link SparqlSession} by default indicates a preference for the
 	 * most compact and efficient format available.
 	 * 
 	 * @param format
@@ -149,7 +179,7 @@ public class HTTPRepository extends RepositoryBase {
 	 *        explicit preference will be stated.
 	 */
 	public void setPreferredTupleQueryResultFormat(final TupleQueryResultFormat format) {
-		httpClient.setPreferredTupleQueryResultFormat(format);
+		this.tupleFormat = format;
 	}
 
 	/**
@@ -159,14 +189,14 @@ public class HTTPRepository extends RepositoryBase {
 	 *         defined.
 	 */
 	public TupleQueryResultFormat getPreferredTupleQueryResultFormat() {
-		return httpClient.getPreferredTupleQueryResultFormat();
+		return tupleFormat;
 	}
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the {@link HTTPClient}'s default preference.
+	 * {@link RDFFormat}, overriding the {@link SparqlSession}'s default preference.
 	 * Setting this parameter is not necessary in most cases as the
-	 * {@link HTTPClient} by default indicates a preference for the most compact
+	 * {@link SparqlSession} by default indicates a preference for the most compact
 	 * and efficient format available.
 	 * <p>
 	 * Use with caution: if set to a format that does not support context
@@ -177,7 +207,7 @@ public class HTTPRepository extends RepositoryBase {
 	 *        preference will be stated.
 	 */
 	public void setPreferredRDFFormat(final RDFFormat format) {
-		httpClient.setPreferredRDFFormat(format);
+		this.rdfFormat = format;
 	}
 
 	/**
@@ -187,7 +217,7 @@ public class HTTPRepository extends RepositoryBase {
 	 *         defined.
 	 */
 	public RDFFormat getPreferredRDFFormat() {
-		return httpClient.getPreferredRDFFormat();
+		return rdfFormat;
 	}
 
 	/**
@@ -200,11 +230,12 @@ public class HTTPRepository extends RepositoryBase {
 	 *        the password. Setting this to null will disable authentication.
 	 */
 	public void setUsernameAndPassword(final String username, final String password) {
-		httpClient.setUsernameAndPassword(username, password);
+		this.username = username;
+		this.password = password;
 	}
 
 	public String getRepositoryURL() {
-		return getHTTPClient().getRepositoryURL();
+		return repositoryURL;
 	}
 
 	/* -------------------*
@@ -215,17 +246,40 @@ public class HTTPRepository extends RepositoryBase {
 	protected void initializeInternal()
 		throws RepositoryException
 	{
-		httpClient.initialize();
+		// no-op
 	}
 
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		httpClient.shutDown();
+		if (client != null) {
+			client.shutDown();
+			client = null;
+		}
 	}
 
-	// httpClient is shared with HTTPConnection
-	SesameHTTPClient getHTTPClient() {
-		return (SesameHTTPClient)httpClient;
+	/**
+	 * Creates a new HTTPClient object. Subclasses may override to return a more
+	 * specific HTTPClient subtype.
+	 * 
+	 * @return a HTTPClient object.
+	 */
+	protected SesameSession createHTTPClient() {
+		// initialize HTTP client
+		SesameSession httpClient = getSesameClient().createSesameSession(serverURL);
+		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
+		if (repositoryURL != null) {
+			httpClient.setRepository(repositoryURL);
+		}
+		if (tupleFormat != null) {
+			httpClient.setPreferredTupleQueryResultFormat(tupleFormat);
+		}
+		if (rdfFormat != null) {
+			httpClient.setPreferredRDFFormat(rdfFormat);
+		}
+		if (username != null) {
+			httpClient.setUsernameAndPassword(username, password);
+		}
+		return httpClient;
 	}
 }

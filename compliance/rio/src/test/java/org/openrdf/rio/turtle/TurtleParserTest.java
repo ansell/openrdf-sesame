@@ -19,10 +19,12 @@ package org.openrdf.rio.turtle;
 import junit.framework.Test;
 
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.TurtleParserSettings;
+import org.openrdf.rio.ntriples.NTriplesParser;
 
 /**
  * JUnit test for the Turtle parser that uses the tests that are available <a
- * href="http://cvs.ilrt.org/cvsweb/redland/raptor/tests/turtle/">online</a>.
+ * href="https://dvcs.w3.org/hg/rdf/file/09a9da374a9f/rdf-turtle/">online</a>.
  */
 public class TurtleParserTest extends TurtleParserTestCase {
 
@@ -33,7 +35,13 @@ public class TurtleParserTest extends TurtleParserTestCase {
 	}
 
 	@Override
-	protected RDFParser createRDFParser() {
-		return new TurtleParser();
+	protected RDFParser createTurtleParser() {
+		RDFParser result = new TurtleParser();
+		return result;
+	}
+
+	@Override
+	protected RDFParser createNTriplesParser() {
+		return new NTriplesParser();
 	}
 }

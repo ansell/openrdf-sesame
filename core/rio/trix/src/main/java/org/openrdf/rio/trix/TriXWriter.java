@@ -39,6 +39,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -229,16 +230,13 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 			URI datatype = literal.getDatatype();
 
 			String language = literal.getLanguage();
-			if (language != null) {
+			if (Literals.isLanguageLiteral(literal)) {
 				xmlWriter.setAttribute(LANGUAGE_ATT, language);
 				xmlWriter.textElement(PLAIN_LITERAL_TAG, literal.getLabel());
 			}
-			else if (datatype != null) {
+			else {
 				xmlWriter.setAttribute(DATATYPE_ATT, datatype.toString());
 				xmlWriter.textElement(TYPED_LITERAL_TAG, literal.getLabel());
-			}
-			else {
-				xmlWriter.textElement(PLAIN_LITERAL_TAG, literal.getLabel());
 			}
 		}
 		else {

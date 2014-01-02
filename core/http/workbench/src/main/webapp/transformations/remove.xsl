@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
-	xmlns="http://www.w3.org/1999/xhtml">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
 
-	<xsl:variable name="title"><xsl:value-of select="$remove.title"/></xsl:variable>
+	<xsl:variable name="title">
+		<xsl:value-of select="$remove.title" />
+	</xsl:variable>
 
 	<xsl:include href="template.xsl" />
 
@@ -20,8 +20,11 @@
 				<xsl:value-of select="$SYSTEM-warning.desc" />
 			</p>
 		</xsl:if>
+		<p class="WARN">
+			<xsl:value-of select="$remove-warning.desc" />
+		</p>
 		<p>
-		<xsl:value-of select="$value-encoding.desc"/>
+			<xsl:value-of select="$value-encoding.desc" />
 		</p>
 
 		<ul>
@@ -45,15 +48,16 @@
 		</ul>
 		<xsl:if test="//sparql:binding[@name='error-message']">
 			<p class="error">
-				<xsl:value-of
-					select="//sparql:binding[@name='error-message']" />
+				<xsl:value-of select="//sparql:binding[@name='error-message']" />
 			</p>
 		</xsl:if>
 		<form method="post" action="remove">
 			<table class="dataentry">
 				<tbody>
 					<tr>
-						<th><xsl:value-of select="$subject.label"/></th>
+						<th>
+							<xsl:value-of select="$subject.label" />
+						</th>
 						<td>
 							<input id="subj" name="subj" type="text"
 								value="{//sparql:binding[@name='subj']/sparql:literal}" />
@@ -62,7 +66,9 @@
 
 					</tr>
 					<tr>
-						<th><xsl:value-of select="$predicate.label"/></th>
+						<th>
+							<xsl:value-of select="$predicate.label" />
+						</th>
 						<td>
 							<input id="pred" name="pred" type="text"
 								value="{//sparql:binding[@name='pred']/sparql:literal}" />
@@ -70,20 +76,24 @@
 						<td></td>
 					</tr>
 					<tr>
-						<th><xsl:value-of select="$object.label"/></th>
+						<th>
+							<xsl:value-of select="$object.label" />
+						</th>
 
 						<td>
 							<textarea id="obj" name="obj" type="text" cols="70"
-								value="{//sparql:binding[@name='obj']/sparql:literal}" ></textarea>
+								value="{//sparql:binding[@name='obj']/sparql:literal}"></textarea>
 						</td>
 						<td></td>
 					</tr>
 					<tr>
-						<th><xsl:value-of select="$context.label"/></th>
+						<th>
+							<xsl:value-of select="$context.label" />
+						</th>
 
 						<td>
-							<input id="context" name="context"
-								type="text" value="{//sparql:binding[@name='context']/sparql:literal}" />
+							<input id="context" name="context" type="text"
+								value="{//sparql:binding[@name='context']/sparql:literal}" />
 						</td>
 						<td></td>
 					</tr>

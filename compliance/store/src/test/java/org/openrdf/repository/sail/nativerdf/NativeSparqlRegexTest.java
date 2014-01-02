@@ -39,7 +39,7 @@ public class NativeSparqlRegexTest extends SparqlRegexTest {
 	}
 
 	@Override
-	protected void tearDown()
+	public void tearDown()
 		throws Exception
 	{
 		try {

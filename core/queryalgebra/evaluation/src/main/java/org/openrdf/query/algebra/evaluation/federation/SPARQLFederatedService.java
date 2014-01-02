@@ -29,11 +29,12 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.Iterations;
-import info.aduna.iteration.SingletonIteration;
 
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -116,65 +117,79 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @param serviceUrl
 	 *        the serviceUrl use to initialize the inner {@link SPARQLRepository}
 	 */
-	public SPARQLFederatedService(String serviceUrl) {
+	public SPARQLFederatedService(String serviceUrl, SesameClient client) {
 		super();
-		this.rep = new SPARQLRepository(serviceUrl);
+		this.rep = new SPARQLRepository(serviceUrl) {
+
+			@Override
+			protected void shutDownInternal()
+				throws RepositoryException
+			{
+				setSesameClient(null);
+				super.shutDownInternal();
+			}
+		};
+		this.rep.setSesameClient(client);
 	}
 
 	/**
 	 * Evaluate the provided sparqlQueryString at the initialized
-	 * {@link SPARQLRepository} of this {@link FederatedService}. Dependent on
-	 * the type (ASK/SELECT) different evaluation is necessary: SELECT: insert
-	 * bindings into SELECT query and evaluate ASK: insert bindings, send ask
-	 * query and return final result
+	 * {@link SPARQLRepository} of this {@link FederatedService}. Insert bindings
+	 * into SELECT query and evaluate
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(String sparqlQueryString,
-			BindingSet bindings, String baseUri, QueryType type, Service service)
+	public CloseableIteration<BindingSet, QueryEvaluationException> select(Service service,
+			Set<String> projectionVars, BindingSet bindings, String baseUri)
 		throws QueryEvaluationException
 	{
 
 		try {
+			String sparqlQueryString = service.getSelectQueryString(projectionVars);
+			TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryString,
+					baseUri);
 
-			if (type == QueryType.SELECT) {
-
-				TupleQuery query = getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sparqlQueryString,
-						baseUri);
-
-				Iterator<Binding> bIter = bindings.iterator();
-				while (bIter.hasNext()) {
-					Binding b = bIter.next();
-					if (service.getServiceVars().contains(b.getName()))
-						query.setBinding(b.getName(), b.getValue());
-				}
-
-				TupleQueryResult res = query.evaluate();
-
-				// insert original bindings again
-				return new InsertBindingSetCursor(res, bindings);
-
+			Iterator<Binding> bIter = bindings.iterator();
+			while (bIter.hasNext()) {
+				Binding b = bIter.next();
+				if (service.getServiceVars().contains(b.getName()))
+					query.setBinding(b.getName(), b.getValue());
 			}
-			else if (type == QueryType.ASK) {
-				BooleanQuery query = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, sparqlQueryString,
-						baseUri);
 
-				Iterator<Binding> bIter = bindings.iterator();
-				while (bIter.hasNext()) {
-					Binding b = bIter.next();
-					if (service.getServiceVars().contains(b.getName()))
-						query.setBinding(b.getName(), b.getValue());
-				}
+			TupleQueryResult res = query.evaluate();
 
-				boolean exists = query.evaluate();
+			// insert original bindings again
+			return new InsertBindingSetCursor(res, bindings);
+		}
+		catch (MalformedQueryException e) {
+			throw new QueryEvaluationException(e);
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException("SPARQLRepository for endpoint " + rep.toString()
+					+ " could not be initialized.", e);
+		}
+	}
 
-				// check if triples are available (with inserted bindings)
-				if (exists)
-					return new SingletonIteration<BindingSet, QueryEvaluationException>(bindings);
-				else
-					return new EmptyIteration<BindingSet, QueryEvaluationException>();
+	/**
+	 * Evaluate the provided sparqlQueryString at the initialized
+	 * {@link SPARQLRepository} of this {@link FederatedService}. Insert
+	 * bindings, send ask query and return final result
+	 */
+	public boolean ask(Service service, BindingSet bindings, String baseUri)
+		throws QueryEvaluationException
+	{
+
+		try {
+			String sparqlQueryString = service.getAskQueryString();
+			BooleanQuery query = getConnection().prepareBooleanQuery(QueryLanguage.SPARQL, sparqlQueryString,
+					baseUri);
+
+			Iterator<Binding> bIter = bindings.iterator();
+			while (bIter.hasNext()) {
+				Binding b = bIter.next();
+				if (service.getServiceVars().contains(b.getName()))
+					query.setBinding(b.getName(), b.getValue());
 			}
-			else
-				throw new QueryEvaluationException("Unsupported QueryType: " + type.toString());
 
+			return query.evaluate();
 		}
 		catch (MalformedQueryException e) {
 			throw new QueryEvaluationException(e);
@@ -238,8 +253,7 @@ public class SPARQLFederatedService implements FederatedService {
 		try {
 			// fallback to simple evaluation (just a single binding)
 			if (allBindings.size() == 1) {
-				String queryString = service.getQueryString(projectionVars);
-				result = evaluate(queryString, allBindings.get(0), baseUri, QueryType.SELECT, service);
+				result = select(service, projectionVars, allBindings.get(0), baseUri);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
@@ -252,7 +266,7 @@ public class SPARQLFederatedService implements FederatedService {
 			// of the binding in the index list
 			projectionVars.add("__rowIdx");
 
-			String queryString = service.getQueryString(projectionVars);
+			String queryString = service.getSelectQueryString(projectionVars);
 
 			List<String> relevantBindingNames = getRelevantBindingNames(allBindings, service.getServiceVars());
 
@@ -273,8 +287,7 @@ public class SPARQLFederatedService implements FederatedService {
 				closeQuietly(res);
 
 				// use fallback: endpoint might not support BINDINGS clause
-				String preparedQuery = service.getQueryString(projectionVars);
-				result = new ServiceFallbackIteration(service, preparedQuery, allBindings, this);
+				result = new ServiceFallbackIteration(service, projectionVars, allBindings, this);
 				result = service.isSilent() ? new SilentIteration(result) : result;
 				return result;
 			}
@@ -318,9 +331,18 @@ public class SPARQLFederatedService implements FederatedService {
 	}
 
 	public void initialize()
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
-		rep.initialize();
+		try {
+			rep.initialize();
+		}
+		catch (RepositoryException e) {
+			throw new QueryEvaluationException(e);
+		}
+	}
+
+	public boolean isInitialized() {
+		return rep.isInitialized();
 	}
 
 	private void closeQuietly(TupleQueryResult res) {
@@ -334,11 +356,29 @@ public class SPARQLFederatedService implements FederatedService {
 	}
 
 	public void shutdown()
-		throws RepositoryException
+		throws QueryEvaluationException
 	{
-		if (conn != null)
-			conn.close();
-		rep.shutDown();
+		boolean foundException = false;
+		try {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		catch (RepositoryException e) {
+			foundException = true;
+			throw new QueryEvaluationException(e);
+		}
+		finally {
+			try {
+				rep.shutDown();
+			}
+			catch (RepositoryException e) {
+				// Try not to clobber the initial exception that may be more useful
+				if (!foundException) {
+					throw new QueryEvaluationException(e);
+				}
+			}
+		}
 	}
 
 	protected RepositoryConnection getConnection()
@@ -461,11 +501,11 @@ public class SPARQLFederatedService implements FederatedService {
 		sb.append(lit.getLabel().replace("\"", "\\\""));
 		sb.append('"');
 
-		if (lit.getLanguage() != null) {
+		if (Literals.isLanguageLiteral(lit)) {
 			sb.append('@');
 			sb.append(lit.getLanguage());
 		}
-		else if (lit.getDatatype() != null) {
+		else {
 			sb.append("^^<");
 			sb.append(lit.getDatatype().stringValue());
 			sb.append('>');

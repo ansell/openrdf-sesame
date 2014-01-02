@@ -83,6 +83,10 @@ public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements Tup
 	public void endQueryResult()
 		throws TupleQueryResultHandlerException
 	{
+		if (bindingNames == null) {
+			throw new IllegalStateException(
+					"Could not end query result as startQueryResult was not called first.");
+		}
 		try {
 			writer.flush();
 		}
@@ -96,6 +100,9 @@ public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements Tup
 	public void handleSolution(BindingSet bindingSet)
 		throws TupleQueryResultHandlerException
 	{
+		if (bindingNames == null) {
+			throw new IllegalStateException("Must call startQueryResult before handleSolution");
+		}
 		try {
 			for (int i = 0; i < bindingNames.size(); i++) {
 				String name = bindingNames.get(i);
@@ -151,7 +158,19 @@ public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements Tup
 		throws IOException
 	{
 		String uriString = uri.toString();
+		boolean quoted = uriString.contains(",");
+
+		if (quoted) {
+			// write opening quote for entire value
+			writer.write("\"");
+		}
+
 		writer.write(uriString);
+
+		if (quoted) {
+			// write closing quote for entire value
+			writer.write("\"");
+		}
 	}
 
 	protected void writeBNode(BNode bNode)
@@ -170,8 +189,8 @@ public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements Tup
 
 		boolean quoted = false;
 
-		if (datatype != null
-				&& (XMLDatatypeUtil.isIntegerDatatype(datatype) || XMLDatatypeUtil.isDecimalDatatype(datatype) || XMLSchema.DOUBLE.equals(datatype)))
+		if (XMLDatatypeUtil.isIntegerDatatype(datatype) || XMLDatatypeUtil.isDecimalDatatype(datatype)
+				|| XMLSchema.DOUBLE.equals(datatype))
 		{
 			try {
 				String normalized = XMLDatatypeUtil.normalize(label, datatype);

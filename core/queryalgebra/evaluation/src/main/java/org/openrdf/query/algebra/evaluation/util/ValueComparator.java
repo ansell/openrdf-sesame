@@ -114,6 +114,7 @@ public class ValueComparator implements Comparator<Value> {
 
 		int result = 0;
 
+		// FIXME: Confirm these rules work with RDF-1.1
 		// Sort by datatype first, plain literals come before datatyped literals
 		URI leftDatatype = leftLit.getDatatype();
 		URI rightDatatype = rightLit.getDatatype();

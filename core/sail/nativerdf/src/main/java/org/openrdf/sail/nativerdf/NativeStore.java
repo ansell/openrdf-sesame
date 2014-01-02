@@ -38,6 +38,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DirectoryLockManager;
@@ -52,7 +55,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class NativeStore extends NotifyingSailBase {
+public class NativeStore extends NotifyingSailBase implements FederatedServiceResolverClient {
 
 	/*-----------*
 	 * Variables *
@@ -93,6 +96,10 @@ public class NativeStore extends NotifyingSailBase {
 	 * Data directory lock.
 	 */
 	private volatile Lock dirLock;
+
+	private FederatedServiceResolver serviceResolver;
+
+	private FederatedServiceResolverImpl serviceResolverImpl;
 
 	/*--------------*
 	 * Constructors *
@@ -166,6 +173,29 @@ public class NativeStore extends NotifyingSailBase {
 
 	public void setNamespaceIDCacheSize(int namespaceIDCacheSize) {
 		this.namespaceIDCacheSize = namespaceIDCacheSize;
+	}
+
+	/**
+	 * @return Returns the SERVICE resolver.
+	 */
+	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
+		if (serviceResolver == null) {
+			if (serviceResolverImpl == null) {
+				serviceResolverImpl = new FederatedServiceResolverImpl();
+			}
+			return serviceResolver = serviceResolverImpl;
+		}
+		return serviceResolver;
+	}
+
+	/**
+	 * Overrides the {@link FederatedServiceResolver} used by this instance, but
+	 * the given resolver is not shutDown when this instance is.
+	 * 
+	 * @param resolver The SERVICE reslover to set.
+	 */
+	public synchronized void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.serviceResolver = resolver;
 	}
 
 	/**
@@ -253,6 +283,10 @@ public class NativeStore extends NotifyingSailBase {
 		}
 		finally {
 			dirLock.release();
+			if (serviceResolverImpl != null) {
+				serviceResolverImpl.shutDown();
+			}
+			logger.debug("NativeStore shut down");
 		}
 	}
 

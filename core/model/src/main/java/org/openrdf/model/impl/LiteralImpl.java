@@ -24,6 +24,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.util.Literals;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
  * An implementation of the {@link Literal} interface.
@@ -54,7 +57,7 @@ public class LiteralImpl implements Literal {
 	private String language;
 
 	/**
-	 * The literal's datatype (null if not applicable).
+	 * The literal's datatype.
 	 */
 	private URI datatype;
 
@@ -72,7 +75,7 @@ public class LiteralImpl implements Literal {
 	 *        The label for the literal, must not be <tt>null</tt>.
 	 */
 	public LiteralImpl(String label) {
-		this(label, null, null);
+		this(label, null, XMLSchema.STRING);
 	}
 
 	/**
@@ -84,7 +87,7 @@ public class LiteralImpl implements Literal {
 	 *        The language tag for the literal.
 	 */
 	public LiteralImpl(String label, String language) {
-		this(label, language, null);
+		this(label, language, RDF.LANGSTRING);
 	}
 
 	/**
@@ -108,7 +111,10 @@ public class LiteralImpl implements Literal {
 		if (language != null) {
 			setLanguage(language.toLowerCase());
 		}
-		if (datatype != null) {
+		else if (datatype == null) {
+			setDatatype(XMLSchema.STRING);
+		}
+		else {
 			setDatatype(datatype);
 		}
 	}
@@ -131,6 +137,7 @@ public class LiteralImpl implements Literal {
 
 	protected void setLanguage(String language) {
 		this.language = language;
+		setDatatype(RDF.LANGSTRING);
 	}
 
 	public String getLanguage() {
@@ -161,15 +168,8 @@ public class LiteralImpl implements Literal {
 			}
 
 			// Compare datatypes
-			if (datatype == null) {
-				if (other.getDatatype() != null) {
-					return false;
-				}
-			}
-			else {
-				if (!datatype.equals(other.getDatatype())) {
-					return false;
-				}
+			if (!datatype.equals(other.getDatatype())) {
+				return false;
 			}
 
 			// Compare language tags
@@ -207,12 +207,11 @@ public class LiteralImpl implements Literal {
 		sb.append(label);
 		sb.append('"');
 
-		if (language != null) {
+		if (Literals.isLanguageLiteral(this)) {
 			sb.append('@');
 			sb.append(language);
 		}
-
-		if (datatype != null) {
+		else {
 			sb.append("^^<");
 			sb.append(datatype.toString());
 			sb.append(">");

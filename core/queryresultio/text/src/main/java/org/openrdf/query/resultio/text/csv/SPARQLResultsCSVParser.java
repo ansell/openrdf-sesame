@@ -62,7 +62,9 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 			if (bindingNames == null) {
 				// header is mandatory in SPARQL CSV
 				bindingNames = Arrays.asList(nextLine);
-				handler.startQueryResult(bindingNames);
+				if (handler != null) {
+					handler.startQueryResult(bindingNames);
+				}
 			}
 			else {
 				// process solution
@@ -112,7 +114,9 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 				}
 
 				BindingSet bindingSet = new ListBindingSet(bindingNames, values.toArray(new Value[values.size()]));
-				handler.handleSolution(bindingSet);
+				if (handler != null) {
+					handler.handleSolution(bindingSet);
+				}
 			}
 		}
 	}

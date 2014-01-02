@@ -16,8 +16,18 @@
  */
 package org.openrdf.repository;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.LinkedList;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -32,7 +42,8 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class EquivalentTest extends TestCase {
+@RunWith(Parameterized.class)
+public abstract class EquivalentTest {
 
 	private static ValueFactory vf = ValueFactoryImpl.getInstance();
 
@@ -135,36 +146,27 @@ public abstract class EquivalentTest extends TestCase {
 			+ ":xyz	\"abc\"^^xsd:integer		neq	\n" + ":xyz	\"abc\"^^:unknown		neq	\n" + ":xyz	_:abc		neq	\n"
 			+ ":xyz	:abc		neq	";
 
-	public static TestSuite suite()
-		throws Exception
-	{
-		return new TestSuite();
-	}
-
-	public static TestSuite suite(Class<? extends EquivalentTest> subclass)
-		throws Exception
-	{
-		TestSuite suite = new TestSuite(subclass.getName());
+	@Parameters(name = "{1} {0} {2}")
+	public static Collection<Object[]> params() {
+		LinkedList<Object[]> params = new LinkedList<Object[]>();
 		for (String row : matrix.split("\n")) {
 			if (row.contains("_:"))
 				continue;
-			EquivalentTest test = subclass.newInstance();
 			String[] fields = row.split("\t", 3);
 			if (fields[2].contains("neq")) {
-				test.setName(fields[0] + " " + NEQ + " " + fields[1]);
+				params.add(new Object[] { NEQ, fields[0], fields[1] });
 			}
 			else if (fields[2].contains("eq")) {
-				test.setName(fields[0] + " " + EQ + " " + fields[1]);
+				params.add(new Object[] { EQ, fields[0], fields[1] });
 			}
 			else if (fields[2].contains("ind")) {
-				test.setName(fields[0] + " " + IND + " " + fields[1]);
+				params.add(new Object[] { IND, fields[0], fields[1] });
 			}
 			else {
 				throw new AssertionError(row);
 			}
-			suite.addTest(test);
 		}
-		return suite;
+		return params;
 	}
 
 	private Value term1;
@@ -175,48 +177,43 @@ public abstract class EquivalentTest extends TestCase {
 
 	private Repository repository;
 
-	private RepositoryConnection con;
-
-	public EquivalentTest() {
-		super();
+	public EquivalentTest(String operator, String term1, String term2) {
+		this.operator = operator;
+		this.term1 = getTerm(term1);
+		this.term2 = getTerm(term2);
 	}
 
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-		String[] fields = name.split(" ", 3);
-		term1 = getTerm(fields[0]);
-		operator = fields[1];
-		term2 = getTerm(fields[2]);
-	}
-
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
-		con = repository.getConnection();
-		con.clear();
-		con.add(t1, RDF.VALUE, term1);
-		con.add(t2, RDF.VALUE, term2);
+		RepositoryConnection con = repository.getConnection();
+		try {
+			con.begin();
+			con.clear();
+			con.add(t1, RDF.VALUE, term1);
+			con.add(t2, RDF.VALUE, term2);
+			con.commit();
+		}
+		finally {
+			con.close();
+		}
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
-		con.close();
-		con = null;
-
 		repository.shutDown();
 		repository = null;
 	}
 
-	@Override
-	protected void runTest()
+	@Test
+	public void testOperator()
 		throws Throwable
 	{
-		assertEquals(null, operator, compare(term1, term2));
+		assertEquals(operator, compare(term1, term2));
 	}
 
 	protected Repository createRepository()
@@ -225,16 +222,22 @@ public abstract class EquivalentTest extends TestCase {
 		Repository repository = newRepository();
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
-		con.clear();
-		con.clearNamespaces();
-		con.close();
+		try {
+			con.begin();
+			con.clear();
+			con.clearNamespaces();
+			con.commit();
+		}
+		finally {
+			con.close();
+		}
 		return repository;
 	}
 
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	private Value getTerm(String label) {
+	private static Value getTerm(String label) {
 		if (label.contains("xyz")) {
 			if (label.contains("integer"))
 				return xyz_integer;
@@ -297,13 +300,21 @@ public abstract class EquivalentTest extends TestCase {
 	private boolean evaluateSparql(String qry)
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
-		TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, qry);
-		TupleQueryResult evaluate = query.evaluate();
+		RepositoryConnection con = repository.getConnection();
 		try {
-			return evaluate.hasNext();
+			con.begin();
+			TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, qry);
+			TupleQueryResult evaluate = query.evaluate();
+			try {
+				return evaluate.hasNext();
+			}
+			finally {
+				evaluate.close();
+				con.commit();
+			}
 		}
 		finally {
-			evaluate.close();
+			con.close();
 		}
 	}
 }

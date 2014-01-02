@@ -21,6 +21,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.LanguageHandler;
 import org.openrdf.rio.ParseErrorListener;
@@ -247,7 +248,7 @@ public class RDFParserHelper {
 					result = valueFactory.createLiteral(workingLabel, workingDatatype);
 				}
 				else {
-					result = valueFactory.createLiteral(workingLabel);
+					result = valueFactory.createLiteral(workingLabel, XMLSchema.STRING);
 				}
 			}
 			catch (Exception e) {

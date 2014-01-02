@@ -26,8 +26,7 @@ import org.openrdf.query.QueryEvaluationException;
  * 
  * @author James Leigh
  */
-public class AlternativeCursor<E> extends
-		LookAheadIteration<E, QueryEvaluationException> {
+public class AlternativeCursor<E> extends LookAheadIteration<E, QueryEvaluationException> {
 
 	private CloseableIteration<? extends E, QueryEvaluationException> delegate;
 
@@ -35,20 +34,24 @@ public class AlternativeCursor<E> extends
 
 	private final CloseableIteration<? extends E, QueryEvaluationException> alternative;
 
-	public AlternativeCursor(
-			CloseableIteration<? extends E, QueryEvaluationException> primary,
-			CloseableIteration<? extends E, QueryEvaluationException> alternative) {
+	public AlternativeCursor(CloseableIteration<? extends E, QueryEvaluationException> primary,
+			CloseableIteration<? extends E, QueryEvaluationException> alternative)
+	{
 		super();
 		this.alternative = alternative;
 		this.primary = primary;
 	}
 
-	public void handleClose() throws QueryEvaluationException {
+	public void handleClose()
+		throws QueryEvaluationException
+	{
 		primary.close();
 		alternative.close();
 	}
 
-	public E getNextElement() throws QueryEvaluationException {
+	public E getNextElement()
+		throws QueryEvaluationException
+	{
 		if (delegate == null) {
 			delegate = primary.hasNext() ? primary : alternative;
 		}
@@ -58,7 +61,6 @@ public class AlternativeCursor<E> extends
 	@Override
 	public String toString() {
 		String name = getClass().getName().replaceAll("^.*\\.|Cursor$", "");
-		return name + "\n\t" + primary.toString() + "\n\t"
-				+ alternative.toString();
+		return name + "\n\t" + primary.toString() + "\n\t" + alternative.toString();
 	}
 }

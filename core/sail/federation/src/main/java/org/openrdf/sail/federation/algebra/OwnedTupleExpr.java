@@ -57,17 +57,18 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 		return owner;
 	}
 
-	public void prepare(QueryLanguage queryLn, String qry,
-			Map<String, String> bindings) throws RepositoryException,
-			MalformedQueryException {
+	public void prepare(QueryLanguage queryLn, String qry, Map<String, String> bindings)
+		throws RepositoryException, MalformedQueryException
+	{
 		assert this.query == null;
 		this.query = owner.prepareTupleQuery(queryLn, qry);
 		this.variables = bindings;
 	}
 
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
-			Dataset dataset, BindingSet bindings)
-			throws QueryEvaluationException {
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Dataset dataset,
+			BindingSet bindings)
+		throws QueryEvaluationException
+	{
 		CloseableIteration<BindingSet, QueryEvaluationException> rval = null;
 		if (query != null) {
 			try {
@@ -76,7 +77,8 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 						if (bindings.hasBinding(name)) {
 							Value value = bindings.getValue(name);
 							query.setBinding(variables.get(name), value);
-						} else {
+						}
+						else {
 							query.removeBinding(variables.get(name));
 						}
 					}
@@ -84,7 +86,8 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 					TupleQueryResult result = query.evaluate();
 					rval = new InsertBindingSetCursor(result, bindings);
 				}
-			} catch (IllegalArgumentException e) { // NOPMD
+			}
+			catch (IllegalArgumentException e) { // NOPMD
 				// query does not support BNode bindings
 			}
 		}
@@ -92,7 +95,8 @@ public class OwnedTupleExpr extends UnaryTupleOperator {
 	}
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
-			throws X {
+		throws X
+	{
 		visitor.meetOther(this);
 	}
 

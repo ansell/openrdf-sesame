@@ -29,38 +29,29 @@
 	<xsl:include href="table.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<script src="../../scripts/paging.js" type="text/javascript">
-		</script>
-		<script src="../../scripts/tuple.js" type="text/javascript">
-		</script>
 		<form>
 			<table class="dataentry">
 				<tbody>
 					<tr>
 						<th>
-							<xsl:value-of
-								select="$download-format.label" />
+							<xsl:value-of select="$download-format.label" />
 						</th>
 						<td>
 							<select id="Accept" name="Accept">
 								<xsl:for-each
 									select="$info//sparql:binding[@name='tuple-download-format']">
-									<option
-										value="{substring-before(sparql:literal, ' ')}">
+									<option value="{substring-before(sparql:literal, ' ')}">
 										<xsl:if
 											test="$info//sparql:binding[@name='default-Accept']/sparql:literal = substring-before(sparql:literal, ' ')">
-											<xsl:attribute
-												name="selected">true</xsl:attribute>
+											<xsl:attribute name="selected">true</xsl:attribute>
 										</xsl:if>
-										<xsl:value-of
-											select="substring-after(sparql:literal, ' ')" />
+										<xsl:value-of select="substring-after(sparql:literal, ' ')" />
 									</option>
 								</xsl:for-each>
 							</select>
 						</td>
 						<td>
-							<input type="submit"
-								onclick="addGraphParam('Accept');return false"
+							<input type="submit" onclick="addGraphParam('Accept');return false"
 								value="{$download.label}" />
 						</td>
 					</tr>
@@ -106,7 +97,8 @@
 							<xsl:value-of select="$show-datatypes.label" />
 						</th>
 						<td>
-							<input type="checkbox" name="show-datatypes" value="show-dataypes" checked="checked" />
+							<input type="checkbox" name="show-datatypes" value="show-dataypes"
+								checked="checked" />
 						</td>
 					</tr>
 				</tbody>
@@ -115,6 +107,10 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
+		<script src="../../scripts/paging.js" type="text/javascript">
+		</script>
+		<script src="../../scripts/tuple.js" type="text/javascript">
+		</script>
 	</xsl:template>
 
 </xsl:stylesheet>

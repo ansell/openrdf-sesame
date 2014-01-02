@@ -327,6 +327,7 @@ public class RdbmsConnectionFactory {
 			efactory.setQueryBuilderFactory(bfactory);
 			efactory.setRdbmsTripleRepository(s);
 			efactory.setIdSequence(ids);
+			efactory.setFederatedServiceResolver(sail.getFederatedServiceResolver());
 			conn.setRdbmsEvaluationFactory(efactory);
 			RdbmsQueryOptimizer optimizer = createOptimizer();
 			SelectQueryOptimizerFactory selectOptimizerFactory = createSelectQueryOptimizerFactory();

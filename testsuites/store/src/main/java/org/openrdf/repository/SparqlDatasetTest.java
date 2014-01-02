@@ -16,9 +16,13 @@
  */
 package org.openrdf.repository;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -27,13 +31,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.DatasetImpl;
 
-public abstract class SparqlDatasetTest extends TestCase {
+public abstract class SparqlDatasetTest {
 
 	public String queryNoFrom = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
 			+ "SELECT (COUNT(DISTINCT ?name) as ?c) \n" + " WHERE { ?x foaf:name  ?name . } ";
@@ -126,8 +129,8 @@ public abstract class SparqlDatasetTest extends TestCase {
 			result.close();
 		}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -161,8 +164,8 @@ public abstract class SparqlDatasetTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

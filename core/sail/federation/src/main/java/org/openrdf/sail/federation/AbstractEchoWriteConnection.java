@@ -37,7 +37,9 @@ abstract class AbstractEchoWriteConnection extends AbstractFederationConnection 
 	}
 
 	@Override
-	public void startTransactionInternal() throws SailException {
+	public void startTransactionInternal()
+		throws SailException
+	{
 		excute(new Procedure() {
 
 			public void run(RepositoryConnection con)

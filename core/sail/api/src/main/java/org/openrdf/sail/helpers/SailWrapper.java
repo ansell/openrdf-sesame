@@ -17,7 +17,9 @@
 package org.openrdf.sail.helpers;
 
 import java.io.File;
+import java.util.List;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
@@ -63,10 +65,12 @@ public class SailWrapper implements StackableSail {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public void setBaseSail(Sail baseSail) {
 		this.baseSail = baseSail;
 	}
 
+	@Override
 	public Sail getBaseSail() {
 		return baseSail;
 	}
@@ -77,14 +81,17 @@ public class SailWrapper implements StackableSail {
 		}
 	}
 
+	@Override
 	public File getDataDir() {
 		return baseSail.getDataDir();
 	}
 
+	@Override
 	public void setDataDir(File dataDir) {
 		baseSail.setDataDir(dataDir);
 	}
 
+	@Override
 	public void initialize()
 		throws SailException
 	{
@@ -92,6 +99,7 @@ public class SailWrapper implements StackableSail {
 		baseSail.initialize();
 	}
 
+	@Override
 	public void shutDown()
 		throws SailException
 	{
@@ -99,6 +107,7 @@ public class SailWrapper implements StackableSail {
 		baseSail.shutDown();
 	}
 
+	@Override
 	public boolean isWritable()
 		throws SailException
 	{
@@ -106,6 +115,7 @@ public class SailWrapper implements StackableSail {
 		return baseSail.isWritable();
 	}
 
+	@Override
 	public SailConnection getConnection()
 		throws SailException
 	{
@@ -113,8 +123,21 @@ public class SailWrapper implements StackableSail {
 		return baseSail.getConnection();
 	}
 
+	@Override
 	public ValueFactory getValueFactory() {
 		verifyBaseSailSet();
 		return baseSail.getValueFactory();
+	}
+
+	@Override
+	public List<IsolationLevel> getSupportedIsolationLevels() {
+		verifyBaseSailSet();
+		return baseSail.getSupportedIsolationLevels();
+	}
+
+	@Override
+	public IsolationLevel getDefaultIsolationLevel() {
+		verifyBaseSailSet();
+		return baseSail.getDefaultIsolationLevel();
 	}
 }

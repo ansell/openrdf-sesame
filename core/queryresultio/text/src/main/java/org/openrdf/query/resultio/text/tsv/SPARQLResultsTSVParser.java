@@ -24,8 +24,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.aduna.text.StringUtil;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -69,7 +67,11 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 				bindingNames = new ArrayList<String>(names.length);
 				for (String name : names) {
 					// strip the '?' prefix
-					bindingNames.add(name.substring(1));
+					if ('?' == name.charAt(0)) {
+						bindingNames.add(name.substring(1));
+					} else {
+						bindingNames.add(name);
+					}
 				}
 				if (handler != null) {
 					handler.startQueryResult(bindingNames);
@@ -84,7 +86,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 					if (valueString.startsWith("_:")) {
 						v = valueFactory.createBNode(valueString.substring(2));
 					}
-					else if (valueString.startsWith("<")) {
+					else if (valueString.startsWith("<") && valueString.endsWith(">")) {
 						try {
 							v = valueFactory.createURI(valueString.substring(1, valueString.length() - 1));
 						}
@@ -167,7 +169,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 
 				// Get label
 				String label = literal.substring(1, endLabelIdx);
-				label = unescapeString(label);
+				label = decodeString(label);
 
 				if (startLangIdx != -1) {
 					// Get language
@@ -200,8 +202,105 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 		return literal.lastIndexOf("\"");
 	}
 
-	private String unescapeString(String s) {
-		s = StringUtil.gsub("\\", "", s);
-		return s;
+	/**
+	 * Decodes an encoded Turtle string. Any \-escape sequences are substituted
+	 * with their decoded value.
+	 * 
+	 * @param s
+	 *        An encoded Turtle string.
+	 * @return The unencoded string.
+	 * @exception IllegalArgumentException
+	 *            If the supplied string is not a correctly encoded Turtle
+	 *            string.
+	 **/
+	public static String decodeString(String s) {
+		int backSlashIdx = s.indexOf('\\');
+
+		if (backSlashIdx == -1) {
+			// No escaped characters found
+			return s;
+		}
+
+		int startIdx = 0;
+		int sLength = s.length();
+		StringBuilder sb = new StringBuilder(sLength);
+
+		while (backSlashIdx != -1) {
+			sb.append(s.substring(startIdx, backSlashIdx));
+
+			if (backSlashIdx + 1 >= sLength) {
+				throw new IllegalArgumentException("Unescaped backslash in: " + s);
+			}
+
+			char c = s.charAt(backSlashIdx + 1);
+
+			if (c == 't') {
+				sb.append('\t');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == 'r') {
+				sb.append('\r');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == 'n') {
+				sb.append('\n');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == '"') {
+				sb.append('"');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == '>') {
+				sb.append('>');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == '\\') {
+				sb.append('\\');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == 'u') {
+				// \\uxxxx
+				if (backSlashIdx + 5 >= sLength) {
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
+				}
+				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 6);
+
+				try {
+					c = (char)Integer.parseInt(xx, 16);
+					sb.append(c);
+
+					startIdx = backSlashIdx + 6;
+				}
+				catch (NumberFormatException e) {
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\u" + xx + "' in: " + s);
+				}
+			}
+			else if (c == 'U') {
+				// \\Uxxxxxxxx
+				if (backSlashIdx + 9 >= sLength) {
+					throw new IllegalArgumentException("Incomplete Unicode escape sequence in: " + s);
+				}
+				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
+
+				try {
+					c = (char)Integer.parseInt(xx, 16);
+					sb.append(c);
+
+					startIdx = backSlashIdx + 10;
+				}
+				catch (NumberFormatException e) {
+					throw new IllegalArgumentException("Illegal Unicode escape sequence '\\U" + xx + "' in: " + s);
+				}
+			}
+			else {
+				throw new IllegalArgumentException("Unescaped backslash in: " + s);
+			}
+
+			backSlashIdx = s.indexOf('\\', startIdx);
+		}
+
+		sb.append(s.substring(startIdx));
+
+		return sb.toString();
 	}
 }

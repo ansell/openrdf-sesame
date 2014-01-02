@@ -16,7 +16,12 @@
  */
 package org.openrdf.repository;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
@@ -26,7 +31,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class SparqlSetBindingTest extends TestCase {
+public abstract class SparqlSetBindingTest {
 
 	public String queryBinding = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
 			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
@@ -46,6 +51,7 @@ public abstract class SparqlSetBindingTest extends TestCase {
 
 	private URI ringoRes;
 	
+	@Test
 	public void testBinding()
 		throws Exception
 	{
@@ -57,6 +63,7 @@ public abstract class SparqlSetBindingTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testBindingSubselect()
 		throws Exception
 	{
@@ -68,8 +75,8 @@ public abstract class SparqlSetBindingTest extends TestCase {
 		result.close();
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -102,8 +109,8 @@ public abstract class SparqlSetBindingTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

@@ -16,10 +16,16 @@
  */
 package org.openrdf.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
@@ -30,7 +36,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-public abstract class SparqlOrderByTest extends TestCase {
+public abstract class SparqlOrderByTest {
 
 	private String query1 = "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name\n"
 			+ "WHERE { ?x foaf:name ?name }\n" + "ORDER BY ?name\n";
@@ -48,6 +54,7 @@ public abstract class SparqlOrderByTest extends TestCase {
 
 	private RepositoryConnection conn;
 
+	@Test
 	public void testQuery1()
 		throws Exception
 	{
@@ -55,20 +62,22 @@ public abstract class SparqlOrderByTest extends TestCase {
 		assertResult(query1, Arrays.asList("James Leigh", "James Leigh", "James Leigh Hunt", "Megan Leigh"));
 	}
 
+	@Test
 	public void testQuery2()
 		throws Exception
 	{
 		assertResult(query2, Arrays.asList("Megan Leigh", "James Leigh", "James Leigh Hunt", "James Leigh"));
 	}
 
+	@Test
 	public void testQuery3()
 		throws Exception
 	{
 		assertResult(query3, Arrays.asList("James Leigh", "James Leigh", "James Leigh Hunt", "Megan Leigh"));
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -98,8 +107,8 @@ public abstract class SparqlOrderByTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

@@ -23,6 +23,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
+
 /**
  * Represents the concept of a boolean query result serialization format.
  * Boolean query result formats are identified by a {@link #getName() name} and
@@ -42,14 +45,14 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 */
 	public static final BooleanQueryResultFormat SPARQL = new BooleanQueryResultFormat("SPARQL/XML",
 			Arrays.asList("application/sparql-results+xml", "application/xml"), Charset.forName("UTF-8"),
-			Arrays.asList("srx", "xml"));
+			Arrays.asList("srx", "xml"), SPARQL_RESULTS_XML_URI);
 
 	/**
 	 * SPARQL Query Results JSON Format.
 	 */
 	public static final BooleanQueryResultFormat JSON = new BooleanQueryResultFormat("SPARQL/JSON",
 			Arrays.asList("application/sparql-results+json", "application/json"), Charset.forName("UTF-8"),
-			Arrays.asList("srj", "json"));
+			Arrays.asList("srj", "json"), SPARQL_RESULTS_JSON_URI);
 
 	/**
 	 * Plain text encoding using values "true" and "false" (case-insensitive).
@@ -116,6 +119,11 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	/**
 	 * Tries to determine the appropriate boolean file format based on the a MIME
 	 * type that describes the content type.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link QueryResultIO#getBooleanParserFormatForMIMEType(String)} and
+	 * {@link QueryResultIO#getBooleanWriterFormatForMIMEType(String)} to find
+	 * all dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param mimeType
 	 *        A MIME type, e.g. "application/sparql-results+xml".
@@ -132,6 +140,13 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 * Tries to determine the appropriate boolean file format based on the a MIME
 	 * type that describes the content type. The supplied fallback format will be
 	 * returned when the MIME type was not recognized.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use
+	 * {@link QueryResultIO#getBooleanParserFormatForMIMEType(String, BooleanQueryResultFormat)}
+	 * and
+	 * {@link QueryResultIO#getBooleanWriterFormatForMIMEType(String, BooleanQueryResultFormat)}
+	 * to find all dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param mimeType
 	 *        a MIME type, e.g. "application/sparql-results+xml"
@@ -150,6 +165,11 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	/**
 	 * Tries to determine the appropriate boolean file format for a file, based
 	 * on the extension specified in a file name.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use {@link QueryResultIO#getBooleanParserFormatForFileName(String)} and
+	 * {@link QueryResultIO#getBooleanWriterFormatForFileName(String)} to find
+	 * all dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param fileName
 	 *        A file name.
@@ -166,6 +186,13 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 * Tries to determine the appropriate boolean file format for a file, based
 	 * on the extension specified in a file name. The supplied fallback format
 	 * will be returned when the file name extension was not recognized.
+	 * <p>
+	 * NOTE: This method may not take into account dynamically loaded formats.
+	 * Use
+	 * {@link QueryResultIO#getBooleanParserFormatForFileName(String, BooleanQueryResultFormat)}
+	 * and
+	 * {@link QueryResultIO#getBooleanWriterFormatForFileName(String, BooleanQueryResultFormat)}
+	 * to find all dynamically loaded parser and writer formats, respectively.
 	 * 
 	 * @param fileName
 	 *        A file name.
@@ -183,7 +210,7 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 *--------------*/
 
 	/**
-	 * Creates a new TupleQueryResultFormat object.
+	 * Creates a new BooleanQueryResultFormat object.
 	 * 
 	 * @param name
 	 *        The name of the format, e.g. "SPARQL/XML".
@@ -199,7 +226,7 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	}
 
 	/**
-	 * Creates a new TupleQueryResultFormat object.
+	 * Creates a new BooleanQueryResultFormat object.
 	 * 
 	 * @param name
 	 *        The name of the format, e.g. "SPARQL/XML".
@@ -218,7 +245,7 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	}
 
 	/**
-	 * Creates a new TupleQueryResultFormat object.
+	 * Creates a new BooleanQueryResultFormat object.
 	 * 
 	 * @param name
 	 *        The name of the format, e.g. "SPARQL/XML".
@@ -239,5 +266,34 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 			Collection<String> fileExtensions)
 	{
 		super(name, mimeTypes, charset, fileExtensions);
+	}
+
+	/**
+	 * Creates a new BooleanQueryResultFormat object.
+	 * 
+	 * @param name
+	 *        The name of the format, e.g. "SPARQL/XML".
+	 * @param mimeTypes
+	 *        The MIME types of the format, e.g.
+	 *        <tt>application/sparql-results+xml</tt> for the SPARQL/XML format.
+	 *        The first item in the list is interpreted as the default MIME type
+	 *        for the format.
+	 * @param charset
+	 *        The default character encoding of the format. Specify <tt>null</tt>
+	 *        if not applicable.
+	 * @param fileExtensions
+	 *        The format's file extensions, e.g. <tt>srx</tt> for SPARQL/XML
+	 *        files. The first item in the list is interpreted as the default
+	 *        file extension for the format.
+	 * @param standardURI
+	 *        The standard URI that has been assigned to this format by a
+	 *        standards organisation or null if it does not currently have a
+	 *        standard URI.
+	 * @since 2.8.0
+	 */
+	public BooleanQueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
+			Collection<String> fileExtensions, URI standardURI)
+	{
+		super(name, mimeTypes, charset, fileExtensions, standardURI);
 	}
 }

@@ -129,23 +129,23 @@ public class FederationConfig extends SailImplConfigBase {
 
 	@Override
 	public void parse(Graph graph, Resource implNode)
-			throws SailConfigException {
+		throws SailConfigException
+	{
 		super.parse(graph, implNode);
 		LinkedHashModel model = new LinkedHashModel(graph);
 		for (Value member : model.filter(implNode, MEMBER, null).objects()) {
 			try {
-				addMember(create(graph, (Resource) member));
-			} catch (RepositoryConfigException e) {
+				addMember(create(graph, (Resource)member));
+			}
+			catch (RepositoryConfigException e) {
 				throw new SailConfigException(e);
 			}
 		}
-		for (Value space : model.filter(implNode, LOCALPROPERTYSPACE, null)
-				.objects()) {
+		for (Value space : model.filter(implNode, LOCALPROPERTYSPACE, null).objects()) {
 			addLocalPropertySpace(space.stringValue());
 		}
 		try {
-			Literal bool = model.filter(implNode, DISTINCT, null)
-					.objectLiteral();
+			Literal bool = model.filter(implNode, DISTINCT, null).objectLiteral();
 			if (bool != null && bool.booleanValue()) {
 				distinct = true;
 			}
@@ -153,13 +153,16 @@ public class FederationConfig extends SailImplConfigBase {
 			if (bool != null && bool.booleanValue()) {
 				readOnly = true;
 			}
-		} catch (ModelException e) {
+		}
+		catch (ModelException e) {
 			throw new SailConfigException(e);
 		}
 	}
 
 	@Override
-	public void validate() throws SailConfigException {
+	public void validate()
+		throws SailConfigException
+	{
 		super.validate();
 		if (members.isEmpty()) {
 			throw new SailConfigException("No federation members specified");
@@ -167,7 +170,8 @@ public class FederationConfig extends SailImplConfigBase {
 		for (RepositoryImplConfig member : members) {
 			try {
 				member.validate();
-			} catch (RepositoryConfigException e) {
+			}
+			catch (RepositoryConfigException e) {
 				throw new SailConfigException(e);
 			}
 		}

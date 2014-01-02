@@ -110,6 +110,10 @@
 		WARNING: Clearing the repository will remove all statements.
 		This operation cannot be undone.
 	</variable>
+	<variable name="remove-warning.desc">
+		WARNING: Specifying only a context will remove all statements belonging to that context.
+		This operation cannot be undone.
+	</variable>
 	<variable name="SYSTEM-warning.desc">
 		WARNING: Modifying the SYSTEM repository directly is not
 		advised.
@@ -143,9 +147,9 @@
 	</variable>
 	<variable name="upload-url.label">RDF Data URL</variable>
 	<variable name="value-encoding.desc">
-		Please specify subject, predicate and/or object of the
+		Please specify subject, predicate, object and/or context of the
 		statements that should be removed. Empty fields match with any
-		subject, predicate or object. URIs, bNodes and literals should
+		subject, predicate, object or context. URIs, bNodes and literals should
 		be entered using the N-Triples encoding. Example values in
 		N-Triples encoding are:
 	</variable>

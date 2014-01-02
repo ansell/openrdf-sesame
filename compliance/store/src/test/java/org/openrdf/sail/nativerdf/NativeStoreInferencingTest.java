@@ -16,48 +16,30 @@
  */
 package org.openrdf.sail.nativerdf;
 
-import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-
-import info.aduna.io.FileUtil;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.sail.InferencingTest;
 import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.SailException;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 
-public class NativeStoreInferencingTest extends TestCase {
+public class NativeStoreInferencingTest extends InferencingTest {
 
-	public static Test suite()
-		throws SailException, IOException
-	{
-		final File dataDir = FileUtil.createTempDir("nativestore");
-		NotifyingSail sailStack = new NativeStore(dataDir, "spoc,posc");
-		sailStack = new ForwardChainingRDFSInferencer(sailStack);
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
-		TestSuite suite = new TestSuite(NativeStoreInferencingTest.class.getName()) {
-
-			@Override
-			public void run(TestResult result) {
-				try {
-					super.run(result);
-				}
-				finally {
-					try {
-						FileUtil.deleteDir(dataDir);
-					}
-					catch (IOException e) {
-					}
-				}
-			}
-		};
-
-		InferencingTest.addTests(suite, sailStack);
-		return suite;
+	@Override
+	protected Sail createSail() {
+		try {
+			NotifyingSail sailStack = new NativeStore(tempDir.newFolder("nativestore"), "spoc,posc");
+			sailStack = new ForwardChainingRDFSInferencer(sailStack);
+			return sailStack;
+		}
+		catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 }
