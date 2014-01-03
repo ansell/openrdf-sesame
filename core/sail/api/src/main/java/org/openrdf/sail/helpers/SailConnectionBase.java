@@ -38,7 +38,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -538,14 +539,13 @@ public abstract class SailConnectionBase implements SailConnection {
 	{
 		synchronized (added) {
 			if (added.containsKey(op)) {
-				ValueFactory vf = sailBase.getValueFactory();
 				Collection<Statement> pending = added.get(op);
 				if (contexts == null || contexts.length == 0) {
-					pending.add(vf.createStatement(subj, pred, obj));
+					pending.add(new StatementImpl(subj, pred, obj));
 				}
 				else {
 					for (Resource ctx : contexts) {
-						pending.add(vf.createStatement(subj, pred, obj, ctx));
+						pending.add(new ContextStatementImpl(subj, pred, obj, ctx));
 					}
 				}
 			}
@@ -565,17 +565,16 @@ public abstract class SailConnectionBase implements SailConnection {
 	{
 		synchronized (removed) {
 			if (removed.containsKey(op)) {
-				ValueFactory vf = sailBase.getValueFactory();
 				Collection<Statement> pending = removed.get(op);
 				if (contexts == null) {
-					pending.add(vf.createStatement(subj, pred, obj));
+					pending.add(new StatementImpl(subj, pred, obj));
 				}
 				else if (contexts.length == 0) {
-					pending.add(vf.createStatement(subj, pred, obj, wildContext));
+					pending.add(new ContextStatementImpl(subj, pred, obj, wildContext));
 				}
 				else {
 					for (Resource ctx : contexts) {
-						pending.add(vf.createStatement(subj, pred, obj, ctx));
+						pending.add(new ContextStatementImpl(subj, pred, obj, ctx));
 					}
 				}
 			}
