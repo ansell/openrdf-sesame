@@ -140,6 +140,21 @@ public abstract class SailIsolationLevelTest {
 	}
 
 	@Test
+	public void testSnapshotRead()
+		throws Exception
+	{
+		if (isSupported(IsolationLevels.SNAPSHOT_READ)) {
+			snapshotRead(IsolationLevels.SNAPSHOT_READ);
+			readCommitted(IsolationLevels.SNAPSHOT_READ);
+			rollbackTriple(IsolationLevels.SNAPSHOT_READ);
+			readPending(IsolationLevels.SNAPSHOT_READ);
+		}
+		else {
+			logger.warn("{} does not support {}", store, IsolationLevels.SNAPSHOT_READ);
+		}
+	}
+
+	@Test
 	public void testSnapshot()
 		throws Exception
 	{
