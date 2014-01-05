@@ -31,36 +31,51 @@ import java.util.List;
  */
 public enum IsolationLevels implements IsolationLevel {
 
-	/** None: the lowest isolation level; transactions are not supported */
+	/**
+	 * None: the lowest isolation level; transactions can see their own changes,
+	 * but may not be able to roll them back and no support for isolation among
+	 * transactions is guaranteed
+	 */
 	NONE,
 
 	/**
-	 * Read Uncommitted: transactions are suppported, but not isolated:
-	 * concurrent transactions may see each other's uncommitted data (so-called
-	 * 'dirty reads')
+	 * Read Uncommitted: transactions can be rolled back, but not necessarily
+	 * isolated: concurrent transactions might see each other's uncommitted data
+	 * (so-called 'dirty reads')
 	 */
-	READ_UNCOMMITTED,
+	READ_UNCOMMITTED(NONE),
 
 	/**
-	 * Read Committed: in this isolation level only statements that have been
-	 * committed (at some point) can be seen by the transaction.
+	 * Read Committed: in this isolation level only statements from other
+	 * transactions that have been committed (at some point) can be seen by this
+	 * transaction.
 	 */
-	READ_COMMITTED,
+	READ_COMMITTED(READ_UNCOMMITTED, NONE),
 
 	/**
 	 * Repeatable Read: in addition to {@link IsolationLevel#READ_COMMITTED},
 	 * statements in this isolation level that are observed within a successful
 	 * transaction will remain observable by the transaction until the end.
 	 */
-	REPEATABLE_READ(READ_COMMITTED),
+	REPEATABLE_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Snapshot: in addition to {@link IsolationLevel#REPEATABLE_READ},
-	 * successful transactions in this isolation level will view a consistent
-	 * snapshot. This isolation level will observe either the complete effects of
-	 * other change-sets and their dependency or no effects of other change-sets.
+	 * Snapshot Read: in addition to {@link IsolationLevel#READ_COMMITTED}, query
+	 * results in this isolation level that are observed within a successful
+	 * transaction will observe a consistent snapshot. Each operation will
+	 * observe either the complete effects of other change-sets and their
+	 * dependency or no effects of other change-sets.
 	 */
-	SNAPSHOT(REPEATABLE_READ, READ_COMMITTED),
+	SNAPSHOT_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
+
+	/**
+	 * Snapshot: in addition to {@link IsolationLevel#REPEATABLE_READ} and
+	 * {@link IsolationLevel#SNAPSHOT_READ}, successful transactions in this
+	 * isolation level will view a consistent snapshot. This isolation level will
+	 * observe either the complete effects of other change-sets and their
+	 * dependency or no effects of other change-sets.
+	 */
+	SNAPSHOT(SNAPSHOT_READ, REPEATABLE_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
 	 * Serializable: in addition to {@link IsolationLevel#SNAPSHOT}, this
@@ -68,7 +83,7 @@ public enum IsolationLevels implements IsolationLevel {
 	 * appear to occur either completely before or completely after a successful
 	 * serializable transaction.
 	 */
-	SERIALIZABLE(SNAPSHOT, REPEATABLE_READ, READ_COMMITTED);
+	SERIALIZABLE(SNAPSHOT, SNAPSHOT_READ, REPEATABLE_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE);
 
 	private final List<? extends IsolationLevels> compatibleLevels;
 
@@ -78,7 +93,7 @@ public enum IsolationLevels implements IsolationLevel {
 
 	@Override
 	public boolean isCompatibleWith(IsolationLevel otherLevel) {
-		return compatibleLevels.contains(otherLevel);
+		return this.equals(otherLevel) || compatibleLevels.contains(otherLevel);
 	}
 
 	/**
