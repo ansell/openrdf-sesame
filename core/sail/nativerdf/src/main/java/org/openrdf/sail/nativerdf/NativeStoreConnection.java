@@ -28,6 +28,7 @@ import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
@@ -295,20 +296,28 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		return nativeStore.getNamespaceStore().getNamespace(prefix);
 	}
 
+	/**
+	 * Accessor for NativeStoreIsolationLevelTest
+	 */
+	@Override
+	protected IsolationLevel getTransactionIsolation() {
+		return super.getTransactionIsolation();
+	}
+
 	@Override
 	protected void startTransactionInternal()
 		throws SailException
 	{
-		if (IsolationLevels.REPEATABLE_READ.equals(getTransactionIsolation())) {
+		IsolationLevel level = getTransactionIsolation();
+		if (IsolationLevels.REPEATABLE_READ.equals(level)) {
 			acquireExclusiveTransactionLock();
 		}
-		else if (IsolationLevels.READ_COMMITTED.equals(getTransactionIsolation())) {
+		else if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
 			// we do nothing, but delay obtaining transaction locks until the first
 			// write operation.
 		}
 		else {
-			throw new SailException("transaction isolation level " + getTransactionIsolation()
-					+ " not supported by native store");
+			throw new SailException("transaction isolation level " + level + " not supported by native store");
 		}
 	}
 
