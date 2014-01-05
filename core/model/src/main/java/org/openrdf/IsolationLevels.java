@@ -63,7 +63,7 @@ public enum IsolationLevels implements IsolationLevel {
 	 * Snapshot Read: in addition to {@link IsolationLevel#READ_COMMITTED}, query
 	 * results in this isolation level that are observed within a successful
 	 * transaction will observe a consistent snapshot. Changes to the data
-	 * occurring while a query result is processed will not affect that query
+	 * occurring while a query is evaluated will not affect that query
 	 * result.
 	 */
 	SNAPSHOT_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
