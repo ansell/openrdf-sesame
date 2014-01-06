@@ -360,12 +360,12 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 
 		IsolationLevel level = getTransactionIsolation();
-		if (IsolationLevels.REPEATABLE_READ.equals(level)) {
-			acquireExclusiveTransactionLock();
-		}
-		else if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
+		if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
 			// we do nothing, but delay obtaining transaction locks until the first
 			// write operation.
+		}
+		else if (IsolationLevels.SERIALIZABLE.isCompatibleWith(level)) {
+			acquireExclusiveTransactionLock();
 		}
 		else {
 			throw new SailException("transaction isolation level " + level + " not supported by memory store. ");
