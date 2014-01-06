@@ -85,22 +85,6 @@ import org.openrdf.rio.helpers.StatementCollector;
  */
 class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
-	/*
-	 * Note: the following debugEnabled method are private so that they can be
-	 * removed when open connections no longer block other connections and they
-	 * can be closed silently (just like in JDBC).
-	 */
-	private static boolean debugEnabled() {
-		try {
-			return System.getProperty("org.openrdf.repository.debug") != null;
-		}
-		catch (SecurityException e) {
-			// Thrown when not allowed to read system properties, for example
-			// when running in applets
-			return false;
-		}
-	}
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -110,12 +94,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private final SesameSession client;
 
 	private boolean active;
-
-	/*
-	 * Stores a stack trace that indicates where this connection as created if
-	 * debugging is enabled.
-	 */
-	private Throwable creatorTrace;
 
 	/*--------------*
 	 * Constructors *
@@ -129,10 +107,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		// parser used for locally processing input data to be sent to the server should be strict, and should preserve bnode ids.
 		setParserConfig(new ParserConfig());
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
-
-		if (debugEnabled()) {
-			creatorTrace = new Throwable();
-		}
 	}
 
 	/*---------*
@@ -147,24 +121,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	@Override
 	public HTTPRepository getRepository() {
 		return (HTTPRepository)super.getRepository();
-	}
-
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		try {
-			if (isOpen()) {
-				if (creatorTrace != null) {
-					logger.warn("Closing connection due to garbage collection, connection was create in:",
-							creatorTrace);
-				}
-				close();
-			}
-		}
-		finally {
-			super.finalize();
-		}
 	}
 
 	public void begin()

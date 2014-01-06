@@ -26,6 +26,7 @@ import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -342,6 +343,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return store.getNamespaceStore().getNamespace(prefix);
 	}
 
+	/**
+	 * Accessor for MemoryStoreIsolationLevelTest
+	 */
+	@Override
+	protected IsolationLevel getTransactionIsolation() {
+		return super.getTransactionIsolation();
+	}
+
 	@Override
 	protected void startTransactionInternal()
 		throws SailException
@@ -350,16 +359,16 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 
-		if (IsolationLevels.REPEATABLE_READ.equals(getTransactionIsolation())) {
-			acquireExclusiveTransactionLock();
-		}
-		else if (IsolationLevels.READ_COMMITTED.equals(getTransactionIsolation())) {
+		IsolationLevel level = getTransactionIsolation();
+		if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
 			// we do nothing, but delay obtaining transaction locks until the first
 			// write operation.
 		}
+		else if (IsolationLevels.SERIALIZABLE.isCompatibleWith(level)) {
+			acquireExclusiveTransactionLock();
+		}
 		else {
-			throw new SailException("transaction isolation level " + getTransactionIsolation()
-					+ " not supported by memory store. ");
+			throw new SailException("transaction isolation level " + level + " not supported by memory store. ");
 		}
 	}
 
