@@ -327,7 +327,7 @@ public abstract class SailIsolationLevelTest {
 						write.commit();
 
 						begin.countDown();
-						observed.await();
+						observed.await(1, TimeUnit.SECONDS);
 
 						write.begin(level);
 						write.removeStatements(RDF.NIL, RDF.TYPE, RDF.LIST);
