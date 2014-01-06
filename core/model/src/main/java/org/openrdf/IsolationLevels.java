@@ -53,29 +53,20 @@ public enum IsolationLevels implements IsolationLevel {
 	READ_COMMITTED(READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Repeatable Read: in addition to {@link IsolationLevel#READ_COMMITTED},
-	 * statements in this isolation level that are observed within a successful
-	 * transaction will remain observable by the transaction until the end.
-	 */
-	REPEATABLE_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
-
-	/**
 	 * Snapshot Read: in addition to {@link IsolationLevel#READ_COMMITTED}, query
 	 * results in this isolation level that are observed within a successful
 	 * transaction will observe a consistent snapshot. Changes to the data
-	 * occurring while a query is evaluated will not affect that query
-	 * result.
+	 * occurring while a query is evaluated will not affect that query result.
 	 */
 	SNAPSHOT_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Snapshot: in addition to {@link IsolationLevel#REPEATABLE_READ} and
-	 * {@link IsolationLevel#SNAPSHOT_READ}, successful transactions in this
-	 * isolation level will view a consistent snapshot. This isolation level will
-	 * observe either the complete effects of other change-sets and their
-	 * dependencies or no effects of other change-sets.
+	 * Snapshot: in addition to {@link IsolationLevel#SNAPSHOT_READ}, successful
+	 * transactions in this isolation level will view a consistent snapshot. This
+	 * isolation level will observe either the complete effects of other
+	 * change-sets and their dependencies or no effects of other change-sets.
 	 */
-	SNAPSHOT(SNAPSHOT_READ, REPEATABLE_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE),
+	SNAPSHOT(SNAPSHOT_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
 	 * Serializable: in addition to {@link IsolationLevel#SNAPSHOT}, this
@@ -83,7 +74,7 @@ public enum IsolationLevels implements IsolationLevel {
 	 * appear to occur either completely before or completely after a successful
 	 * serializable transaction.
 	 */
-	SERIALIZABLE(SNAPSHOT, SNAPSHOT_READ, REPEATABLE_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE);
+	SERIALIZABLE(SNAPSHOT, SNAPSHOT_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE);
 
 	private final List<? extends IsolationLevels> compatibleLevels;
 
