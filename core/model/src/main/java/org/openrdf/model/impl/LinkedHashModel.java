@@ -348,7 +348,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private class ModelNode<V extends Value> implements Serializable {
+	private static class ModelNode<V extends Value> implements Serializable {
 
 		private static final long serialVersionUID = -1205676084606998540L;
 
@@ -371,7 +371,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private class ModelStatement extends ContextStatementImpl {
+	private static class ModelStatement extends ContextStatementImpl {
 
 		private static final long serialVersionUID = 2200404772364346279L;
 
