@@ -343,14 +343,6 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		return store.getNamespaceStore().getNamespace(prefix);
 	}
 
-	/**
-	 * Accessor for MemoryStoreIsolationLevelTest
-	 */
-	@Override
-	protected IsolationLevel getTransactionIsolation() {
-		return super.getTransactionIsolation();
-	}
-
 	@Override
 	protected void startTransactionInternal()
 		throws SailException
