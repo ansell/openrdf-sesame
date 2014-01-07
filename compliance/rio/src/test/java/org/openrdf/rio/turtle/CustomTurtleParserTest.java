@@ -216,6 +216,14 @@ public class CustomTurtleParserTest {
 	}
 
 	@Test
+	public void testSES1988BlankNodePeriodTab() throws Exception {
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.\t"), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
+
+	@Test
 	public void testSES1988BlankNodePeriodNewLine() throws Exception {
 		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.\n"), "",
 				RDFFormat.TURTLE);
