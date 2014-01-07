@@ -209,7 +209,7 @@ public class CustomTurtleParserTest {
 
 	@Test
 	public void testSES1988BlankNodePeriodSpace() throws Exception {
-		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank."), "",
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank. "), "",
 				RDFFormat.TURTLE);
 
 		assertEquals(1, model.size());
