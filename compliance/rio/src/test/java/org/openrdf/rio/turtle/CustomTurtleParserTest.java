@@ -228,7 +228,7 @@ public class CustomTurtleParserTest {
 		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.<urn:c> <urn:d> <urn:e>."), "",
 				RDFFormat.TURTLE);
 
-		assertEquals(1, model.size());
+		assertEquals(2, model.size());
 	}
 
 	@Test
@@ -236,6 +236,6 @@ public class CustomTurtleParserTest {
 		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank._:blank <urn:d> <urn:e>."), "",
 				RDFFormat.TURTLE);
 
-		assertEquals(1, model.size());
+		assertEquals(2, model.size());
 	}
 }
