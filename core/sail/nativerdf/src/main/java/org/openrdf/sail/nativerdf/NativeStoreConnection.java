@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.iteration.CloseableIteration;
@@ -39,6 +41,7 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
@@ -58,10 +61,12 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.UpdateContext;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
+import org.openrdf.sail.nativerdf.datastore.StatementList;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
 /**
@@ -74,6 +79,18 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	 *-----------*/
 
 	protected final NativeStore nativeStore;
+
+	/**
+	 * Statements that are currently being removed, but not yet realized, by an
+	 * active operation.
+	 */
+	private final Map<UpdateContext, StatementList> removed = new HashMap<UpdateContext, StatementList>();
+
+	/**
+	 * Statements that are currently being added, but not yet realized, by an
+	 * active operation.
+	 */
+	private final Map<UpdateContext, StatementList> added = new HashMap<UpdateContext, StatementList>();
 
 	/*-----------*
 	 * Variables *
@@ -386,6 +403,233 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 				txnLock.release();
 			}
 			txnLockAcquired = false;
+		}
+	}
+
+	@Override
+	public void startUpdate(UpdateContext op)
+		throws SailException
+	{
+		if (op.getUpdateExpr() instanceof Modify) {
+			synchronized (removed) {
+				assert !removed.containsKey(op);
+				removed.put(op, new StatementList());
+			}
+			synchronized (added) {
+				assert !added.containsKey(op);
+				added.put(op, new StatementList());
+			}
+		}
+	}
+
+	@Override
+	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		synchronized (added) {
+			if (added.containsKey(op)) {
+				StatementList pending = added.get(op);
+
+				acquireExclusiveTransactionLock();
+
+				OpenRDFUtil.verifyContextNotNull(contexts);
+
+				try {
+					ValueStore valueStore = nativeStore.getValueStore();
+					int subjID = valueStore.storeValue(subj);
+					int predID = valueStore.storeValue(pred);
+					int objID = valueStore.storeValue(obj);
+
+					if (contexts.length == 0) {
+						contexts = new Resource[] { null };
+					}
+
+					for (Resource context : contexts) {
+						int contextID = 0;
+						if (context != null) {
+							contextID = valueStore.storeValue(context);
+						}
+
+						pending.add(subjID, predID, objID, contextID);
+
+						// assume the triple is not yet present in the triple store
+						sailChangedEvent.setStatementsAdded(true);
+
+						if (hasConnectionListeners()) {
+							Statement st;
+
+							if (context != null) {
+								st = valueStore.createStatement(subj, pred, obj, context);
+							}
+							else {
+								st = valueStore.createStatement(subj, pred, obj);
+							}
+
+							notifyStatementAdded(st);
+						}
+					}
+				}
+				catch (IOException e) {
+					throw new SailException(e);
+				}
+				catch (RuntimeException e) {
+					logger.error("Encountered an unexpected problem while trying to add a statement", e);
+					throw e;
+				}
+			}
+			else {
+				addStatement(subj, pred, obj, contexts);
+			}
+		}
+	}
+
+	@Override
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		synchronized (removed) {
+			if (removed.containsKey(op)) {
+				StatementList pending = removed.get(op);
+
+				acquireExclusiveTransactionLock();
+
+				OpenRDFUtil.verifyContextNotNull(contexts);
+
+				try {
+					TripleStore tripleStore = nativeStore.getTripleStore();
+					ValueStore valueStore = nativeStore.getValueStore();
+
+					int subjID = NativeValue.UNKNOWN_ID;
+					if (subj != null) {
+						subjID = valueStore.getID(subj);
+						if (subjID == NativeValue.UNKNOWN_ID) {
+							return;
+						}
+					}
+					int predID = NativeValue.UNKNOWN_ID;
+					if (pred != null) {
+						predID = valueStore.getID(pred);
+						if (predID == NativeValue.UNKNOWN_ID) {
+							return;
+						}
+					}
+					int objID = NativeValue.UNKNOWN_ID;
+					if (obj != null) {
+						objID = valueStore.getID(obj);
+						if (objID == NativeValue.UNKNOWN_ID) {
+							return;
+						}
+					}
+
+					List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
+					if (contexts.length == 0) {
+						contextIDList.add(NativeValue.UNKNOWN_ID);
+					}
+					else {
+						for (Resource context : contexts) {
+							if (context == null) {
+								contextIDList.add(0);
+							}
+							else {
+								int contextID = valueStore.getID(context);
+								if (contextID != NativeValue.UNKNOWN_ID) {
+									contextIDList.add(contextID);
+								}
+							}
+						}
+					}
+
+					for (int i = 0; i < contextIDList.size(); i++) {
+						int contextID = contextIDList.get(i);
+
+						List<Statement> removedStatements = Collections.emptyList();
+
+						if (hasConnectionListeners()) {
+							// We need to iterate over all matching triples so that they can
+							// be reported
+							RecordIterator btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, true,
+									true);
+
+							NativeStatementIterator iter = new NativeStatementIterator(btreeIter, valueStore);
+
+							removedStatements = Iterations.asList(iter);
+						}
+
+						pending.add(subjID, predID, objID, contextID);
+
+						for (Statement st : removedStatements) {
+							notifyStatementRemoved(st);
+						}
+					}
+
+					sailChangedEvent.setStatementsRemoved(true);
+				}
+				catch (IOException e) {
+					throw new SailException(e);
+				}
+				catch (RuntimeException e) {
+					logger.error("Encountered an unexpected problem while trying to remove statements", e);
+					throw e;
+				}
+			}
+			else {
+				removeStatements(subj, pred, obj, contexts);
+			}
+		}
+	}
+
+	@Override
+	public void endUpdate(UpdateContext op)
+		throws SailException
+	{
+		try {
+			TripleStore tripleStore = nativeStore.getTripleStore();
+			StatementList model;
+			// realize DELETE
+			synchronized (removed) {
+				model = removed.remove(op);
+			}
+			if (model != null) {
+				try {
+					CloseableIteration<int[], IOException> iter = model.iteration();
+					try {
+						while (iter.hasNext()) {
+							int[] st = iter.next();
+							tripleStore.removeTriples(st[0], st[1], st[2], st[3], true);
+						}
+					}
+					finally {
+						iter.close();
+					}
+				}
+				finally {
+					model.close();
+				}
+			}
+			// realize INSERT
+			synchronized (added) {
+				model = added.remove(op);
+			}
+			if (model != null) {
+				try {
+					CloseableIteration<int[], IOException> iter = model.iteration();
+					try {
+						while (iter.hasNext()) {
+							int[] st = iter.next();
+							nativeStore.getTripleStore().storeTriple(st[0], st[1], st[2], st[3], true);
+						}
+					}
+					finally {
+						iter.close();
+					}
+				}
+				finally {
+					model.close();
+				}
+			}
+		}
+		catch (IOException e) {
+			throw new SailException(e);
 		}
 	}
 
