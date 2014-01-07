@@ -1122,12 +1122,25 @@ public class TurtleParser extends RDFParserBase {
 
 		// Read all following letter and numbers, they are part of the name
 		c = read();
-		while (TurtleUtil.isNameChar(c)) {
-			name.append((char)c);
-			c = read();
+
+		// If we would never go into the loop we must unread now
+		if (!TurtleUtil.isNameChar(c)) {
+			unread(c);
 		}
 
-		unread(c);
+		while (TurtleUtil.isNameChar(c)) {
+			int previous = c;
+			c = read();
+
+			if (previous == '.' && (c == -1 || TurtleUtil.isWhitespace(c) || c == '<' || c == '_')) {
+				unread(c);
+				unread(previous);
+				break;
+			}
+			name.append((char)previous);
+		}
+
+		// unread(c);
 
 		return createBNode(name.toString());
 	}
