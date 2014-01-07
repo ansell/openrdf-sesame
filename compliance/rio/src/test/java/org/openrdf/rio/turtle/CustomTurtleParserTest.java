@@ -198,4 +198,12 @@ public class CustomTurtleParserTest {
 	public void testSupportedSettings() throws Exception {
 		assertEquals(12, parser.getSupportedSettings().size());
 	}
+	
+	@Test
+	public void testSES1988BlankNodePeriod() throws Exception {
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
 }
