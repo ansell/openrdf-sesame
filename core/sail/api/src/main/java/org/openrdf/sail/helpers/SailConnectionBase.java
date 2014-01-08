@@ -484,7 +484,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		if (isActiveOperation()) {
+		if (isQueuingWrites()) {
 			addStatement(null, subj, pred, obj, contexts);
 		} else {
 			lockAndAdd(subj, pred, obj, contexts);
@@ -516,7 +516,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		if (isActiveOperation()) {
+		if (isQueuingWrites()) {
 			removeStatement(null, subj, pred, obj, contexts);
 		} else {
 			flushPendingUpdates();
@@ -813,9 +813,9 @@ public abstract class SailConnectionBase implements SailConnection {
 		SailBaseIteration<T, E> result = new SailBaseIteration<T, E>(iter, this);
 		Throwable stackTrace = debugEnabled ? new Throwable() : null;
 		synchronized (activeIterations) {
-			boolean was = isActiveOperation();
+			boolean was = isQueuingWrites();
 			activeIterations.put(result, stackTrace);
-			if (isActiveOperation() && !was) {
+			if (isQueuingWrites() && !was) {
 				startUpdate(null);
 			}
 		}
@@ -828,26 +828,6 @@ public abstract class SailConnectionBase implements SailConnection {
 	protected void iterationClosed(SailBaseIteration iter) {
 		synchronized (activeIterations) {
 			activeIterations.remove(iter);
-		}
-	}
-
-	protected boolean isActiveOperation() {
-		if (!getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
-			return false;
-		synchronized (activeIterations) {
-			return !activeIterations.isEmpty();
-		}
-	}
-
-	/**
-	 * @throws SailException
-	 */
-	protected void flushPendingUpdates()
-		throws SailException
-	{
-		if (!isActiveOperation()) {
-			// end snapshot isolated operation
-			endUpdate(null);
 		}
 	}
 
@@ -900,6 +880,26 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	protected abstract void clearNamespacesInternal()
 		throws SailException;
+
+	/**
+	 * @throws SailException
+	 */
+	private void flushPendingUpdates()
+		throws SailException
+	{
+		if (!isQueuingWrites()) {
+			// end snapshot isolated operation
+			endUpdate(null);
+		}
+	}
+
+	private boolean isQueuingWrites() {
+		if (!getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+			return false;
+		synchronized (activeIterations) {
+			return !activeIterations.isEmpty();
+		}
+	}
 
 	private static class JavaLock implements info.aduna.concurrent.locks.Lock {
 
