@@ -21,9 +21,7 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import org.openrdf.IsolationLevel;
 import org.openrdf.sail.NotifyingSail;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailIsolationLevelTest;
 
@@ -54,10 +52,5 @@ public class NativeStoreIsolationLevelTest extends SailIsolationLevelTest {
 		catch (IOException e) {
 			throw new AssertionError(e);
 		}
-	}
-
-	@Override
-	protected IsolationLevel getTransactionIsolation(SailConnection con) {
-		return ((NativeStoreConnection) con).getTransactionIsolation();
 	}
 }

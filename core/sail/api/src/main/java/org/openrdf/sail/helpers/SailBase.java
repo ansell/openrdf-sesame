@@ -62,12 +62,12 @@ public abstract class SailBase implements Sail {
 	/**
 	 * list of supported isolation levels. By default set to include
 	 * {@link IsolationLevels#READ_UNCOMMITTED} and
-	 * {@link IsolationLevels#REPEATABLE_READ}. Specific store implementations
+	 * {@link IsolationLevels#SERIALIZABLE}. Specific store implementations
 	 * are expected to alter this list according to their specific capabilities.
 	 */
 	private List<IsolationLevel> supportedIsolationLevels = Arrays.asList(new IsolationLevel[] {
 			IsolationLevels.READ_UNCOMMITTED,
-			IsolationLevels.REPEATABLE_READ });
+			IsolationLevels.SERIALIZABLE });
 
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and

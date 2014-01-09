@@ -16,9 +16,7 @@
  */
 package org.openrdf.sail.memory;
 
-import org.openrdf.IsolationLevel;
 import org.openrdf.sail.Sail;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailIsolationLevelTest;
 
@@ -37,10 +35,5 @@ public class MemoryStoreIsolationLevelTest extends SailIsolationLevelTest {
 		throws SailException
 	{
 		return new MemoryStore();
-	}
-
-	@Override
-	protected IsolationLevel getTransactionIsolation(SailConnection con) {
-		return ((MemoryStoreConnection) con).getTransactionIsolation();
 	}
 }

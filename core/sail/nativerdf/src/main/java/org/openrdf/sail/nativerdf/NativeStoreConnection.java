@@ -313,25 +313,17 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		return nativeStore.getNamespaceStore().getNamespace(prefix);
 	}
 
-	/**
-	 * Accessor for NativeStoreIsolationLevelTest
-	 */
-	@Override
-	protected IsolationLevel getTransactionIsolation() {
-		return super.getTransactionIsolation();
-	}
-
 	@Override
 	protected void startTransactionInternal()
 		throws SailException
 	{
 		IsolationLevel level = getTransactionIsolation();
-		if (IsolationLevels.REPEATABLE_READ.equals(level)) {
-			acquireExclusiveTransactionLock();
-		}
-		else if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
+		if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
 			// we do nothing, but delay obtaining transaction locks until the first
 			// write operation.
+		}
+		else if (IsolationLevels.SERIALIZABLE.isCompatibleWith(level)) {
+			acquireExclusiveTransactionLock();
 		}
 		else {
 			throw new SailException("transaction isolation level " + level + " not supported by native store");
@@ -396,6 +388,12 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected void rollbackInternal()
 		throws SailException
 	{
+		synchronized (removed) {
+			removed.clear();
+		}
+		synchronized (added) {
+			added.clear();
+		}
 		try {
 			nativeStore.getValueStore().sync();
 			nativeStore.getTripleStore().rollback();
@@ -416,10 +414,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	public void startUpdate(UpdateContext op)
-		throws SailException
-	{
-		if (op.getUpdateExpr() instanceof Modify) {
+	public void startUpdate(UpdateContext op) {
+		if (op == null || op.getUpdateExpr() instanceof Modify) {
 			synchronized (removed) {
 				assert !removed.containsKey(op);
 				removed.put(op, new StatementList());
