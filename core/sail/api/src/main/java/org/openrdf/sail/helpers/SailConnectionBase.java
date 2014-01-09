@@ -412,6 +412,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	{
 		// end snapshot isolated operation
 		endUpdate(null);
+		if (isQueuingWrites()) {
+			startUpdate(null);
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -428,6 +431,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	{
 		// end snapshot isolated operation
 		endUpdate(null);
+		if (isQueuingWrites()) {
+			startUpdate(null);
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
