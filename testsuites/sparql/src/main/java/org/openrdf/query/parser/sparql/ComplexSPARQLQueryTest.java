@@ -830,7 +830,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(count);
 
 			assertEquals(3, count.intValue());
-			
+
 			result.close();
 		}
 		catch (QueryEvaluationException e) {
@@ -838,7 +838,6 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 	}
-
 
 	@Test
 	public void testSES1898LeftJoinSemantics2()
@@ -2033,6 +2032,169 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
+	}
+
+	@Test
+	public void testSES1991UUIDEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?uid WHERE {?s ?p ?o . BIND(UUID() as ?uid) } LIMIT 2";
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			URI uuid1 = (URI)result.next().getValue("uid");
+			URI uuid2 = (URI)result.next().getValue("uid");
+
+			assertNotNull(uuid1);
+			assertNotNull(uuid2);
+			assertFalse(uuid1.equals(uuid2));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES1991STRUUIDEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?uid WHERE {?s ?p ?o . BIND(STRUUID() as ?uid) } LIMIT 2";
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			Literal uid1 = (Literal)result.next().getValue("uid");
+			Literal uid2 = (Literal)result.next().getValue("uid");
+
+			assertNotNull(uid1);
+			assertFalse(uid1.equals(uid2));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES1991RANDEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?r WHERE {?s ?p ?o . BIND(RAND() as ?r) } LIMIT 3";
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			Literal r1 = (Literal)result.next().getValue("r");
+			Literal r2 = (Literal)result.next().getValue("r");
+			Literal r3 = (Literal)result.next().getValue("r");
+
+			assertNotNull(r1);
+
+			// there is a small chance that two successive calls to the random
+			// number generator will generate the exact same value, so we check for
+			// three successive calls (still theoretically possible to be
+			// identical, but phenomenally unlikely).
+			assertFalse(r1.equals(r2) && r1.equals(r3));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES1991NOWEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?d WHERE {?s ?p ?o . BIND(NOW() as ?d) } LIMIT 2";
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			Literal d1 = (Literal)result.next().getValue("d");
+			Literal d2 = (Literal)result.next().getValue("d");
+
+			assertNotNull(d1);
+			assertEquals(d1, d2);
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	/* private / protected methods */
