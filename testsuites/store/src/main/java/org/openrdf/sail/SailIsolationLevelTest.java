@@ -125,21 +125,6 @@ public abstract class SailIsolationLevelTest {
 	}
 
 	@Test
-	public void testRepeatableRead()
-		throws Exception
-	{
-		if (isSupported(IsolationLevels.REPEATABLE_READ)) {
-			repeatableRead(IsolationLevels.REPEATABLE_READ);
-			readCommitted(IsolationLevels.REPEATABLE_READ);
-			rollbackTriple(IsolationLevels.REPEATABLE_READ);
-			readPending(IsolationLevels.REPEATABLE_READ);
-		}
-		else {
-			logger.warn("{} does not support {}", store, IsolationLevels.REPEATABLE_READ);
-		}
-	}
-
-	@Test
 	public void testSnapshotRead()
 		throws Exception
 	{

@@ -53,13 +53,6 @@ public enum IsolationLevels implements IsolationLevel {
 	READ_COMMITTED(READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Repeatable Read: in addition to {@link IsolationLevel#READ_COMMITTED},
-	 * statements in this isolation level that are observed within a successful
-	 * transaction will remain observable by the transaction until the end.
-	 */
-	REPEATABLE_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
-
-	/**
 	 * Snapshot Read: in addition to {@link IsolationLevel#READ_COMMITTED}, query
 	 * results in this isolation level that are observed within a successful
 	 * transaction will observe a consistent snapshot. Changes to the data
@@ -74,7 +67,7 @@ public enum IsolationLevels implements IsolationLevel {
 	 * Transactions in this isolation level will see either the complete effects
 	 * of other transactions (consistently throughout) or not at all.
 	 */
-	SNAPSHOT(SNAPSHOT_READ, REPEATABLE_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE),
+	SNAPSHOT(SNAPSHOT_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
 	 * Serializable: in addition to {@link IsolationLevel#SNAPSHOT}, this
@@ -82,7 +75,7 @@ public enum IsolationLevels implements IsolationLevel {
 	 * appear to occur either completely before or completely after a successful
 	 * serializable transaction.
 	 */
-	SERIALIZABLE(SNAPSHOT, SNAPSHOT_READ, REPEATABLE_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE);
+	SERIALIZABLE(SNAPSHOT, SNAPSHOT_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE);
 
 	private final List<? extends IsolationLevels> compatibleLevels;
 
