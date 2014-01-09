@@ -410,7 +410,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void prepare()
 		throws SailException
 	{
-		flushPendingUpdates();
+		// end snapshot isolated operation
+		endUpdate(null);
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -425,7 +426,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void commit()
 		throws SailException
 	{
-		flushPendingUpdates();
+		// end snapshot isolated operation
+		endUpdate(null);
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
