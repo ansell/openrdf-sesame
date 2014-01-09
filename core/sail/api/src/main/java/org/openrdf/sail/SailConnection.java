@@ -171,13 +171,15 @@ public interface SailConnection {
 	 * @param level
 	 *        the transaction isolation level on which this transaction operates.
 	 * @since 2.8.0
+	 * @throws UnknownSailTransactionStateException
+	 *         If the IsolationLevel is not supported by this implementation
 	 * @throws SailException
 	 *         If the connection could not start a transaction, if the supplied
 	 *         transaction isolation level is not supported, or if a transaction
 	 *         is already active on this connection.
 	 */
 	public void begin(IsolationLevel level)
-		throws SailException;
+		throws UnknownSailTransactionStateException, SailException;
 
 	/**
 	 * Checks for an error state in the active transaction that would force the

@@ -90,15 +90,15 @@ public abstract class SailIsolationLevelTest {
 		SailConnection con = store.getConnection();
 		try {
 			con.begin(level);
-			return getTransactionIsolation(con).isCompatibleWith(level);
+			return true;
+		} catch (UnknownSailTransactionStateException e) {
+			return false;
 		}
 		finally {
 			con.rollback();
 			con.close();
 		}
 	}
-
-	protected abstract IsolationLevel getTransactionIsolation(SailConnection con);
 
 	@Test
 	public void testNone()

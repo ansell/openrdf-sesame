@@ -313,14 +313,6 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		return nativeStore.getNamespaceStore().getNamespace(prefix);
 	}
 
-	/**
-	 * Accessor for NativeStoreIsolationLevelTest
-	 */
-	@Override
-	protected IsolationLevel getTransactionIsolation() {
-		return super.getTransactionIsolation();
-	}
-
 	@Override
 	protected void startTransactionInternal()
 		throws SailException
