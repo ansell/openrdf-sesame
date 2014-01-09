@@ -119,6 +119,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
+			sailConnection.prepare();
 			sailConnection.commit();
 		}
 		catch (SailException e) {
