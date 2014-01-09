@@ -894,7 +894,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	private boolean isQueuingWrites() {
-		if (!getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+		IsolationLevel level = getTransactionIsolation();
+		if (level == null || !level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
 			return false;
 		synchronized (activeIterations) {
 			return !activeIterations.isEmpty();
