@@ -83,6 +83,13 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 		getWrappedConnection().clearInferred(contexts);
 	}
 
+	public void flush()
+		throws SailException
+	{
+		getWrappedConnection().flush();
+		flushUpdates();
+	}
+
 	public void flushUpdates()
 		throws SailException
 	{

@@ -70,10 +70,14 @@ public class StatementList implements Closeable {
 	public void add(int subj, int pred, int obj, int context)
 		throws IOException
 	{
-		if (buffer.size() >= BUF_SIZE) {
+		if (isMemoryBufferFull()) {
 			flush();
 		}
 		buffer.add(new int[] { subj, pred, obj, context });
+	}
+
+	public boolean isMemoryBufferFull() {
+		return buffer.size() >= BUF_SIZE;
 	}
 
 	private void flush()

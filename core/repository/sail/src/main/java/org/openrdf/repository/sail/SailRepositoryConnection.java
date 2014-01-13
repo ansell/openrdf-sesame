@@ -20,7 +20,6 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
-import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -119,6 +118,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
+			sailConnection.flush();
 			sailConnection.prepare();
 			sailConnection.commit();
 		}
