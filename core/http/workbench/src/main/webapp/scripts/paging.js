@@ -2,6 +2,22 @@
 // Prerequisite: jquery
 
 /**
+ * Needed by graph.xsl and tuple.xsl Download functionality. Takes a document
+ * element by name, and creates a request with it as a parameter.
+ */
+function addGraphParam(name) {
+	var value = document.getElementById(name).value;
+	var url = document.location.href;
+	if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
+		document.location.href = url + decodeURIComponent('%26') + name + '='
+				+ encodeURIComponent(value);
+	} else {
+		document.location.href = url + ';' + name + '='
+				+ encodeURIComponent(value);
+	}
+}
+
+/**
  * First, adds the given parameter to the URL query string. Second, adds a
  * 'know_total' parameter if its current value is 'false' or non-existent.
  * Third, simplifies the URL. Fourth, sends the browser to the modified URL.
@@ -161,7 +177,8 @@ function correctButtons() {
 		previousButton.disabled = true;
 	}
 
-	if (count < limit || limit <= 0 || (offset+count) >= getTotalResultCount()) {
+	if (count < limit || limit <= 0
+			|| (offset + count) >= getTotalResultCount()) {
 		nextButton.disabled = true;
 	}
 }
@@ -199,18 +216,18 @@ function hideExternalLinksAndSetHoverEvent() {
 	})
 }
 
-function setCookie(c_name,value,exdays)
-{
-	var exdate=new Date();
+function setCookie(c_name, value, exdays) {
+	var exdate = new Date();
 	exdate.setDate(exdate.getDate() + exdays);
-	var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-	document.cookie=c_name + "=" + c_value;
+	var c_value = escape(value)
+			+ ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+	document.cookie = c_name + "=" + c_value;
 }
 
 function setDataTypeVisibility(show) {
 	setCookie('show-datatypes', show, 365);
 	var data = show ? 'data-longform' : 'data-shortform';
-	$('span.resource[' + data + ']').each(function(index){
+	$('span.resource[' + data + ']').each(function(index) {
 		var newform = decodeURIComponent($(this).attr(data));
 		$(this).find('a:first').text(newform);
 	});
@@ -218,7 +235,7 @@ function setDataTypeVisibility(show) {
 
 var showDatatypesCheckbox = "input[name='show-datatypes']";
 
-function respondToShowDataTypeChange(){
+function respondToShowDataTypeChange() {
 	setDataTypeVisibility($(showDatatypesCheckbox).prop('checked'));
 }
 
