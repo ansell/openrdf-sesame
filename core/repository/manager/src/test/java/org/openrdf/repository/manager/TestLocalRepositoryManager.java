@@ -27,7 +27,9 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import info.aduna.io.FileUtil;
 
@@ -44,6 +46,9 @@ import org.openrdf.sail.memory.config.MemoryStoreConfig;
  */
 public class TestLocalRepositoryManager {
 
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+	
 	private LocalRepositoryManager manager;
 
 	private File datadir;
@@ -59,7 +64,7 @@ public class TestLocalRepositoryManager {
 	public void setUp()
 		throws Exception
 	{
-		datadir = FileUtil.createTempDir("local-repositorymanager-test");
+		datadir = tempDir.newFolder("local-repositorymanager-test");
 		manager = new LocalRepositoryManager(datadir);
 		manager.initialize();
 
@@ -81,7 +86,6 @@ public class TestLocalRepositoryManager {
 		throws IOException
 	{
 		manager.shutDown();
-		FileUtil.deleteDir(datadir);
 	}
 
 	/**
@@ -107,6 +111,24 @@ public class TestLocalRepositoryManager {
 		assertTrue("Expected repository to be initialized.", rep.isInitialized());
 	}
 
+	@Test
+	public void testRestartManager() throws Exception
+	{
+		Repository rep = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep);
+		assertTrue("Expected repository to be initialized.", rep.isInitialized());
+		rep.shutDown();
+		manager.shutDown();
+		
+		manager = new LocalRepositoryManager(datadir);
+		manager.initialize();
+		Repository rep2 = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep2);
+		assertTrue("Expected repository to be initialized.", rep2.isInitialized());
+		rep2.shutDown();
+		
+	}
+	
 	/**
 	 * Test method for {@link RepositoryManager.isSafeToRemove(String)}.
 	 * 
