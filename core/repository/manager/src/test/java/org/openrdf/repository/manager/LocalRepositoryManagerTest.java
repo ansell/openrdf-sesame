@@ -70,7 +70,7 @@ public class LocalRepositoryManagerTest {
 		// Create configurations for the SAIL stack, and the repository
 		// implementation.
 		manager.addRepositoryConfig(new RepositoryConfig(TEST_REPO, new SailRepositoryConfig(
-				new MemoryStoreConfig())));
+				new MemoryStoreConfig(true))));
 
 		// Create configuration for proxy repository to previous repository.
 		manager.addRepositoryConfig(new RepositoryConfig(PROXY_ID, new ProxyRepositoryConfig(TEST_REPO)));
