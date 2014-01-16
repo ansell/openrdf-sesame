@@ -544,8 +544,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public void flushUpdates() {
-		// no-op; changes are reported as soon as they come in
+	public void flushUpdates() throws SailException {
+		if (!isActiveOperation()) {
+			flush();
+		}
 	}
 
 	/**
