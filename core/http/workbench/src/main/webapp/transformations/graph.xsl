@@ -73,18 +73,7 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
-		<script type="text/javascript">
-			<![CDATA[
-			function addGraphParam(name) {
-				var value = document.getElementById(name).value;
-				var url = document.location.href;
-				if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
-					document.location.href = url + decodeURIComponent('%26') + name + '=' + encodeURIComponent(value);
-				} else {
-					document.location.href = url + ';' + name + '=' + encodeURIComponent(value);
-				}
-			}
-			]]>
+		<script src="../../scripts/paging.js" type="text/javascript">
 		</script>
 	</xsl:template>
 
