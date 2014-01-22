@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="false">
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
 	<appender name="MainLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!--  <file>${info.aduna.logging.dir}/main.log</file> -->
+		<file>${info.aduna.logging.dir}/main.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<fileNamePattern>${info.aduna.logging.dir}/main-%d{yyyy-MM-dd}.log</fileNamePattern>
 		</rollingPolicy>
