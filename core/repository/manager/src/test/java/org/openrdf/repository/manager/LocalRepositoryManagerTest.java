@@ -18,20 +18,21 @@ package org.openrdf.repository.manager;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import info.aduna.io.FileUtil;
-
+import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -42,7 +43,10 @@ import org.openrdf.sail.memory.config.MemoryStoreConfig;
 /**
  * @author jeen
  */
-public class TestLocalRepositoryManager {
+public class LocalRepositoryManagerTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	private LocalRepositoryManager manager;
 
@@ -59,14 +63,14 @@ public class TestLocalRepositoryManager {
 	public void setUp()
 		throws Exception
 	{
-		datadir = FileUtil.createTempDir("local-repositorymanager-test");
+		datadir = tempDir.newFolder("local-repositorymanager-test");
 		manager = new LocalRepositoryManager(datadir);
 		manager.initialize();
 
 		// Create configurations for the SAIL stack, and the repository
 		// implementation.
 		manager.addRepositoryConfig(new RepositoryConfig(TEST_REPO, new SailRepositoryConfig(
-				new MemoryStoreConfig())));
+				new MemoryStoreConfig(true))));
 
 		// Create configuration for proxy repository to previous repository.
 		manager.addRepositoryConfig(new RepositoryConfig(PROXY_ID, new ProxyRepositoryConfig(TEST_REPO)));
@@ -81,7 +85,6 @@ public class TestLocalRepositoryManager {
 		throws IOException
 	{
 		manager.shutDown();
-		FileUtil.deleteDir(datadir);
 	}
 
 	/**
@@ -105,6 +108,78 @@ public class TestLocalRepositoryManager {
 		rep = manager.getRepository(TEST_REPO);
 		assertNotNull("Expected repository to exist.", rep);
 		assertTrue("Expected repository to be initialized.", rep.isInitialized());
+	}
+
+	@Test
+	public void testRestartManagerWithoutTransaction()
+		throws Exception
+	{
+		Repository rep = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep);
+		assertTrue("Expected repository to be initialized.", rep.isInitialized());
+		RepositoryConnection conn = rep.getConnection();
+		try {
+			conn.add(conn.getValueFactory().createURI("urn:sesame:test:subject"), RDF.TYPE, OWL.ONTOLOGY);
+			assertEquals(1, conn.size());
+		}
+		finally {
+			conn.close();
+			rep.shutDown();
+			manager.shutDown();
+		}
+
+		manager = new LocalRepositoryManager(datadir);
+		manager.initialize();
+		Repository rep2 = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep2);
+		assertTrue("Expected repository to be initialized.", rep2.isInitialized());
+		RepositoryConnection conn2 = rep2.getConnection();
+		try {
+			assertEquals(1, conn2.size());
+		}
+		finally {
+			conn2.close();
+			rep2.shutDown();
+			manager.shutDown();
+		}
+
+	}
+
+	@Test
+	public void testRestartManagerWithTransaction()
+		throws Exception
+	{
+		Repository rep = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep);
+		assertTrue("Expected repository to be initialized.", rep.isInitialized());
+		RepositoryConnection conn = rep.getConnection();
+		try {
+			conn.begin();
+			conn.add(conn.getValueFactory().createURI("urn:sesame:test:subject"), RDF.TYPE, OWL.ONTOLOGY);
+			conn.commit();
+			assertEquals(1, conn.size());
+		}
+		finally {
+			conn.close();
+			rep.shutDown();
+			manager.shutDown();
+		}
+
+		manager = new LocalRepositoryManager(datadir);
+		manager.initialize();
+		Repository rep2 = manager.getRepository(TEST_REPO);
+		assertNotNull("Expected repository to exist.", rep2);
+		assertTrue("Expected repository to be initialized.", rep2.isInitialized());
+		RepositoryConnection conn2 = rep2.getConnection();
+		try {
+			assertEquals(1, conn2.size());
+		}
+		finally {
+			conn2.close();
+			rep2.shutDown();
+			manager.shutDown();
+		}
+
 	}
 
 	/**

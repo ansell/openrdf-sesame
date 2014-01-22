@@ -27,6 +27,7 @@ import info.aduna.app.AppConfiguration;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -149,7 +150,7 @@ public class QueryStorage {
 			}
 		}
 		catch (RepositoryException e) {
-			// ignore
+			LOGGER.warn(e.getMessage());
 		}
 	}
 
@@ -159,8 +160,8 @@ public class QueryStorage {
 	 * 
 	 * @param repository
 	 *        the current repository
-	 * @return true, if it is possible to request the size of the repository with
-	 *         the given credentials
+	 * @return true, if it is possible to request a statement from the repository
+	 *         with the given credentials
 	 * @throws RepositoryException
 	 *         if there is an issue closing the connection
 	 */
@@ -172,7 +173,10 @@ public class QueryStorage {
 		RepositoryConnection con = null;
 		try {
 			con = repository.getConnection();
-			con.size();
+
+			// Manufacture an unlikely unique statement to check.
+			URI uri = con.getValueFactory().createURI("urn:uuid:" + UUID.randomUUID());
+			con.hasStatement(uri, uri, uri, false, uri);
 		}
 		catch (RepositoryException re) {
 			rval = false;
