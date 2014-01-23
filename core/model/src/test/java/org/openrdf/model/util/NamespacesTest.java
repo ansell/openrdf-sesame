@@ -20,9 +20,12 @@ import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.Namespace;
@@ -37,6 +40,18 @@ import org.openrdf.model.vocabulary.SKOS;
  * @author Peter Ansell
  */
 public class NamespacesTest {
+
+	private String testPrefix1;
+
+	private String testName1;
+
+	@Before
+	public void setUp()
+		throws Exception
+	{
+		testPrefix1 = "ns1";
+		testName1 = "http://example.org/ns1#";
+	}
 
 	/**
 	 * Test method for
@@ -95,6 +110,230 @@ public class NamespacesTest {
 		assertEquals(SKOS.NAMESPACE, map.get(SKOS.PREFIX));
 		assertTrue(map.containsKey(SESAME.PREFIX));
 		assertEquals(SESAME.NAMESPACE, map.get(SESAME.PREFIX));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapClear()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+		// Check no exceptions when calling clear on empty backing set
+		testMap.clear();
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+
+		assertFalse(testMap.isEmpty());
+		assertEquals(1, testMap.size());
+
+		testMap.clear();
+
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapContainsKey()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+		// Check no exceptions when calling containsKey on empty backing set
+		assertFalse(testMap.containsKey(testPrefix1));
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+
+		assertTrue(testMap.containsKey(testPrefix1));
+
+		testSet.clear();
+
+		assertFalse(testMap.containsKey(testPrefix1));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapContainsValue()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+		// Check no exceptions when calling containsKey on empty backing set
+		assertFalse(testMap.containsValue(testName1));
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+
+		assertTrue(testMap.containsValue(testName1));
+
+		testSet.clear();
+
+		assertFalse(testMap.containsValue(testName1));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapEntrySet()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+
+		Set<Entry<String, String>> entrySet1 = testMap.entrySet();
+		assertNotNull(entrySet1);
+		assertTrue(entrySet1.isEmpty());
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+
+		Set<Entry<String, String>> entrySet2 = testMap.entrySet();
+		assertNotNull(entrySet2);
+		assertFalse(entrySet2.isEmpty());
+		assertEquals(1, entrySet2.size());
+		Entry<String, String> nextEntry = entrySet2.iterator().next();
+		assertEquals(testPrefix1, nextEntry.getKey());
+		assertEquals(testName1, nextEntry.getValue());
+
+		testSet.clear();
+
+		Set<Entry<String, String>> entrySet3 = testMap.entrySet();
+		assertNotNull(entrySet3);
+		assertTrue(entrySet3.isEmpty());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapGet()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+		assertNull(testMap.get(testPrefix1));
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		assertEquals(testName1, testMap.get(testPrefix1));
+
+		testSet.clear();
+		assertNull(testMap.get(testPrefix1));
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapIsEmpty()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+		assertTrue(testMap.isEmpty());
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		assertFalse(testMap.isEmpty());
+
+		testSet.clear();
+		assertTrue(testMap.isEmpty());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapKeySet()
+		throws Exception
+	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
+
+		Set<String> keySet1 = testMap.keySet();
+		assertNotNull(keySet1);
+		assertTrue(keySet1.isEmpty());
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+
+		Set<String> keySet2 = testMap.keySet();
+		assertNotNull(keySet2);
+		assertFalse(keySet2.isEmpty());
+		assertEquals(1, keySet2.size());
+		String nextKey = keySet2.iterator().next();
+		assertEquals(testPrefix1, nextKey);
+
+		testSet.clear();
+
+		Set<String> keySet3 = testMap.keySet();
+		assertNotNull(keySet3);
+		assertTrue(keySet3.isEmpty());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapPut()
+		throws Exception
+	{
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapPutAll()
+		throws Exception
+	{
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapRemove()
+		throws Exception
+	{
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapSize()
+		throws Exception
+	{
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
+	 */
+	@Test
+	public final void testWrapValues()
+		throws Exception
+	{
+
 	}
 
 }
