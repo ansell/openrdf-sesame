@@ -18,8 +18,10 @@ package org.openrdf.model.util;
 
 import static org.junit.Assert.*;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,14 +45,20 @@ public class NamespacesTest {
 
 	private String testPrefix1;
 
+	private String testPrefix2;
+
 	private String testName1;
+
+	private String testName2;
 
 	@Before
 	public void setUp()
 		throws Exception
 	{
 		testPrefix1 = "ns1";
+		testPrefix2 = "ns2";
 		testName1 = "http://example.org/ns1#";
+		testName2 = "http://other.example.org/namespace";
 	}
 
 	/**
@@ -289,7 +297,39 @@ public class NamespacesTest {
 	public final void testWrapPut()
 		throws Exception
 	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
 
+		String put1 = testMap.put(testPrefix1, testName1);
+		assertNull("Should have returned null from put on an empty backing set", put1);
+		assertEquals(1, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertTrue(testMap.containsValue(testName1));
+
+		String put2 = testMap.put(testPrefix1, testName2);
+		assertEquals(put2, testName1);
+		// Size should be one at this point as original should have been replaced.
+		assertEquals(1, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName2)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertFalse(testMap.containsValue(testName1));
+		assertTrue(testMap.containsValue(testName2));
+
+		testSet.clear();
+
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+		assertFalse(testMap.containsKey(testPrefix1));
+		assertFalse(testMap.containsValue(testName1));
+		assertFalse(testMap.containsValue(testName2));
+
+		String put3 = testMap.put(testPrefix1, testName1);
+		assertNull("Should have returned null from put on an empty backing set", put3);
+		assertEquals(1, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertTrue(testMap.containsValue(testName1));
 	}
 
 	/**
@@ -300,7 +340,55 @@ public class NamespacesTest {
 	public final void testWrapPutAll()
 		throws Exception
 	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
 
+		Map<String, String> testPutMap = new LinkedHashMap<String, String>();
+
+		testMap.putAll(testPutMap);
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+		assertTrue(testSet.isEmpty());
+		assertEquals(0, testSet.size());
+
+		testPutMap.put(testPrefix1, testName1);
+		testPutMap.put(testPrefix2, testName2);
+
+		testMap.putAll(testPutMap);
+		assertFalse(testMap.isEmpty());
+		assertEquals(2, testMap.size());
+		assertFalse(testSet.isEmpty());
+		assertEquals(2, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix2, testName2)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertTrue(testMap.containsValue(testName1));
+		assertTrue(testMap.containsKey(testPrefix2));
+		assertTrue(testMap.containsValue(testName2));
+
+		testSet.clear();
+
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+		assertTrue(testSet.isEmpty());
+		assertEquals(0, testSet.size());
+		assertFalse(testMap.containsKey(testPrefix1));
+		assertFalse(testMap.containsValue(testName1));
+		assertFalse(testMap.containsKey(testPrefix2));
+		assertFalse(testMap.containsValue(testName2));
+
+		// Try again after clear
+		testMap.putAll(testPutMap);
+		assertFalse(testMap.isEmpty());
+		assertEquals(2, testMap.size());
+		assertFalse(testSet.isEmpty());
+		assertEquals(2, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix2, testName2)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertTrue(testMap.containsValue(testName1));
+		assertTrue(testMap.containsKey(testPrefix2));
+		assertTrue(testMap.containsValue(testName2));
 	}
 
 	/**
@@ -311,18 +399,55 @@ public class NamespacesTest {
 	public final void testWrapRemove()
 		throws Exception
 	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
 
-	}
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+		assertTrue(testSet.isEmpty());
+		assertEquals(0, testSet.size());
+		assertFalse(testMap.containsKey(testPrefix1));
+		assertFalse(testMap.containsValue(testName1));
 
-	/**
-	 * Test method for
-	 * {@link org.openrdf.model.util.Namespaces#wrap(java.util.Set)}.
-	 */
-	@Test
-	public final void testWrapSize()
-		throws Exception
-	{
+		// Directly add to Set, and then try to remove it using the Map
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		assertFalse(testMap.isEmpty());
+		assertEquals(1, testMap.size());
+		assertFalse(testSet.isEmpty());
+		assertEquals(1, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertTrue(testMap.containsValue(testName1));
 
+		testSet.remove(new NamespaceImpl(testPrefix1, testName1));
+
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+		assertTrue(testSet.isEmpty());
+		assertEquals(0, testSet.size());
+		assertFalse(testMap.containsKey(testPrefix1));
+		assertFalse(testMap.containsValue(testName1));
+
+		testSet.clear();
+
+		// Try again after clear
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		assertFalse(testMap.isEmpty());
+		assertEquals(1, testMap.size());
+		assertFalse(testSet.isEmpty());
+		assertEquals(1, testSet.size());
+		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testMap.containsKey(testPrefix1));
+		assertTrue(testMap.containsValue(testName1));
+
+		testSet.remove(new NamespaceImpl(testPrefix1, testName1));
+
+		assertTrue(testMap.isEmpty());
+		assertEquals(0, testMap.size());
+		assertTrue(testSet.isEmpty());
+		assertEquals(0, testSet.size());
+		assertFalse(testMap.containsKey(testPrefix1));
+		assertFalse(testMap.containsValue(testName1));
 	}
 
 	/**
@@ -333,7 +458,27 @@ public class NamespacesTest {
 	public final void testWrapValues()
 		throws Exception
 	{
+		Set<Namespace> testSet = new LinkedHashSet<Namespace>();
+		Map<String, String> testMap = Namespaces.wrap(testSet);
 
+		Collection<String> values1 = testMap.values();
+		assertNotNull(values1);
+		assertTrue(values1.isEmpty());
+
+		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+
+		Collection<String> values2 = testMap.values();
+		assertNotNull(values2);
+		assertFalse(values2.isEmpty());
+		assertEquals(1, values2.size());
+		String nextValue = values2.iterator().next();
+		assertEquals(testName1, nextValue);
+
+		testSet.clear();
+
+		Collection<String> values3 = testMap.values();
+		assertNotNull(values3);
+		assertTrue(values3.isEmpty());
 	}
 
 }

@@ -153,10 +153,9 @@ public class Namespaces {
 					if (nextNamespace.getPrefix().equals(nextKey)) {
 						result = nextNamespace.getName();
 						namespaces.remove(nextNamespace);
-						namespaces.add(new NamespaceImpl(nextNamespace.getPrefix(), nextValue));
-						break;
 					}
 				}
+				namespaces.add(new NamespaceImpl(nextKey, nextValue));
 				return result;
 			}
 
