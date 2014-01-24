@@ -255,7 +255,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 				writeStartOfStartTag(RDF.NAMESPACE, "Description");
 				if (subj instanceof BNode) {
 					BNode bNode = (BNode)subj;
-					writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode.getID()));
 				}
 				else {
 					URI uri = (URI)subj;
@@ -277,7 +277,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 				if (objRes instanceof BNode) {
 					BNode bNode = (BNode)objRes;
-					writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode.getID()));
 				}
 				else {
 					URI uri = (URI)objRes;
@@ -471,5 +471,24 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		writer.write("\n");
+	}
+
+	/**
+	 * Create a syntactically valid node id from the supplied blank node id. This
+	 * is necessary because RDF/XML syntax enforces the blank node id is a valid
+	 * NCName.
+	 * 
+	 * @see http://www.w3.org/TR/REC-rdf-syntax/#rdf-id
+	 * @param blankNodeId a blank node identifier
+	 * @return the blank node identifier converted to a form that is a valid NCName.
+	 */
+	private String getValidNodeId(String blankNodeId) {
+		if (!XMLUtil.isNCName(blankNodeId)) {
+			// TODO more rigorous conversion needed. We currently assume it's not
+			// an NCName because of the start char, but there other possible
+			// reasons.
+			return "_" + blankNodeId; 
+		}
+		return blankNodeId;
 	}
 }
