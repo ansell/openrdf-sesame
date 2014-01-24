@@ -33,10 +33,9 @@ import org.junit.Test;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.rio.RDFHandlerException;
 
 /**
- * @author ans025
+ * @author Peter Ansell
  */
 public class StatementCollectorTest {
 
