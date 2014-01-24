@@ -144,8 +144,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
 		namespaceTable = new HashMap<String, String>(16);
-		nextBNodePrefix = UUID.randomUUID().toString().replaceAll("-", "");
-
+		nextBNodePrefix = createUniqueBNodePrefix();
 		setValueFactory(valueFactory);
 		setParserConfig(new ParserConfig());
 	}
@@ -154,6 +153,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Methods *
 	 *---------*/
 
+	
 	@Override
 	public void setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
@@ -363,7 +363,7 @@ public abstract class RDFParserBase implements RDFParser {
 	 */
 	protected void clear() {
 		baseURI = null;
-		nextBNodePrefix = UUID.randomUUID().toString().replaceAll("-", "");
+		nextBNodePrefix = createUniqueBNodePrefix();
 		namespaceTable.clear();
 	}
 
@@ -702,6 +702,10 @@ public abstract class RDFParserBase implements RDFParser {
 		throws RDFParseException
 	{
 		RDFParserHelper.reportFatalError(e, lineNo, columnNo, getParseErrorListener());
+	}
+	
+	private final String createUniqueBNodePrefix() {
+		return "genid-" + UUID.randomUUID().toString().replaceAll("-", "") + "-";
 	}
 
 }
