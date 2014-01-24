@@ -117,13 +117,25 @@ public class StatementCollectorTest {
 	public final void testStatementCollectorCollectionModel()
 		throws Exception
 	{
-		Collection<Statement> testList = new LinkedHashModel();
+		Model testList = new LinkedHashModel();
 		StatementCollector collector = new StatementCollector(testList);
 
 		// Actual variable is exactly the same, although it could be theoretically
 		// wrapped and still be consistent
 		assertTrue(testList == collector.getStatements());
 		assertNotNull(collector.getNamespaces());
+
+		assertTrue(testList.getNamespaces().isEmpty());
+		assertTrue(collector.getNamespaces().isEmpty());
+
+		collector.handleNamespace("ns1", "http://example.org/ns1#");
+
+		assertFalse(testList.getNamespaces().isEmpty());
+		assertFalse(collector.getNamespaces().isEmpty());
+		assertTrue(collector.getNamespaces().containsKey("ns1"));
+		assertTrue(collector.getNamespaces().containsValue("http://example.org/ns1#"));
+		assertTrue(testList.getNamespaces().iterator().next().getPrefix().equals("ns1"));
+		assertTrue(testList.getNamespaces().iterator().next().getName().equals("http://example.org/ns1#"));
 	}
 
 	/**
