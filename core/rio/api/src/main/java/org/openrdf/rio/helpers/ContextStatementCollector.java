@@ -67,6 +67,7 @@ public class ContextStatementCollector extends RDFHandlerBase {
 	 * reported namespaces.
 	 */
 	public ContextStatementCollector(Collection<Statement> statements, ValueFactory vf, Resource... contexts) {
+		OpenRDFUtil.verifyContextNotNull(contexts);
 		if (statements instanceof Model) {
 			this.namespaces = Namespaces.wrap(((Model)statements).getNamespaces());
 		}
