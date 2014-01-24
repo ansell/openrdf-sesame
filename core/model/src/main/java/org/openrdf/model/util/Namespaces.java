@@ -173,7 +173,6 @@ public class Namespaces {
 					if (nextNamespace.getPrefix().equals(nextKey)) {
 						result = nextNamespace.getName();
 						namespaces.remove(nextNamespace);
-						break;
 					}
 				}
 				return result;
