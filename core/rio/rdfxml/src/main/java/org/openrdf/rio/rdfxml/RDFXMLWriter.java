@@ -479,16 +479,31 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * NCName.
 	 * 
 	 * @see http://www.w3.org/TR/REC-rdf-syntax/#rdf-id
-	 * @param blankNodeId a blank node identifier
-	 * @return the blank node identifier converted to a form that is a valid NCName.
+	 * @param blankNodeId
+	 *        a blank node identifier
+	 * @return the blank node identifier converted to a form that is a valid
+	 *         NCName.
 	 */
 	private String getValidNodeId(String blankNodeId) {
-		if (!XMLUtil.isNCName(blankNodeId)) {
-			// TODO more rigorous conversion needed. We currently assume it's not
-			// an NCName because of the start char, but there other possible
-			// reasons.
-			return "_" + blankNodeId; 
+		String validNodeId = blankNodeId;
+		if (!XMLUtil.isNCName(validNodeId)) {
+			StringBuilder builder = new StringBuilder();
+			
+			// prepend legal start char
+			builder.append("_");
+
+			//  do char-by-char scan and replace illegal chars where necessary.
+			for (char c : validNodeId.toCharArray()) {
+				if (XMLUtil.isNCNameChar(c)) {
+					builder.append(c);
+				}
+				else {
+					// replace incompatible char with underscore.
+					builder.append("_");
+				}
+			}
+			return builder.toString();
 		}
-		return blankNodeId;
+		return validNodeId;
 	}
 }
