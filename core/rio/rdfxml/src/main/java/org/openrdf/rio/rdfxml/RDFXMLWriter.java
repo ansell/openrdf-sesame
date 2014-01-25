@@ -488,11 +488,13 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		String validNodeId = blankNodeId;
 		if (!XMLUtil.isNCName(validNodeId)) {
 			StringBuilder builder = new StringBuilder();
-			
-			// prepend legal start char
-			builder.append("_");
 
-			//  do char-by-char scan and replace illegal chars where necessary.
+			if (!XMLUtil.isNCNameStartChar(validNodeId.charAt(0))) {
+				// prepend legal start char
+				builder.append("_");
+			}
+			
+			// do char-by-char scan and replace illegal chars where necessary.
 			for (char c : validNodeId.toCharArray()) {
 				if (XMLUtil.isNCNameChar(c)) {
 					builder.append(c);
