@@ -504,7 +504,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					builder.append("_");
 				}
 			}
-			return builder.toString();
+			validNodeId = builder.toString();
 		}
 		return validNodeId;
 	}
