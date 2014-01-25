@@ -16,11 +16,11 @@
  */
 package org.openrdf.http.server.repository.transaction;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.openrdf.repository.RepositoryConnection;
 
@@ -29,58 +29,69 @@ import org.openrdf.repository.RepositoryConnection;
  */
 public class ActiveTransactionRegistry {
 
-	private static final Map<UUID, RepositoryConnection> activeConnections = new HashMap<UUID, RepositoryConnection>();
+	private static final ActiveTransactionRegistry singleton = new ActiveTransactionRegistry();
 
-	private static final Set<UUID> checkedOutTransactions = new HashSet<UUID>();
+	public static ActiveTransactionRegistry getInstance() {
+		return singleton;
+	}
 
-	public static void register(UUID transactionId, RepositoryConnection conn)
+	private ActiveTransactionRegistry() {
+		// private constructor, implementing singleton pattern
+	}
+
+	private final ConcurrentMap<UUID, RepositoryConnection> activeConnections = new ConcurrentHashMap<UUID, RepositoryConnection>();
+
+	private final ConcurrentMap<UUID, Lock> transactionLocks = new ConcurrentHashMap<UUID, Lock>();
+
+	public void register(UUID transactionId, RepositoryConnection conn)
 		throws IllegalArgumentException
 	{
-		synchronized (activeConnections) {
-			if (activeConnections.containsKey(transactionId)) {
-				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
-						+ " already registered.");
-			}
-			activeConnections.put(transactionId, conn);
+		if (activeConnections.putIfAbsent(transactionId, conn) != null) {
+			throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+					+ " already registered.");
 		}
 	}
 
-	public static void deregister(UUID transactionId, RepositoryConnection conn)
+	public void deregister(UUID transactionId, RepositoryConnection conn)
 		throws IllegalArgumentException
 	{
 		synchronized (activeConnections) {
-			if (!activeConnections.containsKey(transactionId)) {
+			if (!activeConnections.remove(transactionId, conn)) {
 				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
 						+ " not registered.");
 			}
-			activeConnections.remove(transactionId);
+			transactionLocks.remove(transactionId);
 		}
 	}
 
-	public static RepositoryConnection getTransactionConnection(UUID transactionId)
+	public RepositoryConnection getTransactionConnection(UUID transactionId)
 		throws InterruptedException
 	{
 
 		RepositoryConnection conn = null;
 
-		synchronized (activeConnections) {
-			while (checkedOutTransactions.contains(transactionId)) {
-				// TODO limit?
-				Thread.sleep(60);
-			}
-
-			synchronized (checkedOutTransactions) {
-				conn = activeConnections.get(transactionId);
-				checkedOutTransactions.add(transactionId);
+		Lock txnLock = null;
+		synchronized (transactionLocks) {
+			txnLock = transactionLocks.get(transactionId);
+			if (txnLock == null) {
+				txnLock = new ReentrantLock();
+				transactionLocks.put(transactionId, txnLock);
 			}
 		}
+
+		txnLock.lockInterruptibly();
+		conn = activeConnections.get(transactionId);
 
 		return conn;
 	}
 
-	public static void returnTransactionConnection(UUID transactionId) {
-		synchronized (checkedOutTransactions) {
-			checkedOutTransactions.remove(transactionId);
+	public void returnTransactionConnection(UUID transactionId) {
+		Lock txnLock = transactionLocks.get(transactionId);
+		if (txnLock != null) {
+			txnLock.unlock();
+		}
+		else {
+			throw new IllegalArgumentException("no lock available for " + transactionId);
 		}
 	}
 }

@@ -26,6 +26,8 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.apple.dnssd.TXTRecord;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
@@ -67,10 +69,12 @@ public class TransactionController extends AbstractController {
 	{
 		ModelAndView result;
 
+		ActiveTransactionRegistry txnRegistry = ActiveTransactionRegistry.getInstance();
+		
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
-		RepositoryConnection connection = ActiveTransactionRegistry.getTransactionConnection(transactionId);
+		RepositoryConnection connection = txnRegistry.getTransactionConnection(transactionId);
 
 		try {
 			if ("PUT".equals(reqMethod)) {
@@ -82,7 +86,7 @@ public class TransactionController extends AbstractController {
 				logger.info("DELETE transaction");
 
 				connection.rollback();
-				ActiveTransactionRegistry.deregister(transactionId, connection);
+				txnRegistry.deregister(transactionId, connection);
 				connection.close();
 
 				result = new ModelAndView(EmptySuccessView.getInstance());
@@ -94,7 +98,7 @@ public class TransactionController extends AbstractController {
 			}
 		}
 		finally {
-			ActiveTransactionRegistry.returnTransactionConnection(transactionId);
+			txnRegistry.returnTransactionConnection(transactionId);
 		}
 		return result;
 	}
