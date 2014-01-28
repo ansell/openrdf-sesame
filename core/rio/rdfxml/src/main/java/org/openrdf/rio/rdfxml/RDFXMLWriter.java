@@ -493,15 +493,16 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 				// prepend legal start char
 				builder.append("_");
 			}
-			
+
 			// do char-by-char scan and replace illegal chars where necessary.
 			for (char c : validNodeId.toCharArray()) {
 				if (XMLUtil.isNCNameChar(c)) {
 					builder.append(c);
 				}
 				else {
-					// replace incompatible char with underscore.
-					builder.append("_");
+					// replace incompatible char with encoded hex value that will
+					// always be alphanumeric.
+					builder.append(Integer.toHexString(c));
 				}
 			}
 			validNodeId = builder.toString();
