@@ -484,7 +484,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * @return the blank node identifier converted to a form that is a valid
 	 *         NCName.
 	 */
-	private String getValidNodeId(String blankNodeId) {
+	protected String getValidNodeId(String blankNodeId) {
 		String validNodeId = blankNodeId;
 		if (!XMLUtil.isNCName(validNodeId)) {
 			StringBuilder builder = new StringBuilder();
