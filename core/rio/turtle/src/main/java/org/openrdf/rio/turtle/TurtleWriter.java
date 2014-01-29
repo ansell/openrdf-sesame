@@ -23,7 +23,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringTokenizer;
 
 import info.aduna.io.IndentingWriter;
