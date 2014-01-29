@@ -255,7 +255,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 				writeStartOfStartTag(RDF.NAMESPACE, "Description");
 				if (subj instanceof BNode) {
 					BNode bNode = (BNode)subj;
-					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode.getID()));
+					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 				}
 				else {
 					URI uri = (URI)subj;
@@ -277,7 +277,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 				if (objRes instanceof BNode) {
 					BNode bNode = (BNode)objRes;
-					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode.getID()));
+					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 				}
 				else {
 					URI uri = (URI)objRes;
@@ -479,30 +479,35 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * NCName.
 	 * 
 	 * @see http://www.w3.org/TR/REC-rdf-syntax/#rdf-id
-	 * @param blankNodeId
+	 * @param bNode
 	 *        a blank node identifier
 	 * @return the blank node identifier converted to a form that is a valid
 	 *         NCName.
 	 */
-	protected String getValidNodeId(String blankNodeId) {
-		String validNodeId = blankNodeId;
+	protected String getValidNodeId(BNode bNode) {
+		String validNodeId = bNode.getID();
 		if (!XMLUtil.isNCName(validNodeId)) {
 			StringBuilder builder = new StringBuilder();
-
-			if (!XMLUtil.isNCNameStartChar(validNodeId.charAt(0))) {
-				// prepend legal start char
-				builder.append("_");
+			if (validNodeId.isEmpty()) {
+				builder.append("genid-");
+				builder.append(Integer.toHexString(bNode.hashCode()));
 			}
-
-			// do char-by-char scan and replace illegal chars where necessary.
-			for (char c : validNodeId.toCharArray()) {
-				if (XMLUtil.isNCNameChar(c)) {
-					builder.append(c);
+			else {
+				if (!XMLUtil.isNCNameStartChar(validNodeId.charAt(0))) {
+					// prepend legal start char
+					builder.append("_");
 				}
-				else {
-					// replace incompatible char with encoded hex value that will
-					// always be alphanumeric.
-					builder.append(Integer.toHexString(c));
+
+				// do char-by-char scan and replace illegal chars where necessary.
+				for (char c : validNodeId.toCharArray()) {
+					if (XMLUtil.isNCNameChar(c)) {
+						builder.append(c);
+					}
+					else {
+						// replace incompatible char with encoded hex value that will
+						// always be alphanumeric.
+						builder.append(Integer.toHexString(c));
+					}
 				}
 			}
 			validNodeId = builder.toString();

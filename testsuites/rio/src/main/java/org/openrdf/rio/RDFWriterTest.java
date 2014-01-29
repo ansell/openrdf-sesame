@@ -137,7 +137,7 @@ public abstract class RDFWriterTest {
 		assertEquals("Unexpected number of statements", 17, model.size());
 
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
-			assertEquals(1, model.getNamespaces().size());
+			assertTrue(model.getNamespaces().size() >= 1);
 			assertEquals(ex, model.getNamespace("ex").getName());
 		}
 
@@ -161,8 +161,8 @@ public abstract class RDFWriterTest {
 			assertTrue("missing statement with literal starting with newline", model.contains(st14));
 			assertTrue("missing statement with literal containing multiple newlines", model.contains(st15));
 		}
-		assertTrue("missing statement with single quotes", model.contains(st14));
-		assertTrue("missing statement with double quotes", model.contains(st15));
+		assertTrue("missing statement with single quotes", model.contains(st16));
+		assertTrue("missing statement with double quotes", model.contains(st17));
 	}
 
 	@Test
