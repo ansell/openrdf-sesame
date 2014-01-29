@@ -398,7 +398,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		}
 		else {
 			BNode bNode = (BNode)value;
-			writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+			writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 		}
 	}
 
@@ -455,7 +455,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			}
 			else {
 				BNode bNode = (BNode)objRes;
-				writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+				writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 			}
 
 			writeEndOfEmptyTag();

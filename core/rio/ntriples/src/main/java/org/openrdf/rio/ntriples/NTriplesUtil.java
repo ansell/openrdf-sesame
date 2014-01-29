@@ -309,18 +309,25 @@ public class NTriplesUtil {
 		String nextId = bNode.getID();
 		appendable.append("_:");
 
-		if (nextId.isEmpty() || !isLetter(nextId.charAt(0))) {
-			appendable.append("a");
+		if (nextId.isEmpty()) {
+			appendable.append("genid");
+			appendable.append(Integer.toHexString(bNode.hashCode()));
 		}
-
-		for (int i = 0; i < nextId.length(); i++) {
-			if (isLetterOrNumber(nextId.charAt(i))) {
-				appendable.append(bNode.getID().charAt(i));
+		else
+		{
+			if (!isLetter(nextId.charAt(0))) {
+				appendable.append("genid");
+				appendable.append(Integer.toHexString(nextId.charAt(0)));
 			}
-			else {
-				// Append the position, modulus 10, to ensure that a single
-				// character is printed for each invalid character
-				appendable.append(Integer.toString(i % 10));
+			
+			for (int i = 0; i < nextId.length(); i++) {
+				if (isLetterOrNumber(nextId.charAt(i))) {
+					appendable.append(nextId.charAt(i));
+				}
+				else {
+					// Append the character as its hex representation
+					appendable.append(Integer.toHexString(nextId.charAt(i)));
+				}
 			}
 		}
 	}

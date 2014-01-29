@@ -76,14 +76,4 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		Assert.assertTrue("result of serialization and re-upload should be equal to original", RepositoryUtil.equals(
 				rep1, rep2));
 	}
-
-	
-	@Override
-	@Test
-	@Ignore("[SES-879] round trip for RDF/XML currently fails on literals ending with newlines.")
-	public void testRoundTrip()
-		throws RDFHandlerException, RDFParseException, IOException {
-		// [SES-879] round trip for RDF/XML currently fails on literals ending with newlines. Test disabled to allow
-		// build to succeed pending fix.
-	}
 }
