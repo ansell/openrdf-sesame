@@ -310,7 +310,8 @@ public class NTriplesUtil {
 		appendable.append("_:");
 
 		if (nextId.isEmpty() || !isLetter(nextId.charAt(0))) {
-			appendable.append("a");
+			appendable.append("genid");
+			appendable.append(Integer.toHexString(bNode.hashCode()));
 		}
 
 		for (int i = 0; i < nextId.length(); i++) {
@@ -318,9 +319,8 @@ public class NTriplesUtil {
 				appendable.append(bNode.getID().charAt(i));
 			}
 			else {
-				// Append the position, modulus 10, to ensure that a single
-				// character is printed for each invalid character
-				appendable.append(Integer.toString(i % 10));
+				// Append the character as its hex representation
+				appendable.append(Integer.toHexString(i));
 			}
 		}
 	}
