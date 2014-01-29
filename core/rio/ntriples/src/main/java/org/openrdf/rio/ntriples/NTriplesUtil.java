@@ -316,11 +316,11 @@ public class NTriplesUtil {
 
 		for (int i = 0; i < nextId.length(); i++) {
 			if (isLetterOrNumber(nextId.charAt(i))) {
-				appendable.append(bNode.getID().charAt(i));
+				appendable.append(nextId.charAt(i));
 			}
 			else {
 				// Append the character as its hex representation
-				appendable.append(Integer.toHexString(i));
+				appendable.append(Integer.toHexString(nextId.charAt(i)));
 			}
 		}
 	}
