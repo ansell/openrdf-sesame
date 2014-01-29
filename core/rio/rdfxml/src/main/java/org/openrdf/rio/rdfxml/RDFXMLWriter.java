@@ -495,7 +495,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 			else {
 				if (!XMLUtil.isNCNameStartChar(validNodeId.charAt(0))) {
 					// prepend legal start char
-					builder.append("_");
+					builder.append("genid-");
 				}
 
 				// do char-by-char scan and replace illegal chars where necessary.
