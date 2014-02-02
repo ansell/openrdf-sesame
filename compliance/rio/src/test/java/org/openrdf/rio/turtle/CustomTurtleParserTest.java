@@ -290,10 +290,20 @@ public class CustomTurtleParserTest {
 	}
 
 	@Test
-	public void testSES2013BlankNodeSemiColonBNodeURI()
+	public void testSES2013BlankNodeSemiColonBNodeSpaceURI()
 		throws Exception
 	{
 		Model model = Rio.parse(new StringReader("<urn:a> a _:c2; <urn:b> <urn:c> ."), "", RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"), vf.createURI("urn:c")));
+	}
+
+	@Test
+	public void testSES2013BlankNodeSemiColonBNodeURI()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> a _:c2;<urn:b> <urn:c> ."), "", RDFFormat.TURTLE);
 
 		assertEquals(2, model.size());
 		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"), vf.createURI("urn:c")));
