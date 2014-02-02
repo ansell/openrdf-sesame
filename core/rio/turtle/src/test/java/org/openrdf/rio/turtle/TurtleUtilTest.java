@@ -63,10 +63,9 @@ public class TurtleUtilTest {
 	 * Test method for
 	 * {@link org.openrdf.rio.turtle.TurtleUtil#isWhitespace(int)}.
 	 */
-	@Ignore("TODO: Implement me")
 	@Test
 	public final void testIsWhitespace() {
-
+		assertFalse(TurtleUtil.isWhitespace(';'));
 	}
 
 	/**
