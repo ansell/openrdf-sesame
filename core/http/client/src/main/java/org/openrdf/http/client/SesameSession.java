@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +51,7 @@ import org.apache.http.util.EntityUtils;
 
 import info.aduna.io.IOUtil;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFException;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.protocol.Protocol;
@@ -74,46 +76,47 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.BasicParserSettings;
 
-
-
 /**
- * An {@link SparqlSession} subclass which bundles special functionality 
- * for Sesame remote repositories.
- *
+ * An {@link SparqlSession} subclass which bundles special functionality for
+ * Sesame remote repositories.
+ * 
  * @author Andreas Schwarte
  */
 public class SesameSession extends SparqlSession {
 
-
 	private String serverURL;
+
+	private String transactionURL;
 
 	public SesameSession(HttpClient client, ExecutorService executor) {
 		super(client, executor);
-		
-		// we want to preserve bnode ids to allow Sesame API methods to match blank nodes.
+
+		// we want to preserve bnode ids to allow Sesame API methods to match
+		// blank nodes.
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
-		
-		// Sesame client has preference for binary response formats, as these are most performant
+
+		// Sesame client has preference for binary response formats, as these are
+		// most performant
 		setPreferredTupleQueryResultFormat(TupleQueryResultFormat.BINARY);
 		setPreferredRDFFormat(RDFFormat.BINARY);
 	}
-	
+
 	public void setServerURL(String serverURL) {
 		if (serverURL == null) {
 			throw new IllegalArgumentException("serverURL must not be null");
 		}
 
 		this.serverURL = serverURL;
-	}	
-	
+	}
+
 	public String getServerURL() {
 		return serverURL;
 	}
-	
+
 	public String getRepositoryURL() {
 		return this.getQueryURL();
 	}
-	
+
 	public void setRepository(String repositoryURL) {
 		// Try to parse the server URL from the repository URL
 		Pattern urlPattern = Pattern.compile("(.*)/" + Protocol.REPOSITORIES + "/[^/]*/?");
@@ -122,29 +125,27 @@ public class SesameSession extends SparqlSession {
 		if (matcher.matches() && matcher.groupCount() == 1) {
 			setServerURL(matcher.group(1));
 		}
-		
+
 		setQueryURL(repositoryURL);
 	}
-	
+
 	protected void checkRepositoryURL() {
 		if (getQueryURL() == null) {
 			throw new IllegalStateException("Repository URL has not been set");
 		}
 	}
-	
+
 	protected void checkServerURL() {
 		if (serverURL == null) {
 			throw new IllegalStateException("Server URL has not been set");
 		}
 	}
-	
-	
+
 	@Override
 	public String getUpdateURL() {
 		return Protocol.getStatementsLocation(getQueryURL());
 	}
-	
-	
+
 	/*-----------------*
 	 * Repository list *
 	 *-----------------*/
@@ -164,8 +165,8 @@ public class SesameSession extends SparqlSession {
 	}
 
 	public void getRepositoryList(TupleQueryResultHandler handler)
-			throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException,
-			QueryInterruptedException
+		throws IOException, TupleQueryResultHandlerException, RepositoryException, UnauthorizedException,
+		QueryInterruptedException
 	{
 		checkServerURL();
 
@@ -180,7 +181,7 @@ public class SesameSession extends SparqlSession {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 	}
-	
+
 	/*------------------*
 	 * Protocol version *
 	 *------------------*/
@@ -202,7 +203,7 @@ public class SesameSession extends SparqlSession {
 			throw new RepositoryException(e);
 		}
 	}
-	
+
 	/*-------------------------*
 	 * Repository/context size *
 	 *-------------------------*/
@@ -219,9 +220,9 @@ public class SesameSession extends SparqlSession {
 			for (int i = 0; i < encodedContexts.length; i++) {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
 			}
-	
+
 			HttpUriRequest method = new HttpGet(url.build());
-	
+
 			String response = EntityUtils.toString(executeOK(method).getEntity());
 			try {
 				return Long.parseLong(response);
@@ -229,7 +230,8 @@ public class SesameSession extends SparqlSession {
 			catch (NumberFormatException e) {
 				throw new RepositoryException("Server responded with invalid size value: " + response);
 			}
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			throw new AssertionError(e);
 		}
 		catch (RepositoryException e) {
@@ -240,8 +242,10 @@ public class SesameSession extends SparqlSession {
 		}
 	}
 
-	public void deleteRepository(String repositoryID) throws IOException, RepositoryException {
-		
+	public void deleteRepository(String repositoryID)
+		throws IOException, RepositoryException
+	{
+
 		HttpUriRequest method = new HttpDelete(Protocol.getRepositoryLocation(serverURL, repositoryID));
 
 		try {
@@ -255,7 +259,6 @@ public class SesameSession extends SparqlSession {
 		}
 	}
 
-	
 	/*---------------------------*
 	 * Get/add/remove namespaces *
 	 *---------------------------*/
@@ -303,7 +306,8 @@ public class SesameSession extends SparqlSession {
 			int code = response.getStatusLine().getStatusCode();
 			if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_NOT_AUTHORITATIVE) {
 				return EntityUtils.toString(response.getEntity());
-			} else {
+			}
+			else {
 				EntityUtils.consume(response.getEntity());
 				return null;
 			}
@@ -371,7 +375,6 @@ public class SesameSession extends SparqlSession {
 		}
 	}
 
-	
 	/*-------------*
 	 * Context IDs *
 	 *-------------*/
@@ -407,8 +410,6 @@ public class SesameSession extends SparqlSession {
 		}
 	}
 
-	
-	
 	/*---------------------------*
 	 * Get/add/remove statements *
 	 *---------------------------*/
@@ -422,7 +423,7 @@ public class SesameSession extends SparqlSession {
 
 		try {
 			URIBuilder url = new URIBuilder(Protocol.getStatementsLocation(getQueryURL()));
-	
+
 			if (subj != null) {
 				url.setParameter(Protocol.SUBJECT_PARAM_NAME, Protocol.encodeValue(subj));
 			}
@@ -436,9 +437,9 @@ public class SesameSession extends SparqlSession {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
 			url.setParameter(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred));
-	
+
 			HttpGet method = new HttpGet(url.build());
-	
+
 			try {
 				getRDF(method, handler, true);
 			}
@@ -446,10 +447,59 @@ public class SesameSession extends SparqlSession {
 				logger.warn("Server reported unexpected malfored query error", e);
 				throw new RepositoryException(e.getMessage(), e);
 			}
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			throw new AssertionError(e);
 		}
 	}
+
+	public synchronized void beginTransaction(IsolationLevel isolationLevel)
+		throws OpenRDFException, IOException, UnauthorizedException
+	{
+		checkRepositoryURL();
+		
+		if (transactionURL != null) {
+			throw new IllegalStateException("Transaction URL is already set");
+		}
+
+		HttpPost method = new HttpPost(Protocol.getTransactionsLocation(getRepositoryURL()));
+		
+		// TODO add isolation level to payload
+		
+		HttpResponse response = execute(method);
+		int code = response.getStatusLine().getStatusCode();
+		if (code == HttpURLConnection.HTTP_CREATED) {
+			transactionURL = EntityUtils.toString(response.getEntity());
+		}
+		else {
+			EntityUtils.consume(response.getEntity());
+			throw new RepositoryException("unable to start transaction. HTTP error code " + code);
+		}
+	}
+	
+	public synchronized void commitTransaction()
+			throws OpenRDFException, IOException, UnauthorizedException
+		{
+			checkRepositoryURL();
+			
+			if (transactionURL == null) {
+				throw new IllegalStateException("Transaction URL has not been set");
+			}
+
+			HttpPost method = new HttpPost(Protocol.getTransactionsLocation(getRepositoryURL()));
+			
+			// TODO add isolation level to payload
+			
+			HttpResponse response = execute(method);
+			int code = response.getStatusLine().getStatusCode();
+			if (code == HttpURLConnection.HTTP_CREATED) {
+				transactionURL = EntityUtils.toString(response.getEntity());
+			}
+			else {
+				EntityUtils.consume(response.getEntity());
+				throw new RepositoryException("unable to start transaction. HTTP error code " + code);
+			}
+		}
 
 	public void sendTransaction(final Iterable<? extends TransactionOperation> txn)
 		throws IOException, RepositoryException, UnauthorizedException
@@ -460,6 +510,7 @@ public class SesameSession extends SparqlSession {
 
 		// Create a RequestEntity for the transaction data
 		method.setEntity(new AbstractHttpEntity() {
+
 			public long getContentLength() {
 				return -1; // don't know
 			}
@@ -476,8 +527,9 @@ public class SesameSession extends SparqlSession {
 				return true;
 			}
 
-			public InputStream getContent() throws IOException,
-					IllegalStateException {
+			public InputStream getContent()
+				throws IOException, IllegalStateException
+			{
 				ByteArrayOutputStream buf = new ByteArrayOutputStream();
 				writeTo(buf);
 				return new ByteArrayInputStream(buf.toByteArray());
@@ -501,14 +553,15 @@ public class SesameSession extends SparqlSession {
 			throw new RepositoryException(e);
 		}
 	}
-	
+
 	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
 			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		// Set Content-Length to -1 as we don't know it and we also don't want to
 		// cache
-		HttpEntity entity = new InputStreamEntity(contents, -1, ContentType.parse(dataFormat.getDefaultMIMEType()));
+		HttpEntity entity = new InputStreamEntity(contents, -1,
+				ContentType.parse(dataFormat.getDefaultMIMEType()));
 		upload(entity, baseURI, overwrite, contexts);
 	}
 
@@ -519,6 +572,7 @@ public class SesameSession extends SparqlSession {
 		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
 
 		HttpEntity entity = new AbstractHttpEntity() {
+
 			private InputStream content;
 
 			public long getContentLength() {
@@ -526,7 +580,8 @@ public class SesameSession extends SparqlSession {
 			}
 
 			public Header getContentType() {
-				return new BasicHeader("Content-Type", dataFormat.getDefaultMIMEType() + "; charset=" + charset.name());
+				return new BasicHeader("Content-Type", dataFormat.getDefaultMIMEType() + "; charset="
+						+ charset.name());
 			}
 
 			public boolean isRepeatable() {
@@ -537,8 +592,9 @@ public class SesameSession extends SparqlSession {
 				return true;
 			}
 
-			public synchronized InputStream getContent() throws IOException,
-					IllegalStateException {
+			public synchronized InputStream getContent()
+				throws IOException, IllegalStateException
+			{
 				if (content == null) {
 					ByteArrayOutputStream buf = new ByteArrayOutputStream();
 					writeTo(buf);
@@ -554,7 +610,8 @@ public class SesameSession extends SparqlSession {
 					OutputStreamWriter writer = new OutputStreamWriter(out, charset);
 					IOUtil.transfer(contents, writer);
 					writer.flush();
-				} finally {
+				}
+				finally {
 					contents.close();
 				}
 			}
@@ -572,7 +629,7 @@ public class SesameSession extends SparqlSession {
 
 		try {
 			URIBuilder url = new URIBuilder(Protocol.getStatementsLocation(getQueryURL()));
-	
+
 			// Set relevant query parameters
 			for (String encodedContext : Protocol.encodeContexts(contexts)) {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
@@ -581,7 +638,7 @@ public class SesameSession extends SparqlSession {
 				String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
 				url.setParameter(Protocol.BASEURI_PARAM_NAME, encodedBaseURI);
 			}
-	
+
 			// Select appropriate HTTP method
 			HttpEntityEnclosingRequest method;
 			if (overwrite) {
@@ -590,10 +647,10 @@ public class SesameSession extends SparqlSession {
 			else {
 				method = new HttpPost(url.build());
 			}
-	
+
 			// Set payload
 			method.setEntity(reqEntity);
-	
+
 			// Send request
 			try {
 				executeNoContent((HttpUriRequest)method);
@@ -607,14 +664,15 @@ public class SesameSession extends SparqlSession {
 			catch (OpenRDFException e) {
 				throw new RepositoryException(e);
 			}
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			throw new AssertionError(e);
 		}
 	}
 
-    @Override
-    public void setUsernameAndPassword(String username, String password) {
-        checkServerURL();
-        setUsernameAndPasswordForUrl(username, password, getServerURL());
-    }
+	@Override
+	public void setUsernameAndPassword(String username, String password) {
+		checkServerURL();
+		setUsernameAndPasswordForUrl(username, password, getServerURL());
+	}
 }

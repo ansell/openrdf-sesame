@@ -144,6 +144,11 @@ public abstract class Protocol {
 	public static final String STATEMENTS = "statements";
 
 	/**
+	 * Relative location of the transaction resources of a repository.
+	 */
+	public static final String TRANSACTIONS = "transactions";
+
+	/**
 	 * Relative location of the context list resource of a repository.
 	 */
 	public static final String CONTEXTS = "contexts";
@@ -246,6 +251,19 @@ public abstract class Protocol {
 	}
 
 	/**
+	 * Get the location of the transaction resources for a specific repository.
+	 * 
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
+	 * @return the location of the transaction resources for the specified
+	 *         repository
+	 * @since 2.8.0
+	 */
+	public static final String getTransactionsLocation(String repositoryLocation) {
+		return repositoryLocation + "/" + STATEMENTS;
+	}
+
+	/**
 	 * Extracts the server location from the repository location.
 	 * 
 	 * @param repositoryLocation
@@ -257,7 +275,6 @@ public abstract class Protocol {
 		serverLocation = serverLocation.substring(0, serverLocation.lastIndexOf('/'));
 		return serverLocation;
 	}
-	
 
 	/**
 	 * Extracts the repository ID from the repository location.
@@ -270,8 +287,6 @@ public abstract class Protocol {
 		String repositoryID = repositoryLocation.substring(repositoryLocation.lastIndexOf('/') + 1);
 		return repositoryID;
 	}
-	
-	
 
 	/**
 	 * Get the location of the contexts lists resource for a specific repository.
