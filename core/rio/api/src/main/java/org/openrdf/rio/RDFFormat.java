@@ -270,7 +270,7 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * List of known RDF file formats.
 	 */
-	// FIXME: remove/deprecate this list?
+	@Deprecated
 	private static List<RDFFormat> RDF_FORMATS = new ArrayList<RDFFormat>(12);
 
 	/*--------------------*
@@ -278,7 +278,6 @@ public class RDFFormat extends FileFormat {
 	 *--------------------*/
 
 	static {
-		// FIXME: base available format on available parsers/writers?
 		register(RDFXML);
 		register(NTRIPLES);
 		register(TURTLE);
@@ -298,7 +297,11 @@ public class RDFFormat extends FileFormat {
 
 	/**
 	 * Returns all known/registered RDF formats.
+	 * 
+	 * @deprecated Use {@link RDFParserRegistry#getKeys()} to find all parser
+	 *             formats.
 	 */
+	@Deprecated
 	public static Collection<RDFFormat> values() {
 		return Collections.unmodifiableList(RDF_FORMATS);
 	}
@@ -314,7 +317,10 @@ public class RDFFormat extends FileFormat {
 	 * @param fileExt
 	 *        The (default) file extension for the RDF file format, e.g.
 	 *        <tt>rdf</tt> for RDF/XML files.
+	 * @deprecated Use {@link RDFParserRegistry#add(RDFParserFactory)} to insert
+	 *             new parsers into the system.
 	 */
+	@Deprecated
 	public static RDFFormat register(String name, String mimeType, String fileExt, Charset charset) {
 		RDFFormat rdfFormat = new RDFFormat(name, mimeType, charset, fileExt, false, false);
 		register(rdfFormat);
@@ -323,7 +329,11 @@ public class RDFFormat extends FileFormat {
 
 	/**
 	 * Registers the specified RDF file format.
+	 * 
+	 * @deprecated Use {@link RDFParserRegistry#add(RDFParserFactory)} to insert
+	 *             new parsers into the system.
 	 */
+	@Deprecated
 	public static void register(RDFFormat rdfFormat) {
 		RDF_FORMATS.add(rdfFormat);
 	}
@@ -343,7 +353,9 @@ public class RDFFormat extends FileFormat {
 	 *         <tt>null</tt> otherwise.
 	 * @see #forMIMEType(String,RDFFormat)
 	 * @see #getMIMETypes()
+	 * @deprecated Use {@link Rio#getParserFormatForMIMEType(String)} instead.
 	 */
+	@Deprecated
 	public static RDFFormat forMIMEType(String mimeType) {
 		return forMIMEType(mimeType, null);
 	}
@@ -364,7 +376,10 @@ public class RDFFormat extends FileFormat {
 	 *         the extension was not recognized.
 	 * @see #forMIMEType(String)
 	 * @see #getMIMETypes()
+	 * @deprecated Use {@link Rio#getParserFormatForMIMEType(String, RDFFormat)}
+	 *             instead.
 	 */
+	@Deprecated
 	public static RDFFormat forMIMEType(String mimeType, RDFFormat fallback) {
 		return matchMIMEType(mimeType, RDF_FORMATS, fallback);
 	}
@@ -384,7 +399,9 @@ public class RDFFormat extends FileFormat {
 	 *         <tt>null</tt> otherwise.
 	 * @see #forFileName(String,RDFFormat)
 	 * @see #getFileExtensions()
+	 * @deprecated Use {@link Rio#getParserFormatForFileName(String)} instead.
 	 */
+	@Deprecated
 	public static RDFFormat forFileName(String fileName) {
 		return forFileName(fileName, null);
 	}
@@ -405,7 +422,10 @@ public class RDFFormat extends FileFormat {
 	 *         format if the extension was not recognized.
 	 * @see #forFileName(String)
 	 * @see #getFileExtensions()
+	 * @deprecated Use {@link Rio#getParserFormatForFileName(String, RDFFormat)}
+	 *             instead.
 	 */
+	@Deprecated
 	public static RDFFormat forFileName(String fileName, RDFFormat fallback) {
 		return matchFileName(fileName, RDF_FORMATS, fallback);
 	}
@@ -417,7 +437,10 @@ public class RDFFormat extends FileFormat {
 	 *        A format name.
 	 * @return The RDF format whose name matches the specified name, or
 	 *         <tt>null</tt> if there is no such format.
+	 * @deprecated Use MIME types to identify RDFFormats, and use the static
+	 *             methods in {@link Rio} to find them.
 	 */
+	@Deprecated
 	public static RDFFormat valueOf(String formatName) {
 		for (RDFFormat format : RDF_FORMATS) {
 			if (format.getName().equalsIgnoreCase(formatName)) {

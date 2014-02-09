@@ -46,6 +46,10 @@ public class RDFWriterRegistry extends FileFormatServiceRegistry<RDFFormat, RDFW
 
 	@Override
 	protected RDFFormat getKey(RDFWriterFactory factory) {
-		return factory.getRDFFormat();
+		RDFFormat key = factory.getRDFFormat();
+		if (!RDFFormat.values().contains(key)) {
+			RDFFormat.register(key);
+		}
+		return key;
 	}
 }
