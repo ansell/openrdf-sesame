@@ -31,6 +31,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicWriterSettings;
+import org.openrdf.rio.helpers.NTriplesWriterSettings;
 import org.openrdf.rio.helpers.RDFWriterBase;
 
 /**
@@ -60,7 +61,7 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 	 *        The OutputStream to write the N-Triples document to.
 	 */
 	public NTriplesWriter(OutputStream out) {
-		this(new OutputStreamWriter(out, Charset.forName("US-ASCII")));
+		this(new OutputStreamWriter(out, Charset.forName("UTF-8")));
 	}
 
 	/**
@@ -78,10 +79,12 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.NTRIPLES;
 	}
 
+	@Override
 	public void startRDF()
 		throws RDFHandlerException
 	{
@@ -92,6 +95,7 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		writingStarted = true;
 	}
 
+	@Override
 	public void endRDF()
 		throws RDFHandlerException
 	{
@@ -110,10 +114,12 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String name) {
 		// N-Triples does not support namespace prefixes.
 	}
 
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
@@ -127,7 +133,9 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 			NTriplesUtil.append(st.getPredicate(), writer);
 			writer.write(" ");
 			NTriplesUtil.append(st.getObject(), writer,
-					getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL));
+					getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL),
+					getWriterConfig().get(NTriplesWriterSettings.ESCAPE_UNICODE));
+
 			writer.write(" .\n");
 		}
 		catch (IOException e) {
@@ -135,6 +143,7 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void handleComment(String comment)
 		throws RDFHandlerException
 	{

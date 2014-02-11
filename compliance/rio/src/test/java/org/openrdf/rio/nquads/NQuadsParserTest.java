@@ -16,14 +16,22 @@
  */
 package org.openrdf.rio.nquads;
 
+import junit.framework.Test;
+
 import org.openrdf.rio.RDFParser;
 
 /**
  * JUnit test for the N-Quads parser.
  * 
- * @author Peter Ansell
+ * @author Arjohn Kampman
  */
 public class NQuadsParserTest extends AbstractNQuadsParserTest {
+
+	public static Test suite()
+		throws Exception
+	{
+		return new NQuadsParserTest().createTestSuite();
+	}
 
 	@Override
 	protected RDFParser createRDFParser() {

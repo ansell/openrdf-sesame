@@ -47,7 +47,7 @@ import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
 
-public abstract class NQuadsWriterTestCase extends RDFWriterTest {
+public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 
 	private RDFParser parser;
 
@@ -55,7 +55,7 @@ public abstract class NQuadsWriterTestCase extends RDFWriterTest {
 
 	private ValueFactory vf;
 
-	protected NQuadsWriterTestCase(RDFWriterFactory writerF, RDFParserFactory parserF) {
+	protected AbstractNQuadsWriterTest(RDFWriterFactory writerF, RDFParserFactory parserF) {
 		super(writerF, parserF);
 	}
 
@@ -111,7 +111,7 @@ public abstract class NQuadsWriterTestCase extends RDFWriterTest {
 	{
 		StatementCollector statementCollector = new StatementCollector();
 		parser.setRDFHandler(statementCollector);
-		parser.parse(this.getClass().getClassLoader().getResourceAsStream("testcases/nquads/test2.nq"),
+		parser.parse(this.getClass().getResourceAsStream("/testcases/nquads/test2.nq"),
 				"http://test.base.uri");
 
 		Assert.assertEquals(400, statementCollector.getStatements().size());

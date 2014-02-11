@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -129,10 +130,10 @@ public class NTriplesParser extends RDFParserBase {
 		// Note: baseURI will be checked in parse(Reader, String)
 
 		try {
-			parse(new InputStreamReader(new BOMInputStream(in, false), "US-ASCII"), baseURI);
+			parse(new InputStreamReader(new BOMInputStream(in, false), Charset.forName("UTF-8")), baseURI);
 		}
 		catch (UnsupportedEncodingException e) {
-			// Every platform should support the US-ASCII encoding...
+			// Every platform should support the UTF-8 encoding...
 			throw new RuntimeException(e);
 		}
 	}
@@ -167,7 +168,7 @@ public class NTriplesParser extends RDFParserBase {
 			throw new IllegalArgumentException("base URI can not be 'null'");
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.startRDF();
 		}
 
@@ -200,7 +201,7 @@ public class NTriplesParser extends RDFParserBase {
 			clear();
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -221,7 +222,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Verifies that there is only whitespace until the end of the line.
+	 * Verifies that there is only whitespace or comments until the end of the line.
 	 */
 	protected int assertLineTerminates(int c)
 		throws IOException, RDFParseException
@@ -229,14 +230,32 @@ public class NTriplesParser extends RDFParserBase {
 		c = reader.read();
 
 		c = skipWhitespace(c);
-
-		if (c != -1 && c != '\r' && c != '\n') {
-			reportFatalError("Content after '.' is not allowed");
+		
+		if (c == '#') {
+			//c = skipToEndOfLine(c);
 		}
-
+		else {
+			if (c != -1 && c != '\r' && c != '\n') {
+				reportFatalError("Content after '.' is not allowed");
+			}
+		}
+		
 		return c;
 	}
 
+	/**
+	 * Reads characters from reader until the first EOL has been read. The EOL character or -1 is returned.
+	 */
+	protected int skipToEndOfLine(int c)
+		throws IOException
+	{
+		while (c != -1 && c != '\r' && c != '\n') {
+			c = reader.read();
+		}
+		
+		return c;
+	}
+	
 	/**
 	 * Reads characters from reader until the first EOL has been read. The first
 	 * character after the EOL is returned. In case the end of the character
@@ -315,7 +334,7 @@ public class NTriplesParser extends RDFParserBase {
 
 		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object);
-			if(rdfHandler != null) {
+			if (rdfHandler != null) {
 				rdfHandler.handleStatement(st);
 			}
 		}
@@ -451,8 +470,8 @@ public class NTriplesParser extends RDFParserBase {
 		if (c == -1) {
 			throwEOFException();
 		}
-		else if (!NTriplesUtil.isLetter(c)) {
-			reportError("Expected a letter, found: " + (char)c,
+		else if (!NTriplesUtil.isLetterOrNumber(c)) {
+			reportError("Expected a letter or number, found: " + (char)c,
 					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 		name.append((char)c);
@@ -501,6 +520,12 @@ public class NTriplesParser extends RDFParserBase {
 		if (c == '@') {
 			// Read language
 			c = reader.read();
+			
+			if(!NTriplesUtil.isLetter(c)) {
+				reportError("Expected a letter, found: " + (char)c,
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			}
+			
 			while (c != -1 && c != '.' && c != '^' && c != ' ' && c != '\t') {
 				lang.append((char)c);
 				c = reader.read();

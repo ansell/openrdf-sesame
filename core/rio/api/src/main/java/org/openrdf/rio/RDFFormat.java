@@ -102,15 +102,16 @@ public class RDFFormat extends FileFormat {
 	 * file format.
 	 * <p>
 	 * The file extension <code>.nt</code> is recommend for N-Triples documents.
-	 * The media type is <code>text/plain</code> and encoding is in 7-bit
-	 * US-ASCII.
+	 * The media type is <code>application/n-triples</code> and encoding is in
+	 * UTF-8.
 	 * </p>
 	 * 
-	 * @see <a href="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</a>
+	 * @see <a href="http://www.w3.org/TR/n-triples/">N-Triples</a>
 	 */
-	public static final RDFFormat NTRIPLES = new RDFFormat("N-Triples", Arrays.asList("text/plain"),
-			Charset.forName("US-ASCII"), Arrays.asList("nt"), ValueFactoryImpl.getInstance().createURI(
-					"http://www.w3.org/ns/formats/N-Triples"), NO_NAMESPACES, NO_CONTEXTS);
+	public static final RDFFormat NTRIPLES = new RDFFormat("N-Triples", Arrays.asList("application/n-triples",
+			"text/plain"), Charset.forName("UTF-8"), Arrays.asList("nt"),
+			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/N-Triples"), NO_NAMESPACES,
+			NO_CONTEXTS);
 
 	/**
 	 * The <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle</a> file
@@ -197,17 +198,18 @@ public class RDFFormat extends FileFormat {
 	 * an RDF serialization format that supports recording of named graphs.
 	 * <p>
 	 * The file extension <code>.nq</code> is recommended for N-Quads documents.
-	 * The media type is <code>text/x-nquads</code> and the encoding is 7-bit
-	 * US-ASCII.
+	 * The media type is <code>application/n-quads</code> and the encoding is
+	 * UTF-8.
 	 * </p>
 	 * 
-	 * @see <a href="http://sw.deri.org/2008/07/n-quads/">N-Quads: Extending
-	 *      N-Triples with Context</a>
+	 * @see <a href="http://www.w3.org/TR/n-quads/">N-Quads: Extending N-Triples
+	 *      with Context</a>
 	 * @since 2.6.6
 	 */
-	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", Arrays.asList("text/x-nquads"),
-			Charset.forName("US-ASCII"), Arrays.asList("nq"), ValueFactoryImpl.getInstance().createURI(
-					"http://www.w3.org/ns/formats/N-Quads"), NO_NAMESPACES, SUPPORTS_CONTEXTS);
+	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", Arrays.asList("application/n-quads",
+			"text/x-nquads"), Charset.forName("UTF-8"), Arrays.asList("nq"),
+			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/N-Quads"), NO_NAMESPACES,
+			SUPPORTS_CONTEXTS);
 
 	/**
 	 * The <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD</a>

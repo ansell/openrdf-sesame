@@ -19,6 +19,7 @@ package org.openrdf.rio.nquads;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.helpers.BasicWriterSettings;
+import org.openrdf.rio.helpers.NTriplesWriterSettings;
 import org.openrdf.rio.ntriples.NTriplesUtil;
 import org.openrdf.rio.ntriples.NTriplesWriter;
 import org.openrdf.model.Statement;
@@ -68,7 +69,8 @@ public class NQuadsWriter extends NTriplesWriter {
 
 			// OBJECT
 			NTriplesUtil.append(st.getObject(), writer,
-					getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL));
+					getWriterConfig().get(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL),
+					getWriterConfig().get(NTriplesWriterSettings.ESCAPE_UNICODE));
 
 			if (null != st.getContext()) {
 				writer.write(" ");
