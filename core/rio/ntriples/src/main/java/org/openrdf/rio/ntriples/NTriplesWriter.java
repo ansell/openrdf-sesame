@@ -162,7 +162,8 @@ public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
 		Set<RioSetting<?>> result = new HashSet<RioSetting<?>>(super.getSupportedSettings());
 
 		result.add(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL);
-
+		result.add(NTriplesWriterSettings.ESCAPE_UNICODE);
+		
 		return result;
 	}
 }
