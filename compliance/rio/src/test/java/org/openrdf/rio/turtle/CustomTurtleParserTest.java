@@ -28,10 +28,12 @@ import org.junit.rules.Timeout;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
@@ -41,6 +43,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorCollector;
+import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Custom tests for Turtle Parser
@@ -60,6 +63,8 @@ public class CustomTurtleParserTest {
 
 	private RDFParser parser;
 
+	private StatementCollector statementCollector;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -72,6 +77,8 @@ public class CustomTurtleParserTest {
 		settingsNoVerifyLangTag.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
 		errors = new ParseErrorCollector();
 		parser = Rio.createParser(RDFFormat.TURTLE);
+		statementCollector = new StatementCollector(new LinkedHashModel());
+		parser.setRDFHandler(statementCollector);
 	}
 
 	@Test
@@ -309,4 +316,27 @@ public class CustomTurtleParserTest {
 		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"), vf.createURI("urn:c")));
 	}
 
+	@Test
+	public void testSES2019ParseLongLiterals()
+		throws Exception
+	{
+		parser.parse(this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.ttl"), "");
+
+		assertTrue(errors.getWarnings().isEmpty());
+		assertTrue(errors.getErrors().isEmpty());
+		assertTrue(errors.getFatalErrors().isEmpty());
+
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(5, statementCollector.getStatements().size());
+
+		for (Statement st : statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+
+		ModelUtil.equals(statementCollector.getStatements(), Rio.parse(
+				this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.nt"), "",
+				RDFFormat.NTRIPLES));
+		
+		Rio.write(statementCollector.getStatements(), System.out, RDFFormat.NTRIPLES);
+	}
 }
