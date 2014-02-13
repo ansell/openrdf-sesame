@@ -213,7 +213,7 @@ public class XMLUtil {
 		// Check first character
 		char c = name.charAt(0);
 
-		if (c == '_' || isLetter(c)) {
+		if (isNCNameStartChar(c)) {
 			// Check the rest of the characters
 			for (int i = 1; i < nameLength; i++) {
 				c = name.charAt(i);
@@ -229,6 +229,10 @@ public class XMLUtil {
 		return false;
 	}
 
+	public static final boolean isNCNameStartChar(char c) {
+		return c == '_' || isLetter(c);
+	}
+	
 	public static final boolean isNCNameChar(char c) {
 		return 
 			_isAsciiBaseChar(c) ||

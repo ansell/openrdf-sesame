@@ -462,6 +462,10 @@ public class TurtleUtil {
 				sb.append('"');
 				startIdx = backSlashIdx + 2;
 			}
+			else if (c == '\'') {
+				sb.append('\'');
+				startIdx = backSlashIdx + 2;
+			}
 			else if (c == '>') {
 				sb.append('>');
 				startIdx = backSlashIdx + 2;

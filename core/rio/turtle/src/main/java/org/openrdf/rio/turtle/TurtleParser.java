@@ -1138,9 +1138,11 @@ public class TurtleParser extends RDFParserBase {
 				break;
 			}
 			name.append((char)previous);
+			if(!TurtleUtil.isNameChar(c))
+			{
+				unread(c);
+			}
 		}
-
-		// unread(c);
 
 		return createBNode(name.toString());
 	}
