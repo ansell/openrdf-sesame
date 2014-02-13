@@ -16,9 +16,7 @@
  */
 package org.openrdf.rio.helpers;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.openrdf.model.Statement;
@@ -41,7 +39,7 @@ public class StatementCollector extends ContextStatementCollector {
 	 * namespaces.
 	 */
 	public StatementCollector() {
-		this(new ArrayList<Statement>());
+		super(ValueFactoryImpl.getInstance());
 	}
 
 	/**
@@ -50,7 +48,7 @@ public class StatementCollector extends ContextStatementCollector {
 	 * reported namespaces.
 	 */
 	public StatementCollector(Collection<Statement> statements) {
-		this(statements, new LinkedHashMap<String, String>());
+		super(statements, ValueFactoryImpl.getInstance());
 	}
 
 	/**

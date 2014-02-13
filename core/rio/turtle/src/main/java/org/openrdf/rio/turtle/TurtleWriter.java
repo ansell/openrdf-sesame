@@ -357,7 +357,34 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		writer.write("_:");
-		writer.write(bNode.getID());
+		String id = bNode.getID();
+
+		if (id.isEmpty()) {
+			writer.write("genid-");
+			writer.write(Integer.toHexString(bNode.hashCode()));
+		}
+		else {
+			if (!TurtleUtil.isNameStartChar(id.charAt(0))) {
+				writer.write("genid-");
+			}
+			else {
+				writer.write(id.charAt(0));
+			}
+			for (int i = 1; i < id.length() - 1; i++) {
+				if (TurtleUtil.isNameChar(id.charAt(i))) {
+					writer.write(id.charAt(i));
+				}
+				else {
+					writer.write(Integer.toHexString(id.charAt(i)));
+				}
+			}
+			if (!TurtleUtil.isNameEndChar(id.charAt(id.length() - 1))) {
+				writer.write(Integer.toHexString(id.charAt(id.length() - 1)));
+			}
+			else {
+				writer.write(id.charAt(id.length() - 1));
+			}
+		}
 	}
 
 	protected void writeLiteral(Literal lit)
