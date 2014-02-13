@@ -57,8 +57,12 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void tearDown()
 		throws Exception
 	{
-		super.tearDown();
-		server.stop();
+		try {
+			super.tearDown();
+		}
+		finally {
+			server.stop();
+		}
 	}
 
 	@Override
@@ -144,20 +148,22 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
 	}
-	
+
 	@Test
-	public void testUpdateExecution() throws Exception {
+	public void testUpdateExecution()
+		throws Exception
+	{
 
 		URI foobar = vf.createURI("foo:bar");
-		
+
 		String sparql = "INSERT DATA { <foo:bar> <foo:bar> <foo:bar> . } ";
-		
+
 		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, sparql);
 
 		update.execute();
-		
+
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
-		
+
 		testCon.clear();
 
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
@@ -165,15 +171,16 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		testCon.begin();
 		update.execute();
 
-		// NOTE this is only correct because HTTPconnection does not implement true transaction isolation.
+		// NOTE this is only correct because HTTPconnection does not implement
+		// true transaction isolation.
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
 
 		testCon.commit();
-		
+
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
-		
+
 	}
-	
+
 	@Test
 	@Override
 	public void testAddMalformedLiteralsDefaultConfig()
