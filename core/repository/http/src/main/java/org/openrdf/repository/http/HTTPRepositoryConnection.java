@@ -177,8 +177,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		verifyIsOpen();
 		verifyNotTxnActive("Connection already has an active transaction");
-
-		active = true;
+		try {
+			client.beginTransaction(this.getIsolationLevel());
+			active = true;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IOException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	/**
