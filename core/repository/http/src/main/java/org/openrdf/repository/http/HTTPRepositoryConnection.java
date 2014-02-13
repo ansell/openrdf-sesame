@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,28 +26,25 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.http.client.SesameSession;
-import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
-import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
-import org.openrdf.http.protocol.transaction.operations.ClearOperation;
-import org.openrdf.http.protocol.transaction.operations.RemoveNamespaceOperation;
-import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperation;
-import org.openrdf.http.protocol.transaction.operations.SPARQLUpdateOperation;
-import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
-import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
+import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.Protocol.Action;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -105,7 +104,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Variables *
 	 *-----------*/
 
-	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
+	// private List<TransactionOperation> txn = Collections.synchronizedList(new
+	// ArrayList<TransactionOperation>());
 
 	private final SesameSession client;
 
@@ -117,6 +117,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	private Throwable creatorTrace;
 
+	private Model toAdd;
+
+	private Model toRemove;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -126,7 +130,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 		this.client = client;
 
-		// parser used for locally processing input data to be sent to the server should be strict, and should preserve bnode ids.
+		// parser used for locally processing input data to be sent to the server
+		// should be strict, and should preserve bnode ids.
 		setParserConfig(new ParserConfig());
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 
@@ -219,15 +224,15 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	public TupleQuery prepareTupleQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPTupleQuery(client, ql, queryString, baseURI);
+		return new HTTPTupleQuery(this, ql, queryString, baseURI);
 	}
 
 	public GraphQuery prepareGraphQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPGraphQuery(client, ql, queryString, baseURI);
+		return new HTTPGraphQuery(this, ql, queryString, baseURI);
 	}
 
 	public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String queryString, String baseURI) {
-		return new HTTPBooleanQuery(client, ql, queryString, baseURI);
+		return new HTTPBooleanQuery(this, ql, queryString, baseURI);
 	}
 
 	public RepositoryResult<Resource> getContextIDs()
@@ -305,30 +310,38 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void commit()
 		throws RepositoryException
 	{
-		synchronized (txn) {
-			if (txn.size() > 0) {
-				try {
-					client.sendTransaction(txn);
-					txn.clear();
-				}
-				catch (IOException e) {
-					throw new RepositoryException(e);
-				}
-			}
+		try {
+			client.commitTransaction();
 			active = false;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IOException e) {
+			throw new RepositoryException(e);
 		}
 	}
 
-	public void rollback() {
-		txn.clear();
-		active = false;
+	public void rollback()
+		throws RepositoryException
+	{
+		try {
+			client.rollbackTransaction();
+			active = false;
+		}
+		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IOException e) {
+			throw new RepositoryException(e);
+		}
 	}
 
 	@Override
 	public void close()
 		throws RepositoryException
 	{
-		if (txn.size() > 0) {
+		if (isActive()) {
 			logger.warn("Rolling back transaction due to connection close", new Throwable());
 			rollback();
 		}
@@ -407,47 +420,127 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		// FIXME (J1) in the new setup, isActive is always true when you get to
-		// this point. We need transactional support
-		// in the httpclient itself (and thus in the protocol).
-		if (!isActive()) {
-			// Send bytes directly to the server
-			client.upload(in, baseURI, dataFormat, false, contexts);
-		}
-		else {
-			// Parse files locally
-			super.add(in, baseURI, dataFormat, contexts);
-		}
+		// Send bytes directly to the server
+		client.upload(in, baseURI, dataFormat, false, contexts);
 	}
 
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		// FIXME (J1) in the new setup, isActive is always true when you get to
-		// this point. We need transactional support
-		// in the httpclient itself (and thus in the protocol).
-		if (!isActive()) {
-			// Send bytes directly to the server
-			client.upload(reader, baseURI, dataFormat, false, contexts);
-		}
-		else {
-			// Parse files locally
-			super.add(reader, baseURI, dataFormat, contexts);
-		}
+		client.upload(reader, baseURI, dataFormat, false, contexts);
 	}
 
 	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		txn.add(new AddStatementOperation(subject, predicate, object, contexts));
+		flushTransactionState(Protocol.Action.ADD);
+
+		if (toAdd == null) {
+			toAdd = new LinkedHashModel();
+		}
+		toAdd.add(subject, predicate, object, contexts);
+	}
+
+	private void addModel(Model m)
+		throws RepositoryException
+	{
+		RDFFormat format = RDFFormat.BINARY;
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			Rio.write(m, out, format);
+			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+			client.addData(in, null, format);
+
+		}
+		catch (RDFHandlerException e) {
+			throw new RepositoryException("error while writing statement", e);
+		}
+		catch (RDFParseException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IOException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	private void removeModel(Model m)
+		throws RepositoryException
+	{
+		RDFFormat format = RDFFormat.BINARY;
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			Rio.write(m, out, format);
+			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+			client.removeData(in, null, format);
+
+		}
+		catch (RDFHandlerException e) {
+			throw new RepositoryException("error while writing statement", e);
+		}
+		catch (RDFParseException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IOException e) {
+			throw new RepositoryException(e);
+		}
+	}
+
+	protected void flushTransactionState(Action action)
+		throws RepositoryException
+	{
+		switch (action) {
+			case ADD:
+				if (toRemove != null) {
+					removeModel(toRemove);
+					toRemove = null;
+				}
+				break;
+			case DELETE:
+				if (toAdd != null) {
+					addModel(toAdd);
+					toAdd = null;
+				}
+				break;
+			case GET:
+			case UPDATE:
+			case COMMIT:
+				if (toAdd != null) {
+					addModel(toAdd);
+					toAdd = null;
+				}
+				if (toRemove != null) {
+					removeModel(toRemove);
+					toRemove = null;
+				}
+				break;
+			case ROLLBACK:
+				toAdd = null;
+				toRemove = null;
+				break;
+					
+		}
 	}
 
 	@Override
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
+		flushTransactionState(Protocol.Action.DELETE);
+
+		if (toRemove == null) {
+			toRemove = new LinkedHashModel();
+		}
+		if (subject == null) {
+			subject = SESAME.WILDCARD;
+		}
+		if (predicate == null) {
+			predicate = SESAME.WILDCARD;
+		}
+		if (object == null) {
+			object = SESAME.WILDCARD;
+		}
+		toRemove.add(subject, predicate, object, contexts);
 	}
 
 	@Override
@@ -456,7 +549,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		boolean localTransaction = startLocalTransaction();
 
-		txn.add(new ClearOperation(contexts));
+		remove(null, null, null, contexts);
 
 		conditionalCommit(localTransaction);
 	}
@@ -470,17 +563,29 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 		boolean localTransaction = startLocalTransaction();
 
-		txn.add(new RemoveNamespaceOperation(prefix));
+		try {
+			client.removeNamespacePrefix(prefix);
+			conditionalCommit(localTransaction);
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw new RepositoryException(e);
+		}
 
-		conditionalCommit(localTransaction);
 	}
 
 	public void clearNamespaces()
 		throws RepositoryException
 	{
 		boolean localTransaction = startLocalTransaction();
-		txn.add(new ClearNamespacesOperation());
-		conditionalCommit(localTransaction);
+		try {
+			client.clearNamespaces();
+			conditionalCommit(localTransaction);
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw new RepositoryException(e);
+		}
 	}
 
 	public void setNamespace(String prefix, String name)
@@ -494,8 +599,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 
 		boolean localTransaction = startLocalTransaction();
-		txn.add(new SetNamespaceOperation(prefix, name));
-		conditionalCommit(localTransaction);
+		try {
+			client.setNamespacePrefix(prefix, name);
+			conditionalCommit(localTransaction);
+		}
+		catch (IOException e) {
+			conditionalRollback(localTransaction);
+			throw new RepositoryException(e);
+		}
 	}
 
 	public RepositoryResult<Namespace> getNamespaces()
@@ -554,20 +665,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 				elements.iterator()));
 	}
 
-	protected void scheduleUpdate(HTTPUpdate update) {
-		SPARQLUpdateOperation op = new SPARQLUpdateOperation();
-		op.setUpdateString(update.getQueryString());
-		op.setBaseURI(update.getBaseURI());
-		op.setBindings(update.getBindingsArray());
-		op.setIncludeInferred(update.getIncludeInferred());
-		op.setDataset(update.getDataset());
-		txn.add(op);
-	}
-
 	public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
 		throws RepositoryException, MalformedQueryException
 	{
-		return new HTTPUpdate(this, client, ql, update, baseURI);
+		return new HTTPUpdate(this, ql, update, baseURI);
 	}
 
 	/**
@@ -610,5 +711,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws UnknownTransactionStateException, RepositoryException
 	{
 		return active;
+	}
+
+	/**
+	 * @return
+	 */
+	protected SesameSession getSesameSession() {
+		return client;
 	}
 }

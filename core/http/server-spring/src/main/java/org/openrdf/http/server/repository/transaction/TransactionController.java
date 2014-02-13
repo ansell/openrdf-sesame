@@ -16,8 +16,6 @@
  */
 package org.openrdf.http.server.repository.transaction;
 
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +23,6 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.apple.dnssd.TXTRecord;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +33,24 @@ import org.springframework.web.servlet.mvc.AbstractController;
 import info.aduna.webapp.views.EmptySuccessView;
 import info.aduna.webapp.views.SimpleResponseView;
 
+import org.openrdf.OpenRDFException;
+import org.openrdf.http.protocol.Protocol;
+import org.openrdf.http.protocol.Protocol.Action;
 import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
-import org.openrdf.http.server.repository.RepositoryInterceptor;
-import org.openrdf.repository.Repository;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.RDFHandlerBase;
 
 /**
  * Handles requests for transaction creation on a repository.
@@ -70,7 +77,7 @@ public class TransactionController extends AbstractController {
 		ModelAndView result;
 
 		ActiveTransactionRegistry txnRegistry = ActiveTransactionRegistry.getInstance();
-		
+
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
@@ -127,16 +134,68 @@ public class TransactionController extends AbstractController {
 		throws IOException, ClientHTTPException, ServerHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
+		Action action = Action.valueOf(request.getParameter(Protocol.ACTION_PARAM_NAME));
+
 		Map<String, Object> model = new HashMap<String, Object>();
 
 		try {
-			// TODO read and execute transaction operation.
-			model.put(SimpleResponseView.SC_KEY, SC_CREATED);
+			switch (action) {
+				case ADD:
+					conn.add(request.getInputStream(), null, RDFFormat.BINARY);
+					break;
+				case DELETE:
+					RDFParser parser = Rio.createParser(RDFFormat.BINARY, conn.getValueFactory());
+					parser.setRDFHandler(new WildcardRDFRemover(conn));
+					parser.parse(request.getInputStream(), null);
+					break;
+				case GET:
+					// TODO
+					break;
+				case COMMIT:
+					conn.commit();
+					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
+					conn.close();
+					break;
+				case ROLLBACK:
+					conn.rollback();
+					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
+					conn.close();
+					break;
+				default:
+					throw new ClientHTTPException("action not recognized: " + action);
+			}
+
+			model.put(SimpleResponseView.SC_KEY, HttpServletResponse.SC_OK);
 			return new ModelAndView(SimpleResponseView.getInstance(), model);
 		}
-		catch (Exception e) {
-			throw new ServerHTTPException("Transaction error: " + e.getMessage(), e);
+		catch (OpenRDFException e) {
+			throw new ServerHTTPException("Transaction handling error: " + e.getMessage(), e);
 		}
 	}
 
+	private static class WildcardRDFRemover extends RDFHandlerBase {
+
+		private final RepositoryConnection conn;
+
+		public WildcardRDFRemover(RepositoryConnection conn) {
+			super();
+			this.conn = conn;
+		}
+
+		@Override
+		public void handleStatement(Statement st)
+			throws RDFHandlerException
+		{
+			Resource subject = SESAME.WILDCARD.equals(st.getSubject()) ? null : st.getSubject();
+			URI predicate = SESAME.WILDCARD.equals(st.getPredicate()) ? null : st.getPredicate();
+			Value object = SESAME.WILDCARD.equals(st.getObject()) ? null : st.getObject();
+			try {
+				conn.remove(subject, predicate, object, st.getContext());
+			}
+			catch (RepositoryException e) {
+				throw new RDFHandlerException(e);
+			}
+		}
+
+	}
 }

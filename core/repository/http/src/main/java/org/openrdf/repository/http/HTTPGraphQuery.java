@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPQuery;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
@@ -41,8 +42,11 @@ import org.openrdf.rio.RDFHandlerException;
  */
 public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
-	public HTTPGraphQuery(SparqlSession client, QueryLanguage ql, String queryString, String baseURI) {
-		super(client, ql, queryString, baseURI);
+	private final HTTPRepositoryConnection conn;
+
+	public HTTPGraphQuery(HTTPRepositoryConnection conn, QueryLanguage ql, String queryString, String baseURI) {
+		super(conn.getSesameSession(), ql, queryString, baseURI);
+		this.conn = conn;
 	}
 
 	public GraphQueryResult evaluate()
@@ -50,6 +54,7 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 		{
 			SparqlSession client = getHttpClient();
 			try {
+				conn.flushTransactionState(Protocol.Action.GET);
 				return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
 			}
 			catch (IOException e) {
@@ -91,6 +96,7 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 	{
 		SparqlSession client = getHttpClient();
 		try {
+			conn.flushTransactionState(Protocol.Action.GET);
 			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
 					getBindingsArray());
 		}

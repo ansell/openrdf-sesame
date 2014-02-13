@@ -25,6 +25,15 @@ import org.openrdf.rio.ntriples.NTriplesUtil;
 
 public abstract class Protocol {
 
+	public static enum Action {
+		ADD,
+		DELETE,
+		GET,
+		UPDATE,
+		COMMIT, 
+		ROLLBACK;
+	}
+	
 	/**
 	 * Protocol version.
 	 */
@@ -122,6 +131,12 @@ public abstract class Protocol {
 	 * the Accept HTTP header).
 	 */
 	public static final String ACCEPT_PARAM_NAME = "Accept";
+	
+	/**
+	 * Parameter name for the action parameter used in transactions.
+	 */
+	public static final String ACTION_PARAM_NAME = "action";
+	
 
 	/**
 	 * Relative location of the protocol resource.
@@ -262,7 +277,7 @@ public abstract class Protocol {
 	public static final String getTransactionsLocation(String repositoryLocation) {
 		return repositoryLocation + "/" + STATEMENTS;
 	}
-
+	
 	/**
 	 * Extracts the server location from the repository location.
 	 * 
