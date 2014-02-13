@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,7 +35,9 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -62,8 +65,11 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.query.Binding;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryInterruptedException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -659,6 +665,41 @@ public class SesameSession extends SparqlSession {
 		upload(contents, baseURI, dataFormat, overwrite, null, contexts);
 	}
 
+	@Override
+	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
+			boolean includeInferred, int maxQueryTime, Binding... bindings)
+	{
+		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.QUERY) : getQueryURL();
+		
+		HttpPost method = new HttpPost(requestURL);
+
+		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+
+		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
+				includeInferred, maxQueryTime, bindings);
+
+		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
+
+		return method;
+	}
+
+	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
+			boolean includeInferred, Binding... bindings)
+	{
+
+		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.UPDATE) : getUpdateURL();
+		
+		HttpPost method = new HttpPost(requestURL);
+
+		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+
+		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
+				includeInferred, bindings);
+
+		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
+
+		return method;
+	}
 	protected void upload(final Reader contents, String baseURI, final RDFFormat dataFormat,
 			boolean overwrite, Action action, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException

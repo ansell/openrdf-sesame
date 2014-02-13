@@ -29,6 +29,7 @@ public abstract class Protocol {
 		ADD,
 		DELETE,
 		GET,
+		QUERY,
 		UPDATE,
 		COMMIT, 
 		ROLLBACK;

@@ -16,7 +16,26 @@
  */
 package org.openrdf.http.server.repository.transaction;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static org.openrdf.http.protocol.Protocol.BINDING_PREFIX;
+import static org.openrdf.http.protocol.Protocol.CONTEXT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.DEFAULT_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.INCLUDE_INFERRED_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.INSERT_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.NAMED_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.OBJECT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.PREDICATE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.QUERY_LANGUAGE_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.REMOVE_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.SUBJECT_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.USING_GRAPH_PARAM_NAME;
+import static org.openrdf.http.protocol.Protocol.USING_NAMED_GRAPH_PARAM_NAME;
+
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,27 +47,57 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.mvc.AbstractController;
 
+import info.aduna.lang.FileFormat;
+import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.webapp.views.EmptySuccessView;
 import info.aduna.webapp.views.SimpleResponseView;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.Protocol.Action;
+import org.openrdf.http.protocol.error.ErrorInfo;
+import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.http.server.ClientHTTPException;
+import org.openrdf.http.server.HTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
+import org.openrdf.http.server.repository.BooleanQueryResultView;
+import org.openrdf.http.server.repository.GraphQueryResultView;
+import org.openrdf.http.server.repository.QueryResultView;
+import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.repository.TupleQueryResultView;
+import org.openrdf.http.server.repository.statements.ExportStatementsView;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Query;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
+import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
+import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
@@ -131,7 +180,7 @@ public class TransactionController extends AbstractController {
 
 	private ModelAndView processTransactionOperation(RepositoryConnection conn, HttpServletRequest request,
 			HttpServletResponse response)
-		throws IOException, ClientHTTPException, ServerHTTPException
+		throws IOException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 		Action action = Action.valueOf(request.getParameter(Protocol.ACTION_PARAM_NAME));
@@ -141,25 +190,29 @@ public class TransactionController extends AbstractController {
 		try {
 			switch (action) {
 				case ADD:
-					conn.add(request.getInputStream(), null, RDFFormat.BINARY);
+					conn.add(request.getInputStream(), null, RDFFormat.forMIMEType(request.getContentType()));
 					break;
 				case DELETE:
-					RDFParser parser = Rio.createParser(RDFFormat.BINARY, conn.getValueFactory());
+					RDFParser parser = Rio.createParser(RDFFormat.forMIMEType(request.getContentType()),
+							conn.getValueFactory());
 					parser.setRDFHandler(new WildcardRDFRemover(conn));
 					parser.parse(request.getInputStream(), null);
 					break;
+				case QUERY:
+					return processQuery(conn, request, response);
 				case GET:
-					// TODO
-					break;
+					return getExportStatementsResult(conn, request, response);
+				case UPDATE:
+					return getSparqlUpdateResult(conn, request, response);
 				case COMMIT:
 					conn.commit();
-					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
 					conn.close();
+					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
 					break;
 				case ROLLBACK:
 					conn.rollback();
-					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
 					conn.close();
+					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
 					break;
 				default:
 					throw new ClientHTTPException("action not recognized: " + action);
@@ -173,6 +226,393 @@ public class TransactionController extends AbstractController {
 		}
 	}
 
+	/**
+	 * Get all statements and export them as RDF.
+	 * 
+	 * @return a model and view for exporting the statements.
+	 */
+	private ModelAndView getExportStatementsResult(RepositoryConnection conn, HttpServletRequest request,
+			HttpServletResponse response)
+		throws ClientHTTPException
+	{
+		ProtocolUtil.logRequestParameters(request);
+
+		ValueFactory vf = conn.getValueFactory();
+
+		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
+		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
+		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
+		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
+		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+
+		RDFWriterFactory rdfWriterFactory = ProtocolUtil.getAcceptableService(request, response,
+				RDFWriterRegistry.getInstance());
+
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put(ExportStatementsView.SUBJECT_KEY, subj);
+		model.put(ExportStatementsView.PREDICATE_KEY, pred);
+		model.put(ExportStatementsView.OBJECT_KEY, obj);
+		model.put(ExportStatementsView.CONTEXTS_KEY, contexts);
+		model.put(ExportStatementsView.USE_INFERENCING_KEY, Boolean.valueOf(useInferencing));
+		model.put(ExportStatementsView.FACTORY_KEY, rdfWriterFactory);
+		model.put(ExportStatementsView.HEADERS_ONLY, METHOD_HEAD.equals(request.getMethod()));
+		model.put(ExportStatementsView.CONNECTION_KEY, conn);
+		return new ModelAndView(ExportStatementsView.getInstance(), model);
+	}
+	
+	private ModelAndView processQuery(RepositoryConnection conn, HttpServletRequest request,
+			HttpServletResponse response) throws IOException, HTTPException
+	{
+		String queryStr = request.getParameter(QUERY_PARAM_NAME);
+
+		synchronized (conn) {
+			Query query = getQuery(conn, queryStr, request, response);
+
+			View view;
+			Object queryResult;
+			FileFormatServiceRegistry<? extends FileFormat, ?> registry;
+
+			try {
+				if (query instanceof TupleQuery) {
+					TupleQuery tQuery = (TupleQuery)query;
+
+					queryResult = tQuery.evaluate();
+					registry = TupleQueryResultWriterRegistry.getInstance();
+					view = TupleQueryResultView.getInstance();
+				}
+				else if (query instanceof GraphQuery) {
+					GraphQuery gQuery = (GraphQuery)query;
+
+					queryResult = gQuery.evaluate();
+					registry = RDFWriterRegistry.getInstance();
+					view = GraphQueryResultView.getInstance();
+				}
+				else if (query instanceof BooleanQuery) {
+					BooleanQuery bQuery = (BooleanQuery)query;
+
+					queryResult = bQuery.evaluate();
+					registry = BooleanQueryResultWriterRegistry.getInstance();
+					view = BooleanQueryResultView.getInstance();
+				}
+				else {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Unsupported query type: "
+							+ query.getClass().getName());
+				}
+			}
+			catch (QueryInterruptedException e) {
+				logger.info("Query interrupted", e);
+				throw new ServerHTTPException(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
+			}
+			catch (QueryEvaluationException e) {
+				logger.info("Query evaluation error", e);
+				if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+					// custom signal from the backend, throw as HTTPException
+					// directly (see SES-1016).
+					throw (HTTPException)e.getCause();
+				}
+				else {
+					throw new ServerHTTPException("Query evaluation error: " + e.getMessage());
+				}
+			}
+			Object factory = ProtocolUtil.getAcceptableService(request, response, registry);
+
+			Map<String, Object> model = new HashMap<String, Object>();
+			model.put(QueryResultView.FILENAME_HINT_KEY, "query-result");
+			model.put(QueryResultView.QUERY_RESULT_KEY, queryResult);
+			model.put(QueryResultView.FACTORY_KEY, factory);
+
+			return new ModelAndView(view, model);
+		}
+	}
+
+	private Query getQuery(RepositoryConnection repositoryCon, String queryStr, HttpServletRequest request,
+			HttpServletResponse response)
+		throws IOException, ClientHTTPException
+	{
+		Query result = null;
+
+		// default query language is SPARQL
+		QueryLanguage queryLn = QueryLanguage.SPARQL;
+
+		String queryLnStr = request.getParameter(QUERY_LANGUAGE_PARAM_NAME);
+		logger.debug("query language param = {}", queryLnStr);
+
+		if (queryLnStr != null) {
+			queryLn = QueryLanguage.valueOf(queryLnStr);
+
+			if (queryLn == null) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Unknown query language: " + queryLnStr);
+			}
+		}
+
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+
+		// determine if inferred triples should be included in query evaluation
+		boolean includeInferred = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+
+		String timeout = request.getParameter(Protocol.TIMEOUT_PARAM_NAME);
+		int maxQueryTime = 0;
+		if (timeout != null) {
+			try {
+				maxQueryTime = Integer.parseInt(timeout);
+			}
+			catch (NumberFormatException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid timeout value: " + timeout);
+			}
+		}
+
+		// build a dataset, if specified
+		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
+		String[] namedGraphURIs = request.getParameterValues(NAMED_GRAPH_PARAM_NAME);
+
+		DatasetImpl dataset = null;
+		if (defaultGraphURIs != null || namedGraphURIs != null) {
+			dataset = new DatasetImpl();
+
+			if (defaultGraphURIs != null) {
+				for (String defaultGraphURI : defaultGraphURIs) {
+					try {
+						URI uri = null;
+						if (!"null".equals(defaultGraphURI)) {
+							uri = repositoryCon.getValueFactory().createURI(defaultGraphURI);
+						}
+						dataset.addDefaultGraph(uri);
+					}
+					catch (IllegalArgumentException e) {
+						throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default graph: "
+								+ defaultGraphURI);
+					}
+				}
+			}
+
+			if (namedGraphURIs != null) {
+				for (String namedGraphURI : namedGraphURIs) {
+					try {
+						URI uri = null;
+						if (!"null".equals(namedGraphURI)) {
+							uri = repositoryCon.getValueFactory().createURI(namedGraphURI);
+						}
+						dataset.addNamedGraph(uri);
+					}
+					catch (IllegalArgumentException e) {
+						throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: "
+								+ namedGraphURI);
+					}
+				}
+			}
+		}
+
+		try {
+			result = repositoryCon.prepareQuery(queryLn, queryStr, baseURI);
+
+			result.setIncludeInferred(includeInferred);
+
+			if (maxQueryTime > 0) {
+				result.setMaxQueryTime(maxQueryTime);
+			}
+
+			if (dataset != null) {
+				result.setDataset(dataset);
+			}
+
+			// determine if any variable bindings have been set on this query.
+			@SuppressWarnings("unchecked")
+			Enumeration<String> parameterNames = request.getParameterNames();
+
+			while (parameterNames.hasMoreElements()) {
+				String parameterName = parameterNames.nextElement();
+
+				if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
+				{
+					String bindingName = parameterName.substring(BINDING_PREFIX.length());
+					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
+							repositoryCon.getValueFactory());
+					result.setBinding(bindingName, bindingValue);
+				}
+			}
+		}
+		catch (UnsupportedQueryLanguageException e) {
+			ErrorInfo errInfo = new ErrorInfo(ErrorType.UNSUPPORTED_QUERY_LANGUAGE, queryLn.getName());
+			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
+		}
+		catch (MalformedQueryException e) {
+			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_QUERY, e.getMessage());
+			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
+		}
+		catch (RepositoryException e) {
+			logger.error("Repository error", e);
+			response.sendError(SC_INTERNAL_SERVER_ERROR);
+		}
+
+		return result;
+	}
+
+	
+	/**
+	 * @param repository
+	 * @param repositoryCon
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws ServerHTTPException
+	 * @throws ClientHTTPException
+	 */
+	private ModelAndView getSparqlUpdateResult(RepositoryConnection conn, HttpServletRequest request,
+			HttpServletResponse response)
+		throws ServerHTTPException, ClientHTTPException, HTTPException
+	{
+		ProtocolUtil.logRequestParameters(request);
+
+		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
+
+		// default query language is SPARQL
+		QueryLanguage queryLn = QueryLanguage.SPARQL;
+
+		String queryLnStr = request.getParameter(QUERY_LANGUAGE_PARAM_NAME);
+		logger.debug("query language param = {}", queryLnStr);
+
+		if (queryLnStr != null) {
+			queryLn = QueryLanguage.valueOf(queryLnStr);
+
+			if (queryLn == null) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Unknown query language: " + queryLnStr);
+			}
+		}
+
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+
+		// determine if inferred triples should be included in query evaluation
+		boolean includeInferred = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
+
+		// build a dataset, if specified
+		String[] defaultRemoveGraphURIs = request.getParameterValues(REMOVE_GRAPH_PARAM_NAME);
+		String[] defaultInsertGraphURIs = request.getParameterValues(INSERT_GRAPH_PARAM_NAME);
+		String[] defaultGraphURIs = request.getParameterValues(USING_GRAPH_PARAM_NAME);
+		String[] namedGraphURIs = request.getParameterValues(USING_NAMED_GRAPH_PARAM_NAME);
+
+		DatasetImpl dataset = new DatasetImpl();
+
+		if (defaultRemoveGraphURIs != null) {
+			for (String graphURI : defaultRemoveGraphURIs) {
+				try {
+					URI uri = null;
+					if (!"null".equals(graphURI)) {
+						uri = conn.getValueFactory().createURI(graphURI);
+					}
+					dataset.addDefaultRemoveGraph(uri);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default remove graph: "
+							+ graphURI);
+				}
+			}
+		}
+
+		if (defaultInsertGraphURIs != null && defaultInsertGraphURIs.length > 0) {
+			String graphURI = defaultInsertGraphURIs[0];
+			try {
+				URI uri = null;
+				if (!"null".equals(graphURI)) {
+					uri = conn.getValueFactory().createURI(graphURI);
+				}
+				dataset.setDefaultInsertGraph(uri);
+			}
+			catch (IllegalArgumentException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default insert graph: " + graphURI);
+			}
+		}
+
+		if (defaultGraphURIs != null) {
+			for (String defaultGraphURI : defaultGraphURIs) {
+				try {
+					URI uri = null;
+					if (!"null".equals(defaultGraphURI)) {
+						uri = conn.getValueFactory().createURI(defaultGraphURI);
+					}
+					dataset.addDefaultGraph(uri);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default graph: "
+							+ defaultGraphURI);
+				}
+			}
+		}
+
+		if (namedGraphURIs != null) {
+			for (String namedGraphURI : namedGraphURIs) {
+				try {
+					URI uri = null;
+					if (!"null".equals(namedGraphURI)) {
+						uri = conn.getValueFactory().createURI(namedGraphURI);
+					}
+					dataset.addNamedGraph(uri);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: " + namedGraphURI);
+				}
+			}
+		}
+
+		try {
+
+			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
+			synchronized (repositoryCon) {
+				Update update = repositoryCon.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
+
+				update.setIncludeInferred(includeInferred);
+
+				if (dataset != null) {
+					update.setDataset(dataset);
+				}
+
+				// determine if any variable bindings have been set on this update.
+				@SuppressWarnings("unchecked")
+				Enumeration<String> parameterNames = request.getParameterNames();
+
+				while (parameterNames.hasMoreElements()) {
+					String parameterName = parameterNames.nextElement();
+
+					if (parameterName.startsWith(BINDING_PREFIX)
+							&& parameterName.length() > BINDING_PREFIX.length())
+					{
+						String bindingName = parameterName.substring(BINDING_PREFIX.length());
+						Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
+								conn.getValueFactory());
+						update.setBinding(bindingName, bindingValue);
+					}
+				}
+
+				update.execute();
+			}
+
+			return new ModelAndView(EmptySuccessView.getInstance());
+		}
+		catch (UpdateExecutionException e) {
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
+		}
+		catch (RepositoryException e) {
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException directly
+				// (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Repository update error: " + e.getMessage(), e);
+			}
+		}
+		catch (MalformedQueryException e) {
+			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_QUERY, e.getMessage());
+			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
+		}
+	}
+	
 	private static class WildcardRDFRemover extends RDFHandlerBase {
 
 		private final RepositoryConnection conn;

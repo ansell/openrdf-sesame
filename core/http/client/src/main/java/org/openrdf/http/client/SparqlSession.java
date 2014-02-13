@@ -121,10 +121,7 @@ public class SparqlSession {
 	 * Constants *
 	 *-----------*/
 
-	/**
-	 * 
-	 */
-	private static final Charset UTF8 = Charset.forName("UTF-8");
+	protected static final Charset UTF8 = Charset.forName("UTF-8");
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
