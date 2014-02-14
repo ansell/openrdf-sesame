@@ -69,7 +69,8 @@ public abstract class AbstractValueFactoryTest {
 	 * 
 	 * @return A new instance of the {@link ValueFactory} interface.
 	 */
-	protected abstract ValueFactory getNewValueFactory() throws Exception;
+	protected abstract ValueFactory getNewValueFactory()
+		throws Exception;
 
 	/**
 	 * Determines whether to enable the concurrency tests for this
@@ -276,6 +277,154 @@ public abstract class AbstractValueFactoryTest {
 		for (int i = 0; i < 10000; i++) {
 			allValues.add(vf.createBNode());
 		}
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createBNode()}.
+	 */
+	@Test
+	public final void testCreateBNodeConcurrent()
+		throws Exception
+	{
+		if (!isThreadSafe()) {
+			return;
+		}
+		final ValueFactory finalVf = vf;
+		final Set<BNode> allValues = Collections.newSetFromMap(new ConcurrentHashMap<BNode, Boolean>());
+		final AtomicInteger count = new AtomicInteger(0);
+		final CountDownLatch openLatch = new CountDownLatch(1);
+		final int threadCount = 37;
+		final CountDownLatch closeLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < threadCount; i++) {
+			final int number = i;
+			Runnable runner = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						openLatch.await();
+						for (int j = 0; j < 10000; j++) {
+							final int k = j % 371;
+							final BNode result = finalVf.createBNode();
+							allValues.add(result);
+						}
+						count.incrementAndGet();
+						closeLatch.countDown();
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+						fail("Failed in test: " + number);
+					}
+				}
+			};
+			new Thread(runner, "TestThread" + number).start();
+		}
+		// all threads are waiting on the latch.
+		openLatch.countDown(); // release the latch
+		// all threads are now running concurrently.
+		closeLatch.await();
+		assertEquals(threadCount, count.get());
+		assertEquals(threadCount * 10000, allValues.size());
+		allNonNull(allValues);
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createBNode(String)}
+	 * .
+	 */
+	@Test
+	public final void testCreateBNodeStringConcurrentFixedBase()
+		throws Exception
+	{
+		if (!isThreadSafe()) {
+			return;
+		}
+		final ValueFactory finalVf = vf;
+		final Set<BNode> allValues = Collections.newSetFromMap(new ConcurrentHashMap<BNode, Boolean>());
+		final AtomicInteger count = new AtomicInteger(0);
+		final CountDownLatch openLatch = new CountDownLatch(1);
+		final int threadCount = 37;
+		final CountDownLatch closeLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < threadCount; i++) {
+			final int number = i;
+			Runnable runner = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						openLatch.await();
+						for (int j = 0; j < 10000; j++) {
+							final BNode result = finalVf.createBNode(Integer.toString(number) + ":"
+									+ Integer.toString(j));
+							allValues.add(result);
+						}
+						count.incrementAndGet();
+						closeLatch.countDown();
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+						fail("Failed in test: " + number);
+					}
+				}
+			};
+			new Thread(runner, "TestThread" + number).start();
+		}
+		// all threads are waiting on the latch.
+		openLatch.countDown(); // release the latch
+		// all threads are now running concurrently.
+		closeLatch.await();
+		assertEquals(threadCount, count.get());
+		assertEquals(threadCount * 10000, allValues.size());
+		allNonNull(allValues);
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createBNode(String)}
+	 * .
+	 */
+	@Test
+	public final void testCreateBNodeStringConcurrentVariable()
+		throws Exception
+	{
+		if (!isThreadSafe()) {
+			return;
+		}
+		final ValueFactory finalVf = vf;
+		final Set<BNode> allValues = Collections.newSetFromMap(new ConcurrentHashMap<BNode, Boolean>());
+		final AtomicInteger count = new AtomicInteger(0);
+		final CountDownLatch openLatch = new CountDownLatch(1);
+		final int threadCount = 37;
+		final CountDownLatch closeLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < threadCount; i++) {
+			final int number = i;
+			Runnable runner = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						openLatch.await();
+						for (int j = 0; j < 10000; j++) {
+							final BNode result = finalVf.createBNode(Integer.toString(j));
+							allValues.add(result);
+						}
+						count.incrementAndGet();
+						closeLatch.countDown();
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+						fail("Failed in test: " + number);
+					}
+				}
+			};
+			new Thread(runner, "TestThread" + number).start();
+		}
+		// all threads are waiting on the latch.
+		openLatch.countDown(); // release the latch
+		// all threads are now running concurrently.
+		closeLatch.await();
+		assertEquals(threadCount, count.get());
 		assertEquals(10000, allValues.size());
 		allNonNull(allValues);
 	}
