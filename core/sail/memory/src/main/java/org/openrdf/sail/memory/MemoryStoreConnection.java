@@ -19,6 +19,7 @@ package org.openrdf.sail.memory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import info.aduna.concurrent.locks.Lock;
@@ -59,6 +60,7 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.sail.memory.model.MemBNode;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementIterator;
@@ -205,17 +207,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			MemValueFactory valueFactory = store.getValueFactory();
 
-			synchronized (valueFactory) {
-				for (MemResource memResource : valueFactory.getMemURIs()) {
-					if (isContextResource(memResource, snapshot, readMode)) {
-						contextIDs.add(memResource);
-					}
+			for (MemResource memResource : new ArrayList<MemURI>(valueFactory.getMemURIs())) {
+				if (isContextResource(memResource, snapshot, readMode)) {
+					contextIDs.add(memResource);
 				}
+			}
 
-				for (MemResource memResource : valueFactory.getMemBNodes()) {
-					if (isContextResource(memResource, snapshot, readMode)) {
-						contextIDs.add(memResource);
-					}
+			for (MemResource memResource : new ArrayList<MemBNode>(valueFactory.getMemBNodes())) {
+				if (isContextResource(memResource, snapshot, readMode)) {
+					contextIDs.add(memResource);
 				}
 			}
 		}
@@ -544,7 +544,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public void flushUpdates() throws SailException {
+	public void flushUpdates()
+		throws SailException
+	{
 		if (!isActiveOperation()) {
 			flush();
 		}
