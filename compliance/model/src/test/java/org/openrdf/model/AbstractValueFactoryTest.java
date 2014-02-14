@@ -16,8 +16,12 @@
  */
 package org.openrdf.model;
 
+import static org.junit.Assert.fail;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Abstract tests for the {@link ValueFactory} interface, including concurrency
@@ -60,4 +64,187 @@ public abstract class AbstractValueFactoryTest {
 	 */
 	protected abstract boolean isThreadSafe();
 
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateURIString() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String, java.lang.String)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateURIStringString() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createBNode()}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateBNode() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createBNode(java.lang.String)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateBNodeString() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(java.lang.String)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralString() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(java.lang.String, java.lang.String)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralStringString() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(java.lang.String, org.openrdf.model.URI)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralStringURI() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(boolean)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralBoolean() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createLiteral(byte)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralByte() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(short)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralShort() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createLiteral(int)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralInt() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.ValueFactory#createLiteral(long)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralLong() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(float)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralFloat() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(double)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralDouble() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(javax.xml.datatype.XMLGregorianCalendar)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralXMLGregorianCalendar() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createLiteral(java.util.Date)}.
+	 */
+	@Ignore
+	@Test
+	public final void testCreateLiteralDate() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createStatement(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateStatementResourceURIValue() {
+		fail("Not yet implemented"); // TODO
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createStatement(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource)}
+	 * .
+	 */
+	@Ignore
+	@Test
+	public final void testCreateStatementResourceURIValueResource() {
+		fail("Not yet implemented"); // TODO
+	}
 }
