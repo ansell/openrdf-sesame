@@ -16,7 +16,10 @@
  */
 package org.openrdf.model;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -68,10 +71,13 @@ public abstract class AbstractValueFactoryTest {
 	 * Test method for
 	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String)}.
 	 */
-	@Ignore
 	@Test
 	public final void testCreateURIString() {
-		fail("Not yet implemented"); // TODO
+		Set<URI> allUris = new HashSet<URI>();
+		for (int i = 0; i < 10000; i++) {
+			allUris.add(vf.createURI("http://example.org/a" + i));
+		}
+		assertEquals(10000, allUris.size());
 	}
 
 	/**
