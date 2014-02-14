@@ -92,26 +92,22 @@ public class WeakObjectRegistry<E> extends AbstractSet<E> {
 	}
 
 	@Override
-	public Iterator<E> iterator()
-	{
+	public Iterator<E> iterator() {
 		return objectMap.keySet().iterator();
 	}
 
 	@Override
-	public int size()
-	{
+	public int size() {
 		return objectMap.size();
 	}
 
 	@Override
-	public boolean contains(Object o)
-	{
+	public boolean contains(Object o) {
 		return get(o) != null;
 	}
 
 	@Override
-	public boolean add(E object)
-	{
+	public boolean add(E object) {
 		WeakReference<E> ref = new WeakReference<E>(object);
 
 		WeakReference<E> existingRef = objectMap.put(object, ref);
@@ -119,8 +115,9 @@ public class WeakObjectRegistry<E> extends AbstractSet<E> {
 		if (existingRef != null) {
 			// Get a hard reference to the value to avoid GC timing issues
 			E existingObject = existingRef.get();
-			if(existingObject != null) {
-				// A duplicate was added which replaced the existing object. Undo this
+			if (existingObject != null) {
+				// A duplicate was added which replaced the existing object. Undo
+				// this
 				// operation.
 				objectMap.put(existingObject, existingRef);
 				return false;
@@ -131,15 +128,13 @@ public class WeakObjectRegistry<E> extends AbstractSet<E> {
 	}
 
 	@Override
-	public boolean remove(Object o)
-	{
+	public boolean remove(Object o) {
 		WeakReference<E> ref = objectMap.remove(o);
 		return ref != null && ref.get() != null;
 	}
 
 	@Override
-	public void clear()
-	{
+	public void clear() {
 		objectMap.clear();
 	}
 }
