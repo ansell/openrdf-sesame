@@ -25,7 +25,9 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 /**
  * Abstract tests for the {@link ValueFactory} interface, including concurrency
@@ -34,6 +36,12 @@ import org.junit.Test;
  * @author Peter Ansell
  */
 public abstract class AbstractValueFactoryTest {
+
+	/**
+	 * Timeout each test after 10 seconds.
+	 */
+	@Rule
+	public Timeout timeout = new Timeout(10000);
 
 	private ValueFactory vf;
 
