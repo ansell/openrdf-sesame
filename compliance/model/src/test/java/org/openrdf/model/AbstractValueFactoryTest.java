@@ -18,6 +18,7 @@ package org.openrdf.model;
 
 import static org.junit.Assert.*;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -73,11 +74,12 @@ public abstract class AbstractValueFactoryTest {
 	 */
 	@Test
 	public final void testCreateURIString() {
-		Set<URI> allUris = new HashSet<URI>();
+		Set<URI> allValues = new HashSet<URI>();
 		for (int i = 0; i < 10000; i++) {
-			allUris.add(vf.createURI("http://example.org/a" + i));
+			allValues.add(vf.createURI("http://example.org/a" + i));
 		}
-		assertEquals(10000, allUris.size());
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
 	}
 
 	/**
@@ -85,29 +87,41 @@ public abstract class AbstractValueFactoryTest {
 	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String, java.lang.String)}
 	 * .
 	 */
-	@Ignore
 	@Test
 	public final void testCreateURIStringString() {
-		fail("Not yet implemented"); // TODO
+		Set<URI> allValues = new HashSet<URI>();
+		for (int i = 0; i < 10000; i++) {
+			allValues.add(vf.createURI("http://example.org/a", "b" + i));
+		}
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
 	}
 
 	/**
 	 * Test method for {@link org.openrdf.model.ValueFactory#createBNode()}.
 	 */
-	@Ignore
 	@Test
 	public final void testCreateBNode() {
-		fail("Not yet implemented"); // TODO
+		Set<BNode> allValues = new HashSet<BNode>();
+		for (int i = 0; i < 10000; i++) {
+			allValues.add(vf.createBNode());
+		}
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
 	}
 
 	/**
 	 * Test method for
 	 * {@link org.openrdf.model.ValueFactory#createBNode(java.lang.String)}.
 	 */
-	@Ignore
 	@Test
 	public final void testCreateBNodeString() {
-		fail("Not yet implemented"); // TODO
+		Set<BNode> allValues = new HashSet<BNode>();
+		for (int i = 0; i < 10000; i++) {
+			allValues.add(vf.createBNode(Integer.toString(i)));
+		}
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
 	}
 
 	/**
@@ -252,5 +266,11 @@ public abstract class AbstractValueFactoryTest {
 	@Test
 	public final void testCreateStatementResourceURIValueResource() {
 		fail("Not yet implemented"); // TODO
+	}
+
+	private final void allNonNull(Collection<? extends Value> testValues) {
+		for (Value nextValue : testValues) {
+			assertNotNull(nextValue);
+		}
 	}
 }
