@@ -114,13 +114,17 @@ public class WeakObjectRegistry<E> extends AbstractSet<E> {
 	{
 		WeakReference<E> ref = new WeakReference<E>(object);
 
-		ref = objectMap.put(object, ref);
+		WeakReference<E> existingRef = objectMap.put(object, ref);
 
-		if (ref != null && ref.get() != null) {
-			// A duplicate was added which replaced the existing object. Undo this
-			// operation.
-			objectMap.put(ref.get(), ref);
-			return false;
+		if (existingRef != null) {
+			// Get a hard reference to the value to avoid GC timing issues
+			E existingObject = existingRef.get();
+			if(existingObject != null) {
+				// A duplicate was added which replaced the existing object. Undo this
+				// operation.
+				objectMap.put(existingObject, existingRef);
+				return false;
+			}
 		}
 
 		return true;
