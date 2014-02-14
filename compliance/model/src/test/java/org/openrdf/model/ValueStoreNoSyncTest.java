@@ -16,18 +16,26 @@
  */
 package org.openrdf.model;
 
-import org.openrdf.sail.memory.model.MemValueFactory;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
+import org.openrdf.sail.nativerdf.ValueStore;
 
 /**
- * Test implementation for {@link MemValueFactory}
+ * Test implementation for {@link ValueStore} without force synchronisation.
  * 
  * @author Peter Ansell
  */
-public class MemValueFactoryTest extends AbstractValueFactoryTest {
+public class ValueStoreNoSyncTest extends AbstractValueFactoryTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
 	@Override
-	protected ValueFactory getNewValueFactory() {
-		return new MemValueFactory();
+	protected ValueFactory getNewValueFactory()
+		throws Exception
+	{
+		return new ValueStore(tempDir.newFolder("valuestorenosynctest"), false);
 	}
 
 	@Override

@@ -69,7 +69,7 @@ public abstract class AbstractValueFactoryTest {
 	 * 
 	 * @return A new instance of the {@link ValueFactory} interface.
 	 */
-	protected abstract ValueFactory getNewValueFactory();
+	protected abstract ValueFactory getNewValueFactory() throws Exception;
 
 	/**
 	 * Determines whether to enable the concurrency tests for this
