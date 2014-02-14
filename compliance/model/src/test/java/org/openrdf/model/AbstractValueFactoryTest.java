@@ -19,8 +19,12 @@ package org.openrdf.model;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -92,6 +96,58 @@ public abstract class AbstractValueFactoryTest {
 
 	/**
 	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String)}.
+	 */
+	@Test
+	public final void testCreateURIStringConcurrent()
+		throws Exception
+	{
+		if (!isThreadSafe()) {
+			return;
+		}
+		final ValueFactory finalVf = vf;
+		final Set<URI> allValues = Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
+		final AtomicInteger count = new AtomicInteger(0);
+		final CountDownLatch openLatch = new CountDownLatch(1);
+		final int threadCount = 37;
+		final CountDownLatch closeLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < threadCount; i++) {
+			final int number = i;
+			Runnable runner = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						openLatch.await();
+						for (int j = 0; j < 10000; j++) {
+							final int k = j % 371;
+							final String nextUri = "urn:test" + k + "#test" + j;
+							final URI result = finalVf.createURI(nextUri);
+							allValues.add(result);
+							assertEquals(nextUri, result.stringValue());
+						}
+						count.incrementAndGet();
+						closeLatch.countDown();
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+						fail("Failed in test: " + number);
+					}
+				}
+			};
+			new Thread(runner, "TestThread" + number).start();
+		}
+		// all threads are waiting on the latch.
+		openLatch.countDown(); // release the latch
+		// all threads are now running concurrently.
+		closeLatch.await();
+		assertEquals(threadCount, count.get());
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
+	}
+
+	/**
+	 * Test method for
 	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String, java.lang.String)}
 	 * .
 	 */
@@ -101,6 +157,112 @@ public abstract class AbstractValueFactoryTest {
 		for (int i = 0; i < 10000; i++) {
 			allValues.add(vf.createURI("http://example.org/a", "b" + i));
 		}
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String, java.lang.String)}
+	 * .
+	 */
+	@Test
+	public final void testCreateURIStringStringConcurrentFixedBase()
+		throws Exception
+	{
+		if (!isThreadSafe()) {
+			return;
+		}
+		final ValueFactory finalVf = vf;
+		final Set<URI> allValues = Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
+		final AtomicInteger count = new AtomicInteger(0);
+		final CountDownLatch openLatch = new CountDownLatch(1);
+		final int threadCount = 37;
+		final CountDownLatch closeLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < threadCount; i++) {
+			final int number = i;
+			Runnable runner = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						openLatch.await();
+						for (int j = 0; j < 10000; j++) {
+							final int k = j % 371;
+							final String nextUri = "urn:test#" + k + "test" + j;
+							final URI result = finalVf.createURI("urn:test#", k + "test" + j);
+							allValues.add(result);
+							assertEquals(nextUri, result.stringValue());
+						}
+						count.incrementAndGet();
+						closeLatch.countDown();
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+						fail("Failed in test: " + number);
+					}
+				}
+			};
+			new Thread(runner, "TestThread" + number).start();
+		}
+		// all threads are waiting on the latch.
+		openLatch.countDown(); // release the latch
+		// all threads are now running concurrently.
+		closeLatch.await();
+		assertEquals(threadCount, count.get());
+		assertEquals(10000, allValues.size());
+		allNonNull(allValues);
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.ValueFactory#createURI(java.lang.String, java.lang.String)}
+	 * .
+	 */
+	@Test
+	public final void testCreateURIStringStringConcurrentVariableBase()
+		throws Exception
+	{
+		if (!isThreadSafe()) {
+			return;
+		}
+		final ValueFactory finalVf = vf;
+		final Set<URI> allValues = Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
+		final AtomicInteger count = new AtomicInteger(0);
+		final CountDownLatch openLatch = new CountDownLatch(1);
+		final int threadCount = 37;
+		final CountDownLatch closeLatch = new CountDownLatch(threadCount);
+		for (int i = 0; i < threadCount; i++) {
+			final int number = i;
+			Runnable runner = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						openLatch.await();
+						for (int j = 0; j < 10000; j++) {
+							final int k = j % 371;
+							final String nextUri = "urn:test#" + k + "test" + j;
+							final URI result = finalVf.createURI("urn:test#" + k, "test" + j);
+							allValues.add(result);
+							assertEquals(nextUri, result.stringValue());
+						}
+						count.incrementAndGet();
+						closeLatch.countDown();
+					}
+					catch (InterruptedException ie) {
+						ie.printStackTrace();
+						fail("Failed in test: " + number);
+					}
+				}
+			};
+			new Thread(runner, "TestThread" + number).start();
+		}
+		// all threads are waiting on the latch.
+		openLatch.countDown(); // release the latch
+		// all threads are now running concurrently.
+		closeLatch.await();
+		assertEquals(threadCount, count.get());
 		assertEquals(10000, allValues.size());
 		allNonNull(allValues);
 	}
