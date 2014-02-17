@@ -54,7 +54,7 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 		{
 			SparqlSession client = getHttpClient();
 			try {
-				conn.flushTransactionState(Protocol.Action.GET);
+				conn.flushTransactionState(Protocol.Action.QUERY);
 				return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
 			}
 			catch (IOException e) {
@@ -96,7 +96,7 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 	{
 		SparqlSession client = getHttpClient();
 		try {
-			conn.flushTransactionState(Protocol.Action.GET);
+			conn.flushTransactionState(Protocol.Action.QUERY);
 			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
 					getBindingsArray());
 		}

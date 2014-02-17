@@ -55,7 +55,6 @@ import info.aduna.lang.service.FileFormatServiceRegistry;
 import info.aduna.webapp.views.EmptySuccessView;
 import info.aduna.webapp.views.SimpleResponseView;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.Protocol.Action;
 import org.openrdf.http.protocol.error.ErrorInfo;
@@ -90,7 +89,6 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
@@ -116,7 +114,7 @@ public class TransactionController extends AbstractController {
 	public TransactionController()
 		throws ApplicationContextException
 	{
-		setSupportedMethods(new String[] { "PUT", "DELETE" });
+		setSupportedMethods(new String[] { METHOD_POST, "PUT", "DELETE" });
 	}
 
 	@Override
@@ -134,9 +132,14 @@ public class TransactionController extends AbstractController {
 
 		try {
 			if ("PUT".equals(reqMethod)) {
-				logger.info("PUT transaction");
+				logger.info("PUT txn operation");
 				result = processTransactionOperation(connection, request, response);
-				logger.info("PUT transaction request finished.");
+				logger.info("PUT txn operation request finished.");
+			}
+			else if (METHOD_POST.equals(reqMethod)) {
+				logger.info("POST txn operation");
+				result = processTransactionOperation(connection, request, response);
+				logger.info("POST txn operation request finished.");
 			}
 			else if ("DELETE".equals(reqMethod)) {
 				logger.info("DELETE transaction");
@@ -163,15 +166,18 @@ public class TransactionController extends AbstractController {
 		throws ClientHTTPException
 	{
 		String pathInfoStr = request.getPathInfo();
-		logger.debug("path info: {}", pathInfoStr);
 
 		UUID txnID = null;
 
 		if (pathInfoStr != null && !pathInfoStr.equals("/")) {
 			String[] pathInfo = pathInfoStr.substring(1).split("/");
-			if (pathInfo.length > 0) {
-				txnID = UUID.fromString(pathInfo[3]); // FIXME test
+			// should be of the form: /<Repository>/transactions/<txnID>
+			if (pathInfo.length == 3) {
+				txnID = UUID.fromString(pathInfo[2]); 
 				logger.debug("txnID is '{}'", txnID);
+			}
+			else {
+				logger.warn("could not determine tranaction id from path info {} ", pathInfoStr);
 			}
 		}
 
@@ -215,14 +221,20 @@ public class TransactionController extends AbstractController {
 					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
 					break;
 				default:
+					logger.warn("transaction action '{}' not recognized", action);
 					throw new ClientHTTPException("action not recognized: " + action);
 			}
 
 			model.put(SimpleResponseView.SC_KEY, HttpServletResponse.SC_OK);
 			return new ModelAndView(SimpleResponseView.getInstance(), model);
 		}
-		catch (OpenRDFException e) {
-			throw new ServerHTTPException("Transaction handling error: " + e.getMessage(), e);
+		catch (Exception e) {
+			if (e instanceof ClientHTTPException) {
+				throw (ClientHTTPException)e;
+			}
+			else {
+				throw new ServerHTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Transaction handling error: " + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -464,7 +476,7 @@ public class TransactionController extends AbstractController {
 		ProtocolUtil.logRequestParameters(request);
 
 		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
-
+		logger.debug(sparqlUpdateString);
 		// default query language is SPARQL
 		QueryLanguage queryLn = QueryLanguage.SPARQL;
 
@@ -629,8 +641,14 @@ public class TransactionController extends AbstractController {
 			Resource subject = SESAME.WILDCARD.equals(st.getSubject()) ? null : st.getSubject();
 			URI predicate = SESAME.WILDCARD.equals(st.getPredicate()) ? null : st.getPredicate();
 			Value object = SESAME.WILDCARD.equals(st.getObject()) ? null : st.getObject();
+			Resource context = st.getContext();
 			try {
+				if (context != null) {
 				conn.remove(subject, predicate, object, st.getContext());
+				}
+				else {
+					conn.remove(subject, predicate, object);
+				}
 			}
 			catch (RepositoryException e) {
 				throw new RDFHandlerException(e);

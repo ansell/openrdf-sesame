@@ -91,7 +91,9 @@ public class ActiveTransactionRegistry {
 			txnLock.unlock();
 		}
 		else {
-			throw new IllegalArgumentException("no lock available for " + transactionId);
+			if (activeConnections.containsKey(transactionId)) {
+				throw new IllegalStateException("no lock available for active transaction: " + transactionId);
+			}
 		}
 	}
 }

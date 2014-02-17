@@ -428,8 +428,9 @@ public class SesameSession extends SparqlSession {
 		checkRepositoryURL();
 
 		try {
+			final boolean useTransaction = transactionURL != null;
 			
-			String baseLocation = transactionURL != null ? transactionURL : Protocol.getStatementsLocation(getQueryURL());
+			String baseLocation = useTransaction ? transactionURL : Protocol.getStatementsLocation(getQueryURL());
 			URIBuilder url = new URIBuilder(baseLocation);
 
 			if (subj != null) {
@@ -445,8 +446,11 @@ public class SesameSession extends SparqlSession {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
 			url.setParameter(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred));
-
-			HttpGet method = new HttpGet(url.build());
+			if (useTransaction) {
+				url.setParameter(Protocol.ACTION_PARAM_NAME, Action.GET.toString());
+			}
+			
+			HttpUriRequest method = useTransaction ?  new HttpPut(url.build()) : new HttpGet(url.build());
 
 			try {
 				getRDF(method, handler, true);
@@ -477,7 +481,11 @@ public class SesameSession extends SparqlSession {
 		HttpResponse response = execute(method);
 		int code = response.getStatusLine().getStatusCode();
 		if (code == HttpURLConnection.HTTP_CREATED) {
-			transactionURL = EntityUtils.toString(response.getEntity());
+			transactionURL = response.getFirstHeader("Location").getValue();
+			EntityUtils.consume(response.getEntity());
+			if (transactionURL == null) {
+				throw new RepositoryException("no valid transaction ID received in server response.");
+			}
 		}
 		else {
 			EntityUtils.consume(response.getEntity());
@@ -526,16 +534,8 @@ public class SesameSession extends SparqlSession {
 			throw new IllegalStateException("Transaction URL has not been set");
 		}
 
-		HttpPut method = null;
-		try {
-			URIBuilder url = new URIBuilder(transactionURL);
-			url.addParameter(Protocol.ACTION_PARAM_NAME, Action.ROLLBACK.toString());
-			method = new HttpPut(url.build());
-		}
-		catch (URISyntaxException e) {
-			logger.error("could not create URL for transaction rollback", e);
-			throw new RuntimeException(e);
-		}
+		String requestURL = appendAction(transactionURL, Action.ROLLBACK);
+		HttpPut method = new HttpPut(requestURL);
 
 		HttpResponse response = execute(method);
 		int code = response.getStatusLine().getStatusCode();
@@ -671,8 +671,14 @@ public class SesameSession extends SparqlSession {
 	{
 		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.QUERY) : getQueryURL();
 		
-		HttpPost method = new HttpPost(requestURL);
-
+		HttpEntityEnclosingRequest method = null;
+		if (transactionURL == null) {
+			method = new HttpPost(requestURL);
+		}
+		else {
+			method = new HttpPut(requestURL);
+		}
+		
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
@@ -680,16 +686,22 @@ public class SesameSession extends SparqlSession {
 
 		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 
-		return method;
+		return (HttpUriRequest)method;
 	}
-
+	
+	@Override
 	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 	{
-
 		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.UPDATE) : getUpdateURL();
 		
-		HttpPost method = new HttpPost(requestURL);
+		HttpEntityEnclosingRequest method = null;
+//		if (transactionURL == null) {
+			method = new HttpPost(requestURL);
+//		}
+//		else {
+//			method = new HttpPut(requestURL);
+//		}
 
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
@@ -698,8 +710,9 @@ public class SesameSession extends SparqlSession {
 
 		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 
-		return method;
+		return (HttpUriRequest)method;
 	}
+
 	protected void upload(final Reader contents, String baseURI, final RDFFormat dataFormat,
 			boolean overwrite, Action action, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException

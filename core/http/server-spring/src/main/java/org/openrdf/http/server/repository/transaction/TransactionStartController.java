@@ -69,38 +69,15 @@ public class TransactionStartController extends AbstractController {
 		String reqMethod = request.getMethod();
 
 		if (METHOD_POST.equals(reqMethod)) {
-			logger.info("POST transaction");
+			logger.info("POST transaction start");
 			result = startTransaction(repository, request, response);
-			logger.info("POST transaction request finished.");
+			logger.info("transaction started");
 		}
 		else {
 			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
 					+ reqMethod);
 		}
 		return result;
-	}
-
-	private UUID getTransactionID(HttpServletRequest request)
-		throws ClientHTTPException
-	{
-		String requestURL = request.getRequestURL().toString();
-
-		String queryString = request.getQueryString();
-
-		String pathInfoStr = request.getPathInfo();
-		logger.debug("path info: {}", pathInfoStr);
-
-		UUID txnID = null;
-
-		if (pathInfoStr != null && !pathInfoStr.equals("/")) {
-			String[] pathInfo = pathInfoStr.substring(1).split("/");
-			if (pathInfo.length > 0) {
-				txnID = UUID.fromString(pathInfo[3]); // FIXME test
-				logger.debug("txnID is '{}'", txnID);
-			}
-		}
-
-		return txnID;
 	}
 
 	private ModelAndView startTransaction(Repository repository, HttpServletRequest request,

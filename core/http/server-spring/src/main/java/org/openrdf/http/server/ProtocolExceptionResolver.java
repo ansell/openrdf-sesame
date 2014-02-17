@@ -52,10 +52,10 @@ public class ProtocolExceptionResolver implements HandlerExceptionResolver {
 			statusCode = httpExc.getStatusCode();
 
 			if (exception instanceof ClientHTTPException) {
-				logger.info("Client sent bad request ({}): {}", statusCode, errMsg);
+				logger.info("Client sent bad request ( " + statusCode + ")", exception);
 			}
 			else {
-				logger.error("Error while handling request ({}): {}", statusCode, errMsg);
+				logger.error("Error while handling request (" + statusCode + ")", exception);
 			}
 		}
 		else {

@@ -276,7 +276,7 @@ public abstract class Protocol {
 	 * @since 2.8.0
 	 */
 	public static final String getTransactionsLocation(String repositoryLocation) {
-		return repositoryLocation + "/" + STATEMENTS;
+		return repositoryLocation + "/" + TRANSACTIONS;
 	}
 	
 	/**

@@ -293,6 +293,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, RepositoryException
 	{
+		flushTransactionState(Action.GET);
 		try {
 			client.getStatements(subj, pred, obj, includeInferred, handler, contexts);
 		}
@@ -307,6 +308,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public long size(Resource... contexts)
 		throws RepositoryException
 	{
+		// TODO fix transaction state flush for size request
 		try {
 			return client.size(contexts);
 		}
@@ -318,6 +320,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void commit()
 		throws RepositoryException
 	{
+		flushTransactionState(Action.COMMIT);
 		try {
 			client.commitTransaction();
 			active = false;
@@ -333,6 +336,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void rollback()
 		throws RepositoryException
 	{
+		flushTransactionState(Action.ROLLBACK);
 		try {
 			client.rollbackTransaction();
 			active = false;
@@ -428,6 +432,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
+		flushTransactionState(Action.ADD);
 		// Send bytes directly to the server
 		client.upload(in, baseURI, dataFormat, false, contexts);
 	}
@@ -435,6 +440,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
+		flushTransactionState(Action.ADD);
 		client.upload(reader, baseURI, dataFormat, false, contexts);
 	}
 
@@ -497,36 +503,39 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void flushTransactionState(Action action)
 		throws RepositoryException
 	{
-		switch (action) {
-			case ADD:
-				if (toRemove != null) {
-					removeModel(toRemove);
-					toRemove = null;
-				}
-				break;
-			case DELETE:
-				if (toAdd != null) {
-					addModel(toAdd);
+		if (isActive()) {
+			switch (action) {
+				case ADD:
+					if (toRemove != null) {
+						removeModel(toRemove);
+						toRemove = null;
+					}
+					break;
+				case DELETE:
+					if (toAdd != null) {
+						addModel(toAdd);
+						toAdd = null;
+					}
+					break;
+				case GET:
+				case UPDATE:
+				case COMMIT:
+				case QUERY:
+					if (toAdd != null) {
+						addModel(toAdd);
+						toAdd = null;
+					}
+					if (toRemove != null) {
+						removeModel(toRemove);
+						toRemove = null;
+					}
+					break;
+				case ROLLBACK:
 					toAdd = null;
-				}
-				break;
-			case GET:
-			case UPDATE:
-			case COMMIT:
-				if (toAdd != null) {
-					addModel(toAdd);
-					toAdd = null;
-				}
-				if (toRemove != null) {
-					removeModel(toRemove);
 					toRemove = null;
-				}
-				break;
-			case ROLLBACK:
-				toAdd = null;
-				toRemove = null;
-				break;
-					
+					break;
+
+			}
 		}
 	}
 
