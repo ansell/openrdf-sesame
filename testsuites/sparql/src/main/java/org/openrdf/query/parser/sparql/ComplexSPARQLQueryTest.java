@@ -2200,7 +2200,7 @@ public abstract class ComplexSPARQLQueryTest {
 	@Test
 	public void testSES2024PropertyPathAnonVarSharing() throws Exception {
 		loadTestData("/testdata-query/dataset-ses2024.trig");
-		String query = "PREFIX : <http://example.org/> SELECT * WHERE { ?x1 :p/:lit ?l1 . ?x1 :diff ?x2 . ?x2 :p [:lit ?l2 ] }" ;
+		String query = "PREFIX : <http://example.org/> SELECT * WHERE { ?x1 :p/:lit ?l1 . ?x1 :diff ?x2 . ?x2 :p/:lit ?l2 . }" ;
 
 		TupleQuery tq = null;
 		try {
