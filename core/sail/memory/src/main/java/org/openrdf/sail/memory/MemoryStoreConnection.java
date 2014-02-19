@@ -38,6 +38,7 @@ import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
@@ -141,7 +142,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			}
 
 			TripleSource tripleSource = new MemTripleSource(store, includeInferred, snapshot, readMode);
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset);
+			EvaluationStrategy strategy = getEvaluationStrategy(dataset, tripleSource);
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
 			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
@@ -172,6 +173,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				stLock.release();
 			}
 		}
+	}
+	
+	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
+		return new EvaluationStrategyImpl(tripleSource, dataset);
 	}
 
 	@Override
