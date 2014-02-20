@@ -119,61 +119,81 @@ public class TriGParser extends TurtleParser {
 			// Just continue with TriG parsing at this point
 			skipWSC();
 
-			parseGraph();
+			parseGraph(true);
+		}
+		// If it looks like a Turtle document, then don't try to verify that there
+		// is a graph around it
+		else if (TurtleUtil.isNameStartChar(directive.charAt(0))
+				|| TurtleUtil.isPrefixStartChar(directive.charAt(0)))
+		{
+			unread(directive);
+			parseGraph(false);
 		}
 		else {
 			unread(directive);
-			parseGraph();
+			parseGraph(true);
 		}
 	}
 
-	protected void parseGraph()
+	protected void parseGraph(boolean isGraph)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		int c = read();
-		int c2 = peek();
+		if (isGraph) {
+			int c2 = peek();
 
-		if (c == '[') {
-			skipWSC();
-			c2 = read();
-			if(c2 == ']') {
-				context = createBNode();
+			if (c == '[') {
 				skipWSC();
+				c2 = read();
+				if (c2 == ']') {
+					context = createBNode();
+					skipWSC();
+				}
+				else {
+					unread(c2);
+					unread(c);
+				}
+				c = read();
 			}
-			else {
-				unread(c2);
+			else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
+					|| (c == '_' && c2 == ':'))
+			{
 				unread(c);
-			}
-			c = read();
-		}
-		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
-			unread(c);
 
-			Value value = parseValue();
+				Value value = parseValue();
 
-			if (value instanceof Resource) {
-				context = (Resource)value;
+				if (value instanceof Resource) {
+					context = (Resource)value;
+				}
+				else {
+					reportFatalError("Illegal graph name: " + value);
+				}
+
+				skipWSC();
+				c = read();
 			}
 			else {
-				reportFatalError("Illegal graph name: " + value);
+				unread(c);
+				context = null;
 			}
-
-			skipWSC();
-			c = read();
 		}
 		else {
+			unread(c);
 			context = null;
 		}
 
-		if (c == ':') {
-			verifyCharacterOrFail(read(), "-");
-			skipWSC();
+		c = skipWSC();
+
+		if (isGraph) {
+			if (c == ':') {
+				verifyCharacterOrFail(c, "-");
+				skipWSC();
+			}
+			else {
+				verifyCharacterOrFail(c, "{");
+			}
 			c = read();
 		}
-
-		verifyCharacterOrFail(c, "{");
-
-		c = skipWSC();
 
 		if (c != '}') {
 			parseTriples();
@@ -185,7 +205,10 @@ public class TriGParser extends TurtleParser {
 
 				c = skipWSC();
 
-				if (c == '}') {
+				if (isGraph && c == '}') {
+					break;
+				}
+				else if (!isGraph && (c == -1)) {
 					break;
 				}
 
@@ -194,7 +217,9 @@ public class TriGParser extends TurtleParser {
 				c = skipWSC();
 			}
 
-			verifyCharacterOrFail(c, "}");
+			if (isGraph) {
+				verifyCharacterOrFail(c, "}");
+			}
 		}
 
 		read();
