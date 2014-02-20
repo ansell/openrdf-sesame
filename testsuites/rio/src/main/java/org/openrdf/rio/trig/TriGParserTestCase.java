@@ -83,10 +83,10 @@ public abstract class TriGParserTestCase {
 				TEST_W3C_TEST_URI_BASE, w3cCon);
 		parseNegativeTriGSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
 				TEST_W3C_TEST_URI_BASE, w3cCon);
-		parsePositiveTriGEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
-				TEST_W3C_TEST_URI_BASE, w3cCon);
-		parseNegativeTriGEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
-				TEST_W3C_TEST_URI_BASE, w3cCon);
+		parsePositiveTriGEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL, TEST_W3C_TEST_URI_BASE,
+				w3cCon);
+		parseNegativeTriGEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL, TEST_W3C_TEST_URI_BASE,
+				w3cCon);
 
 		w3cCon.close();
 		w3cRepository.shutDown();
@@ -122,8 +122,8 @@ public abstract class TriGParserTestCase {
 
 			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, null,
-					nextBaseUrl, createTriGParser(), createNQuadsParser()));
+			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, null, nextBaseUrl,
+					createTriGParser(), createNQuadsParser()));
 		}
 
 		queryResult.close();
@@ -151,7 +151,7 @@ public abstract class TriGParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
@@ -238,8 +238,9 @@ public abstract class TriGParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).stringValue(),
+					manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
 			String nextBaseUrl = testBaseUrl + nextTestFile;
@@ -251,76 +252,6 @@ public abstract class TriGParserTestCase {
 		queryResult.close();
 	}
 
-	private void parsePositiveNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
-			String manifestBaseUrl, RepositoryConnection con)
-		throws Exception
-	{
-		StringBuilder positiveQuery = new StringBuilder();
-		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
-		positiveQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
-		positiveQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
-		positiveQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
-		positiveQuery.append(" WHERE { \n");
-		positiveQuery.append("     ?test a rdft:TestNTriplesPositiveSyntax . ");
-		positiveQuery.append("     ?test mf:name ?testName . ");
-		positiveQuery.append("     ?test mf:action ?inputURL . ");
-		positiveQuery.append(" }");
-
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveQuery.toString()).evaluate();
-
-		// Add all positive parser tests to the test suite
-		while (queryResult.hasNext()) {
-			BindingSet bindingSet = queryResult.next();
-			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
-			String nextInputURL = fileBasePath + nextTestFile;
-
-			String nextBaseUrl = testBaseUrl + nextTestFile;
-
-			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, null,
-					nextBaseUrl, createNQuadsParser(), createNQuadsParser()));
-		}
-
-		queryResult.close();
-
-	}
-
-	private void parseNegativeNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
-			String manifestBaseUrl, RepositoryConnection con)
-		throws Exception
-	{
-		StringBuilder negativeQuery = new StringBuilder();
-		negativeQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
-		negativeQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
-		negativeQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
-		negativeQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
-		negativeQuery.append(" WHERE { \n");
-		negativeQuery.append("     ?test a rdft:TestNTriplesNegativeSyntax . ");
-		negativeQuery.append("     ?test mf:name ?testName . ");
-		negativeQuery.append("     ?test mf:action ?inputURL . ");
-		negativeQuery.append(" }");
-
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
-
-		// Add all negative parser tests to the test suite
-		while (queryResult.hasNext()) {
-			BindingSet bindingSet = queryResult.next();
-			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
-			String nextInputURL = fileBasePath + nextTestFile;
-
-			String nextBaseUrl = testBaseUrl + nextTestFile;
-
-			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
-					createNQuadsParser(), FailureMode.IGNORE_FAILURE));
-		}
-
-		queryResult.close();
-
-	}
-
 	/**
 	 * @return An implementation of a TriG parser to test compliance with the
 	 *         TriG Test Suite TriG tests.
@@ -328,8 +259,8 @@ public abstract class TriGParserTestCase {
 	protected abstract RDFParser createTriGParser();
 
 	/**
-	 * @return An implementation of an N-Quads parser to test compliance with
-	 *         the TriG Test Suite N-Quads tests.
+	 * @return An implementation of an N-Quads parser to test compliance with the
+	 *         TriG Test Suite N-Quads tests.
 	 */
 	protected abstract RDFParser createNQuadsParser();
 
