@@ -93,18 +93,23 @@ public class TriGParserCustomTest {
 	public void testAnonymousGraph1()
 		throws Exception
 	{
-		Rio.parse(new StringReader("PREFIX : <http://example/>\n GRAPH [] { :s :p :o }"), "",
-				RDFFormat.TRIG);
+		Rio.parse(new StringReader("PREFIX : <http://example/>\n GRAPH [] { :s :p :o }"), "", RDFFormat.TRIG);
 	}
 
 	@Test
 	public void testAnonymousGraph2()
 		throws Exception
 	{
-		Rio.parse(new StringReader("PREFIX : <http://example/>\n [] { :s :p :o }"), "",
-				RDFFormat.TRIG);
+		Rio.parse(new StringReader("PREFIX : <http://example/>\n [] { :s :p :o }"), "", RDFFormat.TRIG);
 	}
-	
+
+	@Test
+	public void testTurtle()
+		throws Exception
+	{
+		Rio.parse(new StringReader("<urn:a> <urn:b> <urn:c>"), "", RDFFormat.TRIG);
+	}
+
 	@Test
 	public void testSupportedSettings()
 		throws Exception
