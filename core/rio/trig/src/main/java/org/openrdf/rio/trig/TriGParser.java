@@ -114,6 +114,13 @@ public class TriGParser extends TurtleParser {
 				verifyCharacterOrFail(read(), ".");
 			}
 		}
+		else if (directive.equalsIgnoreCase("GRAPH")) {
+			// Do not unread the directive if it was SPARQL GRAPH
+			// Just continue with TriG parsing at this point
+			skipWSC();
+
+			parseGraph();
+		}
 		else {
 			unread(directive);
 			parseGraph();
@@ -178,9 +185,49 @@ public class TriGParser extends TurtleParser {
 		}
 
 		read();
+	}
 
-		// FIXME: Blank nodes are scoped to the named graph?
-		// clearBNodeIDMap();
+	@Override
+	protected void parseTriples()
+		throws IOException, RDFParseException, RDFHandlerException
+	{
+		int c = peek();
+
+		// If the first character is an open bracket we need to decide which of
+		// the two parsing methods for blank nodes to use
+		if (c == '[') {
+			c = read();
+			skipWSC();
+			c = peek();
+			if (c == ']') {
+				c = read();
+				subject = createBNode();
+				skipWSC();
+				parsePredicateObjectList();
+			}
+			else {
+				unread('[');
+				subject = parseImplicitBlank();
+			}
+			skipWSC();
+			c = peek();
+
+			// if this is not the end of the statement, recurse into the list of
+			// predicate and objects, using the subject parsed above as the subject
+			// of the statement.
+			if (c != '.' && c != '}') {
+				parsePredicateObjectList();
+			}
+		}
+		else {
+			parseSubject();
+			skipWSC();
+			parsePredicateObjectList();
+		}
+
+		subject = null;
+		predicate = null;
+		object = null;
 	}
 
 	@Override
@@ -188,7 +235,7 @@ public class TriGParser extends TurtleParser {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj, context);
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
 	}

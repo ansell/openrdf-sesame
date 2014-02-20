@@ -82,11 +82,11 @@ public class TurtleParser extends RDFParserBase {
 
 	private PushbackReader reader;
 
-	private Resource subject;
+	protected Resource subject;
 
-	private URI predicate;
+	protected URI predicate;
 
-	private Value object;
+	protected Value object;
 
 	/*--------------*
 	 * Constructors *
