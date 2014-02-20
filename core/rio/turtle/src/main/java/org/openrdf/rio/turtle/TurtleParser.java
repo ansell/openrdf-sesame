@@ -267,25 +267,29 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		if (directive.equalsIgnoreCase("prefix") || directive.equals("@prefix")) {
+		if ((directive.length() >= 6 && directive.substring(0, 6).equalsIgnoreCase("prefix"))
+				|| (directive.length() >= 7 && directive.substring(0, 7).equals("@prefix")))
+		{
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("base") || directive.equals("@base")) {
+		else if ((directive.length() >= 4 && directive.substring(0, 4).equalsIgnoreCase("base"))
+				|| (directive.length() >= 5 && directive.substring(0, 5).equals("@base")))
+		{
 			parseBase();
 		}
-		else if (directive.equalsIgnoreCase("@prefix")) {
+		else if (directive.length() >= 7 && directive.substring(0, 7).equalsIgnoreCase("@prefix")) {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
 			}
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("@base")) {
+		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("@base")) {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
 			}
 			parseBase();
 		}
-		else if (directive.length() == 0) {
+		else if (directive.trim().isEmpty()) {
 			reportFatalError("Directive name is missing, expected @prefix or @base");
 		}
 		else {
@@ -405,7 +409,8 @@ public class TurtleParser extends RDFParserBase {
 			int c = skipWSC();
 
 			if (c == '.' || // end of triple
-					c == ']' || c == '}') // end of predicateObjectList inside blank node
+					c == ']' || c == '}') // end of predicateObjectList inside blank
+													// node
 			{
 				break;
 			}
@@ -1138,8 +1143,7 @@ public class TurtleParser extends RDFParserBase {
 				break;
 			}
 			name.append((char)previous);
-			if(!TurtleUtil.isNameChar(c))
-			{
+			if (!TurtleUtil.isNameChar(c)) {
 				unread(c);
 			}
 		}

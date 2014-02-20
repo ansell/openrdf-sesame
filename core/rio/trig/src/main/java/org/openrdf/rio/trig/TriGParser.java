@@ -104,8 +104,9 @@ public class TriGParser extends TurtleParser {
 
 		String directive = sb.toString();
 
-		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix")
-				|| directive.equalsIgnoreCase("base"))
+		if (directive.startsWith("@")
+				|| (directive.length() >= 4 && (directive.substring(0, 4).equalsIgnoreCase("prefix") || directive.substring(
+						0, 4).equalsIgnoreCase("base"))))
 		{
 			parseDirective(directive);
 			skipWSC();
@@ -114,16 +115,19 @@ public class TriGParser extends TurtleParser {
 				verifyCharacterOrFail(read(), ".");
 			}
 		}
-		else if (directive.equalsIgnoreCase("GRAPH")) {
+		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("GRAPH")) {
 			// Do not unread the directive if it was SPARQL GRAPH
 			// Just continue with TriG parsing at this point
 			skipWSC();
 
 			parseGraph();
 		}
-		else {
+		else if (directive.startsWith("{") || directive.startsWith(":-") || directive.startsWith("[]")) {
 			unread(directive);
 			parseGraph();
+		}
+		else {
+			reportFatalError("Unexpected start: " + directive);
 		}
 	}
 
@@ -136,7 +140,7 @@ public class TriGParser extends TurtleParser {
 		if (c == '[') {
 			skipWSC();
 			c2 = read();
-			if(c2 == ']') {
+			if (c2 == ']') {
 				context = createBNode();
 				skipWSC();
 			}
@@ -146,7 +150,9 @@ public class TriGParser extends TurtleParser {
 			}
 			c = read();
 		}
-		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
+		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
+				|| (c == '_' && c2 == ':'))
+		{
 			unread(c);
 
 			Value value = parseValue();
