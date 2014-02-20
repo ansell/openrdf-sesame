@@ -17,61 +17,49 @@
 package org.openrdf.rio.trig;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.util.RepositoryUtil;
+import org.openrdf.rio.FailureMode;
+import org.openrdf.rio.NegativeParserTest;
+import org.openrdf.rio.PositiveParserTest;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.helpers.ContextStatementCollector;
-import org.openrdf.rio.helpers.ParseErrorCollector;
-import org.openrdf.rio.helpers.StatementCollector;
-import org.openrdf.rio.ntriples.NTriplesParser;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * JUnit test for the TriG parser.
+ * JUnit test for the TriG parser that uses the tests that are available <a
+ * href="http://www.w3.org/2013/TrigTests/">online</a>.
  */
 public abstract class TriGParserTestCase {
-
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
 	 * Constants *
 	 *-----------*/
 
-	protected static String BASE_URL = "http://www.w3.org/2001/sw/DataAccess/df1/tests/";
+	/**
+	 * Base URL for W3C TriG tests.
+	 */
+	protected static String TESTS_W3C_BASE_URL = "http://www.w3.org/2013/TrigTests/";
 
-	private static String MANIFEST_GOOD_URL = "/testcases/trig/manifest.ttl";
+	/**
+	 * Base directory for W3C TriG tests
+	 */
+	private static String TEST_W3C_FILE_BASE_PATH = "/testcases/trig/";
 
-	private static String MANIFEST_BAD_URL = "/testcases/trig/manifest-bad.ttl";
+	private static String TEST_W3C_MANIFEST_URL = TEST_W3C_FILE_BASE_PATH + "manifest.ttl";
+
+	private static String TEST_W3C_MANIFEST_URI_BASE = "http://www.w3.org/2013/TrigTests/manifest.ttl#";
+
+	private static String TEST_W3C_TEST_URI_BASE = "http://www.w3.org/2013/TrigTests/";
 
 	/*--------------------*
 	 * Static initializer *
@@ -83,304 +71,274 @@ public abstract class TriGParserTestCase {
 		// Create test suite
 		TestSuite suite = new TestSuite(TriGParserTestCase.class.getName());
 
-		// Add the manifest for positive test cases to a repository and query it
-		Repository repository = new SailRepository(new MemoryStore());
-		repository.initialize();
-		RepositoryConnection con = repository.getConnection();
+		// Add the manifest for W3C test cases to a repository and query it
+		Repository w3cRepository = new SailRepository(new MemoryStore());
+		w3cRepository.initialize();
+		RepositoryConnection w3cCon = w3cRepository.getConnection();
 
-		URL url = TriGParserTestCase.class.getResource(MANIFEST_GOOD_URL);
-		con.add(url, base(url.toExternalForm()), RDFFormat.TURTLE);
+		InputStream inputStream = this.getClass().getResourceAsStream(TEST_W3C_MANIFEST_URL);
+		w3cCon.add(inputStream, TEST_W3C_MANIFEST_URI_BASE, RDFFormat.TURTLE);
 
-		String query = "SELECT testName, inputURL, outputURL " + "FROM {} mf:name {testName}; "
-				+ "        mf:result {outputURL}; " + "        mf:action {} qt:data {inputURL} "
-				+ "USING NAMESPACE " + "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
-				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
+		parsePositiveTriGSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, w3cCon);
+		parseNegativeTriGSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, w3cCon);
+		parsePositiveTriGEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, w3cCon);
+		parseNegativeTriGEvalTests(suite, TEST_W3C_FILE_BASE_PATH, TESTS_W3C_BASE_URL,
+				TEST_W3C_TEST_URI_BASE, w3cCon);
 
-		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
-
-		// Add all positive parser tests to the test suite
-		while (queryResult.hasNext()) {
-			BindingSet bindingSet = queryResult.next();
-			String testName = bindingSet.getValue("testName").toString();
-			String inputURL = bindingSet.getValue("inputURL").toString();
-			String outputURL = bindingSet.getValue("outputURL").toString();
-
-			String baseURL = BASE_URL + testName + ".ttl";
-
-			suite.addTest(new PositiveParserTest(testName, inputURL, outputURL, baseURL));
-		}
-
-		queryResult.close();
-
-		// Add the manifest for negative test cases to a repository and query it
-		con.clear();
-		url = TriGParserTestCase.class.getResource(MANIFEST_BAD_URL);
-		con.add(url, base(url.toExternalForm()), RDFFormat.TURTLE);
-
-		query = "SELECT testName, inputURL " + "FROM {} mf:name {testName}; "
-				+ "        mf:action {} qt:data {inputURL} " + "USING NAMESPACE "
-				+ "  mf = <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>, "
-				+ "  qt = <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>";
-		queryResult = con.prepareTupleQuery(QueryLanguage.SERQL, query).evaluate();
-
-		// Add all negative parser tests to the test suite
-		while (queryResult.hasNext()) {
-			BindingSet bindingSet = queryResult.next();
-			String testName = bindingSet.getValue("testName").toString();
-			String inputURL = bindingSet.getValue("inputURL").toString();
-
-			String baseURL = BASE_URL + testName + ".ttl";
-
-			suite.addTest(new NegativeParserTest(testName, inputURL, baseURL));
-		}
-
-		queryResult.close();
-		con.close();
-		repository.shutDown();
-
-		logger.warn("Found {} TriG tests to execute", suite.countTestCases());
+		w3cCon.close();
+		w3cRepository.shutDown();
 
 		return suite;
 	}
 
-	protected abstract RDFParser createRDFParser();
-
-	/*--------------------------------*
-	 * Inner class PositiveParserTest *
-	 *--------------------------------*/
-
-	private class PositiveParserTest extends TestCase {
-
-		/*-----------*
-		 * Variables *
-		 *-----------*/
-
-		private URL inputURL;
-
-		private URL outputURL;
-
-		private String baseURL;
-
-		/*--------------*
-		 * Constructors *
-		 *--------------*/
-
-		public PositiveParserTest(String testName, String inputURL, String outputURL, String baseURL)
-			throws MalformedURLException
-		{
-			super(testName);
-			this.inputURL = url(inputURL);
-			this.outputURL = url(outputURL);
-			this.baseURL = baseURL;
-		}
-
-		/*---------*
-		 * Methods *
-		 *---------*/
-
-		@Override
-		protected void runTest()
-			throws Exception
-		{
-			// Parse input data
-			RDFParser trigParser = createRDFParser();
-			// trigParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-			Model inputCollection = new LinkedHashModel();
-			RDFHandler inputCollector;
-
-			if (outputURL.toString().endsWith(".nq")) {
-				inputCollector = new StatementCollector(inputCollection);
-			}
-			else {
-				// Force context to null if the output is not given in N-Quads
-				inputCollector = new ContextStatementCollector(inputCollection, ValueFactoryImpl.getInstance(),
-						(Resource)null);
-			}
-			trigParser.setRDFHandler(inputCollector);
-			ParseErrorCollector el = new ParseErrorCollector();
-			trigParser.setParseErrorListener(el);
-
-			InputStream in = inputURL.openStream();
-			try {
-				trigParser.parse(in, base(baseURL));
-			}
-			finally {
-				in.close();
-				
-				if (!el.getFatalErrors().isEmpty()) {
-					System.err.println("[TriG] Input file had fatal parsing errors: ");
-					System.err.println(el.getFatalErrors());
-				}
-
-				if (!el.getErrors().isEmpty()) {
-					System.err.println("[TriG] Input file had parsing errors: ");
-					System.err.println(el.getErrors());
-				}
-
-				if (!el.getWarnings().isEmpty()) {
-					System.err.println("[TriG] Input file had parsing warnings: ");
-					System.err.println(el.getWarnings());
-				}
-			}
-
-			Model outputCollection = new LinkedHashModel();
-			RDFHandler outputCollector;
-
-			RDFParser parser;
-			if (outputURL.toString().endsWith(".nq")) {
-				parser = Rio.createParser(RDFFormat.NQUADS);
-				outputCollector = new StatementCollector(outputCollection);
-			}
-			else {
-				parser = Rio.createParser(RDFFormat.NTRIPLES);
-				// Force context to null if the output is not given in N-Quads
-				outputCollector = new ContextStatementCollector(outputCollection, ValueFactoryImpl.getInstance(),
-						(Resource)null);
-			}
-			// parser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-			parser.setRDFHandler(outputCollector);
-
-			el = new ParseErrorCollector();
-			parser.setParseErrorListener(el);
-
-			// Parse expected output data
-			in = outputURL.openStream();
-			try {
-				parser.parse(in, base(baseURL));
-			}
-			finally {
-				in.close();
-				if (!el.getFatalErrors().isEmpty()) {
-					System.err.println("[TriG] Expected output file had fatal parsing errors: ");
-					System.err.println(el.getFatalErrors());
-				}
-
-				if (!el.getErrors().isEmpty()) {
-					System.err.println("[TriG] Expected output file had parsing errors: ");
-					System.err.println(el.getErrors());
-				}
-
-				if (!el.getWarnings().isEmpty()) {
-					System.err.println("[TriG] Expected output file had parsing warnings: ");
-					System.err.println(el.getWarnings());
-				}
-			}
-
-			// Check equality of the two models
-			if (!ModelUtil.equals(inputCollection, outputCollection)) {
-				Collection<? extends Statement> missingStatements = RepositoryUtil.difference(outputCollection,
-						inputCollection);
-				Collection<? extends Statement> unexpectedStatements = RepositoryUtil.difference(inputCollection,
-						outputCollection);
-
-				System.err.println("===models not equal===");
-				if (!missingStatements.isEmpty()) {
-					System.err.println("Missing statements : ");
-					for (Statement nextMissingStatement : missingStatements) {
-						System.err.println(nextMissingStatement.toString());
-					}
-				}
-				if (!unexpectedStatements.isEmpty()) {
-					System.err.println("Unexpected statements : ");
-					for (Statement nextUnexpectedStatement : unexpectedStatements) {
-						System.err.println(nextUnexpectedStatement.toString());
-					}
-				}
-				System.err.println("======================");
-
-				fail("models not equal");
-			}
-
-		}
-
-	} // end inner class PositiveParserTest
-
-	/*--------------------------------*
-	 * Inner class NegativeParserTest *
-	 *--------------------------------*/
-
-	private class NegativeParserTest extends TestCase {
-
-		/*-----------*
-		 * Variables *
-		 *-----------*/
-
-		private URL inputURL;
-
-		private String baseURL;
-
-		/*--------------*
-		 * Constructors *
-		 *--------------*/
-
-		public NegativeParserTest(String caseURI, String inputURL, String baseURL)
-			throws MalformedURLException
-		{
-			super(caseURI);
-			this.inputURL = url(inputURL);
-			this.baseURL = baseURL;
-		}
-
-		/*---------*
-		 * Methods *
-		 *---------*/
-
-		@Override
-		protected void runTest() {
-			try {
-				// Try parsing the input; this should result in an error being
-				// reported.
-				RDFParser turtleParser = createRDFParser();
-				turtleParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
-				turtleParser.setRDFHandler(new StatementCollector());
-
-				InputStream in = inputURL.openStream();
-				turtleParser.parse(in, base(baseURL));
-				in.close();
-
-				fail("Parser parses erroneous data without reporting errors");
-			}
-			catch (RDFParseException e) {
-				// This is expected as the input file is incorrect RDF
-			}
-			catch (Exception e) {
-				fail("Error: " + e.getMessage());
-			}
-		}
-
-	} // end inner class NegativeParserTest
-
-	private static URL url(String uri)
-		throws MalformedURLException
+	private void parsePositiveTriGSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String testLocationBaseUri, RepositoryConnection con)
+		throws Exception
 	{
-		if (!uri.startsWith("injar:"))
-			return new URL(uri);
-		int start = uri.indexOf(':') + 3;
-		int end = uri.indexOf('/', start);
-		String encoded = uri.substring(start, end);
-		try {
-			String jar = URLDecoder.decode(encoded, "UTF-8");
-			return new URL("jar:" + jar + '!' + uri.substring(end));
+		StringBuilder positiveQuery = new StringBuilder();
+		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveQuery.append(" WHERE { \n");
+		positiveQuery.append("     ?test a rdft:TestTrigPositiveSyntax . ");
+		positiveQuery.append("     ?test mf:name ?testName . ");
+		positiveQuery.append("     ?test mf:action ?inputURL . ");
+		positiveQuery.append(" }");
+
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveQuery.toString()).evaluate();
+
+		// Add all positive parser tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(),
+					testLocationBaseUri);
+			String nextInputURL = fileBasePath + nextTestFile;
+
+			String nextBaseUrl = testBaseUrl + nextTestFile;
+
+			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, null,
+					nextBaseUrl, createTriGParser(), createNQuadsParser()));
 		}
-		catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
-		}
+
+		queryResult.close();
+
 	}
 
-	private static String base(String uri) {
-		if (!uri.startsWith("jar:"))
-			return uri;
-		int start = uri.indexOf(':') + 1;
-		int end = uri.lastIndexOf('!');
-		String jar = uri.substring(start, end);
-		try {
-			String encoded = URLEncoder.encode(jar, "UTF-8");
-			return "injar://" + encoded + uri.substring(end + 1);
+	private void parseNegativeTriGSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
+		throws Exception
+	{
+		StringBuilder negativeQuery = new StringBuilder();
+		negativeQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		negativeQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		negativeQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		negativeQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		negativeQuery.append(" WHERE { \n");
+		negativeQuery.append("     ?test a rdft:TestTrigNegativeSyntax . ");
+		negativeQuery.append("     ?test mf:name ?testName . ");
+		negativeQuery.append("     ?test mf:action ?inputURL . ");
+		negativeQuery.append(" }");
+
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
+
+		// Add all negative parser tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
+			String nextInputURL = fileBasePath + nextTestFile;
+
+			String nextBaseUrl = testBaseUrl + nextTestFile;
+
+			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createTriGParser(), FailureMode.IGNORE_FAILURE));
 		}
-		catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
-		}
+
+		queryResult.close();
+
 	}
+
+	private void parsePositiveTriGEvalTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
+		throws Exception
+	{
+		StringBuilder positiveEvalQuery = new StringBuilder();
+		positiveEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveEvalQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveEvalQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveEvalQuery.append(" WHERE { \n");
+		positiveEvalQuery.append("     ?test a rdft:TestTrigEval . ");
+		positiveEvalQuery.append("     ?test mf:name ?testName . ");
+		positiveEvalQuery.append("     ?test mf:action ?inputURL . ");
+		positiveEvalQuery.append("     ?test mf:result ?outputURL . ");
+		positiveEvalQuery.append(" }");
+
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveEvalQuery.toString()).evaluate();
+
+		// Add all positive eval tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
+			String nextInputURL = fileBasePath + nextTestFile;
+			String nextOutputURL = fileBasePath
+					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString(), manifestBaseUrl);
+
+			String nextBaseUrl = testBaseUrl + nextTestFile;
+
+			if (nextTestName.contains("CARRIAGE_RETURN")) {
+				// FIXME: Sesame seems not to preserve the CARRIAGE_RETURN character
+				// right now
+				System.err.println("Ignoring TriG Positive Parser Eval Test: " + nextInputURL);
+				continue;
+			}
+			else if (nextTestName.contains("UTF8_boundaries")
+					|| nextTestName.contains("PN_CHARS_BASE_character_boundaries")
+					|| nextTestName.contains("localName_with_non_leading_extras"))
+			{
+				// FIXME: UTF8 support not implemented yet
+				System.err.println("Ignoring TriG Positive Parser Eval Test: " + nextInputURL);
+				continue;
+			}
+
+			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, nextOutputURL,
+					nextBaseUrl, createTriGParser(), createNQuadsParser()));
+		}
+
+		queryResult.close();
+	}
+
+	private void parseNegativeTriGEvalTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
+		throws Exception
+	{
+		StringBuilder negativeEvalQuery = new StringBuilder();
+		negativeEvalQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		negativeEvalQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		negativeEvalQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		negativeEvalQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		negativeEvalQuery.append(" WHERE { \n");
+		negativeEvalQuery.append("     ?test a rdft:TestTrigNegativeEval . ");
+		negativeEvalQuery.append("     ?test mf:name ?testName . ");
+		negativeEvalQuery.append("     ?test mf:action ?inputURL . ");
+		negativeEvalQuery.append(" }");
+
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeEvalQuery.toString()).evaluate();
+
+		// Add all negative eval tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
+			String nextInputURL = fileBasePath + nextTestFile;
+
+			String nextBaseUrl = testBaseUrl + nextTestFile;
+
+			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createTriGParser(), FailureMode.IGNORE_FAILURE));
+		}
+
+		queryResult.close();
+	}
+
+	private void parsePositiveNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
+		throws Exception
+	{
+		StringBuilder positiveQuery = new StringBuilder();
+		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveQuery.append(" WHERE { \n");
+		positiveQuery.append("     ?test a rdft:TestNTriplesPositiveSyntax . ");
+		positiveQuery.append("     ?test mf:name ?testName . ");
+		positiveQuery.append("     ?test mf:action ?inputURL . ");
+		positiveQuery.append(" }");
+
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveQuery.toString()).evaluate();
+
+		// Add all positive parser tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
+			String nextInputURL = fileBasePath + nextTestFile;
+
+			String nextBaseUrl = testBaseUrl + nextTestFile;
+
+			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, null,
+					nextBaseUrl, createNQuadsParser(), createNQuadsParser()));
+		}
+
+		queryResult.close();
+
+	}
+
+	private void parseNegativeNTriplesSyntaxTests(TestSuite suite, String fileBasePath, String testBaseUrl,
+			String manifestBaseUrl, RepositoryConnection con)
+		throws Exception
+	{
+		StringBuilder negativeQuery = new StringBuilder();
+		negativeQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		negativeQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		negativeQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		negativeQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		negativeQuery.append(" WHERE { \n");
+		negativeQuery.append("     ?test a rdft:TestNTriplesNegativeSyntax . ");
+		negativeQuery.append("     ?test mf:name ?testName . ");
+		negativeQuery.append("     ?test mf:action ?inputURL . ");
+		negativeQuery.append(" }");
+
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
+
+		// Add all negative parser tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
+			String nextInputURL = fileBasePath + nextTestFile;
+
+			String nextBaseUrl = testBaseUrl + nextTestFile;
+
+			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createNQuadsParser(), FailureMode.IGNORE_FAILURE));
+		}
+
+		queryResult.close();
+
+	}
+
+	/**
+	 * @return An implementation of a TriG parser to test compliance with the
+	 *         TriG Test Suite TriG tests.
+	 */
+	protected abstract RDFParser createTriGParser();
+
+	/**
+	 * @return An implementation of an N-Quads parser to test compliance with
+	 *         the TriG Test Suite N-Quads tests.
+	 */
+	protected abstract RDFParser createNQuadsParser();
+
+	private String removeBase(String baseUrl, String redundantBaseUrl) {
+		if (baseUrl.startsWith(redundantBaseUrl)) {
+			return baseUrl.substring(redundantBaseUrl.length());
+		}
+
+		return baseUrl;
+	}
+
 }
