@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.input.BOMInputStream;
 
@@ -57,10 +58,11 @@ public class NQuadsParser extends NTriplesParser {
 		// Note: baseURI will be checked in parse(Reader, String)
 
 		try {
-			parse(new InputStreamReader(new BOMInputStream(inputStream, false), "US-ASCII"), baseURI);
+			parse(new InputStreamReader(new BOMInputStream(inputStream, false), Charset.forName("UTF-8")),
+					baseURI);
 		}
 		catch (UnsupportedEncodingException e) {
-			// Every platform should support the US-ASCII encoding...
+			// Every platform should support the UTF-8 encoding...
 			throw new RuntimeException(e);
 		}
 	}
@@ -76,7 +78,7 @@ public class NQuadsParser extends NTriplesParser {
 			throw new IllegalArgumentException("base URI can not be 'null'");
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.startRDF();
 		}
 
@@ -109,7 +111,7 @@ public class NQuadsParser extends NTriplesParser {
 			clear();
 		}
 
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.endRDF();
 		}
 	}
@@ -160,7 +162,7 @@ public class NQuadsParser extends NTriplesParser {
 
 		if (!ignoredAnError) {
 			Statement st = createStatement(subject, predicate, object, context);
-			if(rdfHandler != null) {
+			if (rdfHandler != null) {
 				rdfHandler.handleStatement(st);
 			}
 		}
@@ -176,7 +178,6 @@ public class NQuadsParser extends NTriplesParser {
 	protected int parseContext(int c)
 		throws IOException, RDFParseException
 	{
-		// FIXME: context (in N-Quads) can be a literal
 		StringBuilder sb = new StringBuilder(100);
 
 		// subject is either an uriref (<foo://bar>) or a nodeID (_:node1)

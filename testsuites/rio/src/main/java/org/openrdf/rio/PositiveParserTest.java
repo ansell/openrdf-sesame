@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio.turtle;
+package org.openrdf.rio;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -30,7 +30,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 
-public class TurtlePositiveParserTest extends TestCase {
+public class PositiveParserTest extends TestCase {
 
 	/*-----------*
 	 * Variables *
@@ -52,7 +52,7 @@ public class TurtlePositiveParserTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
-	public TurtlePositiveParserTest(URI testUri, String testName, String inputURL, String outputURL,
+	public PositiveParserTest(URI testUri, String testName, String inputURL, String outputURL,
 			String baseURL, RDFParser targetParser, RDFParser ntriplesParser)
 		throws MalformedURLException
 	{
@@ -86,21 +86,6 @@ public class TurtlePositiveParserTest extends TestCase {
 		assertNotNull("Test resource was not found: inputURL=" + inputURL, in);
 
 		System.err.println("test: " + inputURL);
-
-		if (inputURL.contains("CARRIAGE_RETURN")) {
-			// FIXME: Sesame seems not to preserve the CARRIAGE_RETURN character
-			// right now
-			System.err.println("Ignoring Turtle Positive Parser Test: " + inputURL);
-			return;
-		}
-		else if (inputURL.contains("UTF8_boundaries")
-				|| inputURL.contains("PN_CHARS_BASE_character_boundaries")
-				|| inputURL.contains("localName_with_non_leading_extras"))
-		{
-			// FIXME: UTF8 support not implemented yet
-			System.err.println("Ignoring Turtle Positive Parser Test: " + inputURL);
-			return;
-		}
 
 		ParseErrorCollector el = new ParseErrorCollector();
 		targetParser.setParseErrorListener(el);
@@ -155,4 +140,4 @@ public class TurtlePositiveParserTest extends TestCase {
 		}
 	}
 
-} // end inner class TurtlePositiveParserTest
+} // end inner class PositiveParserTest

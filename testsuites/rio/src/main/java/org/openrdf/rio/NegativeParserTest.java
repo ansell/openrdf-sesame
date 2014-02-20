@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.rio.turtle;
+package org.openrdf.rio;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -24,14 +24,15 @@ import junit.framework.TestCase;
 import org.openrdf.model.URI;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 
-public class TurtleNegativeParserTest extends TestCase {
+public class NegativeParserTest extends TestCase {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
-
 	private String inputURL;
 
 	private String baseURL;
@@ -40,12 +41,16 @@ public class TurtleNegativeParserTest extends TestCase {
 
 	protected URI testUri;
 
+	protected FailureMode failureMode;
+
+	protected boolean didIgnoreFailure;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public TurtleNegativeParserTest(URI testUri, String caseURI, String inputURL, String baseURL,
-			RDFParser targetParser)
+	public NegativeParserTest(URI testUri, String caseURI, String inputURL, String baseURL,
+			RDFParser targetParser, FailureMode failureMode)
 		throws MalformedURLException
 	{
 		super(caseURI);
@@ -53,6 +58,7 @@ public class TurtleNegativeParserTest extends TestCase {
 		this.inputURL = inputURL;
 		this.baseURL = baseURL;
 		this.targetParser = targetParser;
+		this.failureMode = failureMode;
 	}
 
 	/*---------*
@@ -61,21 +67,33 @@ public class TurtleNegativeParserTest extends TestCase {
 
 	@Override
 	protected void runTest() {
+		ParseErrorCollector el = new ParseErrorCollector();
 		try {
 			// Try parsing the input; this should result in an error being
 			// reported.
 			// targetParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-
+			
 			targetParser.setRDFHandler(new StatementCollector());
 
 			InputStream in = this.getClass().getResourceAsStream(inputURL);
 			assertNotNull("Test resource was not found: inputURL=" + inputURL, in);
+			
+			System.err.println("test: " + inputURL);
+
+			targetParser.setParseErrorListener(el);
+
 			targetParser.parse(in, baseURL);
 			in.close();
 
-			System.err.println("Ignoring Turtle Negative Parser Test that does not report an expected error: "
-					+ inputURL);
-			// fail("Parser parses erroneous data without reporting errors");
+			if (failureMode.ignoreFailure()) {
+				this.didIgnoreFailure = true;
+				System.err.println("Ignoring Negative Parser Test that does not report an expected error: "
+						+ inputURL);
+			}
+			else {
+				this.didIgnoreFailure = false;
+				fail("Parser parses erroneous data without reporting errors");
+			}
 		}
 		catch (RDFParseException e) {
 			// This is expected as the input file is incorrect RDF
@@ -85,4 +103,4 @@ public class TurtleNegativeParserTest extends TestCase {
 		}
 	}
 
-} // end inner class TurtleNegativeParserTest
+} // end inner class NegativeParserTest

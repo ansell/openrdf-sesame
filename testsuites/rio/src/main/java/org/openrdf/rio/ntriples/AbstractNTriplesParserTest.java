@@ -22,25 +22,34 @@ import static org.junit.Assert.fail;
 import java.io.InputStream;
 import java.io.StringReader;
 
+import junit.framework.TestSuite;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
+import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.rio.FailureMode;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.rio.NegativeParserTest;
+import org.openrdf.rio.PositiveParserTest;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * JUnit test for the N-Triples parser.
- * 
- * @author Arjohn Kampman
+ * JUnit test for the N-Triples parser that uses the tests that are available <a
+ * href="http://www.w3.org/2013/N-TriplesTests/">online</a>.
  */
 public abstract class AbstractNTriplesParserTest {
 
@@ -48,184 +57,123 @@ public abstract class AbstractNTriplesParserTest {
 	 * Constants *
 	 *-----------*/
 
-	private static String NTRIPLES_TEST_URL = "http://www.w3.org/2000/10/rdf-tests/rdfcore/ntriples/test.nt";
+	/**
+	 * Base directory for W3C N-Triples tests
+	 */
+	private static String TEST_W3C_FILE_BASE_PATH = "/testcases/ntriples/";
 
-	private static String NTRIPLES_TEST_FILE = "/testcases/ntriples/test.nt";
+	private static String TEST_W3C_MANIFEST_URL = TEST_W3C_FILE_BASE_PATH + "manifest.ttl";
+
+	private static String TEST_W3C_MANIFEST_URI_BASE = "http://www.w3.org/2013/N-TriplesTests/manifest.ttl#";
+
+	private static String TEST_W3C_TEST_URI_BASE = "http://www.w3.org/2013/N-TriplesTests/";
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	@Test
-	public void testNTriplesFile()
+	public TestSuite createTestSuite()
 		throws Exception
 	{
-		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-		Model model = new LinkedHashModel();
-		ntriplesParser.setRDFHandler(new StatementCollector(model));
+		// Create test suite
+		TestSuite suite = new TestSuite(this.getClass().getName());
 
-		InputStream in = NTriplesParser.class.getResourceAsStream(NTRIPLES_TEST_FILE);
-		try {
-			ntriplesParser.parse(in, NTRIPLES_TEST_URL);
-		}
-		catch (RDFParseException e) {
-			fail("Failed to parse N-Triples test document: " + e.getMessage());
-		}
-		finally {
-			in.close();
-		}
+		// Add the manifest for W3C test cases to a repository and query it
+		Repository w3cRepository = new SailRepository(new MemoryStore());
+		w3cRepository.initialize();
+		RepositoryConnection w3cCon = w3cRepository.getConnection();
 
-		assertEquals(30, model.size());
-		assertEquals(28, model.subjects().size());
-		assertEquals(1, model.predicates().size());
-		assertEquals(23, model.objects().size());
+		InputStream inputStream = this.getClass().getResourceAsStream(TEST_W3C_MANIFEST_URL);
+		w3cCon.add(inputStream, TEST_W3C_MANIFEST_URI_BASE, RDFFormat.TURTLE);
+
+		parsePositiveNTriplesSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TEST_W3C_TEST_URI_BASE, w3cCon);
+		parseNegativeNTriplesSyntaxTests(suite, TEST_W3C_FILE_BASE_PATH, TEST_W3C_TEST_URI_BASE, w3cCon);
+
+		w3cCon.close();
+		w3cRepository.shutDown();
+
+		return suite;
 	}
 
-	@Test
-	public void testExceptionHandlingWithDefaultSettings()
+	private void parsePositiveNTriplesSyntaxTests(TestSuite suite, String fileBasePath,
+			String testLocationBaseUri, RepositoryConnection con)
 		throws Exception
 	{
-		String data = "invalid nt";
+		StringBuilder positiveQuery = new StringBuilder();
+		positiveQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		positiveQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		positiveQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		positiveQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		positiveQuery.append(" WHERE { \n");
+		positiveQuery.append("     ?test a rdft:TestNTriplesPositiveSyntax . ");
+		positiveQuery.append("     ?test mf:name ?testName . ");
+		positiveQuery.append("     ?test mf:action ?inputURL . ");
+		positiveQuery.append(" }");
 
-		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.setDatatypeHandling(RDFParser.DatatypeHandling.IGNORE);
-		Model model = new LinkedHashModel();
-		ntriplesParser.setRDFHandler(new StatementCollector(model));
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, positiveQuery.toString()).evaluate();
 
-		try {
-			ntriplesParser.parse(new StringReader(data), NTRIPLES_TEST_URL);
-			fail("expected RDFParseException due to invalid data");
+		// Add all positive parser tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(),
+					testLocationBaseUri);
+			String nextInputURL = fileBasePath + nextTestFile;
+
+			String nextBaseUrl = testLocationBaseUri + nextTestFile;
+
+			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, null, nextBaseUrl,
+					createRDFParser(), createRDFParser()));
 		}
-		catch (RDFParseException expected) {
-			assertEquals(expected.getLineNumber(), 1);
-		}
+
+		queryResult.close();
+
 	}
 
-	@Test
-	public void testExceptionHandlingWithStopAtFirstError()
+	private void parseNegativeNTriplesSyntaxTests(TestSuite suite, String fileBasePath,
+			String testLocationBaseUri, RepositoryConnection con)
 		throws Exception
 	{
-		String data = "invalid nt";
+		StringBuilder negativeQuery = new StringBuilder();
+		negativeQuery.append(" PREFIX mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>\n");
+		negativeQuery.append(" PREFIX qt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>\n");
+		negativeQuery.append(" PREFIX rdft: <http://www.w3.org/ns/rdftest#>\n");
+		negativeQuery.append(" SELECT ?test ?testName ?inputURL ?outputURL \n");
+		negativeQuery.append(" WHERE { \n");
+		negativeQuery.append("     ?test a rdft:TestNTriplesNegativeSyntax . ");
+		negativeQuery.append("     ?test mf:name ?testName . ");
+		negativeQuery.append("     ?test mf:action ?inputURL . ");
+		negativeQuery.append(" }");
 
-		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES,
-				Boolean.FALSE);
+		TupleQueryResult queryResult = con.prepareTupleQuery(QueryLanguage.SPARQL, negativeQuery.toString()).evaluate();
 
-		Model model = new LinkedHashModel();
-		ntriplesParser.setRDFHandler(new StatementCollector(model));
+		// Add all negative parser tests to the test suite
+		while (queryResult.hasNext()) {
+			BindingSet bindingSet = queryResult.next();
+			URI nextTestUri = (URI)bindingSet.getValue("test");
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(),
+					testLocationBaseUri);
+			String nextInputURL = fileBasePath + nextTestFile;
 
-		try {
-			ntriplesParser.parse(new StringReader(data), NTRIPLES_TEST_URL);
-			fail("expected RDFParseException due to invalid data");
+			String nextBaseUrl = testLocationBaseUri + nextTestFile;
+
+			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
+					createRDFParser(), FailureMode.IGNORE_FAILURE));
 		}
-		catch (RDFParseException expected) {
-			assertEquals(expected.getLineNumber(), 1);
-		}
-	}
 
-	@Test
-	public void testExceptionHandlingWithoutStopAtFirstError()
-		throws Exception
-	{
-		String data = "invalid nt";
+		queryResult.close();
 
-		RDFParser ntriplesParser = createRDFParser();
-		ntriplesParser.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
-		ntriplesParser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES,
-				Boolean.TRUE);
-
-		Model model = new LinkedHashModel();
-		ntriplesParser.setRDFHandler(new StatementCollector(model));
-
-		ntriplesParser.parse(new StringReader(data), NTRIPLES_TEST_URL);
-
-		assertEquals(0, model.size());
-		assertEquals(0, model.subjects().size());
-		assertEquals(0, model.predicates().size());
-		assertEquals(0, model.objects().size());
-	}
-
-	@Test
-	public void testExceptionHandlingParsingNTriplesIntoMemoryStore()
-		throws Exception
-	{
-		Repository repo = new SailRepository(new MemoryStore());
-		repo.initialize();
-		RepositoryConnection conn = repo.getConnection();
-		try {
-			// Force the connection to use stop at first error
-			conn.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, Boolean.FALSE);
-
-			String data = "invalid nt";
-			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);
-			fail("expected RDFParseException due to invalid data");
-		}
-		catch (RDFParseException expected) {
-			;
-		}
-		finally {
-			conn.close();
-			repo.shutDown();
-		}
-	}
-
-	@Test
-	public void testExceptionHandlingParsingNTriplesIntoMemoryStoreWithoutStopAtFirstError()
-		throws Exception
-	{
-		Repository repo = new SailRepository(new MemoryStore());
-		repo.initialize();
-		RepositoryConnection conn = repo.getConnection();
-		try {
-			// Force the connection to not use stop at first error
-			conn.getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
-			conn.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, Boolean.TRUE);
-
-			String data = "invalid nt";
-			conn.add(new StringReader(data), "http://example/", RDFFormat.NTRIPLES);
-
-			// verify that no triples were added after the successful parse
-			assertEquals(0, conn.size());
-		}
-		finally {
-			conn.close();
-			repo.shutDown();
-		}
-	}
-
-	@Test
-	public void testEscapes()
-		throws Exception
-	{
-		RDFParser ntriplesParser = createRDFParser();
-		Model model = new LinkedHashModel();
-		ntriplesParser.setRDFHandler(new StatementCollector(model));
-		ntriplesParser.parse(new StringReader(
-				"<urn:test:subject> <urn:test:predicate> \" \\t \\b \\n \\r \\f \\\" \\' \\\\ \" . "),
-				"http://example/");
-		assertEquals(1, model.size());
-		assertEquals(" \t \b \n \r \f \" \' \\ ", model.objectString());
-	}
-
-	@Ignore("Uncomment when implementing SES-1894")
-	@Test
-	public void testBlankNodeIdentifiersRDF11()
-		throws Exception
-	{
-		RDFParser ntriplesParser = createRDFParser();
-		Model model = new LinkedHashModel();
-		ntriplesParser.setRDFHandler(new StatementCollector(model));
-		ntriplesParser.parse(new StringReader("_:123 <urn:test:predicate> _:456 ."), "http://example/");
-		assertEquals(1, model.size());
-	}
-
-	@Test
-	public void testSupportedSettings()
-		throws Exception
-	{
-		assertEquals(12, createRDFParser().getSupportedSettings().size());
 	}
 
 	protected abstract RDFParser createRDFParser();
+
+	private String removeBase(String baseUrl, String redundantBaseUrl) {
+		if (baseUrl.startsWith(redundantBaseUrl)) {
+			return baseUrl.substring(redundantBaseUrl.length());
+		}
+
+		return baseUrl;
+	}
 }
