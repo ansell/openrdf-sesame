@@ -133,7 +133,20 @@ public class TriGParser extends TurtleParser {
 		int c = read();
 		int c2 = peek();
 
-		if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
+		if (c == '[') {
+			skipWSC();
+			c2 = read();
+			if(c2 == ']') {
+				context = createBNode();
+				skipWSC();
+			}
+			else {
+				unread(c2);
+				unread(c);
+			}
+			c = read();
+		}
+		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
 			unread(c);
 
 			Value value = parseValue();

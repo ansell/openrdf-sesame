@@ -90,6 +90,22 @@ public class TriGParserCustomTest {
 	}
 
 	@Test
+	public void testAnonymousGraph1()
+		throws Exception
+	{
+		Rio.parse(new StringReader("PREFIX : <http://example/>\n GRAPH [] { :s :p :o }"), "",
+				RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testAnonymousGraph2()
+		throws Exception
+	{
+		Rio.parse(new StringReader("PREFIX : <http://example/>\n [] { :s :p :o }"), "",
+				RDFFormat.TRIG);
+	}
+	
+	@Test
 	public void testSupportedSettings()
 		throws Exception
 	{
