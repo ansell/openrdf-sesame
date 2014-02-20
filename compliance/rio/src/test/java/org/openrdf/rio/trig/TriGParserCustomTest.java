@@ -77,9 +77,18 @@ public class TriGParserCustomTest {
 	public void testSPARQLGraphKeyword()
 		throws Exception
 	{
-		Rio.parse(new StringReader("GRAPH <urn:a> { [] <http://www.example.net/test> \"Foo\" }"), "", RDFFormat.TRIG);
+		Rio.parse(new StringReader("GRAPH <urn:a> { [] <http://www.example.net/test> \"Foo\" }"), "",
+				RDFFormat.TRIG);
 	}
-	
+
+	@Test
+	public void testTrailingSemicolon()
+		throws Exception
+	{
+		Rio.parse(new StringReader("{<http://example/s> <http://example/p> <http://example/o> ;}"), "",
+				RDFFormat.TRIG);
+	}
+
 	@Test
 	public void testSupportedSettings()
 		throws Exception

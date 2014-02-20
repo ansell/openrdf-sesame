@@ -405,7 +405,7 @@ public class TurtleParser extends RDFParserBase {
 			int c = skipWSC();
 
 			if (c == '.' || // end of triple
-					c == ']') // end of predicateObjectList inside blank node
+					c == ']' || c == '}') // end of predicateObjectList inside blank node
 			{
 				break;
 			}
