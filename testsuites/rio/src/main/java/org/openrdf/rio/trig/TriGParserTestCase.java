@@ -202,8 +202,7 @@ public abstract class TriGParserTestCase {
 				continue;
 			}
 			else if (nextTestName.contains("UTF8_boundaries")
-					|| nextTestName.contains("PN_CHARS_BASE_character_boundaries")
-					|| nextTestName.contains("localName_with_non_leading_extras"))
+					|| nextTestName.contains("PN_CHARS_BASE_character_boundaries"))
 			{
 				// FIXME: UTF8 support not implemented yet
 				System.err.println("Ignoring TriG Positive Parser Eval Test: " + nextInputURL);

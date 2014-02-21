@@ -371,7 +371,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 				writer.write(id.charAt(0));
 			}
 			for (int i = 1; i < id.length() - 1; i++) {
-				if (TurtleUtil.isNameChar(id.charAt(i))) {
+				if (TurtleUtil.isPN_CHARS(id.charAt(i))) {
 					writer.write(id.charAt(i));
 				}
 				else {

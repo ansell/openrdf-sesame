@@ -45,7 +45,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 public class TriGParserCustomTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(10000);
+	public Timeout timeout = new Timeout(1000000);
 
 	private ValueFactory vf;
 
@@ -114,7 +114,16 @@ public class TriGParserCustomTest {
 	public void testMinimalWhitespace()
 		throws Exception
 	{
-		Rio.parse(this.getClass().getResourceAsStream("/testcases/trig/trig-syntax-minimal-whitespace-01.trig"), "", RDFFormat.TRIG);
+		Rio.parse(
+				this.getClass().getResourceAsStream("/testcases/trig/trig-syntax-minimal-whitespace-01.trig"),
+				"", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testMinimalWhitespaceLine12()
+		throws Exception
+	{
+		Rio.parse(new StringReader("@prefix : <http://example/c/> . {_:s:p :o ._:s:p\"Alice\". _:s:p _:o .}"), "", RDFFormat.TRIG);
 	}
 
 	@Test

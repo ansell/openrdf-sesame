@@ -1140,7 +1140,7 @@ public class TurtleParser extends RDFParserBase {
 		if (c == -1) {
 			throwEOFException();
 		}
-		else if (!TurtleUtil.isNameStartChar(c)) {
+		else if (!TurtleUtil.isBLANK_NODE_LABEL_StartChar(c)) {
 			reportError("Expected a letter, found '" + (char)c + "'", BasicParserSettings.PRESERVE_BNODE_IDS);
 		}
 
@@ -1151,11 +1151,11 @@ public class TurtleParser extends RDFParserBase {
 		c = read();
 
 		// If we would never go into the loop we must unread now
-		if (!TurtleUtil.isNameChar(c)) {
+		if (!TurtleUtil.isBLANK_NODE_LABEL_Char(c)) {
 			unread(c);
 		}
 
-		while (TurtleUtil.isNameChar(c)) {
+		while (TurtleUtil.isBLANK_NODE_LABEL_Char(c)) {
 			int previous = c;
 			c = read();
 
@@ -1165,7 +1165,7 @@ public class TurtleParser extends RDFParserBase {
 				break;
 			}
 			name.append((char)previous);
-			if (!TurtleUtil.isNameChar(c)) {
+			if (!TurtleUtil.isBLANK_NODE_LABEL_Char(c)) {
 				unread(c);
 			}
 		}
@@ -1270,7 +1270,9 @@ public class TurtleParser extends RDFParserBase {
 	protected int read()
 		throws IOException
 	{
-		return reader.read();
+		int next = reader.read();
+		// System.out.print((char)next);
+		return next;
 	}
 
 	protected void unread(int c)
