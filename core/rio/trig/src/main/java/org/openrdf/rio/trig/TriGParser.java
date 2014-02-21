@@ -136,7 +136,7 @@ public class TriGParser extends TurtleParser {
 		if (c == '[') {
 			skipWSC();
 			c2 = read();
-			if(c2 == ']') {
+			if (c2 == ']') {
 				context = createBNode();
 				skipWSC();
 			}
@@ -146,7 +146,9 @@ public class TriGParser extends TurtleParser {
 			}
 			c = read();
 		}
-		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
+		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
+				|| (c == '_' && c2 == ':'))
+		{
 			unread(c);
 
 			Value value = parseValue();
@@ -165,11 +167,14 @@ public class TriGParser extends TurtleParser {
 			context = null;
 		}
 
-		if (c == ':') {
-			verifyCharacterOrFail(read(), "-");
-			skipWSC();
-			c = read();
-		}
+		// The following syntax for naming graph seems to have only appeared in
+		// the 2005/06/06 draft of the specification, as it doesn't appear in the
+		// 2007 or later drafts
+		// if (c == ':') {
+		// verifyCharacterOrFail(read(), "-");
+		// skipWSC();
+		// c = read();
+		// }
 
 		verifyCharacterOrFail(c, "{");
 
