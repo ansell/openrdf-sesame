@@ -297,11 +297,17 @@ public class TurtleParser extends RDFParserBase {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
 			}
+			if (directive.length() > 7) {
+				unread(directive.substring(7));
+			}
 			parsePrefixID();
 		}
 		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("@base")) {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
+			}
+			if (directive.length() > 5) {
+				unread(directive.substring(5));
 			}
 			parseBase();
 		}
