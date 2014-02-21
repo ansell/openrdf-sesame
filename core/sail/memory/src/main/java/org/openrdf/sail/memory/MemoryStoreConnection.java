@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.apple.dnssd.TXTRecord;
+
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
@@ -174,7 +176,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			}
 		}
 	}
-	
+
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
 		return new EvaluationStrategyImpl(tripleSource, dataset);
 	}
@@ -261,9 +263,15 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			if (transactionActive()) {
-				snapshot++;
+			if (transactionActive()) { 
+				// current connection has begun a transaction
 				readMode = ReadMode.TRANSACTION;
+				
+				// verify that we have either obtained the transaction lock or that no other transaction
+				// has it.
+				if (txnLockAcquired || !store.isTransactionLockActive()) { 
+					snapshot++;
+				}
 			}
 
 			CloseableIteration<MemStatement, SailException> iter;

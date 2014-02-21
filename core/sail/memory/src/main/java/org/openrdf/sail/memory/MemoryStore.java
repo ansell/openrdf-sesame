@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.apple.dnssd.TXTRecord;
+
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
@@ -418,6 +420,10 @@ public class MemoryStore extends NotifyingSailBase {
 		catch (InterruptedException e) {
 			throw new SailException(e);
 		}
+	}
+	
+	protected boolean isTransactionLockActive() throws SailException {
+		return txnLockManager.tryExclusiveLock() == null;
 	}
 
 	protected int size() {
