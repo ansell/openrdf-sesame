@@ -171,14 +171,14 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
 			String nextBaseUrl = testBaseUrl + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
-					createTurtleParser(), FailureMode.IGNORE_FAILURE));
+					createTurtleParser(), FailureMode.DO_NOT_IGNORE_FAILURE));
 		}
 
 		queryResult.close();
@@ -257,14 +257,14 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
 			String nextBaseUrl = testBaseUrl + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
-					createTurtleParser(), FailureMode.IGNORE_FAILURE));
+					createTurtleParser(), FailureMode.DO_NOT_IGNORE_FAILURE));
 		}
 
 		queryResult.close();
@@ -326,7 +326,7 @@ public abstract class TurtleParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			URI nextTestUri = (URI)bindingSet.getValue("test");
-			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
+			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
 			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(), manifestBaseUrl);
 			String nextInputURL = fileBasePath + nextTestFile;
 
