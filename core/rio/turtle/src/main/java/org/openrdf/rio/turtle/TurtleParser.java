@@ -1103,12 +1103,24 @@ public class TurtleParser extends RDFParserBase {
 			unread(c);
 		}
 
+		String localNameString = localName.toString();
+
+		for (int i = 0; i < localNameString.length(); i++) {
+			if (localNameString.charAt(i) == '%') {
+				if (i > localNameString.length() - 3 || !ASCIIUtil.isHex(localNameString.charAt(i + 1))
+						|| !ASCIIUtil.isHex(localNameString.charAt(i + 2)))
+				{
+					reportFatalError("Found incomplete percent-encoded sequence: " + localNameString);
+				}
+			}
+		}
+
 		// if (c == '.') {
 		// reportFatalError("Blank node identifier must not end in a '.'");
 		// }
 
 		// Note: namespace has already been resolved
-		return createURI(namespace + localName.toString());
+		return createURI(namespace + localNameString);
 	}
 
 	private char readLocalEscapedChar()

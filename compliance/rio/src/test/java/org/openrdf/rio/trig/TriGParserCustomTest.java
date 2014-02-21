@@ -123,7 +123,21 @@ public class TriGParserCustomTest {
 	public void testMinimalWhitespaceLine12()
 		throws Exception
 	{
-		Rio.parse(new StringReader("@prefix : <http://example/c/> . {_:s:p :o ._:s:p\"Alice\". _:s:p _:o .}"), "", RDFFormat.TRIG);
+		Rio.parse(new StringReader("@prefix : <http://example/c/> . {_:s:p :o ._:s:p\"Alice\". _:s:p _:o .}"),
+				"", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testBadPname02()
+		throws Exception
+	{
+		try {
+			Rio.parse(new StringReader("@prefix : <http://example/> . {:a%2 :p :o .}"), "", RDFFormat.TRIG);
+			fail("Did not receive expected exception");
+		}
+		catch (RDFParseException e) {
+
+		}
 	}
 
 	@Test
