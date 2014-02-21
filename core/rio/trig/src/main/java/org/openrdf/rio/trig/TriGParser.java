@@ -114,7 +114,7 @@ public class TriGParser extends TurtleParser {
 				verifyCharacterOrFail(read(), ".");
 			}
 		}
-		else if (directive.equalsIgnoreCase("GRAPH")) {
+		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("GRAPH")) {
 			// Do not unread the directive if it was SPARQL GRAPH
 			// Just continue with TriG parsing at this point
 			skipWSC();
