@@ -48,7 +48,7 @@ public abstract class TriGParserTestCase {
 	/**
 	 * Base URL for W3C TriG tests.
 	 */
-	protected static String TESTS_W3C_BASE_URL = "http://www.w3.org/2013/TrigTests/";
+	protected static String TESTS_W3C_BASE_URL = "http://www.w3.org/2013/TriGTests/";
 
 	/**
 	 * Base directory for W3C TriG tests
@@ -57,9 +57,9 @@ public abstract class TriGParserTestCase {
 
 	private static String TEST_W3C_MANIFEST_URL = TEST_W3C_FILE_BASE_PATH + "manifest.ttl";
 
-	private static String TEST_W3C_MANIFEST_URI_BASE = "http://www.w3.org/2013/TrigTests/manifest.ttl#";
+	private static String TEST_W3C_MANIFEST_URI_BASE = "http://www.w3.org/2013/TriGTests/manifest.ttl#";
 
-	private static String TEST_W3C_TEST_URI_BASE = "http://www.w3.org/2013/TrigTests/";
+	private static String TEST_W3C_TEST_URI_BASE = "http://www.w3.org/2013/TriGTests/";
 
 	/*--------------------*
 	 * Static initializer *
