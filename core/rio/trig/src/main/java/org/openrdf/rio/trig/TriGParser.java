@@ -132,12 +132,14 @@ public class TriGParser extends TurtleParser {
 	{
 		int c = read();
 		int c2 = peek();
-
+		Resource contextOrSubject = null;
+		boolean foundContextOrSubject = false;
 		if (c == '[') {
 			skipWSC();
 			c2 = read();
 			if (c2 == ']') {
-				context = createBNode();
+				contextOrSubject = createBNode();
+				foundContextOrSubject = true;
 				skipWSC();
 			}
 			else {
@@ -154,9 +156,13 @@ public class TriGParser extends TurtleParser {
 			Value value = parseValue();
 
 			if (value instanceof Resource) {
-				context = (Resource)value;
+				contextOrSubject = (Resource)value;
+				foundContextOrSubject = true;
 			}
 			else {
+				// NOTE: If a user parses Turtle using TriG, then the following
+				// could actually be "Illegal subject name", but it should still
+				// hold
 				reportFatalError("Illegal graph name: " + value);
 			}
 
@@ -164,7 +170,7 @@ public class TriGParser extends TurtleParser {
 			c = read();
 		}
 		else {
-			context = null;
+			contextOrSubject = null;
 		}
 
 		// The following syntax for naming graph seems to have only appeared in
@@ -176,30 +182,46 @@ public class TriGParser extends TurtleParser {
 		// c = read();
 		// }
 
-		verifyCharacterOrFail(c, "{");
-
-		c = skipWSC();
-
-		if (c != '}') {
-			parseTriples();
+		if (c == '{') {
+			context = contextOrSubject;
 
 			c = skipWSC();
 
-			while (c == '.') {
-				read();
-
-				c = skipWSC();
-
-				if (c == '}') {
-					break;
-				}
-
+			if (c != '}') {
 				parseTriples();
 
 				c = skipWSC();
-			}
 
-			verifyCharacterOrFail(c, "}");
+				while (c == '.') {
+					read();
+
+					c = skipWSC();
+
+					if (c == '}') {
+						break;
+					}
+
+					parseTriples();
+
+					c = skipWSC();
+				}
+
+				verifyCharacterOrFail(c, "}");
+			}
+		}
+		else {
+			// Did not turn out to be a graph, so assign it to subject instead and
+			// parse from here to triples
+			if(foundContextOrSubject) {
+				subject = contextOrSubject;
+				unread(c);
+				parsePredicateObjectList();
+			}
+			// Or if we didn't recognise anything, just parse as Turtle
+			else {
+				unread(c);
+				parseTriples();
+			}
 		}
 
 		read();
