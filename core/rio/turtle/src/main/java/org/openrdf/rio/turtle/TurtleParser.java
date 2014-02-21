@@ -267,19 +267,39 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		if (directive.equalsIgnoreCase("prefix") || directive.equals("@prefix")) {
+		if (directive.length() >= 7 && directive.substring(0, 7).equals("@prefix")) {
+			if (directive.length() > 7) {
+				unread(directive.substring(7));
+			}
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("base") || directive.equals("@base")) {
+		else if (directive.length() >= 5 && directive.substring(0, 5).equals("@base")) {
+			if (directive.length() > 5) {
+				unread(directive.substring(5));
+			}
 			parseBase();
 		}
-		else if (directive.equalsIgnoreCase("@prefix")) {
+		else if (directive.length() >= 6 && directive.substring(0, 6).equalsIgnoreCase("prefix")) {
+			// SPARQL doesn't require whitespace after directive, so must unread if
+			// we found part of the prefixID
+			if (directive.length() > 6) {
+				unread(directive.substring(6));
+			}
+			parsePrefixID();
+		}
+		else if ((directive.length() >= 4 && directive.substring(0, 4).equalsIgnoreCase("base"))) {
+			if (directive.length() > 4) {
+				unread(directive.substring(4));
+			}
+			parseBase();
+		}
+		else if (directive.length() >= 7 && directive.substring(0, 7).equalsIgnoreCase("@prefix")) {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
 			}
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("@base")) {
+		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("@base")) {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
 			}
@@ -405,7 +425,8 @@ public class TurtleParser extends RDFParserBase {
 			int c = skipWSC();
 
 			if (c == '.' || // end of triple
-					c == ']' || c == '}') // end of predicateObjectList inside blank node
+					c == ']' || c == '}') // end of predicateObjectList inside blank
+													// node
 			{
 				break;
 			}
@@ -1138,8 +1159,7 @@ public class TurtleParser extends RDFParserBase {
 				break;
 			}
 			name.append((char)previous);
-			if(!TurtleUtil.isNameChar(c))
-			{
+			if (!TurtleUtil.isNameChar(c)) {
 				unread(c);
 			}
 		}

@@ -111,6 +111,13 @@ public class TriGParserCustomTest {
 	}
 
 	@Test
+	public void testMinimalWhitespace()
+		throws Exception
+	{
+		Rio.parse(this.getClass().getResourceAsStream("/testcases/trig/trig-syntax-minimal-whitespace-01.trig"), "", RDFFormat.TRIG);
+	}
+
+	@Test
 	public void testSupportedSettings()
 		throws Exception
 	{

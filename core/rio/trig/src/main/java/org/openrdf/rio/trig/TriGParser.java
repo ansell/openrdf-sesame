@@ -104,15 +104,17 @@ public class TriGParser extends TurtleParser {
 
 		String directive = sb.toString();
 
-		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix")
-				|| directive.equalsIgnoreCase("base"))
+		if (directive.startsWith("@")) {
+			parseDirective(directive);
+			skipWSC();
+			verifyCharacterOrFail(read(), ".");
+		}
+		else if ((directive.length() >= 6 && directive.substring(0, 6).equalsIgnoreCase("prefix"))
+				|| (directive.length() >= 4 && directive.substring(0, 4).equalsIgnoreCase("base")))
 		{
 			parseDirective(directive);
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
-			if (directive.startsWith("@")) {
-				verifyCharacterOrFail(read(), ".");
-			}
 		}
 		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("GRAPH")) {
 			// Do not unread the directive if it was SPARQL GRAPH
@@ -212,7 +214,7 @@ public class TriGParser extends TurtleParser {
 		else {
 			// Did not turn out to be a graph, so assign it to subject instead and
 			// parse from here to triples
-			if(foundContextOrSubject) {
+			if (foundContextOrSubject) {
 				subject = contextOrSubject;
 				unread(c);
 				parsePredicateObjectList();
