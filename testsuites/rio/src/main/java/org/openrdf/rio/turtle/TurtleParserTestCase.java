@@ -178,7 +178,7 @@ public abstract class TurtleParserTestCase {
 			String nextBaseUrl = testBaseUrl + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
-					createTurtleParser(), FailureMode.DO_NOT_IGNORE_FAILURE));
+					createTurtleParser(), FailureMode.IGNORE_FAILURE));
 		}
 
 		queryResult.close();
@@ -264,7 +264,7 @@ public abstract class TurtleParserTestCase {
 			String nextBaseUrl = testBaseUrl + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
-					createTurtleParser(), FailureMode.DO_NOT_IGNORE_FAILURE));
+					createTurtleParser(), FailureMode.IGNORE_FAILURE));
 		}
 
 		queryResult.close();
