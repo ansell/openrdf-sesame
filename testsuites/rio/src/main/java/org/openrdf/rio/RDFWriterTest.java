@@ -156,6 +156,9 @@ public abstract class RDFWriterTest {
 			potentialSubjects.add(vf.createBNode());
 		}
 		for (int i = 0; i < 500; i++) {
+			potentialSubjects.add(vf.createBNode(Integer.toHexString(i)));
+		}
+		for (int i = 0; i < 500; i++) {
 			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i)));
 		}
 		for (int i = 0; i < 500; i++) {
