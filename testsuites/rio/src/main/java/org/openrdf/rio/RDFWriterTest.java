@@ -17,70 +17,200 @@
 package org.openrdf.rio;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
-
-import junit.framework.TestCase;
+import org.junit.rules.TemporaryFolder;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.model.vocabulary.EARL;
+import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.SESAME;
+import org.openrdf.model.vocabulary.SKOS;
+import org.openrdf.model.vocabulary.SP;
+import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * @author Arjohn Kampman
+ * @author Peter Ansell
  */
 public abstract class RDFWriterTest {
+
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
+
+	/**
+	 * One prng per testsuite run
+	 */
+	private static final Random prng = new SecureRandom();
 
 	protected RDFWriterFactory rdfWriterFactory;
 
 	protected RDFParserFactory rdfParserFactory;
 
+	protected ValueFactory vf;
+
+	private BNode bnode;
+
+	private BNode bnodeEmpty;
+
+	private BNode bnodeNumeric;
+
+	private BNode bnodeDashes;
+
+	private BNode bnodeSpecialChars;
+
+	private URI uri1;
+
+	private URI uri2;
+
+	private Literal plainLit;
+
+	private Literal dtLit;
+
+	private Literal langLit;
+
+	private Literal litWithNewlineAtEnd;
+
+	private Literal litWithNewlineAtStart;
+
+	private Literal litWithMultipleNewlines;
+
+	private Literal litWithSingleQuotes;
+
+	private Literal litWithDoubleQuotes;
+
+	private String exNs;
+
+	private List<Resource> potentialSubjects;
+
+	private List<Value> potentialObjects;
+
+	private List<URI> potentialPredicates;
+
 	protected RDFWriterTest(RDFWriterFactory writerF, RDFParserFactory parserF) {
 		rdfWriterFactory = writerF;
 		rdfParserFactory = parserF;
+
+		vf = new ValueFactoryImpl();
+
+		exNs = "http://example.org/";
+
+		bnode = vf.createBNode("anon");
+		bnodeEmpty = vf.createBNode("");
+		bnodeNumeric = vf.createBNode("123");
+		bnodeDashes = vf.createBNode("a-b");
+		bnodeSpecialChars = vf.createBNode("$%^&*()!@#$a-b<>?\"'[]{}|\\");
+		uri1 = vf.createURI(exNs, "uri1");
+		uri2 = vf.createURI(exNs, "uri2");
+		plainLit = vf.createLiteral("plain");
+		dtLit = vf.createLiteral(1);
+		langLit = vf.createLiteral("test", "en");
+		litWithNewlineAtEnd = vf.createLiteral("literal with newline at end\n");
+		litWithNewlineAtStart = vf.createLiteral("\nliteral with newline at start");
+		litWithMultipleNewlines = vf.createLiteral("\nliteral \nwith newline at start\n");
+		litWithSingleQuotes = vf.createLiteral("'''some single quote text''' - abc");
+		litWithDoubleQuotes = vf.createLiteral("\"\"\"some double quote text\"\"\" - abc");
+
+		potentialSubjects = new ArrayList<Resource>();
+		potentialSubjects.add(bnode);
+		potentialSubjects.add(bnodeEmpty);
+		potentialSubjects.add(bnodeNumeric);
+		potentialSubjects.add(bnodeDashes);
+		potentialSubjects.add(bnodeSpecialChars);
+		potentialSubjects.add(uri1);
+		potentialSubjects.add(uri2);
+		for (int i = 0; i < 500; i++) {
+			potentialSubjects.add(vf.createBNode());
+		}
+		for (int i = 0; i < 500; i++) {
+			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i)));
+		}
+		for (int i = 0; i < 500; i++) {
+			potentialSubjects.add(vf.createURI(exNs + Integer.toHexString(i) + "/a"
+					+ Integer.toOctalString(i % 133)));
+		}
+		Collections.shuffle(potentialSubjects, prng);
+
+		potentialObjects = new ArrayList<Value>();
+		potentialObjects.addAll(potentialSubjects);
+		potentialObjects.add(plainLit);
+		potentialObjects.add(dtLit);
+		potentialObjects.add(langLit);
+		// FIXME: SES-879: The following break the RDF/XML parser/writer
+		// combination in terms of getting the same number of triples back as we
+		// start with
+		// potentialObjects.add(litWithNewlineAtEnd);
+		// potentialObjects.add(litWithNewlineAtStart);
+		// potentialObjects.add(litWithMultipleNewlines);
+		potentialObjects.add(litWithSingleQuotes);
+		potentialObjects.add(litWithDoubleQuotes);
+		Collections.shuffle(potentialObjects, prng);
+
+		potentialPredicates = new ArrayList<URI>();
+		// In particular, the following fuzz tests the ability of the parser to
+		// cater for rdf:type predicates with literal endings, in unknown
+		// situations. All parsers/writers should preserve these statements, even
+		// if they have shortcuts for URIs
+		potentialPredicates.add(RDF.TYPE);
+		potentialPredicates.add(RDF.NIL);
+		potentialPredicates.add(RDF.FIRST);
+		potentialPredicates.add(RDF.REST);
+		potentialPredicates.add(SKOS.ALT_LABEL);
+		potentialPredicates.add(SKOS.PREF_LABEL);
+		potentialPredicates.add(SKOS.BROADER_TRANSITIVE);
+		potentialPredicates.add(OWL.ONTOLOGY);
+		potentialPredicates.add(OWL.ONEOF);
+		potentialPredicates.add(DC.TITLE);
+		potentialPredicates.add(DCTERMS.ACCESS_RIGHTS);
+		potentialPredicates.add(FOAF.KNOWS);
+		potentialPredicates.add(EARL.SUBJECT);
+		potentialPredicates.add(RDFS.LABEL);
+		potentialPredicates.add(SP.DEFAULT_PROPERTY);
+		potentialPredicates.add(SP.TEXT_PROPERTY);
+		potentialPredicates.add(SP.BIND_CLASS);
+		potentialPredicates.add(SP.DOCUMENT_PROPERTY);
+		potentialPredicates.add(SPIN.LABEL_TEMPLATE_PROPERTY);
+		potentialPredicates.add(SESAME.DIRECTTYPE);
+		Collections.shuffle(potentialPredicates, prng);
 	}
 
 	@Test
 	public void testRoundTrip()
 		throws RDFHandlerException, IOException, RDFParseException
 	{
-		String ex = "http://example.org/";
-
-		ValueFactory vf = new ValueFactoryImpl();
-		BNode bnode = vf.createBNode("anon");
-		BNode bnodeEmpty = vf.createBNode("");
-		BNode bnodeNumeric = vf.createBNode("123");
-		BNode bnodeDashes = vf.createBNode("a-b");
-		BNode bnodeSpecialChars = vf.createBNode("$%^&*()!@#$a-b<>?\"'[]{}|\\");
-		URI uri1 = vf.createURI(ex, "uri1");
-		URI uri2 = vf.createURI(ex, "uri2");
-		Literal plainLit = vf.createLiteral("plain");
-		Literal dtLit = vf.createLiteral(1);
-		Literal langLit = vf.createLiteral("test", "en");
-		Literal litWithNewlineAtEnd = vf.createLiteral("literal with newline at end\n");
-		Literal litWithNewlineAtStart = vf.createLiteral("\nliteral with newline at start");
-		Literal litWithMultipleNewlines = vf.createLiteral("\nliteral \nwith newline at start\n");
-		Literal litWithSingleQuotes = vf.createLiteral("'''some single quote text''' - abc");
-		Literal litWithDoubleQuotes = vf.createLiteral("\"\"\"some double quote text\"\"\" - abc");
-
 		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
 		Statement st2 = vf.createStatement(bnodeEmpty, uri1, plainLit);
 		Statement st3 = vf.createStatement(bnodeNumeric, uri1, plainLit);
@@ -101,7 +231,7 @@ public abstract class RDFWriterTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
-		rdfWriter.handleNamespace("ex", ex);
+		rdfWriter.handleNamespace("ex", exNs);
 		rdfWriter.startRDF();
 		rdfWriter.handleStatement(st1);
 		rdfWriter.handleStatement(st2);
@@ -138,7 +268,7 @@ public abstract class RDFWriterTest {
 
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
 			assertTrue(model.getNamespaces().size() >= 1);
-			assertEquals(ex, model.getNamespace("ex").getName());
+			assertEquals(exNs, model.getNamespace("ex").getName());
 		}
 
 		// Test for four unique statements for blank nodes in subject position
@@ -173,7 +303,6 @@ public abstract class RDFWriterTest {
 		String ns2 = "b:";
 		String ns3 = "c:";
 
-		ValueFactory vf = new ValueFactoryImpl();
 		URI uri1 = vf.createURI(ns1, "r1");
 		URI uri2 = vf.createURI(ns2, "r2");
 		URI uri3 = vf.createURI(ns3, "r3");
@@ -211,7 +340,6 @@ public abstract class RDFWriterTest {
 		String ns2 = "b:";
 		String ns3 = "c:";
 
-		ValueFactory vf = new ValueFactoryImpl();
 		URI uri1 = vf.createURI(ns1, "r1");
 		URI uri2 = vf.createURI(ns2, "r2");
 		URI uri3 = vf.createURI(ns3, "r3");
@@ -250,7 +378,85 @@ public abstract class RDFWriterTest {
 		rdfWriter.handleNamespace("", RDF.NAMESPACE);
 		rdfWriter.handleNamespace("rdf", RDF.NAMESPACE);
 		rdfWriter.startRDF();
-		rdfWriter.handleStatement(new StatementImpl(new URIImpl(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
+		rdfWriter.handleStatement(vf.createStatement(vf.createURI(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
 		rdfWriter.endRDF();
+	}
+
+	/**
+	 * Fuzz and performance test designed to find cases where parsers and/or
+	 * writers are incompatible with each other.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testPerformance()
+		throws Exception
+	{
+		Model model = new LinkedHashModel();
+
+		for (int i = 0; i < 200000; i++) {
+			model.add(potentialSubjects.get(prng.nextInt(potentialSubjects.size())),
+					potentialPredicates.get(prng.nextInt(potentialPredicates.size())),
+					potentialObjects.get(prng.nextInt(potentialObjects.size())));
+		}
+
+		System.out.println("Test statements size: " + model.size() + " (" + rdfWriterFactory.getRDFFormat()
+				+ ")");
+		assertFalse("Did not generate any test statements", model.isEmpty());
+
+		File testFile = tempDir.newFile("performancetest"
+				+ rdfWriterFactory.getRDFFormat().getDefaultFileExtension());
+
+		FileOutputStream out = new FileOutputStream(testFile);
+		try {
+			long startWrite = System.currentTimeMillis();
+			RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+			// Test prefixed URIs for only some of the URIs available
+			rdfWriter.handleNamespace(RDF.PREFIX, RDF.NAMESPACE);
+			rdfWriter.handleNamespace(SKOS.PREFIX, SKOS.NAMESPACE);
+			rdfWriter.handleNamespace(FOAF.PREFIX, FOAF.NAMESPACE);
+			rdfWriter.handleNamespace(EARL.PREFIX, EARL.NAMESPACE);
+			rdfWriter.handleNamespace("ex", exNs);
+			rdfWriter.startRDF();
+
+			for (Statement nextSt : model) {
+				rdfWriter.handleStatement(nextSt);
+			}
+
+			rdfWriter.endRDF();
+			long endWrite = System.currentTimeMillis();
+			System.out.println("Write took: " + (endWrite - startWrite) + " ms ("
+					+ rdfWriterFactory.getRDFFormat() + ")");
+		}
+		finally {
+			out.close();
+		}
+
+		FileInputStream in = new FileInputStream(testFile);
+		try {
+			RDFParser rdfParser = rdfParserFactory.getParser();
+			ParserConfig config = new ParserConfig();
+			config.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+			config.set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+			rdfParser.setParserConfig(config);
+			rdfParser.setValueFactory(vf);
+			Model parsedModel = new LinkedHashModel();
+			rdfParser.setRDFHandler(new StatementCollector(parsedModel));
+			long startParse = System.currentTimeMillis();
+			rdfParser.parse(in, "foo:bar");
+			long endParse = System.currentTimeMillis();
+			System.out.println("Parse took: " + (endParse - startParse) + " ms ("
+					+ rdfParserFactory.getRDFFormat() + ")");
+
+			assertEquals("Unexpected number of statements", model.size(), parsedModel.size());
+
+			if (rdfParser.getRDFFormat().supportsNamespaces()) {
+				assertTrue(parsedModel.getNamespaces().size() >= 5);
+				assertEquals(exNs, parsedModel.getNamespace("ex").getName());
+			}
+		}
+		finally {
+			in.close();
+		}
 	}
 }
