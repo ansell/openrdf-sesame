@@ -427,6 +427,7 @@ public abstract class RDFWriterTest {
 			long endWrite = System.currentTimeMillis();
 			System.out.println("Write took: " + (endWrite - startWrite) + " ms ("
 					+ rdfWriterFactory.getRDFFormat() + ")");
+			System.out.println("File size (bytes): " + testFile.length());
 		}
 		finally {
 			out.close();
