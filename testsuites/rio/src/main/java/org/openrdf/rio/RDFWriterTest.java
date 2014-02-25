@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,6 +88,10 @@ public abstract class RDFWriterTest {
 
 	private BNode bnodeEmpty;
 
+	private BNode bnodeSingleLetter;
+
+	private BNode bnodeDuplicateLetter;
+
 	private BNode bnodeNumeric;
 
 	private BNode bnodeDashes;
@@ -130,6 +136,8 @@ public abstract class RDFWriterTest {
 
 		bnode = vf.createBNode("anon");
 		bnodeEmpty = vf.createBNode("");
+		bnodeSingleLetter = vf.createBNode("a");
+		bnodeDuplicateLetter = vf.createBNode("aa");
 		bnodeNumeric = vf.createBNode("123");
 		bnodeDashes = vf.createBNode("a-b");
 		bnodeSpecialChars = vf.createBNode("$%^&*()!@#$a-b<>?\"'[]{}|\\");
@@ -147,6 +155,8 @@ public abstract class RDFWriterTest {
 		potentialSubjects = new ArrayList<Resource>();
 		potentialSubjects.add(bnode);
 		potentialSubjects.add(bnodeEmpty);
+		potentialSubjects.add(bnodeSingleLetter);
+		potentialSubjects.add(bnodeDuplicateLetter);
 		potentialSubjects.add(bnodeNumeric);
 		potentialSubjects.add(bnodeDashes);
 		potentialSubjects.add(bnodeSpecialChars);
@@ -212,6 +222,19 @@ public abstract class RDFWriterTest {
 
 	@Test
 	public void testRoundTrip()
+		throws Exception
+	{
+		testRoundTripInternal(false);
+	}
+
+	@Test
+	public void testRoundTripPreserveBNodeIds()
+		throws Exception
+	{
+		testRoundTripInternal(true);
+	}
+
+	private void testRoundTripInternal(boolean preserveBNodeIds)
 		throws RDFHandlerException, IOException, RDFParseException
 	{
 		Statement st1 = vf.createStatement(bnode, uri1, plainLit);
@@ -258,6 +281,9 @@ public abstract class RDFWriterTest {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		ParserConfig config = new ParserConfig();
+		if (preserveBNodeIds) {
+			config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+		}
 		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
 		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
 		rdfParser.setParserConfig(config);
@@ -386,6 +412,53 @@ public abstract class RDFWriterTest {
 	}
 
 	/**
+	 * Test specifically for bnode collisions of the form "a" -> "aa", with
+	 * preserve BNode ids setting on.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testSES2030BNodeCollisionsPreserveBNodeIds()
+		throws Exception
+	{
+		testSES2030BNodeCollisionsInternal(true);
+	}
+
+	/**
+	 * Test specifically for bnode collisions of the form "a" -> "aa", with
+	 * preserve BNode ids setting off.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testSES2030BNodeCollisions()
+		throws Exception
+	{
+		testSES2030BNodeCollisionsInternal(false);
+	}
+
+	private void testSES2030BNodeCollisionsInternal(boolean preserveBNodeIDs)
+		throws Exception
+	{
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		RDFWriter rdfWriter = rdfWriterFactory.getWriter(output);
+		rdfWriter.startRDF();
+		rdfWriter.handleStatement(vf.createStatement(uri1, uri2, bnodeSingleLetter));
+		rdfWriter.handleStatement(vf.createStatement(uri1, uri2, bnodeDuplicateLetter));
+		rdfWriter.endRDF();
+		RDFParser rdfParser = rdfParserFactory.getParser();
+		ParserConfig config = new ParserConfig();
+		if (preserveBNodeIDs) {
+			config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+		}
+		rdfParser.setParserConfig(config);
+		Model parsedModel = new LinkedHashModel();
+		rdfParser.setRDFHandler(new StatementCollector(parsedModel));
+		rdfParser.parse(new ByteArrayInputStream(output.toByteArray()), "");
+		assertEquals(2, parsedModel.size());
+	}
+
+	/**
 	 * Fuzz and performance test designed to find cases where parsers and/or
 	 * writers are incompatible with each other.
 	 * 
@@ -395,9 +468,28 @@ public abstract class RDFWriterTest {
 	public void testPerformance()
 		throws Exception
 	{
+		testPerformanceInternal(true);
+	}
+
+	/**
+	 * Tests raw parser performance, without checking for consistency, by not
+	 * storing the resulting triples.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testPerformanceNoHandling()
+		throws Exception
+	{
+		testPerformanceInternal(false);
+	}
+
+	private void testPerformanceInternal(boolean storeParsedStatements)
+		throws Exception
+	{
 		Model model = new LinkedHashModel();
 
-		for (int i = 0; i < 200000; i++) {
+		for (int i = 0; i < 400000; i++) {
 			model.add(potentialSubjects.get(prng.nextInt(potentialSubjects.size())),
 					potentialPredicates.get(prng.nextInt(potentialPredicates.size())),
 					potentialObjects.get(prng.nextInt(potentialObjects.size())));
@@ -445,18 +537,22 @@ public abstract class RDFWriterTest {
 			rdfParser.setParserConfig(config);
 			rdfParser.setValueFactory(vf);
 			Model parsedModel = new LinkedHashModel();
-			rdfParser.setRDFHandler(new StatementCollector(parsedModel));
+			if (storeParsedStatements) {
+				rdfParser.setRDFHandler(new StatementCollector(parsedModel));
+			}
 			long startParse = System.currentTimeMillis();
 			rdfParser.parse(in, "foo:bar");
 			long endParse = System.currentTimeMillis();
 			System.out.println("Parse took: " + (endParse - startParse) + " ms ("
 					+ rdfParserFactory.getRDFFormat() + ")");
 
-			assertEquals("Unexpected number of statements", model.size(), parsedModel.size());
+			if (storeParsedStatements) {
+				assertEquals("Unexpected number of statements", model.size(), parsedModel.size());
 
-			if (rdfParser.getRDFFormat().supportsNamespaces()) {
-				assertTrue(parsedModel.getNamespaces().size() >= 5);
-				assertEquals(exNs, parsedModel.getNamespace("ex").getName());
+				if (rdfParser.getRDFFormat().supportsNamespaces()) {
+					assertTrue(parsedModel.getNamespaces().size() >= 5);
+					assertEquals(exNs, parsedModel.getNamespace("ex").getName());
+				}
 			}
 		}
 		finally {
