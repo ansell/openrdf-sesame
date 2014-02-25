@@ -399,7 +399,7 @@ public abstract class RDFWriterTest {
 					potentialPredicates.get(prng.nextInt(potentialPredicates.size())),
 					potentialObjects.get(prng.nextInt(potentialObjects.size())));
 		}
-
+		System.out.println("Test class: " + this.getClass().getName());
 		System.out.println("Test statements size: " + model.size() + " (" + rdfWriterFactory.getRDFFormat()
 				+ ")");
 		assertFalse("Did not generate any test statements", model.isEmpty());
