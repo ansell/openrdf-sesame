@@ -25,8 +25,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.apple.dnssd.TXTRecord;
-
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;

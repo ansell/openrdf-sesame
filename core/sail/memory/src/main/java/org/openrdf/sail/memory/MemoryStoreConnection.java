@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.apple.dnssd.TXTRecord;
-
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
