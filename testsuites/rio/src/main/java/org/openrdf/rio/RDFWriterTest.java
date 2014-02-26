@@ -191,9 +191,15 @@ public abstract class RDFWriterTest {
 		// FIXME: SES-879: The following break the RDF/XML parser/writer
 		// combination in terms of getting the same number of triples back as we
 		// start with
-		// potentialObjects.add(litWithNewlineAtEnd);
-		// potentialObjects.add(litWithNewlineAtStart);
-		// potentialObjects.add(litWithMultipleNewlines);
+
+		if (rdfParserFactory.getRDFFormat().equals(RDFFormat.RDFXML)) {
+			// System.out.println("FIXME: SES-879: RDFXML Parser does not preserve literals starting or ending in newline character");
+		}
+		else {
+			potentialObjects.add(litWithNewlineAtEnd);
+			potentialObjects.add(litWithNewlineAtStart);
+			potentialObjects.add(litWithMultipleNewlines);
+		}
 		potentialObjects.add(litWithSingleQuotes);
 		potentialObjects.add(litWithDoubleQuotes);
 		Collections.shuffle(potentialObjects, prng);
