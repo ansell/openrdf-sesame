@@ -165,16 +165,19 @@ public abstract class RDFWriterTest {
 		potentialSubjects.add(bnodeSpecialChars);
 		potentialSubjects.add(uri1);
 		potentialSubjects.add(uri2);
-		for (int i = 0; i < 5; i++) {
-			// potentialSubjectsSet.add(vf.createBNode());
+		for (int i = 0; i < 50; i++) {
+			potentialSubjects.add(vf.createBNode());
 		}
-		for (int i = 0; i < 5; i++) {
-			// potentialSubjectsSet.add(vf.createBNode(Integer.toHexString(i)));
+		for (int i = 0; i < 50; i++) {
+			potentialSubjects.add(vf.createBNode(Integer.toHexString(i)));
 		}
-		for (int i = 1; i < 18; i++) {
+		for (int i = 1; i < 50; i++) {
 			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i).toUpperCase()));
 		}
-		for (int i = 0; i < 5; i++) {
+		for (int i = 1; i < 50; i++) {
+			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i).toLowerCase()));
+		}
+		for (int i = 0; i < 200; i++) {
 			potentialSubjects.add(vf.createURI(exNs + Integer.toHexString(i) + "/a"
 					+ Integer.toOctalString(i % 133)));
 		}
@@ -449,7 +452,7 @@ public abstract class RDFWriterTest {
 		int count = 18;
 		for (int i = 0; i < count; i++) {
 			BNode bNode2 = vf.createBNode("a" + Integer.toHexString(i).toUpperCase());
-			System.out.println(bNode2.getID());
+			// System.out.println(bNode2.getID());
 			rdfWriter.handleStatement(vf.createStatement(uri1, uri2, bNode2));
 		}
 		rdfWriter.endRDF();
@@ -501,7 +504,7 @@ public abstract class RDFWriterTest {
 	{
 		Model model = new LinkedHashModel();
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 100000; i++) {
 			model.add(potentialSubjects.get(prng.nextInt(potentialSubjects.size())),
 					potentialPredicates.get(prng.nextInt(potentialPredicates.size())),
 					potentialObjects.get(prng.nextInt(potentialObjects.size())));
@@ -558,14 +561,14 @@ public abstract class RDFWriterTest {
 			System.out.println("Parse took: " + (endParse - startParse) + " ms ("
 					+ rdfParserFactory.getRDFFormat() + ")");
 
-			boolean originalIsSubset = ModelUtil.isSubset(model, parsedModel);
-			boolean parsedIsSubset = ModelUtil.isSubset(parsedModel, model);
-			System.out.println("originalIsSubset=" + originalIsSubset);
-			System.out.println("parsedIsSubset=" + parsedIsSubset);
-
 			if (storeParsedStatements) {
 				if (model.size() != parsedModel.size()) {
 					if (model.size() < 1000) {
+						boolean originalIsSubset = ModelUtil.isSubset(model, parsedModel);
+						boolean parsedIsSubset = ModelUtil.isSubset(parsedModel, model);
+						System.out.println("originalIsSubset=" + originalIsSubset);
+						System.out.println("parsedIsSubset=" + parsedIsSubset);
+
 						System.out.println("Written statements=>");
 						IOUtils.writeLines(IOUtils.readLines(new FileInputStream(testFile)), "\n", System.out);
 						System.out.println("Parsed statements=>");
