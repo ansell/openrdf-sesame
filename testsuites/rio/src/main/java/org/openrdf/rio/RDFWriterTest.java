@@ -32,9 +32,12 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -162,16 +165,16 @@ public abstract class RDFWriterTest {
 		potentialSubjects.add(bnodeSpecialChars);
 		potentialSubjects.add(uri1);
 		potentialSubjects.add(uri2);
-		for (int i = 0; i < 500; i++) {
-			potentialSubjects.add(vf.createBNode());
+		for (int i = 0; i < 5; i++) {
+			// potentialSubjectsSet.add(vf.createBNode());
 		}
-		for (int i = 0; i < 500; i++) {
-			potentialSubjects.add(vf.createBNode(Integer.toHexString(i)));
+		for (int i = 0; i < 5; i++) {
+			// potentialSubjectsSet.add(vf.createBNode(Integer.toHexString(i)));
 		}
-		for (int i = 0; i < 500; i++) {
-			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i)));
+		for (int i = 1; i < 18; i++) {
+			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i).toUpperCase()));
 		}
-		for (int i = 0; i < 500; i++) {
+		for (int i = 0; i < 5; i++) {
 			potentialSubjects.add(vf.createURI(exNs + Integer.toHexString(i) + "/a"
 					+ Integer.toOctalString(i % 133)));
 		}
@@ -443,8 +446,12 @@ public abstract class RDFWriterTest {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(output);
 		rdfWriter.startRDF();
-		rdfWriter.handleStatement(vf.createStatement(uri1, uri2, bnodeSingleLetter));
-		rdfWriter.handleStatement(vf.createStatement(uri1, uri2, bnodeDuplicateLetter));
+		int count = 18;
+		for (int i = 0; i < count; i++) {
+			BNode bNode2 = vf.createBNode("a" + Integer.toHexString(i).toUpperCase());
+			System.out.println(bNode2.getID());
+			rdfWriter.handleStatement(vf.createStatement(uri1, uri2, bNode2));
+		}
 		rdfWriter.endRDF();
 		RDFParser rdfParser = rdfParserFactory.getParser();
 		ParserConfig config = new ParserConfig();
@@ -455,7 +462,12 @@ public abstract class RDFWriterTest {
 		Model parsedModel = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(parsedModel));
 		rdfParser.parse(new ByteArrayInputStream(output.toByteArray()), "");
-		assertEquals(2, parsedModel.size());
+		// if(potentialObjects.size() != parsedModel.size()) {
+		if (count != parsedModel.size()) {
+			Rio.write(parsedModel, System.out, RDFFormat.NQUADS);
+		}
+		assertEquals(count, parsedModel.size());
+		// assertEquals(potentialObjects.size(), parsedModel.size());
 	}
 
 	/**
@@ -489,7 +501,7 @@ public abstract class RDFWriterTest {
 	{
 		Model model = new LinkedHashModel();
 
-		for (int i = 0; i < 400000; i++) {
+		for (int i = 0; i < 100; i++) {
 			model.add(potentialSubjects.get(prng.nextInt(potentialSubjects.size())),
 					potentialPredicates.get(prng.nextInt(potentialPredicates.size())),
 					potentialObjects.get(prng.nextInt(potentialObjects.size())));
@@ -546,7 +558,20 @@ public abstract class RDFWriterTest {
 			System.out.println("Parse took: " + (endParse - startParse) + " ms ("
 					+ rdfParserFactory.getRDFFormat() + ")");
 
+			boolean originalIsSubset = ModelUtil.isSubset(model, parsedModel);
+			boolean parsedIsSubset = ModelUtil.isSubset(parsedModel, model);
+			System.out.println("originalIsSubset=" + originalIsSubset);
+			System.out.println("parsedIsSubset=" + parsedIsSubset);
+
 			if (storeParsedStatements) {
+				if (model.size() != parsedModel.size()) {
+					if (model.size() < 1000) {
+						System.out.println("Written statements=>");
+						IOUtils.writeLines(IOUtils.readLines(new FileInputStream(testFile)), "\n", System.out);
+						System.out.println("Parsed statements=>");
+						Rio.write(parsedModel, System.out, RDFFormat.NQUADS);
+					}
+				}
 				assertEquals("Unexpected number of statements", model.size(), parsedModel.size());
 
 				if (rdfParser.getRDFFormat().supportsNamespaces()) {
