@@ -215,7 +215,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	{
 		try {
 			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
-					subj, pred, obj, includeInferred, transactionActive(), contexts);
+					subj, pred, obj, includeInferred, (transactionActive() && txnLockAcquired), contexts);
 
 			return new ExceptionConvertingIteration<Statement, SailException>(iter) {
 
