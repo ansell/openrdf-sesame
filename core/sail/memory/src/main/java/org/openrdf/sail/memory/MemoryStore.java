@@ -423,11 +423,11 @@ public class MemoryStore extends NotifyingSailBase {
 	protected boolean transactionLockActive() {
 		Lock lock = txnLockManager.tryExclusiveLock();
 		if (lock == null) {
-			return false;
+			return true;
 		}
 		else {
 			lock.release();
-			return true;
+			return false;
 		}
 	}
 	

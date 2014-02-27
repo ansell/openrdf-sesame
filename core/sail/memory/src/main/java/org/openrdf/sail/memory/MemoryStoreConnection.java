@@ -265,10 +265,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				// current connection has begun a transaction
 				readMode = ReadMode.TRANSACTION;
 
-				// verify that we have obtained the transaction lock or another
+				// verify that we have obtained the transaction lock or no other
 				// transaction is active - in which case we need to look at the
 				// latest snapshot
-				if (txnLockAcquired || store.transactionLockActive()) {
+				if (txnLockAcquired || !store.transactionLockActive()) {
 					snapshot++;
 				}
 			}

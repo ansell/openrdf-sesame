@@ -216,7 +216,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 
 			final boolean readTransaction = (transactionActive() && txnLockAcquired)
-					|| nativeStore.transactionLockActive();
+					|| !nativeStore.transactionLockActive();
 			
 			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
 					subj, pred, obj, includeInferred, readTransaction, contexts);
