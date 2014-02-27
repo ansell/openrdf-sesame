@@ -419,10 +419,6 @@ public class MemoryStore extends NotifyingSailBase {
 			throw new SailException(e);
 		}
 	}
-	
-	protected boolean isTransactionLockActive() throws SailException {
-		return txnLockManager.tryExclusiveLock() == null;
-	}
 
 	protected int size() {
 		return statements.size();
