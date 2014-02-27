@@ -261,13 +261,14 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			if (transactionActive()) { 
+			if (transactionActive()) {
 				// current connection has begun a transaction
 				readMode = ReadMode.TRANSACTION;
-				
-				// verify that we have obtained the transaction lock - in which case we need to look at the 
+
+				// verify that we have obtained the transaction lock or another
+				// transaction is active - in which case we need to look at the
 				// latest snapshot
-				if (txnLockAcquired) { 
+				if (txnLockAcquired || store.transactionLockActive()) {
 					snapshot++;
 				}
 			}

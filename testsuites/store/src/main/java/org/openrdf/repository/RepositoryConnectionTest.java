@@ -78,6 +78,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -95,6 +96,7 @@ import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -292,6 +294,93 @@ public abstract class RepositoryConnectionTest {
 		testCon.commit();
 		assertThat(testCon.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
 		assertThat(testCon2.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
+	}
+
+	@Test
+	public void testReadOfAddedStatement1()
+		throws Exception
+	{
+		URI context = vf.createURI("urn:context");
+		URI subject = vf.createURI("urn:test");
+		URI predicate = vf.createURI("urn:property");
+		Value one = vf.createLiteral(1);
+		Value two = vf.createLiteral(2);
+
+		testCon.begin();
+		testCon.add(subject, predicate, one, context);
+		testCon.commit();
+
+		testCon.begin();
+
+		RepositoryResult<Statement> statements = testCon.getStatements(null, predicate, null, false, context);
+		assertTrue("should find the add", statements.hasNext());
+		statements.next();
+
+		testCon.add(subject, predicate, two, context);
+		assertTrue("should find the second add", statements.hasNext());
+
+		statements.close();
+		testCon.rollback();
+	}
+
+	@Test
+	public void testReadOfAddedStatement2()
+		throws Exception
+	{
+		URI duff = vf.createURI("urn:duff");
+		URI context = vf.createURI("urn:context");
+		URI subject = vf.createURI("urn:test");
+		URI predicate = vf.createURI("urn:property");
+		Value one = vf.createLiteral(1);
+		Value two = vf.createLiteral(2);
+
+		testCon.begin();
+		testCon.add(subject, predicate, one, context);
+		testCon.commit();
+
+		testCon.begin();
+		testCon.add(duff, duff, duff, duff);
+		RepositoryResult<Statement> statements = testCon.getStatements(null, predicate, null, false, context);
+		assertTrue("should find the add", statements.hasNext());
+		statements.next();
+
+		testCon.add(subject, predicate, two, context);
+		assertTrue("should find the second add", statements.hasNext());
+
+		statements.close();
+		testCon.rollback();
+	}
+
+	@Test
+	public void testTransactionIsolationForRead()
+		throws Exception
+	{
+		testCon.begin();
+		try {
+			// Add but do not commit
+			testCon.add(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			assertTrue("Should be able to see uncommitted statement on same connection",
+					testCon.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			assertFalse(
+					"Should not be able to see uncommitted statement on separate connection outside transaction",
+					testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			testCon2.begin();
+			try {
+				assertFalse(
+						"Should not be able to see uncommitted statement on separate connection inside transaction",
+						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+			}
+			finally {
+				testCon2.rollback();
+			}
+
+		}
+		finally {
+			testCon.rollback();
+		}
+
 	}
 
 	@Test
@@ -912,18 +1001,17 @@ public abstract class RepositoryConnectionTest {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedTypedLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidIntegerLiteral = vf.createLiteral("the number four", XMLSchema.INTEGER);
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidIntegerLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -936,18 +1024,17 @@ public abstract class RepositoryConnectionTest {
 		}
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedLanguageLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidLanguageLiteral = vf.createLiteral("the number four", "en_us");
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidLanguageLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -960,6 +1047,7 @@ public abstract class RepositoryConnectionTest {
 			fail(e.getMessage());
 		}
 	}
+
 	@Test
 	public void testGetStatementsInSingleContext()
 		throws Exception
