@@ -17,6 +17,7 @@
 package org.openrdf.rio.trig;
 
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.nquads.NQuadsParser;
 
 /**
  * JUnit test for the TriG parser.
@@ -30,7 +31,12 @@ public class TriGParserTest extends TriGParserTestCase {
 	}
 
 	@Override
-	protected RDFParser createRDFParser() {
+	protected RDFParser createTriGParser() {
 		return new TriGParser();
+	}
+
+	@Override
+	protected RDFParser createNQuadsParser() {
+		return new NQuadsParser();
 	}
 }

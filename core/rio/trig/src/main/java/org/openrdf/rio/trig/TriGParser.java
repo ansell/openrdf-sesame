@@ -104,15 +104,24 @@ public class TriGParser extends TurtleParser {
 
 		String directive = sb.toString();
 
-		if (directive.startsWith("@") || directive.equalsIgnoreCase("prefix")
-				|| directive.equalsIgnoreCase("base"))
+		if (directive.startsWith("@")) {
+			parseDirective(directive);
+			skipWSC();
+			verifyCharacterOrFail(read(), ".");
+		}
+		else if ((directive.length() >= 6 && directive.substring(0, 6).equalsIgnoreCase("prefix"))
+				|| (directive.length() >= 4 && directive.substring(0, 4).equalsIgnoreCase("base")))
 		{
 			parseDirective(directive);
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
-			if (directive.startsWith("@")) {
-				verifyCharacterOrFail(read(), ".");
-			}
+		}
+		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("GRAPH")) {
+			// Do not unread the directive if it was SPARQL GRAPH
+			// Just continue with TriG parsing at this point
+			skipWSC();
+
+			parseGraph();
 		}
 		else {
 			unread(directive);
@@ -125,16 +134,37 @@ public class TriGParser extends TurtleParser {
 	{
 		int c = read();
 		int c2 = peek();
-
-		if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
+		Resource contextOrSubject = null;
+		boolean foundContextOrSubject = false;
+		if (c == '[') {
+			skipWSC();
+			c2 = read();
+			if (c2 == ']') {
+				contextOrSubject = createBNode();
+				foundContextOrSubject = true;
+				skipWSC();
+			}
+			else {
+				unread(c2);
+				unread(c);
+			}
+			c = read();
+		}
+		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
+				|| (c == '_' && c2 == ':'))
+		{
 			unread(c);
 
 			Value value = parseValue();
 
 			if (value instanceof Resource) {
-				context = (Resource)value;
+				contextOrSubject = (Resource)value;
+				foundContextOrSubject = true;
 			}
 			else {
+				// NOTE: If a user parses Turtle using TriG, then the following
+				// could actually be "Illegal subject name", but it should still
+				// hold
 				reportFatalError("Illegal graph name: " + value);
 			}
 
@@ -142,45 +172,104 @@ public class TriGParser extends TurtleParser {
 			c = read();
 		}
 		else {
-			context = null;
+			contextOrSubject = null;
 		}
 
-		if (c == ':') {
-			verifyCharacterOrFail(read(), "-");
-			skipWSC();
-			c = read();
-		}
+		// The following syntax for naming graph seems to have only appeared in
+		// the 2005/06/06 draft of the specification, as it doesn't appear in the
+		// 2007 or later drafts
+		// if (c == ':') {
+		// verifyCharacterOrFail(read(), "-");
+		// skipWSC();
+		// c = read();
+		// }
 
-		verifyCharacterOrFail(c, "{");
-
-		c = skipWSC();
-
-		if (c != '}') {
-			parseTriples();
+		if (c == '{') {
+			context = contextOrSubject;
 
 			c = skipWSC();
 
-			while (c == '.') {
-				read();
-
-				c = skipWSC();
-
-				if (c == '}') {
-					break;
-				}
-
+			if (c != '}') {
 				parseTriples();
 
 				c = skipWSC();
-			}
 
-			verifyCharacterOrFail(c, "}");
+				while (c == '.') {
+					read();
+
+					c = skipWSC();
+
+					if (c == '}') {
+						break;
+					}
+
+					parseTriples();
+
+					c = skipWSC();
+				}
+
+				verifyCharacterOrFail(c, "}");
+			}
+		}
+		else {
+			// Did not turn out to be a graph, so assign it to subject instead and
+			// parse from here to triples
+			if (foundContextOrSubject) {
+				subject = contextOrSubject;
+				unread(c);
+				parsePredicateObjectList();
+			}
+			// Or if we didn't recognise anything, just parse as Turtle
+			else {
+				unread(c);
+				parseTriples();
+			}
 		}
 
 		read();
+	}
 
-		// FIXME: Blank nodes are scoped to the named graph?
-		// clearBNodeIDMap();
+	@Override
+	protected void parseTriples()
+		throws IOException, RDFParseException, RDFHandlerException
+	{
+		int c = peek();
+
+		// If the first character is an open bracket we need to decide which of
+		// the two parsing methods for blank nodes to use
+		if (c == '[') {
+			c = read();
+			skipWSC();
+			c = peek();
+			if (c == ']') {
+				c = read();
+				subject = createBNode();
+				skipWSC();
+				parsePredicateObjectList();
+			}
+			else {
+				unread('[');
+				subject = parseImplicitBlank();
+			}
+			skipWSC();
+			c = peek();
+
+			// if this is not the end of the statement, recurse into the list of
+			// predicate and objects, using the subject parsed above as the subject
+			// of the statement.
+			if (c != '.' && c != '}') {
+				parsePredicateObjectList();
+			}
+		}
+		else {
+			parseSubject();
+			skipWSC();
+			parsePredicateObjectList();
+		}
+
+		subject = null;
+		predicate = null;
+		object = null;
 	}
 
 	@Override
@@ -188,7 +277,7 @@ public class TriGParser extends TurtleParser {
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj, context);
-		if(rdfHandler != null) {
+		if (rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
 	}
