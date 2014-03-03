@@ -25,7 +25,15 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class EARL {
 
+	/**
+	 * The EARL namespace: http://www.w3.org/ns/earl#
+	 */
 	public static final String NAMESPACE = "http://www.w3.org/ns/earl#";
+
+	/**
+	 * The recommended prefix for the EARL namespace: "earl"
+	 */
+	public static final String PREFIX = "earl";
 
 	public final static URI ASSERTOR;
 
