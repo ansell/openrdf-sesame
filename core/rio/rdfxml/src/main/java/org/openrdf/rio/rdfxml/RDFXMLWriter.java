@@ -37,6 +37,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFWriterBase;
 import org.openrdf.rio.helpers.XMLWriterSettings;
 
@@ -484,29 +485,37 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * @return the blank node identifier converted to a form that is a valid
 	 *         NCName.
 	 */
-	protected String getValidNodeId(BNode bNode) {
+	protected String getValidNodeId(BNode bNode) throws IOException {
 		String validNodeId = bNode.getID();
 		if (!XMLUtil.isNCName(validNodeId)) {
 			StringBuilder builder = new StringBuilder();
 			if (validNodeId.isEmpty()) {
-				builder.append("genid-");
-				builder.append(Integer.toHexString(bNode.hashCode()));
+				if (this.getWriterConfig().get(BasicParserSettings.PRESERVE_BNODE_IDS)) {
+					throw new IOException("Cannot consistently write blank nodes with empty internal identifiers");
+				}
+				builder.append("genid-hash-");
+				builder.append(Integer.toHexString(System.identityHashCode(bNode)));
 			}
 			else {
 				if (!XMLUtil.isNCNameStartChar(validNodeId.charAt(0))) {
 					// prepend legal start char
-					builder.append("genid-");
+					builder.append("genid-start-");
+					builder.append(Integer.toHexString(validNodeId.charAt(0)));
+				}
+				else {
+					builder.append(validNodeId.charAt(0));
 				}
 
-				// do char-by-char scan and replace illegal chars where necessary.
-				for (char c : validNodeId.toCharArray()) {
-					if (XMLUtil.isNCNameChar(c)) {
-						builder.append(c);
+				for (int i = 1; i < validNodeId.length(); i++) {
+					// do char-by-char scan and replace illegal chars where
+					// necessary.
+					if (XMLUtil.isNCNameChar(validNodeId.charAt(i))) {
+						builder.append(validNodeId.charAt(i));
 					}
 					else {
 						// replace incompatible char with encoded hex value that will
 						// always be alphanumeric.
-						builder.append(Integer.toHexString(c));
+						builder.append(Integer.toHexString(validNodeId.charAt(i)));
 					}
 				}
 			}

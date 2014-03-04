@@ -237,12 +237,14 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 	{
 		// Check if a previous value can be overwritten
 		Integer id = null;
+		/* FIXME: This loop is very slow for large datasets
 		for (Value key : valueIdentifiers.keySet()) {
 			if (!valueFreq.containsKey(key)) {
 				id = valueIdentifiers.remove(key);
 				break;
 			}
 		}
+		*/
 		if (id == null) {
 			// no previous value could be overwritten
 			id = maxValueId.incrementAndGet();

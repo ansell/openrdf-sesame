@@ -2196,6 +2196,44 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testSES2024PropertyPathAnonVarSharing() throws Exception {
+		loadTestData("/testdata-query/dataset-ses2024.trig");
+		String query = "PREFIX : <http://example.org/> SELECT * WHERE { ?x1 :p/:lit ?l1 . ?x1 :diff ?x2 . ?x2 :p/:lit ?l2 . }" ;
+
+		TupleQuery tq = null;
+		try {
+			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		}
+		catch (RepositoryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		catch (MalformedQueryException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			BindingSet bs = result.next();
+			Literal l1 = (Literal)bs.getValue("l1");
+			Literal l2 = (Literal)bs.getValue("l2");
+
+			assertNotNull(l1);
+			assertFalse(l1.equals(l2));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
 
 	/* private / protected methods */
 

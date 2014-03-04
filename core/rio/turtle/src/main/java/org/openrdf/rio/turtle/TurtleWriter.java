@@ -40,6 +40,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.RDFWriterBase;
 
@@ -360,12 +361,16 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		String id = bNode.getID();
 
 		if (id.isEmpty()) {
-			writer.write("genid-");
-			writer.write(Integer.toHexString(bNode.hashCode()));
+			if (this.getWriterConfig().get(BasicParserSettings.PRESERVE_BNODE_IDS)) {
+				throw new IOException("Cannot consistently write blank nodes with empty internal identifiers");
+			}
+			writer.write("genid-hash-");
+			writer.write(Integer.toHexString(System.identityHashCode(bNode)));
 		}
 		else {
 			if (!TurtleUtil.isNameStartChar(id.charAt(0))) {
-				writer.write("genid-");
+				writer.write("genid-start-");
+				writer.write(Integer.toHexString(id.charAt(0)));
 			}
 			else {
 				writer.write(id.charAt(0));
@@ -378,11 +383,13 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 					writer.write(Integer.toHexString(id.charAt(i)));
 				}
 			}
-			if (!TurtleUtil.isNameEndChar(id.charAt(id.length() - 1))) {
-				writer.write(Integer.toHexString(id.charAt(id.length() - 1)));
-			}
-			else {
-				writer.write(id.charAt(id.length() - 1));
+			if (id.length() > 1) {
+				if (!TurtleUtil.isNameEndChar(id.charAt(id.length() - 1))) {
+					writer.write(Integer.toHexString(id.charAt(id.length() - 1)));
+				}
+				else {
+					writer.write(id.charAt(id.length() - 1));
+				}
 			}
 		}
 	}

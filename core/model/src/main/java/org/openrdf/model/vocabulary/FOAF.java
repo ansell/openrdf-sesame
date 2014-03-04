@@ -21,13 +21,20 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Constants for FOAF primitives and for the FOAF namespace.
- * 
+ * Constants for FOAF primitives and for the FOAF namespace.<br>
  * TODO: Currently only a minimal set. Needs expanding.
  */
 public class FOAF {
 
+	/**
+	 * The FOAF namespace: http://xmlns.com/foaf/0.1/
+	 */
 	public static final String NAMESPACE = "http://xmlns.com/foaf/0.1/";
+
+	/**
+	 * The recommended prefix for the FOAF namespace: "foaf"
+	 */
+	public static final String PREFIX = "foaf";
 
 	public final static URI PERSON;
 
