@@ -459,6 +459,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private void addModel(Model m)
 		throws RepositoryException
 	{
+		// TODO we should dynamically pick a format from the available writers perhaps?
 		RDFFormat format = RDFFormat.BINARY;
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
