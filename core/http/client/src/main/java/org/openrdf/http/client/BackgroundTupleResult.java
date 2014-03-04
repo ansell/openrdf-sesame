@@ -82,8 +82,8 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	protected void handleClose()
 		throws QueryEvaluationException
 	{
-		closed = true;
 		synchronized (parserThreadLock) {
+			closed = true;
 			if (parserThread != null) {
 				parserThread.interrupt();
 			}
