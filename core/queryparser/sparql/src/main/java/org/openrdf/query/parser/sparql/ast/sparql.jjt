@@ -1764,13 +1764,6 @@ void QuadData() #void :
     <LBRACE> Quads() <RBRACE> 
 }
 
-void QuadsGrounded() #void :
-{}
-{
-    [TriplesTemplate()] ( QuadsNotTriples() [<DOT>] [TriplesTemplate()] )*
-}
-
-
 void Quads() #void :
 {}
 {
