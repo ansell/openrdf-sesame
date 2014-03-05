@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.mockito.internal.debugging.LoggingListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -365,13 +364,13 @@ public class SailUpdateExecutor {
 	protected void executeInsertData(InsertData insertDataExpr, UpdateContext uc)
 		throws SailException
 	{
-		
+
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
 		parser.setRDFHandler(new RDFSailInserter(con, vf, uc));
 		parser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		parser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		try {
-			// TODO process update context somehow? dataset,  base URI, etc.
+			// TODO process update context somehow? dataset, base URI, etc.
 			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes()), "");
 		}
 		catch (RDFParseException e) {
@@ -392,12 +391,12 @@ public class SailUpdateExecutor {
 	 */
 	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc)
 		throws SailException
-	{		
+	{
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
 		parser.setRDFHandler(new RDFSailRemover(con, vf, uc));
 
 		try {
-			// TODO process update context somehow? dataset,  base URI, etc.
+			// TODO process update context somehow? dataset, base URI, etc.
 			parser.parse(new ByteArrayInputStream(deleteDataExpr.getDataBlock().getBytes()), "");
 		}
 		catch (RDFParseException e) {

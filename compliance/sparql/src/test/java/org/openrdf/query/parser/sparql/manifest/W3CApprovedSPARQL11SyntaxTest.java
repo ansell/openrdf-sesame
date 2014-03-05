@@ -20,6 +20,7 @@ import junit.framework.Test;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11SyntaxTest;
 
@@ -42,9 +43,9 @@ public class W3CApprovedSPARQL11SyntaxTest extends SPARQL11SyntaxTest {
 		super(testURI, name, queryFileURL, positiveTest);
 	}
 
-	protected void parseOperation(String operation, String fileURL)
+	protected ParsedOperation parseOperation(String operation, String fileURL)
 		throws MalformedQueryException
 	{
-		QueryParserUtil.parseOperation(QueryLanguage.SPARQL, operation, fileURL);
+		return QueryParserUtil.parseOperation(QueryLanguage.SPARQL, operation, fileURL);
 	}
 }

@@ -18,6 +18,7 @@ package org.openrdf.repository.sail.helpers;
 
 import java.io.IOException;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -94,7 +95,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 					unread(c);
 					break;
 				}
-				
+
 				sb.append((char)c);
 			}
 			while (sb.length() < 5);
@@ -102,12 +103,14 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 			if (!sb.toString().equalsIgnoreCase("graph")) {
 				unread(sb.toString());
 			}
-			
+
 			skipWSC();
 			c = read();
 			final int c2 = peek();
 
-			if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
+			if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
+					|| (c == '_' && c2 == ':'))
+			{
 				unread(c);
 
 				Value value = parseValue();
@@ -128,12 +131,12 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		}
 
 		c = skipWSC();
-		
+
 		if (c == '{') {
 			read();
 			c = skipWSC();
 		}
-		
+
 		if (c != '}') {
 			parseTriples();
 
@@ -158,4 +161,17 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		read();
 	}
 
+	@Override
+	protected BNode parseNodeID()
+		throws IOException, RDFParseException
+	{
+		throw new RDFParseException("blank node not allowed in data block");
+	}
+
+	@Override
+	protected Resource parseImplicitBlank()
+		throws IOException, RDFParseException, RDFHandlerException
+	{
+		throw new RDFParseException("blank node not allowed in data block");
+	}
 }
