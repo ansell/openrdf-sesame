@@ -95,19 +95,25 @@ public class SyntaxTreeBuilder {
 	}
 
 	private String readToMatchingBrace() {
-	    StringBuilder sb = new StringBuilder(); 
+	    StringBuilder sb = new StringBuilder();
 	    Token tok;
 	    int nesting = 1;
+	    boolean previousTokenDtSep = false;
 	    while (true) {
 		tok = getToken(1);
+		if (!previousTokenDtSep && ! tok.image.equals("^^")) {
+		    sb.append(" ");
+		}
 		if (tok.kind == LBRACE) nesting++;
 		if (tok.kind == RBRACE) {
 		    nesting--;
 		    if (nesting == 0) break;
 		}
 		sb.append(tok.image);
-		sb.append(" ");
+		previousTokenDtSep = tok.image.equals("^^");
+
 		tok = getNextToken();
+
 	    }
 	    return sb.toString();
 	}

@@ -18,6 +18,7 @@ package org.openrdf.repository.sail.helpers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
@@ -213,7 +214,18 @@ public class RDFSailInserter extends RDFHandlerBase {
 				con.addStatement(uc, subj, pred, obj, contexts);
 			}
 			else {
-				con.addStatement(uc, subj, pred, obj, ctxt);
+				if (ctxt == null) {
+					final URI insertGraph = uc.getDataset().getDefaultInsertGraph();
+					if (insertGraph != null) {
+						con.addStatement(uc, subj, pred, obj, insertGraph);
+					}
+					else {
+						con.addStatement(uc, subj, pred, obj);
+					}
+				}
+				else {
+					con.addStatement(uc, subj, pred, obj, ctxt);
+				}
 			}
 		}
 		catch (SailException e) {

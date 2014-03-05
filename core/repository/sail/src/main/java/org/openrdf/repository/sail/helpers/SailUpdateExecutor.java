@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.mockito.internal.debugging.LoggingListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,7 @@ import org.openrdf.repository.util.RDFLoader;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UpdateContext;
@@ -366,7 +368,8 @@ public class SailUpdateExecutor {
 		
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
 		parser.setRDFHandler(new RDFSailInserter(con, vf, uc));
-
+		parser.getParserConfig().addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+		parser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		try {
 			// TODO process update context somehow? dataset,  base URI, etc.
 			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes()), "");
