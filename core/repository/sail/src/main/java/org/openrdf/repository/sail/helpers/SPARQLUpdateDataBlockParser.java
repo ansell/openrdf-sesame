@@ -34,7 +34,8 @@ import org.openrdf.rio.turtle.TurtleUtil;
  * specified in the SPARQL 1.1 grammar for Quad data (assuming no variables, as
  * is the case for INSERT DATA and DELETE DATA operations). This format is
  * almost completely compatible with TriG, except for the fact that it
- * introduces the 'GRAPH' keyword in front of each named graph identifier.
+ * introduces the 'GRAPH' keyword in front of each named graph identifier, and
+ * does not allow the occurrence of blank nodes.
  * 
  * @author Jeen Broekstra
  * @see <a href="http://www.w3.org/TR/sparql11-query/#rInsertData">SPARQL 1.1
@@ -78,6 +79,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		return null;
 	}
 
+	@Override
 	protected void parseGraph()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
@@ -139,12 +141,10 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 
 		if (c != '}') {
 			parseTriples();
-
 			c = skipWSC();
 
 			while (c == '.') {
 				read();
-
 				c = skipWSC();
 
 				if (c == '}' || c == -1) {
@@ -152,7 +152,6 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				}
 
 				parseTriples();
-
 				c = skipWSC();
 			}
 
