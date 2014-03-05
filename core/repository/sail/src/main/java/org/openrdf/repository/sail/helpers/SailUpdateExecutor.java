@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.sail.helpers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
@@ -362,38 +363,21 @@ public class SailUpdateExecutor {
 	protected void executeInsertData(InsertData insertDataExpr, UpdateContext uc)
 		throws SailException
 	{
-		TupleExpr insertExpr = insertDataExpr.getInsertExpr();
-
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeInserted = con.evaluate(
-				insertExpr, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
+		
+		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
+		parser.setRDFHandler(new RDFSailInserter(con, vf, uc));
 
 		try {
-			try {
-				URI insert = uc.getDataset().getDefaultInsertGraph();
-				while (toBeInserted.hasNext()) {
-					BindingSet bs = toBeInserted.next();
-
-					Resource subject = (Resource)bs.getValue("subject");
-					URI predicate = (URI)bs.getValue("predicate");
-					Value object = bs.getValue("object");
-					Resource context = (Resource)bs.getValue("context");
-
-					if (context == null && insert == null) {
-						con.addStatement(uc, subject, predicate, object);
-					}
-					else if (context == null) {
-						con.addStatement(uc, subject, predicate, object, insert);
-					}
-					else {
-						con.addStatement(uc, subject, predicate, object, context);
-					}
-				}
-			}
-			finally {
-				toBeInserted.close();
-			}
+			// TODO process update context somehow? dataset,  base URI, etc.
+			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes()), "");
 		}
-		catch (QueryEvaluationException e) {
+		catch (RDFParseException e) {
+			throw new SailException(e);
+		}
+		catch (RDFHandlerException e) {
+			throw new SailException(e);
+		}
+		catch (IOException e) {
 			throw new SailException(e);
 		}
 	}
@@ -405,36 +389,21 @@ public class SailUpdateExecutor {
 	 */
 	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc)
 		throws SailException
-	{
-		TupleExpr deleteExpr = deleteDataExpr.getDeleteExpr();
-
-		CloseableIteration<? extends BindingSet, QueryEvaluationException> toBeDeleted = con.evaluate(
-				deleteExpr, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
+	{		
+		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
+		parser.setRDFHandler(new RDFSailRemover(con, vf, uc));
 
 		try {
-			try {
-				URI[] remove = getDefaultRemoveGraphs(uc.getDataset());
-				while (toBeDeleted.hasNext()) {
-					BindingSet bs = toBeDeleted.next();
-
-					Resource subject = (Resource)bs.getValue("subject");
-					URI predicate = (URI)bs.getValue("predicate");
-					Value object = bs.getValue("object");
-					Resource context = (Resource)bs.getValue("context");
-
-					if (context != null) {
-						con.removeStatement(uc, subject, predicate, object, context);
-					}
-					else if (remove != null) {
-						con.removeStatement(uc, subject, predicate, object, remove);
-					}
-				}
-			}
-			finally {
-				toBeDeleted.close();
-			}
+			// TODO process update context somehow? dataset,  base URI, etc.
+			parser.parse(new ByteArrayInputStream(deleteDataExpr.getDataBlock().getBytes()), "");
 		}
-		catch (QueryEvaluationException e) {
+		catch (RDFParseException e) {
+			throw new SailException(e);
+		}
+		catch (RDFHandlerException e) {
+			throw new SailException(e);
+		}
+		catch (IOException e) {
 			throw new SailException(e);
 		}
 	}

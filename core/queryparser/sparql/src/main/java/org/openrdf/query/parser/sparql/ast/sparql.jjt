@@ -93,6 +93,24 @@ public class SyntaxTreeBuilder {
 		}
 		return s;
 	}
+
+	private String readToMatchingBrace() {
+	    StringBuilder sb = new StringBuilder(); 
+	    Token tok;
+	    int nesting = 1;
+	    while (true) {
+		tok = getToken(1);
+		if (tok.kind == LBRACE) nesting++;
+		if (tok.kind == RBRACE) {
+		    nesting--;
+		    if (nesting == 0) break;
+		}
+		sb.append(tok.image);
+		sb.append(" ");
+		tok = getNextToken();
+	    }
+	    return sb.toString();
+	}
 }
 PARSER_END(SyntaxTreeBuilder)
 
@@ -1728,11 +1746,24 @@ void GraphRef() #void :
 	<GRAPH> IRIref() 
 }
 
+void UnparsedQuadDataBlock() :
+{}
+{
+    <LBRACE> {jjtThis.setDataBlock(readToMatchingBrace()); } <RBRACE>
+}
+
 void QuadData() #void :
 {}
 {
     <LBRACE> Quads() <RBRACE> 
 }
+
+void QuadsGrounded() #void :
+{}
+{
+    [TriplesTemplate()] ( QuadsNotTriples() [<DOT>] [TriplesTemplate()] )*
+}
+
 
 void Quads() #void :
 {}
@@ -1808,13 +1839,13 @@ void Create() :
 void InsertData() :
 {}
 {
-    <INSERT> <DATA> QuadData()
+    <INSERT> <DATA> UnparsedQuadDataBlock()
 }
 
 void DeleteData() :
 {}
 {
-    <DELETE> <DATA> QuadData()
+    <DELETE> <DATA> UnparsedQuadDataBlock()
 }
 
 void DeleteWhere() :
