@@ -42,8 +42,11 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.DeleteData;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -503,11 +506,16 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void startUpdate(UpdateContext op)
 		throws SailException
 	{
-		if (op.getUpdateExpr() instanceof Modify) {
+		final UpdateExpr expr = op.getUpdateExpr();
+		
+		if (expr instanceof DeleteData || expr instanceof Modify) {
 			synchronized (removed) {
 				assert !removed.containsKey(op);
 				removed.put(op, new LinkedHashModel());
 			}
+		}
+
+		if (expr instanceof InsertData || expr instanceof Modify) {
 			synchronized (added) {
 				assert !added.containsKey(op);
 				added.put(op, new LinkedHashModel());

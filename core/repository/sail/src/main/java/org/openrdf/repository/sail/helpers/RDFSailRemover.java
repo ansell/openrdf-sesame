@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.sail.helpers;
 
+import java.util.Set;
+
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -69,6 +71,8 @@ public class RDFSailRemover extends RDFHandlerBase {
 		this.con = con;
 		this.vf = vf;
 		this.uc = uc;
+		
+
 	}
 
 	/*---------*
@@ -125,11 +129,17 @@ public class RDFSailRemover extends RDFHandlerBase {
 				con.removeStatement(uc, subj, pred, obj, contexts);
 			}
 			else {
-				if (ctxt != null) {
-					con.removeStatement(uc, subj, pred, obj, ctxt);
+				if (ctxt == null) {
+					final Set<URI> removeGraphs = uc.getDataset().getDefaultRemoveGraphs();
+					if (!removeGraphs.isEmpty()) {
+						con.removeStatement(uc, subj, pred, obj, new URI[removeGraphs.size()]);
+					}
+					else {
+						con.removeStatement(uc, subj, pred, obj);
+					}
 				}
 				else {
-					con.removeStatement(uc, subj, pred, obj);
+					con.removeStatement(uc, subj, pred, obj, ctxt);
 				}
 			}
 		}
