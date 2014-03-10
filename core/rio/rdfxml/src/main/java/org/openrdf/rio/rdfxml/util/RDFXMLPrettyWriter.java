@@ -29,6 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -364,6 +365,11 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				topSubject.setType((URI)obj);
 			}
 			else {
+				if (!nodeStack.isEmpty() && pred.equals(nodeStack.peek().nextLi())) {
+					pred = RDF.LI;
+					nodeStack.peek().incrementNextLi();
+				}
+
 				// Push predicate and object
 				predicateStack.push(pred);
 				nodeStack.push(new Node(obj));
@@ -524,6 +530,9 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 	private static class Node {
 
+		private int nextLiIndex = 1;
+		private Resource nextLi;
+
 		private Value value;
 
 		// type == null means that we use <rdf:Description>
@@ -536,6 +545,19 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		 */
 		public Node(Value value) {
 			this.value = value;
+		}
+
+		Resource nextLi() {
+			if (nextLi == null) {
+				nextLi = new URIImpl(RDF.NAMESPACE + "_" + nextLiIndex);
+			}
+
+			return nextLi;
+		}
+
+		public void incrementNextLi() {
+			nextLiIndex++;
+			nextLi = null;
 		}
 
 		public Value getValue() {
