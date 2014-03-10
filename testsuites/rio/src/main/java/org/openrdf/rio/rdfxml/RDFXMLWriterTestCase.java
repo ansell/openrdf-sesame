@@ -45,6 +45,7 @@ public abstract class RDFXMLWriterTestCase extends RDFWriterTest {
 		super(writerF, parserF);
 	}
 
+	@Test
 	public void testWrite()
 		throws RepositoryException, RDFParseException, IOException, RDFHandlerException
 	{
