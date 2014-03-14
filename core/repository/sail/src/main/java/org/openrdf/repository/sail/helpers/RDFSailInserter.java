@@ -18,7 +18,6 @@ package org.openrdf.repository.sail.helpers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;

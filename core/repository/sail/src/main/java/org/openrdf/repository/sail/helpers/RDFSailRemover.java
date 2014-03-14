@@ -31,11 +31,12 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.UpdateContext;
 
 /**
- * An RDFHandler that removes RDF data from a repository.
+ * An Sail-specific RDFHandler that removes RDF data from a repository. To be
+ * used in combination with SPARQL DELETE DATA only.
  * 
  * @author jeen
  */
-public class RDFSailRemover extends RDFHandlerBase {
+class RDFSailRemover extends RDFHandlerBase {
 
 	/*-----------*
 	 * Variables *
@@ -71,7 +72,6 @@ public class RDFSailRemover extends RDFHandlerBase {
 		this.con = con;
 		this.vf = vf;
 		this.uc = uc;
-		
 
 	}
 

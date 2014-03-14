@@ -45,6 +45,8 @@ import org.openrdf.rio.turtle.TurtleUtil;
  */
 public class SPARQLUpdateDataBlockParser extends TriGParser {
 
+	private boolean allowBlankNodes = true;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -161,16 +163,42 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 	}
 
 	@Override
-	protected BNode parseNodeID()
-		throws IOException, RDFParseException
-	{
-		throw new RDFParseException("blank node not allowed in data block");
-	}
-
-	@Override
 	protected Resource parseImplicitBlank()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		throw new RDFParseException("blank node not allowed in data block");
+		if (isAllowBlankNodes()) {
+			return super.parseImplicitBlank();
+		}
+		else {
+			throw new RDFParseException("blank nodes not allowed in data block");
+		}
 	}
+
+	@Override
+	protected BNode parseNodeID()
+		throws IOException, RDFParseException
+	{
+		if (isAllowBlankNodes()) {
+			return super.parseNodeID();
+		}
+		else {
+			throw new RDFParseException("blank nodes not allowed in data block");
+		}
+	}
+
+	/**
+	 * @return Returns the allowBlankNodes.
+	 */
+	public boolean isAllowBlankNodes() {
+		return allowBlankNodes;
+	}
+
+	/**
+	 * @param allowBlankNodes
+	 *        The allowBlankNodes to set.
+	 */
+	public void setAllowBlankNodes(boolean allowBlankNodes) {
+		this.allowBlankNodes = allowBlankNodes;
+	}
+
 }

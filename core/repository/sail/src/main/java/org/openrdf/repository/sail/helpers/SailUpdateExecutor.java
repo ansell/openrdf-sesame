@@ -393,6 +393,7 @@ public class SailUpdateExecutor {
 		throws SailException
 	{
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
+		parser.setAllowBlankNodes(false); // no blank nodes allowed in DELETE DATA.
 		parser.setRDFHandler(new RDFSailRemover(con, vf, uc));
 
 		try {
