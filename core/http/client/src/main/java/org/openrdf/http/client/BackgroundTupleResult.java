@@ -45,6 +45,9 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	private volatile Thread parserThread;
 
+	/** lock needed for using/dereferening parserThread. */
+	private final Object parserThreadLock = new Object();
+	
 	private TupleQueryResultParser parser;
 
 	private InputStream in;
@@ -68,7 +71,7 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in,
 			HttpMethod connection)
 	{
-		super(Collections.<String>emptyList(), queue);
+		super(Collections.<String> emptyList(), queue);
 		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
@@ -76,12 +79,14 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	}
 
 	@Override
-	protected synchronized void handleClose()
+	protected void handleClose()
 		throws QueryEvaluationException
 	{
-		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
+		synchronized (parserThreadLock) {
+			closed = true;
+			if (parserThread != null) {
+				parserThread.interrupt();
+			}
 		}
 		super.handleClose();
 	}
@@ -122,7 +127,9 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 			queue.toss(e);
 		}
 		finally {
-			parserThread = null;
+			synchronized (parserThreadLock) {
+				parserThread = null;
+			}
 			queue.done();
 			bindingNamesReady.countDown();
 			if (!completed) {
