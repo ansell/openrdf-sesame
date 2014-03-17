@@ -19,10 +19,10 @@ package org.openrdf.query.parser.sparql;
 import java.io.File;
 import java.util.List;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.nio.BlockingChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.BlockingChannelConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
@@ -72,7 +72,7 @@ public class SPARQLEmbeddedServer {
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame");
-		jetty.addHandler(webapp);
+		jetty.setHandler(webapp);
 	}
 
 	/**
