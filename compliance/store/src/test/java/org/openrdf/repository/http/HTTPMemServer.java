@@ -70,7 +70,8 @@ public class HTTPMemServer {
 		jetty.addConnector(conn);
 
 		WebAppContext webapp = new WebAppContext();
-		webapp.setParentLoaderPriority(true);
+		webapp.addSystemClass("org.slf4j.");
+		webapp.addSystemClass("ch.qos.logback.");
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame");
