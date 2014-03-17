@@ -298,6 +298,10 @@ public class NativeStore extends NotifyingSailBase {
 			throw new SailException(e);
 		}
 	}
+	
+	protected Lock tryTransactionLock() {
+		return txnLockManager.tryExclusiveLock();
+	}
 
 	protected List<Integer> getContextIDs(Resource... contexts)
 		throws IOException

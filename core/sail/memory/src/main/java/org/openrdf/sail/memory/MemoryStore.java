@@ -420,6 +420,10 @@ public class MemoryStore extends NotifyingSailBase {
 		}
 	}
 
+	protected Lock tryTransactionLock() {
+		return txnLockManager.tryExclusiveLock();
+	}
+	
 	protected int size() {
 		return statements.size();
 	}
