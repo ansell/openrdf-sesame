@@ -55,12 +55,7 @@ public class LoggingOverviewController implements Controller {
 		int count = getCount(request);
 		Map<String, Object> model = new HashMap<String, Object>();
 		LogReader logReader = getLogReader(offset, count, request);
-		if (logReader != null) {
-			model.put("logreader", logReader);
-		}
-		else {
-			model.put("logreader", new ArrayList(0).iterator());
-		}
+		model.put("logreader", logReader);
 		model.put("offset", new Integer(offset));
 		model.put("count", new Integer(count));
 		model.put("countsAvailable", Arrays.asList(new Integer[] {
@@ -175,9 +170,7 @@ public class LoggingOverviewController implements Controller {
 			logReader.init();
 		}
 		catch (Exception e) {
-			// throw new RuntimeException("Unable to initialize log reader.", e);
-			e.printStackTrace();
-			return null;
+			throw new RuntimeException("Unable to initialize log reader.", e);
 		}
 		return logReader;
 	}
