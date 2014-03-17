@@ -420,15 +420,8 @@ public class MemoryStore extends NotifyingSailBase {
 		}
 	}
 
-	protected boolean transactionLockActive() {
-		Lock lock = txnLockManager.tryExclusiveLock();
-		if (lock == null) {
-			return true;
-		}
-		else {
-			lock.release();
-			return false;
-		}
+	protected Lock tryTransactionLock() {
+		return txnLockManager.tryExclusiveLock();
 	}
 	
 	protected int size() {

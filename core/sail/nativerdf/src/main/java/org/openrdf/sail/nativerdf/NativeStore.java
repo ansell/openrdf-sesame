@@ -299,15 +299,8 @@ public class NativeStore extends NotifyingSailBase {
 		}
 	}
 	
-	protected boolean transactionLockActive() {
-		Lock lock = txnLockManager.tryExclusiveLock();
-		if (lock == null) {
-			return true;
-		}
-		else {
-			lock.release();
-			return false;
-		}
+	protected Lock tryTransactionLock() {
+		return txnLockManager.tryExclusiveLock();
 	}
 
 	protected List<Integer> getContextIDs(Resource... contexts)

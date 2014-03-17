@@ -213,10 +213,17 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
+		Lock tempWriteLock = null;
 		try {
 
-			final boolean readTransaction = (transactionActive() && txnLockAcquired)
-					|| !nativeStore.transactionLockActive();
+			boolean readTransaction = transactionActive() && txnLockAcquired;
+			
+			if (!readTransaction) {
+				tempWriteLock = nativeStore.tryTransactionLock();
+				if (tempWriteLock != null) {
+					readTransaction = true;
+				}
+			}
 			
 			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
 					subj, pred, obj, includeInferred, readTransaction, contexts);
@@ -242,6 +249,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		catch (IOException e) {
 			throw new SailException("Unable to get statements", e);
+		}
+		finally {
+			if (tempWriteLock != null) {
+				tempWriteLock.release();
+			}
 		}
 	}
 
