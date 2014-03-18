@@ -93,6 +93,30 @@ public class SyntaxTreeBuilder {
 		}
 		return s;
 	}
+
+	private String readToMatchingBrace() {
+	    StringBuilder sb = new StringBuilder();
+	    Token tok;
+	    int nesting = 1;
+	    boolean previousTokenDtSep = false;
+	    while (true) {
+		tok = getToken(1);
+		if (!previousTokenDtSep && ! tok.image.equals("^^")) {
+		    sb.append(" ");
+		}
+		if (tok.kind == LBRACE) nesting++;
+		if (tok.kind == RBRACE) {
+		    nesting--;
+		    if (nesting == 0) break;
+		}
+		sb.append(tok.image);
+		previousTokenDtSep = tok.image.equals("^^");
+
+		tok = getNextToken();
+
+	    }
+	    return sb.toString();
+	}
 }
 PARSER_END(SyntaxTreeBuilder)
 
@@ -1728,6 +1752,12 @@ void GraphRef() #void :
 	<GRAPH> IRIref() 
 }
 
+void UnparsedQuadDataBlock() :
+{}
+{
+    <LBRACE> {jjtThis.setDataBlock(readToMatchingBrace()); } <RBRACE>
+}
+
 void QuadData() #void :
 {}
 {
@@ -1808,13 +1838,13 @@ void Create() :
 void InsertData() :
 {}
 {
-    <INSERT> <DATA> QuadData()
+    <INSERT> <DATA> UnparsedQuadDataBlock()
 }
 
 void DeleteData() :
 {}
 {
-    <DELETE> <DATA> QuadData()
+    <DELETE> <DATA> UnparsedQuadDataBlock()
 }
 
 void DeleteWhere() :

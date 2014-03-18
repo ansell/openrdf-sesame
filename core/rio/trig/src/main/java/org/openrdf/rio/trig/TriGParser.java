@@ -132,7 +132,7 @@ public class TriGParser extends TurtleParser {
 			Value value = parseValue();
 
 			if (value instanceof Resource) {
-				context = (Resource)value;
+				setContext((Resource)value);
 			}
 			else {
 				reportFatalError("Illegal graph name: " + value);
@@ -142,7 +142,7 @@ public class TriGParser extends TurtleParser {
 			c = read();
 		}
 		else {
-			context = null;
+			setContext(null);
 		}
 
 		if (c == ':') {
@@ -187,9 +187,17 @@ public class TriGParser extends TurtleParser {
 	protected void reportStatement(Resource subj, URI pred, Value obj)
 		throws RDFParseException, RDFHandlerException
 	{
-		Statement st = createStatement(subj, pred, obj, context);
+		Statement st = createStatement(subj, pred, obj, getContext());
 		if(rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
+	}
+	
+	protected void setContext(Resource context) {
+		this.context = context;
+	}
+	
+	protected Resource getContext() {
+		return context;
 	}
 }

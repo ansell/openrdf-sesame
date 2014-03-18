@@ -131,20 +131,21 @@ public interface SyntaxTreeBuilderTreeConstants
   public int JJTBLANKNODE = 125;
   public int JJTGRAPHREFALL = 126;
   public int JJTGRAPHORDEFAULT = 127;
-  public int JJTQUADSNOTTRIPLES = 128;
-  public int JJTLOAD = 129;
-  public int JJTCLEAR = 130;
-  public int JJTDROP = 131;
-  public int JJTADD = 132;
-  public int JJTMOVE = 133;
-  public int JJTCOPY = 134;
-  public int JJTCREATE = 135;
-  public int JJTINSERTDATA = 136;
-  public int JJTDELETEDATA = 137;
-  public int JJTDELETEWHERE = 138;
-  public int JJTDELETECLAUSE = 139;
-  public int JJTINSERTCLAUSE = 140;
-  public int JJTMODIFY = 141;
+  public int JJTUNPARSEDQUADDATABLOCK = 128;
+  public int JJTQUADSNOTTRIPLES = 129;
+  public int JJTLOAD = 130;
+  public int JJTCLEAR = 131;
+  public int JJTDROP = 132;
+  public int JJTADD = 133;
+  public int JJTMOVE = 134;
+  public int JJTCOPY = 135;
+  public int JJTCREATE = 136;
+  public int JJTINSERTDATA = 137;
+  public int JJTDELETEDATA = 138;
+  public int JJTDELETEWHERE = 139;
+  public int JJTDELETECLAUSE = 140;
+  public int JJTINSERTCLAUSE = 141;
+  public int JJTMODIFY = 142;
 
 
   public String[] jjtNodeName = {
@@ -276,6 +277,7 @@ public interface SyntaxTreeBuilderTreeConstants
     "BlankNode",
     "GraphRefAll",
     "GraphOrDefault",
+    "UnparsedQuadDataBlock",
     "QuadsNotTriples",
     "Load",
     "Clear",
@@ -292,4 +294,4 @@ public interface SyntaxTreeBuilderTreeConstants
     "Modify",
   };
 }
-/* JavaCC - OriginalChecksum=222ce2dde642b5d20e6378500c665d76 (do not edit this line) */
+/* JavaCC - OriginalChecksum=2f25d2e2588286c9e3236d8c36ce6cab (do not edit this line) */
