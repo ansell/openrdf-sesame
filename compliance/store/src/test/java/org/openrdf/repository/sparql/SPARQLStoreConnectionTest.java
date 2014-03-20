@@ -254,6 +254,15 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("disabled testGetNamespace() as namespace retrieval is not supported by SPARQL");
 	}
+	
+	@Ignore("temporarily disabled for SPARQLRepository")
+	@Test
+	@Override
+	public void testTransactionIsolationForRead()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testTransactionIsolationForRead() for SPARQLRepository");
+	}
 
 	@Override
 	@Ignore

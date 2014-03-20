@@ -49,12 +49,13 @@ public class ExportServlet extends TupleServlet {
 		if (req.isParameterPresent("Accept")) {
 			String accept = req.getParameter("Accept");
 			RDFFormat format = RDFFormat.forMIMEType(accept);
-			if (format != null) {
-				resp.setContentType(accept);
-				String ext = format.getDefaultFileExtension();
-				String attachment = "attachment; filename=export." + ext;
-				resp.setHeader("Content-disposition", attachment);
+			if (format == null) {
+				throw new RuntimeException("No format known for MIME type: " + accept);
 			}
+			resp.setContentType(accept);
+			String ext = format.getDefaultFileExtension();
+			String attachment = "attachment; filename=export." + ext;
+			resp.setHeader("Content-disposition", attachment);
 			RepositoryConnection con = repository.getConnection();
 			con.setParserConfig(NON_VERIFYING_PARSER_CONFIG);
 			try {

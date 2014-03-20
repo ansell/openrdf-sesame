@@ -16,22 +16,21 @@
  */
 package org.openrdf.repository.http;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.SparqlDatasetTest;
 
 public class HTTPSparqlDatasetTest extends SparqlDatasetTest {
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
-		throws Exception
-	{
+	@BeforeClass
+	public static void startServer() throws Exception {
 		server = new HTTPMemServer();
-		
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
@@ -39,14 +38,13 @@ public class HTTPSparqlDatasetTest extends SparqlDatasetTest {
 		}
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
 	}
-
+	
 	protected Repository newRepository() {
 		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
 	}

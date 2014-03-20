@@ -44,7 +44,11 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.DeleteData;
+import org.openrdf.query.algebra.InsertData;
+import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -485,11 +489,14 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	@Override
-	public void startUpdate(UpdateContext op) {
+	public void startUpdate(UpdateContext op)
+		throws SailException
+	{
 		synchronized (removed) {
 			assert !removed.containsKey(op);
 			removed.put(op, new LinkedList<Statement>());
 		}
+
 		synchronized (added) {
 			assert !added.containsKey(op);
 			added.put(op, new LinkedList<Statement>());
@@ -851,7 +858,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws SailException
 	{
 		Map<SailBaseIteration, Throwable> activeIterationsCopy;
-	
+
 		synchronized (activeIterations) {
 			// Copy the current contents of the map so that we don't have to
 			// synchronize on activeIterations. This prevents a potential
@@ -859,11 +866,11 @@ public abstract class SailConnectionBase implements SailConnection {
 			activeIterationsCopy = new IdentityHashMap<SailBaseIteration, Throwable>(activeIterations);
 			activeIterations.clear();
 		}
-	
+
 		for (Map.Entry<SailBaseIteration, Throwable> entry : activeIterationsCopy.entrySet()) {
 			SailBaseIteration ci = entry.getKey();
 			Throwable creatorTrace = entry.getValue();
-	
+
 			try {
 				if (creatorTrace != null) {
 					logger.warn("Forced closing of unclosed iteration that was created in:", creatorTrace);
@@ -894,10 +901,11 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	/**
 	 * Statement pattern that uses null values as wild cards.
-	 *
+	 * 
 	 * @author James Leigh
 	 */
 	private class WildStatement implements Statement {
+
 		private static final long serialVersionUID = 3363010521961228565L;
 
 		/**
@@ -925,7 +933,8 @@ public abstract class SailConnectionBase implements SailConnection {
 		 *--------------*/
 
 		/**
-		 * Creates a new Statement with the supplied subject, predicate and object.
+		 * Creates a new Statement with the supplied subject, predicate and
+		 * object.
 		 * 
 		 * @param subject
 		 *        The statement's subject, may be <tt>null</tt>.
@@ -979,14 +988,12 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 
 		@Override
-		public Resource getContext()
-		{
+		public Resource getContext() {
 			return context;
 		}
 
 		@Override
-		public String toString()
-		{
+		public String toString() {
 			StringBuilder sb = new StringBuilder(256);
 
 			sb.append("(");

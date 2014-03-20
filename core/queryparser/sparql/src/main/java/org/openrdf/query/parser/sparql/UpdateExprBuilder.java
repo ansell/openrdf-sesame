@@ -70,6 +70,7 @@ import org.openrdf.query.parser.sparql.ast.ASTLoad;
 import org.openrdf.query.parser.sparql.ast.ASTModify;
 import org.openrdf.query.parser.sparql.ast.ASTMove;
 import org.openrdf.query.parser.sparql.ast.ASTQuadsNotTriples;
+import org.openrdf.query.parser.sparql.ast.ASTUnparsedQuadDataBlock;
 import org.openrdf.query.parser.sparql.ast.ASTUpdate;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
@@ -105,103 +106,8 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	public InsertData visit(ASTInsertData node, Object data)
 		throws VisitorException
 	{
-
-		TupleExpr result = new SingletonSet();
-
-		// Collect insert triples
-		GraphPattern parentGP = graphPattern;
-		graphPattern = new GraphPattern();
-
-		// inherit scope & context
-		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
-		graphPattern.setContextVar(parentGP.getContextVar());
-
-		if (node.jjtGetNumChildren() > 0) {
-
-			Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
-
-			if (algebraExpr instanceof ValueExpr) { // named graph identifier
-				Var contextVar = mapValueExprToVar((ValueExpr)algebraExpr);
-				graphPattern.setContextVar(contextVar);
-				graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-			}
-
-			for (int i = 1; i < node.jjtGetNumChildren(); i++) {
-				node.jjtGetChild(i).jjtAccept(this, data);
-			}
-
-		}
-		TupleExpr insertExpr = graphPattern.buildTupleExpr();
-
-		VarCollector collector = new VarCollector();
-		insertExpr.visit(collector);
-		for (Var var : collector.getCollectedVars()) {
-			if (!var.hasValue() && !var.isAnonymous()) {
-				// non-anonymous var in insert data not allowed
-				throw new VisitorException("INSERT DATA may not contain variables");
-			}
-		}
-
-		graphPattern = parentGP;
-
-		// Retrieve all StatementPatterns from the insert expression
-		List<StatementPattern> statementPatterns = StatementPatternCollector.process(insertExpr);
-
-		Set<Var> projectionVars = getProjectionVars(statementPatterns);
-
-		// Create BNodeGenerators for all anonymous variables
-		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
-
-		for (Var var : projectionVars) {
-			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
-				ValueExpr valueExpr;
-
-				if (var.hasValue()) {
-					valueExpr = new ValueConstant(var.getValue());
-				}
-				else {
-					valueExpr = new BNodeGenerator();
-				}
-
-				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
-			}
-		}
-
-		if (!extElemMap.isEmpty()) {
-			result = new Extension(result, extElemMap.values());
-		}
-
-		// Create a Projection for each StatementPattern in the clause
-		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
-
-		for (StatementPattern sp : statementPatterns) {
-			ProjectionElemList projElemList = new ProjectionElemList();
-
-			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
-			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
-			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
-
-			if (sp.getContextVar() != null) {
-				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
-			}
-
-			projList.add(projElemList);
-		}
-
-		if (projList.size() == 1) {
-			result = new Projection(result, projList.get(0));
-		}
-		else if (projList.size() > 1) {
-			result = new MultiProjection(result, projList);
-		}
-		else {
-			// Empty constructor
-			result = new EmptySet();
-		}
-
-		result = new Reduced(result);
-
-		return new InsertData(result);
+		ASTUnparsedQuadDataBlock dataBlock = node.jjtGetChild(ASTUnparsedQuadDataBlock.class);
+		return new InsertData(dataBlock.getDataBlock());
 	}
 
 	@Override
@@ -209,105 +115,9 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 		throws VisitorException
 	{
 
-		TupleExpr result = new SingletonSet();
-
-		// Collect construct triples
-		GraphPattern parentGP = graphPattern;
-		graphPattern = new GraphPattern();
-
-		// inherit scope & context
-		graphPattern.setStatementPatternScope(parentGP.getStatementPatternScope());
-		graphPattern.setContextVar(parentGP.getContextVar());
-
-		Object algebraExpr = node.jjtGetChild(0).jjtAccept(this, data);
-
-		if (algebraExpr instanceof ValueExpr) { // named graph identifier
-			Var contextVar = mapValueExprToVar((ValueExpr)algebraExpr);
-			graphPattern.setContextVar(contextVar);
-			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-		}
-
-		for (int i = 1; i < node.jjtGetNumChildren(); i++) {
-			node.jjtGetChild(i).jjtAccept(this, data);
-		}
-
-		TupleExpr deleteExpr = graphPattern.buildTupleExpr();
-
-		VarCollector collector = new VarCollector();
-		deleteExpr.visit(collector);
-		for (Var var : collector.getCollectedVars()) {
-			if (!var.hasValue()) {
-				if (var.isAnonymous()) {
-					// blank node in delete data not allowed
-					throw new VisitorException("DELETE DATA may not contain blank nodes");
-				}
-				else {
-					// var in delete data not allowed
-					throw new VisitorException("DELETE DATA may not contain variables");
-				}
-			}
-		}
-
-		graphPattern = parentGP;
-
-		// Retrieve all StatementPatterns from the insert expression
-		List<StatementPattern> statementPatterns = StatementPatternCollector.process(deleteExpr);
-
-		Set<Var> projectionVars = getProjectionVars(statementPatterns);
-
-		// Create BNodeGenerators for all anonymous variables
-		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
-
-		for (Var var : projectionVars) {
-			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
-				ValueExpr valueExpr;
-
-				if (var.hasValue()) {
-					valueExpr = new ValueConstant(var.getValue());
-				}
-				else {
-					valueExpr = new BNodeGenerator();
-				}
-
-				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
-			}
-		}
-
-		if (!extElemMap.isEmpty()) {
-			result = new Extension(result, extElemMap.values());
-		}
-
-		// Create a Projection for each StatementPattern in the clause
-		List<ProjectionElemList> projList = new ArrayList<ProjectionElemList>();
-
-		for (StatementPattern sp : statementPatterns) {
-			ProjectionElemList projElemList = new ProjectionElemList();
-
-			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
-			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
-			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
-
-			if (sp.getContextVar() != null) {
-				projElemList.addElement(new ProjectionElem(sp.getContextVar().getName(), "context"));
-			}
-
-			projList.add(projElemList);
-		}
-
-		if (projList.size() == 1) {
-			result = new Projection(result, projList.get(0));
-		}
-		else if (projList.size() > 1) {
-			result = new MultiProjection(result, projList);
-		}
-		else {
-			// Empty constructor
-			result = new EmptySet();
-		}
-
-		result = new Reduced(result);
-
-		return new DeleteData(result);
+		ASTUnparsedQuadDataBlock dataBlock = node.jjtGetChild(ASTUnparsedQuadDataBlock.class);
+		return new DeleteData(dataBlock.getDataBlock());
+	
 	}
 
 	@Override

@@ -185,7 +185,7 @@ public class TriGParser extends TurtleParser {
 		// }
 
 		if (c == '{') {
-			context = contextOrSubject;
+			setContext(contextOrSubject);
 
 			c = skipWSC();
 
@@ -212,6 +212,8 @@ public class TriGParser extends TurtleParser {
 			}
 		}
 		else {
+			setContext(null);
+			
 			// Did not turn out to be a graph, so assign it to subject instead and
 			// parse from here to triples
 			if (foundContextOrSubject) {
@@ -276,9 +278,17 @@ public class TriGParser extends TurtleParser {
 	protected void reportStatement(Resource subj, URI pred, Value obj)
 		throws RDFParseException, RDFHandlerException
 	{
-		Statement st = createStatement(subj, pred, obj, context);
-		if (rdfHandler != null) {
+		Statement st = createStatement(subj, pred, obj, getContext());
+		if(rdfHandler != null) {
 			rdfHandler.handleStatement(st);
 		}
+	}
+	
+	protected void setContext(Resource context) {
+		this.context = context;
+	}
+	
+	protected Resource getContext() {
+		return context;
 	}
 }

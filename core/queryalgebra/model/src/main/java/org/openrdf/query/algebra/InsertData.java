@@ -21,58 +21,26 @@ package org.openrdf.query.algebra;
  */
 public class InsertData extends QueryModelNodeBase implements UpdateExpr {
 
-	private TupleExpr insertExpr;
-
-	public InsertData(TupleExpr insertExpr) {
-		setInsertExpr(insertExpr);
+	private final String dataBlock;
+	
+	public InsertData(String dataBlock) {
+		this.dataBlock = dataBlock;
 	}
-
+	
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
 		visitor.meet(this);
 	}
-
-	@Override
-	public <X extends Exception> void visitChildren(QueryModelVisitor<X> visitor)
-		throws X
-	{
-		if (insertExpr != null) {
-			insertExpr.visit(visitor);
-		}
-		super.visitChildren(visitor);
+	
+	public String getDataBlock() {
+		return dataBlock;
 	}
 
-	@Override
-	public void replaceChildNode(QueryModelNode current, QueryModelNode replacement) {
-		if (insertExpr == current) {
-			setInsertExpr((TupleExpr)replacement);
-		}
-		else {
-			super.replaceChildNode(current, replacement);
-		}
-	}
 
 	@Override
 	public InsertData clone() {
-
-		TupleExpr insertClone = insertExpr != null ? insertExpr.clone() : null;
-		return new InsertData(insertClone);
-	}
-
-	/**
-	 * @param insertExpr
-	 *        The insertExpr to set.
-	 */
-	public void setInsertExpr(TupleExpr insertExpr) {
-		this.insertExpr = insertExpr;
-	}
-
-	/**
-	 * @return Returns the insertExpr.
-	 */
-	public TupleExpr getInsertExpr() {
-		return insertExpr;
+		return new InsertData(dataBlock);
 	}
 
 	public boolean isSilent() {

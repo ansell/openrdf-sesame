@@ -58,7 +58,17 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	protected Repository createRepository() {
 		return new HTTPRepository(HTTPMemServer.INFERENCE_REPOSITORY_URL);
 	}
+	
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
+	@Override
+	public void testTransactionIsolationForRead()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
+	}
 
+	
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
