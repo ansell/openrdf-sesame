@@ -16,6 +16,10 @@
  */
 package org.openrdf.http.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,8 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import info.aduna.io.IOUtil;
@@ -41,12 +45,12 @@ import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.rio.RDFFormat;
 
-public class ProtocolTest extends TestCase {
+public class ProtocolTest {
 
-	private TestServer server;
+	private static TestServer server;
 
-	@Override
-	protected void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new TestServer();
@@ -54,17 +58,13 @@ public class ProtocolTest extends TestCase {
 			server.start();
 		}
 		catch (Exception e) {
-			try {
-				server.stop();
-			}
-			catch (Exception e1) {
-			}
+			server.stop();
 			throw e;
 		}
 	}
 
-	@Override
-	protected void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
 		server.stop();
