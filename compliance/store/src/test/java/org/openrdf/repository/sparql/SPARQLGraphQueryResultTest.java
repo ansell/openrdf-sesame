@@ -16,6 +16,9 @@
  */
 package org.openrdf.repository.sparql;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.GraphQueryResultTest;
 import org.openrdf.repository.Repository;
@@ -29,16 +32,15 @@ import org.openrdf.repository.http.HTTPMemServer;
 public class SPARQLGraphQueryResultTest extends GraphQueryResultTest {
 
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
@@ -46,12 +48,12 @@ public class SPARQLGraphQueryResultTest extends GraphQueryResultTest {
 		}
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
+		server = null;
 	}
 	
 	@Override
