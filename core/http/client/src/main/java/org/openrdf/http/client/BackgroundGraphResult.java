@@ -108,8 +108,9 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 	{
 		super.handleClose();
 		closed = true;
-		if (parserThread != null) {
-			parserThread.interrupt();
+		final Thread thread = parserThread;
+		if (thread != null) {
+			thread.interrupt();
 		}
 		try {
 			queue.close();
