@@ -16,9 +16,13 @@
  */
 package org.openrdf.repository;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -27,13 +31,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.impl.DatasetImpl;
 
-public abstract class SparqlDatasetTest extends TestCase {
+public abstract class SparqlDatasetTest {
 
 	public String queryNoFrom = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
 			+ "SELECT (COUNT(DISTINCT ?name) as ?c) \n" + " WHERE { ?x foaf:name  ?name . } ";
@@ -92,42 +95,42 @@ public abstract class SparqlDatasetTest extends TestCase {
 		}
 		result.close();
 	}
-	
+
 	@Test
 	public void testWithFrom()
-			throws Exception
-		{
-			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryWithFrom);
-			TupleQueryResult result = query.evaluate();
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryWithFrom);
+		TupleQueryResult result = query.evaluate();
 
-			assertTrue(result.hasNext());
+		assertTrue(result.hasNext());
 
-			if (result.hasNext()) {
-				BindingSet bs = result.next();
-				assertFalse(result.hasNext());
+		if (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertFalse(result.hasNext());
 
-				Literal count = (Literal)bs.getValue("c");
-				assertEquals(2, count.intValue());
-			}
-			result.close();
-
-			query.setDataset(dataset);
-			result = query.evaluate();
-
-			assertTrue(result.hasNext());
-
-			if (result.hasNext()) {
-				BindingSet bs = result.next();
-				assertFalse(result.hasNext());
-
-				Literal count = (Literal)bs.getValue("c");
-				assertEquals(2, count.intValue());
-			}
-			result.close();
+			Literal count = (Literal)bs.getValue("c");
+			assertEquals(2, count.intValue());
 		}
+		result.close();
 
-	@Override
-	protected void setUp()
+		query.setDataset(dataset);
+		result = query.evaluate();
+
+		assertTrue(result.hasNext());
+
+		if (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertFalse(result.hasNext());
+
+			Literal count = (Literal)bs.getValue("c");
+			assertEquals(2, count.intValue());
+		}
+		result.close();
+	}
+
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		repository = createRepository();
@@ -161,8 +164,8 @@ public abstract class SparqlDatasetTest extends TestCase {
 	protected abstract Repository newRepository()
 		throws Exception;
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		conn.close();

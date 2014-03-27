@@ -18,6 +18,8 @@ package org.openrdf.repository.http;
 
 import static org.junit.Assert.fail;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,16 +31,15 @@ import org.openrdf.rio.RDFFormat;
 
 public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
@@ -46,11 +47,10 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 		}
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
 	}
 
@@ -67,8 +67,7 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	{
 		System.err.println("temporarily disabled testReadOfAddedStatement1s() for HTTPRepository");
 	}
-	
-	
+
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
@@ -77,7 +76,7 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	{
 		System.err.println("temporarily disabled testReadOfAddedStatement2() for HTTPRepository");
 	}
-	
+
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
@@ -87,7 +86,6 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
 	}
 
-	
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
@@ -184,7 +182,7 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
 	}
-	
+
 	@Test
 	@Override
 	public void testAddMalformedLiteralsDefaultConfig()

@@ -16,23 +16,27 @@
  */
 package org.openrdf.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.UnsupportedRDFormatException;
 
-public abstract class GraphQueryResultTest extends TestCase {
+public abstract class GraphQueryResultTest {
 
 	private Repository rep;
 
@@ -50,7 +54,8 @@ public abstract class GraphQueryResultTest extends TestCase {
 
 	private String multipleConstructQuery;
 
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		rep = createRepository();
@@ -60,8 +65,8 @@ public abstract class GraphQueryResultTest extends TestCase {
 		addData();
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		con.close();
@@ -70,7 +75,6 @@ public abstract class GraphQueryResultTest extends TestCase {
 		rep.shutDown();
 		rep = null;
 
-		super.tearDown();
 	}
 
 	protected Repository createRepository()
@@ -119,6 +123,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDescribeEmpty()
 		throws Exception
 	{
@@ -129,6 +134,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 		assertTrue("Query result should be empty", model.isEmpty());
 	}
 
+	@Test
 	public void testDescribeSingle()
 		throws Exception
 	{
@@ -140,6 +146,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 		assertEquals(1, model.size());
 	}
 
+	@Test
 	public void testDescribeMultiple()
 		throws Exception
 	{
@@ -151,6 +158,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 		assertEquals(4, model.size());
 	}
 
+	@Test
 	public void testConstructEmpty()
 		throws Exception
 	{
@@ -161,6 +169,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 		assertTrue("Query result should be empty", model.isEmpty());
 	}
 
+	@Test
 	public void testConstructSingle()
 		throws Exception
 	{
@@ -172,6 +181,7 @@ public abstract class GraphQueryResultTest extends TestCase {
 		assertEquals(1, model.size());
 	}
 
+	@Test
 	public void testConstructMultiple()
 		throws Exception
 	{

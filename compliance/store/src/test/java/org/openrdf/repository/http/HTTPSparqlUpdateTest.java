@@ -19,6 +19,8 @@ package org.openrdf.repository.http;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,17 +36,16 @@ import org.openrdf.repository.Repository;
  */
 public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
+
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
-
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
@@ -52,14 +53,13 @@ public class HTTPSparqlUpdateTest extends SPARQLUpdateTest {
 		}
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
 	}
-
+	
 	@Override
 	protected Repository newRepository()
 		throws Exception
