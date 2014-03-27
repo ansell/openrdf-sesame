@@ -84,8 +84,9 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 	{
 		synchronized (parserThreadLock) {
 			closed = true;
-			if (parserThread != null) {
-				parserThread.interrupt();
+			final Thread thread = parserThread;
+			if (thread != null) {
+				thread.interrupt();
 			}
 		}
 		super.handleClose();
