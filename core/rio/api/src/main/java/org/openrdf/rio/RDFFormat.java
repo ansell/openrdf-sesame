@@ -175,8 +175,9 @@ public class RDFFormat extends FileFormat {
 	 * @see <a href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">The
 	 *      TriG Syntax</a>
 	 */
-	public static final RDFFormat TRIG = new RDFFormat("TriG", Arrays.asList("application/x-trig"),
-			Charset.forName("UTF-8"), Arrays.asList("trig"), null, SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
+	public static final RDFFormat TRIG = new RDFFormat("TriG",
+			Arrays.asList("application/trig", "application/x-trig"), Charset.forName("UTF-8"),
+			Arrays.asList("trig"), null, SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
 	 * A binary RDF format.
