@@ -49,38 +49,62 @@ import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest extends TestCase {
-	
-	
+
 	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
 
 	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
 
 	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
-	
+
 	// create some objects that we will use throughout this test
 	URI subject = new URIImpl("urn:subj");
+
 	URI subject2 = new URIImpl("urn:subj2");
+
 	URI predicate1 = new URIImpl("urn:pred1");
+
 	URI predicate2 = new URIImpl("urn:pred2");
+
 	Literal object1 = new LiteralImpl("object1");
+
 	Literal object2 = new LiteralImpl("object2");
+
 	Literal object3 = new LiteralImpl("cats");
+
 	Literal object4 = new LiteralImpl("dogs");
+
 	Literal object5 = new LiteralImpl("chicken");
+
 	Statement statement11 = new StatementImpl(subject, predicate1, object1);
+
 	Statement statement12 = new StatementImpl(subject, predicate2, object2);
+
 	Statement statement21 = new StatementImpl(subject2, predicate1, object3);
+
 	Statement statement22 = new StatementImpl(subject2, predicate2, object4);
+
 	Statement statement23 = new StatementImpl(subject2, predicate2, object5);
-	ContextStatementImpl statementContext111 = new ContextStatementImpl(subject, predicate1, object1, CONTEXT_1);
-	ContextStatementImpl statementContext121 = new ContextStatementImpl(subject, predicate2, object2, CONTEXT_1);
-	ContextStatementImpl statementContext211 = new ContextStatementImpl(subject2, predicate1, object3, CONTEXT_1);
-	ContextStatementImpl statementContext222 = new ContextStatementImpl(subject2, predicate2, object4, CONTEXT_2);
-	ContextStatementImpl statementContext232 = new ContextStatementImpl(subject2, predicate2, object5, CONTEXT_2);
+
+	ContextStatementImpl statementContext111 = new ContextStatementImpl(subject, predicate1, object1,
+			CONTEXT_1);
+
+	ContextStatementImpl statementContext121 = new ContextStatementImpl(subject, predicate2, object2,
+			CONTEXT_1);
+
+	ContextStatementImpl statementContext211 = new ContextStatementImpl(subject2, predicate1, object3,
+			CONTEXT_1);
+
+	ContextStatementImpl statementContext222 = new ContextStatementImpl(subject2, predicate2, object4,
+			CONTEXT_2);
+
+	ContextStatementImpl statementContext232 = new ContextStatementImpl(subject2, predicate2, object5,
+			CONTEXT_2);
 
 	// add a statement to an index
 	RAMDirectory directory;
+
 	StandardAnalyzer analyzer;
+
 	LuceneIndex index;
 
 	@Override
@@ -160,10 +184,10 @@ public class LuceneIndexTest extends TestCase {
 
 		searcher.close();
 		reader.close();
-		
+
 		// remove the first statement
 		index.removeStatement(statement11);
-		
+
 		// check that that statement is actually removed and that the other still
 		// exists
 		reader = IndexReader.open(directory);
@@ -180,9 +204,9 @@ public class LuceneIndexTest extends TestCase {
 
 		assertFalse(docs.next());
 		docs.close();
-		
+
 		reader.close();
-		
+
 		// remove the other statement
 		index.removeStatement(statement12);
 
@@ -192,8 +216,10 @@ public class LuceneIndexTest extends TestCase {
 		assertEquals(0, reader.numDocs());
 		reader.close();
 	}
-	
-	public void testAddMultiple() throws Exception{
+
+	public void testAddMultiple()
+		throws Exception
+	{
 		// add a statement to an index
 		HashSet<Statement> added = new HashSet<Statement>();
 		HashSet<Statement> removed = new HashSet<Statement>();
@@ -207,13 +233,13 @@ public class LuceneIndexTest extends TestCase {
 		IndexReader reader = IndexReader.open(directory);
 		assertEquals(2, reader.numDocs());
 		reader.close();
-		
+
 		// check the documents
 		Document document = index.getDocuments(subject).iterator().next();
 		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
 		assertStatement(statement11, document);
 		assertStatement(statement12, document);
-		
+
 		document = index.getDocuments(subject2).iterator().next();
 		assertEquals(subject2.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
 		assertStatement(statement21, document);
@@ -223,40 +249,42 @@ public class LuceneIndexTest extends TestCase {
 		Set<String> texts = new HashSet<String>();
 		texts.add("cats");
 		texts.add("dogs");
-// FIXME
-//		assertTexts(texts, document);
+		// FIXME
+		// assertTexts(texts, document);
 
-		
 		// add/remove one
 		added.clear();
 		removed.clear();
 		added.add(statement23);
 		removed.add(statement22);
 		index.addRemoveStatements(added, removed);
-		
+
 		// check doc 2
 		document = index.getDocuments(subject2).iterator().next();
 		assertEquals(subject2.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
 		assertStatement(statement21, document);
 		assertStatement(statement23, document);
 		assertNoStatement(statement22, document);
-		
+
 		// check if the text field stores all added and no deleted string values
 		texts.remove("dogs");
 		texts.add("chicken");
-// FIXME
-//		assertTexts(texts, document);
-		
+		// FIXME
+		// assertTexts(texts, document);
+
 		// TODO: check deletion of the rest
-		
+
 	}
-	
+
 	/**
-	 * Contexts can only be tested in combination with a sail, 
-	 * as the triples have to be retrieved from the sail
+	 * Contexts can only be tested in combination with a sail, as the triples
+	 * have to be retrieved from the sail
+	 * 
 	 * @throws Exception
 	 */
-	public void testContexts()throws Exception {
+	public void testContexts()
+		throws Exception
+	{
 		// add a sail
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
@@ -268,7 +296,7 @@ public class LuceneIndexTest extends TestCase {
 		// create a Repository wrapping the LuceneSail
 		SailRepository repository = new SailRepository(sail);
 		repository.initialize();
-		
+
 		// now add the statements through the repo
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
@@ -280,35 +308,39 @@ public class LuceneIndexTest extends TestCase {
 			connection.add(statementContext222, statementContext222.getContext());
 			connection.add(statementContext232, statementContext232.getContext());
 			connection.commit();
-				
+
 			// check if they are there
 			assertStatement(statementContext111);
 			assertStatement(statementContext121);
 			assertStatement(statementContext211);
 			assertStatement(statementContext222);
 			assertStatement(statementContext232);
-	
+
 			// delete context 1
-			connection.clear(new Resource[]{CONTEXT_1});
+			connection.clear(new Resource[] { CONTEXT_1 });
 			connection.commit();
 			assertNoStatement(statementContext111);
 			assertNoStatement(statementContext121);
 			assertNoStatement(statementContext211);
 			assertStatement(statementContext222);
 			assertStatement(statementContext232);
-		} finally {
+		}
+		finally {
 			// close repo
 			connection.close();
 			repository.shutDown();
 		}
 	}
-	
+
 	/**
-	 * Contexts can only be tested in combination with a sail, 
-	 * as the triples have to be retrieved from the sail
+	 * Contexts can only be tested in combination with a sail, as the triples
+	 * have to be retrieved from the sail
+	 * 
 	 * @throws Exception
 	 */
-	public void testContextsRemoveContext2()throws Exception {
+	public void testContextsRemoveContext2()
+		throws Exception
+	{
 		// add a sail
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
@@ -316,11 +348,11 @@ public class LuceneIndexTest extends TestCase {
 		LuceneSail sail = new LuceneSail();
 		sail.setBaseSail(memoryStore);
 		sail.setLuceneIndex(index);
-		
+
 		// create a Repository wrapping the LuceneSail
 		SailRepository repository = new SailRepository(sail);
 		repository.initialize();
-		
+
 		// now add the statements through the repo
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
@@ -332,29 +364,30 @@ public class LuceneIndexTest extends TestCase {
 			connection.add(statementContext222, statementContext222.getContext());
 			connection.add(statementContext232, statementContext232.getContext());
 			connection.commit();
-			
+
 			// check if they are there
 			assertStatement(statementContext111);
 			assertStatement(statementContext121);
 			assertStatement(statementContext211);
 			assertStatement(statementContext222);
 			assertStatement(statementContext232);
-			
+
 			// delete context 2
-			connection.clear(new Resource[]{CONTEXT_2});
+			connection.clear(new Resource[] { CONTEXT_2 });
 			connection.commit();
 			assertStatement(statementContext111);
 			assertStatement(statementContext121);
 			assertStatement(statementContext211);
 			assertNoStatement(statementContext222);
 			assertNoStatement(statementContext232);
-		} finally {
+		}
+		finally {
 			// close repo
 			connection.close();
 			repository.shutDown();
 		}
 	}
-	
+
 	public void testRejectedDatatypes() {
 		URI STRING = new URIImpl("http://www.w3.org/2001/XMLSchema#string");
 		URI FLOAT = new URIImpl("http://www.w3.org/2001/XMLSchema#float");
@@ -367,15 +400,19 @@ public class LuceneIndexTest extends TestCase {
 		assertEquals("Is the third literal accepted?", true, index.accept(literal3));
 		assertEquals("Is the fourth literal accepted?", false, index.accept(literal4));
 	}
-	
-	private void assertStatement(Statement statement) throws Exception {
+
+	private void assertStatement(Statement statement)
+		throws Exception
+	{
 		Document document = index.getDocument(statement.getSubject(), statement.getContext());
 		if (document == null)
-			fail("Missing document "+statement.getSubject());
+			fail("Missing document " + statement.getSubject());
 		assertStatement(statement, document);
 	}
-	
-	private void assertNoStatement(Statement statement) throws Exception {
+
+	private void assertNoStatement(Statement statement)
+		throws Exception
+	{
 		Document document = index.getDocument(statement.getSubject(), statement.getContext());
 		if (document == null)
 			return;
@@ -388,15 +425,14 @@ public class LuceneIndexTest extends TestCase {
 	 */
 	private void assertStatement(Statement statement, Document document) {
 		Field[] fields = document.getFields(statement.getPredicate().toString());
-		assertNotNull("field "+statement.getPredicate()+" not found in document "+document, fields);
-		for (Field f:fields)
-		{
+		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
+		for (Field f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
-					return;
+				return;
 		}
-		fail("Statement not found in document "+statement);
+		fail("Statement not found in document " + statement);
 	}
-	
+
 	/**
 	 * @param statement112
 	 * @param document
@@ -405,14 +441,13 @@ public class LuceneIndexTest extends TestCase {
 		Field[] fields = document.getFields(statement.getPredicate().toString());
 		if (fields == null)
 			return;
-		for (Field f:fields)
-		{
+		for (Field f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
-				fail("Statement should not be found in document "+statement);
+				fail("Statement should not be found in document " + statement);
 		}
-		
+
 	}
-	
+
 	/*private void assertTexts(Set<String> texts, Document document) {
 		Set<String> toFind = new HashSet<String>(texts);
 		Set<String> found = new HashSet<String>();

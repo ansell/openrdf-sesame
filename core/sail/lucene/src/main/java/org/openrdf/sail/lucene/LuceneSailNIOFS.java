@@ -25,11 +25,13 @@ import org.apache.lucene.store.NIOFSDirectory;
 
 import org.openrdf.sail.SailException;
 
-
 /**
- * LuceneSail which uses a NIOFSDirectory instead of MMapDirectory to avoid the JVM crash
- * (see <a href="http://stackoverflow.com/questions/8224843/jvm-crashes-on-lucene-datainput-readvint">http://stackoverflow.com/questions/8224843/jvm-crashes-on-lucene-datainput-readvint</a>).
- *
+ * LuceneSail which uses a NIOFSDirectory instead of MMapDirectory to avoid the
+ * JVM crash (see <a href=
+ * "http://stackoverflow.com/questions/8224843/jvm-crashes-on-lucene-datainput-readvint"
+ * >http://stackoverflow.com/questions/8224843/jvm-crashes-on-lucene-datainput-
+ * readvint</a>).
+ * 
  * @author andriy.nikolov
  */
 public class LuceneSailNIOFS extends LuceneSail {
@@ -40,8 +42,9 @@ public class LuceneSailNIOFS extends LuceneSail {
 	{
 		if (parameters.containsKey(LUCENE_DIR_KEY)) {
 			FSDirectory dir = new NIOFSDirectory(new File(parameters.getProperty(LUCENE_DIR_KEY)), null);
-			setLuceneIndex(new LuceneIndex(dir,analyzer));
-		} else
+			setLuceneIndex(new LuceneIndex(dir, analyzer));
+		}
+		else
 			super.initializeLuceneIndex(analyzer);
 	}
 }

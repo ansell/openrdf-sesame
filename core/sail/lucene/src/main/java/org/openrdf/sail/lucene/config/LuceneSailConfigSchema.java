@@ -26,8 +26,11 @@ import org.openrdf.sail.lucene.LuceneSail;
  * {@link LuceneSailFactory}s to initialize {@link LuceneSail}s.
  */
 public class LuceneSailConfigSchema {
-	
-	/** The LuceneSail schema namespace (<tt>http://www.openrdf.org/config/sail/lucene#</tt>). */
+
+	/**
+	 * The LuceneSail schema namespace (
+	 * <tt>http://www.openrdf.org/config/sail/lucene#</tt>).
+	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/lucene#";
 
 	public static final URI INDEX_DIR;

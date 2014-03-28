@@ -45,7 +45,6 @@ import org.openrdf.sail.SailException;
 /**
  * A QueryInterpreter creates a set of QuerySpecs based on Lucene-related
  * StatementPatterns that it finds in a TupleExpr.
- * 
  * <p>
  * QuerySpecs will only be created when the set of StatementPatterns is complete
  * (i.e. contains at least a matches and a query statement connected properly)
@@ -143,13 +142,14 @@ public class QuerySpecBuilder {
 				Value propertyValue = propertyVar.hasValue() ? propertyVar.getValue()
 						: bindings.getValue(propertyVar.getName());
 
-				// if property is a restriction, it should be an URI 
+				// if property is a restriction, it should be an URI
 				if (propertyValue instanceof URI) {
 					propertyURI = (URI)propertyValue;
 				}
 				// otherwise, it should be a variable
 				else if (propertyValue != null) {
-					failOrWarn(PROPERTY + " should have a property URI or a variable as object: " + propertyVar.getValue());
+					failOrWarn(PROPERTY + " should have a property URI or a variable as object: "
+							+ propertyVar.getValue());
 					continue;
 				}
 			}
@@ -174,8 +174,8 @@ public class QuerySpecBuilder {
 			}
 
 			// register a QuerySpec with these details
-			result.add(new QuerySpec(matchesPattern, queryPattern, propertyPattern, scorePattern, snippetPattern, typePattern,
-					subject, queryString, propertyURI));
+			result.add(new QuerySpec(matchesPattern, queryPattern, propertyPattern, scorePattern,
+					snippetPattern, typePattern, subject, queryString, propertyURI));
 		}
 
 		// fail on superflous typePattern, query, score, or snippet patterns.

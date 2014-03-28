@@ -26,27 +26,28 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
-
 /**
- * A buffer collecting all transaction operations (triples that need to be added,
- * removed, clear operations) so that they can be executed at once during commit.
+ * A buffer collecting all transaction operations (triples that need to be
+ * added, removed, clear operations) so that they can be executed at once during
+ * commit.
  * 
  * @author sauermann
  * @author andriy.nikolov
  */
 public class LuceneSailBuffer {
-	
+
 	private static class ContextAwareStatementImpl implements Statement {
 
 		private static final long serialVersionUID = -2976244503679342649L;
+
 		private Statement delegate;
-		
+
 		public ContextAwareStatementImpl(Statement delegate) {
-			if(delegate==null)
+			if (delegate == null)
 				throw new RuntimeException("Trying to add/remove a null statement");
 			this.delegate = delegate;
 		}
-		
+
 		@Override
 		public Resource getSubject() {
 			return delegate.getSubject();
@@ -69,23 +70,21 @@ public class LuceneSailBuffer {
 
 		@Override
 		public boolean equals(Object obj) {
-			if(this == obj)
+			if (this == obj)
 				return true;
-			if(obj instanceof Statement) {
+			if (obj instanceof Statement) {
 				Statement other = (Statement)obj;
-				
-				return this.delegate.equals(other) && 
-						( (this.getContext() == null && other.getContext() == null) 
-								|| (this.getContext()!=null && other.getContext()!=null && this.getContext().equals(other.getContext())));
+
+				return this.delegate.equals(other)
+						&& ((this.getContext() == null && other.getContext() == null) || (this.getContext() != null
+								&& other.getContext() != null && this.getContext().equals(other.getContext())));
 			}
 			return false;
 		}
 
 		@Override
 		public int hashCode() {
-			return delegate.hashCode() 
-					+ ( (getContext()==null) 
-							? 0 : 29791 * getContext().hashCode());
+			return delegate.hashCode() + ((getContext() == null) ? 0 : 29791 * getContext().hashCode());
 		}
 
 		@Override
@@ -94,23 +93,24 @@ public class LuceneSailBuffer {
 		}
 
 	}
-	
-	
+
 	public static class Operation {
-		
+
 	}
-	
+
 	public static class AddRemoveOperation extends Operation {
-	
+
 		HashSet<Statement> added = new HashSet<Statement>();
+
 		HashSet<Statement> removed = new HashSet<Statement>();
+
 		public void add(Statement s) {
-			if(!removed.remove(s))
+			if (!removed.remove(s))
 				added.add(s);
 		}
-		
+
 		public void remove(Statement s) {
-			if(!added.remove(s))
+			if (!added.remove(s))
 				removed.add(s);
 		}
 
@@ -121,69 +121,72 @@ public class LuceneSailBuffer {
 			return added;
 		}
 
-		
 		/**
 		 * @return Returns the removed.
 		 */
 		public HashSet<Statement> getRemoved() {
 			return removed;
 		}
-		
+
 	}
-	
+
 	public static class ClearContextOperation extends Operation {
+
 		Resource[] contexts;
+
 		public ClearContextOperation(Resource[] contexts) {
 			this.contexts = contexts;
 		}
-		
+
 		/**
 		 * @return Returns the contexts.
 		 */
 		public Resource[] getContexts() {
 			return contexts;
 		}
-		
+
 	}
-	
+
 	public static class ClearOperation extends Operation {
-		
+
 	}
-	
+
 	private ArrayList<Operation> operations = new ArrayList<Operation>();
-	
+
 	/**
 	 * Add this statement to the buffer
-	 * @param s the statement
+	 * 
+	 * @param s
+	 *        the statement
 	 */
 	public synchronized void add(Statement s) {
 		// check if the last operation was adding/Removing triples
-		Operation o = (operations.isEmpty()) ? null : operations.get(operations.size()-1);
-		if ((o == null) || !(o instanceof AddRemoveOperation))
-		{
+		Operation o = (operations.isEmpty()) ? null : operations.get(operations.size() - 1);
+		if ((o == null) || !(o instanceof AddRemoveOperation)) {
 			o = new AddRemoveOperation();
 			operations.add(o);
 		}
 		AddRemoveOperation aro = (AddRemoveOperation)o;
 		aro.add(new ContextAwareStatementImpl(s));
 	}
-	
+
 	/**
 	 * Remove this statement to the buffer
-	 * @param s the statement
+	 * 
+	 * @param s
+	 *        the statement
 	 */
 	public synchronized void remove(Statement s) {
 		// check if the last operation was adding/Removing triples
-		Operation o = (operations.isEmpty()) ? null : operations.get(operations.size()-1);
-		if ((o == null) || !(o instanceof AddRemoveOperation))
-		{
+		Operation o = (operations.isEmpty()) ? null : operations.get(operations.size() - 1);
+		if ((o == null) || !(o instanceof AddRemoveOperation)) {
 			o = new AddRemoveOperation();
 			operations.add(o);
 		}
 		AddRemoveOperation aro = (AddRemoveOperation)o;
 		aro.remove(new ContextAwareStatementImpl(s));
 	}
-	
+
 	public synchronized void clear(Resource[] contexts) {
 		if ((contexts == null) || (contexts.length == 0))
 			operations.add(new ClearOperation());
@@ -191,17 +194,18 @@ public class LuceneSailBuffer {
 			operations.add(new ClearContextOperation(contexts));
 	}
 
-	
 	/**
 	 * Iterator over the operations
+	 * 
 	 * @return
 	 */
 	public synchronized Iterator<Operation> operationsIterator() {
 		return operations.iterator();
 	}
-	
+
 	/**
 	 * the list of operations. You must not change it
+	 * 
 	 * @return
 	 */
 	public synchronized List<Operation> operations() {
@@ -209,17 +213,15 @@ public class LuceneSailBuffer {
 	}
 
 	/**
-	 * Optimize will remove any changes that are done before a 
-	 * clear()
+	 * Optimize will remove any changes that are done before a clear()
 	 */
 	public void optimize() {
-		for (int i = operations.size()-1; i>=0; i--) {
+		for (int i = operations.size() - 1; i >= 0; i--) {
 			Operation o = operations.get(i);
 			if (o instanceof ClearOperation) {
 				// remove everything before
 				// is is now the size of the operations to be removed
-				while (i>0)
-				{
+				while (i > 0) {
 					operations.remove(i);
 					i--;
 				}
@@ -234,7 +236,5 @@ public class LuceneSailBuffer {
 	public void reset() {
 		operations.clear();
 	}
-	
-
 
 }

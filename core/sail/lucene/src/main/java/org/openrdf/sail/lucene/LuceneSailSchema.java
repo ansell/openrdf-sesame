@@ -41,7 +41,8 @@ public class LuceneSailSchema {
 	public static final URI MATCHES;
 
 	static {
-		ValueFactory factory = new ValueFactoryImpl(); // compatible with beta4: creating a new factory
+		ValueFactory factory = new ValueFactoryImpl(); // compatible with beta4:
+																		// creating a new factory
 		LUCENE_QUERY = factory.createURI(NAMESPACE + "LuceneQuery");
 		SCORE = factory.createURI(NAMESPACE + "score");
 		QUERY = factory.createURI(NAMESPACE + "query");

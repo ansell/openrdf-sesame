@@ -23,9 +23,8 @@ import org.openrdf.query.algebra.Var;
 
 /**
  * A QuerySpec holds information extracted from a TupleExpr corresponding with a
- * single Lucene query.
- * Access the patterns or use the get-methods to get the names of the 
- * variables to bind.
+ * single Lucene query. Access the patterns or use the get-methods to get the
+ * names of the variables to bind.
  */
 public class QuerySpec {
 
@@ -47,9 +46,9 @@ public class QuerySpec {
 
 	private final URI propertyURI;
 
-	public QuerySpec(StatementPattern matchesPattern, StatementPattern queryPattern, StatementPattern propertyPattern,
-			StatementPattern scorePattern, StatementPattern snippetPattern, StatementPattern typePattern,
-			Resource subject, String queryString, URI propertyURI)
+	public QuerySpec(StatementPattern matchesPattern, StatementPattern queryPattern,
+			StatementPattern propertyPattern, StatementPattern scorePattern, StatementPattern snippetPattern,
+			StatementPattern typePattern, Resource subject, String queryString, URI propertyURI)
 	{
 		this.matchesPattern = matchesPattern;
 		this.queryPattern = queryPattern;
@@ -65,9 +64,10 @@ public class QuerySpec {
 	public StatementPattern getMatchesPattern() {
 		return matchesPattern;
 	}
-	
+
 	/**
 	 * return the name of the bound variable that should match the query
+	 * 
 	 * @return the name of the variable or null, if no name set
 	 */
 	public String getMatchesVariableName() {
@@ -80,24 +80,25 @@ public class QuerySpec {
 	public StatementPattern getQueryPattern() {
 		return queryPattern;
 	}
-	
+
 	public StatementPattern getPropertyPattern() {
 		return propertyPattern;
 	}
-	
+
 	public String getPropertyVariableName() {
 		if (propertyPattern != null)
 			return propertyPattern.getObjectVar().getName();
 		else
 			return null;
 	}
-	
+
 	public StatementPattern getScorePattern() {
 		return scorePattern;
 	}
-	
+
 	/**
 	 * The variable name associated with the query score
+	 * 
 	 * @return the name or null, if no score is queried in the pattern
 	 */
 	public String getScoreVariableName() {
@@ -110,7 +111,7 @@ public class QuerySpec {
 	public StatementPattern getSnippetPattern() {
 		return snippetPattern;
 	}
-	
+
 	public String getSnippetVariableName() {
 		if (snippetPattern != null)
 			return snippetPattern.getObjectVar().getName();
@@ -121,10 +122,11 @@ public class QuerySpec {
 	public StatementPattern getTypePattern() {
 		return typePattern;
 	}
-	
+
 	/**
-	 * the type of query, must equal {@link LuceneSailSchema#}.
-	 * A null type is possible, but not valid.
+	 * the type of query, must equal {@link LuceneSailSchema#}. A null type is
+	 * possible, but not valid.
+	 * 
 	 * @return the type of the Query or null, if no type assigned.
 	 */
 	public URI getQueryType() {
@@ -137,19 +139,22 @@ public class QuerySpec {
 	public Resource getSubject() {
 		return subject;
 	}
-	
+
 	/**
-	 * return the literal expression of the query or null,
-	 * if none set. (null values are possible, but not valid).
+	 * return the literal expression of the query or null, if none set. (null
+	 * values are possible, but not valid).
+	 * 
 	 * @return the query or null
 	 */
 	public String getQueryString() {
-		// this should be the same as ((Literal) queryPattern.getObjectVar().getValue()).getLabel();
+		// this should be the same as ((Literal)
+		// queryPattern.getObjectVar().getValue()).getLabel();
 		return queryString;
 	}
-	
+
 	/**
-	 * @return The URI of the property who's literal values should be searched, or <code>null</code> 
+	 * @return The URI of the property who's literal values should be searched,
+	 *         or <code>null</code>
 	 */
 	public URI getPropertyURI() {
 		return propertyURI;
@@ -172,9 +177,9 @@ public class QuerySpec {
 	}
 
 	private void append(StatementPattern pattern, StringBuilder buffer) {
-		if(pattern == null)
+		if (pattern == null)
 			return;
-		
+
 		buffer.append("   ");
 		buffer.append("StatementPattern\n");
 		append(pattern.getSubjectVar(), buffer);

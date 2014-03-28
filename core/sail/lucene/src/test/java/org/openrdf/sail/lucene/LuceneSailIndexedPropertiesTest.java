@@ -45,23 +45,23 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneSailIndexedPropertiesTest extends TestCase {
-	
+
 	protected LuceneSail sail;
 
 	protected Repository repository;
 
 	protected RepositoryConnection connection;
-	
+
 	public static final URI SUBJECT_1 = new URIImpl("urn:subject1");
 
 	public static final URI SUBJECT_2 = new URIImpl("urn:subject2");
 
 	public static final URI SUBJECT_3 = new URIImpl("urn:subject3");
-	
+
 	public static final URI SUBJECT_4 = new URIImpl("urn:subject4");
-	
+
 	public static final URI SUBJECT_5 = new URIImpl("urn:subject5");
-	
+
 	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
 
 	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
@@ -71,11 +71,10 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 	public static final URI RDFSLABEL = RDFS.LABEL;
 
 	public static final URI RDFSCOMMENT = RDFS.COMMENT;
-	
-	public static final URI FOAFNAME = new URIImpl("http://xmlns.com/foaf/0.1/name");
-	
-	public static final URI FOAFPLAN = new URIImpl("http://xmlns.com/foaf/0.1/plan");
 
+	public static final URI FOAFNAME = new URIImpl("http://xmlns.com/foaf/0.1/name");
+
+	public static final URI FOAFPLAN = new URIImpl("http://xmlns.com/foaf/0.1/plan");
 
 	@Override
 	public void setUp()
@@ -87,9 +86,9 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
 		sail = new LuceneSail();
 		Properties indexedFields = new Properties();
-		indexedFields.setProperty("index.1",RDFSLABEL.toString());
-		indexedFields.setProperty("index.2",RDFSCOMMENT.toString());
-		indexedFields.setProperty(FOAFNAME.toString(),RDFS.LABEL.toString());
+		indexedFields.setProperty("index.1", RDFSLABEL.toString());
+		indexedFields.setProperty("index.2", RDFSCOMMENT.toString());
+		indexedFields.setProperty(FOAFNAME.toString(), RDFS.LABEL.toString());
 		ByteArrayOutputStream indexedFieldsString = new ByteArrayOutputStream();
 		indexedFields.store(indexedFieldsString, "For testing");
 		sail.setParameter(LuceneSail.INDEXEDFIELDS, indexedFieldsString.toString());
@@ -99,20 +98,27 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		// create a Repository wrapping the LuceneSail
 		repository = new SailRepository(sail);
 		repository.initialize();
-		
+
 		// add some statements to it
 		connection = repository.getConnection();
 		connection.setAutoCommit(false);
 		connection.add(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"));
-		connection.add(SUBJECT_1, RDFSCOMMENT, new LiteralImpl("Groucho Marx is going to cut away the first part of the first party of the contract."));
+		connection.add(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
+				"Groucho Marx is going to cut away the first part of the first party of the contract."));
 		connection.add(SUBJECT_1, FOAFNAME, new LiteralImpl("groucho and harpo"));
-		
+
 		connection.add(SUBJECT_2, FOAFNAME, new LiteralImpl("the second resource"));
-		connection.add(SUBJECT_2, RDFSCOMMENT, new LiteralImpl("in the night at the opera, groucho is in a cabin on a ship."));
-		
+		connection.add(SUBJECT_2, RDFSCOMMENT, new LiteralImpl(
+				"in the night at the opera, groucho is in a cabin on a ship."));
+
 		connection.add(SUBJECT_3, RDFSLABEL, new LiteralImpl("the third resource"));
-		connection.add(SUBJECT_3, RDFSCOMMENT, new LiteralImpl("a not well known fact, groucho marx was not a smoker"));
-		connection.add(SUBJECT_3, FOAFPLAN, new LiteralImpl("groucho did not smoke cigars nor cigarillos")); // this should not be indexed
+		connection.add(SUBJECT_3, RDFSCOMMENT, new LiteralImpl(
+				"a not well known fact, groucho marx was not a smoker"));
+		connection.add(SUBJECT_3, FOAFPLAN, new LiteralImpl("groucho did not smoke cigars nor cigarillos")); // this
+																																				// should
+																																				// not
+																																				// be
+																																				// indexed
 		connection.commit();
 	}
 
@@ -123,31 +129,37 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		connection.close();
 		repository.shutDown();
 	}
-	
-	public void testTriplesStored() throws Exception {
+
+	public void testTriplesStored()
+		throws Exception
+	{
 		// are the triples stored in the underlying sail?
-		
+
 		assertTrue(connection.hasStatement(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, RDFSCOMMENT, new LiteralImpl("Groucho Marx is going to cut away the first part of the first party of the contract."), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
+				"Groucho Marx is going to cut away the first part of the first party of the contract."), false));
 		assertTrue(connection.hasStatement(SUBJECT_1, FOAFNAME, new LiteralImpl("groucho and harpo"), false));
-		
+
 		assertTrue(connection.hasStatement(SUBJECT_2, FOAFNAME, new LiteralImpl("the second resource"), false));
-		assertTrue(connection.hasStatement(SUBJECT_2, RDFSCOMMENT, new LiteralImpl("in the night at the opera, groucho is in a cabin on a ship."), false));
-		
+		assertTrue(connection.hasStatement(SUBJECT_2, RDFSCOMMENT, new LiteralImpl(
+				"in the night at the opera, groucho is in a cabin on a ship."), false));
+
 		assertTrue(connection.hasStatement(SUBJECT_3, RDFSLABEL, new LiteralImpl("the third resource"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, RDFSCOMMENT, new LiteralImpl("a not well known fact, groucho marx was not a smoker"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, FOAFPLAN, new LiteralImpl("groucho did not smoke cigars nor cigarillos"), false)); // this should not be indexed
+		assertTrue(connection.hasStatement(SUBJECT_3, RDFSCOMMENT, new LiteralImpl(
+				"a not well known fact, groucho marx was not a smoker"), false));
+		assertTrue(connection.hasStatement(SUBJECT_3, FOAFPLAN, new LiteralImpl(
+				"groucho did not smoke cigars nor cigarillos"), false)); // this
+																							// should
+																							// not be
+																							// indexed
 	}
 
 	public void testRegularQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		// fire a query for all subjects with a given term
-		String queryString = "SELECT Subject, Score "+
-			"FROM {Subject} <" + MATCHES + "> {} "+
-			" <" + QUERY + "> {Query}; "+
-			" <" + PROPERTY + "> {Property}; "+
-			" <" + SCORE + "> {Score} ";
+		String queryString = "SELECT Subject, Score " + "FROM {Subject} <" + MATCHES + "> {} " + " <" + QUERY
+				+ "> {Query}; " + " <" + PROPERTY + "> {Property}; " + " <" + SCORE + "> {Score} ";
 		{
 			TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 			query.setBinding("Query", new LiteralImpl("resource"));
@@ -175,7 +187,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 			TupleQueryResult result = query.evaluate();
 			// check the results
 			ArrayList<URI> uris = new ArrayList<URI>();
-			
+
 			BindingSet bindings = null;
 			while (result.hasNext()) {
 				bindings = result.next();
@@ -196,8 +208,5 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 			result.close();
 		}
 	}
-	
 
-	
-	
 }
