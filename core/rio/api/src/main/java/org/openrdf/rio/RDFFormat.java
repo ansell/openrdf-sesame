@@ -98,8 +98,7 @@ public class RDFFormat extends FileFormat {
 			SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/**
-	 * The <a href="http://www.w3.org/TR/rdf-testcases/#ntriples">N-Triples</a>
-	 * file format.
+	 * The <a href="http://www.w3.org/TR/n-triples/">N-Triples</a> file format.
 	 * <p>
 	 * The file extension <code>.nt</code> is recommend for N-Triples documents.
 	 * The media type is <code>application/n-triples</code> and encoding is in
@@ -114,8 +113,7 @@ public class RDFFormat extends FileFormat {
 			NO_CONTEXTS);
 
 	/**
-	 * The <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle</a> file
-	 * format.
+	 * The <a href="http://www.w3.org/TR/turtle/">Turtle</a> file format.
 	 * <p>
 	 * The file extension <code>.ttl</code> is recommend for Turtle documents.
 	 * The media type is <code>text/turtle</code>, but
@@ -123,8 +121,8 @@ public class RDFFormat extends FileFormat {
 	 * UTF-8.
 	 * </p>
 	 * 
-	 * @see <a href="http://www.w3.org/TeamSubmission/turtle/">Turtle - Terse RDF
-	 *      Triple Language</a>
+	 * @see <a href="http://www.w3.org/TR/turtle/">Turtle - Terse RDF Triple
+	 *      Language</a>
 	 */
 	public static final RDFFormat TURTLE = new RDFFormat("Turtle", Arrays.asList("text/turtle",
 			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"),
@@ -163,21 +161,20 @@ public class RDFFormat extends FileFormat {
 			Charset.forName("UTF-8"), Arrays.asList("xml", "trix"), null, SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
-	 * The <a
-	 * href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">TriG</a> file
-	 * format, a Turtle-based RDF serialization format that supports recording of
-	 * named graphs.
+	 * The <a href="http://www.w3.org/TR/trig/">TriG</a> file format, a
+	 * Turtle-based RDF serialization format that supports recording of named
+	 * graphs.
 	 * <p>
 	 * The file extension <code>.trig</code> is recommend for TriG documents. The
-	 * media type is <code>application/x-trig</code> and the encoding is UTF-8.
+	 * media type is <code>application/trig</code> and the encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see <a href="http://www.wiwiss.fu-berlin.de/suhl/bizer/TriG/Spec/">The
-	 *      TriG Syntax</a>
+	 * @see <a href="http://www.w3.org/TR/trig/">The TriG Syntax</a>
 	 */
-	public static final RDFFormat TRIG = new RDFFormat("TriG",
-			Arrays.asList("application/trig", "application/x-trig"), Charset.forName("UTF-8"),
-			Arrays.asList("trig"), null, SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
+	public static final RDFFormat TRIG = new RDFFormat("TriG", Arrays.asList("application/trig",
+			"application/x-trig"), Charset.forName("UTF-8"), Arrays.asList("trig"),
+			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/TriG"), SUPPORTS_NAMESPACES,
+			SUPPORTS_CONTEXTS);
 
 	/**
 	 * A binary RDF format.
@@ -195,8 +192,8 @@ public class RDFFormat extends FileFormat {
 			SUPPORTS_CONTEXTS);
 
 	/**
-	 * The <a href="http://sw.deri.org/2008/07/n-quads/">N-Quads</a> file format,
-	 * an RDF serialization format that supports recording of named graphs.
+	 * The <a href="http://www.w3.org/TR/n-quads/">N-Quads</a> file format, an
+	 * RDF serialization format that supports recording of named graphs.
 	 * <p>
 	 * The file extension <code>.nq</code> is recommended for N-Quads documents.
 	 * The media type is <code>application/n-quads</code> and the encoding is
@@ -208,7 +205,7 @@ public class RDFFormat extends FileFormat {
 	 * @since 2.6.6
 	 */
 	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", Arrays.asList("application/n-quads",
-			"text/x-nquads"), Charset.forName("UTF-8"), Arrays.asList("nq"),
+			"text/x-nquads", "text/nquads"), Charset.forName("UTF-8"), Arrays.asList("nq"),
 			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/N-Quads"), NO_NAMESPACES,
 			SUPPORTS_CONTEXTS);
 
@@ -231,26 +228,24 @@ public class RDFFormat extends FileFormat {
 					"http://www.w3.org/ns/formats/JSON-LD"), SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
-	 * The Talis <a
-	 * href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html"
-	 * >RDF/JSON</a> file format, an RDF serialization format that supports
-	 * recording of named graphs.
+	 * The <a href="http://www.w3.org/TR/rdf-json/" >RDF/JSON</a> file format, an
+	 * RDF serialization format that supports recording of named graphs.
 	 * <p>
 	 * The file extension <code>.rj</code> is recommended for RDF/JSON documents.
 	 * The media type is <code>application/rdf+json</code> and the encoding is
 	 * UTF-8.
 	 * </p>
 	 * 
-	 * @see <a
-	 *      href="http://dvcs.w3.org/hg/rdf/raw-file/default/rdf-json/index.html">RDF
-	 *      1.1 JSON Serialisation (RDF/JSON)</a>
+	 * @see <a href="http://www.w3.org/TR/rdf-json/">RDF 1.1 JSON Alternate
+	 *      Serialization (RDF/JSON)</a>
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", Arrays.asList("application/rdf+json"),
-			Charset.forName("UTF-8"), Arrays.asList("rj"), null, NO_NAMESPACES, SUPPORTS_CONTEXTS);
+			Charset.forName("UTF-8"), Arrays.asList("rj"), ValueFactoryImpl.getInstance().createURI(
+					"http://www.w3.org/ns/formats/RDF_JSON"), NO_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
-	 * The <a href="http://www.w3.org/TR/xhtml-rdfa/">RDFa</a> file format, an
+	 * The <a href="http://www.w3.org/TR/rdfa-syntax/">RDFa</a> file format, an
 	 * RDF serialization format.
 	 * <p>
 	 * The file extension <code>.xhtml</code> is recommended for RDFa documents.
@@ -258,7 +253,7 @@ public class RDFFormat extends FileFormat {
 	 * encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see <a href="http://www.w3.org/TR/xhtml-rdfa/">XHTML+RDFa 1.1</a>
+	 * @see <a href="http://www.w3.org/TR/rdfa-syntax/">XHTML+RDFa 1.1</a>
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat RDFA = new RDFFormat("RDFa", Arrays.asList("application/xhtml+xml",
