@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -9,13 +10,10 @@
 	</parent>
 
 	<artifactId>sesame-sail-lucenesail</artifactId>
-	
-	<packaging>jar</packaging>
-    <!-- using a three-digit version number, for OSGi compliance -->
-    <!-- if you change version number here, change it in the bundle Manifest below too -->
+
 	<name>OpenRDF Lucene Sail</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Apache Lucene.</description>
-	
+
 	<properties>
 		<lucene.version>3.5.0</lucene.version>
 	</properties>
@@ -25,71 +23,60 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-api</artifactId>
 			<version>${project.version}</version>
-		</dependency>	
-
+		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryalgebra-evaluation</artifactId>
 			<version>${project.version}</version>
-		</dependency>	
-
+		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
 			<version>${lucene.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-queries</artifactId>
 			<version>${lucene.version}</version>
 		</dependency>
-
 		<dependency>
-		    <groupId>org.apache.lucene</groupId>
-		    <artifactId>lucene-highlighter</artifactId>
-		    <version>${lucene.version}</version>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-highlighter</artifactId>
+			<version>${lucene.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
-
-<!-- FIXME: following dependencies added due to LuceneSailExample -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sail</artifactId>
-			<version>${project.version}</version>
-		</dependency>	
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-memory</artifactId>
-			<version>${project.version}</version>
-		</dependency>	
-<!-- FIXME: dependencies above added due to LuceneSailExample -->
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-rdfxml</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
- 		<dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-queryparser-sparql</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-repository-sail</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-
 </project>

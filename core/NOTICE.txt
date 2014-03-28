@@ -28,7 +28,11 @@ This software includes code developed by the Institute for Defense Analyses
 
 This software includes code developed by Atos (http://www.atos.net/).
 
-This software includes code developed by Peter Ansell.
+This software includes code developed by Peter Ansell (https://github.com/ansell).
+
+This software includes code developed by DFKI (http://www.dfki.de/).
+
+This software includes code developed by L3S (http://www.l3s.de/).
 
 The above parties have licensed their code contributions to Aduna under the 
 terms of a contributor license agreement (CLA).
