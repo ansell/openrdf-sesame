@@ -29,6 +29,7 @@
 			<artifactId>sesame-query</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- FIXME: Move SPARQLFederatedService out to another module to avoid the following dependency -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-sparql</artifactId>

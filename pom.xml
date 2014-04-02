@@ -8,7 +8,6 @@
 		<version>7</version>
 	</parent>
 
-
 	<groupId>org.openrdf.sesame</groupId>
 	<artifactId>sesame</artifactId>
 	<version>2.8.0-beta2-SNAPSHOT</version>
@@ -40,12 +39,19 @@
 			<name>James Leigh</name>
 			<email>james@3roundstones.com</email>
 		</developer>
+		<developer>
+			<id>ansell</id>
+			<name>Peter Ansell</name>
+			<email>p_ansell@yahoo.com</email>
+			<url>https://github.com/ansell</url>
+			<timezone>GMT+10</timezone>
+		</developer>
 	</developers>
 
 	<licenses>
 		<license>
 			<name>Aduna BSD license</name>
-			<url>http://repo.aduna-software.org/legal/aduna-bsd.txt</url>
+			<url>https://bitbucket.org/openrdf/sesame/src/master/core/LICENSE.txt</url>
 			<distribution>repo</distribution>
 			<comments>A BSD-style OSS license</comments>
 		</license>
