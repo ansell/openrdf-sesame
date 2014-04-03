@@ -20,6 +20,7 @@ import static org.openrdf.http.protocol.Protocol.ACCEPT_PARAM_NAME;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
@@ -39,11 +40,14 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -125,6 +129,10 @@ public class SparqlSession {
 	 * 
 	 */
 	private static final Charset UTF8 = Charset.forName("UTF-8");
+
+	/** the threshold for URL length, beyond which we use the POST method
+	 * based on the lowest common denominator for various web servers */
+	public static final int MAXIMUM_URL_LENGTH = 8192;
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -444,18 +452,29 @@ public class SparqlSession {
 	}
 
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
-			boolean includeInferred, int maxQueryTime, Binding... bindings)
-	{
-		HttpPost method = new HttpPost(getQueryURL());
-
-		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
-
+			boolean includeInferred, int maxQueryTime, Binding... bindings) {
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
+		if (shouldUsePost(query)) {
+			HttpPost method = new HttpPost(getQueryURL());
+			method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+			method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
+			return method;
+		} else {
+			try {
+				URIBuilder urib = new URIBuilder(getQueryURL());
+				for (NameValuePair nvp : queryParams)
+					urib.addParameter(nvp.getName(), nvp.getValue());
+				return new HttpGet(urib.toString());
+			} catch (URISyntaxException e) {
+				throw new AssertionError(e);
+			}
+		}
+	}
 
-		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
-
-		return method;
+	/** Return whether the provided query should use POST (otherwise use GET) */
+	protected boolean shouldUsePost(String query) {
+		return query.length() + getQueryURL().length() > MAXIMUM_URL_LENGTH;
 	}
 
 	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
