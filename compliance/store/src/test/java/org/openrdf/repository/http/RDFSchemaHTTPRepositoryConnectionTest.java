@@ -62,24 +62,6 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
-	public void testReadOfAddedStatement1()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testReadOfAddedStatement1s() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testReadOfAddedStatement2()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testReadOfAddedStatement2() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
 	public void testTransactionIsolationForRead()
 		throws Exception
 	{
