@@ -16,21 +16,23 @@
  */
 package org.openrdf.repository.http;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryTest;
 
 public class HTTPRepositoryTest extends RepositoryTest {
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
@@ -38,11 +40,10 @@ public class HTTPRepositoryTest extends RepositoryTest {
 		}
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
 	}
 

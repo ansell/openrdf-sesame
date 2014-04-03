@@ -1441,7 +1441,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 				else {
 					// not last element in path.
-					Var nextVar = createAnonVar(startVar.getName() + "-property-set-" + i);
+					Var nextVar = createAnonVar(subjVar.getName() + startVar.getName() + "-property-set-" + i);
 
 					List<ValueExpr> nextVarList = new ArrayList<ValueExpr>();
 					nextVarList.add(nextVar);
@@ -1553,7 +1553,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				else {
 					// not the last element in the path, introduce an anonymous var
 					// to connect.
-					Var nextVar = createAnonVar(predVar.getName() + "-" + i);
+					Var nextVar = createAnonVar(subjVar.getName() + predVar.getName() + "-" + i);
 
 					if (invertSequence && startVar.equals(subjVar)) { // first
 																						// element in
@@ -1784,7 +1784,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				for (long i = 0L; i < length; i++) {
 					if (i < length - 1) {
-						nextVar = createAnonVar(predVar.getName() + "-path-" + length + "-" + i);
+						nextVar = createAnonVar(subjVar.getName() + predVar.getName() + "-path-" + length + "-" + i);
 					}
 					else {
 						nextVar = endVar;

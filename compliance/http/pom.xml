@@ -99,15 +99,21 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jetty</artifactId>
-			<version>6.1.9</version>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>7.0.2.v20100331</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<version>7.0.2.v20100331</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jsp-2.1</artifactId>
-			<version>6.1.9</version>
+			<artifactId>jetty-jsp-2.1</artifactId>
+			<version>7.0.2.v20100331</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -152,6 +158,9 @@
 						</goals>
 						<configuration>
 							<skipTests>false</skipTests>
+							<forkCount>1</forkCount>
+							<reuseForks>false</reuseForks>
+							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
 							<excludes>
 								<exclude>**/TestServer.java</exclude>
 							</excludes>

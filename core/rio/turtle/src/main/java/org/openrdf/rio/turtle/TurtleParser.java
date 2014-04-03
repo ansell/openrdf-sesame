@@ -82,11 +82,11 @@ public class TurtleParser extends RDFParserBase {
 
 	private PushbackReader reader;
 
-	private Resource subject;
+	protected Resource subject;
 
-	private URI predicate;
+	protected URI predicate;
 
-	private Value object;
+	protected Value object;
 
 	/*--------------*
 	 * Constructors *
@@ -267,21 +267,47 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseDirective(String directive)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		if (directive.equalsIgnoreCase("prefix") || directive.equals("@prefix")) {
-			parsePrefixID();
-		}
-		else if (directive.equalsIgnoreCase("base") || directive.equals("@base")) {
-			parseBase();
-		}
-		else if (directive.equalsIgnoreCase("@prefix")) {
-			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
-				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
+		if (directive.length() >= 7 && directive.substring(0, 7).equals("@prefix")) {
+			if (directive.length() > 7) {
+				unread(directive.substring(7));
 			}
 			parsePrefixID();
 		}
-		else if (directive.equalsIgnoreCase("@base")) {
+		else if (directive.length() >= 5 && directive.substring(0, 5).equals("@base")) {
+			if (directive.length() > 5) {
+				unread(directive.substring(5));
+			}
+			parseBase();
+		}
+		else if (directive.length() >= 6 && directive.substring(0, 6).equalsIgnoreCase("prefix")) {
+			// SPARQL doesn't require whitespace after directive, so must unread if
+			// we found part of the prefixID
+			if (directive.length() > 6) {
+				unread(directive.substring(6));
+			}
+			parsePrefixID();
+		}
+		else if ((directive.length() >= 4 && directive.substring(0, 4).equalsIgnoreCase("base"))) {
+			if (directive.length() > 4) {
+				unread(directive.substring(4));
+			}
+			parseBase();
+		}
+		else if (directive.length() >= 7 && directive.substring(0, 7).equalsIgnoreCase("@prefix")) {
+			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
+				reportFatalError("Cannot strictly support case-insensitive @prefix directive in compliance mode.");
+			}
+			if (directive.length() > 7) {
+				unread(directive.substring(7));
+			}
+			parsePrefixID();
+		}
+		else if (directive.length() >= 5 && directive.substring(0, 5).equalsIgnoreCase("@base")) {
 			if (!this.getParserConfig().get(TurtleParserSettings.CASE_INSENSITIVE_DIRECTIVES)) {
 				reportFatalError("Cannot strictly support case-insensitive @base directive in compliance mode.");
+			}
+			if (directive.length() > 5) {
+				unread(directive.substring(5));
 			}
 			parseBase();
 		}
@@ -405,7 +431,8 @@ public class TurtleParser extends RDFParserBase {
 			int c = skipWSC();
 
 			if (c == '.' || // end of triple
-					c == ']') // end of predicateObjectList inside blank node
+					c == ']' || c == '}') // end of predicateObjectList inside blank
+													// node
 			{
 				break;
 			}
@@ -1076,12 +1103,24 @@ public class TurtleParser extends RDFParserBase {
 			unread(c);
 		}
 
+		String localNameString = localName.toString();
+
+		for (int i = 0; i < localNameString.length(); i++) {
+			if (localNameString.charAt(i) == '%') {
+				if (i > localNameString.length() - 3 || !ASCIIUtil.isHex(localNameString.charAt(i + 1))
+						|| !ASCIIUtil.isHex(localNameString.charAt(i + 2)))
+				{
+					reportFatalError("Found incomplete percent-encoded sequence: " + localNameString);
+				}
+			}
+		}
+
 		// if (c == '.') {
 		// reportFatalError("Blank node identifier must not end in a '.'");
 		// }
 
 		// Note: namespace has already been resolved
-		return createURI(namespace + localName.toString());
+		return createURI(namespace + localNameString);
 	}
 
 	private char readLocalEscapedChar()
@@ -1113,7 +1152,7 @@ public class TurtleParser extends RDFParserBase {
 		if (c == -1) {
 			throwEOFException();
 		}
-		else if (!TurtleUtil.isNameStartChar(c)) {
+		else if (!TurtleUtil.isBLANK_NODE_LABEL_StartChar(c)) {
 			reportError("Expected a letter, found '" + (char)c + "'", BasicParserSettings.PRESERVE_BNODE_IDS);
 		}
 
@@ -1124,11 +1163,11 @@ public class TurtleParser extends RDFParserBase {
 		c = read();
 
 		// If we would never go into the loop we must unread now
-		if (!TurtleUtil.isNameChar(c)) {
+		if (!TurtleUtil.isBLANK_NODE_LABEL_Char(c)) {
 			unread(c);
 		}
 
-		while (TurtleUtil.isNameChar(c)) {
+		while (TurtleUtil.isBLANK_NODE_LABEL_Char(c)) {
 			int previous = c;
 			c = read();
 
@@ -1138,8 +1177,7 @@ public class TurtleParser extends RDFParserBase {
 				break;
 			}
 			name.append((char)previous);
-			if(!TurtleUtil.isNameChar(c))
-			{
+			if (!TurtleUtil.isBLANK_NODE_LABEL_Char(c)) {
 				unread(c);
 			}
 		}
@@ -1244,7 +1282,9 @@ public class TurtleParser extends RDFParserBase {
 	protected int read()
 		throws IOException
 	{
-		return reader.read();
+		int next = reader.read();
+		// System.out.print((char)next);
+		return next;
 	}
 
 	protected void unread(int c)

@@ -95,39 +95,39 @@ public abstract class SparqlDatasetTest {
 		}
 		result.close();
 	}
-	
+
 	@Test
 	public void testWithFrom()
-			throws Exception
-		{
-			TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryWithFrom);
-			TupleQueryResult result = query.evaluate();
+		throws Exception
+	{
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryWithFrom);
+		TupleQueryResult result = query.evaluate();
 
-			assertTrue(result.hasNext());
+		assertTrue(result.hasNext());
 
-			if (result.hasNext()) {
-				BindingSet bs = result.next();
-				assertFalse(result.hasNext());
+		if (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertFalse(result.hasNext());
 
-				Literal count = (Literal)bs.getValue("c");
-				assertEquals(2, count.intValue());
-			}
-			result.close();
-
-			query.setDataset(dataset);
-			result = query.evaluate();
-
-			assertTrue(result.hasNext());
-
-			if (result.hasNext()) {
-				BindingSet bs = result.next();
-				assertFalse(result.hasNext());
-
-				Literal count = (Literal)bs.getValue("c");
-				assertEquals(2, count.intValue());
-			}
-			result.close();
+			Literal count = (Literal)bs.getValue("c");
+			assertEquals(2, count.intValue());
 		}
+		result.close();
+
+		query.setDataset(dataset);
+		result = query.evaluate();
+
+		assertTrue(result.hasNext());
+
+		if (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertFalse(result.hasNext());
+
+			Literal count = (Literal)bs.getValue("c");
+			assertEquals(2, count.intValue());
+		}
+		result.close();
+	}
 
 	@Before
 	public void setUp()

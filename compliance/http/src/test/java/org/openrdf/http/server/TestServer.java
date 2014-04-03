@@ -18,10 +18,10 @@ package org.openrdf.http.server;
 
 import java.io.File;
 
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.nio.BlockingChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.BlockingChannelConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
@@ -68,10 +68,12 @@ public class TestServer {
 		jetty.addConnector(conn);
 
 		WebAppContext webapp = new WebAppContext();
+		webapp.addSystemClass("org.slf4j.");
+		webapp.addSystemClass("ch.qos.logback.");
 		webapp.setContextPath(OPENRDF_CONTEXT);
 		// warPath configured in pom.xml maven-war-plugin configuration
 		webapp.setWar("./target/openrdf-sesame");
-		jetty.addHandler(webapp);
+		jetty.setHandler(webapp);
 	}
 
 	public void start()

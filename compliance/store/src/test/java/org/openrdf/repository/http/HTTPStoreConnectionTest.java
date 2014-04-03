@@ -16,11 +16,12 @@
  */
 package org.openrdf.repository.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.Collections;
-import java.util.Set;
-
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -31,21 +32,18 @@ import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RioSetting;
 
 public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
@@ -53,17 +51,46 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		}
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
 	}
 
 	@Override
 	protected Repository createRepository() {
 		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+	}
+
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
+	@Override
+<<<<<<< HEAD
+=======
+	public void testReadOfAddedStatement1()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testReadOfAddedStatement1s() for HTTPRepository");
+	}
+
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
+	@Override
+	public void testReadOfAddedStatement2()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testReadOfAddedStatement2() for HTTPRepository");
+	}
+
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
+	@Override
+>>>>>>> 2.7.x
+	public void testTransactionIsolationForRead()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
 	}
 
 	@Ignore("temporarily disabled for HTTPRepository")
@@ -144,20 +171,22 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
 	}
-	
+
 	@Test
-	public void testUpdateExecution() throws Exception {
+	public void testUpdateExecution()
+		throws Exception
+	{
 
 		URI foobar = vf.createURI("foo:bar");
-		
+
 		String sparql = "INSERT DATA { <foo:bar> <foo:bar> <foo:bar> . } ";
-		
+
 		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, sparql);
 
 		update.execute();
-		
+
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
-		
+
 		testCon.clear();
 
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
@@ -165,15 +194,16 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		testCon.begin();
 		update.execute();
 
-		// NOTE this is only correct because HTTPconnection does not implement true transaction isolation.
+		// NOTE this is only correct because HTTPconnection does not implement
+		// true transaction isolation.
 		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
 
 		testCon.commit();
-		
+
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));
-		
+
 	}
-	
+
 	@Test
 	@Override
 	public void testAddMalformedLiteralsDefaultConfig()

@@ -16,6 +16,8 @@
  */
 package org.openrdf.rio.ntriples;
 
+import junit.framework.Test;
+
 import org.openrdf.rio.RDFParser;
 
 /**
@@ -24,6 +26,12 @@ import org.openrdf.rio.RDFParser;
  * @author Arjohn Kampman
  */
 public class NTriplesParserTest extends AbstractNTriplesParserTest {
+
+	public static Test suite()
+		throws Exception
+	{
+		return new NTriplesParserTest().createTestSuite();
+	}
 
 	@Override
 	protected RDFParser createRDFParser() {

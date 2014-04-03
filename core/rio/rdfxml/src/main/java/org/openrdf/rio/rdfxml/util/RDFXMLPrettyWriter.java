@@ -29,6 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -127,12 +128,12 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Stack for remembering the nodes (subjects/objects) of statements at each
 	 * level.
 	 */
-	private Stack<Node> nodeStack = new Stack<Node>();
+	private final Stack<Node> nodeStack = new Stack<Node>();
 
 	/**
 	 * Stack for remembering the predicate of statements at each level.
 	 */
-	private Stack<URI> predicateStack = new Stack<URI>();
+	private final Stack<URI> predicateStack = new Stack<URI>();
 
 	/*--------------*
 	 * Constructors *
@@ -168,11 +169,12 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		throws IOException
 	{
 		// This export format needs the RDF Schema namespace to be defined:
-		setNamespace("rdfs", RDFS.NAMESPACE);
+		setNamespace(RDFS.PREFIX, RDFS.NAMESPACE);
 
 		super.writeHeader();
 	}
 
+	@Override
 	public void flush()
 		throws IOException
 	{
@@ -185,15 +187,19 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				flushPendingStatements();
 			}
 			catch (RDFHandlerException e) {
-				IOException ioe = new IOException();
-				ioe.initCause(e);
-				throw ioe;
+				if (e.getCause() != null && e.getCause() instanceof IOException) {
+					throw (IOException)e.getCause();
+				}
+				else {
+					throw new IOException(e);
+				}
 			}
 
 			writer.flush();
 		}
 	}
 
+	@Override
 	public void close()
 		throws IOException
 	{
@@ -203,16 +209,16 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			}
 		}
 		catch (RDFHandlerException e) {
-			if (e.getCause() instanceof IOException) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}
 			else {
-				IOException ioe = new IOException(e.getMessage());
-				ioe.initCause(e);
-				throw ioe;
+				throw new IOException(e);
 			}
 		}
 		finally {
+			nodeStack.clear();
+			predicateStack.clear();
 			writer.close();
 		}
 	}
@@ -326,7 +332,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new RuntimeException("Document writing has not yet been started");
+			throw new RDFHandlerException("Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -364,6 +370,11 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				topSubject.setType((URI)obj);
 			}
 			else {
+				if (!nodeStack.isEmpty() && pred.equals(nodeStack.peek().nextLi())) {
+					pred = RDF.LI;
+					nodeStack.peek().incrementNextLi();
+				}
+
 				// Push predicate and object
 				predicateStack.push(pred);
 				nodeStack.push(new Node(obj));
@@ -464,17 +475,15 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		else if (obj instanceof Literal) {
 			Literal objLit = (Literal)obj;
 			// datatype attribute
-			boolean isXmlLiteral = false;
+			URI datatype = objLit.getDatatype();
+			// Check if datatype is rdf:XMLLiteral
+			boolean isXmlLiteral = datatype.equals(RDF.XMLLITERAL);
 
 			// language attribute
 			if (Literals.isLanguageLiteral(objLit)) {
 				writeAttribute("xml:lang", objLit.getLanguage());
 			}
 			else {
-				URI datatype = objLit.getDatatype();
-				// Check if datatype is rdf:XMLLiteral
-				isXmlLiteral = datatype.equals(RDF.XMLLITERAL);
-
 				if (isXmlLiteral) {
 					writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
 				}
@@ -524,6 +533,10 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 	private static class Node {
 
+		private int nextLiIndex = 1;
+
+		private Resource nextLi;
+
 		private Value value;
 
 		// type == null means that we use <rdf:Description>
@@ -536,6 +549,19 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		 */
 		public Node(Value value) {
 			this.value = value;
+		}
+
+		Resource nextLi() {
+			if (nextLi == null) {
+				nextLi = new URIImpl(RDF.NAMESPACE + "_" + nextLiIndex);
+			}
+
+			return nextLi;
+		}
+
+		public void incrementNextLi() {
+			nextLiIndex++;
+			nextLi = null;
 		}
 
 		public Value getValue() {

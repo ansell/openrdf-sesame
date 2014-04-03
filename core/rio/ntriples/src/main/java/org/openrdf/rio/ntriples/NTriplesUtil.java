@@ -27,6 +27,8 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.helpers.BasicWriterSettings;
+import org.openrdf.rio.helpers.NTriplesParserSettings;
+import org.openrdf.rio.helpers.NTriplesWriterSettings;
 
 /**
  * Utility methods for N-Triples encoding/decoding.
@@ -132,7 +134,7 @@ public class NTriplesUtil {
 			return valueFactory.createBNode(nTriplesBNode.substring(2));
 		}
 		else {
-			throw new IllegalArgumentException("Not a legal N-Triples URI: " + nTriplesBNode);
+			throw new IllegalArgumentException("Not a legal N-Triples Blank Node: " + nTriplesBNode);
 		}
 	}
 
@@ -257,7 +259,8 @@ public class NTriplesUtil {
 	{
 		// default to false. Users must call new method directly to remove
 		// xsd:string
-		append(value, appendable, BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL.getDefaultValue());
+		append(value, appendable, BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL.getDefaultValue(),
+				NTriplesWriterSettings.ESCAPE_UNICODE.getDefaultValue());
 	}
 
 	/**
@@ -275,7 +278,8 @@ public class NTriplesUtil {
 	 * @throws IOException
 	 * @since 2.8.0
 	 */
-	public static void append(Value value, Appendable appendable, boolean xsdStringToPlainLiteral)
+	public static void append(Value value, Appendable appendable, boolean xsdStringToPlainLiteral,
+			boolean escapeUnicode)
 		throws IOException
 	{
 		if (value instanceof Resource) {
@@ -513,6 +517,22 @@ public class NTriplesUtil {
 	public static void escapeString(String label, Appendable appendable)
 		throws IOException
 	{
+		escapeString(label, appendable, true);
+	}
+
+	/**
+	 * Escapes a Unicode string to an N-Triples compatible character sequence.
+	 * Any special characters are escaped using backslashes (<tt>"</tt> becomes
+	 * <tt>\"</tt>, etc.), and non-ascii/non-printable characters are escaped
+	 * using Unicode escapes (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>)
+	 * if the option is selected.
+	 * 
+	 * @throws IOException
+	 * @since 2.8.0
+	 */
+	public static void escapeString(String label, Appendable appendable, boolean escapeUnicode)
+		throws IOException
+	{
 		int labelLength = label.length();
 
 		for (int i = 0; i < labelLength; i++) {
@@ -537,12 +557,22 @@ public class NTriplesUtil {
 			else if (cInt >= 0x0 && cInt <= 0x8 || cInt == 0xB || cInt == 0xC || cInt >= 0xE && cInt <= 0x1F
 					|| cInt >= 0x7F && cInt <= 0xFFFF)
 			{
-				appendable.append("\\u");
-				appendable.append(toHexString(cInt, 4));
+				if (escapeUnicode) {
+					appendable.append("\\u");
+					appendable.append(toHexString(cInt, 4));
+				}
+				else {
+					appendable.append(c);
+				}
 			}
 			else if (cInt >= 0x10000 && cInt <= 0x10FFFF) {
-				appendable.append("\\U");
-				appendable.append(toHexString(cInt, 8));
+				if (escapeUnicode) {
+					appendable.append("\\U");
+					appendable.append(toHexString(cInt, 8));
+				}
+				else {
+					appendable.append(c);
+				}
 			}
 			else {
 				appendable.append(c);

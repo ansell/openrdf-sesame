@@ -749,6 +749,10 @@ public class SparqlSession {
 					}
 				}
 
+				if (entity == null) {
+					throw new RepositoryException("Server response was empty.");
+				}
+
 				String baseURI = method.getURI().toASCIIString();
 				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, entity.getContent(),
 						charset, baseURI);

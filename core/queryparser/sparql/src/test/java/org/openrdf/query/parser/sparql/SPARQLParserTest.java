@@ -163,39 +163,4 @@ public class SPARQLParserTest {
 		assertNotEquals(leftArg.getObjectVar().getName(), rightArg.getObjectVar().getName());
 	}
 
-	@Test
-	public void testSES1953UnequalLiteralAndURIConstants()
-		throws Exception
-	{
-		StringBuilder qb = new StringBuilder();
-		qb.append("INSERT DATA {graph <urn:s3> {<urn:s> <urn:label> \"urn:s3\". } } ");
-
-		ParsedUpdate u = parser.parseUpdate(qb.toString(), null);
-
-		UpdateExpr ue = u.getUpdateExprs().get(0);
-
-		assertNotNull(ue);
-		InsertData id = (InsertData)ue;
-
-		TupleExpr te = id.getInsertExpr();
-		assertNotNull(te);
-
-		UnaryTupleOperator uto = (UnaryTupleOperator)te;
-		Projection p = (Projection)uto.getArg();
-
-		ProjectionElem contextElem = null;
-		ProjectionElem objectElem = null;
-		for (ProjectionElem elem : p.getProjectionElemList().getElements()) {
-			if ("context".equals(elem.getTargetName())) {
-				contextElem = elem;
-			}
-			else if ("object".equals(elem.getTargetName())) {
-				objectElem = elem;
-			}
-		}
-		assertNotNull(contextElem);
-		assertNotNull(objectElem);
-		assertNotEquals(objectElem, contextElem);
-		assertNotEquals(objectElem.getSourceName(), contextElem.getSourceName());
-	}
 }

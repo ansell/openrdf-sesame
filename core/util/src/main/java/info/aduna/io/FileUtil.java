@@ -77,7 +77,7 @@ public class FileUtil {
 		// The number of tokens left in 'relativeToTok' is the number of '..'.
 		StringBuilder relPath = new StringBuilder();
 
-		if (!subjTok.equals(relativeToTok)) {
+		if (relativeToTok != null && !relativeToTok.equals(subjTok)) {
 			// That's one dir
 			relPath.append("..");
 			relPath.append(File.separator);
@@ -89,7 +89,7 @@ public class FileUtil {
 		}
 
 		// Now add the path to 'subj'
-		if (!subjTok.equals(relativeToTok)) {
+		if (subjTok != null && !subjTok.equals(relativeToTok)) {
 			relPath.append(subjTok);
 			relPath.append(File.separator);
 		}

@@ -18,10 +18,24 @@ package org.openrdf.rio.trig;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
+import java.io.StringReader;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
+
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.ParseErrorCollector;
+import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Custom (non-manifest) tests for TriG parser.
@@ -29,6 +43,102 @@ import org.openrdf.rio.Rio;
  * @author Peter Ansell
  */
 public class TriGParserCustomTest {
+
+	@Rule
+	public Timeout timeout = new Timeout(1000000);
+
+	private ValueFactory vf;
+
+	private ParserConfig settingsNoVerifyLangTag;
+
+	private ParseErrorCollector errors;
+
+	private RDFParser parser;
+
+	private StatementCollector statementCollector;
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Before
+	public void setUp()
+		throws Exception
+	{
+		vf = ValueFactoryImpl.getInstance();
+		settingsNoVerifyLangTag = new ParserConfig();
+		settingsNoVerifyLangTag.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
+		errors = new ParseErrorCollector();
+		parser = Rio.createParser(RDFFormat.TRIG);
+		statementCollector = new StatementCollector(new LinkedHashModel());
+		parser.setRDFHandler(statementCollector);
+	}
+
+	@Test
+	public void testSPARQLGraphKeyword()
+		throws Exception
+	{
+		Rio.parse(new StringReader("GRAPH <urn:a> { [] <http://www.example.net/test> \"Foo\" }"), "",
+				RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testTrailingSemicolon()
+		throws Exception
+	{
+		Rio.parse(new StringReader("{<http://example/s> <http://example/p> <http://example/o> ;}"), "",
+				RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testAnonymousGraph1()
+		throws Exception
+	{
+		Rio.parse(new StringReader("PREFIX : <http://example/>\n GRAPH [] { :s :p :o }"), "", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testAnonymousGraph2()
+		throws Exception
+	{
+		Rio.parse(new StringReader("PREFIX : <http://example/>\n [] { :s :p :o }"), "", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testTurtle()
+		throws Exception
+	{
+		Rio.parse(new StringReader("<urn:a> <urn:b> <urn:c>"), "", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testMinimalWhitespace()
+		throws Exception
+	{
+		Rio.parse(
+				this.getClass().getResourceAsStream("/testcases/trig/trig-syntax-minimal-whitespace-01.trig"),
+				"", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testMinimalWhitespaceLine12()
+		throws Exception
+	{
+		Rio.parse(new StringReader("@prefix : <http://example/c/> . {_:s:p :o ._:s:p\"Alice\". _:s:p _:o .}"),
+				"", RDFFormat.TRIG);
+	}
+
+	@Test
+	public void testBadPname02()
+		throws Exception
+	{
+		try {
+			Rio.parse(new StringReader("@prefix : <http://example/> . {:a%2 :p :o .}"), "", RDFFormat.TRIG);
+			fail("Did not receive expected exception");
+		}
+		catch (RDFParseException e) {
+
+		}
+	}
 
 	@Test
 	public void testSupportedSettings()

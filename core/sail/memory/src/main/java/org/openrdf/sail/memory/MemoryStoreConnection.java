@@ -40,6 +40,7 @@ import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
@@ -143,8 +144,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			}
 
 			TripleSource tripleSource = new MemTripleSource(store, includeInferred, snapshot, readMode);
-			EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(tripleSource, dataset,
-					store.getFederatedServiceResolver());
+			EvaluationStrategy strategy = getEvaluationStrategy(dataset, tripleSource);
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
 			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
@@ -175,6 +175,10 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				stLock.release();
 			}
 		}
+	}
+
+	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
+		return new EvaluationStrategyImpl(tripleSource, dataset, store.getFederatedServiceResolver());
 	}
 
 	@Override
@@ -255,13 +259,33 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		Lock stLock = store.getStatementsReadLock();
 		boolean releaseLock = true;
 
+		Lock tempWriteLock = null;
 		try {
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
 			if (transactionActive()) {
-				snapshot++;
+				// current connection has begun a transaction
 				readMode = ReadMode.TRANSACTION;
+
+				// verify that we have obtained the transaction write lock, in which case
+				// we need to look at the latest snapshot
+				if (txnLockAcquired) {
+					snapshot++;
+				}
+				else {
+					// obtain a very short-term transaction write lock, only to block
+					// concurrent transactions until we're done
+					// creating the statement iterator.
+					tempWriteLock = store.tryTransactionLock();
+
+					if (tempWriteLock != null) {
+						// no other transaction is actively writing, so we can look at the latest
+						// snapshot
+						snapshot++;
+					}
+				}
+
 			}
 
 			CloseableIteration<MemStatement, SailException> iter;
@@ -274,6 +298,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		finally {
 			if (releaseLock) {
 				stLock.release();
+			}
+			if (tempWriteLock != null) {
+				tempWriteLock.release();
 			}
 		}
 	}

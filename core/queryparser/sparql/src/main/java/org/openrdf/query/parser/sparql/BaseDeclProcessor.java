@@ -20,10 +20,13 @@ import info.aduna.net.ParsedURI;
 
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.sparql.ast.ASTBaseDecl;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
+import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTUnparsedQuadDataBlock;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 /**
@@ -79,12 +82,29 @@ public class BaseDeclProcessor {
 		}
 
 		if (parsedBaseURI != null) {
-			RelativeIRIResolver visitor = new RelativeIRIResolver(parsedBaseURI);
-			try {
-				qc.jjtAccept(visitor, null);
+			ASTUnparsedQuadDataBlock dataBlock = null;
+			if (qc.getOperation() instanceof ASTInsertData) {
+				ASTInsertData insertData = (ASTInsertData)qc.getOperation();
+				dataBlock = insertData.jjtGetChild(ASTUnparsedQuadDataBlock.class);
+
 			}
-			catch (VisitorException e) {
-				throw new MalformedQueryException(e);
+			else if (qc.getOperation() instanceof ASTDeleteData) {
+				ASTDeleteData deleteData = (ASTDeleteData)qc.getOperation();
+				dataBlock = deleteData.jjtGetChild(ASTUnparsedQuadDataBlock.class);
+			}
+
+			if (dataBlock != null) {
+				final String baseURIDeclaration = "BASE <" + parsedBaseURI + "> \n";
+				dataBlock.setDataBlock(baseURIDeclaration + dataBlock.getDataBlock());
+			}
+			else {
+				RelativeIRIResolver visitor = new RelativeIRIResolver(parsedBaseURI);
+				try {
+					qc.jjtAccept(visitor, null);
+				}
+				catch (VisitorException e) {
+					throw new MalformedQueryException(e);
+				}
 			}
 		}
 	}

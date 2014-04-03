@@ -20,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -40,35 +43,43 @@ import org.openrdf.repository.http.HTTPMemServer;
 
 public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
-	@Override
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
+			server = null;
 			throw e;
 		}
 
+	}
+
+	@AfterClass
+	public static void stopServer()
+		throws Exception
+	{
+		server.stop();
+		server = null;
+	}
+
+	@Before
+	@Override
+	public void setUp()
+		throws Exception
+	{
+		super.setUp();
 		// overwrite bnode test values as SPARQL endpoints do not generally work
 		// well with bnodes
 		bob = testRepository.getValueFactory().createURI("urn:x-local:bob");
 		alice = testRepository.getValueFactory().createURI("urn:x-local:alice");
 		alexander = testRepository.getValueFactory().createURI("urn:x-local:alexander");
-	}
-
-	@Override
-	public void tearDown()
-		throws Exception
-	{
-		super.tearDown();
-		server.stop();
 	}
 
 	@Override
@@ -93,7 +104,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testURISerialization() for SPARQLRepository");
 	}
-	
+
 	@Test
 	@Ignore
 	@Override
@@ -102,7 +113,6 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 	{
 		System.err.println("temporarily disabled testStatementSerialization() for SPARQLRepository");
 	}
-	
 
 	@Override
 	@Ignore
@@ -253,6 +263,33 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		System.err.println("disabled testGetNamespace() as namespace retrieval is not supported by SPARQL");
+	}
+
+	@Ignore("disabled for SPARQLRepository")
+	@Test
+	@Override
+	public void testReadOfAddedStatement1()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testReadOfAddedStatement1s() for SPARQLRepository");
+	}
+
+	@Ignore("temporarily disabled for SPARQLRepository")
+	@Test
+	@Override
+	public void testReadOfAddedStatement2()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testReadOfAddedStatement2() for SPARQLRepository");
+	}
+
+	@Ignore("temporarily disabled for SPARQLRepository")
+	@Test
+	@Override
+	public void testTransactionIsolationForRead()
+		throws Exception
+	{
+		System.err.println("temporarily disabled testTransactionIsolationForRead() for SPARQLRepository");
 	}
 
 	@Override

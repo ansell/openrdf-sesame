@@ -51,7 +51,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 public class CustomTurtleParserTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(10000);
+	public Timeout timeout = new Timeout(1000000);
 
 	private ValueFactory vf;
 

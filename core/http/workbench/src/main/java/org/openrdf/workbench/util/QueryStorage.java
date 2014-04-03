@@ -170,10 +170,8 @@ public class QueryStorage {
 	{
 		LOGGER.info("repository: {}", repository.getRepositoryURL());
 		boolean rval = true;
-		RepositoryConnection con = null;
+		RepositoryConnection con = repository.getConnection();
 		try {
-			con = repository.getConnection();
-
 			// Manufacture an unlikely unique statement to check.
 			URI uri = con.getValueFactory().createURI("urn:uuid:" + UUID.randomUUID());
 			con.hasStatement(uri, uri, uri, false, uri);

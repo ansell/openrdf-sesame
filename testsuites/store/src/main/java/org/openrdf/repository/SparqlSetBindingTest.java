@@ -34,11 +34,10 @@ import org.openrdf.query.TupleQueryResult;
 public abstract class SparqlSetBindingTest {
 
 	public String queryBinding = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
-			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
-			 + " } ";
+			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n" + " } ";
 
-	public String queryBindingSubselect = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + "SELECT ?name ?mbox\n"
-			+ " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
+	public String queryBindingSubselect = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+			+ "SELECT ?name ?mbox\n" + " WHERE { ?x foaf:name  ?name ;\n" + "            foaf:mbox  ?mbox .\n"
 			+ "        { SELECT ?x WHERE { ?x a foaf:Person } } } ";
 
 	private Repository repository;
@@ -50,7 +49,7 @@ public abstract class SparqlSetBindingTest {
 	private Literal ringo;
 
 	private URI ringoRes;
-	
+
 	@Test
 	public void testBinding()
 		throws Exception
@@ -83,7 +82,7 @@ public abstract class SparqlSetBindingTest {
 		vf = repository.getValueFactory();
 		ringo = vf.createLiteral("Ringo Starr");
 		ringoRes = vf.createURI("http://example.org/ns#", "ringo");
-		
+
 		createUser("john", "John Lennon", "john@example.org");
 		createUser("paul", "Paul McCartney", "paul@example.org");
 		createUser("ringo", "Ringo Starr", "ringo@example.org");
@@ -127,7 +126,7 @@ public abstract class SparqlSetBindingTest {
 		URI subj = vf.createURI("http://example.org/ns#", id);
 		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");
 		URI foafMbox = vf.createURI("http://xmlns.com/foaf/0.1/", "mbox");
-		
+
 		conn.add(subj, RDF.TYPE, vf.createURI("http://xmlns.com/foaf/0.1/", "Person"));
 		conn.add(subj, foafName, vf.createLiteral(name));
 		conn.add(subj, foafMbox, vf.createURI("mailto:", email));

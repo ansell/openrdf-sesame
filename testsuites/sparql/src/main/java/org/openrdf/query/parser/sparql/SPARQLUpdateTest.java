@@ -801,6 +801,29 @@ public abstract class SPARQLUpdateTest {
 	}
 
 	@Test
+	public void testInsertData2()
+		throws Exception
+	{
+		logger.debug("executing testInsertData2");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT DATA { ex:book1 dc:title \"the number four\"^^<http://www.w3.org/2001/XMLSchema#integer> . }; ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI book1 = f.createURI(EX_NS, "book1");
+
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("the number four", XMLSchema.INTEGER), true));
+
+		operation.execute();
+
+		String msg = "new statement about ex:book1 should have been inserted";
+
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("the number four", XMLSchema.INTEGER), true));
+	}
+	
+	@Test
 	public void testInsertDataBlankNode()
 		throws Exception
 	{

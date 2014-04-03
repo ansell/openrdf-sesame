@@ -37,14 +37,14 @@ public class BasicWriterSettings {
 			"org.openrdf.rio.prettyprint", "Pretty print", Boolean.TRUE);
 
 	/**
-	 * Boolean setting for writer to determine whether it should attempt to
-	 * remove the xsd:string datatype from literals and represent them as RDF-1.0
-	 * Plain Literals.
+	 * Boolean setting for writer to determine whether it should remove the
+	 * xsd:string datatype from literals and represent them as RDF-1.0 Plain
+	 * Literals.
 	 * <p>
 	 * In RDF-1.1, all literals that would have been Plain Literals in RDF-1.0
 	 * will be typed as xsd:string internally.
 	 * <p>
-	 * Defaults to false to allow for backwards compatibility without enforcing
+	 * Defaults to true to allow for backwards compatibility without enforcing
 	 * it.
 	 */
 	public static final RioSetting<Boolean> XSD_STRING_TO_PLAIN_LITERAL = new RioSettingImpl<Boolean>(
