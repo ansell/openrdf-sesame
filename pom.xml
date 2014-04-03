@@ -61,6 +61,7 @@
 		<module>core</module>
 		<module>testsuites</module>
 		<module>compliance</module>
+		<module>bom</module>
 	</modules>
 
 	<properties>

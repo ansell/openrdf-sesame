@@ -16,50 +16,59 @@
  */
 package org.openrdf.repository.sparql;
 
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryTest;
 import org.openrdf.repository.http.HTTPMemServer;
 
-
 /**
- *
  * @author Jeen Broekstra
  */
 public class SPARQLRepositoryTest extends RepositoryTest {
 
+	private static HTTPMemServer server;
 
-	private HTTPMemServer server;
-
-	@Override
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
-			super.setUp();
 		}
 		catch (Exception e) {
 			server.stop();
 			throw e;
 		}
 
+	}
+
+	@Before
+	@Override
+	public void setUp()
+		throws Exception
+	{
+		super.setUp();
 		// overwrite bnode test values as SPARQL endpoints do not generally work
 		// well with bnodes
 		bob = testRepository.getValueFactory().createURI("urn:x-local:bob");
 		alice = testRepository.getValueFactory().createURI("urn:x-local:alice");
 		alexander = testRepository.getValueFactory().createURI("urn:x-local:alexander");
+
 	}
 
-	@Override
-	public void tearDown()
+	@AfterClass
+	public static void stopServer()
 		throws Exception
 	{
-		super.tearDown();
 		server.stop();
+		server = null;
 	}
-	
+
 	@Override
 	protected Repository createRepository()
 		throws Exception

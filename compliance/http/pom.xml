@@ -160,7 +160,7 @@
 							<skipTests>false</skipTests>
 							<forkCount>1</forkCount>
 							<reuseForks>false</reuseForks>
-							<argLine>-Xmx1024M -XX:MaxPermSize=256M</argLine>
+							<argLine>-Xmx512M -XX:MaxPermSize=256M</argLine>
 							<excludes>
 								<exclude>**/TestServer.java</exclude>
 							</excludes>

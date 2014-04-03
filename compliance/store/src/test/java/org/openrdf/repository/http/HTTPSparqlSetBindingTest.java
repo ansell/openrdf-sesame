@@ -27,7 +27,9 @@ public class HTTPSparqlSetBindingTest extends SparqlSetBindingTest {
 	private static HTTPMemServer server;
 
 	@BeforeClass
-	public static void startServer() throws Exception {
+	public static void startServer()
+		throws Exception
+	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
@@ -44,7 +46,7 @@ public class HTTPSparqlSetBindingTest extends SparqlSetBindingTest {
 	{
 		server.stop();
 	}
-	
+
 	protected Repository newRepository() {
 		return new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
 	}

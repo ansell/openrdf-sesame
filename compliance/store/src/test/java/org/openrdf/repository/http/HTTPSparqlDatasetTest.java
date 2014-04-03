@@ -27,7 +27,9 @@ public class HTTPSparqlDatasetTest extends SparqlDatasetTest {
 	private static HTTPMemServer server;
 
 	@BeforeClass
-	public static void startServer() throws Exception {
+	public static void startServer()
+		throws Exception
+	{
 		server = new HTTPMemServer();
 		try {
 			server.start();
