@@ -304,8 +304,8 @@ public class SparqlSession {
 			logger.debug("Setting username '{}' and password for server at {}.", username, url);
 			java.net.URI requestURI = java.net.URI.create(url);
 			String host = requestURI.getHost();
-         int port = requestURI.getPort();
-         AuthScope scope = new AuthScope(host,port);
+			int port = requestURI.getPort();
+			AuthScope scope = new AuthScope(host, port);
 			UsernamePasswordCredentials cred = new UsernamePasswordCredentials(username, password);
 			CredentialsProvider credsProvider = new BasicCredentialsProvider();
 			credsProvider.setCredentials(scope, cred);
