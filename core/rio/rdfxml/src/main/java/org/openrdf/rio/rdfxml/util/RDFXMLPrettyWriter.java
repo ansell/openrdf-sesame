@@ -531,6 +531,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	private static class Node {
 
 		private int nextLiIndex = 1;
+
 		private Resource nextLi;
 
 		private Value value;

@@ -16,7 +16,6 @@
  */
 package org.openrdf.rio.rdfxml;
 
-
 public class RDFXMLWriterTest extends RDFXMLWriterTestCase {
 
 	public RDFXMLWriterTest() {
