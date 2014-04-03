@@ -17,6 +17,7 @@
 package org.openrdf.repository.sparql;
 
 import java.io.File;
+import java.util.Map;
 
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
@@ -44,6 +45,7 @@ public class SPARQLRepository extends RepositoryBase {
 	private String password;
 	private String queryEndpointUrl;
 	private String updateEndpointUrl;
+	private Map<String,String> additionalHttpHeaders;
 
 	/**
 	 * Create a new SPARQLRepository using the supplied endpoint URL for queries
@@ -97,6 +99,7 @@ public class SPARQLRepository extends RepositoryBase {
 		SparqlSession httpClient = getSesameClient().createSparqlSession(queryEndpointUrl, updateEndpointUrl);
 		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
+		httpClient.setAdditionalHttpHeaders(additionalHttpHeaders);
 		if (username != null) {
 			httpClient.setUsernameAndPassword(username, password);
 		}
@@ -162,5 +165,16 @@ public class SPARQLRepository extends RepositoryBase {
 	@Override
 	public String toString() {
 		return queryEndpointUrl;
+	}
+
+	/** Get the additional HTTP headers which will be included in every request to the server */
+	public Map<String, String> getAdditionalHttpHeaders() {
+		return additionalHttpHeaders;
+	}
+
+	/** Set additional HTTP headers to be included in every request to the server,
+	 *  which may be required for certain unusual server configurations */
+	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
+		this.additionalHttpHeaders = additionalHttpHeaders;
 	}
 }

@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -161,6 +162,8 @@ public class SparqlSession {
 	private BooleanQueryResultFormat preferredBQRFormat = BooleanQueryResultFormat.TEXT;
 
 	private RDFFormat preferredRDFFormat = RDFFormat.TURTLE;
+
+	private Map<String, String> additionalHttpHeaders;
 
 	/*--------------*
 	 * Constructors *
@@ -451,25 +454,48 @@ public class SparqlSession {
 		}
 	}
 
+	/**
+	 * @param additionalHttpHeaders
+	 *        The additionalHttpHeaders to set as key value pairs.
+	 */
+	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
+		this.additionalHttpHeaders = additionalHttpHeaders;
+	}
+
+	/**
+	 * @return Returns the additionalHttpHeaders.
+	 */
+	public Map<String, String> getAdditionalHttpHeaders() {
+		return additionalHttpHeaders;
+	}
+
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings) {
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method;
 		if (shouldUsePost(query)) {
-			HttpPost method = new HttpPost(getQueryURL());
-			method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
-			method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
-			return method;
+			HttpPost postMethod = new HttpPost(getQueryURL());
+			postMethod.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+			postMethod.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
+			method = postMethod;
 		} else {
 			try {
 				URIBuilder urib = new URIBuilder(getQueryURL());
 				for (NameValuePair nvp : queryParams)
 					urib.addParameter(nvp.getName(), nvp.getValue());
-				return new HttpGet(urib.toString());
+				method = new HttpGet(urib.toString());
 			} catch (URISyntaxException e) {
 				throw new AssertionError(e);
 			}
 		}
+		// functionality to provide custom http headers as required by the
+		// applications
+		if (this.additionalHttpHeaders != null) {
+			for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
+				method.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+		}
+		return method;
 	}
 
 	/** Return whether the provided query should use POST (otherwise use GET) */
@@ -488,6 +514,11 @@ public class SparqlSession {
 				includeInferred, bindings);
 
 		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
+
+		if (this.additionalHttpHeaders != null) {
+			for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
+				method.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+		}
 
 		return method;
 	}
