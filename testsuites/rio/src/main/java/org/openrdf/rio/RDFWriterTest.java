@@ -26,16 +26,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
@@ -65,7 +61,6 @@ import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.rio.helpers.BasicParserSettings;
-import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
