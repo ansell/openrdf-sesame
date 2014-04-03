@@ -70,7 +70,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-sail</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
