@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +44,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
@@ -131,8 +131,10 @@ public class SparqlSession {
 	 */
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
-	/** the threshold for URL length, beyond which we use the POST method
-	 * based on the lowest common denominator for various web servers */
+	/**
+	 * the threshold for URL length, beyond which we use the POST method
+	 * based on the lowest common denominator for various web servers
+	 */
 	public static final int MAXIMUM_URL_LENGTH = 8192;
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -463,10 +465,10 @@ public class SparqlSession {
 	}
 
 	/**
-	 * @return Returns the additionalHttpHeaders.
+	 * @return A read-only view of the additionalHttpHeaders.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders;
+		return Collections.unmodifiableMap(additionalHttpHeaders);
 	}
 
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
