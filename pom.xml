@@ -45,7 +45,7 @@
 	<licenses>
 		<license>
 			<name>Aduna BSD license</name>
-			<url>http://repo.aduna-software.org/legal/aduna-bsd.txt</url>
+			<url>https://bitbucket.org/openrdf/sesame/src/master/core/LICENSE.txt</url>
 			<distribution>repo</distribution>
 			<comments>A BSD-style OSS license</comments>
 		</license>
@@ -55,6 +55,7 @@
 		<module>core</module>
 		<module>testsuites</module>
 		<module>compliance</module>
+		<module>bom</module>
 	</modules>
 
 	<properties>
