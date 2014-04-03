@@ -172,9 +172,10 @@ public class SPARQLRepository extends RepositoryBase {
 	/** Get the additional HTTP headers which will be used
 	 *
 	 *  @return a read-only view of the additional HTTP headers which will
-	 * be included in every request to the server */
+	 *          be included in every request to the server, or null if no
+	 *          headers have been added */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return Collections.unmodifiableMap(additionalHttpHeaders);
+		return additionalHttpHeaders == null ? null : Collections.unmodifiableMap(additionalHttpHeaders);
 	}
 
 	/** Set additional HTTP headers to be included in every request to the server,
@@ -182,7 +183,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 *
 	 *  This will only take effect on connections subsequently returned by {@link #getConnection()}.
 	 *
-	 *  @param additionalHttpHeaders a map containing pairs of header names and values */
+	 *  @param additionalHttpHeaders a map containing pairs of header names and values. May be null */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
 		this.additionalHttpHeaders = additionalHttpHeaders;
 	}

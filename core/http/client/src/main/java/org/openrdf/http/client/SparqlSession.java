@@ -465,10 +465,10 @@ public class SparqlSession {
 	}
 
 	/**
-	 * @return A read-only view of the additionalHttpHeaders.
+	 * @return A read-only view of the additionalHttpHeaders, or null if none are set.
 	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return Collections.unmodifiableMap(additionalHttpHeaders);
+		return additionalHttpHeaders == null ? null : Collections.unmodifiableMap(additionalHttpHeaders);
 	}
 
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
