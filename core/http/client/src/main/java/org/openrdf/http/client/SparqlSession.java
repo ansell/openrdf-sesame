@@ -476,20 +476,25 @@ public class SparqlSession {
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
 		HttpUriRequest method;
-		if (shouldUsePost(query)) {
+		String queryUrlWithParams;
+		try {
+			URIBuilder urib = new URIBuilder(getQueryURL());
+			for (NameValuePair nvp : queryParams)
+				urib.addParameter(nvp.getName(), nvp.getValue());
+			queryUrlWithParams = urib.toString();
+		} catch (URISyntaxException e) {
+			throw new AssertionError(e);
+		}
+		if (shouldUsePost(queryUrlWithParams)) {
+			// we just built up a URL for nothing. oh well.
+			// It's probably not much overhead against
+			// the poor triplestore having to process such as massive query
 			HttpPost postMethod = new HttpPost(getQueryURL());
 			postMethod.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 			postMethod.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 			method = postMethod;
 		} else {
-			try {
-				URIBuilder urib = new URIBuilder(getQueryURL());
-				for (NameValuePair nvp : queryParams)
-					urib.addParameter(nvp.getName(), nvp.getValue());
-				method = new HttpGet(urib.toString());
-			} catch (URISyntaxException e) {
-				throw new AssertionError(e);
-			}
+			method = new HttpGet(queryUrlWithParams);
 		}
 		// functionality to provide custom http headers as required by the
 		// applications
@@ -500,9 +505,15 @@ public class SparqlSession {
 		return method;
 	}
 
-	/** Return whether the provided query should use POST (otherwise use GET) */
-	protected boolean shouldUsePost(String query) {
-		return query.length() + getQueryURL().length() > MAXIMUM_URL_LENGTH;
+	/**
+	 * Return whether the provided query should use POST (otherwise use GET)
+	 *
+	 * @param fullQueryUrl
+	 *        the complete URL, including hostname and all HTTP
+	 *        query parameters
+	 */
+	protected boolean shouldUsePost(String fullQueryUrl) {
+		return fullQueryUrl.length() > MAXIMUM_URL_LENGTH;
 	}
 
 	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
