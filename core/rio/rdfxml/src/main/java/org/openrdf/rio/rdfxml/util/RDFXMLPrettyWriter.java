@@ -128,12 +128,12 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	 * Stack for remembering the nodes (subjects/objects) of statements at each
 	 * level.
 	 */
-	private Stack<Node> nodeStack = new Stack<Node>();
+	private final Stack<Node> nodeStack = new Stack<Node>();
 
 	/**
 	 * Stack for remembering the predicate of statements at each level.
 	 */
-	private Stack<URI> predicateStack = new Stack<URI>();
+	private final Stack<URI> predicateStack = new Stack<URI>();
 
 	/*--------------*
 	 * Constructors *
@@ -169,11 +169,12 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		throws IOException
 	{
 		// This export format needs the RDF Schema namespace to be defined:
-		setNamespace("rdfs", RDFS.NAMESPACE);
+		setNamespace(RDFS.PREFIX, RDFS.NAMESPACE);
 
 		super.writeHeader();
 	}
 
+	@Override
 	public void flush()
 		throws IOException
 	{
@@ -186,15 +187,19 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				flushPendingStatements();
 			}
 			catch (RDFHandlerException e) {
-				IOException ioe = new IOException();
-				ioe.initCause(e);
-				throw ioe;
+				if (e.getCause() != null && e.getCause() instanceof IOException) {
+					throw (IOException)e.getCause();
+				}
+				else {
+					throw new IOException(e);
+				}
 			}
 
 			writer.flush();
 		}
 	}
 
+	@Override
 	public void close()
 		throws IOException
 	{
@@ -204,16 +209,16 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			}
 		}
 		catch (RDFHandlerException e) {
-			if (e.getCause() instanceof IOException) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
 				throw (IOException)e.getCause();
 			}
 			else {
-				IOException ioe = new IOException(e.getMessage());
-				ioe.initCause(e);
-				throw ioe;
+				throw new IOException(e);
 			}
 		}
 		finally {
+			nodeStack.clear();
+			predicateStack.clear();
 			writer.close();
 		}
 	}
@@ -327,7 +332,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new RuntimeException("Document writing has not yet been started");
+			throw new RDFHandlerException("Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -470,17 +475,15 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		else if (obj instanceof Literal) {
 			Literal objLit = (Literal)obj;
 			// datatype attribute
-			boolean isXmlLiteral = false;
+			URI datatype = objLit.getDatatype();
+			// Check if datatype is rdf:XMLLiteral
+			boolean isXmlLiteral = datatype.equals(RDF.XMLLITERAL);
 
 			// language attribute
 			if (Literals.isLanguageLiteral(objLit)) {
 				writeAttribute("xml:lang", objLit.getLanguage());
 			}
 			else {
-				URI datatype = objLit.getDatatype();
-				// Check if datatype is rdf:XMLLiteral
-				isXmlLiteral = datatype.equals(RDF.XMLLITERAL);
-
 				if (isXmlLiteral) {
 					writeAttribute(RDF.NAMESPACE, "parseType", "Literal");
 				}

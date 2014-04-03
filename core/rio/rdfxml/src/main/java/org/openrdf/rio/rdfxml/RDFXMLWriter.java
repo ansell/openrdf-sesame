@@ -97,9 +97,12 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		return RDFFormat.RDFXML;
 	}
 
-	public void startRDF() {
+	@Override
+	public void startRDF()
+		throws RDFHandlerException
+	{
 		if (writingStarted) {
-			throw new IllegalStateException("Document writing has already started");
+			throw new RDFHandlerException("Document writing has already started");
 		}
 		writingStarted = true;
 	}
@@ -110,7 +113,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		try {
 			// This export format needs the RDF namespace to be defined, add a
 			// prefix for it if there isn't one yet.
-			setNamespace("rdf", RDF.NAMESPACE);
+			setNamespace(RDF.PREFIX, RDF.NAMESPACE);
 
 			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
 				writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -154,7 +157,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new IllegalStateException("Document writing has not yet started");
+			throw new RDFHandlerException("Document writing has not yet started");
 		}
 
 		try {
@@ -224,7 +227,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new IllegalStateException("Document writing has not yet been started");
+			throw new RDFHandlerException("Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -485,7 +488,9 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * @return the blank node identifier converted to a form that is a valid
 	 *         NCName.
 	 */
-	protected String getValidNodeId(BNode bNode) throws IOException {
+	protected String getValidNodeId(BNode bNode)
+		throws IOException
+	{
 		String validNodeId = bNode.getID();
 		if (!XMLUtil.isNCName(validNodeId)) {
 			StringBuilder builder = new StringBuilder();
