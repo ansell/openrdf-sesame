@@ -892,10 +892,10 @@ public abstract class AbstractParserHandlingTest {
 	}
 
 	private void assertErrorListener(int expectedWarnings, int expectedErrors, int expectedFatalErrors) {
-		assertEquals("Unexpected number of warnings", expectedWarnings, testListener.getWarnings().size());
-		assertEquals("Unexpected number of errors", expectedErrors, testListener.getErrors().size());
 		assertEquals("Unexpected number of fatal errors", expectedFatalErrors,
 				testListener.getFatalErrors().size());
+		assertEquals("Unexpected number of errors", expectedErrors, testListener.getErrors().size());
+		assertEquals("Unexpected number of warnings", expectedWarnings, testListener.getWarnings().size());
 	}
 
 	private final Model getTestModel(String datatypeValue, URI datatypeURI) {
