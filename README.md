@@ -39,7 +39,7 @@ In no particular order, these companies and organizations have all contributed t
 
 ###Individual Developers###
 
-The following people are currently involved as developers of Sesame, or have been in the past (listed in no particular order): Arjohn Kampman, Jeen Broekstra, James Leigh, Herko ter Horst, David Huynh, Peter Mika, Peter Ansell, Gunnar Aastrand Grimnes, Leo Saurmann, Sebastian Weber, Michael Grove, Dale Visser, and Andreas Schwarte.
+The following people are currently involved as developers of Sesame, or have been in the past (listed in no particular order): Arjohn Kampman, Jeen Broekstra, James Leigh, Herko ter Horst, David Huynh, Peter Mika, Peter Ansell, Gunnar Aastrand Grimnes, Leo Saurmann, Sebastian Weber, Michael Grove, Dale Visser, Andreas Schwarte, Jerven Bolleman, Philip Coates, Joseph Walton, Jakob Frank, Fernando Hernandez, Nikola Petrov, Sebastian Schaffert, Roland Stühmer, and Andrew MacKinlay.
 
 In addition, we want to gratefully acknowledge all members of the Sesame community who have come up with new ideas, bug reports, and patches, and so have helped carry this project forward. Cheers!
 
