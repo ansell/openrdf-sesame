@@ -132,8 +132,10 @@ public class SparqlSession {
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	/**
-	 * the threshold for URL length, beyond which we use the POST method
-	 * based on the lowest common denominator for various web servers
+	 * The threshold for URL length, beyond which we use the POST method based on
+	 * the lowest common denominator for various web servers
+	 * 
+	 * @since 2.8.0
 	 */
 	public static final int MAXIMUM_URL_LENGTH = 8192;
 
@@ -165,7 +167,7 @@ public class SparqlSession {
 
 	private RDFFormat preferredRDFFormat = RDFFormat.TURTLE;
 
-	private Map<String, String> additionalHttpHeaders;
+	private Map<String, String> additionalHttpHeaders = Collections.emptyMap();
 
 	/*--------------*
 	 * Constructors *
@@ -346,7 +348,8 @@ public class SparqlSession {
 		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
 		QueryInterruptedException
 	{
-		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+				bindings);
 		return getBackgroundTupleQueryResult(method);
 	}
 
@@ -355,7 +358,8 @@ public class SparqlSession {
 		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
-		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+				bindings);
 		getTupleQueryResult(method, handler);
 	}
 
@@ -420,7 +424,8 @@ public class SparqlSession {
 		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
 		UnauthorizedException, QueryInterruptedException
 	{
-		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings);
+		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
+				bindings);
 		getRDF(method, handler, false);
 	}
 
@@ -457,22 +462,34 @@ public class SparqlSession {
 	}
 
 	/**
-	 * @param additionalHttpHeaders
-	 *        The additionalHttpHeaders to set as key value pairs.
+	 * Get the additional HTTP headers which will be used
+	 * 
+	 * @return a read-only view of the additional HTTP headers which will be
+	 *         included in every request to the server.
 	 */
-	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		this.additionalHttpHeaders = additionalHttpHeaders;
+	public Map<String, String> getAdditionalHttpHeaders() {
+		return Collections.unmodifiableMap(additionalHttpHeaders);
 	}
 
 	/**
-	 * @return A read-only view of the additionalHttpHeaders, or null if none are set.
+	 * Set additional HTTP headers to be included in every request to the server,
+	 * which may be required for certain unusual server configurations.
+	 * 
+	 * @param additionalHttpHeaders
+	 *        a map containing pairs of header names and values. May be null
 	 */
-	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders == null ? null : Collections.unmodifiableMap(additionalHttpHeaders);
+	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
+		if (additionalHttpHeaders == null) {
+			this.additionalHttpHeaders = Collections.emptyMap();
+		}
+		else {
+			this.additionalHttpHeaders = additionalHttpHeaders;
+		}
 	}
 
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
-			boolean includeInferred, int maxQueryTime, Binding... bindings) {
+			boolean includeInferred, int maxQueryTime, Binding... bindings)
+	{
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
 				includeInferred, maxQueryTime, bindings);
 		HttpUriRequest method;
@@ -482,7 +499,8 @@ public class SparqlSession {
 			for (NameValuePair nvp : queryParams)
 				urib.addParameter(nvp.getName(), nvp.getValue());
 			queryUrlWithParams = urib.toString();
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			throw new AssertionError(e);
 		}
 		if (shouldUsePost(queryUrlWithParams)) {
@@ -493,24 +511,23 @@ public class SparqlSession {
 			postMethod.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 			postMethod.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 			method = postMethod;
-		} else {
+		}
+		else {
 			method = new HttpGet(queryUrlWithParams);
 		}
 		// functionality to provide custom http headers as required by the
 		// applications
-		if (this.additionalHttpHeaders != null) {
-			for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet())
-				method.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+		for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet()) {
+			method.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
 		}
 		return method;
 	}
 
 	/**
 	 * Return whether the provided query should use POST (otherwise use GET)
-	 *
+	 * 
 	 * @param fullQueryUrl
-	 *        the complete URL, including hostname and all HTTP
-	 *        query parameters
+	 *        the complete URL, including hostname and all HTTP query parameters
 	 */
 	protected boolean shouldUsePost(String fullQueryUrl) {
 		return fullQueryUrl.length() > MAXIMUM_URL_LENGTH;
@@ -559,7 +576,8 @@ public class SparqlSession {
 						String.valueOf(defaultGraphURI)));
 			}
 			for (URI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
+				queryParams.add(new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME,
+						String.valueOf(namedGraphURI)));
 			}
 		}
 
@@ -622,8 +640,7 @@ public class SparqlSession {
 	 * method.
 	 */
 	protected BackgroundTupleResult getBackgroundTupleQueryResult(HttpUriRequest method)
-		throws RepositoryException, QueryInterruptedException, MalformedQueryException,
-		IOException
+		throws RepositoryException, QueryInterruptedException, MalformedQueryException, IOException
 	{
 
 		boolean submitted = false;
@@ -817,8 +834,8 @@ public class SparqlSession {
 				}
 
 				String baseURI = method.getURI().toASCIIString();
-				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, entity.getContent(),
-						charset, baseURI);
+				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, entity.getContent(), charset,
+						baseURI);
 				execute(gRes);
 				submitted = true;
 				return gRes;
@@ -828,8 +845,9 @@ public class SparqlSession {
 			}
 		}
 		finally {
-			if (!submitted)
+			if (!submitted) {
 				EntityUtils.consumeQuietly(response.getEntity());
+			}
 		}
 
 	}
@@ -873,7 +891,8 @@ public class SparqlSession {
 		}
 	}
 
-	private HttpResponse sendGraphQueryViaHttp(HttpUriRequest method, boolean requireContext, Set<RDFFormat> rdfFormats)
+	private HttpResponse sendGraphQueryViaHttp(HttpUriRequest method, boolean requireContext,
+			Set<RDFFormat> rdfFormats)
 		throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
 	{
 
@@ -904,7 +923,8 @@ public class SparqlSession {
 	 * Parse the response in this thread using a suitable
 	 * {@link BooleanQueryResultParser}. All HTTP connections are closed and
 	 * released in this method
-	 * @throws OpenRDFException 
+	 * 
+	 * @throws OpenRDFException
 	 */
 	protected boolean getBoolean(HttpUriRequest method)
 		throws IOException, OpenRDFException
@@ -942,7 +962,8 @@ public class SparqlSession {
 
 	}
 
-	private HttpResponse sendBooleanQueryViaHttp(HttpUriRequest method, Set<BooleanQueryResultFormat> booleanFormats)
+	private HttpResponse sendBooleanQueryViaHttp(HttpUriRequest method,
+			Set<BooleanQueryResultFormat> booleanFormats)
 		throws IOException, OpenRDFException
 	{
 
@@ -974,7 +995,7 @@ public class SparqlSession {
 	 * boolean queries in the same way. This method aborts the HTTP connection.
 	 * 
 	 * @param method
-	 * @throws OpenRDFException 
+	 * @throws OpenRDFException
 	 */
 	protected HttpResponse executeOK(HttpUriRequest method)
 		throws IOException, OpenRDFException
@@ -987,11 +1008,14 @@ public class SparqlSession {
 			if (httpCode == HttpURLConnection.HTTP_OK || httpCode == HttpURLConnection.HTTP_NOT_AUTHORITATIVE) {
 				fail = false;
 				return response; // everything OK, control flow can continue
-			} else {
-				// trying to contact a non-Sesame server?
-				throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
 			}
-		} finally {
+			else {
+				// trying to contact a non-Sesame server?
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server: "
+						+ method.getURI().toString());
+			}
+		}
+		finally {
 			if (fail) {
 				EntityUtils.consumeQuietly(response.getEntity());
 			}
@@ -1005,9 +1029,11 @@ public class SparqlSession {
 		try {
 			if (response.getStatusLine().getStatusCode() >= 300) {
 				// trying to contact a non-Sesame server?
-				throw new RepositoryException("Failed to get server protocol; no such resource on this server: " + method.getURI().toString());
+				throw new RepositoryException("Failed to get server protocol; no such resource on this server: "
+						+ method.getURI().toString());
 			}
-		} finally {
+		}
+		finally {
 			EntityUtils.consume(response.getEntity());
 		}
 	}
@@ -1024,7 +1050,8 @@ public class SparqlSession {
 			if (httpCode >= 200 && httpCode < 300 || httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
 				consume = false;
 				return response; // everything OK, control flow can continue
-			} else {
+			}
+			else {
 				switch (httpCode) {
 					case HttpURLConnection.HTTP_UNAUTHORIZED: // 401
 						throw new UnauthorizedException();
@@ -1050,7 +1077,8 @@ public class SparqlSession {
 						}
 				}
 			}
-		} finally {
+		}
+		finally {
 			if (consume) {
 				EntityUtils.consumeQuietly(response.getEntity());
 			}
@@ -1127,7 +1155,7 @@ public class SparqlSession {
 	 * Gets the http connection read timeout in milliseconds.
 	 */
 	public long getConnectionTimeout() {
-		return (long) params.getIntParameter(CoreConnectionPNames.SO_TIMEOUT, 0);
+		return (long)params.getIntParameter(CoreConnectionPNames.SO_TIMEOUT, 0);
 	}
 
 	/**
@@ -1137,6 +1165,6 @@ public class SparqlSession {
 	 *        timeout in milliseconds. Zero sets to infinity.
 	 */
 	public void setConnectionTimeout(long timeout) {
-		params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, (int) timeout);
+		params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, (int)timeout);
 	}
 }

@@ -42,11 +42,16 @@ public class SPARQLRepository extends RepositoryBase {
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private SesameClient client;
+
 	private String username;
+
 	private String password;
+
 	private String queryEndpointUrl;
+
 	private String updateEndpointUrl;
-	private Map<String,String> additionalHttpHeaders;
+
+	private Map<String, String> additionalHttpHeaders = Collections.emptyMap();
 
 	/**
 	 * Create a new SPARQLRepository using the supplied endpoint URL for queries
@@ -85,7 +90,7 @@ public class SPARQLRepository extends RepositoryBase {
 		return client;
 	}
 
-	public synchronized  void setSesameClient(SesameClient client) {
+	public synchronized void setSesameClient(SesameClient client) {
 		this.client = client;
 	}
 
@@ -100,8 +105,7 @@ public class SPARQLRepository extends RepositoryBase {
 		SparqlSession httpClient = getSesameClient().createSparqlSession(queryEndpointUrl, updateEndpointUrl);
 		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
-		if (additionalHttpHeaders != null)
-			httpClient.setAdditionalHttpHeaders(additionalHttpHeaders);
+		httpClient.setAdditionalHttpHeaders(additionalHttpHeaders);
 		if (username != null) {
 			httpClient.setUsernameAndPassword(username, password);
 		}
@@ -111,8 +115,9 @@ public class SPARQLRepository extends RepositoryBase {
 	public RepositoryConnection getConnection()
 		throws RepositoryException
 	{
-		if (!isInitialized())
+		if (!isInitialized()) {
 			throw new RepositoryException("SPARQLRepository not initialized.");
+		}
 		return new SPARQLConnection(this, createHTTPClient());
 	}
 
@@ -140,7 +145,7 @@ public class SPARQLRepository extends RepositoryBase {
 	public void setDataDir(File dataDir) {
 		// no-op
 	}
-	
+
 	/**
 	 * Set the username and password to use for authenticating with the remote
 	 * repository.
@@ -163,7 +168,7 @@ public class SPARQLRepository extends RepositoryBase {
 			client.shutDown();
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return queryEndpointUrl;
@@ -171,22 +176,29 @@ public class SPARQLRepository extends RepositoryBase {
 
 	/**
 	 * Get the additional HTTP headers which will be used
-	 *
-	 * @return a read-only view of the additional HTTP headers which will
-	 *          be included in every request to the server, or null if no
-	 *          headers have been added */
+	 * 
+	 * @return a read-only view of the additional HTTP headers which will be
+	 *         included in every request to the server.
+	 */
 	public Map<String, String> getAdditionalHttpHeaders() {
-		return additionalHttpHeaders == null ? null : Collections.unmodifiableMap(additionalHttpHeaders);
+		return Collections.unmodifiableMap(additionalHttpHeaders);
 	}
 
 	/**
 	 * Set additional HTTP headers to be included in every request to the server,
-	 * which may be required for certain unusual server configurations.
-	 *
-	 * This will only take effect on connections subsequently returned by {@link #getConnection()}.
-	 *
-	 * @param additionalHttpHeaders a map containing pairs of header names and values. May be null */
+	 * which may be required for certain unusual server configurations. This will
+	 * only take effect on connections subsequently returned by
+	 * {@link #getConnection()}.
+	 * 
+	 * @param additionalHttpHeaders
+	 *        a map containing pairs of header names and values. May be null
+	 */
 	public void setAdditionalHttpHeaders(Map<String, String> additionalHttpHeaders) {
-		this.additionalHttpHeaders = additionalHttpHeaders;
+		if (additionalHttpHeaders == null) {
+			this.additionalHttpHeaders = Collections.emptyMap();
+		}
+		else {
+			this.additionalHttpHeaders = additionalHttpHeaders;
+		}
 	}
 }
