@@ -46,12 +46,12 @@ public class BasicParserSettings {
 	 * <p>
 	 * Verification is performed using registered DatatypeHandlers.
 	 * <p>
-	 * Defaults to true.
+	 * Defaults to false since 2.8.0, defaulted to true in 2.7.
 	 * 
 	 * @since 2.7.0
 	 */
 	public static final RioSetting<Boolean> VERIFY_DATATYPE_VALUES = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.verifydatatypevalues", "Verify recognised datatype values", Boolean.TRUE);
+			"org.openrdf.rio.verifydatatypevalues", "Verify recognised datatype values", Boolean.FALSE);
 
 	/**
 	 * Boolean setting for parser to determine whether to fail parsing if
