@@ -55,11 +55,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	public static void stopServer()
 		throws Exception
 	{
-		try {
-		}
-		finally {
-			server.stop();
-		}
+		server.stop();
 	}
 
 	@Override
