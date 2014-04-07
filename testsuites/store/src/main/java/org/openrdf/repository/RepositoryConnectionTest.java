@@ -58,6 +58,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -65,6 +66,7 @@ import org.junit.rules.Timeout;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -77,6 +79,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -290,6 +293,40 @@ public abstract class RepositoryConnectionTest {
 		testCon.commit();
 		assertThat(testCon.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
 		assertThat(testCon2.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
+	}
+
+
+	@Test
+	@Ignore("this test is no longer generally applicable, since the outcome depends on the transaction isolation level selected by the store")
+	public void testTransactionIsolationForRead()
+		throws Exception
+	{
+		testCon.begin();
+		try {
+			// Add but do not commit
+			testCon.add(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			assertTrue("Should be able to see uncommitted statement on same connection",
+					testCon.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			assertFalse(
+					"Should not be able to see uncommitted statement on separate connection outside transaction",
+					testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			testCon2.begin();
+			try {
+				assertFalse(
+						"Should not be able to see uncommitted statement on separate connection inside transaction",
+						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+			}
+			finally {
+				testCon2.rollback();
+			}
+
+		}
+		finally {
+			testCon.rollback();
+		}
+
 	}
 
 	@Test
@@ -910,18 +947,17 @@ public abstract class RepositoryConnectionTest {
 		assertFalse("List should not be empty", list.isEmpty());
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedTypedLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidIntegerLiteral = vf.createLiteral("the number four", XMLSchema.INTEGER);
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidIntegerLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -934,18 +970,17 @@ public abstract class RepositoryConnectionTest {
 		}
 	}
 
-
 	@Test
 	public void testGetStatementsMalformedLanguageLiteral()
 		throws Exception
-	{	
+	{
 		Literal invalidLanguageLiteral = vf.createLiteral("the number four", "en_us");
 		try {
 			URI pred = vf.createURI(URN_PRED);
 			testCon.add(bob, pred, invalidLanguageLiteral);
-			
+
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
-			
+
 			assertNotNull(statements);
 			assertTrue(statements.hasNext());
 			Statement st = statements.next();
@@ -958,6 +993,7 @@ public abstract class RepositoryConnectionTest {
 			fail(e.getMessage());
 		}
 	}
+
 	@Test
 	public void testGetStatementsInSingleContext()
 		throws Exception

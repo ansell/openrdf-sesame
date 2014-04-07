@@ -245,6 +245,13 @@ public class SailConnectionWrapper implements SailConnection {
 	}
 
 	@Override
+	public void flush()
+		throws SailException
+	{
+		wrappedCon.flush();
+	}
+
+	@Override
 	public void prepare()
 		throws SailException
 	{

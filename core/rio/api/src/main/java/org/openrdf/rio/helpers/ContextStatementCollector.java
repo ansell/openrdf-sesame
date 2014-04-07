@@ -22,10 +22,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.Namespaces;
 import org.openrdf.rio.RDFHandlerException;
 
 /**
@@ -66,15 +67,24 @@ public class ContextStatementCollector extends RDFHandlerBase {
 	 * reported namespaces.
 	 */
 	public ContextStatementCollector(Collection<Statement> statements, ValueFactory vf, Resource... contexts) {
-		this(statements, new LinkedHashMap<String, String>(), vf, contexts);
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		if (statements instanceof Model) {
+			this.namespaces = Namespaces.wrap(((Model)statements).getNamespaces());
+		}
+		else {
+			this.namespaces = new LinkedHashMap<String, String>();
+		}
+		this.statements = statements;
+		this.vf = vf;
+		this.contexts = contexts;
 	}
 
 	/**
 	 * Creates a new StatementCollector that stores reported statements and
 	 * namespaces in the supplied containers.
 	 */
-	public ContextStatementCollector(Collection<Statement> statements, Map<String, String> namespaces, ValueFactory vf,
-			Resource... contexts)
+	public ContextStatementCollector(Collection<Statement> statements, Map<String, String> namespaces,
+			ValueFactory vf, Resource... contexts)
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 		this.statements = statements;
@@ -124,8 +134,7 @@ public class ContextStatementCollector extends RDFHandlerBase {
 		}
 		else {
 			for (Resource nextContext : contexts) {
-				statements.add(vf.createStatement(st.getSubject(), st.getPredicate(),
-						st.getObject(), nextContext));
+				statements.add(vf.createStatement(st.getSubject(), st.getPredicate(), st.getObject(), nextContext));
 			}
 		}
 	}

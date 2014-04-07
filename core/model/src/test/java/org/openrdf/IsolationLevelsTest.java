@@ -60,9 +60,10 @@ public class IsolationLevelsTest {
 	 */
 	@Test
 	public void testIsCompatibleWith() {
-		assertTrue(IsolationLevels.REPEATABLE_READ.isCompatibleWith(IsolationLevels.READ_COMMITTED));
+		assertTrue(IsolationLevels.SNAPSHOT.isCompatibleWith(IsolationLevels.READ_COMMITTED));
 		assertTrue(IsolationLevels.SERIALIZABLE.isCompatibleWith(IsolationLevels.READ_COMMITTED));
-		assertFalse(IsolationLevels.REPEATABLE_READ.isCompatibleWith(IsolationLevels.READ_UNCOMMITTED));
+		assertTrue(IsolationLevels.SNAPSHOT.isCompatibleWith(IsolationLevels.READ_UNCOMMITTED));
+		assertFalse(IsolationLevels.READ_COMMITTED.isCompatibleWith(IsolationLevels.SNAPSHOT));
 	}
 
 	/**
@@ -88,11 +89,11 @@ public class IsolationLevelsTest {
 
 		List<IsolationLevels> supportedLevels = new ArrayList<IsolationLevels>();
 		supportedLevels.add(IsolationLevels.NONE);
-		supportedLevels.add(IsolationLevels.REPEATABLE_READ);
-		supportedLevels.add(IsolationLevels.SERIALIZABLE);
+		supportedLevels.add(IsolationLevels.READ_UNCOMMITTED);
+		supportedLevels.add(IsolationLevels.READ_COMMITTED);
 
 		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(
-				IsolationLevels.READ_UNCOMMITTED, supportedLevels);
+				IsolationLevels.SERIALIZABLE, supportedLevels);
 		assertNull(compatibleLevel);
 
 	}
@@ -101,7 +102,7 @@ public class IsolationLevelsTest {
 	public void testGetCompatibleIsolationLevelNullParams() {
 		try {
 			IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(
-					IsolationLevels.REPEATABLE_READ, null);
+					IsolationLevels.SNAPSHOT, null);
 			fail("should have resulted in an IllegalArgumentException");
 		}
 		catch (IllegalArgumentException e) {
@@ -110,7 +111,7 @@ public class IsolationLevelsTest {
 
 		List<IsolationLevels> supportedLevels = new ArrayList<IsolationLevels>();
 		supportedLevels.add(IsolationLevels.NONE);
-		supportedLevels.add(IsolationLevels.REPEATABLE_READ);
+		supportedLevels.add(IsolationLevels.SNAPSHOT);
 		supportedLevels.add(IsolationLevels.SERIALIZABLE);
 
 		try {

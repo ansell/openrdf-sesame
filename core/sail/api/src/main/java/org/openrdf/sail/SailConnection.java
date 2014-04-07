@@ -19,7 +19,6 @@ package org.openrdf.sail;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
-import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -171,12 +170,32 @@ public interface SailConnection {
 	 * @param level
 	 *        the transaction isolation level on which this transaction operates.
 	 * @since 2.8.0
+	 * @throws UnknownSailTransactionStateException
+	 *         If the IsolationLevel is not supported by this implementation
 	 * @throws SailException
 	 *         If the connection could not start a transaction, if the supplied
 	 *         transaction isolation level is not supported, or if a transaction
 	 *         is already active on this connection.
 	 */
 	public void begin(IsolationLevel level)
+		throws UnknownSailTransactionStateException, SailException;
+
+	/**
+	 * Flushes any pending updates and notify changes to listeners as
+	 * appropriate. This is an optional call; calling or not calling this method
+	 * should have no effect on the outcome of other calls. This method exists to
+	 * give the caller more control over the efficiency when calling
+	 * {@link #prepare()}. This method may be called multiple times within the
+	 * same transaction.
+	 * 
+	 * @since 2.8.0
+	 * @throws SailException
+	 *         If the updates could not be processed, for example because no
+	 *         transaction is active.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
+	 */
+	public void flush()
 		throws SailException;
 
 	/**

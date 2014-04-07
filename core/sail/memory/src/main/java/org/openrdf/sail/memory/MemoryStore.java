@@ -32,6 +32,7 @@ import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
 
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -192,6 +193,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 * Creates a new MemoryStore.
 	 */
 	public MemoryStore() {
+		addSupportedIsolationLevel(IsolationLevels.READ_COMMITTED);
 	}
 
 	/**
@@ -203,6 +205,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 *        the data directory to be used for persistence.
 	 */
 	public MemoryStore(File dataDir) {
+		this();
 		setDataDir(dataDir);
 		setPersist(true);
 	}
@@ -453,6 +456,10 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 		}
 	}
 
+	protected Lock tryTransactionLock() {
+		return txnLockManager.tryExclusiveLock();
+	}
+	
 	protected int size() {
 		return statements.size();
 	}

@@ -17,9 +17,9 @@
 package org.openrdf;
 
 /**
- * A Transaction Isolation Level. Defaul levels supported by Sesame are provided by
- * {@link IsolationLevels}, third-party triplestore implementors may choose to
- * add additional IsolationLevel implementations if their triplestore's
+ * A Transaction Isolation Level. Defaul levels supported by Sesame are provided
+ * by {@link IsolationLevels}, third-party triplestore implementors may choose
+ * to add additional IsolationLevel implementations if their triplestore's
  * isolation contract is different from what is provided by default.
  * 
  * @author Jeen Broekstra
@@ -30,7 +30,8 @@ public interface IsolationLevel {
 	/**
 	 * Verifies if this transaction isolation level is compatible with the
 	 * supplied other isolation level - that is, if this transaction isolation
-	 * level offers at least the same guarantees as the other level.
+	 * level offers at least the same guarantees as the other level. By
+	 * definition, every transaction isolation level is compatible with itself.
 	 * 
 	 * @param otherLevel
 	 *        an other isolation level to check compatibility against.

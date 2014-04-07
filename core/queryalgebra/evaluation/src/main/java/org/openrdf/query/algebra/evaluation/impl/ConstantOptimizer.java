@@ -41,6 +41,11 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.numeric.Rand;
+import org.openrdf.query.algebra.evaluation.function.rdfterm.STRUUID;
+import org.openrdf.query.algebra.evaluation.function.rdfterm.UUID;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -71,8 +76,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 	protected class ConstantVisitor extends QueryModelVisitorBase<RuntimeException> {
 
 		@Override
-		public void meet(Or or)
-		{
+		public void meet(Or or) {
 			or.visitChildren(this);
 
 			try {
@@ -100,7 +104,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of the query tree
+				// TODO: incompatible values types(?), remove the affected part of
+				// the query tree
 				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
@@ -109,8 +114,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(And and)
-		{
+		public void meet(And and) {
 			and.visitChildren(this);
 
 			try {
@@ -138,7 +142,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				}
 			}
 			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of the query tree
+				// TODO: incompatible values types(?), remove the affected part of
+				// the query tree
 				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
@@ -147,8 +152,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		protected void meetBinaryValueOperator(BinaryValueOperator binaryValueOp)
-		{
+		protected void meetBinaryValueOperator(BinaryValueOperator binaryValueOp) {
 			super.meetBinaryValueOperator(binaryValueOp);
 
 			if (isConstant(binaryValueOp.getLeftArg()) && isConstant(binaryValueOp.getRightArg())) {
@@ -157,7 +161,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 					binaryValueOp.replaceWith(new ValueConstant(value));
 				}
 				catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of the query tree
+					// TODO: incompatible values types(?), remove the affected part
+					// of the query tree
 					logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 				}
 				catch (QueryEvaluationException e) {
@@ -167,8 +172,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		protected void meetUnaryValueOperator(UnaryValueOperator unaryValueOp)
-		{
+		protected void meetUnaryValueOperator(UnaryValueOperator unaryValueOp) {
 			super.meetUnaryValueOperator(unaryValueOp);
 
 			if (isConstant(unaryValueOp.getArg())) {
@@ -177,7 +181,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 					unaryValueOp.replaceWith(new ValueConstant(value));
 				}
 				catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of the query tree
+					// TODO: incompatible values types(?), remove the affected part
+					// of the query tree
 					logger.debug("Failed to evaluate UnaryValueOperator with a constant argument", e);
 				}
 				catch (QueryEvaluationException e) {
@@ -187,14 +192,25 @@ public class ConstantOptimizer implements QueryOptimizer {
 		}
 
 		@Override
-		public void meet(FunctionCall functionCall)
-		{
+		public void meet(FunctionCall functionCall) {
 			super.meet(functionCall);
 
 			List<ValueExpr> args = functionCall.getArgs();
-			for (ValueExpr arg : args) {
-				if (!isConstant(arg)) {
+
+			if (args.size() == 0) {
+				/* SPARQL has two types of zero-arg function. One are proper 'constant' functions like NOW() which generate a single value
+				 *  for the entire query and which can be safely optimized to a constant. Other functions, like RAND(), UUID() and STRUUID(), 
+				 *  are a special case: they are expected to yield a new value on every call, and can therefore not be replaced by a constant.
+				 */
+				if (!isConstantZeroArgFunction(functionCall)) {
 					return;
+				}
+			}
+			else {
+				for (ValueExpr arg : args) {
+					if (!isConstant(arg)) {
+						return;
+					}
 				}
 			}
 
@@ -205,7 +221,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 				functionCall.replaceWith(new ValueConstant(value));
 			}
 			catch (ValueExprEvaluationException e) {
-				// TODO: incompatible values types(?), remove the affected part of the query tree
+				// TODO: incompatible values types(?), remove the affected part of
+				// the query tree
 				logger.debug("Failed to evaluate BinaryValueOperator with two constant arguments", e);
 			}
 			catch (QueryEvaluationException e) {
@@ -213,9 +230,31 @@ public class ConstantOptimizer implements QueryOptimizer {
 			}
 		}
 
+		/**
+		 * Determines if the provided zero-arg function is a function that should
+		 * return a constant value for the entire query execution (e.g NOW()), or
+		 * if it should generate a new value for every call (e.g. RAND()).
+		 * 
+		 * @param functionCall
+		 *        a zero-arg function call.
+		 * @return <code>true<code> iff the provided function returns a constant value for the query execution, <code>false</code>
+		 *         otherwise.
+		 */
+		private boolean isConstantZeroArgFunction(FunctionCall functionCall) {
+			Function function = FunctionRegistry.getInstance().get(functionCall.getURI());
+
+			// we treat constant functions as the 'regular case' and make
+			// exceptions for specific SPARQL built-in functions that require
+			// different treatment.
+			if (function instanceof Rand || function instanceof UUID || function instanceof STRUUID) {
+				return false;
+			}
+
+			return true;
+		}
+
 		@Override
-		public void meet(Bound bound)
-		{
+		public void meet(Bound bound) {
 			super.meet(bound);
 
 			if (bound.getArg().hasValue()) {

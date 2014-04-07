@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
@@ -67,12 +68,8 @@ public class TestProxyRepositoryFactory {
 	public final void testGetRepository()
 		throws OpenRDFException, IOException
 	{
-		RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, ValueFactoryImpl.getInstance());
-		Graph graph = new TreeModel();
-		rdfParser.setRDFHandler(new StatementCollector(graph));
-		rdfParser.parse(new BufferedReader(new InputStreamReader(
-				Thread.currentThread().getContextClassLoader().getResourceAsStream("proxy.ttl"))),
-				RepositoryConfigSchema.NAMESPACE);
+		Model graph = Rio.parse(this.getClass().getResourceAsStream("/proxy.ttl"),
+				RepositoryConfigSchema.NAMESPACE, RDFFormat.TURTLE);
 		RepositoryConfig config = RepositoryConfig.create(graph,
 				GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
 		config.validate();

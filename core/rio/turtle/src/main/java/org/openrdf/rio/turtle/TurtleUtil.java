@@ -163,6 +163,18 @@ public class TurtleUtil {
 		return isPN_CHARS_BASE(c);
 	}
 
+	public static boolean isBLANK_NODE_LABEL_StartChar(int c) {
+		return isPN_CHARS_U(c) || ASCIIUtil.isNumber(c);
+	}
+
+	public static boolean isBLANK_NODE_LABEL_Char(int c) {
+		return isPN_CHARS(c) || c == '.';
+	}
+
+	public static boolean isBLANK_NODE_LABEL_EndChar(int c) {
+		return isPN_CHARS(c);
+	}
+
 	public static boolean isNameStartChar(int c) {
 		return isPN_CHARS_U(c) || c == ':' || ASCIIUtil.isNumber(c) || c == '\\' || c == '%';
 	}
@@ -460,6 +472,10 @@ public class TurtleUtil {
 			}
 			else if (c == '"') {
 				sb.append('"');
+				startIdx = backSlashIdx + 2;
+			}
+			else if (c == '\'') {
+				sb.append('\'');
 				startIdx = backSlashIdx + 2;
 			}
 			else if (c == '>') {

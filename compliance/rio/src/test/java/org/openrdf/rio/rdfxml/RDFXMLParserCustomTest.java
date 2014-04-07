@@ -18,11 +18,14 @@ package org.openrdf.rio.rdfxml;
 
 import static org.junit.Assert.*;
 
+import java.io.StringReader;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -164,6 +167,33 @@ public class RDFXMLParserCustomTest {
 			// assertTrue(e.getMessage().contains(
 			// "The parser has encountered more than \"64,000\" entity expansions in this document; this is the limit imposed by the"));
 		}
+	}
+
+	@Test
+	public void testParseCollection()
+		throws Exception
+	{
+		// Example from:
+		// http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-parsetype-Collection
+		StringBuilder string = new StringBuilder();
+		string.append("<?xml version=\"1.0\"?>\n");
+		string.append("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" ");
+		string.append(" xmlns:ex=\"http://example.org/stuff/1.0/\"> \n");
+		string.append("  <rdf:Description rdf:about=\"http://example.org/basket\"> \n");
+		string.append("    <ex:hasFruit rdf:parseType=\"Collection\">\n");
+		string.append("      <rdf:Description rdf:about=\"http://example.org/banana\"/>\n");
+		string.append("      <rdf:Description rdf:about=\"http://example.org/apple\"/>\n");
+		string.append("      <rdf:Description rdf:about=\"http://example.org/pear\"/>\n");
+		string.append("    </ex:hasFruit>\n");
+		string.append("  </rdf:Description>\n");
+		string.append("</rdf:RDF>");
+
+		Model parse = Rio.parse(new StringReader(string.toString()), "", RDFFormat.RDFXML);
+		Rio.write(parse, System.out, RDFFormat.NTRIPLES);
+		assertEquals(7, parse.size());
+		assertEquals(3, parse.filter(null, RDF.FIRST, null).size());
+		assertEquals(3, parse.filter(null, RDF.REST, null).size());
+		assertEquals(1, parse.filter(null, null, RDF.NIL).size());
 	}
 
 	@Test

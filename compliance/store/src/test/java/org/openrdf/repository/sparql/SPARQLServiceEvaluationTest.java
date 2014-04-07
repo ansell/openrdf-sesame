@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +43,6 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.parser.sparql.SPARQLUpdateTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -63,7 +64,7 @@ public class SPARQLServiceEvaluationTest {
 
 	static final Logger logger = LoggerFactory.getLogger(SPARQLServiceEvaluationTest.class);
 
-	private HTTPMemServer server;
+	private static HTTPMemServer server;
 
 	private HTTPRepository remoteRepository;
 
@@ -82,36 +83,40 @@ public class SPARQLServiceEvaluationTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
-	public void setUp()
+	@BeforeClass
+	public static void startServer()
 		throws Exception
 	{
 		server = new HTTPMemServer();
 
 		try {
 			server.start();
-
-			remoteRepository = new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
-			remoteRepository.initialize();
-			loadDataSet(remoteRepository, "/testdata-query/graph1.ttl");
-			loadDataSet(remoteRepository, "/testdata-query/graph2.ttl");
-
-			localRepository = new SailRepository(new MemoryStore());
-			localRepository.initialize();
-
-			loadDataSet(localRepository, "/testdata-query/defaultgraph.ttl");
-			
-			f = localRepository.getValueFactory();
-
-			bob = f.createURI(EX_NS, "bob");
-			alice = f.createURI(EX_NS, "alice");
-			william = f.createURI(EX_NS, "william");
-			
 		}
 		catch (Exception e) {
 			server.stop();
 			throw e;
 		}
+	}
+
+	@Before
+	public void setUp()
+		throws Exception
+	{
+		remoteRepository = new HTTPRepository(HTTPMemServer.REPOSITORY_URL);
+		remoteRepository.initialize();
+		loadDataSet(remoteRepository, "/testdata-query/graph1.ttl");
+		loadDataSet(remoteRepository, "/testdata-query/graph2.ttl");
+
+		localRepository = new SailRepository(new MemoryStore());
+		localRepository.initialize();
+
+		loadDataSet(localRepository, "/testdata-query/defaultgraph.ttl");
+
+		f = localRepository.getValueFactory();
+
+		bob = f.createURI(EX_NS, "bob");
+		alice = f.createURI(EX_NS, "alice");
+		william = f.createURI(EX_NS, "william");
 	}
 
 	protected void loadDataSet(Repository rep, String datasetFile)
@@ -138,12 +143,15 @@ public class SPARQLServiceEvaluationTest {
 	public void tearDown()
 		throws Exception
 	{
-		try {
-			localRepository.shutDown();
-		}
-		finally {
-			server.stop();
-		}
+		localRepository.shutDown();
+	}
+
+	@AfterClass
+	public static void stopServer()
+		throws Exception
+	{
+		server.stop();
+		server = null;
 	}
 
 	@Test
@@ -151,10 +159,10 @@ public class SPARQLServiceEvaluationTest {
 		throws RepositoryException
 	{
 		StringBuilder qb = new StringBuilder();
-		qb.append(" SELECT * \n"); 
+		qb.append(" SELECT * \n");
 		qb.append(" WHERE { \n");
 		qb.append("     SERVICE <" + HTTPMemServer.REPOSITORY_URL + "> { \n");
-		qb.append("             ?X <"	+ FOAF.NAME + "> ?Y \n ");
+		qb.append("             ?X <" + FOAF.NAME + "> ?Y \n ");
 		qb.append("     } \n ");
 		qb.append("     ?X a <" + FOAF.PERSON + "> . \n");
 		qb.append(" } \n");

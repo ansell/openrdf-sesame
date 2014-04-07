@@ -49,7 +49,6 @@ import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
@@ -139,18 +138,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" FROM DEFAULT ");
 		query.append(" WHERE { ?s ?p ?o } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -187,18 +175,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" FROM sesame:nil ");
 		query.append(" WHERE { ?s ?p ?o } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -233,18 +210,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(getNamespaceDeclarations());
 		query.append("DESCRIBE ex:a");
 
-		GraphQuery gq = null;
-		try {
-			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
 		URI a = f.createURI("http://example.org/a");
@@ -269,18 +235,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(getNamespaceDeclarations());
 		query.append("DESCRIBE ?x WHERE {?x rdfs:label \"a\". } ");
 
-		GraphQuery gq = null;
-		try {
-			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
 		URI a = f.createURI("http://example.org/a");
@@ -305,18 +260,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(getNamespaceDeclarations());
 		query.append("DESCRIBE ?x WHERE {?x rdfs:label ?y . } ");
 
-		GraphQuery gq = null;
-		try {
-			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
 		URI a = vf.createURI("http://example.org/a");
@@ -353,18 +297,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(getNamespaceDeclarations());
 		query.append("DESCRIBE ex:b");
 
-		GraphQuery gq = null;
-		try {
-			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
 		URI b = f.createURI("http://example.org/b");
@@ -388,18 +321,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(getNamespaceDeclarations());
 		query.append("DESCRIBE ex:d");
 
-		GraphQuery gq = null;
-		try {
-			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
 		URI d = f.createURI("http://example.org/d");
@@ -434,18 +356,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(getNamespaceDeclarations());
 		query.append("DESCRIBE ex:f");
 
-		GraphQuery gq = null;
-		try {
-			gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
 		URI f = vf.createURI("http://example.org/f");
@@ -480,18 +391,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT (GROUP_CONCAT(DISTINCT ?l) AS ?concat)");
 		query.append("WHERE { ex:groupconcat-test ?p ?l . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -552,18 +452,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("          }");
 		query.append(" } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -625,20 +514,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query2.append("       } \n");
 		query2.append(" } \n");
 
-		TupleQuery tq1 = null;
-		TupleQuery tq2 = null;
-		try {
-			tq1 = conn.prepareTupleQuery(QueryLanguage.SPARQL, query1.toString());
-			tq2 = conn.prepareTupleQuery(QueryLanguage.SPARQL, query2.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq1 = conn.prepareTupleQuery(QueryLanguage.SPARQL, query1.toString());
+		TupleQuery tq2 = conn.prepareTupleQuery(QueryLanguage.SPARQL, query2.toString());
 
 		try {
 			TupleQueryResult result1 = tq1.evaluate();
@@ -679,18 +556,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("          VALUES ?e { ex:b } \n ");
 		query.append(" } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -734,18 +600,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("     ?s :p3 ?v2 . ");
 		query.append("  } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -807,18 +662,7 @@ public abstract class ComplexSPARQLQueryTest {
 
 		String query = "SELECT (COUNT(DISTINCT *) AS ?c) {?s ?p ?o }";
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -830,7 +674,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(count);
 
 			assertEquals(3, count.intValue());
-			
+
 			result.close();
 		}
 		catch (QueryEvaluationException e) {
@@ -838,7 +682,6 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 	}
-
 
 	@Test
 	public void testSES1898LeftJoinSemantics2()
@@ -853,18 +696,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("    OPTIONAL {?s :p2 ?v2 } .");
 		query.append("  } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -911,19 +743,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" PREFIX : <http://example.org/>\n");
 		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0 , 1)) } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
@@ -946,19 +766,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" PREFIX : <http://example.org/>\n");
 		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1/0)) } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
@@ -975,19 +783,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" PREFIX : <http://example.org/>\n");
 		query.append(" SELECT ?y WHERE { :a :p ?y. FILTER(?y in (:c, :d, 1, 1/0)) } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
@@ -1009,19 +805,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" PREFIX : <http://example.org/>\n");
 		query.append(" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
@@ -1064,19 +848,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("    }\n");
 		query.append("}");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-			tq.setBinding("william", conn.getValueFactory().createURI("http://example.org/william"));
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		tq.setBinding("william", conn.getValueFactory().createURI("http://example.org/william"));
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1137,18 +910,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("    }\n");
 		query.append("}");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1197,18 +959,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append(" FROM ex:tree-graph ");
 		query.append(" WHERE { ?node ex:hasParent+ ex:b . ?node ex:name ?name . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1249,19 +1000,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("            } )");
 		query.append(" } ");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1294,19 +1033,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT (GROUP_CONCAT(?l) AS ?concat)");
 		query.append("WHERE { ex:groupconcat-test ?p ?l . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1354,19 +1081,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			// first execute without binding
@@ -1420,19 +1135,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			// first execute without binding
@@ -1486,19 +1189,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			// first execute without binding
@@ -1552,19 +1243,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			// first execute without binding
@@ -1618,19 +1297,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			// first execute without binding
@@ -1689,19 +1356,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			// first execute without binding
@@ -1760,22 +1415,10 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-			DatasetImpl dt = new DatasetImpl();
-			dt.addDefaultGraph(this.alice);
-			tq.setDataset(dt);
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		DatasetImpl dt = new DatasetImpl();
+		dt.addDefaultGraph(this.alice);
+		tq.setDataset(dt);
 
 		try {
 			// first execute without binding
@@ -1834,23 +1477,11 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-			DatasetImpl dt = new DatasetImpl();
-			dt.addDefaultGraph(this.alice);
-			dt.addDefaultGraph(this.bob);
-			tq.setDataset(dt);
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		DatasetImpl dt = new DatasetImpl();
+		dt.addDefaultGraph(this.alice);
+		dt.addDefaultGraph(this.bob);
+		tq.setDataset(dt);
 
 		try {
 			// first execute without binding
@@ -1905,19 +1536,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1953,19 +1572,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -2001,19 +1608,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?parent ?child ");
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . FILTER (?child = <http://example.org/C>) }");
 
-		TupleQuery tq = null;
-		try {
-			tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		}
-		catch (RepositoryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-
-		catch (MalformedQueryException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -2033,6 +1628,147 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
+	}
+
+	@Test
+	public void testSES1991UUIDEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?uid WHERE {?s ?p ?o . BIND(UUID() as ?uid) } LIMIT 2";
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			URI uuid1 = (URI)result.next().getValue("uid");
+			URI uuid2 = (URI)result.next().getValue("uid");
+
+			assertNotNull(uuid1);
+			assertNotNull(uuid2);
+			assertFalse(uuid1.equals(uuid2));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES1991STRUUIDEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?uid WHERE {?s ?p ?o . BIND(STRUUID() as ?uid) } LIMIT 2";
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			Literal uid1 = (Literal)result.next().getValue("uid");
+			Literal uid2 = (Literal)result.next().getValue("uid");
+
+			assertNotNull(uid1);
+			assertFalse(uid1.equals(uid2));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES1991RANDEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?r WHERE {?s ?p ?o . BIND(RAND() as ?r) } LIMIT 3";
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			Literal r1 = (Literal)result.next().getValue("r");
+			Literal r2 = (Literal)result.next().getValue("r");
+			Literal r3 = (Literal)result.next().getValue("r");
+
+			assertNotNull(r1);
+
+			// there is a small chance that two successive calls to the random
+			// number generator will generate the exact same value, so we check for
+			// three successive calls (still theoretically possible to be
+			// identical, but phenomenally unlikely).
+			assertFalse(r1.equals(r2) && r1.equals(r3));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES1991NOWEvaluation()
+		throws Exception
+	{
+		loadTestData("/testdata-query/defaultgraph.ttl");
+		String query = "SELECT ?d WHERE {?s ?p ?o . BIND(NOW() as ?d) } LIMIT 2";
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			Literal d1 = (Literal)result.next().getValue("d");
+			Literal d2 = (Literal)result.next().getValue("d");
+
+			assertNotNull(d1);
+			assertEquals(d1, d2);
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+
+	@Test
+	public void testSES2024PropertyPathAnonVarSharing() throws Exception {
+		loadTestData("/testdata-query/dataset-ses2024.trig");
+		String query = "PREFIX : <http://example.org/> SELECT * WHERE { ?x1 :p/:lit ?l1 . ?x1 :diff ?x2 . ?x2 :p/:lit ?l2 . }" ;
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+
+			BindingSet bs = result.next();
+			Literal l1 = (Literal)bs.getValue("l1");
+			Literal l2 = (Literal)bs.getValue("l2");
+
+			assertNotNull(l1);
+			assertFalse(l1.equals(l2));
+
+			result.close();
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	/* private / protected methods */

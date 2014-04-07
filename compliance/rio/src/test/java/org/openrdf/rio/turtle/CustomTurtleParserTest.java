@@ -32,6 +32,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -39,6 +41,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorCollector;
+import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * Custom tests for Turtle Parser
@@ -48,8 +51,8 @@ import org.openrdf.rio.helpers.ParseErrorCollector;
 public class CustomTurtleParserTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(10000);
-	
+	public Timeout timeout = new Timeout(1000000);
+
 	private ValueFactory vf;
 
 	private ParserConfig settingsNoVerifyLangTag;
@@ -57,6 +60,8 @@ public class CustomTurtleParserTest {
 	private ParseErrorCollector errors;
 
 	private RDFParser parser;
+
+	private StatementCollector statementCollector;
 
 	/**
 	 * @throws java.lang.Exception
@@ -70,6 +75,8 @@ public class CustomTurtleParserTest {
 		settingsNoVerifyLangTag.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
 		errors = new ParseErrorCollector();
 		parser = Rio.createParser(RDFFormat.TURTLE);
+		statementCollector = new StatementCollector(new LinkedHashModel());
+		parser.setRDFHandler(statementCollector);
 	}
 
 	@Test
@@ -169,11 +176,13 @@ public class CustomTurtleParserTest {
 	}
 
 	@Test
-	public void testLiteralWithNewlines() throws Exception {
+	public void testLiteralWithNewlines()
+		throws Exception
+	{
 		String namespace = "http://www.foo.com/bar#";
 		String okLiteralString = "Literal \n without \n new line at the beginning. \n ";
 		String errLiteralString = "\n Literal \n with \n new line at the beginning. \n ";
-	
+
 		URI mySubject = vf.createURI(namespace, "Subject");
 		URI myPredicate = vf.createURI(namespace, "Predicate");
 		Literal myOkObject = vf.createLiteral(okLiteralString);
@@ -184,17 +193,142 @@ public class CustomTurtleParserTest {
 		model.add(mySubject, myPredicate, myOkObject);
 		model.add(mySubject, myPredicate, myErrObject);
 		Rio.write(model, out, RDFFormat.TURTLE);
-		
+
 		String str = out.toString();
-		
+
 		System.err.println(str);
-		
+
 		assertTrue("okLiteralString not found", str.contains(okLiteralString));
-		assertTrue("errLiteralString not found", str.contains(errLiteralString));		
+		assertTrue("errLiteralString not found", str.contains(errLiteralString));
 	}
-	
+
 	@Test
-	public void testSupportedSettings() throws Exception {
+	public void testSupportedSettings()
+		throws Exception
+	{
 		assertEquals(12, parser.getSupportedSettings().size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodEOF()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank."), "", RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodSpace()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank. "), "", RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodTab()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.\t"), "", RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodNewLine()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.\n"), "", RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodCarriageReturn()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.\r"), "", RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodURI()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank.<urn:c> <urn:d> <urn:e>."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+	}
+
+	@Test
+	public void testSES1988BlankNodePeriodBNode()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> _:blank._:blank <urn:d> <urn:e>."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+	}
+
+	@Test
+	public void testSES2013BlankNodeSemiColonBNodeSpaceA()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> a _:c2; a <urn:b> ."), "", RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), RDF.TYPE, vf.createURI("urn:b")));
+	}
+
+	@Test
+	public void testSES2013BlankNodeSemiColonBNodeA()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> a _:c2;a <urn:b> ."), "", RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), RDF.TYPE, vf.createURI("urn:b")));
+	}
+
+	@Test
+	public void testSES2013BlankNodeSemiColonBNodeSpaceURI()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> a _:c2; <urn:b> <urn:c> ."), "", RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"), vf.createURI("urn:c")));
+	}
+
+	@Test
+	public void testSES2013BlankNodeSemiColonBNodeURI()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> a _:c2;<urn:b> <urn:c> ."), "", RDFFormat.TURTLE);
+
+		assertEquals(2, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"), vf.createURI("urn:c")));
+	}
+
+	@Test
+	public void testSES2019ParseLongLiterals()
+		throws Exception
+	{
+		parser.parse(this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.ttl"), "");
+
+		assertTrue(errors.getWarnings().isEmpty());
+		assertTrue(errors.getErrors().isEmpty());
+		assertTrue(errors.getFatalErrors().isEmpty());
+
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(5, statementCollector.getStatements().size());
+
+		ModelUtil.equals(statementCollector.getStatements(), Rio.parse(
+				this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.nt"), "",
+				RDFFormat.NTRIPLES));
 	}
 }

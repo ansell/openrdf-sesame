@@ -19,6 +19,7 @@ package org.openrdf.query.parser.sparql;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,11 +30,14 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.parser.sparql.ast.ASTDeleteData;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
+import org.openrdf.query.parser.sparql.ast.ASTInsertData;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 import org.openrdf.query.parser.sparql.ast.ASTPrefixDecl;
 import org.openrdf.query.parser.sparql.ast.ASTQName;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
+import org.openrdf.query.parser.sparql.ast.ASTUnparsedQuadDataBlock;
 import org.openrdf.query.parser.sparql.ast.SyntaxTreeBuilderTreeConstants;
 import org.openrdf.query.parser.sparql.ast.VisitorException;
 
@@ -65,7 +69,7 @@ public class PrefixDeclProcessor {
 
 		// Build a prefix --> IRI map
 		Map<String, String> prefixMap = new LinkedHashMap<String, String>();
-		
+
 		for (ASTPrefixDecl prefixDecl : prefixDeclList) {
 			String prefix = prefixDecl.getPrefix();
 			String iri = prefixDecl.getIRI().getValue();
@@ -76,7 +80,7 @@ public class PrefixDeclProcessor {
 
 			prefixMap.put(prefix, iri);
 		}
-		
+
 		// insert some default prefixes (if not explicitly defined in the query)
 		insertDefaultPrefix(prefixMap, "rdf", RDF.NAMESPACE);
 		insertDefaultPrefix(prefixMap, "rdfs", RDFS.NAMESPACE);
@@ -85,12 +89,30 @@ public class PrefixDeclProcessor {
 		insertDefaultPrefix(prefixMap, "xsd", XMLSchema.NAMESPACE);
 		insertDefaultPrefix(prefixMap, "fn", FN.NAMESPACE);
 
-		QNameProcessor visitor = new QNameProcessor(prefixMap);
-		try {
-			qc.jjtAccept(visitor, null);
+		ASTUnparsedQuadDataBlock dataBlock = null;
+		if (qc.getOperation() instanceof ASTInsertData) {
+			ASTInsertData insertData = (ASTInsertData)qc.getOperation();
+			dataBlock = insertData.jjtGetChild(ASTUnparsedQuadDataBlock.class);
+
 		}
-		catch (VisitorException e) {
-			throw new MalformedQueryException(e);
+		else if (qc.getOperation() instanceof ASTDeleteData) {
+			ASTDeleteData deleteData = (ASTDeleteData)qc.getOperation();
+			dataBlock = deleteData.jjtGetChild(ASTUnparsedQuadDataBlock.class);
+		}
+
+		if (dataBlock != null) {
+			String prefixes = createPrefixesInSPARQLFormat(prefixMap);
+			// TODO optimize string concat?
+			dataBlock.setDataBlock(prefixes + dataBlock.getDataBlock());
+		}
+		else {
+			QNameProcessor visitor = new QNameProcessor(prefixMap);
+			try {
+				qc.jjtAccept(visitor, null);
+			}
+			catch (VisitorException e) {
+				throw new MalformedQueryException(e);
+			}
 		}
 
 		return prefixMap;
@@ -101,7 +123,21 @@ public class PrefixDeclProcessor {
 			prefixMap.put(prefix, namespace);
 		}
 	}
-	
+
+	private static String createPrefixesInSPARQLFormat(Map<String, String> prefixMap) {
+		StringBuilder sb = new StringBuilder();
+		for (Entry<String, String> entry : prefixMap.entrySet()) {
+			sb.append("PREFIX");
+			final String prefix = entry.getKey();
+			if (prefix != null) {
+				sb.append(" " + prefix);
+			}
+			sb.append(":");
+			sb.append(" <" + entry.getValue() + "> \n");
+		}
+		return sb.toString();
+	}
+
 	private static class QNameProcessor extends ASTVisitorBase {
 
 		private Map<String, String> prefixMap;
@@ -138,21 +174,22 @@ public class PrefixDeclProcessor {
 		}
 
 		private String processEscapesAndHex(String localName) {
-			
+
 			// first process hex-encoded chars.
 			StringBuffer unencoded = new StringBuffer();
 			Pattern hexPattern = Pattern.compile("([^\\\\]|^)(%[A-F\\d][A-F\\d])", Pattern.CASE_INSENSITIVE);
 			Matcher m = hexPattern.matcher(localName);
 			boolean result = m.find();
 			while (result) {
-				// we match the previous char because we need to be sure we are not processing an escaped % char rather than
+				// we match the previous char because we need to be sure we are not
+				// processing an escaped % char rather than
 				// an actual hex encoding, for example: 'foo\%bar'.
 				String previousChar = m.group(1);
 				String encoded = m.group(2);
 
 				int codePoint = Integer.parseInt(encoded.substring(1), 16);
-				String decoded = String.valueOf( Character.toChars(codePoint));
-				
+				String decoded = String.valueOf(Character.toChars(codePoint));
+
 				m.appendReplacement(unencoded, previousChar + decoded);
 				result = m.find();
 			}
@@ -169,7 +206,7 @@ public class PrefixDeclProcessor {
 				result = m.find();
 			}
 			m.appendTail(unescaped);
-			
+
 			return unescaped.toString();
 		}
 

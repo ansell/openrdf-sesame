@@ -57,14 +57,14 @@ public class BackgroundTupleResult extends TupleQueryResultImpl implements Runna
 
 	public BackgroundTupleResult(QueueCursor<BindingSet> queue, TupleQueryResultParser parser, InputStream in)
 	{
-		super(Collections.<String>emptyList(), queue);
+		super(Collections.<String> emptyList(), queue);
 		this.queue = queue;
 		this.parser = parser;
 		this.in = in;
 	}
 
 	@Override
-	protected synchronized void handleClose()
+	protected void handleClose()
 		throws QueryEvaluationException
 	{
 		try {

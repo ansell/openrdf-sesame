@@ -22,8 +22,8 @@ import java.util.Map;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.joran.action.Action;
+import ch.qos.logback.core.joran.spi.ElementSelector;
 import ch.qos.logback.core.joran.spi.InterpretationContext;
-import ch.qos.logback.core.joran.spi.Pattern;
 import ch.qos.logback.core.joran.spi.RuleStore;
 import ch.qos.logback.core.util.OptionHelper;
 
@@ -78,7 +78,7 @@ public class LogConfigurator extends JoranConfigurator {
 	{
 		// parent rules already added
 		super.addInstanceRules(rs);
-		rs.addRule(new Pattern("configuration/appender/logreader"), new LogReaderAction());
+		rs.addRule(new ElementSelector("configuration/appender/logreader"), new LogReaderAction());
 	}
 
 	public class LogReaderAction extends Action {

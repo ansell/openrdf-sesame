@@ -16,10 +16,10 @@
  */
 package org.openrdf.sail.helpers;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,19 +33,22 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.BNode;
-import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.DeleteData;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -60,27 +63,19 @@ import org.openrdf.sail.UpdateContext;
  */
 public abstract class SailConnectionBase implements SailConnection {
 
-	/*
-	 * Note: the following debugEnabled method are private so that they can be
-	 * removed when open connections no longer block other connections and they
-	 * can be closed silently (just like in JDBC).
+	/**
+	 * Size of write queue before auto flushing changes within write operation
 	 */
-	private static boolean debugEnabled() {
-		try {
-			return System.getProperty("org.openrdf.repository.debug") != null;
-		}
-		catch (SecurityException e) {
-			// Thrown when not allowed to read system properties, for example
-			// when running in applets
-			return false;
-		}
-	}
+	private static final int BLOCK_SIZE = 1000;
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	// System.getProperty maybe too expensive to call every time
+	private final boolean debugEnabled = SailBase.debugEnabled();
 
 	private final SailBase sailBase;
 
@@ -104,26 +99,19 @@ public abstract class SailConnectionBase implements SailConnection {
 	 */
 	protected final ReentrantLock updateLock = new ReentrantLock();
 
-	// FIXME: use weak references here?
-	private final List<SailBaseIteration> activeIterations = Collections.synchronizedList(new LinkedList<SailBaseIteration>());
-
-	/*
-	 * Stores a stack trace that indicates where this connection as created if
-	 * debugging is enabled.
-	 */
-	private final Throwable creatorTrace;
+	private final Map<SailBaseIteration, Throwable> activeIterations = new IdentityHashMap<SailBaseIteration, Throwable>();
 
 	/**
 	 * Statements that are currently being removed, but not yet realized, by an
 	 * active operation.
 	 */
-	private final Map<UpdateContext, Model> removed = new HashMap<UpdateContext, Model>();
+	private final Map<UpdateContext, Collection<Statement>> removed = new HashMap<UpdateContext, Collection<Statement>>();
 
 	/**
 	 * Statements that are currently being added, but not yet realized, by an
 	 * active operation.
 	 */
-	private final Map<UpdateContext, Model> added = new HashMap<UpdateContext, Model>();
+	private final Map<UpdateContext, Collection<Statement>> added = new HashMap<UpdateContext, Collection<Statement>>();
 
 	/**
 	 * Used to indicate a removed statement from all contexts.
@@ -140,7 +128,6 @@ public abstract class SailConnectionBase implements SailConnection {
 		this.sailBase = sailBase;
 		isOpen = true;
 		txnActive = false;
-		creatorTrace = debugEnabled() ? new Throwable() : null;
 	}
 
 	/*---------*
@@ -192,13 +179,12 @@ public abstract class SailConnectionBase implements SailConnection {
 		if (level == null) {
 			level = this.sailBase.getDefaultIsolationLevel();
 		}
-		
+
 		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(level,
 				this.sailBase.getSupportedIsolationLevels());
 		if (compatibleLevel == null) {
-			logger.warn("Isolation level {} not compatible with this Sail, falling back to {}", compatibleLevel,
-					this.sailBase.getDefaultIsolationLevel());
-			compatibleLevel = this.sailBase.getDefaultIsolationLevel();
+			throw new UnknownSailTransactionStateException("Isolation level " + level
+					+ " not compatible with this Sail");
 		}
 		this.transactionIsolationLevel = compatibleLevel;
 
@@ -222,7 +208,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		finally {
 			connectionLock.readLock().unlock();
 		}
-
+		startUpdate(null);
 	}
 
 	/**
@@ -253,30 +239,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		try {
 			if (isOpen) {
 				try {
-					while (true) {
-						SailBaseIteration ci = null;
-
-						synchronized (activeIterations) {
-							if (activeIterations.isEmpty()) {
-								break;
-							}
-							else {
-								ci = activeIterations.remove(0);
-							}
-						}
-
-						try {
-							ci.forceClose();
-						}
-						catch (SailException e) {
-							throw e;
-						}
-						catch (Exception e) {
-							throw new SailException(e);
-						}
-					}
-
-					assert activeIterations.isEmpty();
+					forceCloseActiveOperations();
 
 					if (txnActive) {
 						logger.warn("Rolling back transaction due to connection close", new Throwable());
@@ -306,29 +269,11 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 	}
 
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		try {
-			if (isOpen()) {
-				if (creatorTrace != null) {
-					logger.warn("Closing connection due to garbage collection, connection was created in:",
-							creatorTrace);
-				}
-				close();
-			}
-		}
-		finally {
-			super.finalize();
-		}
-	}
-
-	@Override
 	public final CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
+		flushPendingUpdates();
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -360,6 +305,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
+		flushPendingUpdates();
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -375,6 +321,7 @@ public abstract class SailConnectionBase implements SailConnection {
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
+		flushPendingUpdates();
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -401,6 +348,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final long size(Resource... contexts)
 		throws SailException
 	{
+		flushPendingUpdates();
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -440,9 +388,20 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	@Override
+	public void flush()
+		throws SailException
+	{
+		if (isActive()) {
+			endUpdate(null);
+			startUpdate(null);
+		}
+	}
+
+	@Override
 	public void prepare()
 		throws SailException
 	{
+		flush();
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -457,6 +416,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void commit()
 		throws SailException
 	{
+		if (isActive()) {
+			endUpdate(null);
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -481,6 +443,12 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void rollback()
 		throws SailException
 	{
+		synchronized (added) {
+			added.clear();
+		}
+		synchronized (removed) {
+			removed.clear();
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -509,59 +477,29 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		connectionLock.readLock().lock();
-		try {
-			verifyIsOpen();
-
-			updateLock.lock();
-			try {
-				verifyIsActive();
-				addStatementInternal(subj, pred, obj, contexts);
-			}
-			finally {
-				updateLock.unlock();
-			}
-		}
-		finally {
-			connectionLock.readLock().unlock();
-		}
+		addStatement(null, subj, pred, obj, contexts);
 	}
 
 	@Override
 	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		connectionLock.readLock().lock();
-		try {
-			verifyIsOpen();
-
-			updateLock.lock();
-			try {
-				verifyIsActive();
-				removeStatementsInternal(subj, pred, obj, contexts);
-			}
-			finally {
-				updateLock.unlock();
-			}
-		}
-		finally {
-			connectionLock.readLock().unlock();
-		}
+		flushPendingUpdates();
+		removeStatement(null, subj, pred, obj, contexts);
 	}
 
 	@Override
 	public void startUpdate(UpdateContext op)
 		throws SailException
 	{
-		if (op.getUpdateExpr() instanceof Modify) {
-			synchronized (removed) {
-				assert !removed.containsKey(op);
-				removed.put(op, new LinkedHashModel());
-			}
-			synchronized (added) {
-				assert !added.containsKey(op);
-				added.put(op, new LinkedHashModel());
-			}
+		synchronized (removed) {
+			assert !removed.containsKey(op);
+			removed.put(op, new LinkedList<Statement>());
+		}
+
+		synchronized (added) {
+			assert !added.containsKey(op);
+			added.put(op, new LinkedList<Statement>());
 		}
 	}
 
@@ -573,12 +511,22 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
+		verifyIsOpen();
+		verifyIsActive();
 		synchronized (added) {
-			if (added.containsKey(op)) {
-				added.get(op).add(subj, pred, obj, contexts);
+			assert added.containsKey(op);
+			Collection<Statement> pending = added.get(op);
+			if (contexts == null || contexts.length == 0) {
+				pending.add(new StatementImpl(subj, pred, obj));
 			}
 			else {
-				addStatement(subj, pred, obj, contexts);
+				for (Resource ctx : contexts) {
+					pending.add(new ContextStatementImpl(subj, pred, obj, ctx));
+				}
+			}
+			if (pending.size() % BLOCK_SIZE == 0 && !isActiveOperation()) {
+				endUpdate(op);
+				startUpdate(op);
 			}
 		}
 	}
@@ -591,24 +539,58 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
+		verifyIsOpen();
+		verifyIsActive();
 		synchronized (removed) {
-			if (removed.containsKey(op)) {
-				if (contexts != null && contexts.length == 0) {
-					contexts = new Resource[] { wildContext };
-				}
-				removed.get(op).add(subj, pred, obj, contexts);
+			assert removed.containsKey(op);
+			Collection<Statement> pending = removed.get(op);
+			if (contexts == null) {
+				pending.add(new WildStatement(subj, pred, obj));
+			}
+			else if (contexts.length == 0) {
+				pending.add(new WildStatement(subj, pred, obj, wildContext));
 			}
 			else {
-				removeStatements(subj, pred, obj, contexts);
+				for (Resource ctx : contexts) {
+					pending.add(new WildStatement(subj, pred, obj, ctx));
+				}
+			}
+			if (pending.size() % BLOCK_SIZE == 0 && !isActiveOperation()) {
+				endUpdate(op);
+				startUpdate(op);
 			}
 		}
 	}
 
 	@Override
-	public void endUpdate(UpdateContext op)
+	public final void endUpdate(UpdateContext op)
 		throws SailException
 	{
-		Model model;
+		connectionLock.readLock().lock();
+		try {
+			verifyIsOpen();
+
+			updateLock.lock();
+			try {
+				verifyIsActive();
+				endUpdateInternal(op);
+			}
+			finally {
+				updateLock.unlock();
+			}
+		}
+		finally {
+			connectionLock.readLock().unlock();
+			if (op != null) {
+				flush();
+			}
+		}
+	}
+
+	protected void endUpdateInternal(UpdateContext op)
+		throws SailException
+	{
+		Collection<Statement> model;
 		// realize DELETE
 		synchronized (removed) {
 			model = removed.remove(op);
@@ -617,10 +599,10 @@ public abstract class SailConnectionBase implements SailConnection {
 			for (Statement st : model) {
 				Resource ctx = st.getContext();
 				if (wildContext.equals(ctx)) {
-					removeStatements(st.getSubject(), st.getPredicate(), st.getObject());
+					removeStatementsInternal(st.getSubject(), st.getPredicate(), st.getObject());
 				}
 				else {
-					removeStatements(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
+					removeStatementsInternal(st.getSubject(), st.getPredicate(), st.getObject(), ctx);
 				}
 			}
 		}
@@ -630,7 +612,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 		if (model != null) {
 			for (Statement st : model) {
-				addStatement(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+				addStatementInternal(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 		}
 	}
@@ -639,6 +621,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	public final void clear(Resource... contexts)
 		throws SailException
 	{
+		flushPendingUpdates();
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
@@ -799,7 +782,10 @@ public abstract class SailConnectionBase implements SailConnection {
 	protected <T, E extends Exception> CloseableIteration<T, E> registerIteration(CloseableIteration<T, E> iter)
 	{
 		SailBaseIteration<T, E> result = new SailBaseIteration<T, E>(iter, this);
-		activeIterations.add(result);
+		Throwable stackTrace = debugEnabled ? new Throwable() : null;
+		synchronized (activeIterations) {
+			activeIterations.put(result, stackTrace);
+		}
 		return result;
 	}
 
@@ -807,7 +793,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * Called by {@link SailBaseIteration} to indicate that it has been closed.
 	 */
 	protected void iterationClosed(SailBaseIteration iter) {
-		activeIterations.remove(iter);
+		synchronized (activeIterations) {
+			activeIterations.remove(iter);
+		}
 	}
 
 	protected abstract void closeInternal()
@@ -859,6 +847,167 @@ public abstract class SailConnectionBase implements SailConnection {
 
 	protected abstract void clearNamespacesInternal()
 		throws SailException;
+
+	protected boolean isActiveOperation() {
+		synchronized (activeIterations) {
+			return !activeIterations.isEmpty();
+		}
+	}
+
+	private void forceCloseActiveOperations()
+		throws SailException
+	{
+		Map<SailBaseIteration, Throwable> activeIterationsCopy;
+
+		synchronized (activeIterations) {
+			// Copy the current contents of the map so that we don't have to
+			// synchronize on activeIterations. This prevents a potential
+			// deadlock with concurrent calls to connectionClosed()
+			activeIterationsCopy = new IdentityHashMap<SailBaseIteration, Throwable>(activeIterations);
+			activeIterations.clear();
+		}
+
+		for (Map.Entry<SailBaseIteration, Throwable> entry : activeIterationsCopy.entrySet()) {
+			SailBaseIteration ci = entry.getKey();
+			Throwable creatorTrace = entry.getValue();
+
+			try {
+				if (creatorTrace != null) {
+					logger.warn("Forced closing of unclosed iteration that was created in:", creatorTrace);
+				}
+				ci.close();
+			}
+			catch (SailException e) {
+				throw e;
+			}
+			catch (Exception e) {
+				throw new SailException(e);
+			}
+		}
+	}
+
+	/**
+	 * If there are no open operations.
+	 * 
+	 * @throws SailException
+	 */
+	private void flushPendingUpdates()
+		throws SailException
+	{
+		if (!isActiveOperation()) {
+			flush();
+		}
+	}
+
+	/**
+	 * Statement pattern that uses null values as wild cards.
+	 * 
+	 * @author James Leigh
+	 */
+	private class WildStatement implements Statement {
+
+		private static final long serialVersionUID = 3363010521961228565L;
+
+		/**
+		 * The statement's subject.
+		 */
+		private final Resource subject;
+
+		/**
+		 * The statement's predicate.
+		 */
+		private final URI predicate;
+
+		/**
+		 * The statement's object.
+		 */
+		private final Value object;
+
+		/**
+		 * The statement's context, if applicable.
+		 */
+		private final Resource context;
+
+		/*--------------*
+		 * Constructors *
+		 *--------------*/
+
+		/**
+		 * Creates a new Statement with the supplied subject, predicate and
+		 * object.
+		 * 
+		 * @param subject
+		 *        The statement's subject, may be <tt>null</tt>.
+		 * @param predicate
+		 *        The statement's predicate, may be <tt>null</tt>.
+		 * @param object
+		 *        The statement's object, may be <tt>null</tt>.
+		 */
+		public WildStatement(Resource subject, URI predicate, Value object) {
+			this(subject, predicate, object, null);
+		}
+
+		/**
+		 * Creates a new Statement with the supplied subject, predicate and object
+		 * for the specified associated context.
+		 * 
+		 * @param subject
+		 *        The statement's subject, may be <tt>null</tt>.
+		 * @param predicate
+		 *        The statement's predicate, may be <tt>null</tt>.
+		 * @param object
+		 *        The statement's object, may be <tt>null</tt>.
+		 * @param context
+		 *        The statement's context, <tt>null</tt> to indicate no context is
+		 *        associated.
+		 */
+		public WildStatement(Resource subject, URI predicate, Value object, Resource context) {
+			this.subject = subject;
+			this.predicate = predicate;
+			this.object = object;
+			this.context = context;
+		}
+
+		/*---------*
+		 * Methods *
+		 *---------*/
+
+		// Implements Statement.getSubject()
+		public Resource getSubject() {
+			return subject;
+		}
+
+		// Implements Statement.getPredicate()
+		public URI getPredicate() {
+			return predicate;
+		}
+
+		// Implements Statement.getObject()
+		public Value getObject() {
+			return object;
+		}
+
+		@Override
+		public Resource getContext() {
+			return context;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(256);
+
+			sb.append("(");
+			sb.append(getSubject());
+			sb.append(", ");
+			sb.append(getPredicate());
+			sb.append(", ");
+			sb.append(getObject());
+			sb.append(")");
+			sb.append(" [").append(getContext()).append("]");
+
+			return sb.toString();
+		}
+	}
 
 	private static class JavaLock implements info.aduna.concurrent.locks.Lock {
 

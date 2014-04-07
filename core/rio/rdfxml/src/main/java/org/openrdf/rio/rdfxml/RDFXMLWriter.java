@@ -37,6 +37,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFWriterBase;
 import org.openrdf.rio.helpers.XMLWriterSettings;
 
@@ -96,9 +97,12 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		return RDFFormat.RDFXML;
 	}
 
-	public void startRDF() {
+	@Override
+	public void startRDF()
+		throws RDFHandlerException
+	{
 		if (writingStarted) {
-			throw new IllegalStateException("Document writing has already started");
+			throw new RDFHandlerException("Document writing has already started");
 		}
 		writingStarted = true;
 	}
@@ -109,7 +113,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		try {
 			// This export format needs the RDF namespace to be defined, add a
 			// prefix for it if there isn't one yet.
-			setNamespace("rdf", RDF.NAMESPACE);
+			setNamespace(RDF.PREFIX, RDF.NAMESPACE);
 
 			if (getWriterConfig().get(XMLWriterSettings.INCLUDE_XML_PI)) {
 				writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -153,7 +157,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new IllegalStateException("Document writing has not yet started");
+			throw new RDFHandlerException("Document writing has not yet started");
 		}
 
 		try {
@@ -223,7 +227,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		throws RDFHandlerException
 	{
 		if (!writingStarted) {
-			throw new IllegalStateException("Document writing has not yet been started");
+			throw new RDFHandlerException("Document writing has not yet been started");
 		}
 
 		Resource subj = st.getSubject();
@@ -256,7 +260,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 				writeStartOfStartTag(RDF.NAMESPACE, "Description");
 				if (subj instanceof BNode) {
 					BNode bNode = (BNode)subj;
-					writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 				}
 				else {
 					URI uri = (URI)subj;
@@ -278,7 +282,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 				if (objRes instanceof BNode) {
 					BNode bNode = (BNode)objRes;
-					writeAttribute(RDF.NAMESPACE, "nodeID", bNode.getID());
+					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 				}
 				else {
 					URI uri = (URI)objRes;
@@ -471,5 +475,57 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		writer.write("\n");
+	}
+
+	/**
+	 * Create a syntactically valid node id from the supplied blank node id. This
+	 * is necessary because RDF/XML syntax enforces the blank node id is a valid
+	 * NCName.
+	 * 
+	 * @see http://www.w3.org/TR/REC-rdf-syntax/#rdf-id
+	 * @param bNode
+	 *        a blank node identifier
+	 * @return the blank node identifier converted to a form that is a valid
+	 *         NCName.
+	 */
+	protected String getValidNodeId(BNode bNode)
+		throws IOException
+	{
+		String validNodeId = bNode.getID();
+		if (!XMLUtil.isNCName(validNodeId)) {
+			StringBuilder builder = new StringBuilder();
+			if (validNodeId.isEmpty()) {
+				if (this.getWriterConfig().get(BasicParserSettings.PRESERVE_BNODE_IDS)) {
+					throw new IOException("Cannot consistently write blank nodes with empty internal identifiers");
+				}
+				builder.append("genid-hash-");
+				builder.append(Integer.toHexString(System.identityHashCode(bNode)));
+			}
+			else {
+				if (!XMLUtil.isNCNameStartChar(validNodeId.charAt(0))) {
+					// prepend legal start char
+					builder.append("genid-start-");
+					builder.append(Integer.toHexString(validNodeId.charAt(0)));
+				}
+				else {
+					builder.append(validNodeId.charAt(0));
+				}
+
+				for (int i = 1; i < validNodeId.length(); i++) {
+					// do char-by-char scan and replace illegal chars where
+					// necessary.
+					if (XMLUtil.isNCNameChar(validNodeId.charAt(i))) {
+						builder.append(validNodeId.charAt(i));
+					}
+					else {
+						// replace incompatible char with encoded hex value that will
+						// always be alphanumeric.
+						builder.append(Integer.toHexString(validNodeId.charAt(i)));
+					}
+				}
+			}
+			validNodeId = builder.toString();
+		}
+		return validNodeId;
 	}
 }

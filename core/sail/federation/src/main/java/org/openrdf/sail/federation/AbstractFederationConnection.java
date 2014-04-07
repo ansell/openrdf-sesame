@@ -124,6 +124,11 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 			public List<IsolationLevel> getSupportedIsolationLevels() {
 				return Arrays.asList(new IsolationLevel[] { IsolationLevels.NONE });
 			}
+			
+			@Override
+			public IsolationLevel getDefaultIsolationLevel() {
+				return IsolationLevels.NONE;
+			}
 		});
 		this.federation = federation;
 

@@ -40,18 +40,29 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
 
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.algebra.DeleteData;
+import org.openrdf.query.algebra.InsertData;
+import org.openrdf.query.algebra.UpdateExpr;
+import org.openrdf.query.parser.ParsedOperation;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.sail.helpers.SailUpdateExecutor;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.sail.NotifyingSailConnection;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * A SPARQL 1.1 syntax test, created by reading in a W3C working-group style manifest.  
- *
+ * A SPARQL 1.1 syntax test, created by reading in a W3C working-group style
+ * manifest.
+ * 
  * @author Jeen Broekstra
  */
 public abstract class SPARQL11SyntaxTest extends TestCase {
@@ -122,10 +133,45 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		stream.close();
 
 		try {
-			parseOperation(query, queryFileURL);
+			ParsedOperation operation = parseOperation(query, queryFileURL);
 
 			if (!positiveTest) {
-				fail("Negative test case should have failed to parse");
+				boolean dataBlockUpdate = false;
+				if (operation instanceof ParsedUpdate) {
+					for (UpdateExpr updateExpr : ((ParsedUpdate)operation).getUpdateExprs()) {
+						if (updateExpr instanceof InsertData || updateExpr instanceof DeleteData) {
+							// parsing for these operation happens during actual
+							// execution, so try and execute.
+							dataBlockUpdate = true;
+
+							MemoryStore store = new MemoryStore();
+							store.initialize();
+							NotifyingSailConnection conn = store.getConnection();
+							try {
+								conn.begin();
+								SailUpdateExecutor exec = new SailUpdateExecutor(conn, store.getValueFactory(), null);
+								exec.executeUpdate(updateExpr, null, null, true);
+								conn.rollback();
+								fail("Negative test case should have failed to parse");
+							}
+							catch (SailException e) {
+								if (!(e.getCause() instanceof RDFParseException)) {
+									logger.error("unexpected error in negative test case", e);
+									fail("unexpected error in negative test case");
+								}
+								// fall through - a parse exception is expected for a
+								// negative test case
+								conn.rollback();
+							}
+							finally {
+								conn.close();
+							}
+						}
+					}
+				}
+				if (!dataBlockUpdate) {
+					fail("Negative test case should have failed to parse");
+				}
 			}
 		}
 		catch (MalformedQueryException e) {
@@ -136,7 +182,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 		}
 	}
 
-	protected abstract void parseOperation(String operation, String fileURL)
+	protected abstract ParsedOperation parseOperation(String operation, String fileURL)
 		throws MalformedQueryException;
 
 	public static Test suite()

@@ -33,6 +33,7 @@ import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.UnionIteration;
 
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -110,6 +111,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	public NativeStore() {
 		super();
+		addSupportedIsolationLevel(IsolationLevels.READ_COMMITTED);
 	}
 
 	public NativeStore(File dataDir) {
@@ -331,6 +333,10 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		catch (InterruptedException e) {
 			throw new SailException(e);
 		}
+	}
+	
+	protected Lock tryTransactionLock() {
+		return txnLockManager.tryExclusiveLock();
 	}
 
 	protected List<Integer> getContextIDs(Resource... contexts)
