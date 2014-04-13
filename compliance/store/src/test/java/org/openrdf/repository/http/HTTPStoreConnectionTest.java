@@ -172,11 +172,6 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 		testCon.begin();
 		update.execute();
-
-		// NOTE this is only correct because HTTPconnection does not implement
-		// true transaction isolation.
-		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
-
 		testCon.commit();
 
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));

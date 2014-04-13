@@ -429,8 +429,9 @@ public class SesameSession extends SparqlSession {
 
 		try {
 			final boolean useTransaction = transactionURL != null;
-			
-			String baseLocation = useTransaction ? transactionURL : Protocol.getStatementsLocation(getQueryURL());
+
+			String baseLocation = useTransaction ? transactionURL
+					: Protocol.getStatementsLocation(getQueryURL());
 			URIBuilder url = new URIBuilder(baseLocation);
 
 			if (subj != null) {
@@ -449,8 +450,8 @@ public class SesameSession extends SparqlSession {
 			if (useTransaction) {
 				url.setParameter(Protocol.ACTION_PARAM_NAME, Action.GET.toString());
 			}
-			
-			HttpUriRequest method = useTransaction ?  new HttpPut(url.build()) : new HttpGet(url.build());
+
+			HttpUriRequest method = useTransaction ? new HttpPut(url.build()) : new HttpGet(url.build());
 
 			try {
 				getRDF(method, handler, true);
@@ -480,16 +481,20 @@ public class SesameSession extends SparqlSession {
 
 		HttpResponse response = execute(method);
 		int code = response.getStatusLine().getStatusCode();
-		if (code == HttpURLConnection.HTTP_CREATED) {
-			transactionURL = response.getFirstHeader("Location").getValue();
-			EntityUtils.consume(response.getEntity());
-			if (transactionURL == null) {
-				throw new RepositoryException("no valid transaction ID received in server response.");
+
+		try {
+			if (code == HttpURLConnection.HTTP_CREATED) {
+				transactionURL = response.getFirstHeader("Location").getValue();
+				if (transactionURL == null) {
+					throw new RepositoryException("no valid transaction ID received in server response.");
+				}
+			}
+			else {
+				throw new RepositoryException("unable to start transaction. HTTP error code " + code);
 			}
 		}
-		else {
+		finally {
 			EntityUtils.consume(response.getEntity());
-			throw new RepositoryException("unable to start transaction. HTTP error code " + code);
 		}
 	}
 
@@ -574,6 +579,15 @@ public class SesameSession extends SparqlSession {
 		return url + "?" + Protocol.ACTION_PARAM_NAME + "=" + action.toString();
 	}
 
+	/**
+	 * Sends a transaction list as serialized XML to the server.
+	 * 
+	 * @deprecated since 2.8.0
+	 * @param txn
+	 * @throws IOException
+	 * @throws RepositoryException
+	 * @throws UnauthorizedException
+	 */
 	@Deprecated
 	public void sendTransaction(final Iterable<? extends TransactionOperation> txn)
 		throws IOException, RepositoryException, UnauthorizedException
@@ -670,7 +684,7 @@ public class SesameSession extends SparqlSession {
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
 		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.QUERY) : getQueryURL();
-		
+
 		HttpEntityEnclosingRequest method = null;
 		if (transactionURL == null) {
 			method = new HttpPost(requestURL);
@@ -678,7 +692,7 @@ public class SesameSession extends SparqlSession {
 		else {
 			method = new HttpPut(requestURL);
 		}
-		
+
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
@@ -688,20 +702,21 @@ public class SesameSession extends SparqlSession {
 
 		return (HttpUriRequest)method;
 	}
-	
+
 	@Override
 	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 	{
-		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.UPDATE) : getUpdateURL();
-		
+		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.UPDATE)
+				: getUpdateURL();
+
 		HttpEntityEnclosingRequest method = null;
-//		if (transactionURL == null) {
-			method = new HttpPost(requestURL);
-//		}
-//		else {
-//			method = new HttpPut(requestURL);
-//		}
+		// if (transactionURL == null) {
+		method = new HttpPost(requestURL);
+		// }
+		// else {
+		// method = new HttpPut(requestURL);
+		// }
 
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
@@ -768,7 +783,8 @@ public class SesameSession extends SparqlSession {
 		upload(entity, baseURI, overwrite, action, contexts);
 	}
 
-	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, Action action, Resource... contexts)
+	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, Action action,
+			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);

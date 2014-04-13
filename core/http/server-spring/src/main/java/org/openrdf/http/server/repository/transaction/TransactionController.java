@@ -109,7 +109,7 @@ public class TransactionController extends AbstractController {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final Map<UUID, RepositoryConnection> activeConnections = new HashMap<UUID, RepositoryConnection>();
+	private final ActiveTransactionRegistry txnRegistry = ActiveTransactionRegistry.getInstance();
 
 	public TransactionController()
 		throws ApplicationContextException
@@ -123,12 +123,16 @@ public class TransactionController extends AbstractController {
 	{
 		ModelAndView result;
 
-		ActiveTransactionRegistry txnRegistry = ActiveTransactionRegistry.getInstance();
-
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
 		RepositoryConnection connection = txnRegistry.getTransactionConnection(transactionId);
+
+		if (connection == null) {
+			logger.warn("could not find connection for transaction id {}", transactionId);
+			throw new ClientHTTPException(SC_BAD_REQUEST,
+					"unable to find registerd connection for transaction id '" + transactionId + "'");
+		}
 
 		try {
 			if ("PUT".equals(reqMethod)) {
@@ -143,10 +147,13 @@ public class TransactionController extends AbstractController {
 			}
 			else if ("DELETE".equals(reqMethod)) {
 				logger.info("DELETE transaction");
-
-				connection.rollback();
-				txnRegistry.deregister(transactionId, connection);
-				connection.close();
+				try {
+					connection.rollback();
+				}
+				finally {
+					txnRegistry.deregister(transactionId, connection);
+					connection.close();
+				}
 
 				result = new ModelAndView(EmptySuccessView.getInstance());
 				logger.info("PUT transaction request finished.");
@@ -173,7 +180,7 @@ public class TransactionController extends AbstractController {
 			String[] pathInfo = pathInfoStr.substring(1).split("/");
 			// should be of the form: /<Repository>/transactions/<txnID>
 			if (pathInfo.length == 3) {
-				txnID = UUID.fromString(pathInfo[2]); 
+				txnID = UUID.fromString(pathInfo[2]);
 				logger.debug("txnID is '{}'", txnID);
 			}
 			else {
@@ -196,10 +203,10 @@ public class TransactionController extends AbstractController {
 		try {
 			switch (action) {
 				case ADD:
-					conn.add(request.getInputStream(), null, RDFFormat.forMIMEType(request.getContentType()));
+					conn.add(request.getInputStream(), null, Rio.getParserFormatForMIMEType(request.getContentType()));
 					break;
 				case DELETE:
-					RDFParser parser = Rio.createParser(RDFFormat.forMIMEType(request.getContentType()),
+					RDFParser parser = Rio.createParser(Rio.getParserFormatForMIMEType(request.getContentType()),
 							conn.getValueFactory());
 					parser.setRDFHandler(new WildcardRDFRemover(conn));
 					parser.parse(request.getInputStream(), null);
@@ -233,7 +240,8 @@ public class TransactionController extends AbstractController {
 				throw (ClientHTTPException)e;
 			}
 			else {
-				throw new ServerHTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Transaction handling error: " + e.getMessage(), e);
+				throw new ServerHTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"Transaction handling error: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -271,9 +279,10 @@ public class TransactionController extends AbstractController {
 		model.put(ExportStatementsView.CONNECTION_KEY, conn);
 		return new ModelAndView(ExportStatementsView.getInstance(), model);
 	}
-	
+
 	private ModelAndView processQuery(RepositoryConnection conn, HttpServletRequest request,
-			HttpServletResponse response) throws IOException, HTTPException
+			HttpServletResponse response)
+		throws IOException, HTTPException
 	{
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
 
@@ -459,7 +468,6 @@ public class TransactionController extends AbstractController {
 		return result;
 	}
 
-	
 	/**
 	 * @param repository
 	 * @param repositoryCon
@@ -624,7 +632,7 @@ public class TransactionController extends AbstractController {
 			throw new ClientHTTPException(SC_BAD_REQUEST, errInfo.toString());
 		}
 	}
-	
+
 	private static class WildcardRDFRemover extends RDFHandlerBase {
 
 		private final RepositoryConnection conn;
@@ -644,7 +652,7 @@ public class TransactionController extends AbstractController {
 			Resource context = st.getContext();
 			try {
 				if (context != null) {
-				conn.remove(subject, predicate, object, st.getContext());
+					conn.remove(subject, predicate, object, st.getContext());
 				}
 				else {
 					conn.remove(subject, predicate, object);

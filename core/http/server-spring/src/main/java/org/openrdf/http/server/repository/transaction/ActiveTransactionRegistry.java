@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.repository.RepositoryConnection;
 
 /**
@@ -30,6 +33,8 @@ import org.openrdf.repository.RepositoryConnection;
 public class ActiveTransactionRegistry {
 
 	private static final ActiveTransactionRegistry singleton = new ActiveTransactionRegistry();
+
+	private static final Logger logger = LoggerFactory.getLogger(ActiveTransactionRegistry.class);
 
 	public static ActiveTransactionRegistry getInstance() {
 		return singleton;
@@ -47,8 +52,12 @@ public class ActiveTransactionRegistry {
 		throws IllegalArgumentException
 	{
 		if (activeConnections.putIfAbsent(transactionId, conn) != null) {
+			logger.error("transaction already registered: {}", transactionId);
 			throw new IllegalArgumentException("transaction with id " + transactionId.toString()
 					+ " already registered.");
+		}
+		else {
+			logger.debug("registered transaction {} ", transactionId);
 		}
 	}
 
@@ -61,15 +70,13 @@ public class ActiveTransactionRegistry {
 						+ " not registered.");
 			}
 			transactionLocks.remove(transactionId);
+			logger.debug("deregistered transaction {}", transactionId);
 		}
 	}
 
 	public RepositoryConnection getTransactionConnection(UUID transactionId)
 		throws InterruptedException
 	{
-
-		RepositoryConnection conn = null;
-
 		Lock txnLock = null;
 		synchronized (transactionLocks) {
 			txnLock = transactionLocks.get(transactionId);
@@ -80,20 +87,19 @@ public class ActiveTransactionRegistry {
 		}
 
 		txnLock.lockInterruptibly();
-		conn = activeConnections.get(transactionId);
+
+		final RepositoryConnection conn = activeConnections.get(transactionId);
 
 		return conn;
 	}
 
 	public void returnTransactionConnection(UUID transactionId) {
-		Lock txnLock = transactionLocks.get(transactionId);
+		final Lock txnLock = transactionLocks.get(transactionId);
 		if (txnLock != null) {
 			txnLock.unlock();
 		}
-		else {
-			if (activeConnections.containsKey(transactionId)) {
-				throw new IllegalStateException("no lock available for active transaction: " + transactionId);
-			}
+		else if (activeConnections.containsKey(transactionId)) {
+			throw new IllegalStateException("no lock available for active transaction: " + transactionId);
 		}
 	}
 }
