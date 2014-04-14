@@ -610,13 +610,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clearNamespaces()
 		throws RepositoryException
 	{
-		boolean localTransaction = startLocalTransaction();
 		try {
 			client.clearNamespaces();
-			conditionalCommit(localTransaction);
 		}
 		catch (IOException e) {
-			conditionalRollback(localTransaction);
 			throw new RepositoryException(e);
 		}
 	}
@@ -631,13 +628,10 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			throw new NullPointerException("name must not be null");
 		}
 
-		boolean localTransaction = startLocalTransaction();
 		try {
 			client.setNamespacePrefix(prefix, name);
-			conditionalCommit(localTransaction);
 		}
 		catch (IOException e) {
-			conditionalRollback(localTransaction);
 			throw new RepositoryException(e);
 		}
 	}
