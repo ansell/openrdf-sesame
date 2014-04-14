@@ -151,11 +151,11 @@ public class RDFParserHelper {
 		// have datatype RDF.LANGSTRING, but only language literals would have a
 		// non-null lang
 		if (workingLang != null && (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype))) {
-			if (parserConfig.get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
-				boolean recognisedLanguage = false;
-				for (LanguageHandler nextHandler : parserConfig.get(BasicParserSettings.LANGUAGE_HANDLERS)) {
-					if (nextHandler.isRecognizedLanguage(workingLang)) {
-						recognisedLanguage = true;
+			boolean recognisedLanguage = false;
+			for (LanguageHandler nextHandler : parserConfig.get(BasicParserSettings.LANGUAGE_HANDLERS)) {
+				if (nextHandler.isRecognizedLanguage(workingLang)) {
+					recognisedLanguage = true;
+					if (parserConfig.get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
 						try {
 							if (!nextHandler.verifyLanguage(workingLabel, workingLang)) {
 								reportError("'" + lang + "' is not a valid language tag ", lineNo, columnNo,
@@ -168,38 +168,36 @@ public class RDFParserHelper {
 									+ lang, lineNo, columnNo, BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig,
 									errListener);
 						}
-						if (parserConfig.get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
-							try {
-								result = nextHandler.normalizeLanguage(workingLabel, workingLang, valueFactory);
-								workingLabel = result.getLabel();
-								workingLang = result.getLanguage();
-								workingDatatype = result.getDatatype();
-							}
-							catch (LiteralUtilException e) {
-								reportError("'" + label + "' did not have a valid value for language " + lang + ": "
-										+ e.getMessage() + " and could not be normalised", lineNo, columnNo,
-										BasicParserSettings.NORMALIZE_LANGUAGE_TAGS, parserConfig, errListener);
-							}
+					}
+					if (parserConfig.get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
+						try {
+							result = nextHandler.normalizeLanguage(workingLabel, workingLang, valueFactory);
+							workingLabel = result.getLabel();
+							workingLang = result.getLanguage();
+							workingDatatype = result.getDatatype();
+						}
+						catch (LiteralUtilException e) {
+							reportError(
+									"'" + label + "' did not have a valid value for language " + lang + ": "
+											+ e.getMessage() + " and could not be normalised", lineNo, columnNo,
+									BasicParserSettings.NORMALIZE_LANGUAGE_TAGS, parserConfig, errListener);
 						}
 					}
 				}
-				if (!recognisedLanguage) {
-					reportError(
-							"'"
-									+ label
-									+ "' was not recognised as a language literal, and could not be verified, with language "
-									+ lang, lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES,
-							parserConfig, errListener);
-				}
 			}
-
+			if (!recognisedLanguage) {
+				reportError("'" + label
+						+ "' was not recognised as a language literal, and could not be verified, with language "
+						+ lang, lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, parserConfig,
+						errListener);
+			}
 		}
 		else if (workingDatatype != null) {
-			if (parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
-				boolean recognisedDatatype = false;
-				for (DatatypeHandler nextHandler : parserConfig.get(BasicParserSettings.DATATYPE_HANDLERS)) {
-					if (nextHandler.isRecognizedDatatype(workingDatatype)) {
-						recognisedDatatype = true;
+			boolean recognisedDatatype = false;
+			for (DatatypeHandler nextHandler : parserConfig.get(BasicParserSettings.DATATYPE_HANDLERS)) {
+				if (nextHandler.isRecognizedDatatype(workingDatatype)) {
+					recognisedDatatype = true;
+					if (parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
 						try {
 							if (!nextHandler.verifyDatatype(workingLabel, workingDatatype)) {
 								reportError("'" + label + "' is not a valid value for datatype " + datatype, lineNo,
@@ -212,27 +210,27 @@ public class RDFParserHelper {
 									+ datatype, lineNo, columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES,
 									parserConfig, errListener);
 						}
-						if (parserConfig.get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
-							try {
-								result = nextHandler.normalizeDatatype(workingLabel, workingDatatype, valueFactory);
-								workingLabel = result.getLabel();
-								workingLang = result.getLanguage();
-								workingDatatype = result.getDatatype();
-							}
-							catch (LiteralUtilException e) {
-								reportError("'" + label + "' is not a valid value for datatype " + datatype + ": "
-										+ e.getMessage() + " and could not be normalised", lineNo, columnNo,
-										BasicParserSettings.NORMALIZE_DATATYPE_VALUES, parserConfig, errListener);
-							}
+					}
+					if (parserConfig.get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
+						try {
+							result = nextHandler.normalizeDatatype(workingLabel, workingDatatype, valueFactory);
+							workingLabel = result.getLabel();
+							workingLang = result.getLanguage();
+							workingDatatype = result.getDatatype();
+						}
+						catch (LiteralUtilException e) {
+							reportError(
+									"'" + label + "' is not a valid value for datatype " + datatype + ": "
+											+ e.getMessage() + " and could not be normalised", lineNo, columnNo,
+									BasicParserSettings.NORMALIZE_DATATYPE_VALUES, parserConfig, errListener);
 						}
 					}
 				}
-
-				if (!recognisedDatatype) {
-					reportError("'" + label + "' was not recognised, and could not be verified, with datatype "
-							+ datatype, lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES,
-							parserConfig, errListener);
-				}
+			}
+			if (!recognisedDatatype) {
+				reportError("'" + label + "' was not recognised, and could not be verified, with datatype "
+						+ datatype, lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, parserConfig,
+						errListener);
 			}
 
 		}

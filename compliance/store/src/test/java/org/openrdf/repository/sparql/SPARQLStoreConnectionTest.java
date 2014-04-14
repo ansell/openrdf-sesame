@@ -18,6 +18,7 @@ package org.openrdf.repository.sparql;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
@@ -344,7 +345,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		TupleQueryResult result = query.evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
@@ -499,7 +500,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate();
 
 		try {
-			assertTrue(result != null);
+			assertNotNull(result);
 			assertTrue(result.hasNext());
 
 			while (result.hasNext()) {
