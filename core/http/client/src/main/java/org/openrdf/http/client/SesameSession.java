@@ -554,17 +554,6 @@ public class SesameSession extends SparqlSession {
 		}
 	}
 
-	public void addStatement(Resource subject, URI predicate, Value object, Resource... contexts) {
-		checkRepositoryURL();
-		if (transactionURL != null) {
-			HttpPut method = new HttpPut(appendAction(transactionURL, Action.ADD));
-
-		}
-		else {
-
-		}
-	}
-
 	/**
 	 * Appends the action as a parameter to the supplied url
 	 * 

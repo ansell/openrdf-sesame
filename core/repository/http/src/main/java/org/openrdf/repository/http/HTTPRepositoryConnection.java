@@ -32,6 +32,7 @@ import java.util.Set;
 import info.aduna.iteration.CloseableIteratorIteration;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.Protocol.Action;
@@ -401,6 +402,63 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
+	public void add(Statement st, Resource... contexts)
+		throws RepositoryException
+	{
+		if (!isActive()) {
+			// operation is not part of a transaction - just send directly
+			OpenRDFUtil.verifyContextNotNull(contexts);
+			final Model m = new LinkedHashModel();
+			m.add(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+			addModel(m);
+		}
+		else {
+			super.add(st, contexts);
+		}
+	}
+
+	@Override
+	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		if (!isActive()) {
+			// operation is not part of a transaction - just send directly
+			OpenRDFUtil.verifyContextNotNull(contexts);
+			final Model m = new LinkedHashModel();
+			m.add(subject, predicate, object, contexts);
+			addModel(m);
+		}
+		else {
+			super.add(subject, predicate, object, contexts);
+		}
+	}
+
+	@Override
+	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		if (!isActive()) {
+			// operation is not part of a transaction - just send directly
+			OpenRDFUtil.verifyContextNotNull(contexts);
+			if (subject == null) {
+				subject = SESAME.WILDCARD;
+			}
+			if (predicate == null) {
+				predicate = SESAME.WILDCARD;
+			}
+			if (object == null) {
+				object = SESAME.WILDCARD;
+			}
+			final Model m = new LinkedHashModel();
+			m.add(subject, predicate, object, contexts);
+			removeModel(m);
+		}
+		else {
+			super.remove(subject, predicate, object, contexts);
+		}
+	}
+
+	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
@@ -415,7 +473,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private void addModel(Model m)
 		throws RepositoryException
 	{
-		// TODO we should dynamically pick a format from the available writers perhaps?
+		// TODO we should dynamically pick a format from the available writers
+		// perhaps?
 		RDFFormat format = RDFFormat.BINARY;
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
