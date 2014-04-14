@@ -17,15 +17,21 @@
 package org.openrdf.http.server.repository.transaction;
 
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * @author jeen
@@ -44,62 +50,156 @@ public class ActiveTransactionRegistry {
 		// private constructor, implementing singleton pattern
 	}
 
-	private final ConcurrentMap<UUID, RepositoryConnection> activeConnections = new ConcurrentHashMap<UUID, RepositoryConnection>();
+	static class CacheEntry {
 
-	private final ConcurrentMap<UUID, Lock> transactionLocks = new ConcurrentHashMap<UUID, Lock>();
+		private final RepositoryConnection connection;
 
+		private final Lock lock = new ReentrantLock();
+
+		public CacheEntry(RepositoryConnection connection) {
+			this.connection = connection;
+		}
+
+		/**
+		 * @return Returns the connection.
+		 */
+		public RepositoryConnection getConnection() {
+			return connection;
+		}
+
+		/**
+		 * @return Returns the lock.
+		 */
+		public Lock getLock() {
+			return lock;
+		}
+
+	}
+
+	private final Cache<UUID, CacheEntry> activeConnections = CacheBuilder.newBuilder().removalListener(
+			new RemovalListener<UUID, CacheEntry>() {
+
+				@Override
+				public void onRemoval(RemovalNotification<UUID, CacheEntry> notification) {
+					if (RemovalCause.EXPIRED.equals(notification.getCause())) {
+						logger.warn("transaction registry item {} removed after expiry", notification.getKey());
+						CacheEntry entry = notification.getValue();
+						try {
+							entry.getConnection().close();
+						}
+						catch (RepositoryException e) {
+							// fall through
+						}
+					}
+					else {
+						logger.debug("transaction {} removed from registry. cause: {}", notification.getKey(),
+								notification.getCause());
+					}
+				}
+			}).expireAfterAccess(60, TimeUnit.SECONDS).build();
+
+	/**
+	 * Register a new transaction with the given id and connection.
+	 * 
+	 * @param transactionId
+	 *        the transaction id
+	 * @param conn
+	 *        the {@link RepositoryConnection} to use for handling the
+	 *        transaction.
+	 * @throws IllegalArgumentException
+	 *         if a transaction is already registered with the given transaction
+	 *         id.
+	 */
 	public void register(UUID transactionId, RepositoryConnection conn)
 		throws IllegalArgumentException
 	{
-		if (activeConnections.putIfAbsent(transactionId, conn) != null) {
-			logger.error("transaction already registered: {}", transactionId);
-			throw new IllegalArgumentException("transaction with id " + transactionId.toString()
-					+ " already registered.");
-		}
-		else {
-			logger.debug("registered transaction {} ", transactionId);
+		synchronized (activeConnections) {
+			if (activeConnections.getIfPresent(transactionId) == null) {
+				activeConnections.put(transactionId, new CacheEntry(conn));
+				logger.debug("registered transaction {} ", transactionId);
+			}
+			else {
+				logger.error("transaction already registered: {}", transactionId);
+				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+						+ " already registered.");
+			}
 		}
 	}
 
-	public void deregister(UUID transactionId, RepositoryConnection conn)
+	/**
+	 * Remove the given transaction from the registry
+	 * 
+	 * @param transactionId
+	 *        the transaction id
+	 * @throws IllegalArgumentException
+	 *         if no registered transaction with the given id could be found.
+	 */
+	public void deregister(UUID transactionId)
 		throws IllegalArgumentException
 	{
 		synchronized (activeConnections) {
-			if (!activeConnections.remove(transactionId, conn)) {
+			CacheEntry entry = activeConnections.getIfPresent(transactionId);
+			if (entry == null) {
 				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
 						+ " not registered.");
 			}
-			transactionLocks.remove(transactionId);
-			logger.debug("deregistered transaction {}", transactionId);
+			else {
+				activeConnections.invalidate(transactionId);
+				logger.debug("deregistered transaction {}", transactionId);
+			}
 		}
 	}
 
+	/**
+	 * Obtain the {@link RepositoryConnection} associated with the given
+	 * transaction. This method will block if another thread currently has access
+	 * to the connection.
+	 * 
+	 * @param transactionId
+	 *        a transaction ID
+	 * @return the RepositoryConnection belonging to this transaction.
+	 * @throws IllegalArgumentException
+	 *         if no transaction with the given id is registered.
+	 * @throws InterruptedException
+	 *         if the thread is interrupted while acquiring a lock on the
+	 *         transaction.
+	 */
 	public RepositoryConnection getTransactionConnection(UUID transactionId)
 		throws InterruptedException
 	{
 		Lock txnLock = null;
-		synchronized (transactionLocks) {
-			txnLock = transactionLocks.get(transactionId);
-			if (txnLock == null) {
-				txnLock = new ReentrantLock();
-				transactionLocks.put(transactionId, txnLock);
+		synchronized (activeConnections) {
+			CacheEntry entry = activeConnections.getIfPresent(transactionId);
+			if (entry == null) {
+				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+						+ " not registered.");
 			}
+
+			txnLock = entry.getLock();
 		}
 
 		txnLock.lockInterruptibly();
 
-		final RepositoryConnection conn = activeConnections.get(transactionId);
+		final RepositoryConnection conn = activeConnections.getIfPresent(transactionId).getConnection();
 
 		return conn;
 	}
 
+	/**
+	 * Unlocks the {@link RepositoryConnection} associated with the given
+	 * transaction for use by other threads. If the transaction is no longer
+	 * registered, this will method will exit silently.
+	 * 
+	 * @param transactionId
+	 *        a transaction identifier.
+	 */
 	public void returnTransactionConnection(UUID transactionId) {
-		final Lock txnLock = transactionLocks.get(transactionId);
-		if (txnLock != null) {
+
+		final CacheEntry entry = activeConnections.getIfPresent(transactionId);
+
+		if (entry != null) {
+			final Lock txnLock = entry.getLock();
 			txnLock.unlock();
-		}
-		else if (activeConnections.containsKey(transactionId)) {
-			throw new IllegalStateException("no lock available for active transaction: " + transactionId);
 		}
 	}
 }

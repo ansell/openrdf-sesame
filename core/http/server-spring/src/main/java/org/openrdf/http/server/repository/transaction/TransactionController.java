@@ -151,7 +151,7 @@ public class TransactionController extends AbstractController {
 					connection.rollback();
 				}
 				finally {
-					txnRegistry.deregister(transactionId, connection);
+					txnRegistry.deregister(transactionId);
 					connection.close();
 				}
 
@@ -220,12 +220,12 @@ public class TransactionController extends AbstractController {
 				case COMMIT:
 					conn.commit();
 					conn.close();
-					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
+					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request));
 					break;
 				case ROLLBACK:
 					conn.rollback();
 					conn.close();
-					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request), conn);
+					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request));
 					break;
 				default:
 					logger.warn("transaction action '{}' not recognized", action);
