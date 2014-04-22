@@ -305,10 +305,11 @@ public abstract class RDFWriterTest {
 
 		rdfParser.parse(in, "foo:bar");
 
-		assertEquals("Unexpected number of statements", 17, model.size());
+		assertEquals("Unexpected number of statements, found " + model.size(), 17, model.size());
 
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
-			assertTrue(model.getNamespaces().size() >= 1);
+			assertTrue("Expected at least one namespace, found" + model.getNamespaces().size(),
+					model.getNamespaces().size() >= 1);
 			assertEquals(exNs, model.getNamespace("ex").getName());
 		}
 
@@ -520,7 +521,7 @@ public abstract class RDFWriterTest {
 				+ ")");
 		assertFalse("Did not generate any test statements", model.isEmpty());
 
-		File testFile = tempDir.newFile("performancetest"
+		File testFile = tempDir.newFile("performancetest."
 				+ rdfWriterFactory.getRDFFormat().getDefaultFileExtension());
 
 		FileOutputStream out = new FileOutputStream(testFile);
@@ -581,10 +582,12 @@ public abstract class RDFWriterTest {
 						Rio.write(parsedModel, System.out, RDFFormat.NQUADS);
 					}
 				}
-				assertEquals("Unexpected number of statements", model.size(), parsedModel.size());
+				assertEquals("Unexpected number of statements, expected " + model.size() + " found "
+						+ parsedModel.size(), model.size(), parsedModel.size());
 
 				if (rdfParser.getRDFFormat().supportsNamespaces()) {
-					assertTrue(parsedModel.getNamespaces().size() >= 5);
+					assertTrue("Expected at least 5 namespaces, found " + parsedModel.getNamespaces().size(),
+							parsedModel.getNamespaces().size() >= 5);
 					assertEquals(exNs, parsedModel.getNamespace("ex").getName());
 				}
 			}
