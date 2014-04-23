@@ -41,7 +41,7 @@ import java.util.Set;
  * }
  * </pre>
  */
-public interface CloseableIteration<E, X extends Exception> extends Iteration<E, X> {
+public interface CloseableIteration<E, X extends Exception> extends Iteration<E, X>, AutoCloseable {
 
 	/**
 	 * Closes this iteration, freeing any resources that it is holding. If the
