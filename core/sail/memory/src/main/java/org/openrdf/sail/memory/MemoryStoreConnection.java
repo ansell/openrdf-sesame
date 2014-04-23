@@ -738,7 +738,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 					cardinality = store.size();
 				}
 				else {
-					cardinality = Collections.min(listSizes);
+					cardinality = (double)Collections.min(listSizes);
 
 					// List<Var> vars = getVariables(sp);
 					// int constantVarCount = countConstantVars(vars);
