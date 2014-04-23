@@ -21,6 +21,7 @@ import static org.openrdf.repository.config.RepositoryImplConfigBase.create;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.Graph;
@@ -145,12 +146,12 @@ public class FederationConfig extends SailImplConfigBase {
 			addLocalPropertySpace(space.stringValue());
 		}
 		try {
-			Literal bool = model.filter(implNode, DISTINCT, null).objectLiteral();
-			if (bool != null && bool.booleanValue()) {
+			Optional<Literal> bool = model.filter(implNode, DISTINCT, null).objectLiteral();
+			if (bool.isPresent() && bool.get().booleanValue()) {
 				distinct = true;
 			}
 			bool = model.filter(implNode, READ_ONLY, null).objectLiteral();
-			if (bool != null && bool.booleanValue()) {
+			if (bool.isPresent() && bool.get().booleanValue()) {
 				readOnly = true;
 			}
 		}

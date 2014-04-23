@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.BNode;
@@ -188,68 +189,6 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 					st.getContext());
 		}
 		return false;
-	}
-
-	@Override
-	public Value objectValue() throws ModelException {
-		Iterator<Value> iter = objects().iterator();
-		try {
-			if (iter.hasNext()) {
-				Value obj = iter.next();
-				if (iter.hasNext()) {
-					throw new ModelException(obj, iter.next());
-				}
-				return obj;
-			}
-			return null;
-		} finally {
-			closeIterator(iter);
-		}
-	}
-
-	@Override
-	public Literal objectLiteral() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
-		}
-		if (obj instanceof Literal) {
-			return (Literal) obj;
-		}
-		throw new ModelException(obj);
-	}
-
-	@Override
-	public Resource objectResource() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
-		}
-		if (obj instanceof Resource) {
-			return (Resource) obj;
-		}
-		throw new ModelException(obj);
-	}
-
-	@Override
-	public URI objectURI() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
-		}
-		if (obj instanceof URI) {
-			return (URI) obj;
-		}
-		throw new ModelException(obj);
-	}
-
-	@Override
-	public String objectString() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
-		}
-		return obj.stringValue();
 	}
 
 	@Override
