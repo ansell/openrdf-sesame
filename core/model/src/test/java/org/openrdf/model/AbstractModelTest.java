@@ -73,34 +73,34 @@ public abstract class AbstractModelTest {
 	 * @return An empty instance of the {@link Model} implementation being
 	 *         tested.
 	 */
-	private Model getNewEmptyModel() {
+	protected Model getNewEmptyModel() {
 		Model model = getNewModel();
 		assertTrue(model.isEmpty());
 		return model;
 	}
 
-	private Model getNewModelObjectSingleLiteral() {
+	protected Model getNewModelObjectSingleLiteral() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		assertEquals(1, model.size());
 		return model;
 	}
 
-	private Model getNewModelObjectSingleURI() {
+	protected Model getNewModelObjectSingleURI() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, uri2);
 		assertEquals(1, model.size());
 		return model;
 	}
 
-	private Model getNewModelObjectSingleBNode() {
+	protected Model getNewModelObjectSingleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, bnode1);
 		assertEquals(1, model.size());
 		return model;
 	}
 
-	private Model getNewModelObjectDoubleLiteral() {
+	protected Model getNewModelObjectDoubleLiteral() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, literal2);
@@ -108,7 +108,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectDoubleURI() {
+	protected Model getNewModelObjectDoubleURI() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, uri2);
 		model.add(uri1, RDFS.LABEL, uri3);
@@ -116,7 +116,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectDoubleBNode() {
+	protected Model getNewModelObjectDoubleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, bnode1);
 		model.add(uri1, RDFS.LABEL, bnode2);
@@ -124,7 +124,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleLiteralSingleURI() {
+	protected Model getNewModelObjectSingleLiteralSingleURI() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, uri2);
@@ -132,7 +132,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleLiteralSingleBNode() {
+	protected Model getNewModelObjectSingleLiteralSingleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, bnode1);
@@ -140,7 +140,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleURISingleBNode() {
+	protected Model getNewModelObjectSingleURISingleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, uri1);
 		model.add(uri1, RDFS.LABEL, bnode1);
@@ -148,7 +148,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectTripleLiteral() {
+	protected Model getNewModelObjectTripleLiteral() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, literal2);
@@ -157,7 +157,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectTripleURI() {
+	protected Model getNewModelObjectTripleURI() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, uri1);
 		model.add(uri1, RDFS.LABEL, uri2);
@@ -166,7 +166,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectTripleBNode() {
+	protected Model getNewModelObjectTripleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, bnode1);
 		model.add(uri1, RDFS.LABEL, bnode2);
@@ -175,7 +175,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleLiteralSingleURISingleBNode() {
+	protected Model getNewModelObjectSingleLiteralSingleURISingleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, uri2);
@@ -184,7 +184,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleLiteralDoubleURI() {
+	protected Model getNewModelObjectSingleLiteralDoubleURI() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, uri2);
@@ -193,7 +193,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleLiteralDoubleBNode() {
+	protected Model getNewModelObjectSingleLiteralDoubleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, literal1);
 		model.add(uri1, RDFS.LABEL, bnode1);
@@ -202,7 +202,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleURIDoubleBNode() {
+	protected Model getNewModelObjectSingleURIDoubleBNode() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, uri1);
 		model.add(uri1, RDFS.LABEL, bnode1);
@@ -211,7 +211,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleURIDoubleLiteral() {
+	protected Model getNewModelObjectSingleURIDoubleLiteral() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, uri1);
 		model.add(uri1, RDFS.LABEL, literal1);
@@ -220,7 +220,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleBNodeDoubleURI() {
+	protected Model getNewModelObjectSingleBNodeDoubleURI() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, bnode1);
 		model.add(uri1, RDFS.LABEL, uri2);
@@ -229,7 +229,7 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
-	private Model getNewModelObjectSingleBNodeDoubleLiteral() {
+	protected Model getNewModelObjectSingleBNodeDoubleLiteral() {
 		Model model = getNewEmptyModel();
 		model.add(uri1, RDFS.LABEL, bnode1);
 		model.add(uri1, RDFS.LABEL, literal1);
@@ -264,6 +264,30 @@ public abstract class AbstractModelTest {
 	public void tearDown()
 		throws Exception
 	{
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.Model#filter(Resource, URI, Value, Resource...)}.
+	 */
+	@Test
+	public final void testFilterSingleLiteral() {
+		Model model = getNewModelObjectSingleLiteral();
+		Model filter1 = model.filter(null, null, literal1);
+		assertFalse(filter1.isEmpty());
+		Model filter2 = model.filter(null, null, literal1, (Resource)null);
+		assertFalse(filter2.isEmpty());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.Model#contains(Resource, URI, Value, Resource...)}.
+	 */
+	@Test
+	public final void testContainsSingleLiteral() {
+		Model model = getNewModelObjectSingleLiteral();
+		assertTrue(model.contains(null, null, literal1));
+		assertTrue(model.contains(null, null, literal1, (Resource)null));
 	}
 
 	/**
