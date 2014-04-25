@@ -1,63 +1,6 @@
 // Prerequisite: template.js
 
 /**
- * Populate the query text area with the value of the URL query parameter, only
- * if it is present. If it is not present in the URL query, then looks for the
- * 'query' cookie, and sets it from that. (The cookie enables re-populating the
- * text field with the previous query when the user returns via the browser back
- * button.)
- */
-addLoad( function setQueryTextIfPresent() {
-	var query = getParameterFromUrlOrCookie('query');
-	if (query) {
-		var ref = getParameterFromUrlOrCookie('ref');
-		if (ref == 'id' || ref == 'hash') {
-			getQueryTextFromServer(query, ref);
-		} else {
-			$('#query').val(query);
-		}
-	}
-});
-
-function getQueryTextFromServer(queryParam, refParam) {
-	$.getJSON('query', {
-		action : "get",
-		query : queryParam,
-		ref : refParam
-	}, function(response) {
-		if (response.queryText) {
-			$('#query').val(response.queryText);
-		}
-	});
-}
-
-/**
- * Gets a parameter from the URL or the cookies, preferentially in that order.
- * 
- * @param param
- *            the name of the parameter
- * @returns the value of the given parameter, or something that evaluates as
- *          false, if the parameter was not found
- */
-function getParameterFromUrlOrCookie(param) {
-	var href = document.location.href;
-	var elements = href.substring(href.indexOf('?') + 1).substring(
-			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
-	var result = false;
-	for ( var i = 0; elements.length - i; i++) {
-		var pair = elements[i].split('=');
-		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
-		if (pair[0] == param) {
-			result = value;
-		}
-	}
-	if (!result) {
-		result = getCookie(param);
-	}
-	return result;
-}
-
-/**
  * Global variable for holding the current query language.
  */
 var currentQueryLn;
@@ -101,19 +44,6 @@ function resetNamespaces() {
 }
 
 /**
- * Clear the save feedback field, and look at the contents of the query name
- * field. Disables the save button if the field doesn't satisfy a given regular
- * expression.
- */
-function disableSaveIfNotValidName() {
-	var name = document.getElementById('query-name');
-	var save = document.getElementById('save');
-	var valid = /^[- \w]{1,32}$/
-	save.disabled = !valid.test(name.value);
-	clearFeedback();
-}
-
-/**
  * Clear any contents of the save feedback field.
  */
 function clearFeedback() {
@@ -123,17 +53,79 @@ function clearFeedback() {
 }
 
 /**
- * Calls another function with a delay of 200 msec, to give enough time after
+ * Clear the save feedback field, and look at the contents of the query name
+ * field. Disables the save button if the field doesn't satisfy a given regular
+ * expression. With a delay of 200 msec, to give enough time after
  * the event for the document to have changed. (Workaround for annoying browser
  * behavior.)
  */
 function handleNameChange() {
-	setTimeout('disableSaveIfNotValidName()', 200);
+	setTimeout( function disableSaveIfNotValidName() {
+	    var name = document.getElementById('query-name');
+	    var save = document.getElementById('save');
+	    var valid = /^[- \w]{1,32}$/
+	    save.disabled = !valid.test(name.value);
+	    clearFeedback();
+    }, 200);
 }
 
-addLoad(loadNamespaces);
-
 addLoad( function queryPageLoaded() {
+    /**
+     * Gets a parameter from the URL or the cookies, preferentially in that 
+     * order.
+     * 
+     * @param param
+     *            the name of the parameter
+     * @returns the value of the given parameter, or something that evaluates
+                  as false, if the parameter was not found
+     */
+    function getParameterFromUrlOrCookie(param) {
+	    var href = document.location.href;
+	    var elements = href.substring(href.indexOf('?') + 1).substring(
+			href.indexOf(';') + 1).split(decodeURIComponent('%26'));
+	    var result = false;
+	    for ( var i = 0; elements.length - i; i++) {
+		    var pair = elements[i].split('=');
+		    var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
+		    if (pair[0] == param) {
+                result = value;
+		    }
+	    }
+	    if (!result) {
+		    result = getCookie(param);
+	    }
+	    return result;
+    }
+
+    function getQueryTextFromServer(queryParam, refParam) {
+	    $.getJSON('query', {
+		    action : "get",
+		    query : queryParam,
+		    ref : refParam
+	    }, function(response) {
+		    if (response.queryText) {
+			    $('#query').val(response.queryText);
+		    }
+	    });
+    }
+
+    // Populate the query text area with the value of the URL query parameter,
+    // only if it is present. If it is not present in the URL query, then 
+    // looks for the 'query' cookie, and sets it from that. (The cookie
+    // enables re-populating the text field with the previous query when the
+    // user returns via the browser back button.)
+	var query = getParameterFromUrlOrCookie('query');
+	if (query) {
+		var ref = getParameterFromUrlOrCookie('ref');
+		if (ref == 'id' || ref == 'hash') {
+			getQueryTextFromServer(query, ref);
+		} else {
+			$('#query').val(query);
+		}
+	}
+
+    loadNamespaces();
+    
     // Trim the query text area contents of any leading and/or trailing 
     // whitespace.
 	var query = $('#query');
