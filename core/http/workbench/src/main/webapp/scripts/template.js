@@ -87,8 +87,9 @@ function getQueryStringElements() {
 function textContent(element) {
 	var text = element.innerText || element.textContent;
 
-	// TODO It may be possible to just use JavaScript String.trim() here.
-	return text.replace(/^\s*/, "").replace(/\s*$/, "");
+	// Not using JavaScript String.trim() here, just in case there are some IE8
+	// users out there.
+	return text.replace(/^\s+|\s+$/g, '');
 }
 
 /**
@@ -96,30 +97,14 @@ function textContent(element) {
  * 
  * @param sb
  *            string buffer, actually an array of strings to be joined later
- * @param name
- *            name of parameter to add
  * @param id
- *            (optional) id of element containing value. 'name' is used for 'id'
- *            if not provided
+ *            name of parameter to add
  */
-function addParam(sb, name, id) {
-	if (!id) {
-		id = name;
-	}
-
+function addParam(sb, id) {
+	sb[sb.length] = id + '=';
 	var tag = document.getElementById(id);
-	sb[sb.length] = name;
-	sb[sb.length] = '=';
-	if (tag.type == "checkbox") {
-		if (tag.checked) {
-			sb[sb.length] = 'true';
-		} else {
-			sb[sb.length] = 'false';
-		}
-	} else {
-		sb[sb.length] = encodeURIComponent(tag.value);
-	}
-
+	sb[sb.length] = (tag.type == "checkbox") ? tag.checked : 
+	    encodeURIComponent(tag.value);
 	sb[sb.length] = '&';
 }
 

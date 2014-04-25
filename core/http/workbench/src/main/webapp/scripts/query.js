@@ -207,24 +207,6 @@ addLoad(function() {
 });
 
 /**
- * Utility method to create an XMLHTTPRequest object.
- * 
- * @returns a new object for sending an HTTP request
- */
-function createXMLHttpRequest() {
-	try {
-		return new XMLHttpRequest();
-	} catch (e) {
-	}
-	try {
-		return new ActiveXObject("Msxml2.XMLHTTP");
-	} catch (e) {
-	}
-	alert("XMLHttpRequest not supported");
-	return null;
-}
-
-/**
  * Send a background HTTP request to save the query, and handle the response
  * asynchronously.
  * 
