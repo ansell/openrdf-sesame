@@ -153,71 +153,66 @@ addLoad( function queryPageLoaded() {
 	}
 });
 
-/**
- * Send a background HTTP request to save the query, and handle the response
- * asynchronously.
- * 
- * @param overwrite
- *            if true, add a URL parameter that tells the server we wish to
- *            overwrite any already saved query
- */
-function ajaxSave(overwrite) {
-	var feedback = $('#save-feedback');
-	var handleSuccess = function(response) {
-		if (response.accessible) {
-			if (response.written) {
-				feedback.removeClass().addClass('success');
-				feedback.text('Query saved.');
-			} else {
-				if (response.existed) {
-					if (confirm('Query name exists. Click OK to overwrite.')) {
-						ajaxSave(true);
-					} else {
-						feedback.removeClass().addClass('error');
-						feedback.text('Cancelled overwriting existing query.');
-					}
-				}
-			}
-		} else {
-			feedback.removeClass().addClass('error');
-			feedback
-					.text('Repository was not accessible (check your permissions).');
-		}
-	};
-	var handleError = function(jqXHR, textStatus, errorThrown) {
-		feedback.removeClass().addClass('error');
-		if (textStatus == 'timeout') {
-			feedback
-					.text('Timed out waiting for response. Uncertain if save occured.');
-		} else {
-			feedback.text('Save Request Failed: Error Type = ' + textStatus
-					+ ', HTTP Status Text = "' + errorThrown + '"');
-		}
-	};
-	var url = [];
-	url[url.length] = 'query';
-	if (overwrite) {
-		if (document.all) {
-			url[url.length] = ';';
-		} else {
-			url[url.length] = '?';
-		}
-		url[url.length] = 'overwrite=true&'
-	}
-	var href = url.join('');
-	var form = $('form[action="query"]');
-	$.ajax({
-		url : href,
-		type : 'POST',
-		dataType : 'json',
-		data : form.serialize(),
-		timeout : 5000,
-		error : handleError,
-		success : handleSuccess
-	});
-}
-
 function doSubmit() {
+
+    /**
+     * Send a background HTTP request to save the query, and handle the
+     * response asynchronously.
+     * 
+     * @param overwrite
+     *            if true, add a URL parameter that tells the server we wish
+     *            to overwrite any already saved query
+     */
+    function ajaxSave(overwrite) {
+	    var feedback = $('#save-feedback');
+	    var url = [];
+	    url[url.length] = 'query';
+	    if (overwrite) {
+		    url[url.length] = document.all ? ';' : '?';
+		    url[url.length] = 'overwrite=true&'
+	    }
+	    var href = url.join('');
+	    var form = $('form[action="query"]');
+	    $.ajax({
+		    url : href,
+		    type : 'POST',
+		    dataType : 'json',
+		    data : form.serialize(),
+		    timeout : 5000,
+		    error : function(jqXHR, textStatus, errorThrown) {
+		        feedback.removeClass().addClass('error');
+		        if (textStatus == 'timeout') {
+			        feedback
+					    .text('Timed out waiting for response. Uncertain if save occured.');
+		        } else {
+			        feedback.text('Save Request Failed: Error Type = ' + textStatus
+					    + ', HTTP Status Text = "' + errorThrown + '"');
+		        }
+	        },
+		    success : function(response) {
+		        if (response.accessible) {
+			        if (response.written) {
+				        feedback.removeClass().addClass('success');
+				        feedback.text('Query saved.');
+			        } else {
+				        if (response.existed) {
+					        if (confirm('Query name exists. Click OK to overwrite.')) {
+						        ajaxSave(true);
+					        } else {
+						        feedback.removeClass().addClass('error');
+						        feedback.text('Cancelled overwriting existing query.');
+					        }
+				        }
+			        }
+		        } else {
+			        feedback.removeClass().addClass('error');
+			        feedback
+					    .text('Repository was not accessible (check your permissions).');
+		        }
+	        }
+	    });
+    }
+
 	var allowPageToSubmitForm = false;
 	var save = ($('#action').val() == 'save');
 	if (save) {
