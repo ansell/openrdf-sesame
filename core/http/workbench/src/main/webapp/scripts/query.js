@@ -10,22 +10,23 @@ var currentQueryLn;
  * The server has provided the declaration text in hidden elements.
  */
 function loadNamespaces() {
-	var query = document.getElementById('query');
-	var queryLn = document.getElementById('queryLn').value;
-	var namespaces = document.getElementById(queryLn + '-namespaces');
-	var last = document.getElementById(currentQueryLn + '-namespaces');
-	if (namespaces) {
-		if (!query.value) {
-			query.value = namespaces.innerText || namespaces.textContent;
-			currentQueryLn = queryLn;
+	var query = $('#query');
+	var queryLn = $('#queryLn').val();
+	var namespaces = $('#' + queryLn + '-namespaces');
+	var last = $('#' + currentQueryLn + '-namespaces');
+	
+	function toggleNamespaces() {
+	    query.val(namespaces.text());
+	    currentQueryLn = queryLn;
+    }
+	
+	if (namespaces.length) {
+		if (!query.val()) {;
+		    toggleNamespaces();
 		}
 
-		if (last) {
-			var text = last.innerText || last.textContent;
-			if (query.value == text) {
-				query.value = namespaces.innerText || namespaces.textContent;
-				currentQueryLn = queryLn;
-			}
+		if (last.length && (query.val() == last.text())) {
+            toggleNamespaces();
 		}
 	}
 }
