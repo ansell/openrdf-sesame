@@ -37,9 +37,8 @@ function loadNamespaces() {
  */
 function resetNamespaces() {
 	if (confirm('Click OK to clear the current query text and replace it with the '
-			+ document.getElementById('queryLn').value
-			+ ' namespace declarations.')) {
-		document.getElementById('query').value = '';
+			+ $('#queryLn').val() + ' namespace declarations.')) {
+		$('#query').val('');
 		loadNamespaces();
 	}
 }
@@ -48,9 +47,7 @@ function resetNamespaces() {
  * Clear any contents of the save feedback field.
  */
 function clearFeedback() {
-	var feedback = document.getElementById('save-feedback');
-	feedback.className = '';
-	feedback.innerHTML = '';
+	$('#save-feedback').removeClass().text('');
 }
 
 /**
@@ -62,10 +59,8 @@ function clearFeedback() {
  */
 function handleNameChange() {
 	setTimeout( function disableSaveIfNotValidName() {
-	    var name = document.getElementById('query-name');
-	    var save = document.getElementById('save');
-	    var valid = /^[- \w]{1,32}$/
-	    save.disabled = !valid.test(name.value);
+	    $('#save').prop('disabled', 
+	        !/^[- \w]{1,32}$/.test($('#query-name').val()));
 	    clearFeedback();
     }, 200);
 }
