@@ -53,13 +53,13 @@ function addLoad(fn) {
  *          doesn't exist.
  */
 function getCookie(name) {
-	var cookies = document.cookie.split(";");
-	var rval = "";
+	var cookies = document.cookie.split(';');
+	var rval = '';
 	var i, cookie, eq, temp;
 	for (i = 0; i < cookies.length; i++) {
 		cookie = cookies[i];
-		eq = cookie.indexOf("=");
-		temp = cookie.substr(0, eq).replace(/^\s+|\s+$/g, "");
+		eq = cookie.indexOf('=');
+		temp = cookie.substr(0, eq).replace(/^\s+|\s+$/g, '');
 		if (name == temp) {
 			rval = decodeURIComponent(cookie.substr(eq + 1).replace(/\+/g, '%20'));
 			break;
@@ -103,7 +103,7 @@ function textContent(element) {
 function addParam(sb, id) {
 	sb[sb.length] = id + '=';
 	var tag = document.getElementById(id);
-	sb[sb.length] = (tag.type == "checkbox") ? tag.checked : 
+	sb[sb.length] = (tag.type == 'checkbox') ? tag.checked : 
 	    encodeURIComponent(tag.value);
 	sb[sb.length] = '&';
 }
@@ -114,7 +114,7 @@ function addParam(sb, id) {
  */
 addLoad(function() {
 	var noscript = document.getElementById('noscript-message').style.display = 'none';
-	var user = getCookie("server-user");
+	var user = getCookie('server-user');
 	if (user.length == 0 || user == '""') {
 		user = '<span class="disabled">None</span>';
 	}
