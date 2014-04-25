@@ -133,56 +133,31 @@ function handleNameChange() {
 
 addLoad(loadNamespaces);
 
-/**
- * Trim the query text area contents of any leading and/or trailing whitespace.
- */
-addLoad( function trimQuery() {
-	var query = document.getElementById('query');
-	query.value = query.value.trim();
-});
-
-/**
- * Add click handlers identifying the clicked element in a hidden 'action' form
- * field.
- */
-addLoad( function addClickHandlers() {
+addLoad( function queryPageLoaded() {
+    // Trim the query text area contents of any leading and/or trailing 
+    // whitespace.
+	var query = $('#query');
+	query.val($.trim(query.val()));
+	
+	// Add click handlers identifying the clicked element in a hidden 'action' 
+	// form field.
     addHandler = function(id) {
 	    $('#' + id).click( function setAction() { $('#action').val(id); });
     }
     
 	addHandler('exec');
 	addHandler('save');
-});
 
-/**
- * Add event handlers to the save name field to react to changes in it.
- */
-addLoad( function addSaveNameHandler() {
-	var name = document.getElementById('query-name');
-	name.onkeydown = handleNameChange;
-	name.onpaste = handleNameChange;
-	name.oncut = handleNameChange;
-});
+    // Add event handlers to the save name field to react to changes in it.
+	$('#query-name').bind('keydown cut paste', handleNameChange);
 
-/**
- * Add event handlers to the query text area to react to changes in it.
- */
-addLoad( function addQueryChangeHandler() {
-	var query = document.getElementById('query');
-	query.onkeydown = clearFeedback;
-	query.onpaste = clearFeedback;
-	query.oncut = clearFeedback;
-});
+    // Add event handlers to the query text area to react to changes in it.
+    query.bind('keydown cut paste', clearFeedback);
 
-/**
- * Detect if there is no current authenticated user, and if so, disable the
- * 'save privately' option.
- */
-addLoad( function disablePrivateSaveForAnonymous() {
-	if ($('#selected-user>span').is('.disabled')) {
-		var checkbox = document.getElementById('save-private');
-		checkbox.setAttribute('value', false);
-		checkbox.setAttribute('disabled', 'disabled');
+    // Detect if there is no current authenticated user, and if so, disable
+    // the 'save privately' option.
+    if ($('#selected-user>span').is('.disabled')) {
+		$('#save-private').prop('checked', false).prop('disabled', true);
 	}
 });
 
