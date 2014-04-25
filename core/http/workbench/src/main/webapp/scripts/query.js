@@ -7,7 +7,7 @@
  * text field with the previous query when the user returns via the browser back
  * button.)
  */
-function setQueryTextIfPresent() {
+addLoad( function setQueryTextIfPresent() {
 	var query = getParameterFromUrlOrCookie('query');
 	if (query) {
 		var ref = getParameterFromUrlOrCookie('ref');
@@ -17,7 +17,7 @@ function setQueryTextIfPresent() {
 			$('#query').val(query);
 		}
 	}
-}
+});
 
 function getQueryTextFromServer(queryParam, refParam) {
 	$.getJSON('query', {
@@ -101,28 +101,6 @@ function resetNamespaces() {
 }
 
 /**
- * Add click handlers identifying the clicked element in a hidden 'action' form
- * field.
- */
-function addClickHandlers() {
-	addClickHandler('exec');
-	addClickHandler('save');
-}
-
-/**
- * Add a click handler to the specified element, that will set the value on a
- * hidden 'action' form field.
- * 
- * @param id
- *            the id of the element to add the click handler to
- */
-function addClickHandler(id) {
-	document.getElementById(id).onclick = function() {
-		document.getElementById('action').value = id;
-	}
-}
-
-/**
  * Clear the save feedback field, and look at the contents of the query name
  * field. Disables the save button if the field doesn't satisfy a given regular
  * expression.
@@ -153,57 +131,59 @@ function handleNameChange() {
 	setTimeout('disableSaveIfNotValidName()', 200);
 }
 
-/**
- * Add event handlers to the save name field to react to changes in it.
- */
-function addSaveNameHandler() {
-	var name = document.getElementById('query-name');
-	name.onkeydown = handleNameChange;
-	name.onpaste = handleNameChange;
-	name.oncut = handleNameChange;
-}
-
-/**
- * Add event handlers to the query text area to react to changes in it.
- */
-function addQueryChangeHandler() {
-	var query = document.getElementById('query');
-	query.onkeydown = clearFeedback;
-	query.onpaste = clearFeedback;
-	query.oncut = clearFeedback;
-}
+addLoad(loadNamespaces);
 
 /**
  * Trim the query text area contents of any leading and/or trailing whitespace.
  */
-function trimQuery() {
+addLoad( function trimQuery() {
 	var query = document.getElementById('query');
 	query.value = query.value.trim();
-}
+});
+
+/**
+ * Add click handlers identifying the clicked element in a hidden 'action' form
+ * field.
+ */
+addLoad( function addClickHandlers() {
+    addHandler = function(id) {
+	    $('#' + id).click( function setAction() { $('#action').val(id); });
+    }
+    
+	addHandler('exec');
+	addHandler('save');
+});
+
+/**
+ * Add event handlers to the save name field to react to changes in it.
+ */
+addLoad( function addSaveNameHandler() {
+	var name = document.getElementById('query-name');
+	name.onkeydown = handleNameChange;
+	name.onpaste = handleNameChange;
+	name.oncut = handleNameChange;
+});
+
+/**
+ * Add event handlers to the query text area to react to changes in it.
+ */
+addLoad( function addQueryChangeHandler() {
+	var query = document.getElementById('query');
+	query.onkeydown = clearFeedback;
+	query.onpaste = clearFeedback;
+	query.oncut = clearFeedback;
+});
 
 /**
  * Detect if there is no current authenticated user, and if so, disable the
  * 'save privately' option.
  */
-function disablePrivateSaveForAnonymous() {
+addLoad( function disablePrivateSaveForAnonymous() {
 	if ($('#selected-user>span').is('.disabled')) {
 		var checkbox = document.getElementById('save-private');
 		checkbox.setAttribute('value', false);
 		checkbox.setAttribute('disabled', 'disabled');
 	}
-}
-
-/**
- * Add code to be called when the document is loaded.
- */
-addLoad(function() {
-	setQueryTextIfPresent();
-	loadNamespaces();
-	trimQuery();
-	addClickHandlers();
-	addSaveNameHandler();
-	addQueryChangeHandler();
-	disablePrivateSaveForAnonymous();
 });
 
 /**
