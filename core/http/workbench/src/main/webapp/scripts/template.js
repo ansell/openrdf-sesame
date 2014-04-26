@@ -20,17 +20,6 @@ if (typeof (document.cookie) == 'undefined') {
 	});
 }
 
-// The following is to allow composed XSLT style sheets to each add functions to
-// the window.onload event.
-
-chain = function(args) {
-	return function() {
-		for ( var i = 0; i < args.length; i++) {
-			args[i]();
-		}
-	}
-};
-
 /**
  * Note that the way this is currently constructed, functions added with
  * addLoad() will be executed in the order that they were added.
@@ -40,8 +29,19 @@ chain = function(args) {
  *            function to add
  */
 function addLoad(fn) {
-	window.onload = typeof (window.onload) == 'function' ? chain([
-			window.onload, fn ]) : fn;
+
+    // The following is to allow composed XSLT style sheets to each add 
+    // functions to the window.onload event.
+    function chain(args) {
+        return function() {
+            for ( var i = 0; i < args.length; i++) {
+                args[i]();
+            }
+        }
+    };
+
+    window.onload = typeof (window.onload) == 'function' ? chain([
+        window.onload, fn ]) : fn;
 }
 
 /**
@@ -53,20 +53,19 @@ function addLoad(fn) {
  *          doesn't exist.
  */
 function getCookie(name) {
-	var cookies = document.cookie.split(';');
-	var rval = '';
-	var i, cookie, eq, temp;
-	for (i = 0; i < cookies.length; i++) {
-		cookie = cookies[i];
-		eq = cookie.indexOf('=');
-		temp = cookie.substr(0, eq).replace(/^\s+|\s+$/g, '');
-		if (name == temp) {
-			rval = decodeURIComponent(cookie.substr(eq + 1).replace(/\+/g, '%20'));
-			break;
-		}
-	}
+    var cookies = document.cookie.split(';');
+    var rval = '';
+    for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        var eq = cookie.indexOf('=');
+        if (name == cookie.substr(0, eq).replace(/^\s+|\s+$/g, '')) {
+            rval = decodeURIComponent(
+                cookie.substr(eq + 1).replace(/\+/g, '%20'));
+            break;
+        }
+    }
 
-	return rval;
+    return rval;
 }
 
 /**
@@ -78,18 +77,6 @@ function getQueryStringElements() {
 	var href = document.location.href;
 	return href.substring(href.indexOf('?') + 1).split(
 			decodeURIComponent('%26'));
-}
-
-/**
- * Return the text content of a given element, trimmed of any leading or
- * trailing whitespace.
- */
-function textContent(element) {
-	var text = element.innerText || element.textContent;
-
-	// Not using JavaScript String.trim() here, just in case there are some IE8
-	// users out there.
-	return text.replace(/^\s+|\s+$/g, '');
 }
 
 /**
