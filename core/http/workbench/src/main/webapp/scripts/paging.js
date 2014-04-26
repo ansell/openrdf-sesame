@@ -28,6 +28,41 @@ function addGraphParam(name) {
  *            or string} value The value of the query parameter.
  */
 function addPagingParam(name, value) {
+
+    /**
+     * Scans the given URI for duplicate query parameter names, and removes
+     * all but the last occurrence for any duplicate case.
+     *
+     * @param {Strng}
+     *            href The URI to simplify.
+     * @returns {String} The URI with only the last occurrence of any given
+     *          parameter name remaining.
+     */
+    function simplifyParameters(href) {
+        var params = new Object();
+        var rval = '';
+        var elements = tailAfter(tailAfter(href, '?'), ';');
+        var start = href.substring(0, href.indexOf(elements));
+        elements = elements.split(decodeURIComponent('%26'));
+        for ( var i = 0; elements.length - i; i++) {
+            var pair = elements[i].split('=');
+            params[pair[0]] = pair[1];
+
+            // Keep looping. We are interested in the last value.
+	    }
+
+        var amp = decodeURIComponent('%26');
+        for ( var name in params) {
+            // use hasOwnProperty to filter out keys from the Object.prototype
+            if (params.hasOwnProperty(name)) {
+                rval = rval + name + '=' + params[name] + amp;
+            }
+        }
+
+        rval = start + rval.substring(0, rval.length - 1);
+        return rval;
+    }
+
 	var url = document.location.href;
 	var hasParams = (url.indexOf('?') + 1 || url.indexOf(';') + 1);
 	var amp = decodeURIComponent('%26');
@@ -119,41 +154,6 @@ function getParameter(name) {
  */
 function tailAfter(value, split) {
 	return value.substring(value.indexOf(split) + 1);
-}
-
-/**
- * Scans the given URI for duplicate query parameter names, and removes all but
- * the last occurrence for any duplicate case.
- * 
- * @param {Strng}
- *            href The URI to simplify.
- * @returns {String} The URI with only the last occurrence of any given
- *          parameter name remaining.
- */
-function simplifyParameters(href) {
-	var params = new Object();
-	var rval = '';
-	var elements = tailAfter(tailAfter(href, '?'), ';');
-	var start = href.substring(0, href.indexOf(elements));
-	elements = elements.split(decodeURIComponent('%26'));
-	for ( var i = 0; elements.length - i; i++) {
-		var pair = elements[i].split('=');
-		params[pair[0]] = pair[1];
-
-		// Keep looping. We are interested in the last value.
-	}
-
-	var amp = decodeURIComponent('%26');
-	for ( var name in params) {
-		// use hasOwnProperty to filter out keys from the Object.prototype
-		if (params.hasOwnProperty(name)) {
-			rval = rval + name + '=' + params[name] + amp;
-		}
-	}
-
-	rval = start + rval.substring(0, rval.length - 1);
-
-	return rval;
 }
 
 /**
