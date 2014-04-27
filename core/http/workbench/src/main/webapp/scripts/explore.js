@@ -1,39 +1,35 @@
 // Prerequisite: paging.js
 
-function removeDuplicates(self) {
+addLoad(function() {
+    function removeDuplicates(self) {
+        function textContent(element) {
+            return $.trim(element.innerText || element.textContent);
+        }
 
-    // Return the text content of a given element, trimmed of any leading or
-    // trailing whitespace. Not using JavaScript String.trim() here, just in case
-    // there are some IE8 users out there.
-    function textContent(element) {
-        return (element.innerText || element.textContent).replace(
-            /^\s+|\s+$/g, '');
-    }
+        var lists = document.getElementsByTagName('ul');
+        for ( var i = lists.length - 1; i + 1; i--) {
+            var items = lists[i].getElementsByTagName('li');
+            for ( var j = items.length - 1; j; j--) {
+                var text = textContent(items[j]);
+                if (items[j].innerHTML == items[j - 1].innerHTML || text == self) {
+                    items[j].parentNode.removeChild(items[j]);
+                }
+            }
 
-    var lists = document.getElementsByTagName('ul');
-    for ( var i = lists.length - 1; i + 1; i--) {
-        var items = lists[i].getElementsByTagName('li');
-        for ( var j = items.length - 1; j; j--) {
-            var text = textContent(items[j]);
-            if (items[j].innerHTML == items[j - 1].innerHTML || text == self) {
-                items[j].parentNode.removeChild(items[j]);
+            text = textContent(items[0]);
+            if (text == self) {
+                items[0].parentNode.removeChild(items[0]);
+            }
+
+            if (items.length == 0) {
+                lists[i].parentNode.parentNode.removeChild(lists[i].parentNode);
             }
         }
-
-        text = textContent(items[0]);
-        if (text == self) {
-            items[0].parentNode.removeChild(items[0]);
-        }
-
-        if (items.length == 0) {
-            lists[i].parentNode.parentNode.removeChild(lists[i].parentNode);
-        }
     }
-}
 
-function populateParameters() {
+	// Populate parameters
 	var elements = getQueryStringElements();
-	for ( var i = 0; elements.length - i; i++) {
+	for (i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
 		if (pair[0] == 'resource') {
@@ -49,10 +45,7 @@ function populateParameters() {
 			}
 		}
 	}
-}
 
-addLoad(function() {
-	populateParameters();
 	correctButtons();
 	var content = document.getElementById('content');
 	var h1 = content.getElementsByTagName('h1')[0];

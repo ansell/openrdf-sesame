@@ -111,8 +111,7 @@ function getOffset() {
  * @returns {number} The value of the limit query parameter.
  */
 function getLimit() {
-	var limit = document.getElementById('limit').value;
-	return parseInt(limit, 10);
+	return parseInt($('#limit').val(), 10);
 }
 
 /**

@@ -1,19 +1,15 @@
 // Prerequisite: paging.js
 
-function correctLimit() {
-	var limit = getParameter('limit');
-	if ('' == limit) {
-		limit = 0;
-	}
-	
-	document.getElementById('limit').value = limit;
-}
-			
 addLoad(
 function() {
-	correctLimit();
+    var limit = getParameter('limit');
+    if ('' == limit) {
+        limit = 0;
+    }
+	
+    $('#limit')value(limit);
 	correctButtons();
-	var limit = getLimit();
+	limit = getLimit();
 			    
     // Modify title to reflect total_result_count cookie
     if (limit > 0) {
