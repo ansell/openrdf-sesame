@@ -158,29 +158,21 @@ function tailAfter(value, split) {
 
 /**
  * Using the value of the 'limit' query parameter, correct the text of the Next
- * and Previous buttons.
+ * and Previous buttons. Makes use of RegExp to preserve any localization.
  */
 function correctButtons() {
-	var limit = getLimit();
-	var nextButton = document.getElementById('nextX');
-	var previousButton = document.getElementById('previousX');
-
-	// Using RegExp to preserve any localization.
-	var buttonWordPattern = /^[A-z]+\s+/
-	var buttonNumberPattern = /\d+$/
-	var oldNext = nextButton.value;
-	var count = parseInt(buttonNumberPattern.exec(oldNext), 10);
-	nextButton.value = buttonWordPattern.exec(oldNext) + limit;
-	previousButton.value = buttonWordPattern.exec(previousButton.value) + limit;
-	var offset = getOffset();
-	if (offset <= 0 || limit <= 0) {
-		previousButton.disabled = true;
-	}
-
-	if (count < limit || limit <= 0
-			|| (offset + count) >= getTotalResultCount()) {
-		nextButton.disabled = true;
-	}
+    var buttonWordPattern = /^[A-z]+\s+/
+    var nextButton = $('#nextX');
+    var oldNext = nextButton.val();
+    var count = parseInt(/\d+$/.exec(oldNext), 10);
+    var limit = getLimit();
+    nextButton.val(buttonWordPattern.exec(oldNext) + limit);
+    var previousButton = $('#previousX');
+    previousButton.val(buttonWordPattern.exec(previousButton.val()) + limit);
+    var offset = getOffset();
+    previousButton.prop('disabled',  (offset <= 0 || limit <= 0));
+    nextButton.prop('disabled', (count < limit || limit <= 0
+			|| (offset + count) >= getTotalResultCount()));
 }
 
 /**
@@ -216,15 +208,15 @@ function hideExternalLinksAndSetHoverEvent() {
 	})
 }
 
-function setCookie(c_name, value, exdays) {
-	var exdate = new Date();
-	exdate.setDate(exdate.getDate() + exdays);
-	var c_value = escape(value)
-			+ ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
-	document.cookie = c_name + "=" + c_value;
-}
-
 function setDataTypeVisibility(show) {
+    function setCookie(c_name, value, exdays) {
+        var exdate = new Date();
+        exdate.setDate(exdate.getDate() + exdays);
+        var c_value = escape(value)
+            + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+        document.cookie = c_name + "=" + c_value;
+    }
+
 	setCookie('show-datatypes', show, 365);
 	var data = show ? 'data-longform' : 'data-shortform';
 	$('span.resource[' + data + ']').each(function(index) {
@@ -233,17 +225,14 @@ function setDataTypeVisibility(show) {
 	});
 }
 
-var showDatatypesCheckbox = "input[name='show-datatypes']";
-
-function respondToShowDataTypeChange() {
-	setDataTypeVisibility($(showDatatypesCheckbox).prop('checked'));
-}
-
 function setShowDataTypesCheckboxAndSetChangeEvent() {
-	var hideDataTypes = (getCookie('show-datatypes') == 'false');
-	if (hideDataTypes) {
-		$(showDatatypesCheckbox).prop('checked', false);
+    var hideDataTypes = (getCookie('show-datatypes') == 'false');
+    var showDTcb = $("input[name='show-datatypes']");
+    if (hideDataTypes) {
+		showDTcb.prop('checked', false);
 		setDataTypeVisibility(false);
 	}
-	$(showDatatypesCheckbox).on('change', respondToShowDataTypeChange);
+	showDTcb.on('change', function(){
+	    setDataTypeVisibility(showDTcb.prop('checked'));
+	});
 }
