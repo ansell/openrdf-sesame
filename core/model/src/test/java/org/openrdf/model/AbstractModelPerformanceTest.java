@@ -18,16 +18,23 @@ package org.openrdf.model;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
+import java.util.Optional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import org.openrdf.model.util.ModelException;
 
 /**
  * @author Peter Ansell
  */
 public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 
+	private static final int COUNT = 150;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -218,10 +225,71 @@ public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 	/**
 	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
 	 */
-	@Ignore("TODO: Implement me!")
 	@Test
-	public final void testPerfObjectURI() {
-		fail("Not yet implemented"); // TODO
+	public final void testPerfObjectURISingle() {
+		Model model = getNewEmptyModel();
+		for (int i = 0; i < COUNT; i++) {
+			// Add many statements with the same object URI
+			model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:" + i % 10000),
+					vf.createURI("urn:test:uri:predicate:" + (i % 200)),
+					vf.createURI("urn:test:object:uri:single")));
+		}
+
+		long start = System.nanoTime();
+		Optional<URI> objectURI = model.objectURI();
+		System.out.println("testPerfObjectURISingle: " + (System.nanoTime() - start));
+		assertTrue(objectURI.isPresent());
+		assertEquals("urn:test:object:uri:single", objectURI.get().toString());
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 */
+	@Test
+	public final void testPerfObjectURIMultipleAddedFirst() {
+		Model model = getNewEmptyModel();
+		model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:1"),
+				vf.createURI("urn:test:uri:predicate:1"), vf.createURI("urn:test:object:uri:other")));
+		for (int i = 0; i < COUNT; i++) {
+			// Add many statements with the same object URI
+			model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:" + i % 10000),
+					vf.createURI("urn:test:uri:predicate:" + (i % 200)),
+					vf.createURI("urn:test:object:uri:single")));
+		}
+
+		thrown.expect(ModelException.class);
+		long start = System.nanoTime();
+		try {
+			model.objectURI();
+		}
+		finally {
+			System.out.println("testPerfObjectURIMultipleAddedFirst: " + (System.nanoTime() - start));
+		}
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 */
+	@Test
+	public final void testPerfObjectURIMultipleAddedLast() {
+		Model model = getNewEmptyModel();
+		for (int i = 0; i < COUNT; i++) {
+			// Add many statements with the same object URI
+			model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:" + i % 10000),
+					vf.createURI("urn:test:uri:predicate:" + (i % 200)),
+					vf.createURI("urn:test:object:uri:single")));
+		}
+		model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:1"),
+				vf.createURI("urn:test:uri:predicate:1"), vf.createURI("urn:test:object:uri:other")));
+
+		thrown.expect(ModelException.class);
+		long start = System.nanoTime();
+		try {
+			model.objectURI();
+		}
+		finally {
+			System.out.println("testPerfObjectURIMultipleAddedLast: " + (System.nanoTime() - start));
+		}
 	}
 
 	/**
@@ -254,10 +322,71 @@ public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 	/**
 	 * Test method for {@link org.openrdf.model.Model#anObjectURI()}.
 	 */
-	@Ignore("TODO: Implement me!")
 	@Test
-	public final void testPerfAnObjectURI() {
-		fail("Not yet implemented"); // TODO
+	public final void testPerfAnObjectURISingle() {
+		Model model = getNewEmptyModel();
+		for (int i = 0; i < COUNT; i++) {
+			// Add many statements with the same object URI
+			model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:" + i % 10000),
+					vf.createURI("urn:test:uri:predicate:" + (i % 200)),
+					vf.createURI("urn:test:object:uri:single")));
+		}
+
+		long start = System.nanoTime();
+		Optional<URI> objectURI = model.anObjectURI();
+		System.out.println("testPerfAnObjectURISingle: " + (System.nanoTime() - start));
+		assertTrue(objectURI.isPresent());
+		assertEquals("urn:test:object:uri:single", objectURI.get().toString());
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.Model#anObjectURI()}.
+	 */
+	@Test
+	public final void testPerfAnObjectURIMultipleAddedFirst() {
+		Model model = getNewEmptyModel();
+		model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:1"),
+				vf.createURI("urn:test:uri:predicate:1"), vf.createURI("urn:test:object:uri:other")));
+		for (int i = 0; i < COUNT; i++) {
+			// Add many statements with the same object URI
+			model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:" + i % 10000),
+					vf.createURI("urn:test:uri:predicate:" + (i % 200)),
+					vf.createURI("urn:test:object:uri:single")));
+		}
+
+		thrown.expect(ModelException.class);
+		long start = System.nanoTime();
+		try {
+			model.anObjectURI();
+		}
+		finally {
+			System.out.println("testPerfAnObjectURIMultipleAddedFirst: " + (System.nanoTime() - start));
+		}
+	}
+
+	/**
+	 * Test method for {@link org.openrdf.model.Model#anObjectURI()}.
+	 */
+	@Test
+	public final void testPerfAnObjectURIMultipleAddedLast() {
+		Model model = getNewEmptyModel();
+		for (int i = 0; i < COUNT; i++) {
+			// Add many statements with the same object URI
+			model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:" + i % 10000),
+					vf.createURI("urn:test:uri:predicate:" + (i % 200)),
+					vf.createURI("urn:test:object:uri:single")));
+		}
+		model.add(vf.createStatement(vf.createURI("urn:test:uri:subject:1"),
+				vf.createURI("urn:test:uri:predicate:1"), vf.createURI("urn:test:object:uri:other")));
+
+		thrown.expect(ModelException.class);
+		long start = System.nanoTime();
+		try {
+			model.anObjectURI();
+		}
+		finally {
+			System.out.println("testPerfAnObjectURIMultipleAddedLast: " + (System.nanoTime() - start));
+		}
 	}
 
 	/**
