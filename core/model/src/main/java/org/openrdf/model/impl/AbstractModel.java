@@ -192,6 +192,74 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	}
 
 	@Override
+	public Optional<Value> objectValue() throws ModelException {
+		Iterator<Value> iter = objects().iterator();
+		try {
+			if (iter.hasNext()) {
+				Value obj = iter.next();
+				if (iter.hasNext()) {
+					throw new ModelException(obj, iter.next());
+				}
+				return Optional.of(obj);
+			}
+			return Optional.empty();
+		} finally {
+			closeIterator(iter);
+		}
+	}
+
+	@Override
+	public Optional<Literal> objectLiteral() throws ModelException {
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			if (obj.get() instanceof Literal) {
+				return Optional.of((Literal) obj.get());
+			}
+			else {
+				throw new ModelException(obj.get());
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<Resource> objectResource() throws ModelException {
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			if (obj.get() instanceof Resource) {
+				return Optional.of((Resource) obj.get());
+			}
+			else {
+				throw new ModelException(obj.get());
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<URI> objectURI() throws ModelException {
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			if (obj.get() instanceof URI) {
+				return Optional.of((URI) obj.get());
+			}
+			else {
+				throw new ModelException(obj.get());
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<String> objectString() throws ModelException {
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			return Optional.of(obj.get().toString());
+		}
+		return Optional.empty();
+	}
+
+	@Override
 	public int hashCode() {
 		return super.hashCode();
 	}

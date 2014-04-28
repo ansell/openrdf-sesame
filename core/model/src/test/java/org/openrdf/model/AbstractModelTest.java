@@ -41,28 +41,30 @@ import org.openrdf.model.vocabulary.RDFS;
 public abstract class AbstractModelTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(1000);
+	public Timeout timeout = new Timeout(10000);
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	private Literal literal1;
+	protected Literal literal1;
 
-	private Literal literal2;
+	protected Literal literal2;
 
-	private Literal literal3;
+	protected Literal literal3;
 
-	private URI uri1;
+	protected URI uri1;
 
-	private URI uri2;
+	protected URI uri2;
 
-	private URI uri3;
+	protected URI uri3;
 
-	private BNode bnode1;
+	protected BNode bnode1;
 
-	private BNode bnode2;
+	protected BNode bnode2;
 
-	private BNode bnode3;
+	protected BNode bnode3;
+
+	protected final ValueFactory vf = ValueFactoryImpl.getInstance();
 
 	protected abstract Model getNewModel();
 
@@ -245,7 +247,6 @@ public abstract class AbstractModelTest {
 	public void setUp()
 		throws Exception
 	{
-		ValueFactory vf = ValueFactoryImpl.getInstance();
 		uri1 = vf.createURI("urn:test:uri:1");
 		uri2 = vf.createURI("urn:test:uri:2");
 		uri3 = vf.createURI("urn:test:uri:3");
@@ -281,7 +282,8 @@ public abstract class AbstractModelTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.Model#contains(Resource, URI, Value, Resource...)}.
+	 * {@link org.openrdf.model.Model#contains(Resource, URI, Value, Resource...)}
+	 * .
 	 */
 	@Test
 	public final void testContainsSingleLiteral() {

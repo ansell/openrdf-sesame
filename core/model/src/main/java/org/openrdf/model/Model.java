@@ -19,6 +19,7 @@ package org.openrdf.model;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openrdf.model.util.ModelException;
@@ -556,7 +557,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Utility method that finds a single URI object in the model and returns it
-	 * if it exists. If multiple resource objects exist in the model it throws a
+	 * if it exists. If multiple URI objects exist in the model it throws a
 	 * ModelException.
 	 * 
 	 * @return A unique URI appearing as an object of the matched statement(s),
@@ -569,6 +570,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	{
 		Set<URI> result = stream().filter(st -> st.getObject() instanceof URI).map(st -> (URI)st.getObject()).distinct().limit(
 				2).collect(Collectors.toSet());
+
 		if (result.isEmpty()) {
 			return Optional.empty();
 		}
