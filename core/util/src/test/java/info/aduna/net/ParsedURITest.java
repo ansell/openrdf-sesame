@@ -31,6 +31,7 @@ public class ParsedURITest {
 		assertTrue(uri.isAbsolute());
 		assertTrue(uri.isHierarchical());
 		assertEquals("http", uri.getScheme());
+		assertFalse(uri.isOpaque());
 	}
 
 	@Test
@@ -39,6 +40,7 @@ public class ParsedURITest {
 		assertFalse(uri.isAbsolute());
 		assertTrue(uri.isHierarchical());
 		assertNull(uri.getScheme());
+		assertFalse(uri.isOpaque());
 	}
 
 	@Test
@@ -46,9 +48,41 @@ public class ParsedURITest {
 		ParsedURI uri = new ParsedURI("jar:http://example.test/bar/baz.jar!/COM/foo/Quux.class");
 		assertTrue(uri.isAbsolute());
 		assertTrue(uri.isHierarchical());
+		assertFalse(uri.isOpaque());
 		assertEquals("/COM/foo/Quux.class", uri.getPath());
 
 		uri.normalize();
 		assertEquals("/COM/foo/Quux.class", uri.getPath());
+	}
+
+	@Test
+	public void jarUriWithHttpStringifiesToOriginalForm() {
+		ParsedURI uri = new ParsedURI("jar:http://example.test/bar/baz.jar!/COM/foo/Quux.class");
+		assertEquals("jar:http://example.test/bar/baz.jar!/COM/foo/Quux.class", uri.toString());
+	}
+
+	@Test
+	public void jarUriWithFileStringifiesToOriginalForm() {
+		ParsedURI uri = new ParsedURI("jar:file:///some-file.jar!/another-file");
+		System.out.println(uri.getScheme());
+		assertEquals("jar:file:///some-file.jar!/another-file", uri.toString());
+	}
+
+	@Test
+	public void resolvesAnAbsoluteUriRelativeToABaseJarUri() {
+		ParsedURI uri = new ParsedURI("jar:file:///some-file.jar!/some-nested-file");
+		assertEquals("http://example.test/", uri.resolve("http://example.test/").toString());
+	}
+
+	@Test
+	public void resolvesAPathRelativeUriRelativeToABaseJarUri() {
+		ParsedURI uri = new ParsedURI("jar:file:///some-file.jar!/some-nested-file");
+		assertEquals("jar:file:///some-file.jar!/another-file", uri.resolve("another-file").toString());
+	}
+
+	@Test
+	public void resolvesAPathAbsoluteUriRelativeToABaseJarUri() {
+		ParsedURI uri = new ParsedURI("jar:file:///some-file.jar!/nested-directory/some-nested-file");
+		assertEquals("jar:file:///some-file.jar!/another-file", uri.resolve("/another-file").toString());
 	}
 }

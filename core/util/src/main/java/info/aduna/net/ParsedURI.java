@@ -377,7 +377,9 @@ public class ParsedURI implements java.lang.Cloneable {
 
 		if (_scheme != null) {
 			sb.append(_scheme);
-			sb.append(':');
+			if (!isJarScheme(_scheme)) {
+				sb.append(':');
+			}
 		}
 
 		if (isOpaque()) {
@@ -423,8 +425,12 @@ public class ParsedURI implements java.lang.Cloneable {
 	 * Methods for parsing URIs *
 	 *--------------------------*/
 
+	private static final boolean isJarScheme(String s) {
+		return (s.length() > 4 && s.substring(0, 4).equalsIgnoreCase("jar:"));
+	}
+
 	private void _parse(String uri) {
-		if (uri.length() > 4 && uri.substring(0, 4).equalsIgnoreCase("jar:")) {
+		if (isJarScheme(uri)) {
 			// uriString is e.g.
 			// jar:http://www.foo.com/bar/baz.jar!/COM/foo/Quux.class
 			// Treat the part up to and including the exclamation mark as the
