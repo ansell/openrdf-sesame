@@ -35,7 +35,7 @@ function loadNamespaces() {
 	}
 }
 
-addLoad(function() {
+workbench.addLoad(function() {
 	populateParameters();
 	loadNamespaces();
 });

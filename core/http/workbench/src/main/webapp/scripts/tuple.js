@@ -1,6 +1,6 @@
 // Prerequisite: paging.js
 
-addLoad(
+workbench.addLoad(
 function() {
     var limit = getParameter('limit');
     if ('' == limit) {

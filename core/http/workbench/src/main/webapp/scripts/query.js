@@ -65,7 +65,7 @@ function handleNameChange() {
     }, 200);
 }
 
-addLoad( function queryPageLoaded() {
+workbench.addLoad( function queryPageLoaded() {
     /**
      * Gets a parameter from the URL or the cookies, preferentially in that 
      * order.

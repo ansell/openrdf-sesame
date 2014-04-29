@@ -36,7 +36,7 @@ function checkOverwrite() {
     }
 }
 
-addLoad(function createPageLoaded() {
+workbench.addLoad(function createPageLoaded() {
     // Populate parameters
     var elements = getQueryStringElements();
     for ( var i = 0; elements.length - i; i++) {

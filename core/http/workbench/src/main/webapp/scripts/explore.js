@@ -1,6 +1,6 @@
 // Prerequisite: paging.js
 
-addLoad(function() {
+workbench.addLoad(function() {
     function removeDuplicates(self) {
         function textContent(element) {
             return $.trim(element.innerText || element.textContent);

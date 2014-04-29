@@ -38,7 +38,7 @@ function timeoutRespond() {
 	setTimeout('respondToFormState()', 0);
 }
 
-addLoad(function() {
+workbench.addLoad(function() {
 	respondToFormState();
 	$('input.memberID').on('change', respondToFormState);
 	$("input[name='type']").on('change', respondToFormState);

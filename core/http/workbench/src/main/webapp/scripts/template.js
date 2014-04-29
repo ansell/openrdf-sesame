@@ -20,28 +20,29 @@
     }
 })();
 
-/**
- * Note that the way this is currently constructed, functions added with
- * addLoad() will be executed in the order that they were added.
- * 
- * @see http://onwebdevelopment.blogspot.com/2008/07/chaining-functions-in-javascript.html
- * @param fn
- *            function to add
- */
-function addLoad(fn) {
+var workbench = {
 
-    // The following is to allow composed XSLT style sheets to each add 
-    // functions to the window.onload event.
-    function chain(args) {
-        return function() {
-            for ( var i = 0; i < args.length; i++) {
-                args[i]();
+    // Note that the way this is currently constructed, functions added with
+    // addLoad() will be executed in the order that they were added.
+    //
+    // @see http://onwebdevelopment.blogspot.com/2008/07/chaining-functions-in-javascript.html
+    // @param fn
+    //          function to add
+    addLoad: function _addLoad(fn) {
+
+        // The following is to allow composed XSLT style sheets to each add
+        // functions to the window.onload event.
+        function chain(args) {
+            return function() {
+                for ( var i = 0; i < args.length; i++) {
+                    args[i]();
+                }
             }
-        }
-    };
+        };
 
-    window.onload = typeof (window.onload) == 'function' ? chain([
-        window.onload, fn ]) : fn;
+        window.onload = typeof (window.onload) == 'function' ? chain([
+            window.onload, fn ]) : fn;
+    }
 }
 
 /**
@@ -99,7 +100,7 @@ function addParam(sb, id) {
  * Code to run when the document loads: eliminate the 'noscript' warning
  * message, and display an unauthenticated user properly.
  */
-addLoad(function() {
+workbench.addLoad(function() {
 	var noscript = document.getElementById('noscript-message').style.display = 'none';
 	var user = getCookie('server-user');
 	if (user.length == 0 || user == '""') {
