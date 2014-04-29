@@ -40,4 +40,15 @@ public class ParsedURITest {
 		assertTrue(uri.isHierarchical());
 		assertNull(uri.getScheme());
 	}
+
+	@Test
+	public void jarUrisAppearAsAbsoluteAndHierarchical() {
+		ParsedURI uri = new ParsedURI("jar:http://example.test/bar/baz.jar!/COM/foo/Quux.class");
+		assertTrue(uri.isAbsolute());
+		assertTrue(uri.isHierarchical());
+		assertEquals("/COM/foo/Quux.class", uri.getPath());
+
+		uri.normalize();
+		assertEquals("/COM/foo/Quux.class", uri.getPath());
+	}
 }
