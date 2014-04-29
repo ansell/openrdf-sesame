@@ -424,6 +424,20 @@ public class ParsedURI implements java.lang.Cloneable {
 	 *--------------------------*/
 
 	private void _parse(String uri) {
+		if (uriString.length() > 4 && uriString.substring(0, 4).equalsIgnoreCase("jar:")) {
+			// uriString is e.g.
+			// jar:http://www.foo.com/bar/baz.jar!/COM/foo/Quux.class
+			// Treat the part up to and including the exclamation mark as the
+			// scheme and
+			// the rest as the path to enable 'correct' resolving of relative URIs
+			int idx = uriString.indexOf('!');
+			if (idx != -1) {
+				String scheme = uriString.substring(0, idx + 1);
+				String path = uriString.substring(idx + 1);
+				return new ParsedURI(scheme, null, path, null, null);
+			}
+		}
+
 		if (_parseScheme(uri)) {
 			// A scheme was found; _scheme and _schemeSpecificPart are now set
 			if (_schemeSpecificPart.startsWith("/")) {
