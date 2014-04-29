@@ -5,7 +5,7 @@
  * Disables the create button if the id field doesn't have any text.
  */
 function disableCreateIfEmptyId() {
-    $('input#create').prop('disabled', /.+/.test($('#id').val()));
+    $('input#create').prop('disabled', !(/.+/.test($('#id').val())));
 }
 
 /**
