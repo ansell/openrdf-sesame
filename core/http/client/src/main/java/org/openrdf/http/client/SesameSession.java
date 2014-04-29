@@ -634,23 +634,23 @@ public class SesameSession extends SparqlSession {
 	public void addData(InputStream contents, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
-		upload(contents, baseURI, dataFormat, false, Action.ADD, contexts);
+		upload(contents, baseURI, dataFormat, false, true,  Action.ADD, contexts);
 	}
 
 	public void removeData(InputStream contents, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
-		upload(contents, baseURI, dataFormat, false, Action.DELETE, contexts);
+		upload(contents, baseURI, dataFormat, false, true, Action.DELETE, contexts);
 	}
 
-	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
+	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite, boolean preserveNodeIds,
 			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
-		upload(contents, baseURI, dataFormat, overwrite, null, contexts);
+		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, null, contexts);
 	}
 
-	protected void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
+	protected void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite, boolean preserveNodeIds,
 			Action action, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
@@ -658,14 +658,14 @@ public class SesameSession extends SparqlSession {
 		// cache
 		HttpEntity entity = new InputStreamEntity(contents, -1,
 				ContentType.parse(dataFormat.getDefaultMIMEType()));
-		upload(entity, baseURI, overwrite, action, contexts);
+		upload(entity, baseURI, overwrite, preserveNodeIds, action, contexts);
 	}
 
-	public void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite,
+	public void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite, boolean preserveNodeIds,
 			Resource... contexts)
 		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
-		upload(contents, baseURI, dataFormat, overwrite, null, contexts);
+		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, null, contexts);
 	}
 
 	@Override
@@ -718,7 +718,7 @@ public class SesameSession extends SparqlSession {
 	}
 
 	protected void upload(final Reader contents, String baseURI, final RDFFormat dataFormat,
-			boolean overwrite, Action action, Resource... contexts)
+			boolean overwrite, boolean preserveNodeIds, Action action, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
@@ -769,10 +769,10 @@ public class SesameSession extends SparqlSession {
 			}
 		};
 
-		upload(entity, baseURI, overwrite, action, contexts);
+		upload(entity, baseURI, overwrite, preserveNodeIds, action, contexts);
 	}
 
-	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, Action action,
+	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, boolean preserveNodeIds, Action action,
 			Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
@@ -795,6 +795,9 @@ public class SesameSession extends SparqlSession {
 			if (baseURI != null && baseURI.trim().length() != 0) {
 				String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
 				url.setParameter(Protocol.BASEURI_PARAM_NAME, encodedBaseURI);
+			}
+			if (preserveNodeIds) {
+				url.setParameter(Protocol.PRESERVE_BNODE_ID_PARAM_NAME, "true");
 			}
 
 			if (useTransaction) {

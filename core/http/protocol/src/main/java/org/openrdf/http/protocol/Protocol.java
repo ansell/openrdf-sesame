@@ -31,10 +31,10 @@ public abstract class Protocol {
 		GET,
 		QUERY,
 		UPDATE,
-		COMMIT, 
+		COMMIT,
 		ROLLBACK;
 	}
-	
+
 	/**
 	 * Protocol version.
 	 */
@@ -132,12 +132,11 @@ public abstract class Protocol {
 	 * the Accept HTTP header).
 	 */
 	public static final String ACCEPT_PARAM_NAME = "Accept";
-	
+
 	/**
 	 * Parameter name for the action parameter used in transactions.
 	 */
 	public static final String ACTION_PARAM_NAME = "action";
-	
 
 	/**
 	 * Relative location of the protocol resource.
@@ -193,6 +192,14 @@ public abstract class Protocol {
 	 * MIME type for www forms: <tt>application/x-www-form-urlencoded</tt>.
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
+
+	/**
+	 * Parameter for server instruction to preserve blank node ids when parsing
+	 * request data.
+	 * 
+	 * @since 2.8.0
+	 */
+	public static final String PRESERVE_BNODE_ID_PARAM_NAME = "preserveNodeId";
 
 	private static String getServerDir(String serverLocation) {
 		if (serverLocation.endsWith("/")) {
@@ -278,7 +285,7 @@ public abstract class Protocol {
 	public static final String getTransactionsLocation(String repositoryLocation) {
 		return repositoryLocation + "/" + TRANSACTIONS;
 	}
-	
+
 	/**
 	 * Extracts the server location from the repository location.
 	 * 

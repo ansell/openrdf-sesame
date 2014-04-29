@@ -391,14 +391,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		flushTransactionState(Action.ADD);
 		// Send bytes directly to the server
-		client.upload(in, baseURI, dataFormat, false, contexts);
+		client.upload(in, baseURI, dataFormat, false, false, contexts);
 	}
 
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
 		flushTransactionState(Action.ADD);
-		client.upload(reader, baseURI, dataFormat, false, contexts);
+		client.upload(reader, baseURI, dataFormat, false, false, contexts);
 	}
 
 	@Override

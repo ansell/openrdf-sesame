@@ -38,9 +38,13 @@ import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.rio.ParserConfig;
+import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.RioSettingImpl;
 
 /**
  * Handles requests for transaction creation on a repository.
@@ -89,6 +93,12 @@ public class TransactionStartController extends AbstractController {
 
 		try {
 			RepositoryConnection conn = repository.getConnection();
+			
+			ParserConfig config = conn.getParserConfig();
+			config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+			config.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
+			config.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
+			
 			conn.begin();
 			UUID txnId = UUID.randomUUID();
 
