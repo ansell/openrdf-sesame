@@ -88,7 +88,7 @@ workbench.addLoad( function queryPageLoaded() {
 		    }
 	    }
 	    if (!result) {
-		    result = getCookie(param);
+		    result = workbench.getCookie(param);
 	    }
 	    return result;
     }

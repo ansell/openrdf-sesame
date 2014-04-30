@@ -185,7 +185,7 @@ function getTotalResultCount() {
 	var total_result_count = 0;
 	var s_trc = getParameter('know_total');
 	if (s_trc.length == 0) {
-		s_trc = getCookie('total_result_count');
+		s_trc = workbench.getCookie('total_result_count');
 	}
 
 	if (s_trc.length > 0) {
@@ -225,7 +225,7 @@ function setDataTypeVisibility(show) {
 }
 
 function setShowDataTypesCheckboxAndSetChangeEvent() {
-    var hideDataTypes = (getCookie('show-datatypes') == 'false');
+    var hideDataTypes = (workbench.getCookie('show-datatypes') == 'false');
     var showDTcb = $("input[name='show-datatypes']");
     if (hideDataTypes) {
 		showDTcb.prop('checked', false);

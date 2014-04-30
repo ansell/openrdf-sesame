@@ -42,32 +42,33 @@ var workbench = {
 
         window.onload = typeof (window.onload) == 'function' ? chain([
             window.onload, fn ]) : fn;
-    }
-}
-
-/**
- * Retrieves the value of the cookie with the given name.
- * 
- * @param {String}
- *            name The name of the cookie to retrieve.
- * @returns {String} The value of the given cookie, or an empty string if it
- *          doesn't exist.
- */
-function getCookie(name) {
-    var cookies = document.cookie.split(';');
-    var rval = '';
-    for (var i = 0; i < cookies.length; i++) {
-        var cookie = cookies[i];
-        var eq = cookie.indexOf('=');
-        if (name == cookie.substr(0, eq).replace(/^\s+|\s+$/g, '')) {
-            rval = decodeURIComponent(
-                cookie.substr(eq + 1).replace(/\+/g, '%20'));
-            break;
+    },
+    
+    /**
+     * Retrieves the value of the cookie with the given name.
+     * 
+     * @param {String}
+     *            name The name of the cookie to retrieve.
+     * @returns {String} The value of the given cookie, or an empty string if it
+     *          doesn't exist.
+     */
+    getCookie: function _getCookie(name) {
+        var cookies = document.cookie.split(';');
+        var rval = '';
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+            var eq = cookie.indexOf('=');
+            if (name == cookie.substr(0, eq).replace(/^\s+|\s+$/g, '')) {
+                rval = decodeURIComponent(
+                    cookie.substr(eq + 1).replace(/\+/g, '%20'));
+                break;
+            }
         }
+        return rval;
     }
-
-    return rval;
 }
+
+
 
 /**
  * Parses workbench URL query strings into processable arrays.
@@ -102,7 +103,7 @@ function addParam(sb, id) {
  */
 workbench.addLoad(function() {
 	var noscript = document.getElementById('noscript-message').style.display = 'none';
-	var user = getCookie('server-user');
+	var user = workbench.getCookie('server-user');
 	if (user.length == 0 || user == '""') {
 		user = '<span class="disabled">None</span>';
 	}

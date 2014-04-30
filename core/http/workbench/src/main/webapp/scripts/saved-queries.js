@@ -1,7 +1,7 @@
 // Prerequisite: template.js
 
 function deleteQuery(savedBy, name, urn) {
-	var currentUser = getCookie("server-user");
+	var currentUser = workbench.getCookie("server-user");
 	if ((!savedBy || currentUser == savedBy)) {
 		if (confirm("'"
 				+ name
