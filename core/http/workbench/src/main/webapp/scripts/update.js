@@ -53,10 +53,10 @@ function doSubmit() {
 		} else {
 			url[url.length] = '?';
 		}
-		addParam(url, 'queryLn');
-		addParam(url, 'update');
-		addParam(url, 'limit');
-		addParam(url, 'infer');
+		workbench.addParam(url, 'queryLn');
+		workbench.addParam(url, 'update');
+		workbench.addParam(url, 'limit');
+		workbench.addParam(url, 'infer');
 		url[url.length - 1] = '';
 		document.location.href = url.join('');
 		return false;

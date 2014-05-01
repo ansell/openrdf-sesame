@@ -76,23 +76,24 @@ var workbench = {
 	    var href = document.location.href;
 	    return href.substring(href.indexOf('?') + 1).split(
 			decodeURIComponent('%26'));
+    },
+    
+    /**
+     * Utility method for assembling the query string for a request URL.
+     * 
+     * @param sb
+     *            string buffer, actually an array of strings to be joined later
+     * @param id
+     *            name of parameter to add, also the id of the document element
+     *            to get the value from
+     */
+    addParam: function _addParam(sb, id) {
+	    sb[sb.length] = id + '=';
+	    var tag = document.getElementById(id);
+	    sb[sb.length] = (tag.type == 'checkbox') ? tag.checked : 
+	        encodeURIComponent(tag.value);
+	    sb[sb.length] = '&';
     }
-}
-
-/**
- * Utility method for assembling the query string for a request URL.
- * 
- * @param sb
- *            string buffer, actually an array of strings to be joined later
- * @param id
- *            name of parameter to add
- */
-function addParam(sb, id) {
-	sb[sb.length] = id + '=';
-	var tag = document.getElementById(id);
-	sb[sb.length] = (tag.type == 'checkbox') ? tag.checked : 
-	    encodeURIComponent(tag.value);
-	sb[sb.length] = '&';
 }
 
 /**

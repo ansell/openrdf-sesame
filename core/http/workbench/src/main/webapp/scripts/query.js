@@ -221,11 +221,11 @@ function doSubmit() {
 		} else {
 			url[url.length] = '?';
 		}
-		addParam(url, 'action');
-		addParam(url, 'queryLn');
-		addParam(url, 'query');
-		addParam(url, 'limit');
-		addParam(url, 'infer');
+		workbench.addParam(url, 'action');
+		workbench.addParam(url, 'queryLn');
+		workbench.addParam(url, 'query');
+		workbench.addParam(url, 'limit');
+		workbench.addParam(url, 'infer');
 		var href = url.join('');
 		var loc = document.location;
 		var currentBaseLength = loc.href.length - loc.pathname.length
