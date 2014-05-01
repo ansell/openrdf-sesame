@@ -65,20 +65,18 @@ var workbench = {
             }
         }
         return rval;
-    }
-}
+    },
 
-
-
-/**
- * Parses workbench URL query strings into processable arrays.
- * 
- * @returns an array of the 'name=value' substrings of the URL query string
- */
-function getQueryStringElements() {
-	var href = document.location.href;
-	return href.substring(href.indexOf('?') + 1).split(
+    /**
+     * Parses workbench URL query strings into processable arrays.
+     * 
+     * @returns an array of the 'name=value' substrings of the URL query string
+     */
+    getQueryStringElements: function _getQueryStringElements() {
+	    var href = document.location.href;
+	    return href.substring(href.indexOf('?') + 1).split(
 			decodeURIComponent('%26'));
+    }
 }
 
 /**

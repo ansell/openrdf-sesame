@@ -1,7 +1,7 @@
 // Prerequisite: template.js
 
 function populateParameters() {
-	var elements = getQueryStringElements();
+	var elements = workbench.getQueryStringElements();
 	for ( var i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
