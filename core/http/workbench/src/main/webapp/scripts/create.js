@@ -2,13 +2,6 @@
 // Prerequisite: template.js
 
 /**
- * Disables the create button if the id field doesn't have any text.
- */
-function disableCreateIfEmptyId() {
-    $('input#create').prop('disabled', !(/.+/.test($('#id').val())));
-}
-
-/**
  * Invoked by the "Create" button on the form for all but 
  * create-federate.xsl. Checks with the InfoServlet for the user-provided id
  * for the existence of the id already, giving a chance to back out if it
@@ -37,6 +30,13 @@ function checkOverwrite() {
 }
 
 workbench.addLoad(function createPageLoaded() {
+    /**
+     * Disables the create button if the id field doesn't have any text.
+     */
+    function disableCreateIfEmptyId() {
+        $('input#create').prop('disabled', !(/.+/.test($('#id').val())));
+    }
+
     // Populate parameters
     var elements = workbench.getQueryStringElements();
     for ( var i = 0; elements.length - i; i++) {
