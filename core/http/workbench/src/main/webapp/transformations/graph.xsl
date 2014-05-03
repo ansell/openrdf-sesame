@@ -39,7 +39,7 @@
 							</select>
 						</td>
 						<td>
-							<input type="submit" onclick="addGraphParam('Accept');return false"
+							<input type="submit" onclick="workbench.paging.addGraphParam('Accept');return false"
 								value="{$download.label}" />
 						</td>
 					</tr>
@@ -56,7 +56,7 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">
-									addGraphParam('limit');
+									workbench.paging.addGraphParam('limit');
 								</xsl:with-param>
 							</xsl:call-template>
 						</td>

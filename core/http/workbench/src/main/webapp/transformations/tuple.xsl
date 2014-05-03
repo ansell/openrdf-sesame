@@ -51,7 +51,7 @@
 							</select>
 						</td>
 						<td>
-							<input type="submit" onclick="addGraphParam('Accept');return false"
+							<input type="submit" onclick="workbench.paging.addGraphParam('Accept');return false"
 								value="{$download.label}" />
 						</td>
 					</tr>

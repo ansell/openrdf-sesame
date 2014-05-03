@@ -1,11 +1,13 @@
 // Prerequisite: template.js
 // Prerequisite: jquery
 
+workbench.paging = {}
+
 /**
- * Needed by graph.xsl and tuple.xsl Download functionality. Takes a document
- * element by name, and creates a request with it as a parameter.
+ * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
+ * document element by name, and creates a request with it as a parameter.
  */
-function addGraphParam(name) {
+workbench.paging.addGraphParam = function _addGraphParam(name) {
 	var value = document.getElementById(name).value;
 	var url = document.location.href;
 	if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
@@ -77,7 +79,8 @@ function addPagingParam(name, value) {
 }
 
 /**
- * Changes the limit query parameter, and navigates to the new URL.
+ * Invoked in tuple.xsl and explore.xsl. Changes the limit query parameter,
+ * and navigates to the new URL.
  */
 function addLimit() {
 	addPagingParam('limit', document.getElementById('limit').value);

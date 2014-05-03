@@ -7,7 +7,7 @@ function() {
         limit = 0;
     }
 	
-    $('#limit')value(limit);
+    $('#limit').val(limit);
 	correctButtons();
 	limit = getLimit();
 			    
