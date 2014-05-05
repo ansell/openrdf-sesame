@@ -97,6 +97,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
 /**
@@ -209,6 +210,7 @@ public class TransactionController extends AbstractController {
 					RDFParser parser = Rio.createParser(Rio.getParserFormatForMIMEType(request.getContentType()),
 							conn.getValueFactory());
 					parser.setRDFHandler(new WildcardRDFRemover(conn));
+					parser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 					parser.parse(request.getInputStream(), null);
 					break;
 				case QUERY:

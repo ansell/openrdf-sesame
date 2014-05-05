@@ -799,7 +799,7 @@ public class SesameSession extends SparqlSession {
 			if (preserveNodeIds) {
 				url.setParameter(Protocol.PRESERVE_BNODE_ID_PARAM_NAME, "true");
 			}
-
+			
 			if (useTransaction) {
 				if (action == null) {
 					throw new IllegalArgumentException("action can not be null on transaction operation");

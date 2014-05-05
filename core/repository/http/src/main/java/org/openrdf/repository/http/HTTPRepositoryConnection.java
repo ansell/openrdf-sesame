@@ -433,6 +433,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	/*
 	@Override
 	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
@@ -457,6 +458,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			super.remove(subject, predicate, object, contexts);
 		}
 	}
+	*/
 
 	@Override
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
