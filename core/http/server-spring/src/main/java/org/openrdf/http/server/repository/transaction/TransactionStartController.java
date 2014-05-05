@@ -102,7 +102,7 @@ public class TransactionStartController extends AbstractController {
 			conn.begin();
 			UUID txnId = UUID.randomUUID();
 
-			ActiveTransactionRegistry.getInstance().register(txnId, conn);
+			ActiveTransactionRegistry.INSTANCE.register(txnId, conn);
 			model.put(SimpleResponseView.SC_KEY, SC_CREATED);
 			final StringBuffer txnURL = request.getRequestURL();
 			txnURL.append("/" + txnId.toString());

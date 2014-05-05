@@ -34,21 +34,18 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 /**
- * @author jeen
+ * Registry keeping track of active transactions identified by a {@link UUID}
+ * and the {@link RepositoryConnection} that corresponds to the given
+ * transaction.
+ * 
+ * @author Jeen Broekstra
+ * @since 2.8.0
  */
-public class ActiveTransactionRegistry {
+public enum ActiveTransactionRegistry {
 
-	private static final ActiveTransactionRegistry singleton = new ActiveTransactionRegistry();
+	INSTANCE;
 
 	private static final Logger logger = LoggerFactory.getLogger(ActiveTransactionRegistry.class);
-
-	public static ActiveTransactionRegistry getInstance() {
-		return singleton;
-	}
-
-	private ActiveTransactionRegistry() {
-		// private constructor, implementing singleton pattern
-	}
 
 	static class CacheEntry {
 

@@ -91,7 +91,6 @@ import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RDFWriterFactory;
@@ -110,8 +109,6 @@ public class TransactionController extends AbstractController {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final ActiveTransactionRegistry txnRegistry = ActiveTransactionRegistry.getInstance();
-
 	public TransactionController()
 		throws ApplicationContextException
 	{
@@ -127,7 +124,7 @@ public class TransactionController extends AbstractController {
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
-		RepositoryConnection connection = txnRegistry.getTransactionConnection(transactionId);
+		RepositoryConnection connection = ActiveTransactionRegistry.INSTANCE.getTransactionConnection(transactionId);
 
 		if (connection == null) {
 			logger.warn("could not find connection for transaction id {}", transactionId);
@@ -152,7 +149,7 @@ public class TransactionController extends AbstractController {
 					connection.rollback();
 				}
 				finally {
-					txnRegistry.deregister(transactionId);
+					ActiveTransactionRegistry.INSTANCE.deregister(transactionId);
 					connection.close();
 				}
 
@@ -165,7 +162,7 @@ public class TransactionController extends AbstractController {
 			}
 		}
 		finally {
-			txnRegistry.returnTransactionConnection(transactionId);
+			ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(transactionId);
 		}
 		return result;
 	}
@@ -204,7 +201,8 @@ public class TransactionController extends AbstractController {
 		try {
 			switch (action) {
 				case ADD:
-					conn.add(request.getInputStream(), null, Rio.getParserFormatForMIMEType(request.getContentType()));
+					conn.add(request.getInputStream(), null,
+							Rio.getParserFormatForMIMEType(request.getContentType()));
 					break;
 				case DELETE:
 					RDFParser parser = Rio.createParser(Rio.getParserFormatForMIMEType(request.getContentType()),
@@ -222,12 +220,12 @@ public class TransactionController extends AbstractController {
 				case COMMIT:
 					conn.commit();
 					conn.close();
-					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request));
+					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
 					break;
 				case ROLLBACK:
 					conn.rollback();
 					conn.close();
-					ActiveTransactionRegistry.getInstance().deregister(getTransactionID(request));
+					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
 					break;
 				default:
 					logger.warn("transaction action '{}' not recognized", action);
