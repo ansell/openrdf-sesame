@@ -100,6 +100,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private Model toRemove;
 
+	/**
+	 * Maximum size (in number of statements) allowed for statement buffers before
+	 * they are forcibly flushed. 
+	 * 
+	 * TODO: make this setting configurable.
+	 */
+	private static final long MAX_STATEMENT_BUFFER_SIZE = 200000;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -528,11 +536,19 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 						removeModel(toRemove);
 						toRemove = null;
 					}
+					if (toAdd != null && MAX_STATEMENT_BUFFER_SIZE >= toAdd.size()) {
+						addModel(toAdd);
+						toAdd = null;
+					}
 					break;
 				case DELETE:
 					if (toAdd != null) {
 						addModel(toAdd);
 						toAdd = null;
+					}
+					if (toRemove != null && MAX_STATEMENT_BUFFER_SIZE >= toRemove.size()) {
+						removeModel(toRemove);
+						toRemove = null;
 					}
 					break;
 				case GET:
