@@ -223,14 +223,36 @@ public class TransactionController extends AbstractController {
 				case UPDATE:
 					return getSparqlUpdateResult(conn, request, response);
 				case COMMIT:
-					conn.commit();
-					conn.close();
-					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
+					try {
+						conn.commit();
+						conn.close();
+					}
+					finally {
+						try {
+							if (conn.isOpen()) {
+								conn.close();
+							}
+						}
+						finally {
+							ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
+						}
+					}
 					break;
 				case ROLLBACK:
-					conn.rollback();
-					conn.close();
-					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
+					try {
+						conn.rollback();
+						conn.close();
+					}
+					finally {
+						try {
+							if (conn.isOpen()) {
+								conn.close();
+							}
+						}
+						finally {
+							ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
+						}
+					}
 					break;
 				default:
 					logger.warn("transaction action '{}' not recognized", action);
