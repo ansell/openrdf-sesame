@@ -118,6 +118,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		// parser used for locally processing input data to be sent to the server
 		// should be strict, and should preserve bnode ids.
 		setParserConfig(new ParserConfig());
+		getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
 		getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 	}
 
