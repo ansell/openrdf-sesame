@@ -518,16 +518,21 @@ public class SesameSession extends SparqlSession {
 			throw new RuntimeException(e);
 		}
 
-		HttpResponse response = execute(method);
-		int code = response.getStatusLine().getStatusCode();
-		if (code == HttpURLConnection.HTTP_OK) {
-			// we're done.
-			transactionURL = null;
+		final HttpResponse response = execute(method);
+		try {
+			int code = response.getStatusLine().getStatusCode();
+			if (code == HttpURLConnection.HTTP_OK) {
+				// we're done.
+				transactionURL = null;
+			}
+			else {
+				throw new RepositoryException("unable to commit transaction. HTTP error code " + code);
+			}
 		}
-		else {
-			EntityUtils.consume(response.getEntity());
-			throw new RepositoryException("unable to commit transaction. HTTP error code " + code);
+		finally {
+			EntityUtils.consumeQuietly(response.getEntity());
 		}
+
 	}
 
 	public synchronized void rollbackTransaction()
@@ -542,15 +547,19 @@ public class SesameSession extends SparqlSession {
 		String requestURL = appendAction(transactionURL, Action.ROLLBACK);
 		HttpPut method = new HttpPut(requestURL);
 
-		HttpResponse response = execute(method);
-		int code = response.getStatusLine().getStatusCode();
-		if (code == HttpURLConnection.HTTP_OK) {
-			// we're done.
-			transactionURL = null;
+		final HttpResponse response = execute(method);
+		try {
+			int code = response.getStatusLine().getStatusCode();
+			if (code == HttpURLConnection.HTTP_OK) {
+				// we're done.
+				transactionURL = null;
+			}
+			else {
+				throw new RepositoryException("unable to rollback transaction. HTTP error code " + code);
+			}
 		}
-		else {
-			EntityUtils.consume(response.getEntity());
-			throw new RepositoryException("unable to rollback transaction. HTTP error code " + code);
+		finally {
+			EntityUtils.consumeQuietly(response.getEntity());
 		}
 	}
 
@@ -634,7 +643,7 @@ public class SesameSession extends SparqlSession {
 	public void addData(InputStream contents, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
-		upload(contents, baseURI, dataFormat, false, true,  Action.ADD, contexts);
+		upload(contents, baseURI, dataFormat, false, true, Action.ADD, contexts);
 	}
 
 	public void removeData(InputStream contents, String baseURI, RDFFormat dataFormat, Resource... contexts)
@@ -643,15 +652,15 @@ public class SesameSession extends SparqlSession {
 		upload(contents, baseURI, dataFormat, false, true, Action.DELETE, contexts);
 	}
 
-	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite, boolean preserveNodeIds,
-			Resource... contexts)
+	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
+			boolean preserveNodeIds, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, null, contexts);
 	}
 
-	protected void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite, boolean preserveNodeIds,
-			Action action, Resource... contexts)
+	protected void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
+			boolean preserveNodeIds, Action action, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		// Set Content-Length to -1 as we don't know it and we also don't want to
@@ -661,8 +670,8 @@ public class SesameSession extends SparqlSession {
 		upload(entity, baseURI, overwrite, preserveNodeIds, action, contexts);
 	}
 
-	public void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite, boolean preserveNodeIds,
-			Resource... contexts)
+	public void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite,
+			boolean preserveNodeIds, Resource... contexts)
 		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
 		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, null, contexts);
@@ -772,8 +781,8 @@ public class SesameSession extends SparqlSession {
 		upload(entity, baseURI, overwrite, preserveNodeIds, action, contexts);
 	}
 
-	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, boolean preserveNodeIds, Action action,
-			Resource... contexts)
+	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, boolean preserveNodeIds,
+			Action action, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
@@ -799,7 +808,7 @@ public class SesameSession extends SparqlSession {
 			if (preserveNodeIds) {
 				url.setParameter(Protocol.PRESERVE_BNODE_ID_PARAM_NAME, "true");
 			}
-			
+
 			if (useTransaction) {
 				if (action == null) {
 					throw new IllegalArgumentException("action can not be null on transaction operation");

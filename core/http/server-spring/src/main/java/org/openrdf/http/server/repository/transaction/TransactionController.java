@@ -178,11 +178,16 @@ public class TransactionController extends AbstractController {
 			String[] pathInfo = pathInfoStr.substring(1).split("/");
 			// should be of the form: /<Repository>/transactions/<txnID>
 			if (pathInfo.length == 3) {
-				txnID = UUID.fromString(pathInfo[2]);
-				logger.debug("txnID is '{}'", txnID);
+				try {
+					txnID = UUID.fromString(pathInfo[2]);
+					logger.debug("txnID is '{}'", txnID);
+				}
+				catch (IllegalArgumentException e) {
+					throw new ClientHTTPException(SC_BAD_REQUEST, "not a valid transaction id: " + pathInfo[2]);
+				}
 			}
 			else {
-				logger.warn("could not determine tranaction id from path info {} ", pathInfoStr);
+				logger.warn("could not determine transaction id from path info {} ", pathInfoStr);
 			}
 		}
 
@@ -286,64 +291,62 @@ public class TransactionController extends AbstractController {
 	{
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
 
-		synchronized (conn) {
-			Query query = getQuery(conn, queryStr, request, response);
+		Query query = getQuery(conn, queryStr, request, response);
 
-			View view;
-			Object queryResult;
-			FileFormatServiceRegistry<? extends FileFormat, ?> registry;
+		View view;
+		Object queryResult;
+		FileFormatServiceRegistry<? extends FileFormat, ?> registry;
 
-			try {
-				if (query instanceof TupleQuery) {
-					TupleQuery tQuery = (TupleQuery)query;
+		try {
+			if (query instanceof TupleQuery) {
+				TupleQuery tQuery = (TupleQuery)query;
 
-					queryResult = tQuery.evaluate();
-					registry = TupleQueryResultWriterRegistry.getInstance();
-					view = TupleQueryResultView.getInstance();
-				}
-				else if (query instanceof GraphQuery) {
-					GraphQuery gQuery = (GraphQuery)query;
-
-					queryResult = gQuery.evaluate();
-					registry = RDFWriterRegistry.getInstance();
-					view = GraphQueryResultView.getInstance();
-				}
-				else if (query instanceof BooleanQuery) {
-					BooleanQuery bQuery = (BooleanQuery)query;
-
-					queryResult = bQuery.evaluate();
-					registry = BooleanQueryResultWriterRegistry.getInstance();
-					view = BooleanQueryResultView.getInstance();
-				}
-				else {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Unsupported query type: "
-							+ query.getClass().getName());
-				}
+				queryResult = tQuery.evaluate();
+				registry = TupleQueryResultWriterRegistry.getInstance();
+				view = TupleQueryResultView.getInstance();
 			}
-			catch (QueryInterruptedException e) {
-				logger.info("Query interrupted", e);
-				throw new ServerHTTPException(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
-			}
-			catch (QueryEvaluationException e) {
-				logger.info("Query evaluation error", e);
-				if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-					// custom signal from the backend, throw as HTTPException
-					// directly (see SES-1016).
-					throw (HTTPException)e.getCause();
-				}
-				else {
-					throw new ServerHTTPException("Query evaluation error: " + e.getMessage());
-				}
-			}
-			Object factory = ProtocolUtil.getAcceptableService(request, response, registry);
+			else if (query instanceof GraphQuery) {
+				GraphQuery gQuery = (GraphQuery)query;
 
-			Map<String, Object> model = new HashMap<String, Object>();
-			model.put(QueryResultView.FILENAME_HINT_KEY, "query-result");
-			model.put(QueryResultView.QUERY_RESULT_KEY, queryResult);
-			model.put(QueryResultView.FACTORY_KEY, factory);
+				queryResult = gQuery.evaluate();
+				registry = RDFWriterRegistry.getInstance();
+				view = GraphQueryResultView.getInstance();
+			}
+			else if (query instanceof BooleanQuery) {
+				BooleanQuery bQuery = (BooleanQuery)query;
 
-			return new ModelAndView(view, model);
+				queryResult = bQuery.evaluate();
+				registry = BooleanQueryResultWriterRegistry.getInstance();
+				view = BooleanQueryResultView.getInstance();
+			}
+			else {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Unsupported query type: "
+						+ query.getClass().getName());
+			}
 		}
+		catch (QueryInterruptedException e) {
+			logger.info("Query interrupted", e);
+			throw new ServerHTTPException(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
+		}
+		catch (QueryEvaluationException e) {
+			logger.info("Query evaluation error", e);
+			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
+				// custom signal from the backend, throw as HTTPException
+				// directly (see SES-1016).
+				throw (HTTPException)e.getCause();
+			}
+			else {
+				throw new ServerHTTPException("Query evaluation error: " + e.getMessage());
+			}
+		}
+		Object factory = ProtocolUtil.getAcceptableService(request, response, registry);
+
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put(QueryResultView.FILENAME_HINT_KEY, "query-result");
+		model.put(QueryResultView.QUERY_RESULT_KEY, queryResult);
+		model.put(QueryResultView.FACTORY_KEY, factory);
+
+		return new ModelAndView(view, model);
 	}
 
 	private Query getQuery(RepositoryConnection repositoryCon, String queryStr, HttpServletRequest request,

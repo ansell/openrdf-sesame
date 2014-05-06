@@ -101,10 +101,8 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	private Model toRemove;
 
 	/**
-	 * Maximum size (in number of statements) allowed for statement buffers before
-	 * they are forcibly flushed. 
-	 * 
-	 * TODO: make this setting configurable.
+	 * Maximum size (in number of statements) allowed for statement buffers
+	 * before they are forcibly flushed. TODO: make this setting configurable.
 	 */
 	private static final long MAX_STATEMENT_BUFFER_SIZE = 200000;
 
@@ -145,6 +143,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		try {
 			client.beginTransaction(this.getIsolationLevel());
 			active = true;
+		}
+		catch (RepositoryException e) {
+			throw e;
 		}
 		catch (OpenRDFException e) {
 			throw new RepositoryException(e);
@@ -619,6 +620,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			conditionalCommit(localTransaction);
 		}
 		catch (IOException e) {
+			// TODO if rollback throws an exception too, the original ioexception
+			// is silently ignored. Should we throw the rollback exception or the
+			// original exception (and/or should we log one of the exceptions?)
 			conditionalRollback(localTransaction);
 			throw new RepositoryException(e);
 		}

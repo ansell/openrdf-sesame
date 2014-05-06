@@ -105,7 +105,7 @@ import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
- * The HTTP client provides low level HTTP methods for the HTTP communication of
+ * The SparqlSession provides low level HTTP methods for the HTTP communication of
  * the SPARQL repository as well as the HTTP Repository. All methods are
  * compliant to the SPARQL 1.1 protocol. For both Tuple and Graph queries there
  * is a variant which parses the result in the background, see
@@ -114,6 +114,8 @@ import org.openrdf.rio.helpers.ParseErrorLogger;
  * guarantee that HTTP connections are closed properly and returned to the
  * connection pool. Functionality specific to the Sesame HTTP protocol can be
  * found in {@link SesameSession} (which is used by Remote Repositories).
+ * 
+ * The methods in this class are not guaranteed to be thread-safe.
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman

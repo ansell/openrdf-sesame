@@ -103,12 +103,12 @@ public enum ActiveTransactionRegistry {
 	 * @param conn
 	 *        the {@link RepositoryConnection} to use for handling the
 	 *        transaction.
-	 * @throws IllegalArgumentException
+	 * @throws RepositoryException
 	 *         if a transaction is already registered with the given transaction
 	 *         id.
 	 */
 	public void register(UUID transactionId, RepositoryConnection conn)
-		throws IllegalArgumentException
+		throws RepositoryException
 	{
 		synchronized (activeConnections) {
 			if (activeConnections.getIfPresent(transactionId) == null) {
@@ -117,7 +117,7 @@ public enum ActiveTransactionRegistry {
 			}
 			else {
 				logger.error("transaction already registered: {}", transactionId);
-				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+				throw new RepositoryException("transaction with id " + transactionId.toString()
 						+ " already registered.");
 			}
 		}
@@ -128,16 +128,16 @@ public enum ActiveTransactionRegistry {
 	 * 
 	 * @param transactionId
 	 *        the transaction id
-	 * @throws IllegalArgumentException
+	 * @throws RepositoryException
 	 *         if no registered transaction with the given id could be found.
 	 */
 	public void deregister(UUID transactionId)
-		throws IllegalArgumentException
+		throws RepositoryException
 	{
 		synchronized (activeConnections) {
 			CacheEntry entry = activeConnections.getIfPresent(transactionId);
 			if (entry == null) {
-				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+				throw new RepositoryException("transaction with id " + transactionId.toString()
 						+ " not registered.");
 			}
 			else {
@@ -155,20 +155,20 @@ public enum ActiveTransactionRegistry {
 	 * @param transactionId
 	 *        a transaction ID
 	 * @return the RepositoryConnection belonging to this transaction.
-	 * @throws IllegalArgumentException
+	 * @throws RepositoryException
 	 *         if no transaction with the given id is registered.
 	 * @throws InterruptedException
 	 *         if the thread is interrupted while acquiring a lock on the
 	 *         transaction.
 	 */
 	public RepositoryConnection getTransactionConnection(UUID transactionId)
-		throws InterruptedException
+		throws RepositoryException, InterruptedException
 	{
 		Lock txnLock = null;
 		synchronized (activeConnections) {
 			CacheEntry entry = activeConnections.getIfPresent(transactionId);
 			if (entry == null) {
-				throw new IllegalArgumentException("transaction with id " + transactionId.toString()
+				throw new RepositoryException("transaction with id " + transactionId.toString()
 						+ " not registered.");
 			}
 
