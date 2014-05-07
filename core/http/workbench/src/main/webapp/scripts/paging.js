@@ -90,7 +90,7 @@ workbench.paging = {
 	 * Increments the offset query parameter, and navigates to the new URL.
 	 */
 	nextOffset : function _nextOffset() {
-		var offset = getOffset() + getLimit();
+		var offset = workbench.paging.getOffset() + getLimit();
 		workbench.paging.addPagingParam('offset', offset);
 	},
 
@@ -98,17 +98,17 @@ workbench.paging = {
 	 * Decrements the offset query parameter, and navigates to the new URL.
 	 */
 	previousOffset : function _previousOffset() {
-		var offset = Math.max(0, getOffset() - getLimit());
+		var offset = Math.max(0, workbench.paging.getOffset() - getLimit());
 		workbench.paging.addPagingParam('offset', offset);
-	}
-}
+	},
 
-/**
- * @returns {number} The value of the offset query parameter.
- */
-function getOffset() {
-	var offset = getParameter('offset');
-	return ('' == offset) ? 0 : parseInt(offset, 10);
+	/**
+	 * @returns {number} The value of the offset query parameter.
+	 */
+	getOffset : function _getOffset() {
+		var offset = getParameter('offset');
+		return ('' == offset) ? 0 : parseInt(offset, 10);
+	}
 }
 
 /**
@@ -172,7 +172,7 @@ function correctButtons() {
 	nextButton.val(buttonWordPattern.exec(oldNext) + limit);
 	var previousButton = $('#previousX');
 	previousButton.val(buttonWordPattern.exec(previousButton.val()) + limit);
-	var offset = getOffset();
+	var offset = workbench.paging.getOffset();
 	previousButton.prop('disabled', (offset <= 0 || limit <= 0));
 	nextButton
 			.prop(

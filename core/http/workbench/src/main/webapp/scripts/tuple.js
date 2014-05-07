@@ -18,7 +18,7 @@ function() {
     	var h1start = /^.*\(/
         var total_result_count = getTotalResultCount();			    
     	var have_total_count = (total_result_count > 0);
-		var offset = getOffset();
+		var offset = workbench.paging.getOffset();
 		var first = offset + 1;
 		var last = offset + limit;
 		last = have_total_count ? Math.min(total_result_count, last) : last;
