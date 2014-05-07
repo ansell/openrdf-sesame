@@ -45,7 +45,6 @@ workbench.addLoad(function() {
 			}
 		}
 	}
-
 	correctButtons();
 	var content = document.getElementById('content');
 	var h1 = content.getElementsByTagName('h1')[0];
@@ -53,7 +52,7 @@ workbench.addLoad(function() {
 	if (resource) {
 		h1.appendChild(document.createTextNode(' (' + resource + ')'));
 		removeDuplicates(resource);
-		var limit = getLimit();
+		var limit = workbench.paging.getLimit();
 
 		// Modify title to reflect total_result_count cookie
 		var total_result_count = getTotalResultCount();
@@ -68,7 +67,6 @@ workbench.addLoad(function() {
 		if (have_total_count) {
 			newHTML = newHTML + ' of ' + total_result_count;
 		}
-
 		h1.appendChild(document.createTextNode(newHTML + ')'));
 	}
 	hideExternalLinksAndSetHoverEvent();
