@@ -14,7 +14,7 @@ workbench.addLoad(function() {
 		var h1 = document.getElementById('title_heading');
 		var oldh1 = h1.innerHTML;
 		var h1start = /^.*\(/
-		var total_result_count = getTotalResultCount();
+		var total_result_count = workbench.paging.getTotalResultCount();
 		var have_total_count = (total_result_count > 0);
 		var offset = workbench.paging.getOffset();
 		var first = offset + 1;

@@ -30,6 +30,7 @@ workbench.paging = {
 	 *            or string} value The value of the query parameter.
 	 */
 	addPagingParam : function _addPagingParam(name, value) {
+		var wbp = workbench.paging;
 
 		/**
 		 * Scans the given URI for duplicate query parameter names, and removes
@@ -41,9 +42,9 @@ workbench.paging = {
 		 *          parameter name remaining.
 		 */
 		function simplifyParameters(href) {
-			var params = new Object();
+			var params = {};
 			var rval = '';
-			var elements = workbench.paging.getQueryString(href);
+			var elements = wbp.getQueryString(href);
 			var start = href.substring(0, href.indexOf(elements));
 			elements = elements.split(decodeURIComponent('%26'));
 			for ( var i = 0; elements.length - i; i++) {
@@ -51,7 +52,6 @@ workbench.paging = {
 				params[pair[0]] = pair[1];
 				// Keep looping. We are interested in the last value.
 			}
-
 			var amp = decodeURIComponent('%26');
 			for ( var name in params) {
 				// use hasOwnProperty to filter out keys from the
@@ -60,7 +60,6 @@ workbench.paging = {
 					rval = rval + name + '=' + params[name] + amp;
 				}
 			}
-
 			rval = start + rval.substring(0, rval.length - 1);
 			return rval;
 		}
@@ -70,11 +69,10 @@ workbench.paging = {
 		var amp = decodeURIComponent('%26');
 		var sep = hasParams ? amp : ';';
 		url = url + sep + name + '=' + value;
-		var know_total = workbench.paging.getURLqueryParameter('know_total');
+		var know_total = wbp.getURLqueryParameter('know_total');
 		if ('false' == know_total || know_total.length == 0) {
-			url = url + amp + 'know_total=' + getTotalResultCount();
+			url = url + amp + 'know_total=' + wbp.getTotalResultCount();
 		}
-
 		document.location.href = simplifyParameters(url);
 	},
 
@@ -178,32 +176,32 @@ workbench.paging = {
 				.val(buttonWordPattern.exec(previousButton.val()) + limit);
 		var offset = workbench.paging.getOffset();
 		previousButton.prop('disabled', (offset <= 0 || limit <= 0));
-		nextButton
-				.prop(
-						'disabled',
-						(count < limit || limit <= 0 || (offset + count) >= getTotalResultCount()));
-	}
-}
+		gtrc = workbench.paging.getTotalResultCount;
+		nextButton.prop('disabled',
+				(count < limit || limit <= 0 || (offset + count) >= gtrc()));
+	},
 
-/**
- * Gets the total result count, preferably from the 'know_total' query
- * parameter. If the parameter doesn't exist, get it from the
- * 'total_result_count' cookie.
- * 
- * @returns {Number} The given total result count, or zero if it isn't given.
- */
-function getTotalResultCount() {
-	var total_result_count = 0;
-	var s_trc = workbench.paging.getURLqueryParameter('know_total');
-	if (s_trc.length == 0) {
-		s_trc = workbench.getCookie('total_result_count');
-	}
+	/**
+	 * Gets the total result count, preferably from the 'know_total' query
+	 * parameter. If the parameter doesn't exist, get it from the
+	 * 'total_result_count' cookie.
+	 * 
+	 * @returns {Number} The given total result count, or zero if it isn't
+	 *          given.
+	 */
+	getTotalResultCount : function _getTotalResultCount() {
+		var total_result_count = 0;
+		var s_trc = workbench.paging.getURLqueryParameter('know_total');
+		if (s_trc.length == 0) {
+			s_trc = workbench.getCookie('total_result_count');
+		}
 
-	if (s_trc.length > 0) {
-		total_result_count = parseInt(s_trc, 10);
-	}
+		if (s_trc.length > 0) {
+			total_result_count = parseInt(s_trc, 10);
+		}
 
-	return total_result_count;
+		return total_result_count;
+	}
 }
 
 function hideExternalLinksAndSetHoverEvent() {

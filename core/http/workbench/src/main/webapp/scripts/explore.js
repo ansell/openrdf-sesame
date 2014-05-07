@@ -55,7 +55,7 @@ workbench.addLoad(function() {
 		var limit = workbench.paging.getLimit();
 
 		// Modify title to reflect total_result_count cookie
-		var total_result_count = getTotalResultCount();
+		var total_result_count = workbench.paging.getTotalResultCount();
 		var have_total_count = (total_result_count > 0);
 		var offset = limit == 0 ? 0 : workbench.paging.getOffset();
 		var first = offset + 1;
