@@ -201,19 +201,19 @@ workbench.paging = {
 		}
 
 		return total_result_count;
-	}
-}
+	},
 
-function hideExternalLinksAndSetHoverEvent() {
-	$('span.resource:has(span.resourceURL)').each(function(index) {
-		var externalLink = $(this).find('span.resourceURL');
-		externalLink.css('margin-left', '8px').css('visibility', 'hidden');
-		$(this).hover(function() {
-			externalLink.css('visibility', 'visible');
-		}, function() {
-			externalLink.css('visibility', 'hidden');
-		});
-	})
+	hideExternalLinksAndSetHoverEvent : function _hideExternalLinksAndSetHoverEvent() {
+		$('span.resource:has(span.resourceURL)').each(function(index) {
+			var externalLink = $(this).find('span.resourceURL');
+			externalLink.css('margin-left', '8px').css('visibility', 'hidden');
+			$(this).hover(function() {
+				externalLink.css('visibility', 'visible');
+			}, function() {
+				externalLink.css('visibility', 'hidden');
+			});
+		})
+	}
 }
 
 function setDataTypeVisibility(show) {

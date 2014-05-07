@@ -69,6 +69,6 @@ workbench.addLoad(function() {
 		}
 		h1.appendChild(document.createTextNode(newHTML + ')'));
 	}
-	hideExternalLinksAndSetHoverEvent();
+	workbench.paging.hideExternalLinksAndSetHoverEvent();
 	setShowDataTypesCheckboxAndSetChangeEvent();
 });
