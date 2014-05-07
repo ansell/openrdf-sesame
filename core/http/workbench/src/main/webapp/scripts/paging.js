@@ -1,81 +1,82 @@
 // Prerequisite: template.js
 // Prerequisite: jquery
 
-workbench.paging = {}
-
-/**
- * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
- * document element by name, and creates a request with it as a parameter.
- */
-workbench.paging.addGraphParam = function _addGraphParam(name) {
-	var value = document.getElementById(name).value;
-	var url = document.location.href;
-	if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
-		document.location.href = url + decodeURIComponent('%26') + name + '='
-				+ encodeURIComponent(value);
-	} else {
-		document.location.href = url + ';' + name + '='
-				+ encodeURIComponent(value);
-	}
-}
-
-/**
- * First, adds the given parameter to the URL query string. Second, adds a
- * 'know_total' parameter if its current value is 'false' or non-existent.
- * Third, simplifies the URL. Fourth, sends the browser to the modified URL.
- * 
- * @param {String}
- *            name The name of the query parameter.
- * @param {number
- *            or string} value The value of the query parameter.
- */
-function addPagingParam(name, value) {
+workbench.paging = {
 
     /**
-     * Scans the given URI for duplicate query parameter names, and removes
-     * all but the last occurrence for any duplicate case.
-     *
-     * @param {Strng}
-     *            href The URI to simplify.
-     * @returns {String} The URI with only the last occurrence of any given
-     *          parameter name remaining.
+     * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
+     * document element by name, and creates a request with it as a parameter.
      */
-    function simplifyParameters(href) {
-        var params = new Object();
-        var rval = '';
-        var elements = tailAfter(tailAfter(href, '?'), ';');
-        var start = href.substring(0, href.indexOf(elements));
-        elements = elements.split(decodeURIComponent('%26'));
-        for ( var i = 0; elements.length - i; i++) {
-            var pair = elements[i].split('=');
-            params[pair[0]] = pair[1];
-
-            // Keep looping. We are interested in the last value.
+    addGraphParam : function _addGraphParam(name) {
+	    var value = document.getElementById(name).value;
+	    var url = document.location.href;
+	    if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
+		    document.location.href = url + decodeURIComponent('%26') + name + '='
+				+ encodeURIComponent(value);
+	    } else {
+		    document.location.href = url + ';' + name + '='
+				+ encodeURIComponent(value);
 	    }
+    },
 
-        var amp = decodeURIComponent('%26');
-        for ( var name in params) {
-            // use hasOwnProperty to filter out keys from the Object.prototype
-            if (params.hasOwnProperty(name)) {
-                rval = rval + name + '=' + params[name] + amp;
+    /**
+     * First, adds the given parameter to the URL query string. Second, adds a
+     * 'know_total' parameter if its current value is 'false' or non-existent.
+     * Third, simplifies the URL. Fourth, sends the browser to the modified URL.
+     * 
+     * @param {String}
+     *            name The name of the query parameter.
+     * @param {number
+     *            or string} value The value of the query parameter.
+     */
+    addPagingParam : function _addPagingParam(name, value) {
+
+        /**
+         * Scans the given URI for duplicate query parameter names, and removes
+         * all but the last occurrence for any duplicate case.
+         *
+         * @param {String}
+         *            href The URI to simplify.
+         * @returns {String} The URI with only the last occurrence of any given
+         *          parameter name remaining.
+         */
+        function simplifyParameters(href) {
+            var params = new Object();
+            var rval = '';
+            var elements = tailAfter(tailAfter(href, '?'), ';');
+            var start = href.substring(0, href.indexOf(elements));
+            elements = elements.split(decodeURIComponent('%26'));
+            for ( var i = 0; elements.length - i; i++) {
+                var pair = elements[i].split('=');
+                params[pair[0]] = pair[1];
+                // Keep looping. We are interested in the last value.
+	        }
+
+            var amp = decodeURIComponent('%26');
+            for ( var name in params) {
+                // use hasOwnProperty to filter out keys from the
+            	// Object.prototype
+                if (params.hasOwnProperty(name)) {
+                    rval = rval + name + '=' + params[name] + amp;
+                }
             }
+
+            rval = start + rval.substring(0, rval.length - 1);
+            return rval;
         }
 
-        rval = start + rval.substring(0, rval.length - 1);
-        return rval;
+	    var url = document.location.href;
+	    var hasParams = (url.indexOf('?') + 1 || url.indexOf(';') + 1);
+	    var amp = decodeURIComponent('%26');
+	    var sep = hasParams ? amp : ';';
+	    url = url + sep + name + '=' + value;
+	    var know_total = getParameter('know_total');
+	    if ('false' == know_total || know_total.length == 0) {
+		    url = url + amp + 'know_total=' + getTotalResultCount();
+	    }
+
+	    document.location.href = simplifyParameters(url);
     }
-
-	var url = document.location.href;
-	var hasParams = (url.indexOf('?') + 1 || url.indexOf(';') + 1);
-	var amp = decodeURIComponent('%26');
-	var sep = hasParams ? amp : ';';
-	url = url + sep + name + '=' + value;
-	var know_total = getParameter('know_total');
-	if ('false' == know_total || know_total.length == 0) {
-		url = url + amp + 'know_total=' + getTotalResultCount();
-	}
-
-	document.location.href = simplifyParameters(url);
 }
 
 /**
@@ -83,7 +84,7 @@ function addPagingParam(name, value) {
  * and navigates to the new URL.
  */
 function addLimit() {
-	addPagingParam('limit', document.getElementById('limit').value);
+	workbench.paging.addPagingParam('limit', document.getElementById('limit').value);
 }
 
 /**
@@ -91,7 +92,7 @@ function addLimit() {
  */
 function nextOffset() {
 	var offset = getOffset() + getLimit();
-	addPagingParam('offset', offset);
+	workbench.paging.addPagingParam('offset', offset);
 }
 
 /**
@@ -99,7 +100,7 @@ function nextOffset() {
  */
 function previousOffset() {
 	var offset = Math.max(0, getOffset() - getLimit());
-	addPagingParam('offset', offset);
+	workbench.paging.addPagingParam('offset', offset);
 }
 
 /**
