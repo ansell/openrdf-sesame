@@ -43,7 +43,7 @@ workbench.paging = {
 		function simplifyParameters(href) {
 			var params = new Object();
 			var rval = '';
-			var elements = tailAfter(tailAfter(href, '?'), ';');
+			var elements = workbench.paging.getQueryString(href);
 			var start = href.substring(0, href.indexOf(elements));
 			elements = elements.split(decodeURIComponent('%26'));
 			for ( var i = 0; elements.length - i; i++) {
@@ -129,7 +129,7 @@ workbench.paging = {
 	getURLqueryParameter : function _getURLqueryParameter(name) {
 		var rval = '';
 		var href = document.location.href;
-		var elements = tailAfter(tailAfter(href, '?'), ';');
+		var elements = workbench.paging.getQueryString(href);
 		elements = elements.split(decodeURIComponent('%26'));
 		for ( var i = 0; elements.length - i; i++) {
 			var pair = elements[i].split('=');
@@ -140,22 +140,26 @@ workbench.paging = {
 			// Keep looping. We are interested in the last value.
 		}
 		return rval;
-	}
-}
+	},
 
-/**
- * Convenience function for returning the tail of a string after a given
- * character.
- * 
- * @param {String}
- *            value The string to get the tail of.
- * @param split
- *            character to give tail after
- * @returns The substring after the 'split' character, or the original string if
- *          'split' is not found.
- */
-function tailAfter(value, split) {
-	return value.substring(value.indexOf(split) + 1);
+	getQueryString : function _getQueryString(href) {
+		/**
+		 * Convenience function for returning the tail of a string after a given
+		 * character.
+		 * 
+		 * @param {String}
+		 *            value The string to get the tail of.
+		 * @param split
+		 *            character to give tail after
+		 * @returns The substring after the 'split' character, or the original
+		 *          string if 'split' is not found.
+		 */
+		function tailAfter(value, split) {
+			return value.substring(value.indexOf(split) + 1);
+		}
+		
+		return tailAfter(tailAfter(href, '?'), ';');
+	}
 }
 
 /**
