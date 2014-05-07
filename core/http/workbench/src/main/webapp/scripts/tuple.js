@@ -1,13 +1,13 @@
 // Prerequisite: paging.js
 
 workbench.addLoad(function() {
-	var limit = getParameter('limit');
+	var limit = workbench.paging.getURLqueryParameter('limit'); // String
 	if ('' == limit) {
 		limit = 0;
 	}
 	$('#limit').val(limit);
 	correctButtons();
-	limit = workbench.paging.getLimit();
+	limit = workbench.paging.getLimit(); // Number
 
 	// Modify title to reflect total_result_count cookie
 	if (limit > 0) {

@@ -70,7 +70,7 @@ workbench.paging = {
 		var amp = decodeURIComponent('%26');
 		var sep = hasParams ? amp : ';';
 		url = url + sep + name + '=' + value;
-		var know_total = getParameter('know_total');
+		var know_total = workbench.paging.getURLqueryParameter('know_total');
 		if ('false' == know_total || know_total.length == 0) {
 			url = url + amp + 'know_total=' + getTotalResultCount();
 		}
@@ -107,7 +107,7 @@ workbench.paging = {
 	 * @returns {number} The value of the offset query parameter.
 	 */
 	getOffset : function _getOffset() {
-		var offset = getParameter('offset');
+		var offset = workbench.paging.getURLqueryParameter('offset');
 		return ('' == offset) ? 0 : parseInt(offset, 10);
 	},
 
@@ -116,33 +116,31 @@ workbench.paging = {
 	 */
 	getLimit : function _getLimit() {
 		return parseInt($('#limit').val(), 10);
-	}
-}
+	},
 
-/**
- * Retrieves the query parameter with the given name.
- * 
- * @param {String}
- *            name The name of the parameter to retrieve.
- * @returns {String} The value of the given parameter, or an empty string if it
- *          doesn't exist.
- */
-function getParameter(name) {
-	var rval = '';
-	var href = document.location.href;
-	var elements = tailAfter(tailAfter(href, '?'), ';');
-	elements = elements.split(decodeURIComponent('%26'));
-	for ( var i = 0; elements.length - i; i++) {
-		var pair = elements[i].split('=');
-		if (name != pair[0]) {
-			continue;
+	/**
+	 * Retrieves the query parameter with the given name.
+	 * 
+	 * @param {String}
+	 *            name The name of the parameter to retrieve.
+	 * @returns {String} The value of the given parameter, or an empty string if
+	 *          it doesn't exist.
+	 */
+	getURLqueryParameter : function _getURLqueryParameter(name) {
+		var rval = '';
+		var href = document.location.href;
+		var elements = tailAfter(tailAfter(href, '?'), ';');
+		elements = elements.split(decodeURIComponent('%26'));
+		for ( var i = 0; elements.length - i; i++) {
+			var pair = elements[i].split('=');
+			if (name != pair[0]) {
+				continue;
+			}
+			rval = pair[1];
+			// Keep looping. We are interested in the last value.
 		}
-
-		rval = pair[1];
-		// Keep looping. We are interested in the last value.
+		return rval;
 	}
-
-	return rval;
 }
 
 /**
@@ -190,7 +188,7 @@ function correctButtons() {
  */
 function getTotalResultCount() {
 	var total_result_count = 0;
-	var s_trc = getParameter('know_total');
+	var s_trc = workbench.paging.getURLqueryParameter('know_total');
 	if (s_trc.length == 0) {
 		s_trc = workbench.getCookie('total_result_count');
 	}
