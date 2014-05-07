@@ -157,30 +157,32 @@ workbench.paging = {
 		function tailAfter(value, split) {
 			return value.substring(value.indexOf(split) + 1);
 		}
-		
-		return tailAfter(tailAfter(href, '?'), ';');
-	}
-}
 
-/**
- * Using the value of the 'limit' query parameter, correct the text of the Next
- * and Previous buttons. Makes use of RegExp to preserve any localization.
- */
-function correctButtons() {
-	var buttonWordPattern = /^[A-z]+\s+/
-	var nextButton = $('#nextX');
-	var oldNext = nextButton.val();
-	var count = parseInt(/\d+$/.exec(oldNext), 10);
-	var limit = workbench.paging.getLimit();
-	nextButton.val(buttonWordPattern.exec(oldNext) + limit);
-	var previousButton = $('#previousX');
-	previousButton.val(buttonWordPattern.exec(previousButton.val()) + limit);
-	var offset = workbench.paging.getOffset();
-	previousButton.prop('disabled', (offset <= 0 || limit <= 0));
-	nextButton
-			.prop(
-					'disabled',
-					(count < limit || limit <= 0 || (offset + count) >= getTotalResultCount()));
+		return tailAfter(tailAfter(href, '?'), ';');
+	},
+
+	/**
+	 * Using the value of the 'limit' query parameter, correct the text of the
+	 * Next and Previous buttons. Makes use of RegExp to preserve any
+	 * localization.
+	 */
+	correctButtons : function _correctButtons() {
+		var buttonWordPattern = /^[A-z]+\s+/
+		var nextButton = $('#nextX');
+		var oldNext = nextButton.val();
+		var count = parseInt(/\d+$/.exec(oldNext), 10);
+		var limit = workbench.paging.getLimit();
+		nextButton.val(buttonWordPattern.exec(oldNext) + limit);
+		var previousButton = $('#previousX');
+		previousButton
+				.val(buttonWordPattern.exec(previousButton.val()) + limit);
+		var offset = workbench.paging.getOffset();
+		previousButton.prop('disabled', (offset <= 0 || limit <= 0));
+		nextButton
+				.prop(
+						'disabled',
+						(count < limit || limit <= 0 || (offset + count) >= getTotalResultCount()));
+	}
 }
 
 /**

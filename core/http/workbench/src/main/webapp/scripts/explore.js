@@ -45,7 +45,7 @@ workbench.addLoad(function() {
 			}
 		}
 	}
-	correctButtons();
+	workbench.paging.correctButtons();
 	var content = document.getElementById('content');
 	var h1 = content.getElementsByTagName('h1')[0];
 	var resource = document.getElementById('resource').value;

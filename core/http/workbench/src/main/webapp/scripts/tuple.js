@@ -6,7 +6,7 @@ workbench.addLoad(function() {
 		limit = 0;
 	}
 	$('#limit').val(limit);
-	correctButtons();
+	workbench.paging.correctButtons();
 	limit = workbench.paging.getLimit(); // Number
 
 	// Modify title to reflect total_result_count cookie
