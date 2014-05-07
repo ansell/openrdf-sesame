@@ -213,34 +213,36 @@ workbench.paging = {
 				externalLink.css('visibility', 'hidden');
 			});
 		})
-	}
-}
+	},
 
-function setDataTypeVisibility(show) {
-	function setCookie(c_name, value, exdays) {
-		var exdate = new Date();
-		exdate.setDate(exdate.getDate() + exdays);
-		var c_value = escape(value)
-				+ ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
-		document.cookie = c_name + "=" + c_value;
-	}
+	setShowDataTypesCheckboxAndSetChangeEvent : function _setShowDataTypesCheckboxAndSetChangeEvent() {
+		function setDataTypeVisibility(show) {
+			function setCookie(c_name, value, exdays) {
+				var exdate = new Date();
+				exdate.setDate(exdate.getDate() + exdays);
+				var c_value = escape(value)
+						+ ((exdays == null) ? "" : "; expires="
+								+ exdate.toUTCString());
+				document.cookie = c_name + "=" + c_value;
+			}
 
-	setCookie('show-datatypes', show, 365);
-	var data = show ? 'data-longform' : 'data-shortform';
-	$('span.resource[' + data + ']').each(function(index) {
-		var newform = decodeURIComponent($(this).attr(data));
-		$(this).find('a:first').text(newform);
-	});
-}
+			setCookie('show-datatypes', show, 365);
+			var data = show ? 'data-longform' : 'data-shortform';
+			var selector = $('span.resource[' + data + ']');
+			selector.each(function(index) {
+				var newform = decodeURIComponent($(this).attr(data));
+				$(this).find('a:first').text(newform);
+			});
+		}
 
-function setShowDataTypesCheckboxAndSetChangeEvent() {
-	var hideDataTypes = (workbench.getCookie('show-datatypes') == 'false');
-	var showDTcb = $("input[name='show-datatypes']");
-	if (hideDataTypes) {
-		showDTcb.prop('checked', false);
-		setDataTypeVisibility(false);
+		var hideDataTypes = (workbench.getCookie('show-datatypes') == 'false');
+		var showDTcb = $("input[name='show-datatypes']");
+		if (hideDataTypes) {
+			showDTcb.prop('checked', false);
+			setDataTypeVisibility(false);
+		}
+		showDTcb.on('change', function() {
+			setDataTypeVisibility(showDTcb.prop('checked'));
+		});
 	}
-	showDTcb.on('change', function() {
-		setDataTypeVisibility(showDTcb.prop('checked'));
-	});
 }

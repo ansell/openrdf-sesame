@@ -70,5 +70,5 @@ workbench.addLoad(function() {
 		h1.appendChild(document.createTextNode(newHTML + ')'));
 	}
 	workbench.paging.hideExternalLinksAndSetHoverEvent();
-	setShowDataTypesCheckboxAndSetChangeEvent();
+	workbench.paging.setShowDataTypesCheckboxAndSetChangeEvent();
 });

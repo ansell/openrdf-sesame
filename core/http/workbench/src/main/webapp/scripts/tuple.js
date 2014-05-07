@@ -28,5 +28,5 @@ workbench.addLoad(function() {
 		h1.innerHTML = newHTML;
 	}
 	workbench.paging.hideExternalLinksAndSetHoverEvent();
-	setShowDataTypesCheckboxAndSetChangeEvent();
+	workbench.paging.setShowDataTypesCheckboxAndSetChangeEvent();
 });
