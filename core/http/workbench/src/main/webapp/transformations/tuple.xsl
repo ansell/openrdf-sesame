@@ -89,7 +89,7 @@
 						</td>
 						<td>
 							<input id="nextX" type="button" value="{$nextX.label}"
-								onclick="nextOffset();" />
+								onclick="workbench.paging.nextOffset();" />
 						</td>
 					</tr>
 					<tr>
