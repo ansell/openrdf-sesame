@@ -123,7 +123,7 @@
 				        </th>
 						<td>
 							<input id="previousX" type="button"
-								value="{$previousX.label}" onclick="previousOffset();" />
+								value="{$previousX.label}" onclick="workbench.paging.previousOffset();" />
 						</td>
 						<td>
 							<input id="nextX" type="button"

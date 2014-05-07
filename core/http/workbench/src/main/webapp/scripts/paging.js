@@ -92,15 +92,15 @@ workbench.paging = {
 	nextOffset : function _nextOffset() {
 		var offset = getOffset() + getLimit();
 		workbench.paging.addPagingParam('offset', offset);
-	}
-}
+	},
 
-/**
- * Decrements the offset query parameter, and navigates to the new URL.
- */
-function previousOffset() {
-	var offset = Math.max(0, getOffset() - getLimit());
-	workbench.paging.addPagingParam('offset', offset);
+	/**
+	 * Decrements the offset query parameter, and navigates to the new URL.
+	 */
+	previousOffset : function _previousOffset() {
+		var offset = Math.max(0, getOffset() - getLimit());
+		workbench.paging.addPagingParam('offset', offset);
+	}
 }
 
 /**

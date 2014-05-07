@@ -85,7 +85,7 @@
 						</th>
 						<td>
 							<input id="previousX" type="button" value="{$previousX.label}"
-								onclick="previousOffset();" />
+								onclick="workbench.paging.previousOffset();" />
 						</td>
 						<td>
 							<input id="nextX" type="button" value="{$nextX.label}"
