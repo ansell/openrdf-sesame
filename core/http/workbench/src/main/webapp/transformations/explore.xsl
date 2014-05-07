@@ -112,7 +112,7 @@
 						</th>
 						<td>
 							<xsl:call-template name="limit-select">
-								<xsl:with-param name="onchange">addLimit();</xsl:with-param>
+								<xsl:with-param name="onchange">workbench.paging.addLimit();</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td></td>

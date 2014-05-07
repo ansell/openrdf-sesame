@@ -76,15 +76,16 @@ workbench.paging = {
 	    }
 
 	    document.location.href = simplifyParameters(url);
+    },
+    
+    /**
+     * Invoked in tuple.xsl and explore.xsl. Changes the limit query parameter,
+     * and navigates to the new URL.
+     */
+    addLimit : function _addLimit() {
+    	workbench.paging.addPagingParam('limit', 
+    			document.getElementById('limit').value);
     }
-}
-
-/**
- * Invoked in tuple.xsl and explore.xsl. Changes the limit query parameter,
- * and navigates to the new URL.
- */
-function addLimit() {
-	workbench.paging.addPagingParam('limit', document.getElementById('limit').value);
 }
 
 /**
