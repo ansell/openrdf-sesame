@@ -377,7 +377,9 @@ public class ParsedURI implements java.lang.Cloneable {
 
 		if (_scheme != null) {
 			sb.append(_scheme);
-			sb.append(':');
+			if (!isJarScheme(_scheme)) {
+				sb.append(':');
+			}
 		}
 
 		if (isOpaque()) {
@@ -423,7 +425,32 @@ public class ParsedURI implements java.lang.Cloneable {
 	 * Methods for parsing URIs *
 	 *--------------------------*/
 
+	private static final boolean isJarScheme(String s) {
+		return (s.length() > 4 && s.substring(0, 4).equalsIgnoreCase("jar:"));
+	}
+
 	private void _parse(String uri) {
+		if (isJarScheme(uri)) {
+			// uriString is e.g.
+			// jar:http://www.foo.com/bar/baz.jar!/COM/foo/Quux.class
+			// Treat the part up to and including the exclamation mark as the
+			// scheme and
+			// the rest as the path to enable 'correct' resolving of relative URIs
+			int idx = uri.indexOf('!');
+			if (idx != -1) {
+				String scheme = uri.substring(0, idx + 1);
+				String path = uri.substring(idx + 1);
+
+				_scheme = scheme;
+				_authority = null;
+				_path = path;
+				_query = null;
+				_fragment = null;
+
+				return;
+			}
+		}
+
 		if (_parseScheme(uri)) {
 			// A scheme was found; _scheme and _schemeSpecificPart are now set
 			if (_schemeSpecificPart.startsWith("/")) {

@@ -18,16 +18,28 @@ package org.openrdf.rio.turtle;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Iterator;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.vocabulary.DC;
+import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 
@@ -163,4 +175,50 @@ public class TestTurtleParser {
 		}
 	}
 
+	@Test
+	public void rdfXmlLoadedFromInsideAJarResolvesRelativeUris() throws Exception {
+		URL zipfileUrl = TestTurtleParser.class.getResource("sample-with-turtle-data.zip");
+
+		assertNotNull("The sample-with-turtle-data.zip file must be present for this test", zipfileUrl);
+
+		String url = "jar:" + zipfileUrl + "!/index.ttl";
+
+		RDFParser parser = new TurtleParser();
+
+		StatementCollector sc = new StatementCollector();
+		parser.setRDFHandler(sc);
+
+		InputStream in = new URL(url).openStream();
+		parser.parse(in, url);
+		in.close();
+
+		Collection<Statement> stmts = sc.getStatements();
+
+		assertThat(stmts, Matchers.<Statement>iterableWithSize(2));
+
+		Iterator<Statement> iter = stmts.iterator();
+
+		Statement stmt1 = iter.next(),
+				stmt2 = iter.next();
+
+		assertEquals(new URIImpl("http://www.example.com/#"), stmt1.getSubject());
+		assertEquals(new URIImpl("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
+
+		Resource res = (Resource) stmt1.getObject();
+
+		String resourceUrl = res.stringValue();
+
+		assertThat(resourceUrl, CoreMatchers.startsWith("jar:" + zipfileUrl + "!"));
+
+		URL javaUrl = new URL(resourceUrl);
+		assertEquals("jar", javaUrl.getProtocol());
+
+		InputStream uc = javaUrl.openStream();
+		assertEquals("The resource stream should be empty", -1, uc.read());
+		uc.close();
+
+		assertEquals(res, stmt2.getSubject());
+		assertEquals(DC.TITLE, stmt2.getPredicate());
+		assertEquals(new LiteralImpl("Empty File"), stmt2.getObject());
+	}
 }
