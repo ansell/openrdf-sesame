@@ -25,7 +25,7 @@
 							<xsl:value-of select="$query-language.label" />
 						</th>
 						<td>
-							<select id="queryLn" name="queryLn" onchange="loadNamespaces()">
+							<select id="queryLn" name="queryLn" onchange="workbench.query.loadNamespaces()">
 								<xsl:for-each select="$info//sparql:binding[@name='query-format']">
 									<option value="{substring-before(sparql:literal, ' ')}">
 										<xsl:choose>

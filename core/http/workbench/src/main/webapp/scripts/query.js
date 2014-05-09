@@ -1,34 +1,35 @@
 // Prerequisite: template.js
 
-/**
- * Global variable for holding the current query language.
- */
-var currentQueryLn;
+workbench.query = {
 
-/**
- * Populate reasonable default name space declarations into the query text area.
- * The server has provided the declaration text in hidden elements.
- */
-function loadNamespaces() {
-	var query = $('#query');
-	var queryLn = $('#queryLn').val();
-	var namespaces = $('#' + queryLn + '-namespaces');
-	var last = $('#' + currentQueryLn + '-namespaces');
-	
-	function toggleNamespaces() {
-	    query.val(namespaces.text());
-	    currentQueryLn = queryLn;
+    /**
+     * Holds the current selected query language.
+     */
+    currentQueryLn : '',
+
+    /**
+     * Populate reasonable default name space declarations into the query text area.
+     * The server has provided the declaration text in hidden elements.
+     */
+    loadNamespaces : function _loadNamespaces() {
+	    function toggleNamespaces() {
+	        query.val(namespaces.text());
+	        workbench.query.currentQueryLn = queryLn;
+        }
+
+	    var query = $('#query');
+	    var queryLn = $('#queryLn').val();
+	    var namespaces = $('#' + queryLn + '-namespaces');
+	    var last = $('#' + workbench.query.currentQueryLn + '-namespaces');
+	    if (namespaces.length) {
+		    if (!query.val()) {
+		        toggleNamespaces();
+		    }
+            if (last.length && (query.val() == last.text())) {
+                toggleNamespaces();
+		    }
+	    }
     }
-	
-	if (namespaces.length) {
-		if (!query.val()) {;
-		    toggleNamespaces();
-		}
-
-		if (last.length && (query.val() == last.text())) {
-            toggleNamespaces();
-		}
-	}
 }
 
 /**
@@ -39,7 +40,7 @@ function resetNamespaces() {
 	if (confirm('Click OK to clear the current query text and replace it with the '
 			+ $('#queryLn').val() + ' namespace declarations.')) {
 		$('#query').val('');
-		loadNamespaces();
+		workbench.query.loadNamespaces();
 	}
 }
 
@@ -120,7 +121,7 @@ workbench.addLoad( function queryPageLoaded() {
 		}
 	}
 
-    loadNamespaces();
+    workbench.query.loadNamespaces();
     
     // Trim the query text area contents of any leading and/or trailing 
     // whitespace.
