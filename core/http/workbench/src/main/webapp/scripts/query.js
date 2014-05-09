@@ -42,29 +42,29 @@ workbench.query = {
 		    $('#query').val('');
 		    workbench.query.loadNamespaces();
 	    }
-    }    
-}
+    },
+    
+    /**
+     * Clear any contents of the save feedback field.
+     */
+    clearFeedback : function _clearFeedback() {
+	    $('#save-feedback').removeClass().text('');
+    },
 
-/**
- * Clear any contents of the save feedback field.
- */
-function clearFeedback() {
-	$('#save-feedback').removeClass().text('');
-}
-
-/**
- * Clear the save feedback field, and look at the contents of the query name
- * field. Disables the save button if the field doesn't satisfy a given regular
- * expression. With a delay of 200 msec, to give enough time after
- * the event for the document to have changed. (Workaround for annoying browser
- * behavior.)
- */
-function handleNameChange() {
-	setTimeout( function disableSaveIfNotValidName() {
-	    $('#save').prop('disabled', 
-	        !/^[- \w]{1,32}$/.test($('#query-name').val()));
-	    clearFeedback();
-    }, 200);
+    /**
+     * Clear the save feedback field, and look at the contents of the query name
+     * field. Disables the save button if the field doesn't satisfy a given regular
+     * expression. With a delay of 200 msec, to give enough time after
+     * the event for the document to have changed. (Workaround for annoying browser
+     * behavior.)
+     */
+    handleNameChange : function _handleNameChange() {
+	    setTimeout( function disableSaveIfNotValidName() {
+	        $('#save').prop('disabled', 
+	            !/^[- \w]{1,32}$/.test($('#query-name').val()));
+	        workbench.query.clearFeedback();
+        }, 0);
+    }     
 }
 
 workbench.addLoad( function queryPageLoaded() {
@@ -139,10 +139,10 @@ workbench.addLoad( function queryPageLoaded() {
 	addHandler('save');
 
     // Add event handlers to the save name field to react to changes in it.
-	$('#query-name').bind('keydown cut paste', handleNameChange);
+	$('#query-name').bind('keydown cut paste', workbench.query.handleNameChange);
 
     // Add event handlers to the query text area to react to changes in it.
-    query.bind('keydown cut paste', clearFeedback);
+    query.bind('keydown cut paste', workbench.query.clearFeedback);
 
     // Detect if there is no current authenticated user, and if so, disable
     // the 'save privately' option.
