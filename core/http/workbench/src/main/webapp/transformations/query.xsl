@@ -16,7 +16,7 @@
 			select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
 		<xsl:variable name="query"
 			select="sparql:results/sparql:result/sparql:binding[@name='query']" />
-		<form action="query" method="POST" onsubmit="return doSubmit()">
+		<form action="query" method="POST" onsubmit="return workbench.query.doSubmit()">
 			<input type="hidden" name="action" id="action" />
 			<table class="dataentry">
 				<tbody>

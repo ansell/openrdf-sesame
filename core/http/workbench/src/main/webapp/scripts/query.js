@@ -64,7 +64,106 @@ workbench.query = {
 	            !/^[- \w]{1,32}$/.test($('#query-name').val()));
 	        workbench.query.clearFeedback();
         }, 0);
-    }     
+    },
+    
+    doSubmit : function _doSubmit() {
+
+        /**
+         * Send a background HTTP request to save the query, and handle the
+         * response asynchronously.
+         * 
+         * @param overwrite
+         *            if true, add a URL parameter that tells the server we wish
+         *            to overwrite any already saved query
+         */
+        function ajaxSave(overwrite) {
+	        var feedback = $('#save-feedback');
+	        var url = [];
+	        url[url.length] = 'query';
+	        if (overwrite) {
+		        url[url.length] = document.all ? ';' : '?';
+		        url[url.length] = 'overwrite=true&'
+	        }
+	        var href = url.join('');
+	        var form = $('form[action="query"]');
+	        $.ajax({
+		        url : href,
+		        type : 'POST',
+		        dataType : 'json',
+		        data : form.serialize(),
+		        timeout : 5000,
+		        error : function(jqXHR, textStatus, errorThrown) {
+		            feedback.removeClass().addClass('error');
+		            if (textStatus == 'timeout') {
+			            feedback.text('Timed out waiting for response. Uncertain if save occured.');
+		            } else {
+			            feedback.text('Save Request Failed: Error Type = ' + 
+			            textStatus + ', HTTP Status Text = "' + errorThrown + '"');
+		            }
+	            },
+		        success : function(response) {
+		            if (response.accessible) {
+			            if (response.written) {
+				            feedback.removeClass().addClass('success');
+				            feedback.text('Query saved.');
+			            } else {
+				            if (response.existed) {
+					            if (confirm('Query name exists. Click OK to overwrite.')) {
+						            ajaxSave(true);
+					            } else {
+						            feedback.removeClass().addClass('error');
+						            feedback.text('Cancelled overwriting existing query.');
+					            }
+				            }
+			            }
+		            } else {
+			            feedback.removeClass().addClass('error');
+			            feedback.text('Repository was not accessible (check your permissions).');
+		            }
+	            }
+	        });
+        }
+
+	    var allowPageToSubmitForm = false;
+	    var save = ($('#action').val() == 'save');
+	    if (save) {
+		    ajaxSave(false);
+	    } else {
+		    var url = [];
+		    url[url.length] = 'query';
+		    if (document.all) {
+			     url[url.length] = ';';
+    		} else {
+			    url[url.length] = '?';
+		    }
+		    workbench.addParam(url, 'action');
+		    workbench.addParam(url, 'queryLn');
+		    workbench.addParam(url, 'query');
+		    workbench.addParam(url, 'limit');
+		    workbench.addParam(url, 'infer');
+		    var href = url.join('');
+		    var loc = document.location;
+		    var currentBaseLength = loc.href.length - loc.pathname.length
+				- loc.search.length;
+		    var pathLength = href.length;
+		    var urlLength = pathLength + currentBaseLength;
+
+		    // Published Internet Explorer restrictions on URL length, which are the
+		    // most restrictive of the major browsers.
+		    if (pathLength > 2048 || urlLength > 2083) {
+			    alert("Due to its length, your query will be posted in the request body. "
+					+ "It won't be possible to use a bookmark for the results page.");
+			    allowPageToSubmitForm = true;
+		    } else {
+			    // GET using the constructed URL, method exits here
+			    document.location.href = href;
+		    }
+	    }
+
+	    // Value returned to form submit event. If not true, prevents normal form
+	    // submission.
+	    return allowPageToSubmitForm;
+    }  
 }
 
 workbench.addLoad( function queryPageLoaded() {
@@ -121,7 +220,6 @@ workbench.addLoad( function queryPageLoaded() {
 			$('#query').val(query);
 		}
 	}
-
     workbench.query.loadNamespaces();
     
     // Trim the query text area contents of any leading and/or trailing 
@@ -134,7 +232,6 @@ workbench.addLoad( function queryPageLoaded() {
     addHandler = function(id) {
 	    $('#' + id).click( function setAction() { $('#action').val(id); });
     }
-    
 	addHandler('exec');
 	addHandler('save');
 
@@ -150,104 +247,3 @@ workbench.addLoad( function queryPageLoaded() {
 		$('#save-private').prop('checked', false).prop('disabled', true);
 	}
 });
-
-function doSubmit() {
-
-    /**
-     * Send a background HTTP request to save the query, and handle the
-     * response asynchronously.
-     * 
-     * @param overwrite
-     *            if true, add a URL parameter that tells the server we wish
-     *            to overwrite any already saved query
-     */
-    function ajaxSave(overwrite) {
-	    var feedback = $('#save-feedback');
-	    var url = [];
-	    url[url.length] = 'query';
-	    if (overwrite) {
-		    url[url.length] = document.all ? ';' : '?';
-		    url[url.length] = 'overwrite=true&'
-	    }
-	    var href = url.join('');
-	    var form = $('form[action="query"]');
-	    $.ajax({
-		    url : href,
-		    type : 'POST',
-		    dataType : 'json',
-		    data : form.serialize(),
-		    timeout : 5000,
-		    error : function(jqXHR, textStatus, errorThrown) {
-		        feedback.removeClass().addClass('error');
-		        if (textStatus == 'timeout') {
-			        feedback
-					    .text('Timed out waiting for response. Uncertain if save occured.');
-		        } else {
-			        feedback.text('Save Request Failed: Error Type = ' + textStatus
-					    + ', HTTP Status Text = "' + errorThrown + '"');
-		        }
-	        },
-		    success : function(response) {
-		        if (response.accessible) {
-			        if (response.written) {
-				        feedback.removeClass().addClass('success');
-				        feedback.text('Query saved.');
-			        } else {
-				        if (response.existed) {
-					        if (confirm('Query name exists. Click OK to overwrite.')) {
-						        ajaxSave(true);
-					        } else {
-						        feedback.removeClass().addClass('error');
-						        feedback.text('Cancelled overwriting existing query.');
-					        }
-				        }
-			        }
-		        } else {
-			        feedback.removeClass().addClass('error');
-			        feedback
-					    .text('Repository was not accessible (check your permissions).');
-		        }
-	        }
-	    });
-    }
-
-	var allowPageToSubmitForm = false;
-	var save = ($('#action').val() == 'save');
-	if (save) {
-		ajaxSave(false);
-	} else {
-		var url = [];
-		url[url.length] = 'query';
-		if (document.all) {
-			url[url.length] = ';';
-		} else {
-			url[url.length] = '?';
-		}
-		workbench.addParam(url, 'action');
-		workbench.addParam(url, 'queryLn');
-		workbench.addParam(url, 'query');
-		workbench.addParam(url, 'limit');
-		workbench.addParam(url, 'infer');
-		var href = url.join('');
-		var loc = document.location;
-		var currentBaseLength = loc.href.length - loc.pathname.length
-				- loc.search.length;
-		var pathLength = href.length;
-		var urlLength = pathLength + currentBaseLength;
-
-		// Published Internet Explorer restrictions on URL length, which are the
-		// most restrictive of the major browsers.
-		if (pathLength > 2048 || urlLength > 2083) {
-			alert("Due to its length, your query will be posted in the request body. "
-					+ "It won't be possible to use a bookmark for the results page.");
-			allowPageToSubmitForm = true;
-		} else {
-			// GET using the constructed URL, method exits here
-			document.location.href = href;
-		}
-	}
-
-	// Value returned to form submit event. If not true, prevents normal form
-	// submission.
-	return allowPageToSubmitForm;
-}
