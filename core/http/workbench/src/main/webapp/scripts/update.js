@@ -1,43 +1,30 @@
 // Prerequisite: template.js
 
-var currentqueryLn = 'SPARQL';
-
-function loadNamespaces() {
-	var update = document.getElementById('update');
-	var queryLn = 'SPARQL';
-	var namespaces = document.getElementById(queryLn + '-namespaces');
-	var last = document.getElementById(currentqueryLn + '-namespaces');
-	if (namespaces) {
-		if (!update.value) {
-			update.value = namespaces.innerText || namespaces.textContent;
-			currentqueryLn = queryLn;
-		}
-		if (last) {
-			var text = last.innerText || last.textContent;
-			if (update.value == text) {
-				update.value = namespaces.innerText || namespaces.textContent;
-				currentqueryLn = queryLn;
-			}
-		}
-	}
-}
-
-workbench.addLoad(function() {
+workbench.addLoad(function updatePageLoaded() {
 	// Populate parameters
 	var elements = workbench.getQueryStringElements();
+	var update = $('#update');
 	for ( var i = 0; elements.length - i; i++) {
 		var pair = elements[i].split('=');
 		var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
-		var q = document.getElementById('update');
-		if (pair[0] == 'update')
-			if (!q.value) {
-				q.value = value;
+		if (pair[0] == 'update') {
+			if (!update.text()) {
+				update.text(value);
 			}
+		}
 	}
-	loadNamespaces();
+
+	// Load URI namespace->prefix mappings into text area (could do this at
+	// XSLT-processing time, but that would break the logic of the above code,
+	// which looks to see if the text area is empty before populating it with
+	// the contents of the update parameter.
+	var namespaces = $('#SPARQL-namespaces');
+	if (!update.text()) {
+		update.text(namespaces.text());
+	}
 });
 
-/* MSIE6 does not like xslt w/ this updatestring, so we use url parameters. */
+/* MSIE6 does not like XSLT w/ this update string, so we use URL parameters. */
 function doSubmit() {
 	if (document.getElementById('update').value.length >= 1000) {
 		// some functionality will not work as expected on result pages

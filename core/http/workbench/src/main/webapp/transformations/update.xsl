@@ -17,19 +17,6 @@
 				<tbody>
 					<tr>
 						<th>
-							<xsl:value-of select="$query-language.label" />
-						</th>
-						<td>
-							<select id="queryLn" name="queryLn" onchange="loadNamespaces()">
-								<option value="SPARQL" selected="true">
-									SPARQL
-								</option>
-							</select>
-						</td>
-						<td></td>
-					</tr>
-					<tr>
-						<th>
 							<xsl:value-of select="$update-string.label" />
 						</th>
 						<td>
