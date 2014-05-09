@@ -96,7 +96,7 @@
 							<xsl:value-of select="$query-actions.label" />
 						</th>
 						<td>
-							<input type="button" onclick="resetNamespaces()" value="Clear" />
+							<input type="button" onclick="workbench.query.resetNamespaces()" value="Clear" />
 							<input id="exec" type="submit" value="{$execute.label}" />
 							<input id="save" type="submit" value="{$save.label}"
 								disabled="true" />

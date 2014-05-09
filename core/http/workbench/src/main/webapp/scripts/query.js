@@ -29,19 +29,20 @@ workbench.query = {
                 toggleNamespaces();
 		    }
 	    }
-    }
-}
-
-/**
- * After confirming with the user, clears the query text and loads the current
- * repository and query language name space declarations.
- */
-function resetNamespaces() {
-	if (confirm('Click OK to clear the current query text and replace it with the '
-			+ $('#queryLn').val() + ' namespace declarations.')) {
-		$('#query').val('');
-		workbench.query.loadNamespaces();
-	}
+    },
+    
+    /**
+     * After confirming with the user, clears the query text and loads the current
+     * repository and query language name space declarations.
+     */
+    resetNamespaces : function _resetNamespaces() {
+	    if (confirm('Click OK to clear the current query text and replace' +
+	        'it with the ' + $('#queryLn').val() + 
+	        ' namespace declarations.')) {
+		    $('#query').val('');
+		    workbench.query.loadNamespaces();
+	    }
+    }    
 }
 
 /**
