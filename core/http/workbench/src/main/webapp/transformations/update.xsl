@@ -12,7 +12,7 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<form action="update" method="POST" onsubmit="return doSubmit()">
+		<form action="update" method="POST" onsubmit="return workbench.update.doSubmit()">
 			<table class="dataentry">
 				<tbody>
 					<tr>

@@ -1,5 +1,30 @@
 // Prerequisite: template.js
 
+workbench.update = {
+	doSubmit : function _doSubmit() {
+		if ($('#update').text().length >= 1000) {
+			// Too long to put in URL for a GET request. Instead, POST.
+			// Browser back-button may not work as expected.
+			return true;
+		} else { // safe to use in request-URI
+			var url = [];
+			url[url.length] = 'update';
+			if (document.all) {
+				url[url.length] = ';';
+			} else {
+				url[url.length] = '?';
+			}
+			workbench.addParam(url, 'queryLn');
+			workbench.addParam(url, 'update');
+			workbench.addParam(url, 'limit');
+			workbench.addParam(url, 'infer');
+			url[url.length - 1] = '';
+			document.location.href = url.join('');
+			return false;
+		}
+	}
+}
+
 workbench.addLoad(function updatePageLoaded() {
 	// Populate parameters
 	var elements = workbench.getQueryStringElements();
@@ -23,26 +48,3 @@ workbench.addLoad(function updatePageLoaded() {
 		update.text(namespaces.text());
 	}
 });
-
-/* MSIE6 does not like XSLT w/ this update string, so we use URL parameters. */
-function doSubmit() {
-	if (document.getElementById('update').value.length >= 1000) {
-		// some functionality will not work as expected on result pages
-		return true;
-	} else { // safe to use in request-URI
-		var url = [];
-		url[url.length] = 'update';
-		if (document.all) {
-			url[url.length] = ';';
-		} else {
-			url[url.length] = '?';
-		}
-		workbench.addParam(url, 'queryLn');
-		workbench.addParam(url, 'update');
-		workbench.addParam(url, 'limit');
-		workbench.addParam(url, 'infer');
-		url[url.length - 1] = '';
-		document.location.href = url.join('');
-		return false;
-	}
-}
