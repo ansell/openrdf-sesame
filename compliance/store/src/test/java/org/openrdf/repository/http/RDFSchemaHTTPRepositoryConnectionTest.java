@@ -61,7 +61,6 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
-	@Override
 	public void testReadOfAddedStatement1()
 		throws Exception
 	{
@@ -70,7 +69,6 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
-	@Override
 	public void testReadOfAddedStatement2()
 		throws Exception
 	{
