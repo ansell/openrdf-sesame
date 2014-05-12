@@ -24,6 +24,8 @@ pom.xml.versionsBackup
 # IntelliJ files
 .idea/
 *.iml
+*.ipr
+*.iws
 
 # Mac nonsense
 .DS_Store
