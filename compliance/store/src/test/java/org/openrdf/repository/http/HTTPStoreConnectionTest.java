@@ -66,51 +66,6 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
-	public void testTransactionIsolationForRead()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testTransactionIsolation()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testTransactionIsolation() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testAutoCommit()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testAutoCommit() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testRollback()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testRollback() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testEmptyCommit()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testEmptyCommit() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
 	public void testEmptyRollback()
 		throws Exception
 	{

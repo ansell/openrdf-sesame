@@ -219,15 +219,19 @@ public class SesameSession extends SparqlSession {
 	{
 		checkRepositoryURL();
 
-		String[] encodedContexts = Protocol.encodeContexts(contexts);
-
 		try {
-			URIBuilder url = new URIBuilder(Protocol.getSizeLocation(getQueryURL()));
+			final boolean useTransaction = transactionURL != null;
+
+			String baseLocation = useTransaction ? appendAction(transactionURL, Action.SIZE)
+					: Protocol.getSizeLocation(getQueryURL());
+			URIBuilder url = new URIBuilder(baseLocation);
+
+			String[] encodedContexts = Protocol.encodeContexts(contexts);
 			for (int i = 0; i < encodedContexts.length; i++) {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
 			}
 
-			HttpUriRequest method = new HttpGet(url.build());
+			final HttpUriRequest method = useTransaction ? new HttpPost(url.build()) : new HttpGet(url.build());
 
 			String response = EntityUtils.toString(executeOK(method).getEntity());
 			try {
@@ -451,7 +455,7 @@ public class SesameSession extends SparqlSession {
 				url.setParameter(Protocol.ACTION_PARAM_NAME, Action.GET.toString());
 			}
 
-			HttpUriRequest method = useTransaction ? new HttpPut(url.build()) : new HttpGet(url.build());
+			HttpUriRequest method = useTransaction ? new HttpPost(url.build()) : new HttpGet(url.build());
 
 			try {
 				getRDF(method, handler, true);
@@ -507,11 +511,11 @@ public class SesameSession extends SparqlSession {
 			throw new IllegalStateException("Transaction URL has not been set");
 		}
 
-		HttpPut method = null;
+		HttpPost method = null;
 		try {
 			URIBuilder url = new URIBuilder(transactionURL);
 			url.addParameter(Protocol.ACTION_PARAM_NAME, Action.COMMIT.toString());
-			method = new HttpPut(url.build());
+			method = new HttpPost(url.build());
 		}
 		catch (URISyntaxException e) {
 			logger.error("could not create URL for transaction commit", e);
@@ -545,7 +549,7 @@ public class SesameSession extends SparqlSession {
 		}
 
 		String requestURL = appendAction(transactionURL, Action.ROLLBACK);
-		HttpPut method = new HttpPut(requestURL);
+		HttpPost method = new HttpPost(requestURL);
 
 		final HttpResponse response = execute(method);
 		try {
@@ -683,13 +687,7 @@ public class SesameSession extends SparqlSession {
 	{
 		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.QUERY) : getQueryURL();
 
-		HttpEntityEnclosingRequest method = null;
-		if (transactionURL == null) {
-			method = new HttpPost(requestURL);
-		}
-		else {
-			method = new HttpPut(requestURL);
-		}
+		final HttpPost method = new HttpPost(requestURL);
 
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
@@ -709,12 +707,7 @@ public class SesameSession extends SparqlSession {
 				: getUpdateURL();
 
 		HttpEntityEnclosingRequest method = null;
-		// if (transactionURL == null) {
 		method = new HttpPost(requestURL);
-		// }
-		// else {
-		// method = new HttpPut(requestURL);
-		// }
 
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
@@ -818,7 +811,7 @@ public class SesameSession extends SparqlSession {
 
 			// Select appropriate HTTP method
 			HttpEntityEnclosingRequest method;
-			if (overwrite || useTransaction) {
+			if (overwrite) {
 				method = new HttpPut(url.build());
 			}
 			else {

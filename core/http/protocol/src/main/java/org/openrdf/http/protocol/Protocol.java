@@ -25,13 +25,27 @@ import org.openrdf.rio.ntriples.NTriplesUtil;
 
 public abstract class Protocol {
 
+	/**
+	 * Defines the action a particular transaction update is executing.  
+	 *
+	 * @author Jeen Broekstra
+	 */
 	public static enum Action {
+		/** adding data */
 		ADD,
+		/** deleting data */
 		DELETE,
+		/** getStatements or exportStatements */
 		GET,
+		/** retrieving repository size */
+		SIZE,
+		/** SPARQL or SeRQL query */
 		QUERY,
+		/** SPARQL Update */
 		UPDATE,
+		/** commit */
 		COMMIT,
+		/** rollback */
 		ROLLBACK;
 	}
 

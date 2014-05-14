@@ -89,6 +89,7 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
+import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
@@ -134,11 +135,13 @@ public class TransactionController extends AbstractController {
 
 		try {
 			if ("PUT".equals(reqMethod)) {
+				// TODO filter for appropriate PUT operations
 				logger.info("PUT txn operation");
 				result = processTransactionOperation(connection, request, response);
 				logger.info("PUT txn operation request finished.");
 			}
 			else if (METHOD_POST.equals(reqMethod)) {
+				// TODO filter for appropriate POST operations
 				logger.info("POST txn operation");
 				result = processTransactionOperation(connection, request, response);
 				logger.info("POST txn operation request finished.");
@@ -154,7 +157,7 @@ public class TransactionController extends AbstractController {
 				}
 
 				result = new ModelAndView(EmptySuccessView.getInstance());
-				logger.info("PUT transaction request finished.");
+				logger.info("DELETE transaction request finished.");
 			}
 			else {
 				throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
@@ -220,6 +223,8 @@ public class TransactionController extends AbstractController {
 					return processQuery(conn, request, response);
 				case GET:
 					return getExportStatementsResult(conn, request, response);
+				case SIZE:
+					return getSize(conn, request, response);
 				case UPDATE:
 					return getSparqlUpdateResult(conn, request, response);
 				case COMMIT:
@@ -271,6 +276,36 @@ public class TransactionController extends AbstractController {
 						"Transaction handling error: " + e.getMessage(), e);
 			}
 		}
+	}
+
+	private ModelAndView getSize(RepositoryConnection conn, HttpServletRequest request,
+			HttpServletResponse response)
+		throws HTTPException
+	{
+		ProtocolUtil.logRequestParameters(request);
+
+		Map<String, Object> model = new HashMap<String, Object>();
+		final boolean headersOnly = METHOD_HEAD.equals(request.getMethod());
+
+		if (!headersOnly) {
+			Repository repository = RepositoryInterceptor.getRepository(request);
+
+			ValueFactory vf = repository.getValueFactory();
+			Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
+
+			long size = -1;
+
+			try {
+					size = conn.size(contexts);
+			}
+			catch (RepositoryException e) {
+				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+			}
+			model.put(SimpleResponseView.CONTENT_KEY, String.valueOf(size));
+		}
+
+		return new ModelAndView(SimpleResponseView.getInstance(), model);
+
 	}
 
 	/**

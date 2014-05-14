@@ -275,7 +275,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public long size(Resource... contexts)
 		throws RepositoryException
 	{
-		// TODO fix transaction state flush for size request
+		flushTransactionState(Action.SIZE);
 		try {
 			return client.size(contexts);
 		}
@@ -557,6 +557,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 				case UPDATE:
 				case COMMIT:
 				case QUERY:
+				case SIZE:
 					if (toAdd != null) {
 						addModel(toAdd);
 						toAdd = null;
