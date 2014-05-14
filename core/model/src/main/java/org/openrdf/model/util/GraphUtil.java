@@ -180,7 +180,7 @@ public class GraphUtil {
 	{
 		Resource subject = getOptionalSubject(graph, pred, obj, contexts);
 
-		if (subject instanceof URI) {
+		if (subject == null || subject instanceof URI) {
 			return (URI)subject;
 		}
 		else {
