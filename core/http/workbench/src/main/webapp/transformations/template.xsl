@@ -131,7 +131,7 @@
 					</p>
 					<!-- These scripts need to be loaded before other templates are applied. -->
 					<script src="../../scripts/template.js" type="text/javascript"></script>
-					<script src="../../scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+					<script src="../../scripts/jquery-1.11.0.min.js" type="text/javascript"></script>
 					<xsl:apply-templates select="*" />
 				</div>
 				<div id="footer">
