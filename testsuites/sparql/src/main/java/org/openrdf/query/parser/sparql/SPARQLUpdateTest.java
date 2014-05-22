@@ -824,6 +824,28 @@ public abstract class SPARQLUpdateTest {
 	}
 	
 	@Test
+	public void testInsertDataLangTaggedLiteral()
+		throws Exception
+	{
+		logger.debug("executing testInsertDataLangTaggedLiteral");
+
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("INSERT DATA { ex:book1 dc:title \"book 1\"@en . } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		URI book1 = f.createURI(EX_NS, "book1");
+
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1", "en"), true));
+
+		operation.execute();
+
+		String msg = "new statement about ex:book1 should have been inserted";
+		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1", "en"), true));
+	}
+	
+	@Test
 	public void testInsertDataBlankNode()
 		throws Exception
 	{
