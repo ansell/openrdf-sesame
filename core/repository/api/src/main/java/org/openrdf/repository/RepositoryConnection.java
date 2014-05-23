@@ -594,6 +594,8 @@ public interface RepositoryConnection {
 	 * 
 	 * @param level
 	 *        The {@link IsolationLevel} at which this transaction will operate.
+	 *        If set to <code>null</code> the default isolation level of the
+	 *        underlying store will be used.
 	 * @throws RepositoryException
 	 *         If the connection could not start the transaction. One possible
 	 *         reason this may happen is if the specified {@link IsolationLevel}

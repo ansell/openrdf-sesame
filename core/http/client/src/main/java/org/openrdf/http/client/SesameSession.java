@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
@@ -49,6 +50,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import info.aduna.io.IOUtil;
@@ -481,8 +483,13 @@ public class SesameSession extends SparqlSession {
 
 		HttpPost method = new HttpPost(Protocol.getTransactionsLocation(getRepositoryURL()));
 
-		// TODO add isolation level to payload
+		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair(Protocol.ISOLATION_LEVEL_PARAM_NAME,
+				isolationLevel.getURI().stringValue()));
+
+		method.setEntity(new UrlEncodedFormEntity(params, UTF8));
 		HttpResponse response = execute(method);
 		int code = response.getStatusLine().getStatusCode();
 

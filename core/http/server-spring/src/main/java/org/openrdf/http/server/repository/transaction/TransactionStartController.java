@@ -34,10 +34,15 @@ import org.springframework.web.servlet.mvc.AbstractController;
 
 import info.aduna.webapp.views.SimpleResponseView;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
+import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -91,15 +96,29 @@ public class TransactionStartController extends AbstractController {
 		ProtocolUtil.logRequestParameters(request);
 		Map<String, Object> model = new HashMap<String, Object>();
 
+		IsolationLevel isolationLevel = null;
+		final String isolationLevelString = request.getParameter(Protocol.ISOLATION_LEVEL_PARAM_NAME);
+		if (isolationLevelString != null) {
+			final URI level = ValueFactoryImpl.getInstance().createURI(isolationLevelString);
+			
+			// FIXME this needs to be adapted to accommodate custom isolation levels
+			// from third party stores.
+			for (IsolationLevel standardLevel : IsolationLevels.values()) {
+				if (standardLevel.getURI().equals(level)) {
+					isolationLevel = standardLevel;
+					break;
+				}
+			}
+		}
+
 		try {
 			RepositoryConnection conn = repository.getConnection();
-			
+
 			ParserConfig config = conn.getParserConfig();
 			config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 			config.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 			config.addNonFatalError(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
-			
-			conn.begin();
+			conn.begin(isolationLevel);
 			UUID txnId = UUID.randomUUID();
 
 			ActiveTransactionRegistry.INSTANCE.register(txnId, conn);

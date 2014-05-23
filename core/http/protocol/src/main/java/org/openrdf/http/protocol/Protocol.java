@@ -148,6 +148,11 @@ public abstract class Protocol {
 	public static final String ACCEPT_PARAM_NAME = "Accept";
 
 	/**
+	 * Parameter name for the isolation level used in transactions.
+	 */
+	public static final String ISOLATION_LEVEL_PARAM_NAME = "isolation-level";
+	
+	/**
 	 * Parameter name for the action parameter used in transactions.
 	 */
 	public static final String ACTION_PARAM_NAME = "action";
