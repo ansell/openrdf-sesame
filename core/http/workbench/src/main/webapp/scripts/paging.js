@@ -203,18 +203,6 @@ workbench.paging = {
 		return total_result_count;
 	},
 
-	hideExternalLinksAndSetHoverEvent : function _hideExternalLinksAndSetHoverEvent() {
-		$('span.resource:has(span.resourceURL)').each(function(index) {
-			var externalLink = $(this).find('span.resourceURL');
-			externalLink.css('margin-left', '8px').css('visibility', 'hidden');
-			$(this).hover(function() {
-				externalLink.css('visibility', 'visible');
-			}, function() {
-				externalLink.css('visibility', 'hidden');
-			});
-		})
-	},
-
 	setShowDataTypesCheckboxAndSetChangeEvent : function _setShowDataTypesCheckboxAndSetChangeEvent() {
 		function setDataTypeVisibility(show) {
 			function setCookie(c_name, value, exdays) {

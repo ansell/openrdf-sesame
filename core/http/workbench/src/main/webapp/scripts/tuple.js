@@ -27,6 +27,5 @@ workbench.addLoad(function() {
 		newHTML = newHTML + ')';
 		h1.innerHTML = newHTML;
 	}
-	workbench.paging.hideExternalLinksAndSetHoverEvent();
 	workbench.paging.setShowDataTypesCheckboxAndSetChangeEvent();
 });
