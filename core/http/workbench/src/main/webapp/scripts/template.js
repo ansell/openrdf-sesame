@@ -1,25 +1,3 @@
-(function defineCookieInDOM() {
-	// This is a workaround for Firefox not setting the cookie object in the
-	// DOM when processing XSLT. See
-	// https://bugzilla.mozilla.org/show_bug.cgi?id=230214
-	if (typeof (document.cookie) == 'undefined') {
-		var obj = document.createElementNS('http://www.w3.org/1999/xhtml',
-				'object');
-		obj.width = 0;
-		obj.height = 0;
-		obj.type = 'text/html';
-		obj.data = 'data:text/html;charset=utf-8,%3Cscript%3Eparent._htmlDom%3Ddocument%3C/script%3E';
-		document.getElementsByTagName('body')[0].appendChild(obj);
-		var _htmlDom;
-		document.__defineGetter__('cookie', function getCookie() {
-			return _htmlDom.cookie;
-		});
-		document.__defineSetter__('cookie', function setCookie(c) {
-			_htmlDom.cookie = c;
-		});
-	}
-})();
-
 var workbench = {
 
 	// Note that the way this is currently constructed, functions added with
