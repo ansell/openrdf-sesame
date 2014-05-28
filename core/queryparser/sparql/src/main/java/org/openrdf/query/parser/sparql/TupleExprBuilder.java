@@ -2943,23 +2943,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	}
 
-	static class ExtensionCollector extends QueryModelVisitorBase<VisitorException> {
-
-		private Collection<Extension> extensions = new ArrayList<Extension>();
-
-		public Collection<Extension> getExtensions() {
-			return extensions;
-		}
-
-		@Override
-		public void meet(Extension node)
-			throws VisitorException
-		{
-			extensions.add(node);
-			super.meet(node);
-		}
-	}
-
 	static class AggregateOperatorReplacer extends QueryModelVisitorBase<VisitorException> {
 
 		private Var replacement;
