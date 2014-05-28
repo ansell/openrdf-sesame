@@ -34,7 +34,6 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.sparql.ast.ASTQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ParseException;
@@ -189,29 +188,28 @@ public class TupleExprBuilderTest {
 	}
 
 	@Test
-	public void testOrderByWithAliases1() throws Exception
+	public void testOrderByWithAliases1()
+		throws Exception
 	{
-		String queryString = " SELECT ?x (SUM(?v1)/COUNT(?v1) as ?r) WHERE { ?x <urn:foo> ?v1 } GROUP BY ?x ORDER BY ?r"; 
-
+		String queryString = " SELECT ?x (SUM(?v1)/COUNT(?v1) as ?r) WHERE { ?x <urn:foo> ?v1 } GROUP BY ?x ORDER BY ?r";
 
 		SPARQLParser parser = new SPARQLParser();
 		ParsedQuery query = parser.parseQuery(queryString, null);
-		
+
 		assertNotNull(query);
 		TupleExpr te = query.getTupleExpr();
-		
+
 		assertTrue(te instanceof Projection);
-		
+
 		te = ((Projection)te).getArg();
-		
+
 		assertTrue(te instanceof Order);
-		
+
 		te = ((Order)te).getArg();
-		
+
 		assertTrue(te instanceof Extension);
 	}
-	
-	
+
 	private class ServiceNodeFinder extends ASTVisitorBase {
 
 		private List<String> graphPatterns = new ArrayList<String>();
