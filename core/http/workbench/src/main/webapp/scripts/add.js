@@ -1,82 +1,60 @@
 function handleFormatSelection(selected) {
 	if (selected == 'application/x-trig' || selected == 'application/trix'
 			|| selected == 'text/x-nquads') {
-		var checkbox = document.getElementById('useForContext');
-		var context = document.getElementById('context');
-
-		checkbox.checked = false;
-		context.readOnly = false;
-		context.value = '';
+		$('#useForContext').prop('checked', false);
+		$('#context').val('').prop('readonly', false);
 	}
 }
 
 function handleBaseURIUse() {
-	var baseURI = document.getElementById('baseURI');
-	var checkbox = document.getElementById('useForContext');
-	var context = document.getElementById('context');
-	if (checkbox.checked) {
-		context.readOnly = true;
-		if (baseURI.value != '') {
-			context.value = "<" + baseURI.value + ">";
-		} else {
-			context.value = '';
-		}
-	} else {
-		context.readOnly = false;
+	var readOnly = $('#useForContext').prop('checked');
+	if (readOnly) {
+		setContextFromBaseURI();
 	}
 }
 
+function setContextFromBaseURI(){
+	var baseURI = $('#baseURI').val();
+	$('#context').val(baseURI == '' ? '' : '<' + baseURI + '>');	
+}
+
 function enabledInput(selected) {
-	document.getElementById('source-' + selected).checked = true;
-	document.getElementById('file').disabled = selected != 'file';
-	document.getElementById('url').disabled = selected != 'url';
-	document.getElementById('text').disabled = selected != 'text';
-
-	var checkbox = document.getElementById('useForContext');
-	var context = document.getElementById('context');
+    istext = (selected == 'text');
+	$('#text').prop('disabled', !istext);
 	var contentType = document.getElementById('Content-Type');
-	if (selected == 'text') {
-		contentType.options[0].disabled = true;
-		contentType.options[0].selected = false;
-		for (i = 1; i < contentType.options.length; i++) {
-			var option = contentType.options[i];
-			if (option.value == 'application/x-turtle'
-					|| option.value == 'text/turtle') {
-				option.selected = true;
-				break;
-			}
-		}
-	} else {
-		contentType.options[0].disabled = false;
-		contentType.options[0].selected = true;
-	}
-
-	var baseURI = document.getElementById('baseURI');
-	var file = document.getElementById('file');
-	var url = document.getElementById('url');
-	if (selected == 'file') {
-		if (file.value != '') {
-			baseURI.value = encodeURI('file://'
-					+ file.value.replace(/\\/g, '/'));
-		} else {
-			baseURI.value = '';
-		}
-		if (checkbox.checked) {
-			if (baseURI.value != '') {
-				context.value = "<" + baseURI.value + ">";
-			} else {
-				context.value = '';
-			}
+	contentType.options[0].disabled = istext;
+	contentType.options[0].selected = !istext;
+	$('#source-' + selected).prop('checked', true);
+	var isfile = (selected == 'file');
+	$('#file').prop('disabled', !isfile);
+	var isurl = (selected == 'url');
+	$('#url').prop('disabled', !isurl);
+	if (istext) {
+	    for (i = 1; i < contentType.options.length; i++) {
+		    var option = contentType.options[i];
+		    if (option.value == 'application/x-turtle'
+				|| option.value == 'text/turtle') {
+			    option.selected = true;
+			    break;
+		    }
 		}
 	}
-	if (selected == 'url') {
-		baseURI.value = url.value;
-		if (checkbox.checked) {
-			if (baseURI.value != '') {
-				context.value = "<" + baseURI.value + ">";
-			} else {
-				context.value = '';
-			}
-		}
+	else {
+	    var baseURI = $('#baseURI');
+	    var checked = $('#useForContext').prop('checked');
+	    if (isfile) {
+		    var file = $('#file');
+		    baseURI.val(file.val() == '' ? '' : encodeURI('file://'
+				+ file.val().replace(/\\/g, '/')));
+		    if (checked) {
+			    setContextFromBaseURI();
+		    }
+	    }
+	    else if (isurl) {
+		    baseURI.val($('#url').val());
+		    if (checked) {
+			    setContextFromBaseURI();
+		    }
+	    }
 	}
 }
