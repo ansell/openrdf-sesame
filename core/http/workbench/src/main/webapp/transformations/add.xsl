@@ -33,10 +33,10 @@
 						<td>
 							<input id="baseURI" name="baseURI" type="text"
 								value="{//sparql:binding[@name='baseURI']/sparql:literal}"
-								onchange="handleBaseURIUse()" />
+								onchange="workbench.add.handleBaseURIUse()" />
 							<br />
 							<input type="checkbox" id="useForContext" name="useForContext"
-								checked="true" onchange="handleBaseURIUse()" />
+								checked="true" onchange="workbench.add.handleBaseURIUse()" />
 							use base URI as context identifier
 						</td>
 						<td></td>
@@ -59,7 +59,7 @@
 						</th>
 						<td>
 							<select id="Content-Type" name="Content-Type"
-								onchange="handleFormatSelection(this.value)">
+								onchange="workbench.add.handleFormatSelection(this.value)">
 								<option id='autodetect' value="autodetect" selected="true">(autodetect)
 								</option>
 								<xsl:for-each
@@ -77,7 +77,7 @@
 						<td></td>
 						<td>
 							<input type="radio" id="source-url" name="source" value="url"
-								onchange="enabledInput('url')" />
+								onchange="workbench.add.enabledInput('url')" />
 							<xsl:value-of select="$upload-url.desc" />
 						</td>
 						<td></td>
@@ -88,7 +88,7 @@
 						</th>
 						<td>
 							<input id="url" name="url" type="text" value=""
-								onchange="enabledInput('url');" />
+								onchange="workbench.add.enabledInput('url');" />
 						</td>
 						<td></td>
 					</tr>
@@ -96,7 +96,7 @@
 						<td></td>
 						<td>
 							<input type="radio" id="source-file" name="source" value="file"
-								onchange="enabledInput('file')" />
+								onchange="workbench.add.enabledInput('file')" />
 							<xsl:value-of select="$upload-file.desc" />
 						</td>
 						<td></td>
@@ -106,7 +106,7 @@
 							<xsl:value-of select="$upload-file.label" />
 						</th>
 						<td>
-							<input type="file" id="file" name="content" onchange="enabledInput('file')" />
+							<input type="file" id="file" name="content" onchange="workbench.add.enabledInput('file')" />
 						</td>
 						<td></td>
 					</tr>
@@ -114,7 +114,7 @@
 						<td></td>
 						<td>
 							<input type="radio" id="source-text" name="source" value="contents"
-								onchange="enabledInput('text')" />
+								onchange="workbench.add.enabledInput('text')" />
 							<xsl:value-of select="$upload-text.desc" />
 						</td>
 						<td></td>
@@ -125,7 +125,7 @@
 						</th>
 						<td>
 							<textarea id="text" name="content" rows="6" cols="70"
-								onchange="enabledInput('text')">
+								onchange="workbench.add.enabledInput('text')">
 							</textarea>
 						</td>
 						<td></td>
