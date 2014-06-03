@@ -39,7 +39,7 @@ module workbench {
      * @returns {String} The value of the given cookie, or an empty string if it
      *          doesn't exist.
      */
-    export function getCookie(name: string): string {
+    export function getCookie(name: string) {
         var cookies = document.cookie.split(';');
         var rval = '';
         for (var i = 0; i < cookies.length; i++) {
@@ -59,7 +59,7 @@ module workbench {
      * 
      * @returns an array of the 'name=value' substrings of the URL query string
      */
-    export function getQueryStringElements(): string[] {
+    export function getQueryStringElements() {
         var href = document.location.href;
         return href.substring(href.indexOf('?') + 1).split(
             decodeURIComponent('%26'));
@@ -74,7 +74,7 @@ module workbench {
      *            name of parameter to add, also the id of the document element
      *            to get the value from
      */
-    export function addParam(sb: string[], id: string): void {
+    export function addParam(sb: string[], id: string) {
         sb[sb.length] = id + '=';
         var tag = document.getElementById(id);
         sb[sb.length] = (tag.getAttribute('type') == 'checkbox') ?

@@ -214,18 +214,16 @@ module workbench {
             function setCookie(c_name: string, value: boolean, exdays: number) {
                 var exdate = new Date();
                 exdate.setDate(exdate.getDate() + exdays);
-                var c_value = value + ((exdays == null) ? "" : "; expires=" +
-                    exdate.toUTCString());
-                document.cookie = c_name + "=" + c_value;
+                document.cookie = c_name + "=" + value + ((exdays == null) ? "" : "; expires=" +
+                exdate.toUTCString());
             }
 
             export function setShow(show: boolean) {
                 setCookie('show-datatypes', show, 365);
                 var data = show ? 'data-longform' : 'data-shortform';
-                var selector = $('span.resource[' + data + ']');
-                selector.each(function(index) {
-                    var newform = decodeURIComponent($(this).attr(data));
-                    $(this).find('a:first').text(newform);
+                $('span.resource[' + data + ']').each(function() {
+                    var me = $(this);
+                    me.find('a:first').text(decodeURIComponent(me.attr(data)));
                 });
             }
         }

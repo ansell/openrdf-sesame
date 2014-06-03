@@ -40,8 +40,14 @@
 					</tr>
 					<tr>
 						<td></td>
-						<td colspan="2">
+						<td>
 							<input type="submit" value="{$delete.label}" />
+						</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td>
+							<span id="delete-feedback" class="error"></span>
 						</td>
 					</tr>
 				</tbody>

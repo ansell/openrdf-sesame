@@ -8,7 +8,7 @@
  * does. Depends on the current behavior of getting a failure response (500
  * Internal Server Error at present), when the ID does not exist.
  */
-export function checkOverwrite() {
+function checkOverwrite() {
     var submit = false;
     $.ajax({
         url: '../' + $('#id').val() + '/info',
