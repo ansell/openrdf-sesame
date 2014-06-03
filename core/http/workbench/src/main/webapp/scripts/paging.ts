@@ -35,7 +35,7 @@ module workbench {
             var rval = '';
             var queryString = getQueryString(href);
             var start = href.substring(0, href.indexOf(queryString));
-            var elements = elements.split(decodeURIComponent('%26'));
+            var elements = queryString.split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {
                 var pair = elements[i].split('=');
                 params[pair[0]] = pair[1];
@@ -198,18 +198,6 @@ module workbench {
             return total_result_count;
         }
 
-        export function hideExternalLinksAndSetHoverEvent() {
-            $('span.resource:has(span.resourceURL)').each(function(index) {
-                var externalLink = $(this).find('span.resourceURL');
-                externalLink.css('margin-left', '8px').css('visibility', 'hidden');
-                $(this).hover(function() {
-                    externalLink.css('visibility', 'visible');
-                }, function() {
-                        externalLink.css('visibility', 'hidden');
-                    });
-            })
-	   }
-
         module DataTypeVisibility {
             function setCookie(c_name: string, value: boolean, exdays: number) {
                 var exdate = new Date();
@@ -221,7 +209,7 @@ module workbench {
             export function setShow(show: boolean) {
                 setCookie('show-datatypes', show, 365);
                 var data = show ? 'data-longform' : 'data-shortform';
-                $('span.resource[' + data + ']').each(function() {
+                $('div.resource[' + data + ']').each(function() {
                     var me = $(this);
                     me.find('a:first').text(decodeURIComponent(me.attr(data)));
                 });

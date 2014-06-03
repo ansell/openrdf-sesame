@@ -8,4 +8,5 @@ destdir=~/tomcat7/webapps/openrdf-workbench/scripts
 cd $indir
 tsc --sourcemap --sourceRoot "/openrdf-workbench/scripts" --outDir $srcdir *.ts
 cp $srcdir/*.js* $destdir
-echo 'Replaced deployed JavaScript files with compiled TypeScript sersions.'
+cp *.ts $destdir
+echo 'Replaced deployed JavaScript files with compiled TypeScript versions.'

@@ -76,9 +76,9 @@ module workbench {
      */
     export function addParam(sb: string[], id: string) {
         sb[sb.length] = id + '=';
-        var tag = document.getElementById(id);
-        sb[sb.length] = (tag.getAttribute('type') == 'checkbox') ?
-        tag.getAttribute('checked') : encodeURIComponent(tag.innerText);
+        var tag = <HTMLInputElement>document.getElementById(id);
+        sb[sb.length] = tag.type == 'checkbox' ? String(tag.checked) : 
+            encodeURIComponent(tag.value);
         sb[sb.length] = '&';
     }
 }
