@@ -316,11 +316,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		String uniqueStringForValue = value.stringValue();
-		
+
 		if (value instanceof Literal) {
 			uniqueStringForValue += "-lit";
-			
-			// we need to append datatype and/or language tag to ensure a unique var name (see SES-1927)
+
+			// we need to append datatype and/or language tag to ensure a unique
+			// var name (see SES-1927)
 			Literal lit = (Literal)value;
 			if (lit.getDatatype() != null) {
 				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
@@ -335,7 +336,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		else {
 			uniqueStringForValue += "-uri";
 		}
-		
+
 		Var var = createAnonVar("-const-" + uniqueStringForValue);
 		var.setConstant(true);
 		var.setValue(value);
@@ -540,6 +541,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	{
 		TupleExpr result = (TupleExpr)data;
 
+		final Order orderClause = result instanceof Order ? (Order)result : null;
+
 		Extension extension = new Extension();
 
 		ProjectionElemList projElemList = new ProjectionElemList();
@@ -639,15 +642,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		if (!extension.getElements().isEmpty()) {
-			if (result instanceof Order) {
+			if (orderClause != null) {
 				// Extensions produced by SELECT expressions should be nested inside
 				// the ORDER BY clause, to make sure
-				// sorting can work on the newly introduced variable. See SES-892.
-				Order o = (Order)result;
-				TupleExpr arg = o.getArg();
+				// sorting can work on the newly introduced variable. See SES-892
+				// and SES-1809.
+				TupleExpr arg = orderClause.getArg();
 				extension.setArg(arg);
-				o.setArg(extension);
-				result = o;
+				orderClause.setArg(extension);
+				result = orderClause;
 			}
 			else {
 				extension.setArg(result);

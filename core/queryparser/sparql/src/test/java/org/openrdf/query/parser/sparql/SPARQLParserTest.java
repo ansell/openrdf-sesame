@@ -26,17 +26,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.openrdf.query.algebra.InsertData;
+import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UnaryTupleOperator;
-import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.query.parser.ParsedUpdate;
 
 /**
  * @author jeen
@@ -107,6 +104,28 @@ public class SPARQLParserTest {
 
 		assertTrue(leftArg.getObjectVar().equals(rightArg.getSubjectVar()));
 		assertEquals(leftArg.getObjectVar().getName(), rightArg.getSubjectVar().getName());
+	}
+
+	@Test
+	public void testOrderByWithAliases1()
+		throws Exception
+	{
+		String queryString = " SELECT ?x (SUM(?v1)/COUNT(?v1) as ?r) WHERE { ?x <urn:foo> ?v1 } GROUP BY ?x ORDER BY ?r";
+
+		ParsedQuery query = parser.parseQuery(queryString, null);
+
+		assertNotNull(query);
+		TupleExpr te = query.getTupleExpr();
+
+		assertTrue(te instanceof Projection);
+
+		te = ((Projection)te).getArg();
+
+		assertTrue(te instanceof Order);
+
+		te = ((Order)te).getArg();
+
+		assertTrue(te instanceof Extension);
 	}
 
 	@Test
