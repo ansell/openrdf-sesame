@@ -845,6 +845,46 @@ public abstract class SPARQLUpdateTest {
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1", "en"), true));
 	}
 	
+	@Test 
+	public void testInsertDataGraph1() 
+	throws Exception
+	{
+		logger.debug("executing testInsertDataGraph1");
+		
+		StringBuilder update = new StringBuilder();
+		update.append("INSERT DATA { \n");
+		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> } \n" );
+		update.append("<urn:s1> a <urn:C1> . \n");
+		update.append("}");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
+		operation.execute();
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
+	}
+	
+	@Test 
+	public void testInsertDataGraph2() 
+	throws Exception
+	{
+		logger.debug("executing testInsertDataGraph2");
+		
+		StringBuilder update = new StringBuilder();
+		update.append("INSERT DATA { \n");
+		update.append("<urn:s1> a <urn:C1> . \n");
+		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> } \n" );
+		update.append("}");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
+		operation.execute();
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
+	}
+	
 	@Test
 	public void testInsertDataBlankNode()
 		throws Exception
