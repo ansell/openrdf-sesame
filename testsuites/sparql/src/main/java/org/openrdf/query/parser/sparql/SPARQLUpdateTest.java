@@ -853,15 +853,15 @@ public abstract class SPARQLUpdateTest {
 		
 		StringBuilder update = new StringBuilder();
 		update.append("INSERT DATA { \n");
-		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> } \n" );
+		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> . } \n" );
 		update.append("<urn:s1> a <urn:C1> . \n");
 		update.append("}");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
 		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
 		operation.execute();
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
 		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
 	}
 	
@@ -874,14 +874,14 @@ public abstract class SPARQLUpdateTest {
 		StringBuilder update = new StringBuilder();
 		update.append("INSERT DATA { \n");
 		update.append("<urn:s1> a <urn:C1> . \n");
-		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> } \n" );
+		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> . } \n" );
 		update.append("}");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
 		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
 		operation.execute();
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
 		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
 	}
 	
