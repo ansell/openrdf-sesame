@@ -20,6 +20,10 @@ module workbench {
                 + encodeURIComponent(value);
             }
         }
+        
+        class StringMap {
+            [key: string]: string;
+        }
 
         /**
          * Scans the given URI for duplicate query parameter names, and removes
@@ -31,7 +35,7 @@ module workbench {
          *          parameter name remaining.
          */
         function simplifyParameters(href: string) {
-            var params = {};
+            var params:StringMap = {};
             var rval = '';
             var queryString = getQueryString(href);
             var start = href.substring(0, href.indexOf(queryString));
@@ -151,7 +155,7 @@ module workbench {
             return value.substring(value.indexOf(split) + 1);
         }
 
-        export function getQueryString(href) {
+        export function getQueryString(href: string) {
             return tailAfter(tailAfter(href, '?'), ';');
         }
 
