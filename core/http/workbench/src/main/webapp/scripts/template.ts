@@ -4,14 +4,9 @@ module workbench {
         (ev?: Event): void;
     }
 
-    interface LoadRoutineArray {
-        [index: number]: LoadRoutine;
-        length: number;
-    }
-
     // The following is to allow composed XSLT style sheets to each add
     // functions to the window.onload event.
-    function chain(args: LoadRoutineArray): LoadRoutine {
+    function chain(args: LoadRoutine[]): LoadRoutine {
             return function() {
             for (var i = 0; i < args.length; i++) {
                 args[i]();
@@ -77,8 +72,8 @@ module workbench {
     export function addParam(sb: string[], id: string) {
         sb[sb.length] = id + '=';
         var tag = <HTMLInputElement>document.getElementById(id);
-        sb[sb.length] = tag.type == 'checkbox' ? String(tag.checked) : 
-            encodeURIComponent(tag.value);
+        sb[sb.length] = tag.type == 'checkbox' ? String(tag.checked) :
+        encodeURIComponent(tag.value);
         sb[sb.length] = '&';
     }
 }
