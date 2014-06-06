@@ -31,7 +31,7 @@
 							<input type="text" id="prefix" name="prefix"
 								size="8" />
 							<select id="prefix-select"
-								onchange="updatePrefix()">
+								onchange="workbench.namespaces.updatePrefix()">
 								<option></option>
 								<xsl:for-each
 									select="//sparql:result">
@@ -61,7 +61,7 @@
 							<input type="submit"
 								value="{$update.label}" />
 							<input type="submit"
-								onclick="document.getElementById('namespace').value = '';return true"
+								onclick="$('#namespace').val('');return true"
 								value="{$delete.label}" />
 						</td>
 					</tr>
@@ -71,16 +71,7 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
-		<script type="text/javascript">
-			<![CDATA[
-			function updatePrefix() {
-				var prefix = document.getElementById('prefix');
-				var namespace = document.getElementById('namespace');
-				var select = document.getElementById('prefix-select');
-				prefix.value = select.options[select.selectedIndex].text;
-				namespace.value = select.value;
-			}
-			]]>
+		<script src="../../scripts/namespaces.js" type="text/javascript">
 		</script>
 	</xsl:template>
 
