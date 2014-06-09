@@ -1,66 +1,67 @@
-// Prerequisite: template.js
-// Prerequisite: jquery
-
-workbench.add = {
-    handleFormatSelection : function _handleFormatSelection(selected) {
-        if (selected == 'application/x-trig' || selected == 'application/trix'
-                || selected == 'text/x-nquads') {
-            $('#useForContext').prop('checked', false);
-            $('#context').val('').prop('readonly', false);
+/// <reference path="template.ts" />
+/// <reference path="jquery.d.ts" />
+var workbench;
+(function (workbench) {
+    (function (add) {
+        function handleFormatSelection(selected) {
+            if (selected == 'application/x-trig' || selected == 'application/trix' || selected == 'text/x-nquads') {
+                $('#useForContext').prop('checked', false);
+                $('#context').val('').prop('readonly', false);
+            }
         }
-    },
-    
-    setContextFromBaseURI : function _setContextFromBaseURI(){
-        var baseURI = $('#baseURI').val();
-        $('#context').val(baseURI == '' ? '' : '<' + baseURI + '>');        
-    },
+        add.handleFormatSelection = handleFormatSelection;
 
-    handleBaseURIUse : function _handleBaseURIUse() {
-        if ($('#useForContext').prop('checked')) {
-            workbench.add.setContextFromBaseURI();
+        function setContextFromBaseURI() {
+            var baseURI = $('#baseURI').val();
+            $('#context').val(baseURI == '' ? '' : '<' + baseURI + '>');
         }
-    },
-    
-    enabledInput: function _enabledInput(selected) {
-        istext = (selected == 'text');
-        $('#text').prop('disabled', !istext);
-        var contentType = document.getElementById('Content-Type');
-        contentType.options[0].disabled = istext;
-        contentType.options[0].selected = !istext;
-        $('#source-' + selected).prop('checked', true);
-        var isfile = (selected == 'file');
-        $('#file').prop('disabled', !isfile);
-        var isurl = (selected == 'url');
-        $('#url').prop('disabled', !isurl);
-        if (istext) {
-            for (i = 1; i < contentType.options.length; i++) {
-                var option = contentType.options[i];
-                if (option.value == 'application/x-turtle'
-                        || option.value == 'text/turtle') {
-                    option.selected = true;
-                    break;
+
+        function handleBaseURIUse() {
+            if ($('#useForContext').prop('checked')) {
+                setContextFromBaseURI();
+            }
+        }
+        add.handleBaseURIUse = handleBaseURIUse;
+
+        function enabledInput(selected) {
+            var istext = (selected == 'text');
+            $('#text').prop('disabled', !istext);
+            var contentType = $('#Content-Type');
+            var firstType = contentType.find('option:first');
+            firstType.prop('disabled', true);
+            $('#source-' + selected).prop('checked', true);
+            var isfile = (selected == 'file');
+            $('#file').prop('disabled', !isfile);
+            var isurl = (selected == 'url');
+            $('#url').prop('disabled', !isurl);
+            if (istext) {
+                var turtle = contentType.find("option[value='application/x-turtle']");
+                if (turtle.length == 0) {
+                    turtle = contentType.find("option[value='text/turtle']");
+                }
+                if (turtle.length > 0) {
+                    turtle.prop('selected', true);
+                }
+            } else {
+                firstType.prop('selected', true);
+                var baseURI = $('#baseURI');
+                var checked = $('#useForContext').prop('checked');
+                if (isfile) {
+                    var file = $('#file');
+                    baseURI.val(file.val() == '' ? '' : encodeURI('file://' + file.val().replace(/\\/g, '/')));
+                    if (checked) {
+                        setContextFromBaseURI();
+                    }
+                } else if (isurl) {
+                    baseURI.val($('#url').val());
+                    if (checked) {
+                        setContextFromBaseURI();
+                    }
                 }
             }
         }
-        else {
-            var baseURI = $('#baseURI');
-            var checked = $('#useForContext').prop('checked');
-            if (isfile) {
-                var file = $('#file');
-                baseURI.val(file.val() == '' ? '' : encodeURI('file://'
-                        + file.val().replace(/\\/g, '/')));
-                if (checked) {
-                    workbench.add.setContextFromBaseURI();
-                }
-            }
-            else if (isurl) {
-                baseURI.val($('#url').val());
-                if (checked) {
-                    workbench.add.setContextFromBaseURI();
-                }
-            }
-        }
-    }    
-}
-
-
+        add.enabledInput = enabledInput;
+    })(workbench.add || (workbench.add = {}));
+    var add = workbench.add;
+})(workbench || (workbench = {}));
+//# sourceMappingURL=add.js.map
