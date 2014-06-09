@@ -1,3 +1,7 @@
+// WARNING: Do not edit the *.js version of this file. Instead, always edit the
+// corresponding *.ts source in the ts subfolder, and then invoke the
+// compileTypescript.sh bash script to generate new *.js and *.js.map files.
+
 module workbench {
 
     export interface LoadRoutine {

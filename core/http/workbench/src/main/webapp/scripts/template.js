@@ -1,3 +1,6 @@
+// WARNING: Do not edit the *.js version of this file. Instead, always edit the
+// corresponding *.ts source in the ts subfolder, and then invoke the
+// compileTypescript.sh bash script to generate new *.js and *.js.map files.
 var workbench;
 (function (workbench) {
     // The following is to allow composed XSLT style sheets to each add
