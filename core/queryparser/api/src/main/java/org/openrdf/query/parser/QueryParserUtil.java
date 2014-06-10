@@ -230,7 +230,7 @@ public class QueryParserUtil {
 	public static String removeSPARQLQueryProlog(String queryString) {
 		final List<Token> tokens = QueryPrologLexer.lex(queryString);
 
-		// The last token is guaranteed to be the rest of the query.
+		// The last token is guaranteed to be the rest of the query if the query was syntactically valid.
 		Token t = tokens.get(tokens.size() - 1);
 		return t.getStringValue();
 	}
