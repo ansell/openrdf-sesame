@@ -1,21 +1,24 @@
 /// <reference path="template.ts" />
 /// <reference path="jquery.d.ts" />
+
 // WARNING: Do not edit the *.js version of this file. Instead, always edit the
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
-var workbench;
-(function (workbench) {
-    (function (_query) {
+
+module workbench {
+
+    export module query {
+
         /**
-        * Holds the current selected query language.
-        */
+         * Holds the current selected query language.
+         */
         var currentQueryLn = '';
 
         /**
-        * Populate reasonable default name space declarations into the query text area.
-        * The server has provided the declaration text in hidden elements.
-        */
-        function loadNamespaces() {
+         * Populate reasonable default name space declarations into the query text area.
+         * The server has provided the declaration text in hidden elements.
+         */
+        export function loadNamespaces() {
             function toggleNamespaces() {
                 query.val(namespaces.text());
                 currentQueryLn = queryLn;
@@ -34,59 +37,64 @@ var workbench;
                 }
             }
         }
-        _query.loadNamespaces = loadNamespaces;
 
         /**
-        * After confirming with the user, clears the query text and loads the current
-        * repository and query language name space declarations.
-        */
-        function resetNamespaces() {
-            if (confirm('Click OK to clear the current query text and replace' + 'it with the ' + $('#queryLn').val() + ' namespace declarations.')) {
+         * After confirming with the user, clears the query text and loads the current
+         * repository and query language name space declarations.
+         */
+        export function resetNamespaces() {
+            if (confirm('Click OK to clear the current query text and replace' +
+                'it with the ' + $('#queryLn').val() +
+                ' namespace declarations.')) {
                 $('#query').val('');
                 workbench.query.loadNamespaces();
             }
         }
-        _query.resetNamespaces = resetNamespaces;
 
         /**
-        * Clear any contents of the save feedback field.
-        */
-        function clearFeedback() {
+         * Clear any contents of the save feedback field.
+         */
+        export function clearFeedback() {
             $('#save-feedback').removeClass().text('');
         }
-        _query.clearFeedback = clearFeedback;
 
         /**
-        * Clear the save feedback field, and look at the contents of the query name
-        * field. Disables the save button if the field doesn't satisfy a given regular
-        * expression. With a delay of 200 msec, to give enough time after
-        * the event for the document to have changed. (Workaround for annoying browser
-        * behavior.)
-        */
-        function handleNameChange() {
+         * Clear the save feedback field, and look at the contents of the query name
+         * field. Disables the save button if the field doesn't satisfy a given regular
+         * expression. With a delay of 200 msec, to give enough time after
+         * the event for the document to have changed. (Workaround for annoying browser
+         * behavior.)
+         */
+        export function handleNameChange() {
             setTimeout(function disableSaveIfNotValidName() {
-                $('#save').prop('disabled', !/^[- \w]{1,32}$/.test($('#query-name').val()));
+                $('#save').prop('disabled',
+                    !/^[- \w]{1,32}$/.test($('#query-name').val()));
                 workbench.query.clearFeedback();
             }, 0);
         }
-        _query.handleNameChange = handleNameChange;
+
+        interface AjaxSaveResponse {
+            accessible: boolean;
+            existed: boolean;
+            written: boolean;
+        }
 
         /**
-        * Send a background HTTP request to save the query, and handle the
-        * response asynchronously.
-        *
-        * @param overwrite
-        *            if true, add a URL parameter that tells the server we wish
-        *            to overwrite any already saved query
-        */
-        function ajaxSave(overwrite) {
+         * Send a background HTTP request to save the query, and handle the
+         * response asynchronously.
+         * 
+         * @param overwrite
+         *            if true, add a URL parameter that tells the server we wish
+         *            to overwrite any already saved query
+         */
+        function ajaxSave(overwrite: boolean) {
             var feedback = $('#save-feedback');
-            var url = [];
+            var url: string[] = [];
             url[url.length] = 'query';
             if (overwrite) {
                 url[url.length] = document.all ? ';' : '?';
-                url[url.length] = 'overwrite=true&';
-            }
+                url[url.length] = 'overwrite=true&'
+	        }
             var href = url.join('');
             var form = $('form[action="query"]');
             $.ajax({
@@ -95,15 +103,16 @@ var workbench;
                 dataType: 'json',
                 data: form.serialize(),
                 timeout: 5000,
-                error: function (jqXHR, textStatus, errorThrown) {
+                error: function(jqXHR: JQueryXHR, textStatus: string, errorThrown: string) {
                     feedback.removeClass().addClass('error');
                     if (textStatus == 'timeout') {
                         feedback.text('Timed out waiting for response. Uncertain if save occured.');
                     } else {
-                        feedback.text('Save Request Failed: Error Type = ' + textStatus + ', HTTP Status Text = "' + errorThrown + '"');
+                        feedback.text('Save Request Failed: Error Type = ' +
+                            textStatus + ', HTTP Status Text = "' + errorThrown + '"');
                     }
                 },
-                success: function (response) {
+                success: function(response: AjaxSaveResponse) {
                     if (response.accessible) {
                         if (response.written) {
                             feedback.removeClass().addClass('success');
@@ -126,13 +135,13 @@ var workbench;
             });
         }
 
-        function doSubmit() {
+        export function doSubmit() {
             var allowPageToSubmitForm = false;
             var save = ($('#action').val() == 'save');
             if (save) {
                 ajaxSave(false);
             } else {
-                var url = [];
+                var url: string[] = [];
                 url[url.length] = 'query';
                 if (document.all) {
                     url[url.length] = ';';
@@ -146,14 +155,16 @@ var workbench;
                 workbench.addParam(url, 'infer');
                 var href = url.join('');
                 var loc = document.location;
-                var currentBaseLength = loc.href.length - loc.pathname.length - loc.search.length;
+                var currentBaseLength = loc.href.length - loc.pathname.length
+                    - loc.search.length;
                 var pathLength = href.length;
                 var urlLength = pathLength + currentBaseLength;
 
                 // Published Internet Explorer restrictions on URL length, which are the
                 // most restrictive of the major browsers.
                 if (pathLength > 2048 || urlLength > 2083) {
-                    alert("Due to its length, your query will be posted in the request body. " + "It won't be possible to use a bookmark for the results page.");
+                    alert("Due to its length, your query will be posted in the request body. "
+                        + "It won't be possible to use a bookmark for the results page.");
                     allowPageToSubmitForm = true;
                 } else {
                     // GET using the constructed URL, method exits here
@@ -165,24 +176,27 @@ var workbench;
             // submission.
             return allowPageToSubmitForm;
         }
-        _query.doSubmit = doSubmit;
-    })(workbench.query || (workbench.query = {}));
-    var query = workbench.query;
-})(workbench || (workbench = {}));
+    }
+}
+
+interface QueryTextResponse {
+    queryText: string;
+}
 
 workbench.addLoad(function queryPageLoaded() {
     /**
-    * Gets a parameter from the URL or the cookies, preferentially in that
-    * order.
-    *
-    * @param param
-    *            the name of the parameter
-    * @returns the value of the given parameter, or something that evaluates
-    as false, if the parameter was not found
-    */
-    function getParameterFromUrlOrCookie(param) {
+     * Gets a parameter from the URL or the cookies, preferentially in that 
+     * order.
+     * 
+     * @param param
+     *            the name of the parameter
+     * @returns the value of the given parameter, or something that evaluates
+                  as false, if the parameter was not found
+     */
+    function getParameterFromUrlOrCookie(param: string) {
         var href = document.location.href;
-        var elements = href.substring(href.indexOf('?') + 1).substring(href.indexOf(';') + 1).split(decodeURIComponent('%26'));
+        var elements = href.substring(href.indexOf('?') + 1).substring(
+            href.indexOf(';') + 1).split(decodeURIComponent('%26'));
         var result = '';
         for (var i = 0; elements.length - i; i++) {
             var pair = elements[i].split('=');
@@ -197,20 +211,20 @@ workbench.addLoad(function queryPageLoaded() {
         return result;
     }
 
-    function getQueryTextFromServer(queryParam, refParam) {
+    function getQueryTextFromServer(queryParam: string, refParam: string) {
         $.getJSON('query', {
             action: "get",
             query: queryParam,
             ref: refParam
-        }, function (response) {
-            if (response.queryText) {
-                $('#query').val(response.queryText);
-            }
-        });
+        }, function(response: QueryTextResponse) {
+                if (response.queryText) {
+                    $('#query').val(response.queryText);
+                }
+            });
     }
 
     // Populate the query text area with the value of the URL query parameter,
-    // only if it is present. If it is not present in the URL query, then
+    // only if it is present. If it is not present in the URL query, then 
     // looks for the 'query' cookie, and sets it from that. (The cookie
     // enables re-populating the text field with the previous query when the
     // user returns via the browser back button.)
@@ -225,17 +239,15 @@ workbench.addLoad(function queryPageLoaded() {
     }
     workbench.query.loadNamespaces();
 
-    // Trim the query text area contents of any leading and/or trailing
+    // Trim the query text area contents of any leading and/or trailing 
     // whitespace.
     var queryTA = $('#query');
     queryTA.val($.trim(queryTA.val()));
 
-    // Add click handlers identifying the clicked element in a hidden 'action'
+    // Add click handlers identifying the clicked element in a hidden 'action' 
     // form field.
-    var addHandler = function (id) {
-        $('#' + id).click(function setAction() {
-            $('#action').val(id);
-        });
+    var addHandler = function(id: string) {
+        $('#' + id).click(function setAction() { $('#action').val(id); });
     };
     addHandler('exec');
     addHandler('save');
@@ -252,4 +264,3 @@ workbench.addLoad(function queryPageLoaded() {
         $('#save-private').prop('checked', false).prop('disabled', true);
     }
 });
-//# sourceMappingURL=query.js.map

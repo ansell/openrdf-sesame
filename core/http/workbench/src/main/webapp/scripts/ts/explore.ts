@@ -1,12 +1,14 @@
 /// <reference path="template.ts" />
 /// <reference path="jquery.d.ts" />
 /// <reference path="paging.ts" />
+
 // WARNING: Do not edit the *.js version of this file. Instead, always edit the
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
-workbench.addLoad(function () {
-    function removeDuplicates(self) {
-        function textContent(element) {
+
+workbench.addLoad(function() {
+    function removeDuplicates(self:string) {
+        function textContent(element:HTMLElement) {
             return $.trim(element.innerText || element.textContent);
         }
 
@@ -39,14 +41,15 @@ workbench.addLoad(function () {
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
         if (pair[0] == 'resource') {
             resource.val(value);
-        } else if (pair[0] == 'limit') {
+        }
+        else if (pair[0] == 'limit') {
             $('#limit').val(value);
         }
     }
     workbench.paging.correctButtons();
     var content = document.getElementById('content');
     var h1 = content.getElementsByTagName('h1')[0];
-    var rvalue = resource.val();
+    var rvalue=resource.val();
     if (rvalue) {
         h1.appendChild(document.createTextNode(' (' + rvalue + ')'));
         removeDuplicates(rvalue);
@@ -69,4 +72,3 @@ workbench.addLoad(function () {
     }
     workbench.paging.setShowDataTypesCheckboxAndSetChangeEvent();
 });
-//# sourceMappingURL=explore.js.map

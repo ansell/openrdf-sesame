@@ -1,18 +1,21 @@
 /// <reference path="template.ts" />
 /// <reference path="jquery.d.ts" />
+
 // WARNING: Do not edit the *.js version of this file. Instead, always edit the
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
-var workbench;
-(function (workbench) {
-    (function (update) {
-        function doSubmit() {
+
+module workbench {
+
+    export module update {
+
+        export function doSubmit() {
             if ($('#update').text().length >= 1000) {
                 // Too long to put in URL for a GET request. Instead, POST.
                 // Browser back-button may not work as expected.
                 return true;
-            } else {
-                var url = [];
+            } else { // safe to use in request-URI
+                var url: string[] = [];
                 url[url.length] = 'update';
                 if (document.all) {
                     url[url.length] = ';';
@@ -28,10 +31,8 @@ var workbench;
                 return false;
             }
         }
-        update.doSubmit = doSubmit;
-    })(workbench.update || (workbench.update = {}));
-    var update = workbench.update;
-})(workbench || (workbench = {}));
+    }
+}
 
 workbench.addLoad(function updatePageLoaded() {
     // Populate parameters
@@ -56,4 +57,3 @@ workbench.addLoad(function updatePageLoaded() {
         update.text(namespaces.text());
     }
 });
-//# sourceMappingURL=update.js.map
