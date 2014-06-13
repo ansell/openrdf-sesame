@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.Model;
@@ -213,12 +214,12 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean contains(Resource subj, URI pred, Value obj, Collection<Optional<Resource>> contexts) {
 		return matchPattern(subj, pred, obj, contexts).hasNext();
 	}
 
 	@Override
-	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean remove(Resource subj, URI pred, Value obj, Collection<Optional<Resource>> contexts) {
 		Iterator iter = matchPattern(subj, pred, obj, contexts);
 		if (!iter.hasNext()) {
 			return false;
@@ -386,11 +387,7 @@ public class LinkedHashModel extends AbstractModel {
 		public ModelStatement(ModelNode<Resource> subj, ModelNode<URI> pred, ModelNode<Value> obj,
 				ModelNode<Resource> ctx)
 		{
-			super(subj.getValue(), pred.getValue(), obj.getValue(), ctx.getValue());
-			assert subj != null;
-			assert pred != null;
-			assert obj != null;
-			assert ctx != null;
+			super(subj.getValue(), pred.getValue(), obj.getValue(), Optional.ofNullable(ctx.getValue()));
 			this.subj = subj;
 			this.pred = pred;
 			this.obj = obj;

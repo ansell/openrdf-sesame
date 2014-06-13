@@ -18,7 +18,9 @@ package org.openrdf.model.impl;
 
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,12 +53,12 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	@Override
 	public boolean add(Statement st) {
 		return add(st.getSubject(), st.getPredicate(), st.getObject(),
-				st.getContext());
+				Arrays.asList(st.getContext()));
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return !contains(null, null, null);
+		return !contains(null, null, null, Collections.emptyList());
 	}
 
 	@Override
@@ -167,8 +169,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	}
 
 	@Override
-	public boolean clear(Resource... contexts) {
-		return remove(null, null, null, contexts);
+	public void clear(Collection<Optional<Resource>> contexts) {
+		remove(null, null, null, contexts);
 	}
 
 	@Override

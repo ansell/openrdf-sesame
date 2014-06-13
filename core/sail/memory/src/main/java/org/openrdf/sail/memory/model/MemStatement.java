@@ -16,6 +16,9 @@
  */
 package org.openrdf.sail.memory.model;
 
+import java.util.Optional;
+
+import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ContextStatementImpl;
 
 /**
@@ -64,7 +67,7 @@ public class MemStatement extends ContextStatementImpl {
 	 * Creates a new MemStatement with the supplied subject, predicate, object
 	 * and context and marks it as 'explicit'.
 	 */
-	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+	public MemStatement(MemResource subject, MemURI predicate, MemValue object, Optional<Resource> context,
 			int sinceSnapshot)
 	{
 		this(subject, predicate, object, context, true, sinceSnapshot);
@@ -74,7 +77,7 @@ public class MemStatement extends ContextStatementImpl {
 	 * Creates a new MemStatement with the supplied subject, predicate, object
 	 * and context and marks it as 'explicit'.
 	 */
-	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+	public MemStatement(MemResource subject, MemURI predicate, MemValue object, Optional<Resource> context,
 			boolean explicit, int sinceSnapshot)
 	{
 		this(subject, predicate, object, context, explicit, sinceSnapshot, TxnStatus.NEUTRAL);
@@ -85,7 +88,7 @@ public class MemStatement extends ContextStatementImpl {
 	 * and context. The value of the <tt>explicit</tt> parameter determines if
 	 * this statement is marked as 'explicit' or not.
 	 */
-	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+	public MemStatement(MemResource subject, MemURI predicate, MemValue object, Optional<Resource> context,
 			boolean explicit, int sinceSnapshot, TxnStatus txnStatus)
 	{
 		super(subject, predicate, object, context);
@@ -114,8 +117,8 @@ public class MemStatement extends ContextStatementImpl {
 	}
 
 	@Override
-	public MemResource getContext() {
-		return (MemResource)super.getContext();
+	public Optional<Resource> getContext() {
+		return super.getContext();
 	}
 
 	public void setSinceSnapshot(int snapshot) {
@@ -163,9 +166,9 @@ public class MemStatement extends ContextStatementImpl {
 		getSubject().addSubjectStatement(this);
 		getPredicate().addPredicateStatement(this);
 		getObject().addObjectStatement(this);
-		MemResource context = getContext();
-		if (context != null) {
-			context.addContextStatement(this);
+		Optional<Resource> context = getContext();
+		if (context.isPresent()) {
+			((MemResource)context.get()).addContextStatement(this);
 		}
 	}
 
@@ -178,9 +181,9 @@ public class MemStatement extends ContextStatementImpl {
 		getSubject().removeSubjectStatement(this);
 		getPredicate().removePredicateStatement(this);
 		getObject().removeObjectStatement(this);
-		MemResource context = getContext();
-		if (context != null) {
-			context.removeContextStatement(this);
+		Optional<Resource> context = getContext();
+		if (context.isPresent()) {
+			((MemResource)context.get()).removeContextStatement(this);
 		}
 	}
 }

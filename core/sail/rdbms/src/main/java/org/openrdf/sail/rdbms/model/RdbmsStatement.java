@@ -16,6 +16,9 @@
  */
 package org.openrdf.sail.rdbms.model;
 
+import java.util.Optional;
+
+import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ContextStatementImpl;
 
 /**
@@ -32,9 +35,9 @@ public class RdbmsStatement extends ContextStatementImpl {
 		this(subject, predicate, object, null);
 	}
 
-	public RdbmsStatement(RdbmsResource subject, RdbmsURI predicate, RdbmsValue object, RdbmsResource context)
+	public RdbmsStatement(RdbmsResource subject, RdbmsURI predicate, RdbmsValue object, Resource context)
 	{
-		super(subject, predicate, object, context);
+		super(subject, predicate, object, Optional.ofNullable(context));
 	}
 
 	@Override
@@ -53,8 +56,8 @@ public class RdbmsStatement extends ContextStatementImpl {
 	}
 
 	@Override
-	public RdbmsResource getContext() {
-		return (RdbmsResource)super.getContext();
+	public Optional<Resource> getContext() {
+		return super.getContext();
 	}
 
 }

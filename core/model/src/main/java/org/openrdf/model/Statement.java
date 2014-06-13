@@ -17,6 +17,7 @@
 package org.openrdf.model;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import org.apache.commons.rdf.Triple;
 
@@ -59,11 +60,12 @@ public interface Statement extends Serializable, Triple {
 	 * @return The statement's context, or <tt>null</tt> in case of the null
 	 *         context or if not applicable.
 	 */
-	// FIXME should this return a set instead of a single context?
-	public Resource getContext();
+	public Optional<Resource> getContext();
 
 	/**
-	 * Compares a statement object to another object.
+	 * Compares a statement object to another object. <br>
+	 * NOTE: The context, whether present or not, is not used to compare
+	 * Statement objects for equality.
 	 * 
 	 * @param other
 	 *        The object to compare this statement to.
@@ -77,7 +79,9 @@ public interface Statement extends Serializable, Triple {
 	 * The hash code of a statement is defined as:
 	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode()</tt>
 	 * . This is similar to how {@link String#hashCode String.hashCode()} is
-	 * defined.
+	 * defined. <br>
+	 * NOTE: The context, whether present or not, is not used to derive the
+	 * hashcode for a Statement objects.
 	 * 
 	 * @return A hash code for the statement.
 	 */

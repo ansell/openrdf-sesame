@@ -17,9 +17,9 @@
 package org.openrdf.model;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openrdf.model.util.ModelException;
@@ -130,7 +130,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return <code>true</code> if statements match the specified pattern.
 	 */
-	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean contains(Resource subj, URI pred, Value obj, Collection<Optional<Resource>> contexts);
 
 	/**
 	 * Adds one or more statements to the model. This method creates a statement
@@ -146,7 +146,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @param obj
 	 *        The statement's object.
 	 * @param contexts
-	 *        The contexts to add statements to.
+	 *        The contexts to add statements to. All contexts must not be null.
 	 * @throws IllegalArgumentException
 	 *         If This Model cannot store the given statement, because it is
 	 *         filtered out of this view.
@@ -154,16 +154,20 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If this Model cannot accept any statements, because it is filtered
 	 *         to the empty set.
 	 */
-	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean add(Resource subj, URI pred, Value obj, Collection<Optional<Resource>> contexts);
+
+	/**
+	 * Removes all statements in this model.
+	 */
+	public void clear();
 
 	/**
 	 * Removes statements with the specified context exist in this model.
 	 * 
 	 * @param context
 	 *        The context of the statements to remove.
-	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean clear(Resource... context);
+	public void clear(Collection<Optional<Resource>> contexts);
 
 	/**
 	 * Removes statements with the specified subject, predicate, object and
@@ -201,7 +205,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        matching one of these will be removed.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean remove(Resource subj, URI pred, Value obj, Collection<Optional<Resource>> contexts);
 
 	// Views
 
@@ -252,7 +256,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
 	 */
-	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
+	public Model filter(Resource subj, URI pred, Value obj, Collection<Optional<Resource>> contexts);
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The
@@ -368,8 +372,8 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the contexts contained in this model
 	 */
-	public default Set<Resource> contexts() {
-		Set<Resource> subjects = stream().map(st -> st.getContext()).collect(Collectors.toSet());
+	public default Set<Optional<Resource>> contexts() {
+		Set<Optional<Resource>> subjects = stream().map(st -> st.getContext()).collect(Collectors.toSet());
 		return subjects;
 	};
 

@@ -16,6 +16,8 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.Optional;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -34,7 +36,7 @@ public class ContextStatementImpl extends StatementImpl {
 	/**
 	 * The statement's context, if applicable.
 	 */
-	private final Resource context;
+	private final Optional<Resource> context;
 
 	/*--------------*
 	 * Constructors *
@@ -54,7 +56,7 @@ public class ContextStatementImpl extends StatementImpl {
 	 *        The statement's context, <tt>null</tt> to indicate no context is
 	 *        associated.
 	 */
-	public ContextStatementImpl(Resource subject, URI predicate, Value object, Resource context) {
+	public ContextStatementImpl(Resource subject, URI predicate, Value object, Optional<Resource> context) {
 		super(subject, predicate, object);
 		this.context = context;
 	}
@@ -64,7 +66,7 @@ public class ContextStatementImpl extends StatementImpl {
 	 *---------*/
 
 	@Override
-	public Resource getContext()
+	public Optional<Resource> getContext()
 	{
 		return context;
 	}

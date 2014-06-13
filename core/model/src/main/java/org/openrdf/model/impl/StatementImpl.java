@@ -16,6 +16,8 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.Optional;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -77,24 +79,27 @@ public class StatementImpl implements Statement {
 	 * Methods *
 	 *---------*/
 
-	// Implements Statement.getSubject()
+	@Override
 	public Resource getSubject() {
 		return subject;
 	}
 
-	// Implements Statement.getPredicate()
+	@Override
 	public URI getPredicate() {
 		return predicate;
 	}
 
-	// Implements Statement.getObject()
+	@Override
 	public Value getObject() {
 		return object;
 	}
-
-	// Implements Statement.getContext()
-	public Resource getContext() {
-		return null;
+	
+	/*
+	 * Override this in subclasses that support contexts. 
+	 */
+	@Override
+	public Optional<Resource> getContext() {
+		return Optional.empty();
 	}
 
 	// Overrides Object.equals(Object), implements Statement.equals(Object)
