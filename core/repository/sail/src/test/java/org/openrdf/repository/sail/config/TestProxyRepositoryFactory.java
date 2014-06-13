@@ -32,7 +32,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfig;
@@ -71,7 +71,7 @@ public class TestProxyRepositoryFactory {
 		Model graph = Rio.parse(this.getClass().getResourceAsStream("/proxy.ttl"),
 				RepositoryConfigSchema.NAMESPACE, RDFFormat.TURTLE);
 		RepositoryConfig config = RepositoryConfig.create(graph,
-				GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
+				Models.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
 		config.validate();
 		assertThat(config.getID(), is("proxy"));
 		assertThat(config.getTitle(), is("Test Proxy for 'memory'"));

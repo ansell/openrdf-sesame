@@ -19,13 +19,15 @@ package org.openrdf.rio.helpers;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -46,7 +48,7 @@ public class BufferedGroupingRDFHandler extends RDFHandlerWrapper {
 
 	private final int bufferSize;
 
-	private final Graph bufferedStatements;
+	private final Model bufferedStatements;
 
 	private final Set<Resource> contexts;
 
@@ -75,7 +77,7 @@ public class BufferedGroupingRDFHandler extends RDFHandlerWrapper {
 	public BufferedGroupingRDFHandler(int bufferSize, RDFHandler... handlers) {
 		super(handlers);
 		this.bufferSize = bufferSize;
-		this.bufferedStatements = new GraphImpl();
+		this.bufferedStatements = new LinkedHashModel();
 		this.contexts = new HashSet<Resource>();
 	}
 
@@ -100,33 +102,21 @@ public class BufferedGroupingRDFHandler extends RDFHandlerWrapper {
 		throws RDFHandlerException
 	{
 		// primary grouping per context.
-		for (Resource context : contexts) {
-			Set<Resource> subjects = GraphUtil.getSubjects(bufferedStatements, null, null, context);
-			for (Resource subject : subjects) {
-				Set<URI> processedPredicates = new HashSet<URI>();
-
+		for (final Resource context : contexts) {
+			for (Resource subject : bufferedStatements.filter(null, null, null, context).subjects()) {
 				// give rdf:type preference over other predicates.
-				Iterator<Statement> typeStatements = bufferedStatements.match(subject, RDF.TYPE, null, context);
-				while (typeStatements.hasNext()) {
-					Statement typeStatement = typeStatements.next();
-					super.handleStatement(typeStatement);
+				for (Statement nextSt : bufferedStatements.filter(subject, RDF.TYPE, null, context)) {
+					super.handleStatement(nextSt);
 				}
-
-				processedPredicates.add(RDF.TYPE);
 
 				// retrieve other statement from this context with the same
 				// subject, and output them grouped by predicate
-				Iterator<Statement> subjectStatements = bufferedStatements.match(subject, null, null, context);
-				while (subjectStatements.hasNext()) {
-					Statement subjectStatement = subjectStatements.next();
-					URI predicate = subjectStatement.getPredicate();
-					if (!processedPredicates.contains(predicate)) {
-						Iterator<Statement> toWrite = bufferedStatements.match(subject, predicate, null, context);
-						while (toWrite.hasNext()) {
-							Statement toWriteSt = toWrite.next();
-							super.handleStatement(toWriteSt);
-						}
-						processedPredicates.add(predicate);
+				for (URI nextPredicate : bufferedStatements.filter(subject, null, null, context).stream().filter(
+						s -> !s.getPredicate().equals(RDF.TYPE)).map(s -> s.getPredicate()).distinct().collect(
+						Collectors.toSet()))
+				{
+					for (Statement nextSt : bufferedStatements.filter(subject, nextPredicate, null, context)) {
+						super.handleStatement(nextSt);
 					}
 				}
 			}

@@ -22,7 +22,7 @@ import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
@@ -90,10 +90,10 @@ public class SailRepositoryConfig extends RepositoryImplConfigBase {
 		throws RepositoryConfigException
 	{
 		try {
-			Resource sailImplNode = GraphUtil.getOptionalObjectResource(graph, repImplNode, SAILIMPL);
+			Resource sailImplNode = Models.getOptionalObjectResource(graph, repImplNode, SAILIMPL);
 
 			if (sailImplNode != null) {
-				Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, sailImplNode, SAILTYPE);
+				Literal typeLit = Models.getOptionalObjectLiteral(graph, sailImplNode, SAILTYPE);
 
 				if (typeLit != null) {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());

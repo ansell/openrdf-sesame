@@ -20,12 +20,15 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORY;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYID;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMPL;
 
+import java.util.Optional;
+
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -123,8 +126,8 @@ public class RepositoryConfig {
 		implConfig.validate();
 	}
 
-	public void export(Graph graph) {
-		ValueFactory vf = graph.getValueFactory();
+	public void export(Model graph) {
+		ValueFactory vf = ValueFactoryImpl.getInstance();
 
 		BNode repositoryNode = vf.createBNode();
 
@@ -142,23 +145,23 @@ public class RepositoryConfig {
 		}
 	}
 
-	public void parse(Graph graph, Resource repositoryNode)
+	public void parse(Model graph, Resource repositoryNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Literal idLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, REPOSITORYID);
-			if (idLit != null) {
-				setID(idLit.getLabel());
+			Optional<Literal> idLit = Models.getOptionalObjectLiteral(graph, repositoryNode, REPOSITORYID);
+			if (idLit.isPresent()) {
+				setID(idLit.get().getLabel());
 			}
 
-			Literal titleLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, RDFS.LABEL);
-			if (titleLit != null) {
-				setTitle(titleLit.getLabel());
+			Optional<Literal> titleLit = Models.getOptionalObjectLiteral(graph, repositoryNode, RDFS.LABEL);
+			if (titleLit.isPresent()) {
+				setTitle(titleLit.get().getLabel());
 			}
 
-			Resource implNode = GraphUtil.getOptionalObjectResource(graph, repositoryNode, REPOSITORYIMPL);
-			if (implNode != null) {
-				setRepositoryImplConfig(RepositoryImplConfigBase.create(graph, implNode));
+			Optional<Resource> implNode = Models.getOptionalObjectResource(graph, repositoryNode, REPOSITORYIMPL);
+			if (implNode.isPresent()) {
+				setRepositoryImplConfig(RepositoryImplConfigBase.create(graph, implNode.get()));
 			}
 		}
 		catch (GraphUtilException e) {
@@ -171,7 +174,7 @@ public class RepositoryConfig {
 	 * supplying the <tt>graph</tt> and <tt>repositoryNode</tt> to its
 	 * {@link #parse(Graph, Resource) parse} method.
 	 */
-	public static RepositoryConfig create(Graph graph, Resource repositoryNode)
+	public static RepositoryConfig create(Model graph, Resource repositoryNode)
 		throws RepositoryConfigException
 	{
 		RepositoryConfig config = new RepositoryConfig();

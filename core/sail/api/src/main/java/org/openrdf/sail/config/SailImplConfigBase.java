@@ -22,7 +22,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 
 /**
@@ -76,7 +76,7 @@ public class SailImplConfigBase implements SailImplConfig {
 		throws SailConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SAILTYPE);
+			Literal typeLit = Models.getOptionalObjectLiteral(graph, implNode, SAILTYPE);
 			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}

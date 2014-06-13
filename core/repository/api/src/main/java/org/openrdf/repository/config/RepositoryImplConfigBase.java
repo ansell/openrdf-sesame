@@ -18,11 +18,14 @@ package org.openrdf.repository.config;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTYPE;
 
+import java.util.Optional;
+
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 
 /**
@@ -62,23 +65,23 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		}
 	}
 
-	public Resource export(Graph graph) {
-		BNode implNode = graph.getValueFactory().createBNode();
+	public Resource export(Model graph) {
+		BNode implNode = ValueFactoryImpl.getInstance().createBNode();
 
 		if (type != null) {
-			graph.add(implNode, REPOSITORYTYPE, graph.getValueFactory().createLiteral(type));
+			graph.add(implNode, REPOSITORYTYPE, ValueFactoryImpl.getInstance().createLiteral(type));
 		}
 
 		return implNode;
 	}
 
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model graph, Resource implNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
-			if (typeLit != null) {
-				setType(typeLit.getLabel());
+			Optional<Literal> typeLit = Models.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
+			if (typeLit.isPresent()) {
+				setType(typeLit.get().getLabel());
 			}
 		}
 		catch (GraphUtilException e) {
@@ -86,17 +89,17 @@ public class RepositoryImplConfigBase implements RepositoryImplConfig {
 		}
 	}
 
-	public static RepositoryImplConfig create(Graph graph, Resource implNode)
+	public static RepositoryImplConfig create(Model graph, Resource implNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
+			Optional<Literal> typeLit = Models.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
 
-			if (typeLit != null) {
-				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
+			if (typeLit.isPresent()) {
+				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.get().getLabel());
 
 				if (factory == null) {
-					throw new RepositoryConfigException("Unsupported repository type: " + typeLit.getLabel());
+					throw new RepositoryConfigException("Unsupported repository type: " + typeLit.get().getLabel());
 				}
 
 				RepositoryImplConfig implConfig = factory.getConfig();

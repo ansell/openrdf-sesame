@@ -27,7 +27,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
@@ -157,12 +157,12 @@ public class NativeStoreConfig extends SailImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			Literal tripleIndexLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, TRIPLE_INDEXES);
+			Literal tripleIndexLit = Models.getOptionalObjectLiteral(graph, implNode, TRIPLE_INDEXES);
 			if (tripleIndexLit != null) {
 				setTripleIndexes((tripleIndexLit).getLabel());
 			}
 
-			Literal forceSyncLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, FORCE_SYNC);
+			Literal forceSyncLit = Models.getOptionalObjectLiteral(graph, implNode, FORCE_SYNC);
 			if (forceSyncLit != null) {
 				try {
 					setForceSync(forceSyncLit.booleanValue());
@@ -173,7 +173,7 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal valueCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, VALUE_CACHE_SIZE);
+			Literal valueCacheSizeLit = Models.getOptionalObjectLiteral(graph, implNode, VALUE_CACHE_SIZE);
 			if (valueCacheSizeLit != null) {
 				try {
 					setValueCacheSize(valueCacheSizeLit.intValue());
@@ -184,7 +184,7 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal valueIDCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
+			Literal valueIDCacheSizeLit = Models.getOptionalObjectLiteral(graph, implNode,
 					VALUE_ID_CACHE_SIZE);
 			if (valueIDCacheSizeLit != null) {
 				try {
@@ -196,7 +196,7 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal namespaceCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
+			Literal namespaceCacheSizeLit = Models.getOptionalObjectLiteral(graph, implNode,
 					NAMESPACE_CACHE_SIZE);
 			if (namespaceCacheSizeLit != null) {
 				try {
@@ -208,7 +208,7 @@ public class NativeStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal namespaceIDCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
+			Literal namespaceIDCacheSizeLit = Models.getOptionalObjectLiteral(graph, implNode,
 					NAMESPACE_ID_CACHE_SIZE);
 			if (namespaceIDCacheSizeLit != null) {
 				try {

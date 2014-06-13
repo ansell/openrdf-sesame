@@ -35,7 +35,7 @@ import info.aduna.io.IOUtil;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryReadOnlyException;
@@ -109,7 +109,7 @@ public class Create implements Command {
 					final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
 					rdfParser.setRDFHandler(new StatementCollector(graph));
 					rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
-					final Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
+					final Resource repositoryNode = Models.getUniqueSubject(graph, RDF.TYPE,
 							RepositoryConfigSchema.REPOSITORY);
 					final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
 					repConfig.validate();

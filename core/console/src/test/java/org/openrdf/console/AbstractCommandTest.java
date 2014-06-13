@@ -29,9 +29,10 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -68,18 +69,18 @@ public class AbstractCommandTest {
 	{
 		Repository systemRepo = manager.getSystemRepository();
 		RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
-		Graph graph = new LinkedHashModel();
+		Model graph = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(graph));
 		rdfParser.parse(new StringReader(IOUtil.readString(new InputStreamReader(configStream, "UTF-8"))),
 				RepositoryConfigSchema.NAMESPACE);
 		configStream.close();
-		Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY);
+		Resource repositoryNode = Models.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY);
 		RepositoryConfig repoConfig = RepositoryConfig.create(graph, repositoryNode);
 		repoConfig.validate();
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repoConfig);
 		if (null != data) { // null if we didn't provide a data file
 			RepositoryConnection connection = manager.getRepository(
-					GraphUtil.getUniqueObjectLiteral(graph, repositoryNode, RepositoryConfigSchema.REPOSITORYID).stringValue()).getConnection();
+					Models.getUniqueObjectLiteral(graph, repositoryNode, RepositoryConfigSchema.REPOSITORYID).stringValue()).getConnection();
 			try {
 				connection.add(data, null, RDFFormat.TURTLE);
 			}

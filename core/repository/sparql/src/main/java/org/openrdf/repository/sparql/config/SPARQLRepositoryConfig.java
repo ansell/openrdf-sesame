@@ -21,7 +21,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
@@ -101,12 +101,12 @@ public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, QUERY_ENDPOINT);
+			URI uri = Models.getOptionalObjectURI(graph, implNode, QUERY_ENDPOINT);
 			if (uri != null) {
 				setQueryEndpointUrl(uri.stringValue());
 			}
 			
-			uri = GraphUtil.getOptionalObjectURI(graph, implNode, UPDATE_ENDPOINT);
+			uri = Models.getOptionalObjectURI(graph, implNode, UPDATE_ENDPOINT);
 			if (uri != null) {
 				setUpdateEndpointUrl(uri.stringValue());
 			}

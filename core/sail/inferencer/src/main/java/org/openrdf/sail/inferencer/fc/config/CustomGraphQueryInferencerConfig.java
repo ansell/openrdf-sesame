@@ -33,7 +33,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
@@ -109,7 +109,7 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 		super.parse(graph, implNode);
 
 		try {
-			Literal language = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
+			Literal language = Models.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
 			if (null == language) {
 				setQueryLanguage(QueryLanguage.SPARQL);
 			}
@@ -120,13 +120,13 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 							+ " property, found " + language);
 				}
 			}
-			Iterator<Value> iter = GraphUtil.getObjectIterator(graph, implNode, RULE_QUERY);
+			Iterator<Value> iter = Models.getObjectIterator(graph, implNode, RULE_QUERY);
 			if (iter.hasNext()) {
-				setRuleQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
+				setRuleQuery(Models.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
 			}
-			iter = GraphUtil.getObjectIterator(graph, implNode, MATCHER_QUERY);
+			iter = Models.getObjectIterator(graph, implNode, MATCHER_QUERY);
 			if (iter.hasNext()) {
-				setMatcherQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
+				setMatcherQuery(Models.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
 			}
 		}
 		catch (GraphUtilException e) {

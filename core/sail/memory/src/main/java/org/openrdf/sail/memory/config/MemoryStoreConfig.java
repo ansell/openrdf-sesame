@@ -22,7 +22,7 @@ import static org.openrdf.sail.memory.config.MemoryStoreSchema.SYNC_DELAY;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfigBase;
@@ -89,7 +89,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			Literal persistValue = GraphUtil.getOptionalObjectLiteral(graph, implNode, PERSIST);
+			Literal persistValue = Models.getOptionalObjectLiteral(graph, implNode, PERSIST);
 			if (persistValue != null) {
 				try {
 					setPersist((persistValue).booleanValue());
@@ -100,7 +100,7 @@ public class MemoryStoreConfig extends SailImplConfigBase {
 				}
 			}
 
-			Literal syncDelayValue = GraphUtil.getOptionalObjectLiteral(graph, implNode, SYNC_DELAY);
+			Literal syncDelayValue = Models.getOptionalObjectLiteral(graph, implNode, SYNC_DELAY);
 			if (syncDelayValue != null) {
 				try {
 					setSyncDelay((syncDelayValue).longValue());

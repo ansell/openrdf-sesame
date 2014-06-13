@@ -24,7 +24,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
@@ -107,15 +107,15 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
+			URI uri = Models.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
 			if (uri != null) {
 				setURL(uri.toString());
 			}
-			Literal username = GraphUtil.getOptionalObjectLiteral(graph, implNode, USERNAME);
+			Literal username = Models.getOptionalObjectLiteral(graph, implNode, USERNAME);
 			if (username != null) {
 				setUsername(username.getLabel());
 			}
-			Literal password = GraphUtil.getOptionalObjectLiteral(graph, implNode, PASSWORD);
+			Literal password = Models.getOptionalObjectLiteral(graph, implNode, PASSWORD);
 			if (password != null) {
 				setPassword(password.getLabel());
 			}

@@ -27,13 +27,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.Binding;
@@ -62,7 +62,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private Graph graph = new GraphImpl();
+	private Model graph = new LinkedHashModel();
 
 	/*--------------*
 	 * Constructors *
@@ -95,15 +95,12 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		try {
-			Resource resultSetNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE, RESULTSET);
+			Resource resultSetNode = Models.getUniqueSubject(graph, RDF.TYPE, RESULTSET);
 
 			List<String> bindingNames = getBindingNames(resultSetNode);
 			tqrHandler.startQueryResult(bindingNames);
 
-			Iterator<Value> solIter = GraphUtil.getObjectIterator(graph, resultSetNode, SOLUTION);
-			while (solIter.hasNext()) {
-				Value solutionNode = solIter.next();
-
+			for(Value solutionNode : graph.filter(resultSetNode, SOLUTION, null).subjects()) {
 				if (solutionNode instanceof Resource) {
 					reportSolution((Resource)solutionNode, bindingNames);
 				}
@@ -127,11 +124,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	{
 		List<String> bindingNames = new ArrayList<String>(16);
 
-		Iterator<Value> varIter = GraphUtil.getObjectIterator(graph, resultSetNode, RESULTVARIABLE);
-
-		while (varIter.hasNext()) {
-			Value varName = varIter.next();
-
+		for (Value varName : graph.filter(resultSetNode, RESULTVARIABLE, null).subjects()) {
 			if (varName instanceof Literal) {
 				bindingNames.add(((Literal)varName).getLabel());
 			}
@@ -148,10 +141,7 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	{
 		MapBindingSet bindingSet = new MapBindingSet(bindingNames.size());
 
-		Iterator<Value> bindingIter = GraphUtil.getObjectIterator(graph, solutionNode, BINDING);
-		while (bindingIter.hasNext()) {
-			Value bindingNode = bindingIter.next();
-
+		for(Value bindingNode : graph.filter(solutionNode, BINDING, null).objects()) {
 			if (bindingNode instanceof Resource) {
 				Binding binding = getBinding((Resource)bindingNode);
 				bindingSet.addBinding(binding);
@@ -172,8 +162,8 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	private Binding getBinding(Resource bindingNode)
 		throws GraphUtilException
 	{
-		Literal name = GraphUtil.getUniqueObjectLiteral(graph, bindingNode, VARIABLE);
-		Value value = GraphUtil.getUniqueObject(graph, bindingNode, VALUE);
+		Literal name = Models.getUniqueObjectLiteral(graph, bindingNode, VARIABLE);
+		Value value = Models.getUniqueObject(graph, bindingNode, VALUE);
 		return new BindingImpl(name.getLabel(), value);
 	}
 }

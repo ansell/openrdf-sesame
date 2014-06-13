@@ -19,7 +19,7 @@ package org.openrdf.sail.config;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 
 public class SailConfigUtil {
@@ -28,7 +28,7 @@ public class SailConfigUtil {
 		throws SailConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.SAILTYPE);
+			Literal typeLit = Models.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.SAILTYPE);
 
 			if (typeLit != null) {
 				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());

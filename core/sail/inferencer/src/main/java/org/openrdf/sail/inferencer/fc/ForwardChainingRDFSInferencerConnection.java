@@ -25,12 +25,12 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 import info.aduna.text.ASCIIUtil;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.sail.Sail;
@@ -68,9 +68,9 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	/**
 	 * Contains the statements that have been reported by the base Sail as
 	 */
-	private Graph newStatements;
+	private Model newStatements;
 
-	private Graph newThisIteration;
+	private Model newThisIteration;
 
 	/**
 	 * Flags indicating which rules should be evaluated.
@@ -110,7 +110,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		}
 
 		if (newStatements == null) {
-			newStatements = new GraphImpl();
+			newStatements = new TreeModel();
 		}
 		newStatements.add(st);
 	}
@@ -132,7 +132,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			clearInferred();
 			addAxiomStatements();
 
-			newStatements = new GraphImpl();
+			newStatements = new TreeModel();
 			Iterations.addAll(getWrappedConnection().getStatements(null, null, null, true), newStatements);
 
 			statementsRemoved = false;
@@ -290,7 +290,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		}
 
 		newThisIteration = newStatements;
-		newStatements = new GraphImpl();
+		newStatements = new TreeModel();
 	}
 
 	protected boolean hasNewStatements() {
@@ -411,11 +411,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> iter = newThisIteration.match(null, null, null);
-
-		while (iter.hasNext()) {
-			Statement st = iter.next();
-
+		for(Statement st : newThisIteration.filter(null, null, null)) {
 			boolean added = addInferredStatement(st.getPredicate(), RDF.TYPE, RDF.PROPERTY);
 
 			if (added) {
@@ -432,10 +428,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	{
 		int nofInferred = 0;
 
-		Iterator<Statement> ntIter = newThisIteration.match(null, null, null);
-
-		while (ntIter.hasNext()) {
-			Statement nt = ntIter.next();
+		for(Statement nt : newThisIteration.filter(null, null, null)) {
 
 			Resource xxx = nt.getSubject();
 			URI aaa = nt.getPredicate();

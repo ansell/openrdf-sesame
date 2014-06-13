@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.rdbms.config;
 
-import static org.openrdf.model.util.GraphUtil.getOptionalObjectLiteral;
+import static org.openrdf.model.util.Models.getOptionalObjectLiteral;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.JDBC_DRIVER;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.MAX_TRIPLE_TABLES;
 import static org.openrdf.sail.rdbms.config.RdbmsStoreSchema.PASSWORD;

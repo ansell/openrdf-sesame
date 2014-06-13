@@ -20,7 +20,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfigBase;
@@ -74,7 +74,7 @@ public class ProxyRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			Literal proxiedID = GraphUtil.getOptionalObjectLiteral(graph,
+			Literal proxiedID = Models.getOptionalObjectLiteral(graph,
 					implNode, ProxyRepositorySchema.PROXIED_ID);
 			if (proxiedID != null) {
 				this.setProxiedRepositoryID(proxiedID.getLabel());

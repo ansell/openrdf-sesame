@@ -19,7 +19,7 @@ package org.openrdf.model.util;
 import org.openrdf.OpenRDFException;
 
 /**
- * An exception thrown by {@link GraphUtil} when specific conditions are not
+ * An exception thrown by {@link Models} when specific conditions are not
  * met.
  * 
  * @author Arjohn Kampman

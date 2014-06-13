@@ -20,7 +20,7 @@ import static org.openrdf.sail.config.SailConfigSchema.DELEGATE;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 
 /**
@@ -91,7 +91,7 @@ public class DelegatingSailImplConfigBase extends SailImplConfigBase implements 
 		super.parse(graph, implNode);
 
 		try {
-			Resource delegateNode = GraphUtil.getOptionalObjectResource(graph, implNode, DELEGATE);
+			Resource delegateNode = Models.getOptionalObjectResource(graph, implNode, DELEGATE);
 			if (delegateNode != null) {
 				setDelegate(SailConfigUtil.parseRepositoryImpl(graph, delegateNode));
 			}

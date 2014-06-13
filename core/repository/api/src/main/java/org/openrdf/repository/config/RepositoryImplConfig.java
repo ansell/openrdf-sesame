@@ -16,7 +16,7 @@
  */
 package org.openrdf.repository.config;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 
 /**
@@ -37,8 +37,8 @@ public interface RepositoryImplConfig {
 	public void validate()
 		throws RepositoryConfigException;
 
-	public Resource export(Graph graph);
+	public Resource export(Model graph);
 
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model graph, Resource implNode)
 		throws RepositoryConfigException;
 }

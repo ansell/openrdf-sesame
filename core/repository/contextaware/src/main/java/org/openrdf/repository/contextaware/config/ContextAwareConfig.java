@@ -28,13 +28,14 @@ import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMO
 
 import java.util.Set;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
@@ -198,8 +199,7 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	public Resource export(Graph graph) {
 		Resource repImplNode = super.export(graph);
 
-		ValueFactory vf = graph.getValueFactory();
-
+		ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
 		if (includeInferred != null) {
 			Literal bool = vf.createLiteral(includeInferred);
 			graph.add(repImplNode, INCLUDE_INFERRED, bool);
@@ -239,36 +239,36 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			Literal lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, INCLUDE_INFERRED);
+			Literal lit = Models.getOptionalObjectLiteral(graph, implNode, INCLUDE_INFERRED);
 			if (lit != null) {
 				setIncludeInferred(lit.booleanValue());
 			}
-			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, MAX_QUERY_TIME);
+			lit = Models.getOptionalObjectLiteral(graph, implNode, MAX_QUERY_TIME);
 			if (lit != null) {
 				setMaxQueryTime(lit.intValue());
 			}
-			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
+			lit = Models.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
 			if (lit != null) {
 				setQueryLanguage(QueryLanguage.valueOf(lit.getLabel()));
 			}
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
+			URI uri = Models.getOptionalObjectURI(graph, implNode, BASE_URI);
 			if (uri != null) {
 				setBaseURI(uri.stringValue());
 			}
 
-			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
+			Set<Value> objects = Models.getObjects(graph, implNode, READ_CONTEXT);
 			setReadContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
+			objects = Models.getObjects(graph, implNode, ADD_CONTEXT);
 			setAddContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
+			objects = Models.getObjects(graph, implNode, REMOVE_CONTEXT);
 			setRemoveContexts(objects.toArray(new URI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
+			objects = Models.getObjects(graph, implNode, ARCHIVE_CONTEXT);
 			setArchiveContexts(objects.toArray(new URI[objects.size()]));
 
-			uri = GraphUtil.getOptionalObjectURI(graph, implNode, INSERT_CONTEXT);
+			uri = Models.getOptionalObjectURI(graph, implNode, INSERT_CONTEXT);
 			if (uri != null) {
 				setInsertContext(uri);
 			}

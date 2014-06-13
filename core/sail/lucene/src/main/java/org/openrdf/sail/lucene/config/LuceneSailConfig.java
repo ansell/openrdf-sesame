@@ -21,7 +21,7 @@ import static org.openrdf.sail.lucene.config.LuceneSailConfigSchema.INDEX_DIR;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.DelegatingSailImplConfigBase;
 import org.openrdf.sail.config.SailConfigException;
@@ -87,7 +87,7 @@ public class LuceneSailConfig extends DelegatingSailImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			Literal indexDirLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, INDEX_DIR);
+			Literal indexDirLit = Models.getOptionalObjectLiteral(graph, implNode, INDEX_DIR);
 			if (indexDirLit != null) {
 				setIndexDir(indexDirLit.getLabel());
 			}

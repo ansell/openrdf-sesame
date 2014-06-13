@@ -19,12 +19,12 @@ package org.openrdf.query.dawg;
 import static org.openrdf.query.dawg.DAWGTestResultSetSchema.BOOLEAN;
 import static org.openrdf.query.dawg.DAWGTestResultSetSchema.RESULTSET;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.GraphImpl;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandlerException;
@@ -39,7 +39,7 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 	 * Variables *
 	 *-----------*/
 
-	private Graph graph = new GraphImpl();
+	private Model graph = new LinkedHashModel();
 
 	private boolean value;
 
@@ -77,8 +77,8 @@ public class DAWGTestBooleanParser extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		try {
-			Resource resultSetNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE, RESULTSET);
-			Literal booleanLit = GraphUtil.getUniqueObjectLiteral(graph, resultSetNode, BOOLEAN);
+			Resource resultSetNode = Models.getUniqueSubject(graph, RDF.TYPE, RESULTSET);
+			Literal booleanLit = Models.getUniqueObjectLiteral(graph, resultSetNode, BOOLEAN);
 
 			if (booleanLit.equals(DAWGTestResultSetSchema.TRUE)) {
 				value = true;

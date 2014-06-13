@@ -18,7 +18,6 @@ package org.openrdf.query;
 
 import java.util.Map;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
 
 /**

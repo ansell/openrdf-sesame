@@ -704,18 +704,4 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		}
 	}
 
-	/* Graph methods */
-
-	@Deprecated
-	@Override
-	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
-		return this.filter(subj, pred, obj, contexts).iterator();
-	}
-
-	@Deprecated
-	@Override
-	public ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
-	}
-	
 }

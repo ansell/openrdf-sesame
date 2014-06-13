@@ -35,7 +35,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.XMLSchema;

@@ -24,9 +24,7 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.IterationWrapper;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 

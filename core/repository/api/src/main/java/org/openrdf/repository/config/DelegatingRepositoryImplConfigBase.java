@@ -18,9 +18,11 @@ package org.openrdf.repository.config;
 
 import static org.openrdf.repository.config.RepositoryConfigSchema.DELEGATE;
 
-import org.openrdf.model.Graph;
+import java.util.Optional;
+
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.util.GraphUtilException;
 
 /**
@@ -74,7 +76,7 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 	}
 
 	@Override
-	public Resource export(Graph graph)
+	public Resource export(Model graph)
 	{
 		Resource implNode = super.export(graph);
 
@@ -87,15 +89,15 @@ public class DelegatingRepositoryImplConfigBase extends RepositoryImplConfigBase
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model graph, Resource implNode)
 		throws RepositoryConfigException
 	{
 		super.parse(graph, implNode);
 
 		try {
-			Resource delegateNode = GraphUtil.getOptionalObjectResource(graph, implNode, DELEGATE);
-			if (delegateNode != null) {
-				setDelegate(create(graph, delegateNode));
+			Optional<Resource> delegateNode = Models.getOptionalObjectResource(graph, implNode, DELEGATE);
+			if (delegateNode.isPresent()) {
+				setDelegate(create(graph, delegateNode.get()));
 			}
 		}
 		catch (GraphUtilException e) {

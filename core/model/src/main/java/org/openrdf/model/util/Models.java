@@ -16,19 +16,14 @@
  */
 package org.openrdf.model.util;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.util.iterators.ConvertingIterator;
-import org.openrdf.util.iterators.Iterators;
 
 /**
  * Utility methods for working with {@link Graph} objects. Note that since
@@ -38,31 +33,7 @@ import org.openrdf.util.iterators.Iterators;
  * 
  * @author Arjohn Kampman
  */
-public class GraphUtil {
-
-	/**
-	 * Gets the subject of the statements with the specified predicate, object
-	 * and (optionally) contexts from the supplied graph. Calling this method is
-	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt> and
-	 * extracting the subjects of the matching statements from the returned
-	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
-	 * description of the parameter values.
-	 */
-	public static Iterator<Resource> getSubjectIterator(Graph graph, URI pred, Value obj, Resource... contexts)
-	{
-		Iterator<Statement> iter = graph.match(null, pred, obj, contexts);
-
-		return new ConvertingIterator<Statement, Resource>(iter) {
-
-			@Override
-			protected Resource convert(Statement st)
-				throws RuntimeException
-			{
-				return st.getSubject();
-			}
-
-		};
-	}
+public class Models {
 
 	/**
 	 * Gets the subject of the statements with the specified predicate, object
@@ -72,9 +43,8 @@ public class GraphUtil {
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 */
-	public static Set<Resource> getSubjects(Graph graph, URI pred, Value obj, Resource... contexts) {
-		Iterator<Resource> iter = getSubjectIterator(graph, pred, obj, contexts);
-		return Iterators.addAll(iter, new LinkedHashSet<Resource>());
+	public static Set<Resource> getSubjects(Model graph, URI pred, Value obj, Resource... contexts) {
+		return graph.filter(null, pred, obj, contexts).subjects();
 	}
 
 	/**
@@ -92,7 +62,7 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters do not have
 	 *         exactly one unique subject.
 	 */
-	public static Resource getUniqueSubject(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static Resource getUniqueSubject(Model graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Resource> subjects = getSubjects(graph, pred, obj, contexts);
@@ -119,7 +89,7 @@ public class GraphUtil {
 	 *         {@link #getUniqueSubject(Graph, URI, Value, Resource[])} or if its
 	 *         return value is not a URI.
 	 */
-	public static URI getUniqueSubjectURI(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static URI getUniqueSubjectURI(Model graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Resource subject = getUniqueSubject(graph, pred, obj, contexts);
@@ -147,7 +117,7 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
 	 */
-	public static Resource getOptionalSubject(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static Resource getOptionalSubject(Model graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Resource> subjects = getSubjects(graph, pred, obj, contexts);
@@ -175,7 +145,7 @@ public class GraphUtil {
 	 *         {@link #getOptionalSubject(Graph, URI, Value, Resource[])} or if
 	 *         its return value is not a URI.
 	 */
-	public static URI getOptionalSubjectURI(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static URI getOptionalSubjectURI(Model graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Resource subject = getOptionalSubject(graph, pred, obj, contexts);
@@ -192,37 +162,12 @@ public class GraphUtil {
 	 * Gets the objects of the statements with the specified subject, predicate
 	 * and (optionally) contexts from the supplied graph. Calling this method is
 	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt> and
-	 * extracting the objects of the matching statements from the returned
-	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
-	 * description of the parameter values.
-	 */
-	public static Iterator<Value> getObjectIterator(Graph graph, Resource subj, URI pred, Resource... contexts)
-	{
-		Iterator<Statement> iter = graph.match(subj, pred, null, contexts);
-
-		return new ConvertingIterator<Statement, Value>(iter) {
-
-			@Override
-			protected Value convert(Statement st)
-				throws RuntimeException
-			{
-				return st.getObject();
-			}
-
-		};
-	}
-
-	/**
-	 * Gets the objects of the statements with the specified subject, predicate
-	 * and (optionally) contexts from the supplied graph. Calling this method is
-	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt> and
 	 * adding the objects of the matching statements to a set. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 */
-	public static Set<Value> getObjects(Graph graph, Resource subj, URI pred, Resource... contexts) {
-		Iterator<Value> iter = getObjectIterator(graph, subj, pred, contexts);
-		return Iterators.addAll(iter, new LinkedHashSet<Value>());
+	public static Set<Value> getObjects(Model graph, Resource subj, URI pred, Resource... contexts) {
+		return graph.filter(subj, pred, null, contexts).objects();
 	}
 
 	/**
@@ -240,7 +185,7 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters do not have
 	 *         exactly one unique object.
 	 */
-	public static Value getUniqueObject(Graph graph, Resource subj, URI pred, Resource... contexts)
+	public static Value getUniqueObject(Model graph, Resource subj, URI pred, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Value> objects = getObjects(graph, subj, pred, contexts);
@@ -263,14 +208,8 @@ public class GraphUtil {
 	 * context, else the (subj, pred) pair will occur exactly once in the entire
 	 * Graph.
 	 */
-	public static void setUniqueObject(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
-		Iterator<Statement> iter = graph.match(subj, pred, null, contexts);
-
-		while (iter.hasNext()) {
-			iter.next();
-			iter.remove();
-		}
-
+	public static void setUniqueObject(Model graph, Resource subj, URI pred, Value obj, Resource... contexts) {
+		graph.remove(subj, pred, null, contexts);
 		graph.add(subj, pred, obj, contexts);
 	}
 
@@ -285,7 +224,7 @@ public class GraphUtil {
 	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Resource.
 	 */
-	public static Resource getUniqueObjectResource(Graph graph, Resource subj, URI pred)
+	public static Resource getUniqueObjectResource(Model graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
 		Value obj = getUniqueObject(graph, subj, pred);
@@ -309,7 +248,7 @@ public class GraphUtil {
 	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a URI.
 	 */
-	public static URI getUniqueObjectURI(Graph graph, Resource subj, URI pred)
+	public static URI getUniqueObjectURI(Model graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
 		Value obj = getUniqueObject(graph, subj, pred);
@@ -333,7 +272,7 @@ public class GraphUtil {
 	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Literal.
 	 */
-	public static Literal getUniqueObjectLiteral(Graph graph, Resource subj, URI pred)
+	public static Literal getUniqueObjectLiteral(Model graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
 		Value obj = getUniqueObject(graph, subj, pred);
@@ -361,16 +300,16 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
 	 */
-	public static Value getOptionalObject(Graph graph, Resource subj, URI pred, Resource... contexts)
+	public static Optional<Value> getOptionalObject(Model graph, Resource subj, URI pred, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Value> objects = getObjects(graph, subj, pred, contexts);
 
 		if (objects.isEmpty()) {
-			return null;
+			return Optional.empty();
 		}
 		else if (objects.size() == 1) {
-			return objects.iterator().next();
+			return Optional.of(objects.iterator().next());
 		}
 		else {
 			throw new GraphUtilException("Multiple " + pred + " properties found");
@@ -389,13 +328,16 @@ public class GraphUtil {
 	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Resource.
 	 */
-	public static Resource getOptionalObjectResource(Graph graph, Resource subj, URI pred)
+	public static Optional<Resource> getOptionalObjectResource(Model graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
-		Value obj = getOptionalObject(graph, subj, pred);
+		Optional<Value> obj = getOptionalObject(graph, subj, pred);
 
-		if (obj == null || obj instanceof Resource) {
-			return (Resource)obj;
+		if (!obj.isPresent()) {
+			return Optional.empty();
+		}
+		else if (obj.get() instanceof Resource) {
+			return Optional.of((Resource)obj.get());
 		}
 		else {
 			throw new GraphUtilException("Expected URI or blank node for property " + pred);
@@ -414,13 +356,16 @@ public class GraphUtil {
 	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a URI.
 	 */
-	public static URI getOptionalObjectURI(Graph graph, Resource subj, URI pred)
+	public static Optional<URI> getOptionalObjectURI(Model graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
-		Value obj = getOptionalObject(graph, subj, pred);
+		Optional<Value> obj = getOptionalObject(graph, subj, pred);
 
-		if (obj == null || obj instanceof URI) {
-			return (URI)obj;
+		if (!obj.isPresent()) {
+			return Optional.empty();
+		}
+		else if (obj.get() instanceof URI) {
+			return Optional.of((URI)obj.get());
 		}
 		else {
 			throw new GraphUtilException("Expected URI for property " + pred);
@@ -439,50 +384,19 @@ public class GraphUtil {
 	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Literal.
 	 */
-	public static Literal getOptionalObjectLiteral(Graph graph, Resource subj, URI pred)
+	public static Optional<Literal> getOptionalObjectLiteral(Model graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
-		Value obj = getOptionalObject(graph, subj, pred);
+		Optional<Value> obj = getOptionalObject(graph, subj, pred);
 
-		if (obj == null || obj instanceof Literal) {
-			return (Literal)obj;
+		if (!obj.isPresent()) {
+			return Optional.empty();
+		}
+		else if (obj.get() instanceof Literal) {
+			return Optional.of((Literal)obj.get());
 		}
 		else {
 			throw new GraphUtilException("Expected literal for property " + pred);
-		}
-	}
-
-	/**
-	 * Utility method that removes all statements matching the specified criteria
-	 * from a graph.
-	 * 
-	 * @param graph
-	 *        The graph to remove the statements from.
-	 * @param subj
-	 *        The subject of the statements to match, <tt>null</tt> to match
-	 *        statements with any subject.
-	 * @param pred
-	 *        The predicate of the statements to match, <tt>null</tt> to match
-	 *        statements with any predicate.
-	 * @param obj
-	 *        The object of the statements to match, <tt>null</tt> to match
-	 *        statements with any object.
-	 * @param contexts
-	 *        The contexts of the statements to match. If no contexts are
-	 *        specified, statements will match disregarding their context. If one
-	 *        or more contexts are specified, statements with a context matching
-	 *        one of these will match.
-	 * @throws IllegalArgumentException
-	 *         If a <tt>null</tt>-array is specified as the value for
-	 *         <tt>contexts</tt>. See
-	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
-	 *         info.
-	 */
-	public static void remove(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
-		Iterator<Statement> statements = graph.match(subj, pred, obj, contexts);
-		while (statements.hasNext()) {
-			statements.next();
-			statements.remove();
 		}
 	}
 }

@@ -19,7 +19,6 @@ package org.openrdf.model;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openrdf.model.util.ModelException;
@@ -32,7 +31,7 @@ import org.openrdf.model.util.ModelException;
  * @since 2.7.0
  * @author James Leigh
  */
-public interface Model extends Graph, Set<Statement>, Serializable {
+public interface Model extends Set<Statement>, Serializable {
 
 	/**
 	 * Returns an unmodifiable view of this model. This method provides

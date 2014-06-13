@@ -16,9 +16,9 @@
  */
 package org.openrdf.query.dawg;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -51,10 +51,10 @@ public class DAWGTestResultSetUtil {
 		}
 	}
 
-	public static Graph toGraph(TupleQueryResult tqr)
+	public static Model toGraph(TupleQueryResult tqr)
 		throws QueryEvaluationException
 	{
-		Graph graph = new GraphImpl();
+		Model graph = new LinkedHashModel();
 		DAWGTestResultSetWriter writer = new DAWGTestResultSetWriter(new StatementCollector(graph));
 
 		try {

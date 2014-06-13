@@ -31,7 +31,7 @@ import info.aduna.io.IOUtil;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
@@ -141,7 +141,7 @@ public class CreateServlet extends TransformationServlet {
 		rdfParser.setRDFHandler(new StatementCollector(graph));
 		rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
 		final RepositoryConfig repConfig = RepositoryConfig.create(graph,
-				GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
+				Models.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
 		repConfig.validate();
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 		return repConfig;
