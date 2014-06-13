@@ -18,6 +18,7 @@ package org.openrdf.model.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -54,7 +55,7 @@ public class LiteralImpl implements Literal {
 	/**
 	 * The literal's language tag (null if not applicable).
 	 */
-	private String language;
+	private Optional<String> language;
 
 	/**
 	 * The literal's datatype.
@@ -75,7 +76,7 @@ public class LiteralImpl implements Literal {
 	 *        The label for the literal, must not be <tt>null</tt>.
 	 */
 	public LiteralImpl(String label) {
-		this(label, null, XMLSchema.STRING);
+		this(label, Optional.empty(), XMLSchema.STRING);
 	}
 
 	/**
@@ -87,6 +88,18 @@ public class LiteralImpl implements Literal {
 	 *        The language tag for the literal.
 	 */
 	public LiteralImpl(String label, String language) {
+		this(label, Optional.of(language), RDF.LANGSTRING);
+	}
+
+	/**
+	 * Creates a new plain literal with the supplied label and language tag.
+	 * 
+	 * @param label
+	 *        The label for the literal, must not be <tt>null</tt>.
+	 * @param language
+	 *        The language tag for the literal.
+	 */
+	public LiteralImpl(String label, Optional<String> language) {
 		this(label, language, RDF.LANGSTRING);
 	}
 
@@ -99,17 +112,17 @@ public class LiteralImpl implements Literal {
 	 *        The datatype for the literal.
 	 */
 	public LiteralImpl(String label, URI datatype) {
-		this(label, null, datatype);
+		this(label, Optional.empty(), datatype);
 	}
 
 	/**
 	 * Creates a new Literal object, initializing the variables with the supplied
 	 * parameters.
 	 */
-	private LiteralImpl(String label, String language, URI datatype) {
+	private LiteralImpl(String label, Optional<String> language, URI datatype) {
 		setLabel(label);
-		if (language != null) {
-			setLanguage(language.toLowerCase());
+		if (language.isPresent()) {
+			setLanguage(language.get().toLowerCase());
 		}
 		else if (datatype == null) {
 			setDatatype(XMLSchema.STRING);
@@ -136,11 +149,11 @@ public class LiteralImpl implements Literal {
 	}
 
 	protected void setLanguage(String language) {
-		this.language = language;
+		this.language = Optional.of(language);
 		setDatatype(RDF.LANGSTRING);
 	}
 
-	public String getLanguage() {
+	public Optional<String> getLanguage() {
 		return language;
 	}
 

@@ -19,6 +19,7 @@ package org.openrdf.query.algebra.evaluation.impl;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -373,8 +374,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars, bindings,
-					baseUri);
+			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars,
+					bindings, baseUri);
 
 			if (service.isSilent())
 				return new SilentIteration(result);
@@ -582,7 +583,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				if (objVar != null && !objVar.isConstant() && !result.hasBinding(objVar.getName())) {
 					result.addBinding(objVar.getName(), st.getObject());
 				}
-				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
+				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName())
+						&& st.getContext() != null)
+				{
 					result.addBinding(conVar.getName(), st.getContext());
 				}
 
@@ -660,7 +663,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
 
 		final QueryBindingSet b = new QueryBindingSet(bindings);
-		
+
 		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
 			public boolean hasNext()
@@ -1176,13 +1179,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
-
-			String langTag = literal.getLanguage();
-			if (langTag == null) {
-				langTag = "";
-			}
-
-			return tripleSource.getValueFactory().createLiteral(langTag);
+			return tripleSource.getValueFactory().createLiteral(literal.getLanguage().orElse(""));
 		}
 
 		throw new ValueExprEvaluationException();
@@ -1196,12 +1193,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		if (v instanceof Literal) {
 			Literal literal = (Literal)v;
 
-			if (literal.getDatatype() != null) {
+			if (literal.getLanguage().isPresent()) {
+				return RDF.LANGSTRING;
+			}
+			else if (literal.getDatatype() != null) {
 				// literal with datatype
 				return literal.getDatatype();
-			}
-			else if (literal.getLanguage() != null) {
-				return RDF.LANGSTRING;
 			}
 			else {
 				// simple literal

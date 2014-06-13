@@ -141,7 +141,7 @@ public abstract class IdSequence {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
 			if (Literals.isLanguageLiteral(lit)) {
-				return hash(digest, lit.getLanguage());
+				return hash(digest, lit.getLanguage().get());
 			}
 			else {
 				return hash(digest, lit.getDatatype().stringValue());
@@ -170,10 +170,9 @@ public abstract class IdSequence {
 	}
 
 	protected ValueType valueOf(Literal lit) {
-		String lang = lit.getLanguage();
 		URI dt = lit.getDatatype();
 		int length = lit.stringValue().length();
-		if (lang != null) {
+		if (lit.getLanguage().isPresent()) {
 			// language
 			if (length > LONG)
 				return ValueType.LANG_LONG;

@@ -16,6 +16,7 @@
  */
 package org.openrdf.rio.jsonld;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.BNode;
@@ -58,24 +59,28 @@ class JSONLDInternalRDFParser implements com.github.jsonldjava.core.RDFParser {
 		if (object instanceof Literal) {
 			final Literal literal = (Literal)object;
 			final String value = literal.getLabel();
-			final String language = literal.getLanguage();
+			final Optional<String> language = literal.getLanguage();
 
 			String datatype = getResourceValue(literal.getDatatype());
 
 			// In RDF-1.1, Language Literals internally have the datatype
 			// rdf:langString
-			if (language != null && datatype == null) {
+			if (language.isPresent() && datatype == null) {
 				datatype = RDF.LANGSTRING.stringValue();
 			}
 
 			// In RDF-1.1, RDF-1.0 Plain Literals are now Typed Literals with
 			// type xsd:String
-			if (language == null && datatype == null) {
+			if (!language.isPresent() && datatype == null) {
 				datatype = XMLSchema.STRING.stringValue();
 			}
 
-			result.addQuad(subject, predicate, value, datatype, language, graphName);
-
+			if (language.isPresent()) {
+				result.addQuad(subject, predicate, value, datatype, language.get(), graphName);
+			}
+			else {
+				result.addQuad(subject, predicate, value, datatype, null, graphName);
+			}
 		}
 		else {
 			result.addQuad(subject, predicate, getResourceValue((Resource)object), graphName);

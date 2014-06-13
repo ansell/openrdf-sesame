@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.memory.model;
 
+import java.util.Optional;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -71,6 +73,21 @@ public class MemLiteral extends LiteralImpl implements MemValue {
 	 *        The language code of the supplied label.
 	 */
 	public MemLiteral(Object creator, String label, String lang) {
+		super(label, lang);
+		this.creator = creator;
+	}
+
+	/**
+	 * Creates a new Literal which will get the supplied label and language code.
+	 * 
+	 * @param creator
+	 *        The object that is creating this MemLiteral.
+	 * @param label
+	 *        The label for this literal.
+	 * @param lang
+	 *        The language code of the supplied label.
+	 */
+	public MemLiteral(Object creator, String label, Optional<String> lang) {
 		super(label, lang);
 		this.creator = creator;
 	}

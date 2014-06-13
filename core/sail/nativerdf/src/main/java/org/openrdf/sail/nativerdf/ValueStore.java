@@ -18,6 +18,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
@@ -498,12 +499,12 @@ public class ValueStore extends ValueFactoryBase {
 		byte[] langData = null;
 		int langDataLength = 0;
 		if (Literals.isLanguageLiteral(literal)) {
-			langData = literal.getLanguage().getBytes("UTF-8");
+			langData = literal.getLanguage().get().getBytes(StandardCharsets.UTF_8);
 			langDataLength = langData.length;
 		}
 
 		// Get label in UTF-8
-		byte[] labelData = literal.getLabel().getBytes("UTF-8");
+		byte[] labelData = literal.getLabel().getBytes(StandardCharsets.UTF_8);
 
 		// Combine parts in a single byte array
 		byte[] literalData = new byte[6 + langDataLength + labelData.length];

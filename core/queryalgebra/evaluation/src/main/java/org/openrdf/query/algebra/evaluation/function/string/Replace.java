@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.openrdf.model.Literal;
@@ -112,11 +113,11 @@ public class Replace implements Function {
 			Pattern p = Pattern.compile(patternString, f);
 			String result = p.matcher(argString).replaceAll(replacementString);
 
-			String lang = arg.getLanguage();
+			Optional<String> lang = arg.getLanguage();
 			URI dt = arg.getDatatype();
 
-			if (lang != null) {
-				return valueFactory.createLiteral(result, lang);
+			if (lang.isPresent()) {
+				return valueFactory.createLiteral(result, lang.get());
 			}
 			else if (dt != null) {
 				return valueFactory.createLiteral(result, dt);

@@ -298,7 +298,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 
 				// language attribute
 				if (Literals.isLanguageLiteral(objLit)) {
-					writeAttribute("xml:lang", objLit.getLanguage());
+					writeAttribute("xml:lang", objLit.getLanguage().get());
 				}
 				else {
 					URI datatype = objLit.getDatatype();

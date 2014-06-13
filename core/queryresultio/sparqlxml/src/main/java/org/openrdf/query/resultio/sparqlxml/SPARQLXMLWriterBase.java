@@ -512,7 +512,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		throws IOException
 	{
 		if (Literals.isLanguageLiteral(literal)) {
-			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage());
+			xmlWriter.setAttribute(LITERAL_LANG_ATT, literal.getLanguage().get());
 		}
 		// Only enter this section for non-language literals now, as the
 		// rdf:langString datatype is handled implicitly above

@@ -18,6 +18,7 @@ package org.openrdf.sail.rdbms.model;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -46,30 +47,37 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 		this.lit = lit;
 	}
 
+	@Override
 	public boolean booleanValue() {
 		return lit.booleanValue();
 	}
 
+	@Override
 	public byte byteValue() {
 		return lit.byteValue();
 	}
 
+	@Override
 	public XMLGregorianCalendar calendarValue() {
 		return lit.calendarValue();
 	}
 
+	@Override
 	public BigDecimal decimalValue() {
 		return lit.decimalValue();
 	}
 
+	@Override
 	public double doubleValue() {
 		return lit.doubleValue();
 	}
 
+	@Override
 	public float floatValue() {
 		return lit.floatValue();
 	}
 
+	@Override
 	public URI getDatatype() {
 		return lit.getDatatype();
 	}
@@ -78,26 +86,32 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 		return lit.getLabel();
 	}
 
-	public String getLanguage() {
+	@Override
+	public Optional<String> getLanguage() {
 		return lit.getLanguage();
 	}
 
+	@Override
 	public BigInteger integerValue() {
 		return lit.integerValue();
 	}
 
+	@Override
 	public int intValue() {
 		return lit.intValue();
 	}
 
+	@Override
 	public long longValue() {
 		return lit.longValue();
 	}
 
+	@Override
 	public short shortValue() {
 		return lit.shortValue();
 	}
 
+	@Override
 	public String stringValue() {
 		return lit.stringValue();
 	}

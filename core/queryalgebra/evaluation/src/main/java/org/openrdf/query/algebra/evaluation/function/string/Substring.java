@@ -16,6 +16,8 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
+import java.util.Optional;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -101,11 +103,11 @@ public class Substring implements Function {
 				}
 
 				try {
-					String language = literal.getLanguage();
+					Optional<String> language = literal.getLanguage();
 					lexicalValue = lexicalValue.substring(startIndex, endIndex);
 
-					if (language != null) {
-						return valueFactory.createLiteral(lexicalValue, language);
+					if (language.isPresent()) {
+						return valueFactory.createLiteral(lexicalValue, language.get());
 					}
 					else if (XMLSchema.STRING.equals(literal.getDatatype())) {
 						return valueFactory.createLiteral(lexicalValue, XMLSchema.STRING);

@@ -275,7 +275,6 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		throws IOException
 	{
 		String label = literal.getLabel();
-		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
 
 		int marker = PLAIN_LITERAL_RECORD_MARKER;
@@ -298,7 +297,7 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		writeString(label);
 
 		if (Literals.isLanguageLiteral(literal)) {
-			writeString(language);
+			writeString(literal.getLanguage().get());
 		}
 		else {
 			writeQName(datatype);

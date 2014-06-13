@@ -306,13 +306,12 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		String label = literal.getLabel();
-		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
 
 		if (Literals.isLanguageLiteral(literal)) {
 			out.writeByte(LANG_LITERAL_VALUE);
 			writeString(label);
-			writeString(language);
+			writeString(literal.getLanguage().get());
 		}
 		else {
 			out.writeByte(DATATYPE_LITERAL_VALUE);

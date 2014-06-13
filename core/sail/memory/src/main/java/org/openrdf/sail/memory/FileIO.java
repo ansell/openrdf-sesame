@@ -309,13 +309,12 @@ class FileIO {
 			Literal lit = (Literal)value;
 
 			String label = lit.getLabel();
-			String language = lit.getLanguage();
 			URI datatype = lit.getDatatype();
 
 			if (Literals.isLanguageLiteral(lit)) {
 				dataOut.writeByte(LANG_LITERAL_MARKER);
 				writeString(label, dataOut);
-				writeString(language, dataOut);
+				writeString(lit.getLanguage().get(), dataOut);
 			}
 			else {
 				dataOut.writeByte(DATATYPE_LITERAL_MARKER);

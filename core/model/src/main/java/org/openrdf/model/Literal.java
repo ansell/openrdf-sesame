@@ -18,6 +18,7 @@ package org.openrdf.model;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -44,7 +45,7 @@ public interface Literal extends Value {
 	 * @return The language tag for this literal, or <tt>null</tt> if it doesn't
 	 *         have one.
 	 */
-	public String getLanguage();
+	public Optional<String> getLanguage();
 
 	/**
 	 * Gets the datatype for this literal.

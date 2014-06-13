@@ -434,9 +434,8 @@ public class Literals {
 		Locale result = fallback;
 
 		try {
-			String lang = l.getLanguage();
-			if (lang != null) {
-				LanguageTag tag = new LanguageTag(lang);
+			if (l.getLanguage().isPresent()) {
+				LanguageTag tag = new LanguageTag(l.getLanguage().get());
 				result = tag.toLocale();
 			}
 		}
@@ -618,7 +617,7 @@ public class Literals {
 			throw new NullPointerException("Literal cannot be null");
 		}
 
-		return literal.getLanguage() != null;
+		return literal.getLanguage().isPresent();
 	}
 
 	protected Literals() {

@@ -30,6 +30,7 @@ import static org.openrdf.rio.trix.TriXConstants.URI_TAG;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Optional;
 
 import info.aduna.xml.XMLWriter;
 
@@ -229,9 +230,9 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 			Literal literal = (Literal)value;
 			URI datatype = literal.getDatatype();
 
-			String language = literal.getLanguage();
+			Optional<String> language = literal.getLanguage();
 			if (Literals.isLanguageLiteral(literal)) {
-				xmlWriter.setAttribute(LANGUAGE_ATT, language);
+				xmlWriter.setAttribute(LANGUAGE_ATT, language.get());
 				xmlWriter.textElement(PLAIN_LITERAL_TAG, literal.getLabel());
 			}
 			else {

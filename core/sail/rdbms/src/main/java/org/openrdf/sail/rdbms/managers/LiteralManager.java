@@ -92,10 +92,9 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 		throws SQLException, InterruptedException
 	{
 		String label = literal.getLabel();
-		String language = literal.getLanguage();
 		URI datatype = literal.getDatatype();
 		if (Literals.isLanguageLiteral(literal)) {
-			table.insertLanguage(id, label, language);
+			table.insertLanguage(id, label, literal.getLanguage().get());
 		}
 		else {
 			String dt = datatype.stringValue();

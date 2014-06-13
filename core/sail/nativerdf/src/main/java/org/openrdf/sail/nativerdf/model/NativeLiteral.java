@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.nativerdf.model;
 
+import java.util.Optional;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.sail.nativerdf.ValueStoreRevision;
@@ -59,6 +61,15 @@ public class NativeLiteral extends LiteralImpl implements NativeValue {
 	}
 
 	public NativeLiteral(ValueStoreRevision revision, String label, String lang, int internalID) {
+		super(label, lang);
+		setInternalID(internalID, revision);
+	}
+
+	public NativeLiteral(ValueStoreRevision revision, String label, Optional<String> lang) {
+		this(revision, label, lang, UNKNOWN_ID);
+	}
+
+	public NativeLiteral(ValueStoreRevision revision, String label, Optional<String> lang, int internalID) {
 		super(label, lang);
 		setInternalID(internalID, revision);
 	}

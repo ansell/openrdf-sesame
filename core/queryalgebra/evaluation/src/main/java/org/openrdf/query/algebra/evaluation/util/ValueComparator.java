@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.util;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 import info.aduna.lang.ObjectUtil;
 
@@ -135,18 +136,18 @@ public class ValueComparator implements Comparator<Value> {
 		if (result == 0) {
 			// datatypes are equal or both literals are untyped; sort by language
 			// tags, simple literals come before literals with language tags
-			String leftLanguage = leftLit.getLanguage();
-			String rightLanguage = rightLit.getLanguage();
+			Optional<String> leftLanguage = leftLit.getLanguage();
+			Optional<String> rightLanguage = rightLit.getLanguage();
 
-			if (leftLanguage != null) {
-				if (rightLanguage != null) {
-					result = leftLanguage.compareTo(rightLanguage);
+			if (leftLanguage.isPresent()) {
+				if (rightLanguage.isPresent()) {
+					result = leftLanguage.get().compareTo(rightLanguage.get());
 				}
 				else {
 					result = 1;
 				}
 			}
-			else if (rightLanguage != null) {
+			else if (rightLanguage.isPresent()) {
 				result = -1;
 			}
 		}
