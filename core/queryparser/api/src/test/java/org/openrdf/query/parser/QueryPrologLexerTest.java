@@ -19,6 +19,7 @@ package org.openrdf.query.parser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -40,6 +41,15 @@ public class QueryPrologLexerTest {
 
 	}
 
+	public void testFinalTokenEmptyString() {
+		try {
+			Token t = QueryPrologLexer.getRestOfQueryToken("");
+		}
+		catch (Exception e) {
+			fail("lexer should not throw exception on malformed input");
+		}
+	}
+
 	@Test
 	public void testLexNoProlog1() {
 		List<Token> tokens = QueryPrologLexer.lex("SELECT * WHERE {?s ?p ?o} ");
@@ -49,7 +59,14 @@ public class QueryPrologLexerTest {
 		Token t = tokens.get(0);
 		assertTrue(t.getType().equals(TokenType.REST_OF_QUERY));
 	}
-	
+
+	@Test
+	public void testFinalTokenNoProlog1() {
+		Token t = QueryPrologLexer.getRestOfQueryToken("SELECT * WHERE {?s ?p ?o} ");
+		assertNotNull(t);
+		assertTrue(t.getType().equals(TokenType.REST_OF_QUERY));
+	}
+
 	@Test
 	public void testLexWithComment() {
 		List<Token> tokens = QueryPrologLexer.lex("# COMMENT \n SELECT * WHERE {?s ?p ?o} ");
@@ -58,25 +75,58 @@ public class QueryPrologLexerTest {
 		Token t = tokens.get(tokens.size() - 1);
 		assertTrue(t.getType().equals(TokenType.REST_OF_QUERY));
 	}
-	
-	
+
+	@Test
+	public void testFinalTokenWithComment() {
+		Token t = QueryPrologLexer.getRestOfQueryToken("# COMMENT \n SELECT * WHERE {?s ?p ?o} ");
+		assertNotNull(t);
+		assertTrue(t.getType().equals(TokenType.REST_OF_QUERY));
+	}
+
 	@Test
 	public void testLexWithBaseAndComment() {
 		List<Token> tokens = QueryPrologLexer.lex("BASE <foobar> # COMMENT \n SELECT * WHERE {?s ?p ?o} ");
 		assertNotNull(tokens);
 
-		for (Token t: tokens) {
-			System.out.println(t);
-		}
 		Token t = tokens.get(tokens.size() - 1);
 		assertTrue(t.getType().equals(TokenType.REST_OF_QUERY));
 	}
-	
+
+	@Test
+	public void testFinalTokenWithBaseAndComment() {
+		Token t = QueryPrologLexer.getRestOfQueryToken("BASE <foobar> # COMMENT \n SELECT * WHERE {?s ?p ?o} ");
+		assertNotNull(t);
+		assertTrue(t.getType().equals(TokenType.REST_OF_QUERY));
+	}
+
 	@Test
 	public void testLexSyntaxError() {
-		List<Token> tokens = QueryPrologLexer.lex("BASE <foobar # missing closing bracket \n SELECT * WHERE {?s ?p ?o} ");
-		assertNotNull(tokens);
-		// all that is guaranteed in queries with syntax errors is that the lexer returns. there are no guarantees that the
-		// last token is the rest of the query in this case. Any syntax errors in the query are to be picked up by subsequent processing.
+		// all that is guaranteed in queries with syntax errors is that the lexer
+		// returns. there are no guarantees that the
+		// last token is the rest of the query in this case. Any syntax errors in
+		// the query are to be picked up by subsequent processing.
+
+		try {
+			List<Token> tokens = QueryPrologLexer.lex("BASE <foobar # missing closing bracket \n SELECT * WHERE {?s ?p ?o} ");
+		}
+		catch (Exception e) {
+			fail("malformed query should not make lexer fail");
+
+		}
+	}
+
+	@Test
+	public void testFinalTokenSyntaxError() {
+		// all that is guaranteed in queries with syntax errors is that the lexer
+		// returns. there are no guarantees that the
+		// token returned is the rest of the query in this case. Any syntax errors
+		// in the query are to be picked up by subsequent processing.
+
+		try {
+			Token t = QueryPrologLexer.getRestOfQueryToken("BASE <foobar # missing closing bracket \n SELECT * WHERE {?s ?p ?o} ");
+		}
+		catch (Exception e) {
+			fail("malformed query should not make lexer fail");
+		}
 	}
 }
