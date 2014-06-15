@@ -229,7 +229,12 @@ public class QueryParserUtil {
 	 */
 	public static String removeSPARQLQueryProlog(String queryString) {
 		final Token t = QueryPrologLexer.getRestOfQueryToken(queryString);
-		return t.getStringValue();
+		if (t != null) {
+			return t.getStringValue();
+		}
+		else {
+			return queryString;
+		}
 	}
 
 }
