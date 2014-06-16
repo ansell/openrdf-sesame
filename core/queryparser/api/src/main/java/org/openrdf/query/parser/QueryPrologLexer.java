@@ -57,7 +57,8 @@ public class QueryPrologLexer {
 
 	private static final Pattern PREFIX_PATTERN = Pattern.compile("^prefix([^:]+):", Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern COMMENT_PATTERN = Pattern.compile("^#([^\n]+)");
+//	private static final Pattern COMMENT_PATTERN = Pattern.compile("^#([^\n]+/)");
+	private static final Pattern COMMENT_PATTERN = Pattern.compile("^(#.*(\r)?\n|(\r)?\n*)*");
 
 	public static class Token {
 
