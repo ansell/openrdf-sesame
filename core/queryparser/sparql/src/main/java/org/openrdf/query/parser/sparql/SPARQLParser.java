@@ -239,12 +239,15 @@ public class SPARQLParser implements QueryParser {
 				String queryStr = buf.toString().trim();
 				if (queryStr.length() > 0) {
 					try {
+						long start = System.currentTimeMillis();
 						ParsedOperation parsedQuery = QueryParserUtil.parseOperation(QueryLanguage.SPARQL,
 								queryStr, null);
+						long finish = System.currentTimeMillis();
 
 						System.out.println("Parsed query: ");
 						System.out.println(parsedQuery.toString());
 						System.out.println();
+						System.out.println("parsed in " + (finish - start) + " ms.");
 
 					}
 					catch (Exception e) {
