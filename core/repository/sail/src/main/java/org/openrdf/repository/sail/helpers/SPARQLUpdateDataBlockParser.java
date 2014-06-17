@@ -129,10 +129,6 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		if (checkGraphKeyword(false)) {
-			if (getContext() != null) {
-				reportFatalError("Nested named graph not allowed.");
-			}
-			
 			skipWSC();
 			int c = read();
 			final int c2 = peek();
@@ -155,6 +151,9 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				setContext(null);
 			}
 		}
+		else {
+			setContext(null);
+		}
 
 		int c = skipWSC();
 
@@ -172,12 +171,10 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				c = skipWSC();
 
 				if (c == '}' || c == -1) {
-					setContext(null);
 					read();
 					return;
 				}
 				else if (checkGraphKeyword(true)) {
-					setContext(null);
 					return;
 				}
 
@@ -185,8 +182,8 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				c = skipWSC();
 			}
 		}
+		
 		read();
-		setContext(null);
 
 	}
 
