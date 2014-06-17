@@ -16,7 +16,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.turtle.TurtleParser;
 
 public class SPINParserTest {
-	private String basicTest = "@PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
+	private String basicTest = "@prefix rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
 			+ "@prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .\n"
 			+ "@prefix skos:<http://www.w3.org/2004/02/skos/core#> .\n"
 			+ "@prefix owl:<http://www.w3.org/2002/07/owl#> .\n"

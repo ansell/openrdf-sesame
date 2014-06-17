@@ -19,6 +19,7 @@
 	 <module>queryresultio</module>
 	 <module>query</module>
 	 <module>queryalgebra</module>
+	 <module>spin</module>
 	 <module>queryparser</module>
 	 <module>queryrender</module>
 	 <module>sail</module>
