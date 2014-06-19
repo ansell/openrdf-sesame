@@ -284,7 +284,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
-	 * to a URI, or throws a ModelUtilException if that value is not a URI.
+	 * to a URI, or throws a ModelException if that value is not a URI.
 	 * 
 	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
@@ -298,7 +298,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
-	 * to a BNode, or throws a ModelUtilException if that value is not a BNode.
+	 * to a BNode, or throws a ModelException if that value is not a BNode.
 	 * 
 	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
