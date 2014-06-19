@@ -228,25 +228,13 @@ public class TransactionController extends AbstractController {
 				case UPDATE:
 					return getSparqlUpdateResult(conn, request, response);
 				case COMMIT:
-					try {
-						conn.commit();
-						conn.close();
-					}
-					finally {
-						try {
-							if (conn.isOpen()) {
-								conn.close();
-							}
-						}
-						finally {
-							ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
-						}
-					}
+					conn.commit();
+					conn.close();
+					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
 					break;
 				case ROLLBACK:
 					try {
 						conn.rollback();
-						conn.close();
 					}
 					finally {
 						try {
@@ -296,7 +284,7 @@ public class TransactionController extends AbstractController {
 			long size = -1;
 
 			try {
-					size = conn.size(contexts);
+				size = conn.size(contexts);
 			}
 			catch (RepositoryException e) {
 				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
