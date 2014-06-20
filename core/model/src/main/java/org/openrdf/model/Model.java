@@ -268,6 +268,49 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	public Set<Resource> subjects();
 
 	/**
+	 * Gets the subject of the statement(s). If the model contains one or more
+	 * statements, all these statements should have the same subject. A
+	 * {@link ModelException} is thrown if this is not the case.
+	 * 
+	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelException
+	 *         If the statements matched by the specified parameters have more
+	 *         than one unique subject.
+	 * @since 2.8.0
+	 */
+	public Resource subjectResource()
+		throws ModelException;
+
+	/**
+	 * Utility method that casts the return value of {@link #subjectResource()}
+	 * to a URI, or throws a ModelException if that value is not a URI.
+	 * 
+	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelException
+	 *         If such an exception is thrown by {@link #subjectResource()} or if
+	 *         its return value is not a URI.
+	 * @since 2.8.0
+	 */
+	public URI subjectURI()
+		throws ModelException;
+
+	/**
+	 * Utility method that casts the return value of {@link #subjectResource()}
+	 * to a BNode, or throws a ModelException if that value is not a BNode.
+	 * 
+	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
+	 *         matching statements were found.
+	 * @throws ModelException
+	 *         If such an exception is thrown by {@link #subjectResource()} or if
+	 *         its return value is not a BNode.
+	 * @since 2.8.0
+	 */
+	public BNode subjectBNode()
+		throws ModelException;
+
+	/**
 	 * Returns a {@link Set} view of the predicates contained in this model. The
 	 * set is backed by the model, so changes to the model are reflected in the
 	 * set, and vice-versa. If the model is modified while an iteration over the
@@ -316,9 +359,9 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	public Set<Resource> contexts();
 
 	/**
-	 * Gets the object of the statement(s). If contains one or more statements,
-	 * all these statements should have the same object. A {@link ModelException}
-	 * is thrown if this is not the case.
+	 * Gets the object of the statement(s). If the model contains one or more
+	 * statements, all these statements should have the same object. A
+	 * {@link ModelException} is thrown if this is not the case.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
