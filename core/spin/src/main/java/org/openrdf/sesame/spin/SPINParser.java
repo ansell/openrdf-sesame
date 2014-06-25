@@ -36,7 +36,6 @@ public class SPINParser {
 		connection.begin();
 		connection.add(reader, baseURI, dataFormat);
 		connection.commit();
-
 		connection.close();
 	}
 
@@ -45,13 +44,10 @@ public class SPINParser {
 		List<ParsedQuery> queries = new ArrayList<ParsedQuery>();
 		try {
 			connection = myRepository.getConnection();
-
 			recoverConstructQueriesFromTriples(queries, connection);
-
 		} catch (RepositoryException e) {
 			log.error("SPIN parsing failed", e);
 		}
-
 		return queries;
 	}
 
@@ -69,31 +65,33 @@ public class SPINParser {
 	private void recoverConstructQueryFromTriples(Statement queryStart,
 			List<ParsedQuery> queries, RepositoryConnection connection)
 			throws RepositoryException {
-
 		List<Resource> types = getWhere(queryStart.getSubject(), connection);
 		for (Resource where : types) {
 			List<Resource> variables = getVariables(where, connection);
 			TupleExpr query = new Projection();
-
 			ParsedGraphQuery parsedGraphQuery = new ParsedGraphQuery(query);
 			queries.add(parsedGraphQuery);
 		}
 	}
 
-	private List<Resource> getVariables(Resource where, RepositoryConnection connection) throws RepositoryException {
-		List<Resource> types = new ArrayList<Resource>();
-		URI predicate = SP.VAR_NAME;
-		return findSubjects(where, connection, types, predicate);
+	private List<Resource> getVariables(Resource where,
+			RepositoryConnection connection) throws RepositoryException {
+		return findSubjects(where, connection, SP.VAR_NAME);
 	}
 
-	private List<Resource> getWhere(Resource subject, RepositoryConnection connection)
+	private List<Resource> getWhere(Resource subject,
+			RepositoryConnection connection) throws RepositoryException {
+		return findSubjects(subject, connection, SP.WHERE);
+	}
+
+	private List<Resource> findSubjects(Resource subject,
+			RepositoryConnection connection, URI predicate)
 			throws RepositoryException {
-		List<Resource> types = new ArrayList<Resource>();
-		URI predicate = SP.WHERE;
-		return findSubjects(subject, connection, types, predicate);
+		return findSubjects(subject, connection, new ArrayList<Resource>(),
+				predicate);
 	}
 
-	protected List<Resource> findSubjects(Resource subject,
+	private List<Resource> findSubjects(Resource subject,
 			RepositoryConnection connection, List<Resource> types, URI predicate)
 			throws RepositoryException {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
@@ -105,6 +103,7 @@ public class SPINParser {
 		return types;
 	}
 
+	@Override
 	public void finalize() {
 		if (myRepository != null) {
 			try {

@@ -1,9 +1,7 @@
 package org.openrdf.sesame.spin;
 
-import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**

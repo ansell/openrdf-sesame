@@ -1,0 +1,53 @@
+@prefix rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:<http://www.w3.org/2004/02/skos/core#> .
+@prefix owl:<http://www.w3.org/2002/07/owl#> .
+@prefix xsd:<http://www.w3.org/2001/XMLSchema#> .
+@prefix sp:<http:spinrdf.org/sp#> .
+@prefix spin:<http:spinrdf.org/spin#> .
+
+<http://purl.uniprot.org/core/Protein>
+    a rdfs:Class ;
+    spin:constraint
+        [ a sp:Construct ;
+          sp:templates ( [ sp:object spin:ConstraintViolation ;
+                           sp:predicate rdf:type ;
+                           sp:subject _:b1
+                         ]
+                         [ sp:object [ sp:varName "link"^^xsd:string ] ;
+                           sp:predicate spin:violationRoot ;
+                           sp:subject _:b1
+                         ]
+                         [ sp:object rdfs:seeAlso ;
+                           sp:predicate spin:violationPath ;
+                           sp:subject _:b1
+                         ]
+                         [ sp:object "URC17: WormBase links may only be found in Caenorhabditis briggsae or Caenorhabditis elegans entries." ;
+                           sp:predicate rdfs:label ;
+                           sp:subject _:b1
+                         ] ) ;
+          sp:where ( [ sp:object <http://purl.uniprot.org/core/Protein> ;
+                       sp:predicate rdf:type ;
+                       sp:subject spin:_this
+                     ]
+                     [ a sp:NotExists ;
+                       sp:elements ( [ sp:object <http://purl.uniprot.org/taxonomy/6238> ;
+                                       sp:predicate <http://purl.uniprot.org/core/organism> ;
+                                       sp:subject spin:_this
+                                     ] )
+                     ]
+                     [ a sp:NotExists ;
+                       sp:elements ( [ sp:object <http://purl.uniprot.org/taxonomy/6239> ;
+                                       sp:predicate <http://purl.uniprot.org/core/organism> ;
+                                       sp:subject spin:_this
+                                     ] )
+                     ]
+                     [ sp:object [ sp:varName "link"^^xsd:string ] ;
+                       sp:predicate rdfs:seeAlso ;
+                       sp:subject spin:_this
+                     ]
+                     [ sp:object <http://purl.uniprot.org/database/WormBase> ;
+                       sp:predicate <http://purl.uniprot.org/core/database> ;
+                       sp:subject [ sp:varName "link"^^xsd:string ]
+                     ] )
+        ] .
