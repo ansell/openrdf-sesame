@@ -35,4 +35,14 @@ public class SPINParserTest {
 		List<ParsedQuery> parsed = spinParser.parse();
 		assertEquals(1, parsed.size());
 	}
+	
+	@Test
+	public void testBasicText() throws RDFParseException, RDFHandlerException,
+			IOException, RepositoryException {
+		SPINParser spinParser = new SPINParser(new InputStreamReader(
+				ResourceUtil.getInputStream("constraintText.ttl")), "",
+				RDFFormat.TURTLE);
+		List<ParsedQuery> parsed = spinParser.parse();
+		assertEquals(1, parsed.size());
+	}
 }
