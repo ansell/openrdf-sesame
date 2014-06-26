@@ -21,7 +21,8 @@ public class SPINParserTest {
 
 	@Test
 	public void test() throws RDFParseException, RDFHandlerException,
-			IOException, RepositoryException, MalformedQueryException {
+			IOException, RepositoryException, MalformedQueryException,
+			MalformedRuleException {
 		SPINParser spinParser = new SPINParser(new StringReader(""), "",
 				RDFFormat.TURTLE);
 		Map<Resource, ParsedQuery> parsed = spinParser.parse();
@@ -30,29 +31,32 @@ public class SPINParserTest {
 
 	@Test
 	public void testBasic() throws RDFParseException, RDFHandlerException,
-			IOException, RepositoryException, MalformedQueryException {
+			IOException, RepositoryException, MalformedQueryException,
+			MalformedRuleException {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraint.ttl")), "",
 				RDFFormat.TURTLE);
 		Map<Resource, ParsedQuery> parsed = spinParser.parse();
 		assertEquals(1, parsed.size());
 	}
-	
+
 	@Test
 	public void testBasicText() throws RDFParseException, RDFHandlerException,
-			IOException, RepositoryException, MalformedQueryException {
+			IOException, RepositoryException, MalformedQueryException,
+			MalformedRuleException {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraintText.ttl")), "",
 				RDFFormat.TURTLE);
 		Map<Resource, ParsedQuery> parsed = spinParser.parse();
 		assertEquals(1, parsed.size());
 	}
-	
-	@Test(expected=MalformedRuleException.class)
+
+	@Test(expected = MalformedRuleException.class)
 	public void testRequireAttachedResource() throws RDFParseException,
-			RepositoryException, IOException, MalformedQueryException {
+			RepositoryException, IOException, MalformedQueryException,
+			MalformedRuleException {
 		new SPINParser(new InputStreamReader(
-				ResourceUtil.getInputStream("unattachedConstraintText.ttl")), "",
-				RDFFormat.TURTLE).parse();
+				ResourceUtil.getInputStream("unattachedConstraintText.ttl")),
+				"", RDFFormat.TURTLE).parse();
 	}
 }

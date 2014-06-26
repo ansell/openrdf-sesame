@@ -1,5 +1,7 @@
 package org.openrdf.sesame.spin;
 
+import info.aduna.iteration.Iterations;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -47,7 +49,8 @@ public class SPINParser {
 		connection.close();
 	}
 
-	public Map<Resource, ParsedQuery> parse() throws MalformedQueryException {
+	public Map<Resource, ParsedQuery> parse() throws MalformedQueryException,
+			MalformedRuleException {
 		SailRepositoryConnection connection;
 		Map<Resource, ParsedQuery> queries = new HashMap<Resource, ParsedQuery>();
 		try {
@@ -61,7 +64,8 @@ public class SPINParser {
 
 	private void recoverConstructQueriesFromTriples(
 			Map<Resource, ParsedQuery> queries, RepositoryConnection connection)
-			throws RepositoryException, MalformedQueryException {
+			throws RepositoryException, MalformedQueryException,
+			MalformedRuleException {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
 				null, RDF.TYPE, SP.CONSTRUCT, true);
 		while (queryStarts.hasNext()) {
@@ -73,7 +77,15 @@ public class SPINParser {
 
 	private void recoverConstructQueryFromTriples(Statement queryStart,
 			Map<Resource, ParsedQuery> queries, RepositoryConnection connection)
-			throws RepositoryException, MalformedQueryException {
+			throws RepositoryException, MalformedQueryException,
+			MalformedRuleException {
+		int numAttachedResources = Iterations.asList(
+				connection.getStatements(null, SPIN.CONSTRAINT_PROPERTY,
+						queryStart.getSubject(), true)).size();
+		if (1 != numAttachedResources) {
+			throw new MalformedRuleException(
+					"Expected 1 attached resource, got " + numAttachedResources);
+		}
 		List<Literal> texts = findTexts(queryStart.getSubject(), connection);
 		for (Literal text : texts) {
 			RepositoryResult<Namespace> namespaces = connection.getNamespaces();
