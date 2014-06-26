@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.model.Literal;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.Projection;
@@ -44,14 +44,12 @@ public class SPINParser {
 		connection.close();
 	}
 
-	public List<ParsedQuery> parse() {
+	public List<ParsedQuery> parse() throws MalformedQueryException {
 		SailRepositoryConnection connection;
 		List<ParsedQuery> queries = new ArrayList<ParsedQuery>();
 		try {
 			connection = myRepository.getConnection();
 			recoverConstructQueriesFromTriples(queries, connection);
-		} catch (MalformedQueryException e) {
-			log.error("SPIN parsing failed", e);
 		} catch (RepositoryException e) {
 			log.error("SPIN parsing failed", e);
 		}
@@ -75,13 +73,18 @@ public class SPINParser {
 			throws RepositoryException, MalformedQueryException {
 		List<Literal> texts = findTexts(queryStart.getSubject(), connection);
 		for (Literal text : texts) {
-			// This fails at the moment because we have to pull in the prefix declarations
-			// of the surrounding Turtle as well:
-			// queries.add(QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
-			// text.stringValue(), null));
-			
-			// Hack for test pass until the above is made to work.
-			queries.add(new ParsedGraphQuery());
+			RepositoryResult<Namespace> namespaces = connection.getNamespaces();
+            StringBuilder query = new StringBuilder(text.stringValue());
+            while (namespaces.hasNext()){
+            	Namespace namespace = namespaces.next();
+            	query.insert(0, ">\n");
+            	query.insert(0, namespace.getName());
+            	query.insert(0, ": <");
+            	query.insert(0,  namespace.getPrefix());
+            	query.insert(0, "PREFIX ");
+            }
+			queries.add(QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
+					query.toString(), null));
 		}
 		List<Resource> types = getWhere(queryStart.getSubject(), connection);
 		for (Resource where : types) {

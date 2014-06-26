@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import org.junit.Test;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
@@ -19,7 +20,7 @@ public class SPINParserTest {
 
 	@Test
 	public void test() throws RDFParseException, RDFHandlerException,
-			IOException, RepositoryException {
+			IOException, RepositoryException, MalformedQueryException {
 		SPINParser spinParser = new SPINParser(new StringReader(""), "",
 				RDFFormat.TURTLE);
 		List<ParsedQuery> parsed = spinParser.parse();
@@ -28,7 +29,7 @@ public class SPINParserTest {
 
 	@Test
 	public void testBasic() throws RDFParseException, RDFHandlerException,
-			IOException, RepositoryException {
+			IOException, RepositoryException, MalformedQueryException {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraint.ttl")), "",
 				RDFFormat.TURTLE);
@@ -38,7 +39,7 @@ public class SPINParserTest {
 	
 	@Test
 	public void testBasicText() throws RDFParseException, RDFHandlerException,
-			IOException, RepositoryException {
+			IOException, RepositoryException, MalformedQueryException {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraintText.ttl")), "",
 				RDFFormat.TURTLE);
