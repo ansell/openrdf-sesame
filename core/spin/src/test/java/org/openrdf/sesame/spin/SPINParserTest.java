@@ -6,9 +6,10 @@ import info.aduna.io.ResourceUtil;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
+import org.openrdf.model.Resource;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.repository.RepositoryException;
@@ -23,7 +24,7 @@ public class SPINParserTest {
 			IOException, RepositoryException, MalformedQueryException {
 		SPINParser spinParser = new SPINParser(new StringReader(""), "",
 				RDFFormat.TURTLE);
-		List<ParsedQuery> parsed = spinParser.parse();
+		Map<Resource, ParsedQuery> parsed = spinParser.parse();
 		assertEquals(0, parsed.size());
 	}
 
@@ -33,7 +34,7 @@ public class SPINParserTest {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraint.ttl")), "",
 				RDFFormat.TURTLE);
-		List<ParsedQuery> parsed = spinParser.parse();
+		Map<Resource, ParsedQuery> parsed = spinParser.parse();
 		assertEquals(1, parsed.size());
 	}
 	
@@ -43,7 +44,7 @@ public class SPINParserTest {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraintText.ttl")), "",
 				RDFFormat.TURTLE);
-		List<ParsedQuery> parsed = spinParser.parse();
+		Map<Resource, ParsedQuery> parsed = spinParser.parse();
 		assertEquals(1, parsed.size());
 	}
 }

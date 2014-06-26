@@ -3,13 +3,16 @@ package org.openrdf.sesame.spin;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -44,9 +47,9 @@ public class SPINParser {
 		connection.close();
 	}
 
-	public List<ParsedQuery> parse() throws MalformedQueryException {
+	public Map<Resource, ParsedQuery> parse() throws MalformedQueryException {
 		SailRepositoryConnection connection;
-		List<ParsedQuery> queries = new ArrayList<ParsedQuery>();
+		Map<Resource, ParsedQuery> queries = new HashMap<Resource, ParsedQuery>();
 		try {
 			connection = myRepository.getConnection();
 			recoverConstructQueriesFromTriples(queries, connection);
@@ -56,9 +59,9 @@ public class SPINParser {
 		return queries;
 	}
 
-	private void recoverConstructQueriesFromTriples(List<ParsedQuery> queries,
-			RepositoryConnection connection) throws RepositoryException,
-			MalformedQueryException {
+	private void recoverConstructQueriesFromTriples(
+			Map<Resource, ParsedQuery> queries, RepositoryConnection connection)
+			throws RepositoryException, MalformedQueryException {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
 				null, RDF.TYPE, SP.CONSTRUCT, true);
 		while (queryStarts.hasNext()) {
@@ -69,29 +72,32 @@ public class SPINParser {
 	}
 
 	private void recoverConstructQueryFromTriples(Statement queryStart,
-			List<ParsedQuery> queries, RepositoryConnection connection)
+			Map<Resource, ParsedQuery> queries, RepositoryConnection connection)
 			throws RepositoryException, MalformedQueryException {
 		List<Literal> texts = findTexts(queryStart.getSubject(), connection);
 		for (Literal text : texts) {
 			RepositoryResult<Namespace> namespaces = connection.getNamespaces();
-            StringBuilder query = new StringBuilder(text.stringValue());
-            while (namespaces.hasNext()){
-            	Namespace namespace = namespaces.next();
-            	query.insert(0, ">\n");
-            	query.insert(0, namespace.getName());
-            	query.insert(0, ": <");
-            	query.insert(0,  namespace.getPrefix());
-            	query.insert(0, "PREFIX ");
-            }
-			queries.add(QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
-					query.toString(), null));
+			StringBuilder query = new StringBuilder(text.stringValue());
+			while (namespaces.hasNext()) {
+				Namespace namespace = namespaces.next();
+				query.insert(0, ">\n");
+				query.insert(0, namespace.getName());
+				query.insert(0, ": <");
+				query.insert(0, namespace.getPrefix());
+				query.insert(0, "PREFIX ");
+			}
+			queries.put(
+					ValueFactoryImpl.getInstance().createBNode(),
+					QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
+							query.toString(), null));
 		}
 		List<Resource> types = getWhere(queryStart.getSubject(), connection);
 		for (Resource where : types) {
 			List<Resource> variables = getVariables(where, connection);
 			TupleExpr query = new Projection();
 			ParsedGraphQuery parsedGraphQuery = new ParsedGraphQuery(query);
-			queries.add(parsedGraphQuery);
+			queries.put(ValueFactoryImpl.getInstance().createBNode(),
+					parsedGraphQuery);
 		}
 	}
 

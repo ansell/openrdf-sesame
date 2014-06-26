@@ -8,7 +8,7 @@
 @prefix core:<http://purl.uniprot.org/core/> .
 @prefix taxonomy:<http://purl.uniprot.org/taxonomy/> .
 
-<http://purl.uniprot.org/core/Protein>
+core:Protein
     a rdfs:Class ;
     spin:constraint
         [ a sp:Construct ;
