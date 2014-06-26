@@ -47,4 +47,12 @@ public class SPINParserTest {
 		Map<Resource, ParsedQuery> parsed = spinParser.parse();
 		assertEquals(1, parsed.size());
 	}
+	
+	@Test(expected=MalformedRuleException.class)
+	public void testRequireAttachedResource() throws RDFParseException,
+			RepositoryException, IOException, MalformedQueryException {
+		new SPINParser(new InputStreamReader(
+				ResourceUtil.getInputStream("unattachedConstraintText.ttl")), "",
+				RDFFormat.TURTLE).parse();
+	}
 }
