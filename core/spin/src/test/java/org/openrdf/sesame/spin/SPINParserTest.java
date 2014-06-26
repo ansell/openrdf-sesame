@@ -3,7 +3,6 @@ package org.openrdf.sesame.spin;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import info.aduna.io.ResourceUtil;
 
@@ -14,6 +13,7 @@ import java.util.Collection;
 
 import org.junit.Test;
 import org.openrdf.model.Resource;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
@@ -26,55 +26,63 @@ import com.google.common.collect.Multimap;
 
 public class SPINParserTest {
 
+	private static final Resource PROTEIN = ValueFactoryImpl.getInstance()
+			.createURI("http://purl.uniprot.org/core/Protein");
+
 	@Test
 	public void test() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
 		SPINParser spinParser = new SPINParser(new StringReader(""), "",
 				RDFFormat.TURTLE);
-		assertEquals(0, spinParser.parseConstraint().size());
+		assertThat(spinParser.parseConstraint().size(), is(equalTo(0)));
 	}
 
 	@Test
 	public void testBasic() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser spinParser = new SPINParser(new InputStreamReader(
-				ResourceUtil.getInputStream("constraint.ttl")), "",
-				RDFFormat.TURTLE);
-		assertEquals(1, spinParser.parseConstraint().size());
+		SPINParser spinParser = createParser("constraint.ttl");
+		assertThat(spinParser.parseConstraint().size(), is(equalTo(1)));
 	}
 
 	@Test
 	public void testBasicText() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser spinParser = new SPINParser(new InputStreamReader(
-				ResourceUtil.getInputStream("constraintText.ttl")), "",
-				RDFFormat.TURTLE);
-		assertEquals(1, spinParser.parseConstraint().size());
+		SPINParser spinParser = createParser("constraintText.ttl");
+		//assertThat(spinParser.parseConstraint().size(), is(equalTo(1)));
+		assertOneConstraint(spinParser.parseConstraint(), PROTEIN);
 	}
 
 	@Test(expected = MalformedRuleException.class)
 	public void testRequireAttachedResource() throws RDFParseException,
 			RepositoryException, IOException, MalformedQueryException,
 			MalformedRuleException {
-		new SPINParser(new InputStreamReader(
-				ResourceUtil.getInputStream("unattachedConstraintText.ttl")),
-				"", RDFFormat.TURTLE).parseConstraint();
+		createParser("unattachedConstraintText.ttl").parseConstraint();
 	}
-	
+
 	@Test
 	public void testExplictlyUnbound() throws RDFParseException,
 			RepositoryException, IOException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser parser = new SPINParser(new InputStreamReader(
-				ResourceUtil.getInputStream("unattachedUnboundConstraintText.ttl")),
-				"", RDFFormat.TURTLE);
+		SPINParser parser = createParser("unattachedUnboundConstraintText.ttl");
 		Multimap<Resource, ParsedQuery> constraints = parser.parseConstraint();
-		assertEquals(1, constraints.size());
-		Collection<ParsedQuery> queries = parser.parseConstraint().get(null);
+		assertOneConstraint(constraints, null);
+	}
+
+	private static void assertOneConstraint(
+			Multimap<Resource, ParsedQuery> parse, Resource resource) {
+		assertThat(parse.size(), is(equalTo(1)));
+		Collection<ParsedQuery> queries = parse.get(resource);
 		assertThat(queries.size(), is(equalTo(1)));
-		assertThat(queries.iterator().next(), is(instanceOf(ParsedGraphQuery.class)));
+		assertThat(queries.iterator().next(),
+				is(instanceOf(ParsedGraphQuery.class)));
+	}
+
+	private static SPINParser createParser(String filename)
+			throws RDFParseException, RepositoryException, IOException {
+		return new SPINParser(new InputStreamReader(
+				ResourceUtil.getInputStream(filename)), "", RDFFormat.TURTLE);
 	}
 }

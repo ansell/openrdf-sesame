@@ -80,9 +80,10 @@ public class SPINParser {
 			Multimap<Resource, ParsedQuery> queries, RepositoryConnection connection)
 			throws RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		int numAttachedResources = Iterations.asList(
+		List<Statement> list = Iterations.asList(
 				connection.getStatements(null, SPIN.CONSTRAINT_PROPERTY,
-						queryStart.getSubject(), true)).size();
+						queryStart.getSubject(), true));
+		int numAttachedResources = list.size();
 		if (1 != numAttachedResources) {
 			throw new MalformedRuleException(
 					"Expected 1 attached resource, got " + numAttachedResources);
@@ -100,7 +101,7 @@ public class SPINParser {
 				query.insert(0, "PREFIX ");
 			}
 			queries.put(
-					ValueFactoryImpl.getInstance().createBNode(),
+					list.get(0).getSubject(),
 					QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
 							query.toString(), null));
 		}
