@@ -12,12 +12,12 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.Projection;
-import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.QueryParserUtil;
@@ -70,8 +70,8 @@ public class SPINParser {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
 				null, RDF.TYPE, SP.CONSTRUCT, true);
 		while (queryStarts.hasNext()) {
-			Statement queryStart = queryStarts.next();
-			recoverConstructQueryFromTriples(queryStart, queries, connection);
+			recoverConstructQueryFromTriples(queryStarts.next(), queries,
+					connection);
 		}
 		queryStarts.close();
 	}
@@ -80,15 +80,9 @@ public class SPINParser {
 			Multimap<Resource, ParsedQuery> queries,
 			RepositoryConnection connection) throws RepositoryException,
 			MalformedQueryException, MalformedRuleException {
-		List<Statement> list = Iterations.asList(connection.getStatements(null,
-				SPIN.CONSTRAINT_PROPERTY, queryStart.getSubject(), true));
-		int numAttachedResources = list.size();
-		if (1 != numAttachedResources) {
-			throw new MalformedRuleException(
-					"Expected 1 attached resource, got " + numAttachedResources);
-		}
-		Resource resource = list.get(0).getSubject();
-		List<Literal> texts = findTexts(queryStart.getSubject(), connection);
+		Resource subject = queryStart.getSubject();
+		Resource resource = getBoundResource(connection, subject);
+		List<Literal> texts = findTexts(subject, connection);
 		for (Literal text : texts) {
 			RepositoryResult<Namespace> namespaces = connection.getNamespaces();
 			StringBuilder query = new StringBuilder(text.stringValue());
@@ -105,11 +99,61 @@ public class SPINParser {
 					QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
 							query.toString(), null));
 		}
-		List<Resource> types = getWhere(queryStart.getSubject(), connection);
+		List<Resource> types = getWhere(subject, connection);
 		for (Resource where : types) {
 			List<Resource> variables = getVariables(where, connection);
 			queries.put(resource, new ParsedGraphQuery(new Projection()));
 		}
+	}
+
+	private Resource getBoundResource(RepositoryConnection connection,
+			Resource subject) throws RepositoryException,
+			MalformedRuleException {
+		Resource resource = null;
+		if (shouldBeBound(connection, subject)) {
+			List<Statement> list = Iterations.asList(connection.getStatements(
+					null, SPIN.CONSTRAINT_PROPERTY, subject, true));
+			int numBoundResources = list.size();
+			if (1 != numBoundResources) {
+				throw new MalformedRuleException(
+						"Expected 1 attached resource, got "
+								+ numBoundResources);
+			}
+			resource = list.get(0).getSubject();
+		}
+		return resource;
+	}
+
+	private boolean shouldBeBound(RepositoryConnection connection,
+			Resource subject) throws RepositoryException,
+			MalformedRuleException {
+		List<Statement> thisUnboundStatements = Iterations
+				.asList(connection.getStatements(subject,
+						SPIN.THIS_UNBOUND_PROPERTY, null, true));
+		int numUnboundStatements = thisUnboundStatements.size();
+		if (1 < numUnboundStatements) {
+			throw new MalformedRuleException(
+					"Expected at most 1 spin:thisUnbound predicate, found "
+							+ numUnboundStatements);
+		}
+		boolean shouldBeBound = numUnboundStatements == 0;
+		if (!shouldBeBound) {
+			Statement statement = thisUnboundStatements.get(0);
+			Value boundValue = statement.getObject();
+			if (!(boundValue instanceof Literal)) {
+				throw new MalformedRuleException(
+						"Expected a Literal as the statement object: "
+								+ statement);
+			}
+			Literal boundLiteral = (Literal) boundValue;
+			if (boundLiteral.getDatatype() != XMLSchema.BOOLEAN) {
+				throw new MalformedRuleException(
+						"Expected an xsd:boolean as the statment object: "
+								+ statement);
+			}
+			shouldBeBound = !boundLiteral.booleanValue();
+		}
+		return shouldBeBound;
 	}
 
 	private List<Resource> getVariables(Resource where,

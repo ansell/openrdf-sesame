@@ -72,7 +72,7 @@ public class SPINParserTest {
 	private static void assertOneConstraint(
 			Multimap<Resource, ParsedQuery> parse, Resource resource) {
 		assertThat(parse.size(), is(1));
-		assertThat(parse.containsKey(PROTEIN), is(true));
+		assertThat(parse.containsKey(resource), is(true));
 		Collection<ParsedQuery> queries = parse.get(resource);
 		assertThat(queries.size(), is(1));
 		assertThat(queries.iterator().next(),
