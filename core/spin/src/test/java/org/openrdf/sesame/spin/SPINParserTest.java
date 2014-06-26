@@ -1,21 +1,28 @@
 package org.openrdf.sesame.spin;
 
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import info.aduna.io.ResourceUtil;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.Map;
+import java.util.Collection;
 
 import org.junit.Test;
 import org.openrdf.model.Resource;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+
+import com.google.common.collect.Multimap;
 
 public class SPINParserTest {
 
@@ -64,7 +71,10 @@ public class SPINParserTest {
 		SPINParser parser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("unattachedUnboundConstraintText.ttl")),
 				"", RDFFormat.TURTLE);
-		assertEquals(1, parser.parseConstraint().size());
-
+		Multimap<Resource, ParsedQuery> constraints = parser.parseConstraint();
+		assertEquals(1, constraints.size());
+		Collection<ParsedQuery> queries = parser.parseConstraint().get(null);
+		assertThat(queries.size(), is(equalTo(1)));
+		assertThat(queries.iterator().next(), is(instanceOf(ParsedGraphQuery.class)));
 	}
 }
