@@ -5,9 +5,7 @@ import info.aduna.iteration.Iterations;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
@@ -34,6 +32,9 @@ import org.openrdf.sail.memory.MemoryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 public class SPINParser {
 	private Logger log = LoggerFactory.getLogger(SPINParser.class);
 	private SailRepository myRepository;
@@ -49,10 +50,10 @@ public class SPINParser {
 		connection.close();
 	}
 
-	public Map<Resource, ParsedQuery> parse() throws MalformedQueryException,
+	public Multimap<Resource, ParsedQuery> parseConstraint() throws MalformedQueryException,
 			MalformedRuleException {
 		SailRepositoryConnection connection;
-		Map<Resource, ParsedQuery> queries = new HashMap<Resource, ParsedQuery>();
+		Multimap<Resource, ParsedQuery> queries = HashMultimap.create(1,1);
 		try {
 			connection = myRepository.getConnection();
 			recoverConstructQueriesFromTriples(queries, connection);
@@ -63,7 +64,7 @@ public class SPINParser {
 	}
 
 	private void recoverConstructQueriesFromTriples(
-			Map<Resource, ParsedQuery> queries, RepositoryConnection connection)
+			Multimap<Resource, ParsedQuery> queries, RepositoryConnection connection)
 			throws RepositoryException, MalformedQueryException,
 			MalformedRuleException {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
@@ -76,7 +77,7 @@ public class SPINParser {
 	}
 
 	private void recoverConstructQueryFromTriples(Statement queryStart,
-			Map<Resource, ParsedQuery> queries, RepositoryConnection connection)
+			Multimap<Resource, ParsedQuery> queries, RepositoryConnection connection)
 			throws RepositoryException, MalformedQueryException,
 			MalformedRuleException {
 		int numAttachedResources = Iterations.asList(

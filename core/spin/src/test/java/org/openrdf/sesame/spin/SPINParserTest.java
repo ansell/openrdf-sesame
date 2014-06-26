@@ -25,8 +25,7 @@ public class SPINParserTest {
 			MalformedRuleException {
 		SPINParser spinParser = new SPINParser(new StringReader(""), "",
 				RDFFormat.TURTLE);
-		Map<Resource, ParsedQuery> parsed = spinParser.parse();
-		assertEquals(0, parsed.size());
+		assertEquals(0, spinParser.parseConstraint().size());
 	}
 
 	@Test
@@ -36,8 +35,7 @@ public class SPINParserTest {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraint.ttl")), "",
 				RDFFormat.TURTLE);
-		Map<Resource, ParsedQuery> parsed = spinParser.parse();
-		assertEquals(1, parsed.size());
+		assertEquals(1, spinParser.parseConstraint().size());
 	}
 
 	@Test
@@ -47,8 +45,7 @@ public class SPINParserTest {
 		SPINParser spinParser = new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("constraintText.ttl")), "",
 				RDFFormat.TURTLE);
-		Map<Resource, ParsedQuery> parsed = spinParser.parse();
-		assertEquals(1, parsed.size());
+		assertEquals(1, spinParser.parseConstraint().size());
 	}
 
 	@Test(expected = MalformedRuleException.class)
@@ -57,6 +54,17 @@ public class SPINParserTest {
 			MalformedRuleException {
 		new SPINParser(new InputStreamReader(
 				ResourceUtil.getInputStream("unattachedConstraintText.ttl")),
-				"", RDFFormat.TURTLE).parse();
+				"", RDFFormat.TURTLE).parseConstraint();
+	}
+	
+	@Test
+	public void testExplictlyUnbound() throws RDFParseException,
+			RepositoryException, IOException, MalformedQueryException,
+			MalformedRuleException {
+		SPINParser parser = new SPINParser(new InputStreamReader(
+				ResourceUtil.getInputStream("unattachedUnboundConstraintText.ttl")),
+				"", RDFFormat.TURTLE);
+		assertEquals(1, parser.parseConstraint().size());
+
 	}
 }

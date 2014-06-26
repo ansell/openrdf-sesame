@@ -1,0 +1,24 @@
+@prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:<http://www.w3.org/2002/07/owl#> .
+@prefix sp:<http:spinrdf.org/sp#> .
+@prefix spin:<http:spinrdf.org/spin#> .
+@prefix core:<http://purl.uniprot.org/core/> .
+@prefix taxonomy:<http://purl.uniprot.org/taxonomy/> .
+
+[ a sp:Construct ;
+  spin:thisUnbound true ;
+  sp:text """
+      CONSTRUCT {
+          _:b1 a spin:ConstraintViolation ;
+               spin:violationRoot ?link ;
+               spin:violationPath rdfs:seeAlso ;
+               rdfs:label "URC17: WormBase links may only be found in Caenorhabditis briggsae or Caenorhabditis elegans entries."
+      }
+      WHERE {
+          ?this a core:Protein .
+          FILTER NOT EXISTS { ?this core:organism taxonomy:6238 }
+          FILTER NOT EXISTS { ?this core:organism taxonomy:6239 }
+          ?this rdfs:seeAlso ?link .
+          ?link core:database <http://purl.uniprot.org/database/WormBase> .
+      }"""
+] .
