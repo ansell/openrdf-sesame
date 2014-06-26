@@ -42,17 +42,16 @@ public class SPINParserTest {
 	public void testBasic() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser spinParser = createParser("constraint.ttl");
-		assertThat(spinParser.parseConstraint().size(), is(equalTo(1)));
+		assertOneConstraint(createParser("constraint.ttl").parseConstraint(),
+				PROTEIN);
 	}
 
 	@Test
 	public void testBasicText() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser spinParser = createParser("constraintText.ttl");
-		//assertThat(spinParser.parseConstraint().size(), is(equalTo(1)));
-		assertOneConstraint(spinParser.parseConstraint(), PROTEIN);
+		assertOneConstraint(createParser("constraintText.ttl")
+				.parseConstraint(), PROTEIN);
 	}
 
 	@Test(expected = MalformedRuleException.class)
@@ -66,16 +65,16 @@ public class SPINParserTest {
 	public void testExplictlyUnbound() throws RDFParseException,
 			RepositoryException, IOException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser parser = createParser("unattachedUnboundConstraintText.ttl");
-		Multimap<Resource, ParsedQuery> constraints = parser.parseConstraint();
-		assertOneConstraint(constraints, null);
+		assertOneConstraint(createParser("unattachedUnboundConstraintText.ttl")
+				.parseConstraint(), null);
 	}
 
 	private static void assertOneConstraint(
 			Multimap<Resource, ParsedQuery> parse, Resource resource) {
-		assertThat(parse.size(), is(equalTo(1)));
+		assertThat(parse.size(), is(1));
+		assertThat(parse.containsKey(PROTEIN), is(true));
 		Collection<ParsedQuery> queries = parse.get(resource);
-		assertThat(queries.size(), is(equalTo(1)));
+		assertThat(queries.size(), is(1));
 		assertThat(queries.iterator().next(),
 				is(instanceOf(ParsedGraphQuery.class)));
 	}

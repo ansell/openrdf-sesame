@@ -50,10 +50,10 @@ public class SPINParser {
 		connection.close();
 	}
 
-	public Multimap<Resource, ParsedQuery> parseConstraint() throws MalformedQueryException,
-			MalformedRuleException {
+	public Multimap<Resource, ParsedQuery> parseConstraint()
+			throws MalformedQueryException, MalformedRuleException {
 		SailRepositoryConnection connection;
-		Multimap<Resource, ParsedQuery> queries = HashMultimap.create(1,1);
+		Multimap<Resource, ParsedQuery> queries = HashMultimap.create(1, 1);
 		try {
 			connection = myRepository.getConnection();
 			recoverConstructQueriesFromTriples(queries, connection);
@@ -64,9 +64,9 @@ public class SPINParser {
 	}
 
 	private void recoverConstructQueriesFromTriples(
-			Multimap<Resource, ParsedQuery> queries, RepositoryConnection connection)
-			throws RepositoryException, MalformedQueryException,
-			MalformedRuleException {
+			Multimap<Resource, ParsedQuery> queries,
+			RepositoryConnection connection) throws RepositoryException,
+			MalformedQueryException, MalformedRuleException {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
 				null, RDF.TYPE, SP.CONSTRUCT, true);
 		while (queryStarts.hasNext()) {
@@ -77,17 +77,17 @@ public class SPINParser {
 	}
 
 	private void recoverConstructQueryFromTriples(Statement queryStart,
-			Multimap<Resource, ParsedQuery> queries, RepositoryConnection connection)
-			throws RepositoryException, MalformedQueryException,
-			MalformedRuleException {
-		List<Statement> list = Iterations.asList(
-				connection.getStatements(null, SPIN.CONSTRAINT_PROPERTY,
-						queryStart.getSubject(), true));
+			Multimap<Resource, ParsedQuery> queries,
+			RepositoryConnection connection) throws RepositoryException,
+			MalformedQueryException, MalformedRuleException {
+		List<Statement> list = Iterations.asList(connection.getStatements(null,
+				SPIN.CONSTRAINT_PROPERTY, queryStart.getSubject(), true));
 		int numAttachedResources = list.size();
 		if (1 != numAttachedResources) {
 			throw new MalformedRuleException(
 					"Expected 1 attached resource, got " + numAttachedResources);
 		}
+		Resource resource = list.get(0).getSubject();
 		List<Literal> texts = findTexts(queryStart.getSubject(), connection);
 		for (Literal text : texts) {
 			RepositoryResult<Namespace> namespaces = connection.getNamespaces();
@@ -101,17 +101,14 @@ public class SPINParser {
 				query.insert(0, "PREFIX ");
 			}
 			queries.put(
-					list.get(0).getSubject(),
+					resource,
 					QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
 							query.toString(), null));
 		}
 		List<Resource> types = getWhere(queryStart.getSubject(), connection);
 		for (Resource where : types) {
 			List<Resource> variables = getVariables(where, connection);
-			TupleExpr query = new Projection();
-			ParsedGraphQuery parsedGraphQuery = new ParsedGraphQuery(query);
-			queries.put(ValueFactoryImpl.getInstance().createBNode(),
-					parsedGraphQuery);
+			queries.put(resource, new ParsedGraphQuery(new Projection()));
 		}
 	}
 
