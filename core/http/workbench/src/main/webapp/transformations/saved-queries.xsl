@@ -74,7 +74,7 @@
 						</td>
 						<td style="vertical-align:middle">
 							<input type="button" id="{$query}-toggle" value="Show"
-								onclick="toggle('{$query}');" />
+								onclick="workbench.savedQueries.toggle('{$query}');" />
 						</td>
 						<td style="vertical-align:middle">
 							<form method="post" name="edit-query" action="query">
@@ -91,7 +91,7 @@
 						<td style="vertical-align:middle">
 							<form method="post" id="{$query}" action="saved-queries?delete={$query}">
 								<input type="button" value="Delete..."
-									onclick="deleteQuery('{$user}', '{$queryName}', '{$query}');" />
+									onclick="workbench.savedQueries.deleteQuery('{$user}', '{$queryName}', '{$query}');" />
 							</form>
 						</td>
 					</tr>

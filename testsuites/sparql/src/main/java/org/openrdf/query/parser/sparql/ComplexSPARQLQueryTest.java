@@ -44,6 +44,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -829,6 +830,68 @@ public abstract class ComplexSPARQLQueryTest {
 			}
 		}
 		assertEquals(2, count);
+	}
+
+	@Test
+	public void testSES2052If1()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT ?p \n");
+		query.append("WHERE { \n");
+		query.append("         ?s ?p ?o . \n");
+		query.append("        FILTER(IF(BOUND(?p), ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, false)) \n");
+		query.append("}");
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+
+				URI p = (URI)bs.getValue("p");
+				assertNotNull(p);
+				assertEquals(RDF.TYPE, p);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
+	@Test
+	public void testSES2052If2()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-query.trig");
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT ?p \n");
+		query.append("WHERE { \n");
+		query.append("         ?s ?p ?o . \n");
+		query.append("        FILTER(IF(!BOUND(?p), false , ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)) \n");
+		query.append("}");
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+			while (result.hasNext()) {
+				BindingSet bs = result.next();
+
+				URI p = (URI)bs.getValue("p");
+				assertNotNull(p);
+				assertEquals(RDF.TYPE, p);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
 	}
 
 	@Test
@@ -1746,9 +1809,11 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSES2024PropertyPathAnonVarSharing() throws Exception {
+	public void testSES2024PropertyPathAnonVarSharing()
+		throws Exception
+	{
 		loadTestData("/testdata-query/dataset-ses2024.trig");
-		String query = "PREFIX : <http://example.org/> SELECT * WHERE { ?x1 :p/:lit ?l1 . ?x1 :diff ?x2 . ?x2 :p/:lit ?l2 . }" ;
+		String query = "PREFIX : <http://example.org/> SELECT * WHERE { ?x1 :p/:lit ?l1 . ?x1 :diff ?x2 . ?x2 :p/:lit ?l2 . }";
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 

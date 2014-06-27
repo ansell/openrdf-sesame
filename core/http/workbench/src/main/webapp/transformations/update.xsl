@@ -12,22 +12,9 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<form action="update" method="POST" onsubmit="return doSubmit()">
+		<form action="update" method="POST" onsubmit="return workbench.update.doSubmit()">
 			<table class="dataentry">
 				<tbody>
-					<tr>
-						<th>
-							<xsl:value-of select="$query-language.label" />
-						</th>
-						<td>
-							<select id="queryLn" name="queryLn" onchange="loadNamespaces()">
-								<option value="SPARQL" selected="true">
-									SPARQL
-								</option>
-							</select>
-						</td>
-						<td></td>
-					</tr>
 					<tr>
 						<th>
 							<xsl:value-of select="$update-string.label" />

@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.parser;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,7 @@ import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
+import org.openrdf.query.parser.QueryPrologLexer.Token;
 
 /**
  * Utility class for creating query parsers and parsing queries in various query
@@ -64,7 +66,7 @@ public class QueryParserUtil {
 	{
 		ParsedOperation parsedOperation = null;
 		QueryParser parser = createParser(ql);
-		
+
 		if (QueryLanguage.SPARQL.equals(ql)) {
 			String strippedOperation = removeSPARQLQueryProlog(operation).toUpperCase();
 
@@ -78,10 +80,11 @@ public class QueryParserUtil {
 			}
 		}
 		else {
-			// SPARQL is the only QL supported by sesame that has update operations, so we simply redirect to parseQuery
+			// SPARQL is the only QL supported by sesame that has update
+			// operations, so we simply redirect to parseQuery
 			parsedOperation = parser.parseQuery(operation, baseURI);
 		}
-		
+
 		return parsedOperation;
 	}
 
@@ -216,51 +219,22 @@ public class QueryParserUtil {
 
 	/**
 	 * Removes SPARQL prefix and base declarations, if any, from the supplied
-	 * SPARQL query string.
+	 * SPARQL query string. The supplied query string is assumed to be
+	 * syntactically legal.
 	 * 
 	 * @param queryString
-	 *        a SPARQL query string
+	 *        a syntactically legal SPARQL query string
 	 * @return a substring of queryString, with prefix and base declarations
 	 *         removed.
 	 */
 	public static String removeSPARQLQueryProlog(String queryString) {
-		String normalizedQuery = queryString;
-
-		// strip all prefix declarations
-		Pattern pattern = Pattern.compile("prefix[^:]+:\\s*<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
-		Matcher matcher = pattern.matcher(queryString);
-
-		int startIndexCorrection = 0;
-		while (matcher.find()) {
-			normalizedQuery = normalizedQuery.substring(matcher.end() - startIndexCorrection,
-					normalizedQuery.length());
-			startIndexCorrection += (matcher.end() - startIndexCorrection);
+		final Token t = QueryPrologLexer.getRestOfQueryToken(queryString);
+		if (t != null) {
+			return t.getStringValue();
 		}
-		
-		normalizedQuery = normalizedQuery.trim();
-		
-		// strip leading comment before base (if present)
-		pattern = Pattern.compile("^#[^\n]+");
-		matcher = pattern.matcher(normalizedQuery);
-		if (matcher.find()) {
-			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
-			normalizedQuery = normalizedQuery.trim();
+		else {
+			return queryString;
 		}
-		
-		// strip base declaration (if present)
-		pattern = Pattern.compile("^base\\s+<[^>]*>\\s*", Pattern.CASE_INSENSITIVE);
-		matcher = pattern.matcher(normalizedQuery);
-		if (matcher.find()) {
-			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
-		}
-
-		// strip leading comment after base (if present)
-		pattern = Pattern.compile("^#[^\n]+");
-		matcher = pattern.matcher(normalizedQuery);
-		if (matcher.find()) {
-			normalizedQuery = normalizedQuery.substring(matcher.end(), normalizedQuery.length());
-		}
-		
-		return normalizedQuery.trim();
 	}
+
 }

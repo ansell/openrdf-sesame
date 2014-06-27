@@ -108,6 +108,12 @@ public class If extends QueryModelNodeBase implements ValueExpr {
 		if (condition == current) {
 			setCondition((ValueExpr)replacement);
 		}
+		else if (result == current) {
+			setResult((ValueExpr)replacement);
+		}
+		else if (alternative == current) {
+			setAlternative((ValueExpr)replacement);
+		}
 		else {
 			super.replaceChildNode(current, replacement);
 		}
@@ -169,7 +175,9 @@ public class If extends QueryModelNodeBase implements ValueExpr {
 	 *        The result to set.
 	 */
 	public void setResult(ValueExpr result) {
+		result.setParentNode(this);
 		this.result = result;
+
 	}
 
 	/**
@@ -184,6 +192,7 @@ public class If extends QueryModelNodeBase implements ValueExpr {
 	 *        The alternative to set.
 	 */
 	public void setAlternative(ValueExpr alternative) {
+		alternative.setParentNode(this);
 		this.alternative = alternative;
 	}
 

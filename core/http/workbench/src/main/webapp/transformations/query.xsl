@@ -16,7 +16,7 @@
 			select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
 		<xsl:variable name="query"
 			select="sparql:results/sparql:result/sparql:binding[@name='query']" />
-		<form action="query" method="POST" onsubmit="return doSubmit()">
+		<form action="query" method="POST" onsubmit="return workbench.query.doSubmit()">
 			<input type="hidden" name="action" id="action" />
 			<table class="dataentry">
 				<tbody>
@@ -25,7 +25,7 @@
 							<xsl:value-of select="$query-language.label" />
 						</th>
 						<td>
-							<select id="queryLn" name="queryLn" onchange="loadNamespaces()">
+							<select id="queryLn" name="queryLn" onchange="workbench.query.loadNamespaces()">
 								<xsl:for-each select="$info//sparql:binding[@name='query-format']">
 									<option value="{substring-before(sparql:literal, ' ')}">
 										<xsl:choose>
@@ -96,7 +96,7 @@
 							<xsl:value-of select="$query-actions.label" />
 						</th>
 						<td>
-							<input type="button" onclick="resetNamespaces()" value="Clear" />
+							<input type="button" onclick="workbench.query.resetNamespaces()" value="Clear" />
 							<input id="exec" type="submit" value="{$execute.label}" />
 							<input id="save" type="submit" value="{$save.label}"
 								disabled="true" />

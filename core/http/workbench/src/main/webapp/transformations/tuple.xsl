@@ -51,7 +51,7 @@
 							</select>
 						</td>
 						<td>
-							<input type="submit" onclick="addGraphParam('Accept');return false"
+							<input type="submit" onclick="workbench.paging.addGraphParam('Accept');return false"
 								value="{$download.label}" />
 						</td>
 					</tr>
@@ -68,7 +68,7 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">
-									addLimit();
+									workbench.paging.addLimit();
 								</xsl:with-param>
 							</xsl:call-template>
 						</td>
@@ -85,11 +85,11 @@
 						</th>
 						<td>
 							<input id="previousX" type="button" value="{$previousX.label}"
-								onclick="previousOffset();" />
+								onclick="workbench.paging.previousOffset();" />
 						</td>
 						<td>
 							<input id="nextX" type="button" value="{$nextX.label}"
-								onclick="nextOffset();" />
+								onclick="workbench.paging.nextOffset();" />
 						</td>
 					</tr>
 					<tr>
