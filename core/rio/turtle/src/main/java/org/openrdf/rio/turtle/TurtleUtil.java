@@ -94,6 +94,11 @@ public class TurtleUtil {
 			}
 		}
 
+		// Last character cannot be a period
+		if (!TurtleUtil.isNameEndChar(uri.charAt(uriLength - 1))) {
+			return -1;
+		}
+
 		if (idx > 0 && idx < uriLength) {
 			// A valid split index has been found
 			return idx;
