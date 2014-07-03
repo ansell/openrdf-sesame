@@ -267,7 +267,6 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
 	@Ignore("disabled for SPARQLRepository")
 	@Test
-	@Override
 	public void testReadOfAddedStatement1()
 		throws Exception
 	{
@@ -276,7 +275,6 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
 	@Ignore("temporarily disabled for SPARQLRepository")
 	@Test
-	@Override
 	public void testReadOfAddedStatement2()
 		throws Exception
 	{
