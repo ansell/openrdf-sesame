@@ -106,6 +106,8 @@ public abstract class RDFWriterTest {
 
 	private URI uri2;
 
+	private URI uri3;
+
 	private Literal plainLit;
 
 	private Literal dtLit;
@@ -147,6 +149,7 @@ public abstract class RDFWriterTest {
 		bnodeSpecialChars = vf.createBNode("$%^&*()!@#$a-b<>?\"'[]{}|\\");
 		uri1 = vf.createURI(exNs, "uri1");
 		uri2 = vf.createURI(exNs, "uri2");
+		uri3 = vf.createURI(exNs, "uri3.");
 		plainLit = vf.createLiteral("plain");
 		dtLit = vf.createLiteral(1);
 		langLit = vf.createLiteral("test", "en");
@@ -166,6 +169,7 @@ public abstract class RDFWriterTest {
 		potentialSubjects.add(bnodeSpecialChars);
 		potentialSubjects.add(uri1);
 		potentialSubjects.add(uri2);
+		potentialSubjects.add(uri3);
 		for (int i = 0; i < 50; i++) {
 			potentialSubjects.add(vf.createBNode());
 		}
@@ -294,6 +298,9 @@ public abstract class RDFWriterTest {
 		Statement st15 = vf.createStatement(uri1, uri2, litWithMultipleNewlines);
 		Statement st16 = vf.createStatement(uri1, uri2, litWithSingleQuotes);
 		Statement st17 = vf.createStatement(uri1, uri2, litWithDoubleQuotes);
+		Statement st18 = vf.createStatement(uri1, uri2, uri3);
+		Statement st19 = vf.createStatement(uri2, uri3, uri1);
+		Statement st20 = vf.createStatement(uri3, uri1, uri2);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
@@ -317,6 +324,9 @@ public abstract class RDFWriterTest {
 		rdfWriter.handleStatement(st15);
 		rdfWriter.handleStatement(st16);
 		rdfWriter.handleStatement(st17);
+		rdfWriter.handleStatement(st18);
+		rdfWriter.handleStatement(st19);
+		rdfWriter.handleStatement(st20);
 		rdfWriter.endRDF();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -331,7 +341,7 @@ public abstract class RDFWriterTest {
 
 		rdfParser.parse(in, "foo:bar");
 
-		assertEquals("Unexpected number of statements, found " + model.size(), 17, model.size());
+		assertEquals("Unexpected number of statements, found " + model.size(), 20, model.size());
 
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
 			assertTrue("Expected at least one namespace, found" + model.getNamespaces().size(),
@@ -361,6 +371,9 @@ public abstract class RDFWriterTest {
 		}
 		assertTrue("missing statement with single quotes", model.contains(st16));
 		assertTrue("missing statement with double quotes", model.contains(st17));
+		assertTrue("missing statement with object URI ending in period", model.contains(st18));
+		assertTrue("missing statement with predicate URI ending in period", model.contains(st19));
+		assertTrue("missing statement with subject URI ending in period", model.contains(st20));
 	}
 
 	@Test
