@@ -49,7 +49,7 @@
 						</th>
 						<td>
 							<textarea id="query" name="query" rows="16" cols="80"
-								wrap="hard">
+								wrap="soft">
 								<xsl:value-of select="$query" />
 							</textarea>
 						</td>
