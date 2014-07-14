@@ -56,6 +56,23 @@ public class QueryStorage {
 
 	private static QueryStorage instance;
 
+	/**
+	 * Returns a single instance of QueryStorage, initialising it the very first
+	 * time with whatever {@link AppConfiguration} is sent in.
+	 * 
+	 * @param config
+	 *        If there is no instance created, this is used to initialise the
+	 *        instance.
+	 * @return An instance of {@link QueryStorage} that either already exists, or
+	 *         if not, is created using the given {@link AppConfiguration}.
+	 * @throws RepositoryException
+	 *         If the Repository was not accessible at
+	 *         {@link AppConfiguration#getDataDir()} or if one could not be
+	 *         initialised there.
+	 * @throws IOException
+	 *         If the data directory specified by
+	 *         {@link AppConfiguration#getDataDir()} was not accessible.
+	 */
 	public static QueryStorage getSingletonInstance(final AppConfiguration config)
 		throws RepositoryException, IOException
 	{
