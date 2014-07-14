@@ -174,6 +174,8 @@ public class RepositoryManagerFederator {
 
 	private URI getLocationPredicate(String memberRepoType) {
 		URI predicate;
+		// TODO: SES-2088: Create a unique URI based identifier for repositories
+		// rather than this method
 		if (SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
 			predicate = SPARQLRepositoryConfig.QUERY_ENDPOINT;
 		}
