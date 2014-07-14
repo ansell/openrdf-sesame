@@ -281,11 +281,12 @@ public class QueryServlet extends TransformationServlet {
 	private void saveQuery(final WorkbenchRequest req, final HttpServletResponse resp)
 		throws IOException, BadRequestException, OpenRDFException, JSONException
 	{
-		if(!(repository instanceof HTTPRepository)) {
-			// TODO: SES-2088: This method is 
+		// TODO: SES-2088 : This method only works with HTTPRepsitory, as other
+		// repositories do not have URI/URLs
+		if (!(repository instanceof HTTPRepository)) {
 			return;
 		}
-		
+
 		resp.setContentType("application/json");
 		final JSONObject json = new JSONObject();
 		final boolean accessible = storage.checkAccess(repository);
@@ -308,8 +309,8 @@ public class QueryServlet extends TransformationServlet {
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 				}
 				else {
-					storage.saveQuery((HTTPRepository)repository, queryName, userName, shared, queryLanguage, queryText, infer,
-							rowsPerPage);
+					storage.saveQuery((HTTPRepository)repository, queryName, userName, shared, queryLanguage,
+							queryText, infer, rowsPerPage);
 				}
 			}
 			json.put("written", written);
@@ -428,8 +429,15 @@ public class QueryServlet extends TransformationServlet {
 					}
 				}
 				else if ("id".equals(ref)) {
-					result = storage.getQueryText((HTTPRepository)repository,
-							getUserNameFromParameter(req, "owner"), query);
+					// TODO: SES-2088 : This method only works with HTTPRepsitory, as
+					// other repositories do not have URI/URLs
+					if (repository instanceof HTTPRepository) {
+						result = storage.getQueryText((HTTPRepository)repository,
+								getUserNameFromParameter(req, "owner"), query);
+					}
+					else {
+						result = query;
+					}
 				}
 				else {
 					// if ref not recognized assume request meant "text"
@@ -450,13 +458,23 @@ public class QueryServlet extends TransformationServlet {
 		throws BadRequestException, OpenRDFException
 	{
 		if (req.isParameterPresent(REF)) {
-			return "id".equals(req.getParameter(REF)) ? storage.canRead(storage.selectSavedQuery(
-					(HTTPRepository)repository, getUserNameFromParameter(req, "owner"), req.getParameter(QUERY)),
-					getUserNameFromParameter(req, SERVER_USER)) : true;
+			if ("id".equals(req.getParameter(REF))) {
+				if (repository instanceof HTTPRepository) {
+					return storage.canRead(
+							storage.selectSavedQuery((HTTPRepository)repository,
+									getUserNameFromParameter(req, "owner"), req.getParameter(QUERY)),
+							getUserNameFromParameter(req, SERVER_USER));
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				return true;
+			}
 		}
 		else {
 			throw new BadRequestException("Expected 'ref' parameter in request.");
 		}
 	}
-
 }
