@@ -282,11 +282,17 @@ public class QueryStorage {
 		}
 	}
 
-	public boolean askExists(final HTTPRepository repository, final String queryName, final String userName)
+	public boolean askExists(final Repository repository, final String queryName, final String userName)
 		throws QueryEvaluationException, RepositoryException, MalformedQueryException
 	{
+		// TODO: SES-2088 : This method only works with HTTPRepsitory, as other
+		// repositories do not have URI/URLs
+		if (!(repository instanceof HTTPRepository)) {
+			return false;
+		}
+
 		final QueryStringBuilder ask = new QueryStringBuilder(ASK_EXISTS);
-		ask.replaceURI(REPOSITORY, repository.getRepositoryURL());
+		ask.replaceURI(REPOSITORY, ((HTTPRepository)repository).getRepositoryURL());
 		ask.replaceQuote(QUERY_NAME, queryName);
 		ask.replaceQuote(USER_NAME, userName);
 		LOGGER.info("{}", ask);

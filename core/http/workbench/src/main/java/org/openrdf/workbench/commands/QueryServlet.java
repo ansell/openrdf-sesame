@@ -43,7 +43,6 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -282,15 +281,19 @@ public class QueryServlet extends TransformationServlet {
 	private void saveQuery(final WorkbenchRequest req, final HttpServletResponse resp)
 		throws IOException, BadRequestException, OpenRDFException, JSONException
 	{
+		if(!(repository instanceof HTTPRepository)) {
+			// TODO: SES-2088: This method is 
+			return;
+		}
+		
 		resp.setContentType("application/json");
 		final JSONObject json = new JSONObject();
-		final HTTPRepository http = (HTTPRepository)repository;
-		final boolean accessible = storage.checkAccess(http);
+		final boolean accessible = storage.checkAccess(repository);
 		json.put("accessible", accessible);
 		if (accessible) {
 			final String queryName = req.getParameter("query-name");
 			String userName = getUserNameFromParameter(req, SERVER_USER);
-			final boolean existed = storage.askExists(http, queryName, userName);
+			final boolean existed = storage.askExists(repository, queryName, userName);
 			json.put("existed", existed);
 			final boolean written = Boolean.valueOf(req.getParameter("overwrite")) || !existed;
 			if (written) {
@@ -301,11 +304,11 @@ public class QueryServlet extends TransformationServlet {
 						: false;
 				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
-					final URI query = storage.selectSavedQuery(http, userName, queryName);
+					final URI query = storage.selectSavedQuery((HTTPRepository)repository, userName, queryName);
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 				}
 				else {
-					storage.saveQuery(http, queryName, userName, shared, queryLanguage, queryText, infer,
+					storage.saveQuery((HTTPRepository)repository, queryName, userName, shared, queryLanguage, queryText, infer,
 							rowsPerPage);
 				}
 			}
