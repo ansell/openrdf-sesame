@@ -34,6 +34,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-runtime</artifactId>
 			<version>${project.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -54,6 +55,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-repository-http</artifactId>
 			<version>${project.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -74,6 +76,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-sail-nativerdf</artifactId>
 			<version>${project.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
