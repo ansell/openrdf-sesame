@@ -190,6 +190,8 @@ public class RepositoryManagerFederator {
 		throws MalformedURLException, RepositoryConfigException, OpenRDFException
 	{
 		Value locator;
+		// TODO: SES-2088: Create a unique URI based identifier for repositories
+		// rather than this method
 		if (HTTPRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
 			locator = valueFactory.createURI(((HTTPRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getURL());
 		}
