@@ -165,10 +165,12 @@ public class QueryStorage {
 	 * @throws RepositoryException
 	 *         if there is an issue closing the connection
 	 */
-	public boolean checkAccess(final HTTPRepository repository)
+	public boolean checkAccess(final Repository repository)
 		throws RepositoryException
 	{
-		LOGGER.info("repository: {}", repository.getRepositoryURL());
+		if (repository instanceof HTTPRepository) {
+			LOGGER.info("repository: {}", ((HTTPRepository)repository).getRepositoryURL());
+		}
 		boolean rval = true;
 		RepositoryConnection con = repository.getConnection();
 		try {
@@ -380,6 +382,8 @@ public class QueryStorage {
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT);
 		select.replaceQuote(USER_NAME, userName);
+		// TODO: SES-2088 : Have another way of identifying a repository so this
+		// can be more useful
 		select.replaceURI(REPOSITORY, repository.getRepositoryURL());
 		final RepositoryConnection connection = this.queries.getConnection();
 		try {

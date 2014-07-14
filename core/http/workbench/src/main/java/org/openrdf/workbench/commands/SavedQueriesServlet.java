@@ -104,15 +104,23 @@ public class SavedQueriesServlet extends TransformationServlet {
 	private void getSavedQueries(final WorkbenchRequest req, final TupleResultBuilder builder)
 		throws OpenRDFException, BadRequestException
 	{
-		final HTTPRepository repo = (HTTPRepository)this.repository;
 		String user = req.getParameter(SERVER_USER);
 		if (null == user) {
 			user = "";
 		}
-		if (!storage.checkAccess(repo)) {
-			throw new BadRequestException("User '" + user + "' not authorized to access repository '"
-					+ repo.getRepositoryURL() + "'");
+		if (!storage.checkAccess(this.repository)) {
+			if (this.repository instanceof HTTPRepository) {
+				throw new BadRequestException("User '" + user + "' not authorized to access repository '"
+						+ ((HTTPRepository)this.repository).getRepositoryURL() + "'");
+			}
+			else {
+				throw new BadRequestException("User '" + user + "' not authorized to access repository");
+			}
 		}
-		storage.selectSavedQueries(repo, user, builder);
+		if (this.repository instanceof HTTPRepository) {
+			// SES-2088 : There is no way that this will succeed in its current
+			// design without having a URL for the repository
+			storage.selectSavedQueries((HTTPRepository)this.repository, user, builder);
+		}
 	}
 }
