@@ -17,7 +17,6 @@
 package org.openrdf.workbench.commands;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
@@ -80,22 +79,26 @@ public class SavedQueriesServlet extends TransformationServlet {
 	protected void doPost(final WorkbenchRequest wreq, final HttpServletResponse resp, final String xslPath)
 		throws BadRequestException, IOException, OpenRDFException
 	{
-		final String urn = wreq.getParameter("delete");
-		if (null == urn || urn.isEmpty()) {
-			throw new BadRequestException("Expected POST to contain a 'delete=' parameter.");
-		}
-		final boolean accessible = storage.checkAccess((HTTPRepository)this.repository);
-		if (accessible) {
-			String userName = wreq.getParameter(SERVER_USER);
-			if (null == userName) {
-				userName = "";
+		// TODO: SES-2088 : This method only works with HTTPRepsitory, as other
+		// repositories do not have URI/URLs
+		if (repository instanceof HTTPRepository) {
+			final String urn = wreq.getParameter("delete");
+			if (null == urn || urn.isEmpty()) {
+				throw new BadRequestException("Expected POST to contain a 'delete=' parameter.");
 			}
-			final URIImpl queryURI = new URIImpl(urn);
-			if (storage.canChange(queryURI, userName)) {
-				storage.deleteQuery(queryURI, userName);
-			}
-			else {
-				throw new BadRequestException("User '" + userName + "' may not delete query id " + urn);
+			final boolean accessible = storage.checkAccess(this.repository);
+			if (accessible) {
+				String userName = wreq.getParameter(SERVER_USER);
+				if (null == userName) {
+					userName = "";
+				}
+				final URIImpl queryURI = new URIImpl(urn);
+				if (storage.canChange(queryURI, userName)) {
+					storage.deleteQuery(queryURI, userName);
+				}
+				else {
+					throw new BadRequestException("User '" + userName + "' may not delete query id " + urn);
+				}
 			}
 		}
 		this.service(wreq, resp, xslPath);
