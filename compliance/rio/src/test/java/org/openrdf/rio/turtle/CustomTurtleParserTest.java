@@ -85,6 +85,7 @@ public class CustomTurtleParserTest {
 	{
 		try {
 			Rio.parse(new StringReader("<urn:a> <http://www.example.net/test> \"Foo\"@."), "", RDFFormat.TURTLE);
+			fail("Did not receive an exception");
 		}
 		catch (RDFParseException e) {
 			assertTrue(e.getMessage().contains("Expected a letter, found '.'"));
@@ -100,6 +101,7 @@ public class CustomTurtleParserTest {
 			// on a file of this structure
 			Rio.parse(new StringReader("<urn:a> <http://www.example.net/test> \"Foo\"@."), "", RDFFormat.TURTLE,
 					settingsNoVerifyLangTag, vf, errors);
+			fail("Did not receive an exception");
 		}
 		catch (RDFParseException e) {
 			assertTrue(e.getMessage().contains("Unexpected end of file"));
@@ -331,4 +333,73 @@ public class CustomTurtleParserTest {
 				this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.nt"), "",
 				RDFFormat.NTRIPLES));
 	}
+
+	@Test
+	public void testSES2086PeriodEndingLocalNamesFailure1()
+		throws Exception
+	{
+		try {
+			Rio.parse(new StringReader(
+					"@prefix : <http://example.org> .\n <urn:a> <http://www.example.net/test> :test. ."), "",
+					RDFFormat.TURTLE);
+			fail("Did not receive an exception");
+		}
+		catch (RDFParseException e) {
+			System.out.println(e.getMessage());
+			assertTrue(e.getMessage().contains("Object for statement missing"));
+		}
+	}
+
+	@Test
+	public void testSES2086PeriodEndingLocalNamesFailure2()
+		throws Exception
+	{
+		try {
+			Rio.parse(
+					new StringReader(
+							"@prefix ns: <http://example.org/data/> . ns:uriWithDot. a ns:Product ; ns:title \"An example subject ending with a dot.\" . "),
+					"", RDFFormat.TURTLE);
+			fail("Did not receive an exception");
+		}
+		catch (RDFParseException e) {
+			System.out.println(e.getMessage());
+			assertTrue(e.getMessage().contains(
+					"'' is not a valid value for datatype http://www.w3.org/2001/XMLSchema#integer"));
+		}
+	}
+
+	@Test
+	public void testSES2086PeriodEndingLocalNamesFailure3()
+		throws Exception
+	{
+		try {
+			Rio.parse(
+					new StringReader(
+							"@prefix ns: <http://example.org/data/> . ns:1 a ns:Product ; ns:affects ns:4 , ns:16 , ns:uriWithDot. ; ns:title \"An example entity with uriWithDot as an object\" . "),
+					"", RDFFormat.TURTLE);
+			fail("Did not receive an exception");
+		}
+		catch (RDFParseException e) {
+			System.out.println(e.getMessage());
+			assertTrue(e.getMessage().contains("Expected an RDF value here, found ';'"));
+		}
+	}
+
+	@Test
+	public void testSES2086PeriodEndingLocalNamesFailure4()
+		throws Exception
+	{
+		try {
+			Rio.parse(
+					new StringReader(
+							"@prefix ns: <http://example.org/data/> . ns:1 a ns:uriWithDot. ; ns:title \"An example entity with uriWithDot as an object\" . "),
+					"", RDFFormat.TURTLE);
+			fail("Did not receive an exception");
+		}
+		catch (RDFParseException e) {
+			System.out.println(e.getMessage());
+			assertTrue(e.getMessage().contains("Expected an RDF value here, found ';'"));
+		}
+	}
+
 }
