@@ -364,7 +364,7 @@ public class CustomTurtleParserTest {
 		catch (RDFParseException e) {
 			System.out.println(e.getMessage());
 			assertTrue(e.getMessage().contains(
-					"'' is not a valid value for datatype http://www.w3.org/2001/XMLSchema#integer"));
+					"Illegal predicate value: \"\"^^<http://www.w3.org/2001/XMLSchema#integer>"));
 		}
 	}
 
