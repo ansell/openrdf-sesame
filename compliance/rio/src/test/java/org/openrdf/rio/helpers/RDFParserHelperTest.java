@@ -199,6 +199,7 @@ public class RDFParserHelperTest {
 	public final void testReportErrorStringFatalActive()
 		throws Exception
 	{
+		parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
 		thrown.expect(RDFParseException.class);
 		thrown.expectMessage(TEST_MESSAGE_FOR_FAILURE);
@@ -215,6 +216,7 @@ public class RDFParserHelperTest {
 	public final void testReportErrorStringNonFatalActive()
 		throws Exception
 	{
+		parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
 		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, BasicParserSettings.VERIFY_DATATYPE_VALUES,
@@ -247,6 +249,7 @@ public class RDFParserHelperTest {
 	public final void testReportErrorStringIntIntFatalActive()
 		throws Exception
 	{
+		parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
 		thrown.expect(RDFParseException.class);
 		thrown.expectMessage(TEST_MESSAGE_FOR_FAILURE);
@@ -263,6 +266,7 @@ public class RDFParserHelperTest {
 	public final void testReportErrorStringIntIntNonFatalActive()
 		throws Exception
 	{
+		parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
 		assertTrue(parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES));
 		parserConfig.addNonFatalError(BasicParserSettings.VERIFY_DATATYPE_VALUES);
 		RDFParserHelper.reportError(TEST_MESSAGE_FOR_FAILURE, 1, 1, BasicParserSettings.VERIFY_DATATYPE_VALUES,

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -307,6 +308,48 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		};
 	}
 
+	@Override
+	public Resource subjectResource() throws ModelException {
+		Iterator<Resource> iter = subjects().iterator();
+		try {
+			if (iter.hasNext()) {
+				Resource subj = iter.next();
+				if (iter.hasNext()) {
+					throw new ModelException(subj, iter.next());
+				}
+				return subj;
+			}
+			return null;
+		} finally {
+			closeIterator(iter);
+		}
+	}
+	
+	@Override
+	public URI subjectURI() throws ModelException {
+		Resource subj = subjectResource();
+		if (subj == null) {
+			return null;
+		}
+		if (subj instanceof URI) {
+			return (URI) subj;
+		}
+		throw new ModelException(subj);
+	}
+	
+	@Override
+	public BNode subjectBNode() throws ModelException {
+		Resource subj = subjectResource();
+		if (subj == null) {
+			return null;
+		}
+		if (subj instanceof BNode) {
+			return (BNode) subj;
+		}
+		throw new ModelException(subj);
+	}
+	
+	
 	@Override
 	public Set<URI> predicates() {
 		return new ValueSet<URI>() {

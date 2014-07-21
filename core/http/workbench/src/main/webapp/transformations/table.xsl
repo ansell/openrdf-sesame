@@ -60,7 +60,7 @@
 		<xsl:param name="resource" />
 		<xsl:param name="url" select="string('')" />
 		<xsl:param name="shortform" select="string('')" />
-		<span class="resource">
+		<div class="resource">
 			<xsl:if test="$shortform != string('')">
 				<xsl:attribute name="data-longform">
 					<xsl:call-template name="url-encode">
@@ -82,14 +82,12 @@
 				</xsl:attribute>
 				<xsl:value-of select="$resource" />
 			</a>
-			<span class="resourceURL">
-				<xsl:if test="$url != string('')">
-					<a href="{$url}" target="_blank">
-						<img src="../../images/external.png" alt="web" />
-					</a>
-				</xsl:if>
-			</span>
-		</span>
+			<xsl:if test="$url != string('')">
+				<a class="resourceURL" href="{$url}" target="_blank">
+					<img src="../../images/external.png" alt="web" />
+				</a>
+			</xsl:if>
+		</div>
 	</xsl:template>
 
 	<xsl:template name="explore-literal">

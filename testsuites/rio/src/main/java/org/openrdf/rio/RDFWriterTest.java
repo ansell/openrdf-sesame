@@ -61,6 +61,7 @@ import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.rio.helpers.BasicParserSettings;
+import org.openrdf.rio.helpers.JSONLDMode;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -100,6 +101,8 @@ public abstract class RDFWriterTest {
 	private URI uri1;
 
 	private URI uri2;
+
+	private URI uri3;
 
 	private Literal plainLit;
 
@@ -142,6 +145,7 @@ public abstract class RDFWriterTest {
 		bnodeSpecialChars = vf.createBNode("$%^&*()!@#$a-b<>?\"'[]{}|\\");
 		uri1 = vf.createURI(exNs, "uri1");
 		uri2 = vf.createURI(exNs, "uri2");
+		uri3 = vf.createURI(exNs, "uri3.");
 		plainLit = vf.createLiteral("plain");
 		dtLit = vf.createLiteral(1);
 		langLit = vf.createLiteral("test", "en");
@@ -161,6 +165,7 @@ public abstract class RDFWriterTest {
 		potentialSubjects.add(bnodeSpecialChars);
 		potentialSubjects.add(uri1);
 		potentialSubjects.add(uri2);
+		potentialSubjects.add(uri3);
 		for (int i = 0; i < 50; i++) {
 			potentialSubjects.add(vf.createBNode());
 		}
@@ -228,6 +233,33 @@ public abstract class RDFWriterTest {
 		Collections.shuffle(potentialPredicates, prng);
 	}
 
+	/**
+	 * Override this method to setup custom settings for WriterConfig needed to
+	 * pass tests.
+	 * <p>
+	 * One example of this is that {@link JSONLDMode#EXPAND} does not preserve
+	 * namespace prefixes, causing the tests here to be unnecessarily ignored.
+	 * The fix for that is to override this method and set the mode to
+	 * {@link JSONLDMode#COMPACT} that does preserve namespaces.
+	 * 
+	 * @param config
+	 *        The config object to modify.
+	 */
+	protected void setupWriterConfig(WriterConfig config) {
+	}
+
+	/**
+	 * Override this method to setup custom settings for ParserConfig needed to
+	 * pass tests.
+	 * 
+	 * @param config
+	 *        The config object to modify.
+	 */
+	protected void setupParserConfig(ParserConfig config) {
+		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
+		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
+	}
+
 	@Test
 	public void testRoundTripWithXSDString()
 		throws RDFHandlerException, IOException, RDFParseException
@@ -275,13 +307,13 @@ public abstract class RDFWriterTest {
 		Statement st15 = vf.createStatement(uri1, uri2, litWithMultipleNewlines);
 		Statement st16 = vf.createStatement(uri1, uri2, litWithSingleQuotes);
 		Statement st17 = vf.createStatement(uri1, uri2, litWithDoubleQuotes);
+		Statement st18 = vf.createStatement(uri1, uri2, uri3);
+		Statement st19 = vf.createStatement(uri2, uri3, uri1);
+		Statement st20 = vf.createStatement(uri3, uri1, uri2);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
-		//if (!serialiseXSDString) {
-		//	rdfWriter.getWriterConfig().set(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL, true);
-		//}
-
+		setupWriterConfig(rdfWriter.getWriterConfig());
 		rdfWriter.handleNamespace("ex", exNs);
 		rdfWriter.startRDF();
 		rdfWriter.handleStatement(st1);
@@ -301,27 +333,28 @@ public abstract class RDFWriterTest {
 		rdfWriter.handleStatement(st15);
 		rdfWriter.handleStatement(st16);
 		rdfWriter.handleStatement(st17);
+		rdfWriter.handleStatement(st18);
+		rdfWriter.handleStatement(st19);
+		rdfWriter.handleStatement(st20);
 		rdfWriter.endRDF();
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
-		ParserConfig config = new ParserConfig();
+		setupParserConfig(rdfParser.getParserConfig());
 		if (preserveBNodeIds) {
-			config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+			rdfParser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 		}
-		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
-		config.set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
-		rdfParser.setParserConfig(config);
 		rdfParser.setValueFactory(vf);
 		Model model = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(model));
 
 		rdfParser.parse(in, "foo:bar");
 
-		assertEquals("Unexpected number of statements", 17, model.size());
+		assertEquals("Unexpected number of statements, found " + model.size(), 20, model.size());
 
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
-			assertTrue(model.getNamespaces().size() >= 1);
+			assertTrue("Expected at least one namespace, found" + model.getNamespaces().size(),
+					model.getNamespaces().size() >= 1);
 			assertEquals(exNs, model.getNamespace("ex").getName());
 		}
 
@@ -347,6 +380,9 @@ public abstract class RDFWriterTest {
 		}
 		assertTrue("missing statement with single quotes", model.contains(st16));
 		assertTrue("missing statement with double quotes", model.contains(st17));
+		assertTrue("missing statement with object URI ending in period", model.contains(st18));
+		assertTrue("missing statement with predicate URI ending in period", model.contains(st19));
+		assertTrue("missing statement with subject URI ending in period", model.contains(st20));
 	}
 
 	@Test
@@ -364,6 +400,7 @@ public abstract class RDFWriterTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+		setupWriterConfig(rdfWriter.getWriterConfig());
 		rdfWriter.handleNamespace("", ns1);
 		rdfWriter.handleNamespace("", ns2);
 		rdfWriter.handleNamespace("", ns3);
@@ -373,6 +410,7 @@ public abstract class RDFWriterTest {
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
+		setupParserConfig(rdfParser.getParserConfig());
 		rdfParser.setValueFactory(vf);
 		StatementCollector stCollector = new StatementCollector();
 		rdfParser.setRDFHandler(stCollector);
@@ -401,6 +439,7 @@ public abstract class RDFWriterTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+		setupWriterConfig(rdfWriter.getWriterConfig());
 		rdfWriter.handleNamespace("1", ns1);
 		rdfWriter.handleNamespace("_", ns2);
 		rdfWriter.handleNamespace("a%", ns3);
@@ -410,6 +449,7 @@ public abstract class RDFWriterTest {
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		RDFParser rdfParser = rdfParserFactory.getParser();
+		setupParserConfig(rdfParser.getParserConfig());
 		rdfParser.setValueFactory(vf);
 		StatementCollector stCollector = new StatementCollector();
 		rdfParser.setRDFHandler(stCollector);
@@ -429,6 +469,7 @@ public abstract class RDFWriterTest {
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+		setupWriterConfig(rdfWriter.getWriterConfig());
 		rdfWriter.handleNamespace("", RDF.NAMESPACE);
 		rdfWriter.handleNamespace("rdf", RDF.NAMESPACE);
 		rdfWriter.startRDF();
@@ -467,6 +508,7 @@ public abstract class RDFWriterTest {
 	{
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(output);
+		setupWriterConfig(rdfWriter.getWriterConfig());
 		rdfWriter.startRDF();
 		int count = 18;
 		for (int i = 0; i < count; i++) {
@@ -476,11 +518,10 @@ public abstract class RDFWriterTest {
 		}
 		rdfWriter.endRDF();
 		RDFParser rdfParser = rdfParserFactory.getParser();
-		ParserConfig config = new ParserConfig();
+		setupParserConfig(rdfParser.getParserConfig());
 		if (preserveBNodeIDs) {
-			config.set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+			rdfParser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 		}
-		rdfParser.setParserConfig(config);
 		Model parsedModel = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(parsedModel));
 		rdfParser.parse(new ByteArrayInputStream(output.toByteArray()), "");
@@ -533,13 +574,14 @@ public abstract class RDFWriterTest {
 				+ ")");
 		assertFalse("Did not generate any test statements", model.isEmpty());
 
-		File testFile = tempDir.newFile("performancetest"
+		File testFile = tempDir.newFile("performancetest."
 				+ rdfWriterFactory.getRDFFormat().getDefaultFileExtension());
 
 		FileOutputStream out = new FileOutputStream(testFile);
 		try {
 			long startWrite = System.currentTimeMillis();
 			RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+			setupWriterConfig(rdfWriter.getWriterConfig());
 			// Test prefixed URIs for only some of the URIs available
 			rdfWriter.handleNamespace(RDF.PREFIX, RDF.NAMESPACE);
 			rdfWriter.handleNamespace(SKOS.PREFIX, SKOS.NAMESPACE);
@@ -565,10 +607,7 @@ public abstract class RDFWriterTest {
 		FileInputStream in = new FileInputStream(testFile);
 		try {
 			RDFParser rdfParser = rdfParserFactory.getParser();
-			ParserConfig config = new ParserConfig();
-			config.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
-			config.set(BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, true);
-			rdfParser.setParserConfig(config);
+			setupParserConfig(rdfParser.getParserConfig());
 			rdfParser.setValueFactory(vf);
 			Model parsedModel = new LinkedHashModel();
 			if (storeParsedStatements) {
@@ -594,10 +633,12 @@ public abstract class RDFWriterTest {
 						Rio.write(parsedModel, System.out, RDFFormat.NQUADS);
 					}
 				}
-				assertEquals("Unexpected number of statements", model.size(), parsedModel.size());
+				assertEquals("Unexpected number of statements, expected " + model.size() + " found "
+						+ parsedModel.size(), model.size(), parsedModel.size());
 
 				if (rdfParser.getRDFFormat().supportsNamespaces()) {
-					assertTrue(parsedModel.getNamespaces().size() >= 5);
+					assertTrue("Expected at least 5 namespaces, found " + parsedModel.getNamespaces().size(),
+							parsedModel.getNamespaces().size() >= 5);
 					assertEquals(exNs, parsedModel.getNamespace("ex").getName());
 				}
 			}

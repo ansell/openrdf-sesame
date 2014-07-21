@@ -33,9 +33,12 @@ import org.openrdf.rio.turtle.TurtleUtil;
  * An extension of {@link TriGParser} that processes data in the format
  * specified in the SPARQL 1.1 grammar for Quad data (assuming no variables, as
  * is the case for INSERT DATA and DELETE DATA operations). This format is
- * almost completely compatible with TriG, except for the fact that it
- * introduces the 'GRAPH' keyword in front of each named graph identifier, and
- * does not allow the occurrence of blank nodes.
+ * almost completely compatible with TriG, except for three differentces:
+ * <ul>
+ * <li>it introduces the 'GRAPH' keyword in front of each named graph identifier
+ * <li>it does not allow the occurrence of blank nodes.
+ * <li>it does not require curly braces around the default graph.
+ * </ul>
  * 
  * @author Jeen Broekstra
  * @see <a href="http://www.w3.org/TR/sparql11-query/#rInsertData">SPARQL 1.1
@@ -81,19 +84,26 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		return null;
 	}
 
-	/*
-	@Override
-	protected void parseGraph()
+	/**
+	 * Checks for the GRAPH keyword and optionally reads it away.
+	 * 
+	 * @param verifyOnly
+	 *        if set to <code>true</code> the method does not read away the graph
+	 *        keyword, but only verifies its presence. If <code>false</code> it
+	 *        also reads away the keyword.
+	 * @return <code>true</code> if the GRAPH keyword was detected,
+	 *         <code>false<code> otherwise.
+	 * @throws IOException
+	 * @throws RDFParseException
+	 * @throws RDFHandlerException
+	 */
+	private boolean checkGraphKeyword(boolean verifyOnly)
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = read();
-
-		// for now we just read away the GRAPH keyword if present, we don't
-		// explicitly verify it's there.
+		boolean isGraphKeyword = false;
+		int c = peek();
 		if (c == 'g' || c == 'G') {
-			// graph keyword?
 			StringBuilder sb = new StringBuilder(5);
-			sb.append((char)c);
 			do {
 				c = read();
 				if (c == -1 || TurtleUtil.isWhitespace(c)) {
@@ -105,12 +115,26 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 			}
 			while (sb.length() < 5);
 
-			if (!sb.toString().equalsIgnoreCase("graph")) {
+			isGraphKeyword = sb.toString().equalsIgnoreCase("GRAPH");
+
+			if (verifyOnly || !isGraphKeyword) {
 				unread(sb.toString());
 			}
+		}
+		return isGraphKeyword;
+	}
 
+	/*
+	@Override
+	protected void parseGraph()
+		throws IOException, RDFParseException, RDFHandlerException
+	{
+		if (checkGraphKeyword(false)) {
+			if (getContext() != null) {
+				reportFatalError("nested named graph not allowed.");
+			}
 			skipWSC();
-			c = read();
+			int c = read();
 			final int c2 = peek();
 
 			if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
@@ -128,14 +152,11 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				}
 			}
 			else {
-				setContext(null);
+				reportFatalError("Missing graph name.");
 			}
 		}
-		else {
-			unread(c);
-		}
 
-		c = skipWSC();
+		int c = skipWSC();
 
 		if (c == '{') {
 			read();
@@ -151,16 +172,23 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				c = skipWSC();
 
 				if (c == '}' || c == -1) {
-					break;
+					read();
+					setContext(null);
+					return;
+				}
+				else if (checkGraphKeyword(true)) {
+					return;
 				}
 
 				parseTriples();
 				c = skipWSC();
 			}
-
 		}
-
-		read();
+		
+		c = read();
+		if (c == '}') {
+			setContext(null);
+		}
 	}
 	*/
 

@@ -24,12 +24,6 @@
 					href="../../styles/default/print.css" media="print" />
 				<link title="Default" rel="stylesheet" type="text/css"
 					href="../../styles/default/screen.css" media="screen" />
-				<xsl:comment><![CDATA[[if (gt IE 5.5)&(lt IE 7)]>
-				<link title="Default" rel="stylesheet" type="text/css" href="../../styles/msie-png-alpha.css" media="screen" />
-				<![endif]]]></xsl:comment>
-				<xsl:comment><![CDATA[[if IE 6]>
-				<link title="Default" rel="stylesheet" type="text/css" href="../../styles/default/msie-minheight.css" media="screen" />
-				<![endif]]]></xsl:comment>
 				<link title="Basic" rel="alternate stylesheet" type="text/css"
 					href="../../styles/basic/all.css" media="all" />
 				<link rel="shortcut icon" href="../../favicon.ico" type="image/ico" />
@@ -131,7 +125,7 @@
 					</p>
 					<!-- These scripts need to be loaded before other templates are applied. -->
 					<script src="../../scripts/template.js" type="text/javascript"></script>
-					<script src="../../scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+					<script src="../../scripts/jquery-1.11.0.min.js" type="text/javascript"></script>
 					<xsl:apply-templates select="*" />
 				</div>
 				<div id="footer">

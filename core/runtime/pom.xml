@@ -163,6 +163,12 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-rio-jsonld</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sesame-rio-ntriples</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>

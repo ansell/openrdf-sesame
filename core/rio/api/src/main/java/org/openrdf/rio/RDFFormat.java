@@ -210,17 +210,15 @@ public class RDFFormat extends FileFormat {
 			SUPPORTS_CONTEXTS);
 
 	/**
-	 * The <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD</a>
-	 * file format, an RDF serialization format that supports recording of named
-	 * graphs.
+	 * The <a href="http://www.w3.org/TR/json-ld/">JSON-LD</a> file format, an
+	 * RDF serialization format that supports recording of named graphs.
 	 * <p>
 	 * The file extension <code>.jsonld</code> is recommended for JSON-LD
 	 * documents. The media type is <code>application/ld+json</code> and the
 	 * encoding is UTF-8.
 	 * </p>
 	 * 
-	 * @see <a href="http://json-ld.org/spec/latest/json-ld-syntax/">JSON-LD
-	 *      1.0</a>
+	 * @see <a href="http://www.w3.org/TR/json-ld/">JSON-LD 1.0</a>
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", Arrays.asList("application/ld+json"),
