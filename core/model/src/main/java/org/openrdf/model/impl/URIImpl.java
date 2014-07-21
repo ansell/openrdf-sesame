@@ -128,4 +128,14 @@ public class URIImpl implements URI {
 	public int hashCode() {
 		return uriString.hashCode();
 	}
+
+	@Override
+	public String ntriplesString() {
+		return "<" + uriString + ">";
+	}
+
+	@Override
+	public String getIRIString() {
+		return uriString;
+	}
 }

@@ -16,6 +16,8 @@
  */
 package org.openrdf.model;
 
+import org.apache.commons.rdf.IRI;
+
 import org.openrdf.model.util.URIUtil;
 
 /**
@@ -32,7 +34,7 @@ import org.openrdf.model.util.URIUtil;
  * 
  * @see URIUtil#getLocalNameIndex(String)
  */
-public interface URI extends Resource {
+public interface URI extends Resource, IRI {
 
 	/**
 	 * Returns the String-representation of this URI.

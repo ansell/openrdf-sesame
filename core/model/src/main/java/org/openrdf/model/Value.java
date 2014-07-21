@@ -18,14 +18,18 @@ package org.openrdf.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.rdf.RDFTerm;
+
 /**
  * The supertype of all RDF model objects (URIs, blank nodes and literals).
  */
-public interface Value extends Serializable {
+public interface Value extends Serializable, RDFTerm {
 
 	/**
-	 * Returns the String-value of a <tt>Value</tt> object. This returns either
-	 * a {@link Literal}'s label, a {@link URI}'s URI or a {@link BNode}'s ID.
+	 * Returns the String-value of a <tt>Value</tt> object. This returns either a
+	 * {@link Literal}'s label, a {@link URI}'s URI or a {@link BNode}'s ID.
+	 * 
+	 * @see org.apache.commons.rdf.RDFTerm#ntriplesString()
 	 */
 	public String stringValue();
 }

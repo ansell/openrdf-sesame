@@ -104,4 +104,14 @@ public class BNodeImpl implements BNode {
 	public String toString() {
 		return "_:" + id;
 	}
+
+	@Override
+	public String ntriplesString() {
+		return toString();
+	}
+
+	@Override
+	public String internalIdentifier() {
+		return id;
+	}
 }

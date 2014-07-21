@@ -340,6 +340,13 @@
 				<artifactId>jackson-annotations</artifactId>
 				<version>2.4.0</version>
 			</dependency>			
+
+			<!-- Early version of Commons RDF, before uploading to Apache Commons. Must be compiled manually from Git -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-rdf</artifactId>
+				<version>0.0.1</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

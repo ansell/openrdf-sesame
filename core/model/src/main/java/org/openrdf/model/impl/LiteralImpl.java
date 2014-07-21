@@ -220,7 +220,7 @@ public class LiteralImpl implements Literal {
 		sb.append(label);
 		sb.append('"');
 
-		if (Literals.isLanguageLiteral(this)) {
+		if (getLanguageTag().isPresent()) {
 			sb.append('@');
 			sb.append(language);
 		}
@@ -275,5 +275,20 @@ public class LiteralImpl implements Literal {
 
 	public XMLGregorianCalendar calendarValue() {
 		return XMLDatatypeUtil.parseCalendar(getLabel());
+	}
+
+	@Override
+	public String ntriplesString() {
+		return toString();
+	}
+
+	@Override
+	public Optional<String> getLanguageTag() {
+		return getLanguage();
+	}
+
+	@Override
+	public String getLexicalForm() {
+		return getLabel();
 	}
 }

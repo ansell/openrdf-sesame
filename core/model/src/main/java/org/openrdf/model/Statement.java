@@ -18,6 +18,8 @@ package org.openrdf.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.rdf.Triple;
+
 /**
  * An RDF statement, with optional associated context. A statement can have an
  * associated context in specific cases, for example when fetched from a
@@ -25,13 +27,14 @@ import java.io.Serializable;
  * statement is equal to another statement if the subjects, predicates and
  * objects are equal.
  */
-public interface Statement extends Serializable {
+public interface Statement extends Serializable, Triple {
 
 	/**
 	 * Gets the subject of this statement.
 	 * 
 	 * @return The statement's subject.
 	 */
+	@Override
 	public Resource getSubject();
 
 	/**
@@ -39,6 +42,7 @@ public interface Statement extends Serializable {
 	 * 
 	 * @return The statement's predicate.
 	 */
+	@Override
 	public URI getPredicate();
 
 	/**
@@ -46,6 +50,7 @@ public interface Statement extends Serializable {
 	 * 
 	 * @return The statement's object.
 	 */
+	@Override
 	public Value getObject();
 
 	/**
@@ -70,8 +75,8 @@ public interface Statement extends Serializable {
 
 	/**
 	 * The hash code of a statement is defined as:
-	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode()</tt>.
-	 * This is similar to how {@link String#hashCode String.hashCode()} is
+	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode()</tt>
+	 * . This is similar to how {@link String#hashCode String.hashCode()} is
 	 * defined.
 	 * 
 	 * @return A hash code for the statement.

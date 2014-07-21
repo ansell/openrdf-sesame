@@ -30,13 +30,16 @@ import org.openrdf.model.vocabulary.RDF;
  * 
  * @author Arjohn Kampman
  */
-public interface Literal extends Value {
+public interface Literal extends Value, org.apache.commons.rdf.Literal {
 
 	/**
 	 * Gets the label of this literal.
 	 * 
 	 * @return The literal's label.
+	 * @deprecated Use {@link org.apache.commons.rdf.Literal#getLexicalForm()}
+	 *             instead.
 	 */
+	@Deprecated
 	public String getLabel();
 
 	/**
@@ -44,7 +47,10 @@ public interface Literal extends Value {
 	 * 
 	 * @return The language tag for this literal, or <tt>null</tt> if it doesn't
 	 *         have one.
+	 * @deprecated Use {@link org.apache.commons.rdf.Literal#getLanguageTag()}
+	 *             instead.
 	 */
+	@Deprecated
 	public Optional<String> getLanguage();
 
 	/**

@@ -16,10 +16,11 @@
  */
 package org.openrdf.model;
 
+import org.apache.commons.rdf.BlankNodeOrIRI;
 
 /**
  * The supertype of all RDF resources (URIs and blank nodes).
  */
-public interface Resource extends Value {
+public interface Resource extends Value, BlankNodeOrIRI {
 	// Empty place holder as common supertype of URI and BNode
 }

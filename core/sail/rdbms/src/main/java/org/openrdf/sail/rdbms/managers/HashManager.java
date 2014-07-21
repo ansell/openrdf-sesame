@@ -83,6 +83,11 @@ public class HashManager extends ManagerBase {
 		public String stringValue() {
 			return null;
 		}
+
+		@Override
+		public String ntriplesString() {
+			return null;
+		}
 	};
 
 	private RdbmsValue taken;

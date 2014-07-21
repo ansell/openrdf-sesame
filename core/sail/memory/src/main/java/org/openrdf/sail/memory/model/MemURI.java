@@ -349,4 +349,14 @@ public class MemURI implements URI, MemResource {
 			}
 		}
 	}
+
+	@Override
+	public String ntriplesString() {
+		return "<" + getIRIString() + ">";
+	}
+
+	@Override
+	public String getIRIString() {
+		return stringValue();
+	}
 }

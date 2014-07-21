@@ -69,4 +69,13 @@ public class RdbmsURI extends RdbmsResource implements URI {
 		return uri.hashCode();
 	}
 
+	@Override
+	public String ntriplesString() {
+		return uri.ntriplesString();
+	}
+
+	@Override
+	public String getIRIString() {
+		return uri.getIRIString();
+	}
 }

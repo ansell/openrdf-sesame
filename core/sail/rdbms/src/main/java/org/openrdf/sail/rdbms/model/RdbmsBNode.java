@@ -65,4 +65,14 @@ public class RdbmsBNode extends RdbmsResource implements BNode {
 		return bnode.hashCode();
 	}
 
+	@Override
+	public String ntriplesString() {
+		return bnode.ntriplesString();
+	}
+
+	@Override
+	public String internalIdentifier() {
+		return bnode.internalIdentifier();
+	}
+
 }

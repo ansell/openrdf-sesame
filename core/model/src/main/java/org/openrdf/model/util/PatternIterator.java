@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
 /**
@@ -102,7 +103,7 @@ public class PatternIterator<S extends Statement> implements Iterator<S> {
 		if (subj != null && !subj.equals(st.getSubject())) {
 			return false;
 		}
-		if (pred != null && !pred.equals(st.getPredicate())) {
+		if (pred != null && !pred.equals(((Statement)st).getPredicate())) {
 			return false;
 		}
 		if (obj != null && !obj.equals(st.getObject())) {

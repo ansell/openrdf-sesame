@@ -130,4 +130,19 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 	public int hashCode() {
 		return lit.hashCode();
 	}
+
+	@Override
+	public String ntriplesString() {
+		return lit.ntriplesString();
+	}
+
+	@Override
+	public Optional<String> getLanguageTag() {
+		return lit.getLanguageTag();
+	}
+
+	@Override
+	public String getLexicalForm() {
+		return lit.getLexicalForm();
+	}
 }
