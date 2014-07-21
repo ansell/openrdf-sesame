@@ -19,6 +19,7 @@
 		<module>languages</module>
 		<module>datatypes</module>
 		<module>binary</module>
+		<module>jsonld</module>
 		<module>n3</module>
 		<module>nquads</module>
 		<module>ntriples</module>
