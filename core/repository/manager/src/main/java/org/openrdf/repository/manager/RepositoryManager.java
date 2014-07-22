@@ -61,7 +61,7 @@ public abstract class RepositoryManager implements RepositoryResolver {
 	 * Variables *
 	 *-----------*/
 
-	protected final Map<String, Repository> initializedRepositories;
+	protected Map<String, Repository> initializedRepositories;
 
 	/*--------------*
 	 * Constructors *
