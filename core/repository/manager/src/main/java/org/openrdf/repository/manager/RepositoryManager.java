@@ -61,7 +61,7 @@ public abstract class RepositoryManager implements RepositoryResolver {
 	 * Variables *
 	 *-----------*/
 
-	private final Map<String, Repository> initializedRepositories;
+	protected final Map<String, Repository> initializedRepositories;
 
 	/*--------------*
 	 * Constructors *
@@ -426,7 +426,7 @@ public abstract class RepositoryManager implements RepositoryResolver {
 		}
 	}
 
-	private void updateInitializedRepositories() {
+	protected void updateInitializedRepositories() {
 		synchronized (initializedRepositories) {
 			Iterator<Repository> iter = initializedRepositories.values().iterator();
 			while (iter.hasNext()) {
