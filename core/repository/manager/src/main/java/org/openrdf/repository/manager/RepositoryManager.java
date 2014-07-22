@@ -71,7 +71,18 @@ public abstract class RepositoryManager implements RepositoryResolver {
 	 * Creates a new RepositoryManager.
 	 */
 	public RepositoryManager() {
-		this.initializedRepositories = new HashMap<String, Repository>();
+		this(new HashMap<String, Repository>());
+	}
+
+	/**
+	 * Create a new RepositoryManager using the given map to store repository
+	 * information.
+	 * 
+	 * @param initializedRepositories
+	 *        A map that will be used to store repository information.
+	 */
+	public RepositoryManager(Map<String, Repository> initializedRepositories) {
+		setInitializedRepositories(initializedRepositories);
 	}
 
 	/*---------*
@@ -424,6 +435,10 @@ public abstract class RepositoryManager implements RepositoryResolver {
 			updateInitializedRepositories();
 			return initializedRepositories.remove(repositoryID);
 		}
+	}
+
+	protected void setInitializedRepositories(Map<String, Repository> nextInitializedRepositories) {
+		initializedRepositories = nextInitializedRepositories;
 	}
 
 	protected void updateInitializedRepositories() {
