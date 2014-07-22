@@ -11,13 +11,11 @@ html,body {
 }
 
 html {
-	background: #FFF url(images/bg_html.png);
-	background-repeat: repeat-x;
 	overflow: scroll;
 }
 
 body {
-	background: url(images/bg_body.png);
+	background: linear-gradient(#757575, #FFFFFF);
 	background-repeat: no-repeat;
 }
 
@@ -140,7 +138,7 @@ div.resource:hover > a.resourceURL {
 	margin: 10px 0 0 5px;
 	padding: 0;
 	width: 190px;
-	background: url(images/hr_menu.png);
+	background: #D0D0D0;
 	background-repeat: no-repeat;
 	font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
 	font-weight: bold;
@@ -166,13 +164,13 @@ div.resource:hover > a.resourceURL {
 #navigation li {
 	margin: 0;
 	padding: 3px 0px 6px 10px;
-	background: url(images/hr_menu.png);
+	background: #D0D0D0;
 	background-repeat: no-repeat;
 	background-position: bottom;
 }
 
 #navigation .current {
-	background: #DEDEDE url(images/hr_menu.png);
+	background: #DEDEDE;
 	background-repeat: no-repeat;
 	background-position: bottom;
 }
