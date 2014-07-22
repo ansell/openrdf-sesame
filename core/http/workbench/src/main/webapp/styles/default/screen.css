@@ -16,6 +16,8 @@ html {
 
 body {
 	background: linear-gradient(#757575, #D0D0D0 150px, #FFFFFF);
+	filter: progid:DXImageTransform.Microsoft.gradient(
+		startColorstr='#757575', endColorstr='#ffffff',GradientType=0 ); /* IE6-9 */
 	background-repeat: no-repeat;
 }
 
