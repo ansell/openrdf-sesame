@@ -79,6 +79,7 @@ import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
+import org.openrdf.rio.helpers.BasicParserSettings;
 
 /**
  * Handles requests for manipulating the statements in a repository.
@@ -413,6 +414,7 @@ public class StatementsController extends AbstractController {
 
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		URI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
+		final boolean preserveNodeIds = ProtocolUtil.parseBooleanParam(request, Protocol.PRESERVE_BNODE_ID_PARAM_NAME, false);
 
 		if (baseURI == null) {
 			baseURI = vf.createURI("foo:bar");
@@ -423,10 +425,14 @@ public class StatementsController extends AbstractController {
 		try {
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 			synchronized (repositoryCon) {
-				if (repositoryCon.isAutoCommit()) {
+				if (!repositoryCon.isActive()) {
 					repositoryCon.begin();
 				}
-
+				
+				if (preserveNodeIds) {
+					repositoryCon.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
+				}
+				
 				if (replaceCurrent) {
 					repositoryCon.clear(contexts);
 				}

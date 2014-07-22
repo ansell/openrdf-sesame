@@ -59,6 +59,11 @@ public class SESAME {
 	 */
 	public final static URI NIL;
 
+	/**
+	 * <tt>http://www.openrdf.org/schema/sesame#wildcard</tt>
+	 */
+	public final static URI WILDCARD;
+	
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		DIRECTSUBCLASSOF = factory.createURI(SESAME.NAMESPACE, "directSubClassOf");
@@ -66,5 +71,7 @@ public class SESAME {
 		DIRECTTYPE = factory.createURI(SESAME.NAMESPACE, "directType");
 
 		NIL = factory.createURI(NAMESPACE, "nil");
+		
+		WILDCARD = factory.createURI(NAMESPACE, "wildcard");
 	}
 }

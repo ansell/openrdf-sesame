@@ -567,6 +567,126 @@ public class Rio {
 		writer.endRDF();
 	}
 
+	/**
+	 * Writes the given statement to the given {@link OutputStream} in the given
+	 * format.
+	 * <p>
+	 * 
+	 * @param st
+	 *        The statement to be written.
+	 * @param output
+	 *        The {@link OutputStream} to write the statement to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statement.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statement.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.8.0
+	 */
+	public static void write(Statement st, OutputStream output, RDFFormat dataFormat)
+		throws RDFHandlerException
+	{
+		write(st, output, dataFormat, new WriterConfig());
+	}
+
+	/**
+	 * Writes the given single statement to the given {@link OutputStream} in the given
+	 * format.
+	 * 
+	 * @param st
+	 *        The statement to be written.
+	 * @param output
+	 *        The {@link OutputStream} to write the statement to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statement.
+	 * @param settings
+	 *        The {@link WriterConfig} containing setting for configuring the
+	 *        writer.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statement.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.8.0
+	 */
+	public static void write(Statement st, OutputStream output, RDFFormat dataFormat,
+			WriterConfig settings)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+		writer.setWriterConfig(settings);
+		write(st, writer);
+	}
+	
+	/**
+	 * Writes the given single statement to the given {@link Writer} in the given
+	 * format.
+	 * <p>
+	 * 
+	 * @param Statement
+	 *        A statements to be written.
+	 * @param output
+	 *        The {@link Writer} to write the statement to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statement.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statement.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.8.0
+	 */
+	public static void write(Statement statement, Writer output, RDFFormat dataFormat)
+		throws RDFHandlerException
+	{
+		write(statement, output, dataFormat, new WriterConfig());
+	}
+
+	/**
+	 * Writes the given single statement to the given {@link Writer} in the given
+	 * format.
+	 * <p>
+	 * 
+	 * @param model
+	 *        A statement to be written.
+	 * @param output
+	 *        The {@link Writer} to write the statement to.
+	 * @param dataFormat
+	 *        The {@link RDFFormat} to use when writing the statement.
+	 * @param settings
+	 *        The {@link WriterConfig} containing settings for configuring the
+	 *        writer.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statement.
+	 * @throws UnsupportedRDFormatException
+	 *         If no {@link RDFWriter} is available for the specified RDF format.
+	 * @since 2.8.0
+	 */
+	public static void write(Statement statement, Writer output, RDFFormat dataFormat, WriterConfig settings)
+		throws RDFHandlerException
+	{
+		final RDFWriter writer = Rio.createWriter(dataFormat, output);
+		writer.setWriterConfig(settings);
+		write(statement, writer);
+	}
+
+	/**
+	 * Writes the given single statement to the given {@link RDFHandler}.
+	 * <p>
+	 * 
+	 * @param Statement
+	 *        A statement, to be written.
+	 * @throws RDFHandlerException
+	 *         Thrown if there is an error writing the statement.
+	 * @since 2.8.0
+	 */
+	public static void write(Statement statement, RDFHandler writer)
+		throws RDFHandlerException
+	{
+		writer.startRDF();
+		writer.handleStatement(statement);
+		writer.endRDF();
+	}
+
 	public static void main(String[] args)
 		throws IOException, RDFParseException, RDFHandlerException, UnsupportedRDFormatException
 	{

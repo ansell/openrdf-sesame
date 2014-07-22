@@ -70,6 +70,7 @@ import org.openrdf.IsolationLevels;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -109,8 +110,8 @@ public abstract class RepositoryConnectionTest {
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
-	@Rule
-	public Timeout to = new Timeout(60000);
+//	@Rule
+//	public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
@@ -1471,14 +1472,8 @@ public abstract class RepositoryConnectionTest {
 		testCon.add(bob, name, nameBob);
 		testCon.add(alice, name, nameAlice);
 
-		Graph graph;
 		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
-		try {
-			graph = new LinkedHashModel(Iterations.asList(statements));
-		}
-		finally {
-			statements.close();
-		}
+		Model	graph = Iterations.addAll(statements, new LinkedHashModel());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(baos);
@@ -1487,13 +1482,14 @@ public abstract class RepositoryConnectionTest {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream in = new ObjectInputStream(bais);
-		Graph deserializedGraph = (Graph)in.readObject();
+		Model deserializedGraph = (Model)in.readObject();
 		in.close();
 
 		assertThat(deserializedGraph.isEmpty(), is(equalTo(false)));
-
+		
 		for (Statement st : deserializedGraph) {
 			assertThat(graph, hasItem(st));
+			System.out.println(st);
 			assertThat(testCon.hasStatement(st, true), is(equalTo(true)));
 		}
 	}

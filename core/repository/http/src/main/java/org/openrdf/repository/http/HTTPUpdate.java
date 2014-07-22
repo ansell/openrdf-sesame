@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.query.AbstractHTTPUpdate;
 import org.openrdf.http.protocol.UnauthorizedException;
+import org.openrdf.http.protocol.Protocol.Action;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
@@ -37,11 +38,12 @@ import org.openrdf.repository.RepositoryException;
  */
 public class HTTPUpdate extends AbstractHTTPUpdate {
 
-	protected final HTTPRepositoryConnection httpCon;
+	private final HTTPRepositoryConnection httpCon;
 
-	public HTTPUpdate(HTTPRepositoryConnection con, SparqlSession client, QueryLanguage ql, String queryString,
-			String baseURI) {
-		super(client, ql, queryString, baseURI);
+	public HTTPUpdate(HTTPRepositoryConnection con, QueryLanguage ql,
+			String queryString, String baseURI)
+	{
+		super(con.getSesameSession(), ql, queryString, baseURI);
 		this.httpCon = con;
 	}
 
@@ -50,30 +52,23 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 		throws UpdateExecutionException
 	{
 		try {
-			// TODO have a look at this
-			if (httpCon.isAutoCommit()) {
-				// execute update immediately
-				SparqlSession client = getHttpClient();
-				try {
-					client.sendUpdate(getQueryLanguage(), getQueryString(), getBaseURI(), dataset, includeInferred,
-							getBindingsArray());
-				}
-				catch (UnauthorizedException e) {
-					throw new HTTPUpdateExecutionException(e.getMessage(), e);
-				}
-				catch (QueryInterruptedException e) {
-					throw new HTTPUpdateExecutionException(e.getMessage(), e);
-				}
-				catch (MalformedQueryException e) {
-					throw new HTTPUpdateExecutionException(e.getMessage(), e);
-				}
-				catch (IOException e) {
-					throw new HTTPUpdateExecutionException(e.getMessage(), e);
-				}
+			SparqlSession client = getHttpClient();
+			try {
+				httpCon.flushTransactionState(Action.UPDATE);
+				client.sendUpdate(getQueryLanguage(), getQueryString(), getBaseURI(), dataset, includeInferred,
+						getBindingsArray());
 			}
-			else {
-				// defer execution as part of transaction.
-				httpCon.scheduleUpdate(this);
+			catch (UnauthorizedException e) {
+				throw new HTTPUpdateExecutionException(e.getMessage(), e);
+			}
+			catch (QueryInterruptedException e) {
+				throw new HTTPUpdateExecutionException(e.getMessage(), e);
+			}
+			catch (MalformedQueryException e) {
+				throw new HTTPUpdateExecutionException(e.getMessage(), e);
+			}
+			catch (IOException e) {
+				throw new HTTPUpdateExecutionException(e.getMessage(), e);
 			}
 		}
 		catch (RepositoryException e) {

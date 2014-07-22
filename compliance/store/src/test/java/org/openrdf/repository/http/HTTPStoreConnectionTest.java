@@ -66,87 +66,6 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
-	public void testTransactionIsolationForRead()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testTransactionIsolation()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testTransactionIsolation() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testAutoCommit()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testAutoCommit() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testRollback()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testRollback() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testEmptyCommit()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testEmptyCommit() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testEmptyRollback()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testEmptyRollback() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testSizeCommit()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testSizeCommit() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testSizeRollback()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testSizeRollback() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
-	public void testGetContextIDs()
-		throws Exception
-	{
-		System.err.println("temporarily disabled testGetContextIDs() for HTTPRepository");
-	}
-
-	@Ignore("temporarily disabled for HTTPRepository")
-	@Test
-	@Override
 	public void testOrderByQueriesAreInterruptable() {
 		System.err.println("temporarily disabled testOrderByQueriesAreInterruptable() for HTTPRepository");
 	}
@@ -172,11 +91,6 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 		testCon.begin();
 		update.execute();
-
-		// NOTE this is only correct because HTTPconnection does not implement
-		// true transaction isolation.
-		assertFalse(testCon.hasStatement(foobar, foobar, foobar, true));
-
 		testCon.commit();
 
 		assertTrue(testCon.hasStatement(foobar, foobar, foobar, true));

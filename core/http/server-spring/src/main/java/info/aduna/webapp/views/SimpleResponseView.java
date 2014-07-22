@@ -37,6 +37,8 @@ public class SimpleResponseView implements View {
 
 	private static final String CONTENT_TYPE = "text/plain; charset=UTF-8";
 
+	public static final String CUSTOM_HEADERS_KEY = "headers";
+
 	private static final SimpleResponseView INSTANCE = new SimpleResponseView();
 
 	public static SimpleResponseView getInstance() {
@@ -61,6 +63,15 @@ public class SimpleResponseView implements View {
 		response.setStatus(sc.intValue());
 
 		response.setContentType(CONTENT_TYPE);
+		
+		if (model.containsKey(CUSTOM_HEADERS_KEY)) {
+			Map<String, String> customHeaders = (Map<String, String>)model.get(CUSTOM_HEADERS_KEY);
+			if (customHeaders != null) {
+				for (String headerName : customHeaders.keySet()) {
+					response.setHeader(headerName, customHeaders.get(headerName));
+				}
+			}
+		}
 
 		OutputStream out = response.getOutputStream();
 

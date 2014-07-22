@@ -19,6 +19,11 @@ package org.openrdf;
 import java.util.Arrays;
 import java.util.List;
 
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.SESAME;
+
 /**
  * Enumeration of Transaction {@link IsolationLevel}s supported by Sesame. Note
  * that Sesame stores are not required to support all levels, consult the
@@ -131,5 +136,10 @@ public enum IsolationLevels implements IsolationLevel {
 		else {
 			return level;
 		}
+	}
+	
+	public URI getURI() {
+		final ValueFactory f = ValueFactoryImpl.getInstance();
+		return f.createURI(SESAME.NAMESPACE, this.name());
 	}
 }
