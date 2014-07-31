@@ -486,9 +486,11 @@ public class SesameSession extends SparqlSession {
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair(Protocol.ISOLATION_LEVEL_PARAM_NAME,
-				isolationLevel.getURI().stringValue()));
-
+		if (isolationLevel != null) {
+			params.add(new BasicNameValuePair(Protocol.ISOLATION_LEVEL_PARAM_NAME,
+					isolationLevel.getURI().stringValue()));
+		}
+		
 		method.setEntity(new UrlEncodedFormEntity(params, UTF8));
 		HttpResponse response = execute(method);
 		int code = response.getStatusLine().getStatusCode();
