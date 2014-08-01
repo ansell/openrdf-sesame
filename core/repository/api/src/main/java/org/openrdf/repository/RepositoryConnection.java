@@ -619,7 +619,7 @@ public interface RepositoryConnection {
 	 *         out.
 	 * @throws RepositoryException
 	 *         If the connection could not be committed, or if the connection
-	 *         does not have an active connection.
+	 *         does not have an active transaction.
 	 * @see #isActive()
 	 * @see #begin()
 	 * @see #rollback()

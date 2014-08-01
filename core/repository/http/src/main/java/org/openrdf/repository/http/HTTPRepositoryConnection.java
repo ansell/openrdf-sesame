@@ -151,6 +151,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		catch (OpenRDFException e) {
 			throw new RepositoryException(e);
 		}
+		catch (IllegalStateException e) {
+			throw new RepositoryException(e);
+		}
 		catch (IOException e) {
 			throw new RepositoryException(e);
 		}
@@ -295,6 +298,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		catch (OpenRDFException e) {
 			throw new RepositoryException(e);
 		}
+		catch (IllegalStateException e) {
+			throw new RepositoryException(e);
+		}
 		catch (IOException e) {
 			throw new RepositoryException(e);
 		}
@@ -309,6 +315,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			active = false;
 		}
 		catch (OpenRDFException e) {
+			throw new RepositoryException(e);
+		}
+		catch (IllegalStateException e) {
 			throw new RepositoryException(e);
 		}
 		catch (IOException e) {
