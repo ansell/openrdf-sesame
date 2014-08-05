@@ -62,7 +62,7 @@ public abstract class RepositoryManager implements RepositoryResolver {
 	 * Variables *
 	 *-----------*/
 
-	private final Map<String, Repository> initializedRepositories;
+	protected Map<String, Repository> initializedRepositories;
 
 	private HttpClient httpClient;
 
@@ -74,7 +74,18 @@ public abstract class RepositoryManager implements RepositoryResolver {
 	 * Creates a new RepositoryManager.
 	 */
 	public RepositoryManager() {
-		this.initializedRepositories = new HashMap<String, Repository>();
+		this(new HashMap<String, Repository>());
+	}
+
+	/**
+	 * Create a new RepositoryManager using the given map to store repository
+	 * information.
+	 * 
+	 * @param initializedRepositories
+	 *        A map that will be used to store repository information.
+	 */
+	public RepositoryManager(Map<String, Repository> initializedRepositories) {
+		setInitializedRepositories(initializedRepositories);
 	}
 
 	/*---------*
@@ -441,7 +452,11 @@ public abstract class RepositoryManager implements RepositoryResolver {
 		}
 	}
 
-	private void updateInitializedRepositories() {
+	protected void setInitializedRepositories(Map<String, Repository> nextInitializedRepositories) {
+		initializedRepositories = nextInitializedRepositories;
+	}
+
+	protected void updateInitializedRepositories() {
 		synchronized (initializedRepositories) {
 			Iterator<Repository> iter = initializedRepositories.values().iterator();
 			while (iter.hasNext()) {
