@@ -89,11 +89,8 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private BindingSet parentBindings;
 
-	@Override
-	protected BindingSet getNextElement()
-		throws QueryEvaluationException
-	{
-
+	
+	private void resetCurrentDescribeExprIter() throws QueryEvaluationException {
 		while (currentDescribeExprIter == null) {
 			if (currentBindings == null && startValue == null) {
 				if (sourceIter.hasNext()) {
@@ -101,7 +98,7 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				}
 				else {
 					// no more bindings, therefore no more results to return.
-					return null;
+					return;
 				}
 			}
 
@@ -140,8 +137,18 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 					}
 					break;
 			}
+		} // end while
+	}
+	
+	@Override
+	protected BindingSet getNextElement()
+		throws QueryEvaluationException
+	{
+		resetCurrentDescribeExprIter();
+		if (currentDescribeExprIter == null) {
+			return null;
 		}
-
+		
 		while (!currentDescribeExprIter.hasNext() && !nodeQueue.isEmpty()) {
 			// process next node in queue
 			BNode nextNode = nodeQueue.poll();
@@ -156,6 +163,29 @@ public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 			}
 			processedNodes.add(nextNode);
+
+			if (nodeQueue.isEmpty() && !currentDescribeExprIter.hasNext()) {
+				// we have hit a blank node that has no further expansion. reset to
+				// initialize next in value expression queue.
+				currentDescribeExprIter.close();
+				currentDescribeExprIter = null;
+				
+				if (currentMode == Mode.OUTGOING_LINKS) {
+					currentMode = Mode.INCOMING_LINKS;
+				}
+				else {
+					// done with this valueExpr, reset to initialize next in value
+					// expression queue.
+					currentMode = Mode.OUTGOING_LINKS;
+					startValue = null;
+				}
+				
+				resetCurrentDescribeExprIter();
+				if (currentDescribeExprIter == null) {
+					return null;
+				}
+			}
+
 		}
 
 		if (currentDescribeExprIter.hasNext()) {
