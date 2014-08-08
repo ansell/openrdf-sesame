@@ -106,20 +106,24 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 	protected void handleClose()
 		throws QueryEvaluationException
 	{
-		super.handleClose();
-		closed = true;
-		final Thread thread = parserThread;
-		if (thread != null) {
-			thread.interrupt();
-		}
 		try {
-			in.close();
-		}
-		catch (IOException e) {
-			throw new QueryEvaluationException(e);
+			super.handleClose();
 		}
 		finally {
-			queue.close();
+			closed = true;
+			final Thread thread = parserThread;
+			if (thread != null) {
+				thread.interrupt();
+			}
+			try {
+				in.close();
+			}
+			catch (IOException e) {
+				throw new QueryEvaluationException(e);
+			}
+			finally {
+				queue.close();
+			}
 		}
 	}
 
