@@ -69,7 +69,7 @@ public class BackgroundGraphResultHangTest {
 	public void testBGRHang()
 		throws Exception
 	{
-		String data = "@prefix a:<http:base.org>\n" + "<u:1> <u:2> <u:3 .";
+		String data = "@not-rdf";
 
 		BackgroundGraphResult gRes = new BackgroundGraphResult(new DummyParser(), new ByteArrayInputStream(
 				data.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8"), "http://base.org",
