@@ -113,11 +113,13 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 			thread.interrupt();
 		}
 		try {
-			queue.close();
 			in.close();
 		}
 		catch (IOException e) {
 			throw new QueryEvaluationException(e);
+		}
+		finally {
+			queue.close();
 		}
 	}
 
