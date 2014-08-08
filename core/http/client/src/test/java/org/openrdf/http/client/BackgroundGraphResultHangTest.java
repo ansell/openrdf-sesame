@@ -21,76 +21,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.Collection;
 
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import org.openrdf.http.client.BackgroundGraphResult;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.rio.ParseErrorListener;
-import org.openrdf.rio.ParseLocationListener;
-import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.RioSetting;
+import org.openrdf.rio.helpers.RDFParserBase;
 
-public class TestBackgroundGraphResultHang {
+/**
+ * @author Damyan Ognyanov
+ */
+public class BackgroundGraphResultHangTest {
 
-	static class DummyParser implements RDFParser {
+	static class DummyParser extends RDFParserBase {
 
 		@Override
 		public RDFFormat getRDFFormat() {
 			return null;
-		}
-
-		@Override
-		public void setValueFactory(ValueFactory valueFactory) {
-		}
-
-		@Override
-		public void setRDFHandler(RDFHandler handler) {
-		}
-
-		@Override
-		public void setParseErrorListener(ParseErrorListener el) {
-		}
-
-		@Override
-		public void setParseLocationListener(ParseLocationListener ll) {
-		}
-
-		@Override
-		public void setParserConfig(ParserConfig config) {
-		}
-
-		@Override
-		public ParserConfig getParserConfig() {
-			return null;
-		}
-
-		@Override
-		public Collection<RioSetting<?>> getSupportedSettings() {
-			return null;
-		}
-
-		@Override
-		public void setVerifyData(boolean verifyData) {
-		}
-
-		@Override
-		public void setPreserveBNodeIDs(boolean preserveBNodeIDs) {
-		}
-
-		@Override
-		public void setStopAtFirstError(boolean stopAtFirstError) {
-		}
-
-		@Override
-		public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
 		}
 
 		@Override
@@ -107,11 +60,14 @@ public class TestBackgroundGraphResultHang {
 			throw new RDFParseException("invalid RDF ");
 		}
 
-	};
+	}
 
-	@Test(timeout = 1000, expected = QueryEvaluationException.class)
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
+	@Test(timeout = 1000)
 	public void testBGRHang()
-		throws QueryEvaluationException
+		throws Exception
 	{
 		String data = "@prefix a:<http:base.org>\n" + "<u:1> <u:2> <u:3 .";
 
@@ -125,18 +81,11 @@ public class TestBackgroundGraphResultHang {
 					}
 				});
 
-		try {
-			gRes.run();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		gRes.run();
 
 		gRes.getNamespaces();
-		while (gRes.hasNext()) {
-			gRes.next();
-		}
-		gRes.close();
-	}
 
+		thrown.expect(QueryEvaluationException.class);
+		gRes.hasNext();
+	}
 }
