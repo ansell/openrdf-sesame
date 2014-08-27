@@ -63,6 +63,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.Rio;
 
 /**
  * A set of compliance tests on SPARQL query functionality which can not be
@@ -379,6 +380,114 @@ public abstract class ComplexSPARQLQueryTest {
 				}
 			}
 		}
+	}
+
+	@Test
+	public void testDescribeMultipleA()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . [] <urn:blank> <urn:1> . <urn:2> <urn:p2> <urn:3> . } ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI blank = vf.createURI("urn:blank");
+
+		Model result = QueryResults.asModel(gq.evaluate());
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(null, blank, urn1));
+		assertTrue(result.contains(urn2, p2, null));
+	}
+
+	@Test
+	public void testDescribeMultipleB()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . <urn:1> <urn:blank> [] . <urn:2> <urn:p2> <urn:3> . } ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI blank = vf.createURI("urn:blank");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(urn1, blank, null));
+		assertTrue(result.contains(urn2, p2, null));
+	}
+
+	@Test
+	public void testDescribeMultipleC()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . [] <urn:blank> <urn:1>. <urn:1> <urn:blank> [] . <urn:2> <urn:p2> <urn:3> . } ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI blank = vf.createURI("urn:blank");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(urn1, blank, null));
+		assertTrue(result.contains(null, blank, urn1));
+		assertTrue(result.contains(urn2, p2, null));
+	}
+
+	@Test
+	public void testDescribeMultipleD()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . [] <urn:blank> <urn:1>. <urn:2> <urn:p2> <urn:3> . [] <urn:blank> <urn:2> . <urn:4> <urn:p2> <urn:3> . <urn:4> <urn:blank> [] .} ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> <urn:4> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI urn4 = vf.createURI("urn:4");
+		URI blank = vf.createURI("urn:blank");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(null, blank, urn1));
+		assertTrue(result.contains(urn2, p2, null));
+		assertTrue(result.contains(urn4, p2, null));
+		assertTrue(result.contains(urn4, blank, null));
 	}
 
 	@Test

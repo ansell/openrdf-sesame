@@ -60,8 +60,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 
 	private QueueCursor<Statement> queue;
 
-	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI)
-	{
+	public BackgroundGraphResult(RDFParser parser, InputStream in, Charset charset, String baseURI) {
 		this(new QueueCursor<Statement>(10), parser, in, charset, baseURI);
 	}
 
@@ -99,15 +98,19 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		throws QueryEvaluationException
 	{
 		try {
+			super.handleClose();
+		}
+		finally {
+			closed = true;
 			try {
-				closed = true;
-				super.handleClose();
-			} finally {
 				in.close();
 			}
-		}
-		catch (IOException e) {
-			throw new QueryEvaluationException(e);
+			catch (IOException e) {
+				throw new QueryEvaluationException(e);
+			}
+			finally {
+				queue.close();
+			}
 		}
 	}
 
@@ -132,6 +135,7 @@ public class BackgroundGraphResult extends IterationWrapper<Statement, QueryEval
 		}
 		finally {
 			queue.done();
+			namespacesReady.countDown();
 		}
 	}
 
