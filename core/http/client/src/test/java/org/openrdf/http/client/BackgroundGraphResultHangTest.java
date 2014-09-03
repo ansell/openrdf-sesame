@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 
-import org.apache.commons.httpclient.HttpMethodBase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -72,14 +71,7 @@ public class BackgroundGraphResultHangTest {
 		String data = "@not-rdf";
 
 		BackgroundGraphResult gRes = new BackgroundGraphResult(new DummyParser(), new ByteArrayInputStream(
-				data.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8"), "http://base.org",
-				new HttpMethodBase() {
-
-					@Override
-					public String getName() {
-						return null;
-					}
-				});
+				data.getBytes(Charset.forName("UTF-8"))), Charset.forName("UTF-8"), "http://base.org");
 
 		gRes.run();
 
