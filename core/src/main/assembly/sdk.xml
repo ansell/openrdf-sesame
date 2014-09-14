@@ -16,6 +16,17 @@
 			<binaries>
 				<unpack>false</unpack>
 				<outputDirectory>lib</outputDirectory>
+				<dependencySets>
+				    <dependencySet>
+					<unpack>false</unpack>
+					<outputDirectory>lib</outputDirectory>
+					<scope>runtime</scope>
+					<useTransitiveFiltering>false</useTransitiveFiltering>
+					<excludes>
+					    <exclude>org.openrdf.sesame:*:jar:*</exclude>
+					</excludes>
+				    </dependencySet>
+				</dependencySets>
 			</binaries>
 		</moduleSet>
 	</moduleSets>
@@ -34,10 +45,6 @@
 			<outputDirectory>docs/apidocs</outputDirectory>
 		</fileSet>
 
-		<fileSet>
-			<directory>target/docs</directory>
-			<outputDirectory>docs</outputDirectory>
-		</fileSet>
 	</fileSets>
 
 	<files>
