@@ -421,7 +421,24 @@ public class NTriplesParser extends RDFParserBase {
 			if (c == -1) {
 				throwEOFException();
 			}
+            if (c == ' ') {
+                reportFatalError("IRI included an unencoded space: '" + c + "'");
+            }
 			uriRef.append((char)c);
+
+            if (c == '\\') {
+                // This escapes the next character, which might be a '>'
+                c = reader.read();
+                if (c == -1) {
+                    throwEOFException();
+                }
+                if (c != 'u' && c != 'U') {
+                    reportFatalError("IRI includes string escapes: '\\" + c + "'");
+                }
+                uriRef.append((char)c);
+            }
+
+
 			c = reader.read();
 		}
 
