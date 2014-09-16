@@ -160,7 +160,7 @@ public abstract class AbstractNQuadsParserTest {
 			String nextBaseUrl = testLocationBaseUri + nextTestFile;
 
 			suite.addTest(new NegativeParserTest(nextTestUri, nextTestName, nextInputURL, nextBaseUrl,
-					createRDFParser(), FailureMode.IGNORE_FAILURE));
+					createRDFParser(), FailureMode.DO_NOT_IGNORE_FAILURE));
 		}
 
 		queryResult.close();
