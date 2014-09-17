@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +51,7 @@ import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
@@ -58,6 +60,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
+import org.openrdf.query.resultio.QueryResultIO;
+import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -791,6 +795,46 @@ public abstract class ComplexSPARQLQueryTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+	}
+
+	@Test
+	public void testSES1685propPathSameVar()
+		throws Exception
+	{
+		final String queryStr = "PREFIX : <urn:> SELECT ?x WHERE {?x :p+ ?x}";
+
+		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . :b :p :a ."), "", RDFFormat.TURTLE);
+
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
+		TupleQueryResult result = query.evaluate();
+
+		assertNotNull(result);
+		
+		int count = 0;
+		while (result.hasNext()) {
+			result.next();
+			count++;
+		}
+		// result should be both a and b.
+		assertEquals(2, count); 
+	}
+	
+	@Test
+	public void testSES2014ConstructBGPSameURI() throws Exception {
+		final String queryStr = "PREFIX : <urn:> CONSTRUCT {:x :p :x } WHERE {} ";
+
+		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . "), "", RDFFormat.TURTLE);
+
+		final URI x = conn.getValueFactory().createURI("<urn:x>");
+		final URI p = conn.getValueFactory().createURI("<urn:p>");
+		
+		GraphQuery query = conn.prepareGraphQuery(QueryLanguage.SPARQL, queryStr);
+		Model result = QueryResults.asModel(query.evaluate());
+		
+		assertNotNull(result);
+		assertFalse(result.isEmpty());
+		assertTrue(result.contains(x, p, x));
+		
 	}
 
 	@Test
