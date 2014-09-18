@@ -51,7 +51,6 @@ import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
@@ -60,14 +59,11 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
-import org.openrdf.query.resultio.QueryResultIO;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.Rio;
 
 /**
  * A set of compliance tests on SPARQL query functionality which can not be
@@ -809,32 +805,34 @@ public abstract class ComplexSPARQLQueryTest {
 		TupleQueryResult result = query.evaluate();
 
 		assertNotNull(result);
-		
+
 		int count = 0;
 		while (result.hasNext()) {
 			result.next();
 			count++;
 		}
 		// result should be both a and b.
-		assertEquals(2, count); 
+		assertEquals(2, count);
 	}
-	
+
 	@Test
-	public void testSES2014ConstructBGPSameURI() throws Exception {
+	public void testSES2014ConstructBGPSameURI()
+		throws Exception
+	{
 		final String queryStr = "PREFIX : <urn:> CONSTRUCT {:x :p :x } WHERE {} ";
 
 		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . "), "", RDFFormat.TURTLE);
 
-		final URI x = conn.getValueFactory().createURI("<urn:x>");
-		final URI p = conn.getValueFactory().createURI("<urn:p>");
-		
+		final URI x = conn.getValueFactory().createURI("urn:x");
+		final URI p = conn.getValueFactory().createURI("urn:p");
+
 		GraphQuery query = conn.prepareGraphQuery(QueryLanguage.SPARQL, queryStr);
 		Model result = QueryResults.asModel(query.evaluate());
-		
+
 		assertNotNull(result);
 		assertFalse(result.isEmpty());
 		assertTrue(result.contains(x, p, x));
-		
+
 	}
 
 	@Test
