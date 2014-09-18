@@ -816,7 +816,7 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSES2014ConstructBGPSameURI()
+	public void testSES2104ConstructBGPSameURI()
 		throws Exception
 	{
 		final String queryStr = "PREFIX : <urn:> CONSTRUCT {:x :p :x } WHERE {} ";
