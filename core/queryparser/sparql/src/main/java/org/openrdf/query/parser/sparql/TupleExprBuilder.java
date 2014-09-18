@@ -828,12 +828,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		if (constructExpr instanceof Filter) {
 			// sameTerm filters in construct (this can happen when there's a cyclic
 			// path defined, see SES-1685 and SES-2104)
-			
-			// we remove the sameTerm filters by simply replacing all mapped variable occurrences
+
+			// we remove the sameTerm filters by simply replacing all mapped
+			// variable occurrences
 			Set<SameTerm> sameTermConstraints = getSameTermConstraints((Filter)constructExpr);
 			statementPatterns = replaceSameTermVars(statementPatterns, sameTermConstraints);
 		}
-
 
 		Set<Var> constructVars = getConstructVars(statementPatterns);
 
@@ -845,14 +845,15 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		for (Var var : constructVars) {
 			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
+				ValueExpr valueExpr;
+
 				if (var.hasValue()) {
-					final ValueConstant constant = new ValueConstant(var.getValue());
-					extElemMap.put(var, new ExtensionElem(constant, var.getName()));
+					valueExpr = new ValueConstant(var.getValue());
 				}
 				else {
-					final BNodeGenerator nodeGenerator = new BNodeGenerator();
-					extElemMap.put(var, new ExtensionElem(nodeGenerator, var.getName()));
+					valueExpr = new BNodeGenerator();
 				}
+				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
 			}
 			else if (!whereClauseVarCollector.collectedVars.contains(var)) {
 				// non-anon var in construct clause not present in where clause
@@ -926,12 +927,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				for (StatementPattern sp : statementPatterns) {
 					Var subj = sp.getSubjectVar();
 					Var obj = sp.getObjectVar();
-					
+
 					if (subj.equals(left) || subj.equals(right)) {
 						if (obj.equals(left) || obj.equals(right)) {
 							sp.setObjectVar(subj);
 						}
- 					}
+					}
 				}
 			}
 		}
