@@ -33,6 +33,7 @@
 	<filter-mapping>
 		<filter-name>UrlRewriteFilter</filter-name>
 		<url-pattern>/</url-pattern>
+		<url-pattern>/overview.view</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
