@@ -422,7 +422,8 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
             if (c == ' ') {
-                reportFatalError("IRI included an unencoded space: '" + c + "'");
+                reportError("IRI included an unencoded space: " + (char)c,
+                        NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
             }
 			uriRef.append((char)c);
 
@@ -433,7 +434,8 @@ public class NTriplesParser extends RDFParserBase {
                     throwEOFException();
                 }
                 if (c != 'u' && c != 'U') {
-                    reportFatalError("IRI includes string escapes: '\\" + c + "'");
+                    reportError("IRI includes string escapes: '\\" + c + "'",
+                            NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
                 }
                 uriRef.append((char)c);
             }
