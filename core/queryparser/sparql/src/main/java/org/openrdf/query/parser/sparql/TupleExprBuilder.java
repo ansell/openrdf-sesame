@@ -822,15 +822,25 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		super.visit(node, null);
 		TupleExpr constructExpr = graphPattern.buildTupleExpr();
 
-		// Retrieve all StatementPattern's from the construct expression
+		// Retrieve all StatementPatterns from the construct expression
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(constructExpr);
+
+		if (constructExpr instanceof Filter) {
+			// sameTerm filters in construct (this can happen when there's a cyclic
+			// path defined, see SES-1685 and SES-2104)
+
+			// we remove the sameTerm filters by simply replacing all mapped
+			// variable occurrences
+			Set<SameTerm> sameTermConstraints = getSameTermConstraints((Filter)constructExpr);
+			statementPatterns = replaceSameTermVars(statementPatterns, sameTermConstraints);
+		}
 
 		Set<Var> constructVars = getConstructVars(statementPatterns);
 
 		VarCollector whereClauseVarCollector = new VarCollector();
 		result.visit(whereClauseVarCollector);
 
-		// Create BNodeGenerator's for all anonymous variables
+		// Create BNodeGenerators for all anonymous variables
 		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
 
 		for (Var var : constructVars) {
@@ -843,7 +853,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				else {
 					valueExpr = new BNodeGenerator();
 				}
-
 				extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
 			}
 			else if (!whereClauseVarCollector.collectedVars.contains(var)) {
@@ -906,6 +915,37 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 
 		return vars;
+	}
+
+	private List<StatementPattern> replaceSameTermVars(List<StatementPattern> statementPatterns,
+			Set<SameTerm> sameTermConstraints)
+	{
+		if (sameTermConstraints != null) {
+			for (SameTerm st : sameTermConstraints) {
+				Var left = (Var)st.getLeftArg();
+				Var right = (Var)st.getRightArg();
+				for (StatementPattern sp : statementPatterns) {
+					Var subj = sp.getSubjectVar();
+					Var obj = sp.getObjectVar();
+
+					if (subj.equals(left) || subj.equals(right)) {
+						if (obj.equals(left) || obj.equals(right)) {
+							sp.setObjectVar(subj);
+						}
+					}
+				}
+			}
+		}
+		return statementPatterns;
+	}
+
+	private Set<SameTerm> getSameTermConstraints(Filter filter)
+		throws VisitorException
+	{
+		final SameTermCollector collector = new SameTermCollector();
+		filter.visit(collector);
+
+		return collector.getCollectedSameTerms();
 	}
 
 	@Override
@@ -1522,6 +1562,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						Var objVar = mapValueExprToVar(object);
 						boolean replaced = false;
 
+						// See SES-1685 we introduce a new var and a SameTerm filter
+						// to avoid problems in cyclic paths
 						if (objVar.equals(subjVar)) {
 							objVar = createAnonVar(objVar.getName() + "-" + UUID.randomUUID().toString());
 							replaced = true;
@@ -1845,6 +1887,24 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		 */
 		public Set<Var> getCollectedVars() {
 			return collectedVars;
+		}
+
+	}
+
+	protected class SameTermCollector extends QueryModelVisitorBase<VisitorException> {
+
+		private final Set<SameTerm> collectedSameTerms = new HashSet<SameTerm>();
+
+		@Override
+		public void meet(SameTerm st) {
+			collectedSameTerms.add(st);
+		}
+
+		/**
+		 * @return Returns the collected SameTerms.
+		 */
+		public Set<SameTerm> getCollectedSameTerms() {
+			return collectedSameTerms;
 		}
 
 	}
