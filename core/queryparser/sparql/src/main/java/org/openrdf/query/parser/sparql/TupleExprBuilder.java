@@ -315,7 +315,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			throw new IllegalArgumentException("value can not be null");
 		}
 
-		String uniqueStringForValue = value.stringValue();
+		String uniqueStringForValue = Integer.toString(value.stringValue().hashCode());
 
 		if (value instanceof Literal) {
 			uniqueStringForValue += "-lit";
@@ -337,7 +337,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			uniqueStringForValue += "-uri";
 		}
 
-		Var var = createAnonVar("-const-" + uniqueStringForValue);
+		Var var = createAnonVar("_const-" + uniqueStringForValue);
 		var.setConstant(true);
 		var.setValue(value);
 		return var;
