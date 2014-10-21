@@ -351,6 +351,32 @@ public abstract class RepositoryConnectionTest {
 		testCon.rollback();
 	}
 
+
+	@Test
+	public void testReadOfAddedStatement3()
+		throws Exception
+	{
+		URI context = vf.createURI("urn:context");
+		URI subject = vf.createURI("urn:test");
+		URI predicate = vf.createURI("urn:property");
+		Value one = vf.createLiteral(1);
+		Value two = vf.createLiteral(2);
+
+		testCon.begin();
+		testCon.add(subject, predicate, one, context);
+		testCon.commit();
+
+		RepositoryResult<Statement> statements = testCon.getStatements(null, predicate, null, false, context);
+		assertTrue("should find the add", statements.hasNext());
+		statements.next();
+
+		testCon.begin();
+		testCon.add(subject, predicate, two, context);
+		assertFalse("should not find the second add", statements.hasNext());
+
+		statements.close();
+		testCon.rollback();
+	}
 	@Test
 	public void testTransactionIsolationForRead()
 		throws Exception

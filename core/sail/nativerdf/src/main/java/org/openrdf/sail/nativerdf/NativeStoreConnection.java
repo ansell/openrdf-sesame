@@ -217,14 +217,16 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		try {
 
 			boolean readTransaction = transactionActive() && txnLockAcquired;
-			
+
 			if (!readTransaction) {
-				tempWriteLock = nativeStore.tryTransactionLock();
-				if (tempWriteLock != null) {
-					readTransaction = true;
+				if (transactionActive()) {
+					tempWriteLock = nativeStore.tryTransactionLock();
+					if (tempWriteLock != null) {
+						readTransaction = true;
+					}
 				}
 			}
-			
+
 			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
 					subj, pred, obj, includeInferred, readTransaction, contexts);
 
