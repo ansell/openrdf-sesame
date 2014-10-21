@@ -216,9 +216,17 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		Lock tempWriteLock = null;
 		try {
 
-			boolean readTransaction = transactionActive() && txnLockAcquired;
+			boolean readTransaction = false;
 
-			if (!readTransaction) {
+			// check if we should read modified triples in the current transaction.
+			if (txnLockAcquired) {
+				readTransaction = true;
+			}
+			else {
+				// we do not currently have a transaction lock but if we are in an
+				// active transaction, we should still try and read modifications in
+				// the transaction (provided no other concurrent connection has the
+				// transaction lock).
 				if (transactionActive()) {
 					tempWriteLock = nativeStore.tryTransactionLock();
 					if (tempWriteLock != null) {
