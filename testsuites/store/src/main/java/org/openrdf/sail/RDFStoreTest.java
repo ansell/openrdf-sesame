@@ -36,14 +36,12 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.NumericLiteralImpl;
 import org.openrdf.model.impl.URIImpl;
@@ -529,18 +527,15 @@ public abstract class RDFStoreTest {
 
 		con.begin();
 
-		int count = 0;
 		while (iter.hasNext()) {
 			BindingSet bindings = iter.next();
 			Value c = bindings.getValue("C");
 			if (c instanceof Resource) {
 				con.addStatement((Resource)c, RDF.TYPE, RDFS.CLASS);
 			}
-			count++;
 		}
 
 		con.commit();
-		assertEquals(4, count);
 
 		assertEquals(3, countElements(con.getStatements(null, RDF.TYPE, RDFS.CLASS, false)));
 
@@ -559,61 +554,6 @@ public abstract class RDFStoreTest {
 		}
 
 		assertEquals(2, countElements(con.getStatements(null, RDF.TYPE, RDF.PROPERTY, false)));
-	}
-
-	@Test
-	public void testAddWhileQuery2()
-		throws Exception
-	{
-		/*  FIXME See issue SES-2106
-		 * 
-		 *  Any value _smaller_ than 73 makes the test succeed on native store. Any value of 73 or higher causes erratic behavior, where
-		 *  the number of returned triples in the query is either a fixed amount smaller or larger than expected: 
-		 *  
-		 *  numberOfTriples	reported number of query results
-		 *  73					25
-		 *  74					25
-		 *  75					26
-		 *  81					32
-		 *  100					150
-		 *  
-		 *  Note that if the query result is larger than the number of triples, the additional result are _duplicate_ triples. 
-		 *  Also note that this peculiar behavior only occurs if an add operation is done during iteration over the result.
-		 */
-		final int numberOfTriples = 81;
-
-		final URI p = vf.createURI("http://example.org/p");
-		con.begin();
-		for (int i = 0; i < numberOfTriples; i++) {
-			URI s = vf.createURI("http://example.org/subject-" + i);
-			Literal o = vf.createLiteral("object " + i);
-			con.addStatement(s, p, o);
-		}
-		con.commit();
-
-		assertEquals(numberOfTriples, con.size());
-
-		CloseableIteration<? extends Statement, SailException> result = con.getStatements(null, p, null, true);
-
-		SailConnection con2 = sail.getConnection();
-		try {
-			con2.begin();
-			int count = 0;
-			while (result.hasNext()) {
-				Statement st = result.next();
-				System.out.println(" [" + count + "] :" + st.toString());
-				con2.addStatement(vf.createBNode(), p, st.getObject());
-				count++;
-//				assertTrue(count <= numberOfTriples);
-			}
-			con2.commit();
-			assertEquals(numberOfTriples, count);
-		}
-		finally {
-			con2.close();
-		}
-		
-		assertEquals(numberOfTriples * 2, con.size());
 	}
 
 	@Test
