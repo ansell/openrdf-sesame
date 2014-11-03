@@ -30,6 +30,7 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.STATEMENT;
 import static org.openrdf.rio.binary.BinaryRDFConstants.URI_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -66,13 +67,15 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 	private final DataOutputStream out;
 
 	private boolean writingStarted = false;
+	
+	private byte[] buf;
 
 	public BinaryRDFWriter(OutputStream out) {
 		this(out, 100);
 	}
 
 	public BinaryRDFWriter(OutputStream out, int bufferSize) {
-		this.out = new DataOutputStream(out);
+		this.out = new DataOutputStream(new BufferedOutputStream(out));
 		this.statementQueue = new ArrayBlockingQueue<Statement>(bufferSize);
 		this.valueFreq = new HashMap<Value, AtomicInteger>(3 * bufferSize);
 		this.valueIdentifiers = new LinkedHashMap<Value, Integer>(bufferSize);
@@ -327,7 +330,18 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 	private void writeString(String s)
 		throws IOException
 	{
-		out.writeInt(s.length());
-		out.writeChars(s);
+		int strLen = s.length();
+		out.writeInt(strLen);
+		int stringBytes = strLen << 1;
+		if(buf == null || buf.length < stringBytes) {
+			buf = new byte[stringBytes << 1];
+		}
+		int pos = 0;
+		for(int i = 0; i < strLen; i++) {
+			char v = s.charAt(i);
+			buf[pos++] = (byte) ((v >>> 8) & 0xFF);
+			buf[pos++] = (byte) ((v >>> 0) & 0xFF);
+		}
+		out.write(buf, 0, stringBytes);
 	}
 }
