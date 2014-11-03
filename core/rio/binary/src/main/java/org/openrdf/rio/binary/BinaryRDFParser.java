@@ -59,6 +59,8 @@ public class BinaryRDFParser extends RDFParserBase {
 
 	private DataInputStream in;
 
+	private byte[] buf = null;
+
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.BINARY;
 	}
@@ -278,10 +280,11 @@ public class BinaryRDFParser extends RDFParserBase {
 		throws IOException
 	{
 		int stringLength = in.readInt();
-		char[] cArray = new char[stringLength];
-		for (int i = 0; i < stringLength; i++) {
-			cArray[i] = in.readChar();
+		int stringBytes = stringLength << 1;
+		if (buf == null || buf.length < stringBytes) {
+			buf = new byte[stringBytes];
 		}
-		return new String(cArray);
+		in.readFully(buf, 0, stringBytes);
+		return new String(buf, 0, stringBytes, "UTF-16BE");
 	}
 }
