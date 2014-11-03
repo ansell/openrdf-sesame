@@ -282,9 +282,8 @@ public class BinaryRDFParser extends RDFParserBase {
 		int stringLength = in.readInt();
 		int stringBytes = stringLength << 1;
 		if (buf == null || buf.length < stringBytes) {
-			// Always grow the buffer to at least double its previous size
-			int newCap = (buf == null ? stringBytes : Math.max(stringBytes, buf.length << 1));
-			buf = new byte[newCap];
+			// Allocate what we need plus some extra space
+			buf = new byte[stringBytes << 1];
 		}
 		in.readFully(buf, 0, stringBytes);
 		return new String(buf, 0, stringBytes, "UTF-16BE");
