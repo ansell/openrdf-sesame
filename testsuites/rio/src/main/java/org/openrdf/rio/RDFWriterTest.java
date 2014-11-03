@@ -124,6 +124,8 @@ public abstract class RDFWriterTest {
 
 	private Literal litWithDoubleQuotes;
 
+	private Literal litBigPlaceholder;
+
 	private String exNs;
 
 	private List<Resource> potentialSubjects;
@@ -158,6 +160,8 @@ public abstract class RDFWriterTest {
 		litWithMultipleNewlines = vf.createLiteral("\nliteral \nwith newline at start\n");
 		litWithSingleQuotes = vf.createLiteral("'''some single quote text''' - abc");
 		litWithDoubleQuotes = vf.createLiteral("\"\"\"some double quote text\"\"\" - abc");
+
+		litBigPlaceholder = vf.createLiteral(prng.nextDouble());
 
 		potentialSubjects = new ArrayList<Resource>();
 		potentialSubjects.add(bnode);
@@ -207,6 +211,7 @@ public abstract class RDFWriterTest {
 		}
 		potentialObjects.add(litWithSingleQuotes);
 		potentialObjects.add(litWithDoubleQuotes);
+		potentialObjects.add(litBigPlaceholder);
 		Collections.shuffle(potentialObjects, prng);
 
 		potentialPredicates = new ArrayList<URI>();
@@ -556,9 +561,19 @@ public abstract class RDFWriterTest {
 		Model model = new LinkedHashModel();
 
 		for (int i = 0; i < 100000; i++) {
+
+			Value obj = potentialObjects.get(prng.nextInt(potentialObjects.size()));
+			if (obj == litBigPlaceholder) {
+				StringBuffer big = new StringBuffer();
+				int len = 25000 + prng.nextInt(5000);
+				for (int j = 0; j < len; j++) {
+					big.append(((char) (32 + prng.nextInt(90))));
+				}
+				obj = vf.createLiteral(big.toString());
+			}
+
 			model.add(potentialSubjects.get(prng.nextInt(potentialSubjects.size())),
-					potentialPredicates.get(prng.nextInt(potentialPredicates.size())),
-					potentialObjects.get(prng.nextInt(potentialObjects.size())));
+					potentialPredicates.get(prng.nextInt(potentialPredicates.size())), obj);
 		}
 		System.out.println("Test class: " + this.getClass().getName());
 		System.out.println("Test statements size: " + model.size() + " (" + rdfWriterFactory.getRDFFormat()
