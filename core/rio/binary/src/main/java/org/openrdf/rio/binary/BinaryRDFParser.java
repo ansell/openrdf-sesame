@@ -31,6 +31,7 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.URI_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_DECL;
 import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +79,7 @@ public class BinaryRDFParser extends RDFParserBase {
 			throw new IllegalArgumentException("Input stream must not be null");
 		}
 
-		this.in = new DataInputStream(in);
+		this.in = new DataInputStream(new BufferedInputStream(in));
 
 		// Check magic number
 		byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
