@@ -216,15 +216,25 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		Lock tempWriteLock = null;
 		try {
 
-			boolean readTransaction = transactionActive() && txnLockAcquired;
-			
-			if (!readTransaction) {
-				tempWriteLock = nativeStore.tryTransactionLock();
-				if (tempWriteLock != null) {
-					readTransaction = true;
+			boolean readTransaction = false;
+
+			// check if we should read modified triples in the current transaction.
+			if (txnLockAcquired) {
+				readTransaction = true;
+			}
+			else {
+				// we do not currently have a transaction lock but if we are in an
+				// active transaction, we should still try and read modifications in
+				// the transaction (provided no other concurrent connection has the
+				// transaction lock).
+				if (transactionActive()) {
+					tempWriteLock = nativeStore.tryTransactionLock();
+					if (tempWriteLock != null) {
+						readTransaction = true;
+					}
 				}
 			}
-			
+
 			CloseableIteration<? extends Statement, IOException> iter = nativeStore.createStatementIterator(
 					subj, pred, obj, includeInferred, readTransaction, contexts);
 
