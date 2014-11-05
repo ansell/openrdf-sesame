@@ -20,9 +20,6 @@ import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Superclass for {@link ParserConfig} and {@link WriterConfig}.
  * 
@@ -31,16 +28,20 @@ import org.slf4j.LoggerFactory;
 public class RioConfig implements Serializable {
 
 	/**
-	 * @since 2.7.0
+	 * @since 2.7.14
 	 */
-	private static final long serialVersionUID = 270L;
+	private static final long serialVersionUID = 2714L;
 
 	/**
 	 * A map containing mappings from settings to their values.
 	 */
 	protected final ConcurrentMap<RioSetting<Object>, Object> settings = new ConcurrentHashMap<RioSetting<Object>, Object>();
 
-	protected final Logger log = LoggerFactory.getLogger(this.getClass());
+	/**
+	 * Logger disabled here to check its effect on intermittent Jenkins CI
+	 * failures.
+	 */
+	// protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 
@@ -95,7 +96,8 @@ public class RioConfig implements Serializable {
 				// information about whether it was previously set or not
 				settings.put((RioSetting<Object>)setting, value);
 
-				this.log.trace("Overriding previous setting for {}", setting.getKey());
+				// this.log.trace("Overriding previous setting for {}",
+				// setting.getKey());
 			}
 		}
 	}

@@ -46,6 +46,16 @@ public abstract class AggregateOperatorBase extends UnaryValueOperator implement
 		return this.distinct;
 	}
 
+    @Override
+    public int hashCode() {
+        int distHash = (isDistinct() ? 1 : 0);
+        if (arg == null) {
+            return 73 + distHash;
+        } else {
+            return arg.hashCode() + distHash;
+        }
+    }
+
 	@Override
 	public AggregateOperatorBase clone() {
 		return (AggregateOperatorBase)super.clone();
