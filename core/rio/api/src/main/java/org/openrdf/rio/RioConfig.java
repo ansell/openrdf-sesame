@@ -20,6 +20,9 @@ import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Superclass for {@link ParserConfig} and {@link WriterConfig}.
  * 
@@ -37,11 +40,7 @@ public class RioConfig implements Serializable {
 	 */
 	protected final ConcurrentMap<RioSetting<Object>, Object> settings = new ConcurrentHashMap<RioSetting<Object>, Object>();
 
-	/**
-	 * Logger disabled here to check its effect on intermittent Jenkins CI
-	 * failures.
-	 */
-	// protected final Logger log = LoggerFactory.getLogger(this.getClass());
+	protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 
