@@ -20,8 +20,6 @@ import java.util.Date;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.model.vocabulary.XMLSchema;
-
 /**
  * A factory for creating URIs, blank nodes, literals and statements.
  * 
