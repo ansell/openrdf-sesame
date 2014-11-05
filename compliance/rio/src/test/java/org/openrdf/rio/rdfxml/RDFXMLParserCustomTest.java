@@ -197,6 +197,28 @@ public class RDFXMLParserCustomTest {
 	}
 
 	@Test
+	public void testParseCommentAtStart()
+		throws Exception
+	{
+		// Example from:
+		// http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-parsetype-Collection
+		StringBuilder string = new StringBuilder();
+		string.append("<!-- Test comment for parser to ignore -->\n");
+		string.append("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" ");
+		string.append(" xmlns:ex=\"http://example.org/stuff/1.0/\"> \n");
+		string.append("  <rdf:Description rdf:about=\"http://example.org/basket\"> \n");
+		string.append("    <ex:hasFruit>\n");
+		string.append("    	Mango\n");
+		string.append("    </ex:hasFruit>\n");
+		string.append("  </rdf:Description>\n");
+		string.append("</rdf:RDF>");
+
+		Model parse = Rio.parse(new StringReader(string.toString()), "", RDFFormat.RDFXML);
+		Rio.write(parse, System.out, RDFFormat.NTRIPLES);
+		assertEquals(1, parse.size());
+	}
+
+	@Test
 	public void testSupportedSettings()
 		throws Exception
 	{
