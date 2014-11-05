@@ -75,6 +75,7 @@ import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.NAryValueOperator;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Now;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
@@ -439,6 +440,12 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(Not node)
+		throws X
+	{
+		meetUnaryValueOperator(node);
+	}
+
+	public void meet(Now node)
 		throws X
 	{
 		meetUnaryValueOperator(node);

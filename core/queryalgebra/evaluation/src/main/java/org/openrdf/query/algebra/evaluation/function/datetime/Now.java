@@ -36,7 +36,13 @@ import org.openrdf.query.algebra.evaluation.function.Function;
  * for RDF</a>
  * 
  * @author Jeen Broekstra
+ * @deprecated According to the SPARQL specification, NOW is expected to return
+ *             identical values for every call within a single query, which
+ *             makes it stateful and not a proper stateless Function. Query
+ *             Evaluation will move to a dedicated Now algebra node instead. See
+ *             {@link org.openrdf.query.algebra.model.Now}.
  */
+@Deprecated
 public class Now implements Function {
 
 	public String getURI() {
@@ -49,21 +55,20 @@ public class Now implements Function {
 		if (args.length != 0) {
 			throw new ValueExprEvaluationException("NOW requires 0 argument, got " + args.length);
 		}
-		
+
 		Calendar cal = Calendar.getInstance();
-		
+
 		Date now = cal.getTime();
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(now);
 		try {
 			XMLGregorianCalendar date = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			
+
 			return valueFactory.createLiteral(date);
 		}
 		catch (DatatypeConfigurationException e) {
 			throw new ValueExprEvaluationException(e);
 		}
-
 
 	}
 

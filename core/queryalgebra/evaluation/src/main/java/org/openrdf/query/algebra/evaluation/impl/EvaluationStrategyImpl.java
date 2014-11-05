@@ -16,11 +16,18 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIterationBase;
@@ -94,6 +101,7 @@ import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Now;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
@@ -151,9 +159,11 @@ import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.RepositoryException;
 
 /**
- * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
- * API.
+ * Default evaluation strategy for Sesame queries, to evaluate one
+ * {@link TupleExpr} on the given {@link TripleSource}, optionally using the
+ * given {@link Dataset}.
  * 
+ * @author Jeen Broekstra
  * @author James Leigh
  * @author Arjohn Kampman
  * @author David Huynh
@@ -168,6 +178,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	protected final TripleSource tripleSource;
 
 	protected final Dataset dataset;
+
+	// shared return value for successive calls of the NOW() function within the
+	// same query. Will be reset upon each new query being evaluated. See
+	// SES-869.
+	private Value sharedValueOfNow;
 
 	/*--------------*
 	 * Constructors *
@@ -548,7 +563,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				if (objVar != null && !objVar.isConstant() && !result.hasBinding(objVar.getName())) {
 					result.addBinding(objVar.getName(), st.getObject());
 				}
-				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
+				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName())
+						&& st.getContext() != null)
+				{
 					result.addBinding(conVar.getName(), st.getContext());
 				}
 
@@ -604,6 +621,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return evaluate((Order)expr, bindings);
 		}
 		else if (expr instanceof QueryRoot) {
+			// new query, reset shared return value for successive calls of NOW()
+			this.sharedValueOfNow = null;
 			return evaluate(((QueryRoot)expr).getArg(), bindings);
 		}
 		else if (expr instanceof DescribeOperator) {
@@ -626,7 +645,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
 
 		final QueryBindingSet b = new QueryBindingSet(bindings);
-		
+
 		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
 			public boolean hasNext()
@@ -1002,6 +1021,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof Not) {
 			return evaluate((Not)expr, bindings);
+		}
+		else if (expr instanceof Now) {
+			return evaluate((Now)expr, bindings);
 		}
 		else if (expr instanceof SameTerm) {
 			return evaluate((SameTerm)expr, bindings);
@@ -1538,6 +1560,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		return function.evaluate(tripleSource.getValueFactory(), argValues);
+
 	}
 
 	public Value evaluate(And node, BindingSet bindings)
@@ -1604,6 +1627,27 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value argValue = evaluate(node.getArg(), bindings);
 		boolean argBoolean = QueryEvaluationUtil.getEffectiveBooleanValue(argValue);
 		return BooleanLiteralImpl.valueOf(!argBoolean);
+	}
+
+	public Value evaluate(Now node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		if (sharedValueOfNow == null) {
+			Calendar cal = Calendar.getInstance();
+
+			Date now = cal.getTime();
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(now);
+			try {
+				XMLGregorianCalendar date = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+
+				sharedValueOfNow = tripleSource.getValueFactory().createLiteral(date);
+			}
+			catch (DatatypeConfigurationException e) {
+				throw new ValueExprEvaluationException(e);
+			}
+		}
+		return sharedValueOfNow;
 	}
 
 	public Value evaluate(SameTerm node, BindingSet bindings)

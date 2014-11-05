@@ -75,6 +75,7 @@ import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Now;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
@@ -237,6 +238,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	private int anonVarID = 1;
 
+	// The NOW function is a single object shared across the tuple expression, so it can reuse the same value in multiple calls within the
+	// same query.
+	private Now sharedNowFunction;
+	
 	// private Map<ValueConstant, Var> mappedValueConstants = new
 	// HashMap<ValueConstant, Var>();
 
@@ -2258,10 +2263,13 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public FunctionCall visit(ASTNow node, Object data)
+	public Now visit(ASTNow node, Object data)
 		throws VisitorException
 	{
-		return createFunctionCall("NOW", node, 0, 0);
+		if (sharedNowFunction == null) {
+			sharedNowFunction = new Now();
+		}
+		return sharedNowFunction;
 	}
 
 	@Override

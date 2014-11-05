@@ -195,6 +195,9 @@ public interface QueryModelVisitor<X extends Exception> {
 	public void meet(Not node)
 		throws X;
 
+	public void meet(Now node)
+			throws X;
+	
 	public void meet(Or node)
 		throws X;
 
