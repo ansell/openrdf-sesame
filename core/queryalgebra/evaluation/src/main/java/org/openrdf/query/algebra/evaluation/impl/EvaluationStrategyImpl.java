@@ -16,18 +16,11 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIterationBase;
@@ -1022,9 +1015,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		else if (expr instanceof Not) {
 			return evaluate((Not)expr, bindings);
 		}
-		else if (expr instanceof Now) {
-			return evaluate((Now)expr, bindings);
-		}
 		else if (expr instanceof SameTerm) {
 			return evaluate((SameTerm)expr, bindings);
 		}
@@ -1551,11 +1541,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new QueryEvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
-		// the NOW function is a special case as it needs to keep a shared return value for the duration of the query.
+		// the NOW function is a special case as it needs to keep a shared return
+		// value for the duration of the query.
 		if (function instanceof Now) {
 			return evaluate((Now)function, bindings);
 		}
-		
+
 		List<ValueExpr> args = node.getArgs();
 
 		Value[] argValues = new Value[args.size()];
