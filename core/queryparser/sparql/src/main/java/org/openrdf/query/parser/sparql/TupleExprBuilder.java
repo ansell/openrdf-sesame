@@ -238,10 +238,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	private int anonVarID = 1;
 
-	// The NOW function is a single object shared across the tuple expression, so it can reuse the same value in multiple calls within the
-	// same query.
-	private Now sharedNowFunction;
-	
 	// private Map<ValueConstant, Var> mappedValueConstants = new
 	// HashMap<ValueConstant, Var>();
 
@@ -2266,10 +2262,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Now visit(ASTNow node, Object data)
 		throws VisitorException
 	{
-		if (sharedNowFunction == null) {
-			sharedNowFunction = new Now();
-		}
-		return sharedNowFunction;
+		return new Now();
 	}
 
 	@Override
