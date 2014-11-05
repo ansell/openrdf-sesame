@@ -31,12 +31,12 @@ import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.CompareAll;
 import org.openrdf.query.algebra.CompareAny;
 import org.openrdf.query.algebra.CompareSubQueryValueOperator;
-import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Copy;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Create;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.DeleteData;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
@@ -64,6 +64,7 @@ import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LangMatches;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Like;
+import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
@@ -75,7 +76,6 @@ import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.NAryValueOperator;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
-import org.openrdf.query.algebra.Now;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
@@ -101,7 +101,6 @@ import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
-import org.openrdf.query.algebra.ListMemberOperator;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 
@@ -440,12 +439,6 @@ public abstract class QueryModelVisitorBase<X extends Exception> implements Quer
 	}
 
 	public void meet(Not node)
-		throws X
-	{
-		meetUnaryValueOperator(node);
-	}
-
-	public void meet(Now node)
 		throws X
 	{
 		meetUnaryValueOperator(node);

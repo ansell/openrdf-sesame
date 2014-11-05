@@ -101,7 +101,6 @@ import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Namespace;
 import org.openrdf.query.algebra.Not;
-import org.openrdf.query.algebra.Now;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
@@ -133,6 +132,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.datetime.Now;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
@@ -1551,6 +1551,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new QueryEvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
+		// the NOW function is a special case as it needs to keep a shared return value for the duration of the query.
+		if (function instanceof Now) {
+			return evaluate((Now)function, bindings);
+		}
+		
 		List<ValueExpr> args = node.getArgs();
 
 		Value[] argValues = new Value[args.size()];
@@ -1633,19 +1638,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		if (sharedValueOfNow == null) {
-			Calendar cal = Calendar.getInstance();
-
-			Date now = cal.getTime();
-			GregorianCalendar c = new GregorianCalendar();
-			c.setTime(now);
-			try {
-				XMLGregorianCalendar date = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-
-				sharedValueOfNow = tripleSource.getValueFactory().createLiteral(date);
-			}
-			catch (DatatypeConfigurationException e) {
-				throw new ValueExprEvaluationException(e);
-			}
+			sharedValueOfNow = node.evaluate(tripleSource.getValueFactory());
 		}
 		return sharedValueOfNow;
 	}

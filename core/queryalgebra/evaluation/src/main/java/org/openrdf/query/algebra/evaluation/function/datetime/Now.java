@@ -36,13 +36,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
  * for RDF</a>
  * 
  * @author Jeen Broekstra
- * @deprecated According to the SPARQL specification, NOW is expected to return
- *             identical values for every call within a single query, which
- *             makes it stateful and not a proper stateless Function. Query
- *             Evaluation will move to a dedicated Now algebra node instead. See
- *             {@link org.openrdf.query.algebra.model.Now}.
  */
-@Deprecated
 public class Now implements Function {
 
 	public String getURI() {

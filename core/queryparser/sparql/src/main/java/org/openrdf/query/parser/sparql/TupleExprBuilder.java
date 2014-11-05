@@ -75,7 +75,6 @@ import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
-import org.openrdf.query.algebra.Now;
 import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
@@ -2259,10 +2258,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	@Override
-	public Now visit(ASTNow node, Object data)
+	public FunctionCall visit(ASTNow node, Object data)
 		throws VisitorException
 	{
-		return new Now();
+		return createFunctionCall("NOW".toString(), node, 0, 0);
 	}
 
 	@Override
