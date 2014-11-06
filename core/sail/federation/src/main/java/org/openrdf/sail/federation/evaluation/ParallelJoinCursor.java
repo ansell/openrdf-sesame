@@ -93,7 +93,7 @@ public class ParallelJoinCursor extends
 	}
 
 	@Override
-	public BindingSet getNextElement() throws QueryEvaluationException {
+	public synchronized BindingSet getNextElement() throws QueryEvaluationException {
 		BindingSet result = null;
 		while (rightIter != null || rightQueue.hasNext()) {
 			if (rightIter == null) {
@@ -112,7 +112,7 @@ public class ParallelJoinCursor extends
 	}
 
 	@Override
-	public void handleClose() throws QueryEvaluationException {
+	public synchronized void handleClose() throws QueryEvaluationException {
 		closed = true;
 		if (evaluationThread != null) {
 			evaluationThread.interrupt();
