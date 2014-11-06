@@ -65,7 +65,7 @@ public class FOAF {
 	public final static URI DEPICTS;
 	public final static URI DNA_CHECKSUM;
 	public final static URI FAMILY_NAME;
-	/** @Deprecated Use FAMILY_NAME instead for new statements */
+	/** @deprecated Use FAMILY_NAME instead for new statements */
 	@Deprecated
 	public final static URI FAMILYNAME;
 	public final static URI FIRST_NAME;
@@ -74,7 +74,7 @@ public class FOAF {
 	public final static URI GEEKCODE;
 	public final static URI GENDER;
 	public final static URI GIVEN_NAME;
-	/** @Deprecated Use GIVEN_NAME instead for new statements */
+	/** @deprecated Use GIVEN_NAME instead for new statements */
 	@Deprecated
 	public final static URI GIVENNAME;
 	public final static URI HOLDS_ACCOUNT;
