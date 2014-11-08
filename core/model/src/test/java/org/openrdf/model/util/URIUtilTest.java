@@ -16,13 +16,17 @@
  */
 package org.openrdf.model.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * @author Arjohn Kampman
  */
-public class URIUtilTest extends TestCase {
+public class URIUtilTest {
 
+	@Test
 	public void testIsCorrectURISplit()
 		throws Exception
 	{
@@ -46,5 +50,30 @@ public class URIUtilTest extends TestCase {
 		assertFalse(URIUtil.isCorrectURISplit("isbn:", "1#2"));
 		assertFalse(URIUtil.isCorrectURISplit("isbn:", "1/2"));
 		assertFalse(URIUtil.isCorrectURISplit("isbn:", "1:2"));
+
+	}
+
+	@Test
+	public void testIsValidURIReference()
+		throws Exception
+	{
+		assertTrue(URIUtil.isValidURIReference("http://example.org/foo/bar/"));
+		assertTrue("whitespace should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar with a lot of space/"));
+		assertTrue("unwise chars should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar/unwise{<characters>}"));
+		assertTrue("query params in single quotes should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar?query='blah'"));
+		assertTrue("query params in double quotes should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar?query=\"blah\"&foo=bar"));
+		assertTrue("short simple urns should be allowed", URIUtil.isValidURIReference("urn:p1"));
+		assertTrue("Escaped special char should be allowed",
+				URIUtil.isValidURIReference("http://example.org/foo\u00ea/bar/"));
+		
+		assertTrue("fragment identifier should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar#fragment1"));
+		assertTrue("Unescaped special char should be allowed",
+				URIUtil.isValidURIReference("http://example.org/foo®/bar/"));
+		assertFalse("control char should not be allowed",
+				URIUtil.isValidURIReference("http://example.org/foo\u0001/bar/"));
+		assertFalse("relative uri should fail", URIUtil.isValidURIReference("foo/bar/"));
+		assertFalse("single column is not a valid uri", URIUtil.isValidURIReference(":"));
+		assertTrue("reserved char is allowed in non-conflicting spot", URIUtil.isValidURIReference("http://foo.com/b!ar/"));
+		assertFalse("reserved char should not be allowed in conflicting spot", URIUtil.isValidURIReference("http;://foo.com/bar/"));
 	}
 }
