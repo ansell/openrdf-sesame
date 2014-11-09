@@ -949,6 +949,29 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES869ValueOfNow() 
+	throws Exception 
+	{
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT ?p ( NOW() as ?n ) { BIND (NOW() as ?p ) }" );
+		
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value p = bs.getValue("p");
+		Value n = bs.getValue("n");
+		
+		assertNotNull(p);
+		assertNotNull(n);
+		assertEquals(p, n);
+		
+	}
+	
+	@Test
 	public void testValuesInOptional()
 		throws Exception
 	{
