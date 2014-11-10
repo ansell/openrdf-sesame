@@ -231,10 +231,14 @@ public class URIUtil {
 	}
 
 	/**
-	 * Escapes a given URI reference with %-encoded chars where excluded
-	 * characters appear, according to the specs in
-	 * http://www.isi.edu/in-notes/rfc2396.txt section 2.4. Note that this method
-	 * does not check for control characters.
+	 * Escapes any character that is not either reserved or in the legal range of
+	 * unreserved characters, according to RFC 2396.
+	 * 
+	 * @param unescaped
+	 *        a (relative or absolute) uri reference.
+	 * @return a (relative or absolute) uri reference with all characters that
+	 *         can not appear as-is in a URI %-escaped.
+	 * @see <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>.
 	 */
 	private static String escapeExcludedChars(String unescaped) {
 		final StringBuilder escaped = new StringBuilder();
