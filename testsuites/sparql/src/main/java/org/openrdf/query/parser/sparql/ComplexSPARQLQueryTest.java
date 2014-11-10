@@ -949,6 +949,18 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES2121URIFunction() throws Exception {
+		String query = "SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		BindingSet bs = result.next();
+		URI uri = (URI)bs.getValue("uri");
+		System.out.println(uri);
+	}
+	
+	@Test
 	public void testValuesInOptional()
 		throws Exception
 	{
