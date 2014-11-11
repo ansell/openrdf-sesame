@@ -65,9 +65,6 @@ public class SPARQLTSVCustomTest {
 
 	/**
 	 * Only Literals with the XML Schema numeric types should be simplified.
-	 * NOTE: This will fail when using RDF-1.1, as the datatype
-	 * {@link XMLSchema#STRING} is implied and hence is not generally
-	 * represented.
 	 * 
 	 * @throws Exception
 	 */
