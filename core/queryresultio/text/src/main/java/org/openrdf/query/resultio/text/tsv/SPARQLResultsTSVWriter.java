@@ -77,7 +77,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 					writer.write("\t");
 				}
 			}
-			writer.write("\r\n");
+			writer.write("\n");
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -122,7 +122,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 					writer.write("\t");
 				}
 			}
-			writer.write("\r\n");
+			writer.write("\n");
 		}
 		catch (IOException e) {
 			throw new TupleQueryResultHandlerException(e);
@@ -180,17 +180,11 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	{
 		String label = lit.getLabel();
 
-		boolean quoted = false;
-		if (lit.getDatatype() != null || lit.getLanguage() != null) {
-			quoted = true;
-			writer.write("\"");
-		}
+		writer.write("\"");
 
 		writer.write(encodeString(label));
 
-		if (quoted) {
-			writer.write("\"");
-		}
+		writer.write("\"");
 
 		if (lit.getLanguage() != null) {
 			// Append the literal's language
