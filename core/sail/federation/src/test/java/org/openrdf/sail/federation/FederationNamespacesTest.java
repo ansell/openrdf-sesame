@@ -35,7 +35,6 @@ import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.memory.MemoryStore;
 
-
 /**
  * Tests for correct behavior when members define matching or conflicting
  * prefix/namespace maps.
@@ -43,68 +42,72 @@ import org.openrdf.sail.memory.MemoryStore;
  * @author Dale Visser
  */
 public class FederationNamespacesTest extends TestCase {
-	
+
+	private static String PREFIX = "a";
+
 	@Test
 	public void testTwoMatchingNamespaces()
-		throws RepositoryException, RDFParseException, IOException{
-		Federation federation = new Federation();
-		SailRepository repo = new SailRepository(federation);
-		repo.initialize();
-		federation.addMember(createMember("1", "a", "http://test/a#"));
-		federation.addMember(createMember("2", "a", "http://test/a#"));
-		RepositoryConnection con = repo.getConnection();
+		throws RepositoryException, RDFParseException, IOException
+	{
+		RepositoryConnection con = createFederationWithMemberNamespaces("a", "a");
 		try {
-		assertThat(con.getNamespace("a"), is(equalTo("http://test/a#")));
-		} finally {
+			assertThat(con.getNamespace("a"), is(equalTo("http://test/a#")));
+		}
+		finally {
 			con.close();
 		}
 	}
 
 	@Test
 	public void testThreeMatchingNamespaces()
-		throws RepositoryException, RDFParseException, IOException{
-		Federation federation = new Federation();
-		SailRepository repo = new SailRepository(federation);
-		repo.initialize();
-		federation.addMember(createMember("1", "a", "http://test/a#"));
-		federation.addMember(createMember("2", "a", "http://test/a#"));
-		federation.addMember(createMember("3", "a", "http://test/a#"));
-		RepositoryConnection con = repo.getConnection();
+		throws RepositoryException, RDFParseException, IOException
+	{
+		RepositoryConnection con = createFederationWithMemberNamespaces("a", "a", "a");
 		try {
-		assertThat(con.getNamespace("a"), is(equalTo("http://test/a#")));
-		} finally {
+			assertThat(con.getNamespace("a"), is(equalTo("http://test/a#")));
+		}
+		finally {
 			con.close();
 		}
 	}
-	
+
 	@Test
 	public void testTwoMismatchedNamespaces()
-		throws RepositoryException, RDFParseException, IOException{
-		Federation federation = new Federation();
-		SailRepository repo = new SailRepository(federation);
-		repo.initialize();
-		federation.addMember(createMember("1", "a", "http://test/a#"));
-		federation.addMember(createMember("2", "a", "http://test/b#"));
-		RepositoryConnection con = repo.getConnection();
+		throws RepositoryException, RDFParseException, IOException
+	{
+		RepositoryConnection con = createFederationWithMemberNamespaces("a", "b");
 		try {
-		assertThat(con.getNamespace("a"), is(nullValue()));
-		} finally {
+			assertThat(con.getNamespace("a"), is(nullValue()));
+		}
+		finally {
 			con.close();
 		}
-	}	
-	
-	
+	}
+
+	private RepositoryConnection createFederationWithMemberNamespaces(String... paths)
+		throws RepositoryException, RDFParseException, IOException
+	{
+		Federation federation = new Federation();
+		for (int i = 0; i < paths.length; i++) {
+			federation.addMember(createMember(Integer.toString(i), PREFIX, "http://test/" + paths[i] + "#"));
+		}
+		SailRepository repo = new SailRepository(federation);
+		repo.initialize();
+		return repo.getConnection();
+	}
+
 	private Repository createMember(String memberID, String prefix, String name)
-			throws RepositoryException, RDFParseException, IOException {
+		throws RepositoryException, RDFParseException, IOException
+	{
 		SailRepository member = new SailRepository(new MemoryStore());
 		member.initialize();
 		SailRepositoryConnection con = member.getConnection();
 		try {
 			con.setNamespace(prefix, name);
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		return member;
 	}
-
 }
