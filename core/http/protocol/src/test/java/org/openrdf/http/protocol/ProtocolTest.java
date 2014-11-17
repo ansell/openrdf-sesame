@@ -30,6 +30,12 @@ import static org.openrdf.http.protocol.Protocol.getRepositoriesLocation;
 import static org.openrdf.http.protocol.Protocol.getRepositoryLocation;
 import static org.openrdf.http.protocol.Protocol.getServerLocation;
 import static org.openrdf.http.protocol.Protocol.getRepositoryID;
+
+import org.openrdf.model.BNode;
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+
 import junit.framework.TestCase;
 
 public class ProtocolTest extends TestCase {
@@ -84,5 +90,22 @@ public class ProtocolTest extends TestCase {
 	public void testGetNamespacesLocation() {
 		String result = getNamespacesLocation(repositoryLocation);
 		assertEquals(result, repositoryLocation + "/" + NAMESPACES);
+	}
+	
+	public void testEncodeValueRoundtrip() {
+		final ValueFactory vf = ValueFactoryImpl.getInstance();
+		URI uri = vf.createURI("http://example.org/foo-bar");
+		
+		String encodedUri = Protocol.encodeValue(uri);
+		URI decodedUri = (URI)Protocol.decodeValue(encodedUri, vf);
+		
+		assertEquals(uri, decodedUri);
+		
+		BNode bnode = vf.createBNode("foo-bar-1");
+		String encodedBnode = Protocol.encodeValue(bnode);
+		
+		BNode decodedNode = (BNode)Protocol.decodeValue(encodedBnode, vf);
+		assertEquals(bnode, decodedNode);
+		
 	}
 }

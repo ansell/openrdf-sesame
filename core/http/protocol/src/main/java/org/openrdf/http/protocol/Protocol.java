@@ -338,7 +338,7 @@ public abstract class Protocol {
 	public static String encodeValue(Value value) {
 		if (value instanceof BNode) {
 			// SES-2129 special treatment of blank node names to avoid problems with round-tripping.
-			return ((BNode)value).getID();
+			return "_:" + ((BNode)value).getID();
 		}
 		
 		// for everything else we just use N-Triples serialization.
