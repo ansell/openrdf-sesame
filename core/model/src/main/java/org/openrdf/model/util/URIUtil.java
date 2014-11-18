@@ -18,7 +18,9 @@ package org.openrdf.model.util;
 
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.openrdf.model.URI;
 
@@ -34,7 +36,7 @@ public class URIUtil {
 	 * before forming the URI. http://www.isi.edu/in-notes/rfc2396.txt section
 	 * 2.2.
 	 */
-	private static final List<Character> reserved = Arrays.asList(new Character[] {
+	private static final Set<Character> reserved = new HashSet<Character>(Arrays.asList(new Character[] {
 			';',
 			'/',
 			'?',
@@ -44,14 +46,14 @@ public class URIUtil {
 			'=',
 			'+',
 			'$',
-			',' });
+			',' }));
 
 	/**
 	 * Punctuation mark characters, which are part of the set of unreserved chars
 	 * and therefore allowed to occur in unescaped form. See
 	 * http://www.isi.edu/in-notes/rfc2396.txt
 	 */
-	private static final List<Character> mark = Arrays.asList(new Character[] {
+	private static final Set<Character> mark = new HashSet<Character>(Arrays.asList(new Character[] {
 			'-',
 			'_',
 			'.',
@@ -60,7 +62,7 @@ public class URIUtil {
 			'*',
 			'\'',
 			'(',
-			')' });
+			')' }));
 
 	/**
 	 * Finds the index of the first local name character in an (non-relative)
