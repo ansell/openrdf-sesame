@@ -131,18 +131,19 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 		Lock stLock = store.getStatementsReadLock();
 		boolean releaseLock = true;
+		Lock tempWriteLock = null;
 
 		try {
 			int snapshot = store.getCurrentSnapshot();
 			ReadMode readMode = ReadMode.COMMITTED;
 
-			Lock tempWriteLock = null;
-			
+
 			if (transactionActive()) {
 				// current connection has begun a transaction
 				readMode = ReadMode.TRANSACTION;
 
-				// verify that we have obtained the transaction write lock, in which case
+				// verify that we have obtained the transaction write lock, in which
+				// case
 				// we need to look at the latest snapshot
 				if (txnLockAcquired) {
 					snapshot++;
@@ -154,7 +155,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 					tempWriteLock = store.tryTransactionLock();
 
 					if (tempWriteLock != null) {
-						// no other transaction is actively writing, so we can look at the latest
+						// no other transaction is actively writing, so we can look at
+						// the latest
 						// snapshot
 						snapshot++;
 					}
@@ -192,6 +194,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		finally {
 			if (releaseLock) {
 				stLock.release();
+			}
+			if (tempWriteLock != null) {
+				tempWriteLock.release();
 			}
 		}
 	}
@@ -287,7 +292,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 				// current connection has begun a transaction
 				readMode = ReadMode.TRANSACTION;
 
-				// verify that we have obtained the transaction write lock, in which case
+				// verify that we have obtained the transaction write lock, in which
+				// case
 				// we need to look at the latest snapshot
 				if (txnLockAcquired) {
 					snapshot++;
@@ -299,7 +305,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 					tempWriteLock = store.tryTransactionLock();
 
 					if (tempWriteLock != null) {
-						// no other transaction is actively writing, so we can look at the latest
+						// no other transaction is actively writing, so we can look at
+						// the latest
 						// snapshot
 						snapshot++;
 					}
