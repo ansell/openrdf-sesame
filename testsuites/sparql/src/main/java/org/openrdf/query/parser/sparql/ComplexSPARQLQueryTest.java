@@ -957,7 +957,16 @@ public abstract class ComplexSPARQLQueryTest {
 		assertTrue(result.hasNext());
 		BindingSet bs = result.next();
 		URI uri = (URI)bs.getValue("uri");
-		System.out.println(uri);
+		assertTrue("uri result for invalid URI should be unbound", uri == null);
+		
+		query = "BASE <http://example.org/> SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		bs = result.next();
+		uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for valid URI reference should be bound", uri != null);
 	}
 	
 	@Test
