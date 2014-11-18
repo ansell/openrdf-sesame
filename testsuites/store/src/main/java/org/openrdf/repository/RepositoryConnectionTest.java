@@ -351,7 +351,6 @@ public abstract class RepositoryConnectionTest {
 		testCon.rollback();
 	}
 
-
 	@Test
 	public void testReadOfAddedStatement3()
 		throws Exception
@@ -377,6 +376,7 @@ public abstract class RepositoryConnectionTest {
 		statements.close();
 		testCon.rollback();
 	}
+
 	@Test
 	public void testTransactionIsolationForRead()
 		throws Exception
@@ -397,6 +397,18 @@ public abstract class RepositoryConnectionTest {
 				assertFalse(
 						"Should not be able to see uncommitted statement on separate connection inside transaction",
 						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+				String query = "CONSTRUCT WHERE { <" + OWL.CLASS + "> <" + RDFS.COMMENT + ">  ?obj . }";
+				GraphQueryResult queryResult = testCon2.prepareGraphQuery(QueryLanguage.SPARQL, query).evaluate();
+				try {
+					assertFalse(
+							"Should not be able to see uncommitted statement on separate connection inside transaction",
+							queryResult.hasNext());
+				}
+				finally {
+					queryResult.close();
+				}
+
 			}
 			finally {
 				testCon2.rollback();
