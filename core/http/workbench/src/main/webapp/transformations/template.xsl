@@ -26,6 +26,8 @@
 					href="../../styles/default/screen.css" media="screen" />
 				<link title="Basic" rel="alternate stylesheet" type="text/css"
 					href="../../styles/basic/all.css" media="all" />
+				<link rel="stylesheet" type="text/css"
+                    href="../../styles/yasqe.min.css" />
 				<link rel="shortcut icon" href="../../favicon.ico" type="image/ico" />
 				<link rel="icon" href="../../favicon.png" type="image/png" />
 			</head>

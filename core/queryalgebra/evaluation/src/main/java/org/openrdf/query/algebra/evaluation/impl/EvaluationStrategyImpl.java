@@ -126,6 +126,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceManager;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.datetime.Now;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
@@ -152,9 +153,11 @@ import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.RepositoryException;
 
 /**
- * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
- * API.
+ * Default evaluation strategy for Sesame queries, to evaluate one
+ * {@link TupleExpr} on the given {@link TripleSource}, optionally using the
+ * given {@link Dataset}.
  * 
+ * @author Jeen Broekstra
  * @author James Leigh
  * @author Arjohn Kampman
  * @author David Huynh
@@ -169,6 +172,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	protected final TripleSource tripleSource;
 
 	protected final Dataset dataset;
+
+	// shared return value for successive calls of the NOW() function within the
+	// same query. Will be reset upon each new query being evaluated. See
+	// SES-869.
+	private Value sharedValueOfNow;
 
 	/*--------------*
 	 * Constructors *
@@ -607,6 +615,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return evaluate((Order)expr, bindings);
 		}
 		else if (expr instanceof QueryRoot) {
+			// new query, reset shared return value for successive calls of NOW()
+			this.sharedValueOfNow = null;
 			return evaluate(((QueryRoot)expr).getArg(), bindings);
 		}
 		else if (expr instanceof DescribeOperator) {
@@ -1542,6 +1552,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new QueryEvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
+		// the NOW function is a special case as it needs to keep a shared return
+		// value for the duration of the query.
+		if (function instanceof Now) {
+			return evaluate((Now)function, bindings);
+		}
+
 		List<ValueExpr> args = node.getArgs();
 
 		Value[] argValues = new Value[args.size()];
@@ -1551,6 +1567,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		return function.evaluate(tripleSource.getValueFactory(), argValues);
+
 	}
 
 	public Value evaluate(And node, BindingSet bindings)
@@ -1617,6 +1634,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value argValue = evaluate(node.getArg(), bindings);
 		boolean argBoolean = QueryEvaluationUtil.getEffectiveBooleanValue(argValue);
 		return BooleanLiteralImpl.valueOf(!argBoolean);
+	}
+
+	public Value evaluate(Now node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		if (sharedValueOfNow == null) {
+			sharedValueOfNow = node.evaluate(tripleSource.getValueFactory());
+		}
+		return sharedValueOfNow;
 	}
 
 	public Value evaluate(SameTerm node, BindingSet bindings)

@@ -42,17 +42,22 @@
 				</tbody>
 			</table>
 		</form>
-		<pre id="SPARQL-namespaces" style="display:none">
-			<xsl:for-each
-				select="document(//sparql:link[@href='namespaces']/@href)//sparql:results/sparql:result">
-				<xsl:value-of
-					select="concat('PREFIX ', sparql:binding[@name='prefix']/sparql:literal, ':&lt;', sparql:binding[@name='namespace']/sparql:literal, '&gt;')" />
-				<xsl:text>
-</xsl:text>
-			</xsl:for-each>
-		</pre>
-		<script src="../../scripts/update.js" type="text/javascript">
-		</script>
+		<script type="text/javascript">
+        var namespaces = {
+          <xsl:for-each
+                select="document(//sparql:link[@href='namespaces']/@href)//sparql:results/sparql:result">
+                <xsl:value-of
+                    select="concat('&quot;', sparql:binding[@name='prefix']/sparql:literal, ':&quot;:&quot;', sparql:binding[@name='namespace']/sparql:literal, '&quot;,')" />
+                <xsl:text>
+                </xsl:text>
+            </xsl:for-each>
+        
+        };
+        </script>
+		<script src="../../scripts/codemirror.4.5.0.min.js" type="text/javascript"></script>
+        <script src="../../scripts/yasqe.min.js" type="text/javascript"></script>
+        <script src="../../scripts/yasqeHelper.js" type="text/javascript"></script>
+		<script src="../../scripts/update.js" type="text/javascript"></script>
 	</xsl:template>
 
 </xsl:stylesheet>

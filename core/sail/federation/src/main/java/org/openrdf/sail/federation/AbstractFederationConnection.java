@@ -178,6 +178,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 			throws SailException {
 		Map<String, Namespace> namespaces = new HashMap<String, Namespace>();
 		Set<String> prefixes = new HashSet<String>();
+		Set<String> conflictedPrefixes = new HashSet<String>();
 
 		try {
 			for (RepositoryConnection member : members) {
@@ -192,7 +193,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 							namespaces.put(prefix, next);
 						} else if (!next.getName().equals(
 								namespaces.get(prefix).getName())) {
-							namespaces.remove(prefix);
+							conflictedPrefixes.add(prefix);
 						}
 					}
 				} finally {
@@ -202,7 +203,9 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		} catch (RepositoryException e) {
 			throw new SailException(e);
 		}
-
+		for (String prefix: conflictedPrefixes){
+			namespaces.remove(prefix);
+		}
 		return new CloseableIteratorIteration<Namespace, SailException>(
 				namespaces.values().iterator());
 	}
