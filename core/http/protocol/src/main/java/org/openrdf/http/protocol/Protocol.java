@@ -17,6 +17,7 @@
 package org.openrdf.http.protocol;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -327,14 +328,20 @@ public abstract class Protocol {
 	}
 
 	/**
-	 * Encodes a value for use in a URL.
+	 * Encodes a value in a canonical serialized string format, for use in a URL query parameter.
 	 * 
 	 * @param value
 	 *        The value to encode, possibly <tt>null</tt>.
-	 * @return The N-Triples representation of the supplied value, or
+	 * @return The protocol-serialized representation of the supplied value, or
 	 *         {@link #NULL_PARAM_VALUE} if the supplied value was <tt>null</tt>.
 	 */
 	public static String encodeValue(Value value) {
+		if (value instanceof BNode) {
+			// SES-2129 special treatment of blank node names to avoid problems with round-tripping.
+			return "_:" + ((BNode)value).getID();
+		}
+		
+		// for everything else we just use N-Triples serialization.
 		return NTriplesUtil.toNTriplesString(value);
 	}
 
@@ -397,7 +404,7 @@ public abstract class Protocol {
 	 * 
 	 * @param context
 	 *        The context to encode, possibly <tt>null</tt>.
-	 * @return The N-Triples representation of the supplied context, or
+	 * @return The protocol-serialized representation of the supplied context, or
 	 *         {@link #NULL_PARAM_VALUE} if the supplied value was <tt>null</tt>.
 	 */
 	public static String encodeContext(Resource context) {
