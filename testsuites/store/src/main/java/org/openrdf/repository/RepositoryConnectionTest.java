@@ -107,8 +107,8 @@ public abstract class RepositoryConnectionTest {
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
-	 @Rule
-	 public Timeout to = new Timeout(60000);
+	@Rule
+	public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
