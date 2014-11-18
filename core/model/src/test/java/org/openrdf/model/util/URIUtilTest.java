@@ -64,8 +64,7 @@ public class URIUtilTest {
 		assertTrue("query params in double quotes should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar?query=\"blah\"&foo=bar"));
 		assertTrue("short simple urns should be allowed", URIUtil.isValidURIReference("urn:p1"));
 		assertTrue("Escaped special char should be allowed",
-				URIUtil.isValidURIReference("http://example.org/foo\u00ea/bar/"));
-		
+				URIUtil.isValidURIReference("http://example.org/foo\\u00ea/bar/"));
 		assertTrue("fragment identifier should be allowed", URIUtil.isValidURIReference("http://example.org/foo/bar#fragment1"));
 		assertTrue("Unescaped special char should be allowed",
 				URIUtil.isValidURIReference("http://example.org/foo®/bar/"));
