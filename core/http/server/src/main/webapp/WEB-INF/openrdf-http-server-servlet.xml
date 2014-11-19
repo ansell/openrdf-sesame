@@ -20,7 +20,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
 		<property name="major" value="2" />
 		<property name="minor" value="7" />
-		<property name="micro" value="12" />
+		<property name="micro" value="14" />
 	</bean>
 
 	<bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration"
