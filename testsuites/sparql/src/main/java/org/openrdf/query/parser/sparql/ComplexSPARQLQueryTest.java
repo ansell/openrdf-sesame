@@ -949,6 +949,27 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES2121URIFunction() throws Exception {
+		String query = "SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		BindingSet bs = result.next();
+		URI uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for invalid URI should be unbound", uri == null);
+		
+		query = "BASE <http://example.org/> SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		bs = result.next();
+		uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for valid URI reference should be bound", uri != null);
+	}
+	
+	@Test
 	public void testSES869ValueOfNow() 
 	throws Exception 
 	{

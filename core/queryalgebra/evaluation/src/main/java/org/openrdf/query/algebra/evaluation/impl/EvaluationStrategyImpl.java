@@ -45,6 +45,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -1313,21 +1314,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value argValue = evaluate(node.getArg(), bindings);
 
 		if (argValue instanceof Literal) {
-			Literal lit = (Literal)argValue;
+			final Literal lit = (Literal)argValue;
 
-			String baseURI = node.getBaseURI();
+			String uriString = lit.getLabel();
+			final String baseURI = node.getBaseURI();
+
+			if (!URIUtil.isValidURIReference(uriString)) {
+				// uri string may be a relative reference. Try appending base URI
+				if (baseURI != null) {
+					uriString = baseURI + uriString;
+					if (!URIUtil.isValidURIReference(uriString)) {
+						throw new ValueExprEvaluationException("not a valid URI reference: " + uriString);
+					}
+				}
+				else {
+					throw new ValueExprEvaluationException("not a valid URI reference: " + uriString);
+				}
+			}
 
 			URI result = null;
+
 			try {
-				result = tripleSource.getValueFactory().createURI(lit.getLabel());
+				result = tripleSource.getValueFactory().createURI(uriString);
 			}
 			catch (IllegalArgumentException e) {
-				try {
-					result = tripleSource.getValueFactory().createURI(baseURI, lit.getLabel());
-				}
-				catch (IllegalArgumentException e1) {
-					throw new ValueExprEvaluationException(e1.getMessage());
-				}
+				throw new ValueExprEvaluationException(e.getMessage());
 			}
 			return result;
 		}
