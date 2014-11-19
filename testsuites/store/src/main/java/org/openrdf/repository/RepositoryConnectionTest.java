@@ -58,7 +58,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -96,12 +95,10 @@ import org.openrdf.query.Update;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -274,6 +271,18 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
+	public void testAddStatementWithContext()
+		throws Exception
+	{
+		Statement statement = vf.createStatement(alice, name, nameAlice, context1);
+		testCon.add(statement);
+
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(statement, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false, context1));
+	}
+
+	@Test
 	public void testAddLiteralWithNewline()
 		throws Exception
 	{
@@ -351,7 +360,6 @@ public abstract class RepositoryConnectionTest {
 		testCon.rollback();
 	}
 
-
 	@Test
 	public void testReadOfAddedStatement3()
 		throws Exception
@@ -377,6 +385,7 @@ public abstract class RepositoryConnectionTest {
 		statements.close();
 		testCon.rollback();
 	}
+
 	@Test
 	public void testTransactionIsolationForRead()
 		throws Exception
