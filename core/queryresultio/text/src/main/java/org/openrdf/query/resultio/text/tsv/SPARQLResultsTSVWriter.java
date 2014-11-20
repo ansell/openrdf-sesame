@@ -31,6 +31,8 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.datatypes.XMLDatatypeUtil;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -180,6 +182,21 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	{
 		String label = lit.getLabel();
 
+		URI datatype = lit.getDatatype();
+
+		if (XMLSchema.INTEGER.equals(datatype) || XMLSchema.DECIMAL.equals(datatype)
+				|| XMLSchema.DOUBLE.equals(datatype))
+		{
+			try {
+				writer.write(XMLDatatypeUtil.normalize(label, datatype));
+				return; // done
+			}
+			catch (IllegalArgumentException e) {
+				// not a valid numeric typed literal. ignore error and write as
+				// quoted string instead.
+			}
+		}
+
 		writer.write("\"");
 
 		writer.write(encodeString(label));
@@ -192,10 +209,9 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 			writer.write(lit.getLanguage());
 		}
 		else if (lit.getDatatype() != null) {
-			// Append the literal's datatype (possibly written as an abbreviated
-			// URI)
+			// Append the literal's datatype
 			writer.write("^^");
-			writeURI(lit.getDatatype());
+			writeURI(datatype);
 		}
 	}
 
