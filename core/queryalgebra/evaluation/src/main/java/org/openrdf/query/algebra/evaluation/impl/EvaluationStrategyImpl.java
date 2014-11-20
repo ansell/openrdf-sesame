@@ -671,31 +671,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		};
 
-		/*
-		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
-
-		public boolean hasNext()
-		throws QueryEvaluationException
-		{
-		return iter.hasNext();
-		}
-
-		public BindingSet next()
-		throws QueryEvaluationException
-		{
-		final QueryBindingSet result = new QueryBindingSet(b);
-		result.addAll(iter.next());
-		return result;
-		}
-
-		public void remove()
-		throws QueryEvaluationException
-		{
-		iter.remove();
-		}
-		};
-		*/
-
 		return result;
 	}
 
