@@ -1003,16 +1003,19 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("	VALUES (?o) { (:b) }\n");
 		query.append("}\n");
 	
+		ValueFactory vf = conn.getValueFactory();
+		final URI a = vf.createURI("http://example.org/a");
+		final URI b = vf.createURI("http://example.org/b");
+		
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 		
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
 		assertTrue(result.hasNext());
-		
-		while (result.hasNext()) {
-			BindingSet bs =result.next();
-			System.out.println(bs);
-		}
+		BindingSet bs =result.next();
+		assertFalse("only one result expected", result.hasNext()); 
+		assertEquals(a, bs.getValue("s"));
+		assertEquals(b, bs.getValue("o"));
 	}
 	
 	@Test
