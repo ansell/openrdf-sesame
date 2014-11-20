@@ -17,6 +17,9 @@
     	:sparql11-sequence-01
     	:sparql11-sequence-02
     	:sparql11-sequence-03
+    	:sparql11-sequence-04
+    	:sparql11-sequence-05
+    	:sparql11-sequence-06
     	:sparql11-sequence-07
     	:sparql11-inverse-01
     	:sparql11-inverse-02
@@ -34,6 +37,7 @@
 	   	:sparql11-wildcard-cycles-01
 	   	:sparql11-wildcard-cycles-02
    		:sparql11-wildcard-cycles-03
+   		:sparql11-wildcard-cycles-04
     	:sparql11-nested-01
     	:sparql11-nested-02
     	:sparql11-nested-03
@@ -113,6 +117,21 @@
          mf:action [ qt:query <sparql11-sequence-03.rq> ; qt:data <data-01.ttl> ] ;
          mf:result <sparql11-sequence-03.srx> . 
          
+:sparql11-sequence-04  mf:name  "sparql11-sequence-04" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-sequence-04.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-sequence-04.srx> . 
+         
+:sparql11-sequence-05  mf:name  "sparql11-sequence-05" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-sequence-05.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-sequence-05.srx> . 
+         
+ :sparql11-sequence-06  mf:name  "sparql11-sequence-06" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-sequence-06.rq> ; qt:data <data-02.ttl> ] ;
+         mf:result <sparql11-sequence-06.srx> . 
+         
  :sparql11-sequence-07  mf:name  "sparql11-sequence-07" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-sequence-07.rq> ; qt:data <data-02.ttl> ] ;
@@ -178,6 +197,13 @@
          mf:action [ qt:query <sparql11-wildcard-cycles-03.rq> ; qt:data <data-05.ttl> ] ;
          mf:result <sparql11-wildcard-cycles-03.srx> .
          
+:sparql11-wildcard-cycles-04  mf:name  "sparql11-wildcard-cycles-04" ;
+         rdf:type   mf:QueryEvaluationTest ;
+         mf:action [ qt:query <sparql11-wildcard-cycles-04.rq> ; qt:data <data-06.ttl> ] ;
+         mf:result <sparql11-wildcard-cycles-04.srx> .
+
+
+                                    
 :sparql11-nested-01  mf:name  "sparql11-nested-01" ;
          rdf:type   mf:QueryEvaluationTest ;
          mf:action [ qt:query <sparql11-nested-01.rq> ; qt:data <data-04.ttl> ] ;
