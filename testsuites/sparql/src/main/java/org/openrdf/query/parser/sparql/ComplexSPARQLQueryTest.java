@@ -991,6 +991,29 @@ public abstract class ComplexSPARQLQueryTest {
 		assertEquals(p, n);
 		
 	}
+
+	@Test 
+	public void testSES2136() throws Exception 
+	{
+		loadTestData("/testcases-sparql-1.1-w3c/bindings/data02.ttl");
+		StringBuilder query = new StringBuilder();
+		query.append("PREFIX : <http://example.org/>\n");
+		query.append("SELECT ?s ?o { \n"); 
+		query.append(" { SELECT * WHERE { ?s ?p ?o . } }\n");
+		query.append("	VALUES (?o) { (:b) }\n");
+		query.append("}\n");
+	
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		while (result.hasNext()) {
+			BindingSet bs =result.next();
+			System.out.println(bs);
+		}
+	}
 	
 	@Test
 	public void testValuesInOptional()

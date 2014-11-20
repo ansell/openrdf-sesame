@@ -32,6 +32,7 @@ import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.IntersectIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LimitIteration;
+import info.aduna.iteration.LookAheadIteration;
 import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
@@ -640,28 +641,60 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		final QueryBindingSet b = new QueryBindingSet(bindings);
 
-		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
+		result = new LookAheadIteration<BindingSet, QueryEvaluationException>() {
 
-			public boolean hasNext()
+			@Override
+			protected BindingSet getNextElement()
 				throws QueryEvaluationException
 			{
-				return iter.hasNext();
-			}
-
-			public BindingSet next()
-				throws QueryEvaluationException
-			{
-				final QueryBindingSet result = new QueryBindingSet(b);
-				result.addAll(iter.next());
+				QueryBindingSet result = null;
+				if (iter.hasNext()) {
+					result = new QueryBindingSet(b);
+					final BindingSet assignedBindings = iter.next();
+					for (String name : assignedBindings.getBindingNames()) {
+						final Binding assignedBinding = assignedBindings.getBinding(name);
+						if (assignedBinding != null) { // can be null if set to UNDEF
+							// check that the binding assignment does not overwrite
+							// existing bindings.
+							if (b.hasBinding(name)) {
+								// if values are not equal there is no compatible merge
+								if (!assignedBinding.getValue().equals(b.getValue(name))) {
+									return null;
+								}
+							}
+							result.addBinding(assignedBinding);
+						}
+					}
+				}
 				return result;
 			}
 
-			public void remove()
-				throws QueryEvaluationException
-			{
-				iter.remove();
-			}
 		};
+
+		/*
+		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
+
+		public boolean hasNext()
+		throws QueryEvaluationException
+		{
+		return iter.hasNext();
+		}
+
+		public BindingSet next()
+		throws QueryEvaluationException
+		{
+		final QueryBindingSet result = new QueryBindingSet(b);
+		result.addAll(iter.next());
+		return result;
+		}
+
+		public void remove()
+		throws QueryEvaluationException
+		{
+		iter.remove();
+		}
+		};
+		*/
 
 		return result;
 	}
