@@ -186,7 +186,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 		URI datatype = lit.getDatatype();
 
 		if (XMLSchema.INTEGER.equals(datatype) || XMLSchema.DECIMAL.equals(datatype)
-				|| XMLSchema.DOUBLE.equals(datatype) || XMLSchema.BOOLEAN.equals(datatype))
+				|| XMLSchema.DOUBLE.equals(datatype))
 		{
 			try {
 				writer.write(XMLDatatypeUtil.normalize(label, datatype));

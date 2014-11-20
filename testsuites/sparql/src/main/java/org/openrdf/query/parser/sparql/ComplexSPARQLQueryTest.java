@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
 
@@ -63,7 +64,6 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.Rio;
 
 /**
  * A set of compliance tests on SPARQL query functionality which can not be
@@ -794,6 +794,48 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES1685propPathSameVar()
+		throws Exception
+	{
+		final String queryStr = "PREFIX : <urn:> SELECT ?x WHERE {?x :p+ ?x}";
+
+		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . :b :p :a ."), "", RDFFormat.TURTLE);
+
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
+		TupleQueryResult result = query.evaluate();
+
+		assertNotNull(result);
+
+		int count = 0;
+		while (result.hasNext()) {
+			result.next();
+			count++;
+		}
+		// result should be both a and b.
+		assertEquals(2, count);
+	}
+
+	@Test
+	public void testSES2104ConstructBGPSameURI()
+		throws Exception
+	{
+		final String queryStr = "PREFIX : <urn:> CONSTRUCT {:x :p :x } WHERE {} ";
+
+		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . "), "", RDFFormat.TURTLE);
+
+		final URI x = conn.getValueFactory().createURI("urn:x");
+		final URI p = conn.getValueFactory().createURI("urn:p");
+
+		GraphQuery query = conn.prepareGraphQuery(QueryLanguage.SPARQL, queryStr);
+		Model result = QueryResults.asModel(query.evaluate());
+
+		assertNotNull(result);
+		assertFalse(result.isEmpty());
+		assertTrue(result.contains(x, p, x));
+
+	}
+
+	@Test
 	public void testSES1898LeftJoinSemantics2()
 		throws Exception
 	{
@@ -906,6 +948,50 @@ public abstract class ComplexSPARQLQueryTest {
 		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
 	}
 
+	@Test
+	public void testSES2121URIFunction() throws Exception {
+		String query = "SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		BindingSet bs = result.next();
+		URI uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for invalid URI should be unbound", uri == null);
+		
+		query = "BASE <http://example.org/> SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		bs = result.next();
+		uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for valid URI reference should be bound", uri != null);
+	}
+	
+	@Test
+	public void testSES869ValueOfNow() 
+	throws Exception 
+	{
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT ?p ( NOW() as ?n ) { BIND (NOW() as ?p ) }" );
+		
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+		
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		
+		BindingSet bs = result.next();
+		Value p = bs.getValue("p");
+		Value n = bs.getValue("n");
+		
+		assertNotNull(p);
+		assertNotNull(n);
+		assertEquals(p, n);
+		
+	}
+	
 	@Test
 	public void testValuesInOptional()
 		throws Exception

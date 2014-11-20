@@ -31,6 +31,7 @@ import static org.openrdf.rio.binary.BinaryRDFConstants.URI_VALUE;
 import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_DECL;
 import static org.openrdf.rio.binary.BinaryRDFConstants.VALUE_REF;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +60,8 @@ public class BinaryRDFParser extends RDFParserBase {
 
 	private DataInputStream in;
 
+	private byte[] buf = null;
+
 	public RDFFormat getRDFFormat() {
 		return RDFFormat.BINARY;
 	}
@@ -76,7 +79,7 @@ public class BinaryRDFParser extends RDFParserBase {
 			throw new IllegalArgumentException("Input stream must not be null");
 		}
 
-		this.in = new DataInputStream(in);
+		this.in = new DataInputStream(new BufferedInputStream(in));
 
 		// Check magic number
 		byte[] magicNumber = IOUtil.readBytes(in, MAGIC_NUMBER.length);
@@ -278,10 +281,12 @@ public class BinaryRDFParser extends RDFParserBase {
 		throws IOException
 	{
 		int stringLength = in.readInt();
-		char[] cArray = new char[stringLength];
-		for (int i = 0; i < stringLength; i++) {
-			cArray[i] = in.readChar();
+		int stringBytes = stringLength << 1;
+		if (buf == null || buf.length < stringBytes) {
+			// Allocate what we need plus some extra space
+			buf = new byte[stringBytes << 1];
 		}
-		return new String(cArray);
+		in.readFully(buf, 0, stringBytes);
+		return new String(buf, 0, stringBytes, "UTF-16BE");
 	}
 }

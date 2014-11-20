@@ -274,6 +274,18 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
+	public void testAddStatementWithContext()
+		throws Exception
+	{
+		Statement statement = vf.createStatement(alice, name, nameAlice, context1);
+		testCon.add(statement);
+
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(statement, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false, context1));
+	}
+
+	@Test
 	public void testAddLiteralWithNewline()
 		throws Exception
 	{
@@ -296,7 +308,6 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon2.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
 	}
 
-
 	@Test
 	@Ignore("this test is no longer generally applicable, since the outcome depends on the transaction isolation level selected by the store")
 	public void testTransactionIsolationForRead()
@@ -318,6 +329,18 @@ public abstract class RepositoryConnectionTest {
 				assertFalse(
 						"Should not be able to see uncommitted statement on separate connection inside transaction",
 						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+				String query = "CONSTRUCT WHERE { <" + OWL.CLASS + "> <" + RDFS.COMMENT + ">  ?obj . }";
+				GraphQueryResult queryResult = testCon2.prepareGraphQuery(QueryLanguage.SPARQL, query).evaluate();
+				try {
+					assertFalse(
+							"Should not be able to see uncommitted statement on separate connection inside transaction",
+							queryResult.hasNext());
+				}
+				finally {
+					queryResult.close();
+				}
+
 			}
 			finally {
 				testCon2.rollback();

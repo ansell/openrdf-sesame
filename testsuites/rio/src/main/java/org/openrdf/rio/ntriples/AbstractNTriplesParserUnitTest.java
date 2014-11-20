@@ -385,5 +385,52 @@ public abstract class AbstractNTriplesParserUnitTest {
 		assertEquals(12, createRDFParser().getSupportedSettings().size());
 	}
 
+    @Test
+    public void testUriWithSpaceShouldFailToParse()
+            throws Exception
+    {
+        RDFParser ntriplesParser = createRDFParser();
+        Model model = new LinkedHashModel();
+        ntriplesParser.setRDFHandler(new StatementCollector(model));
+
+        String nt = "<http://example/ space> <http://example/p> <http://example/o> .";
+
+        try {
+            ntriplesParser.parse(new StringReader(nt), NTRIPLES_TEST_URL);
+            fail("Should have failed to parse invalid N-Triples uri with space");
+        }
+        catch (RDFParseException ignored) {
+        }
+
+        assertEquals(0, model.size());
+        assertEquals(0, model.subjects().size());
+        assertEquals(0, model.predicates().size());
+        assertEquals(0, model.objects().size());
+    }
+
+    @Test
+    public void testUriWithEscapeCharactersShouldFailToParse()
+            throws Exception
+    {
+        RDFParser ntriplesParser = createRDFParser();
+        Model model = new LinkedHashModel();
+        ntriplesParser.setRDFHandler(new StatementCollector(model));
+
+        String nt = "<http://example/\\n> <http://example/p> <http://example/o> .";
+
+        try {
+            ntriplesParser.parse(new StringReader(nt), NTRIPLES_TEST_URL);
+            fail("Should have failed to parse invalid N-Triples uri with space");
+        }
+        catch (RDFParseException ignored) {
+        }
+
+        assertEquals(0, model.size());
+        assertEquals(0, model.subjects().size());
+        assertEquals(0, model.predicates().size());
+        assertEquals(0, model.objects().size());
+    }
+
 	protected abstract RDFParser createRDFParser();
 }
+

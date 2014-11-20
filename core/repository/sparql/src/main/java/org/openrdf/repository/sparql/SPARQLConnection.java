@@ -687,14 +687,14 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					}
 					qb.append("    GRAPH <" + namedGraph + "> { \n");
 				}
-				createDataBody(qb, statements);
-				if (context != null && context instanceof URI) {
+				createDataBody(qb, statements, true);
+				if (context != null) {
 					qb.append(" } \n");
 				}
 			}
 		}
 		else {
-			createDataBody(qb, statements);
+			createDataBody(qb, statements, false);
 		}
 		qb.append("}");
 
@@ -717,22 +717,37 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					}
 					qb.append("    GRAPH <" + namedGraph + "> { \n");
 				}
-				createDataBody(qb, statements);
-				if (context != null && context instanceof URI) {
+				createDataBody(qb, statements, true);
+				if (context != null) {
 					qb.append(" } \n");
 				}
 			}
 		}
 		else {
-			createDataBody(qb, statements);
+			createDataBody(qb, statements, false);
 		}
 		qb.append("}");
 
 		return qb.toString();
 	}
 
-	private void createDataBody(StringBuilder qb, Iterable<? extends Statement> statements) {
+	private void createDataBody(StringBuilder qb, Iterable<? extends Statement> statements,
+			boolean ignoreContext)
+	{
 		for (Statement st : statements) {
+			final Resource context = st.getContext();
+			if (!ignoreContext) {
+				if (context != null) {
+					String namedGraph = context.stringValue();
+					if (context instanceof BNode) {
+						// SPARQL does not allow blank nodes as named graph
+						// identifiers, so we need to skolemize
+						// the blank node id.
+						namedGraph = "urn:nodeid:" + context.stringValue();
+					}
+					qb.append("    GRAPH <" + namedGraph + "> { \n");
+				}
+			}
 			if (st.getSubject() instanceof BNode) {
 				qb.append("_:" + st.getSubject().stringValue() + " ");
 			}
@@ -764,6 +779,10 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 				qb.append("<" + st.getObject().stringValue() + "> ");
 			}
 			qb.append(". \n");
+			
+			if (!ignoreContext && context != null) {
+				qb.append("    }\n");
+			}
 		}
 	}
 

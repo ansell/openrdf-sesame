@@ -333,6 +333,9 @@ public class ParsedURI implements java.lang.Cloneable {
 			if (relURI._path.startsWith("/")) {
 				path = relURI._path;
 			}
+			else if (relURI._path.length() == 0) {
+				path = this._path;
+			}
 			else {
 				// RFC, step 6:
 				path = this._path;
