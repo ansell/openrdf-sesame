@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,7 +119,7 @@ public class RDFInserter extends RDFHandlerBase {
 	 */
 	public void enforceContext(Resource... contexts) {
 		OpenRDFUtil.verifyContextNotNull(contexts);
-		this.contexts = contexts;
+		this.contexts = Arrays.copyOf(contexts, contexts.length);
 	}
 
 	/**
@@ -141,7 +142,7 @@ public class RDFInserter extends RDFHandlerBase {
 	 *         contexts is enforced.
 	 */
 	public Resource[] getContexts() {
-		return contexts;
+		return Arrays.copyOf(contexts, contexts.length);
 	}
 
 	@Override
