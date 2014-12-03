@@ -25,12 +25,12 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
+import info.aduna.iteration.Iteration;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.OpenRDFUtil;
@@ -43,6 +43,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -68,14 +69,11 @@ import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
 import org.openrdf.repository.sparql.query.SPARQLTupleQuery;
 import org.openrdf.repository.sparql.query.SPARQLUpdate;
-import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.repository.util.RDFLoader;
-import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -86,6 +84,8 @@ import org.openrdf.rio.helpers.StatementCollector;
 public class SPARQLConnection extends RepositoryConnectionBase {
 
 	private static final String EVERYTHING = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }";
+	
+	private static final String EVERYTHING_WITH_GRAPH = "SELECT * WHERE {  ?s ?p ?o . OPTIONAL { GRAPH ?ctx { ?s ?p ?o } } }";
 
 	private static final String SOMETHING = "ASK { ?s ?p ?o }";
 
@@ -94,9 +94,16 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	private StringBuffer sparqlTransaction;
 
 	private Object transactionLock = new Object();
+	
+	private final boolean quadMode;
 
 	public SPARQLConnection(SPARQLRepository repository) {
+		this(repository, false);	// in triple mode by default
+	}
+	
+	public SPARQLConnection(SPARQLRepository repository, boolean quadMode) {
 		super(repository);
+		this.quadMode = quadMode;
 	}
 
 	@Override
@@ -188,6 +195,20 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		try {
+			if (isQuadMode()) {
+				TupleQuery tupleQuery = prepareTupleQuery(SPARQL, EVERYTHING_WITH_GRAPH);
+				setBindings(tupleQuery, subj, pred, obj, contexts);
+				tupleQuery.setIncludeInferred(includeInferred);
+				TupleQueryResult qRes = tupleQuery.evaluate();
+				return new RepositoryResult<Statement>( 
+						new ExceptionConvertingIteration<Statement, RepositoryException>(
+								toStatementIteration(qRes, subj, pred, obj)) {
+							@Override
+							protected RepositoryException convert(Exception e) {
+								return new RepositoryException(e);
+							}
+						});
+			}
 			if (subj != null && pred != null && obj != null) {
 				if (hasStatement(subj, pred, obj, includeInferred, contexts)) {
 					Statement st = new StatementImpl(subj, pred, obj);
@@ -915,4 +936,46 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		}
 		qb.append(". \n");
 	}
+	
+	/**
+	 * Shall graph information also be retrieved, 
+	 * e.g. for {@link #getStatements(Resource, URI, Value, boolean, Resource...)
+	 * 
+	 * @return
+	 */
+	protected boolean isQuadMode() {
+		return quadMode;
+	}
+	
+	/**
+	 * Converts a {@link TupleQueryResult} resulting from the {@link #EVERYTHING_WITH_GRAPH}
+	 * to a statement by using the respective values from the {@link BindingSet} or (if
+	 * provided) the ones from the arguments.
+	 * 
+	 * @param iter the {@link TupleQueryResult}
+	 * @param subj the subject {@link Resource} used as input or <code>null</code> if wildcard was used
+	 * @param pred the predicate {@link URI} used as input or <code>null</code> if wildcard was used
+	 * @param obj the object {@link Value} used as input or <code>null</code> if wildcard was used
+	 * 
+	 * @return the converted iteration
+	 */
+	protected Iteration<Statement, QueryEvaluationException> toStatementIteration(TupleQueryResult iter, final Resource subj, final URI pred, final Value obj) {
+		
+		return new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(iter) {
+			
+			@Override
+			protected Statement convert(BindingSet b) throws QueryEvaluationException {
+				
+				Resource s = subj==null ? (Resource)b.getValue("s") : subj;
+				URI p = pred==null ? (URI)b.getValue("p") : pred;
+				Value o = obj==null ? b.getValue("o") : obj;
+				Resource ctx = (Resource)b.getValue("ctx");
+				
+				return ValueFactoryImpl.getInstance().createStatement(s, p, o, ctx);
+			}
+			
+		};
+	}
+	
+
 }

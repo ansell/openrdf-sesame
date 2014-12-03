@@ -20,11 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import info.aduna.iteration.Iterations;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Statement;
@@ -179,6 +184,39 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		// TODO see SES-1776
 	}
 
+	@Test
+	public void testGetStatementsContextHandling()
+		throws Exception
+	{
+		// enable quad mode
+		((SPARQLRepository)testRepository).enableQuadMode(true);
+		
+		testCon.clear();
+
+		testCon.begin();
+		testCon.add(alice, name, nameAlice, context1);
+		testCon.add(bob, name, nameBob);
+		testCon.commit();
+
+		List<Statement> res;
+		
+		// test 1: alice statement should have context 1
+		res = Iterations.asList(testCon.getStatements(alice, null, null, false));
+		Assert.assertEquals(1, res.size());
+		Assert.assertEquals(context1, res.iterator().next().getContext());
+		
+		// test 2: bob statement should have default named graph
+		res = Iterations.asList(testCon.getStatements(bob, null, null, false));
+		Assert.assertEquals(1, res.size());
+		Assert.assertEquals(null, res.iterator().next().getContext());
+		
+		// test 3: bound statement should fetch context
+		res = Iterations.asList(testCon.getStatements(alice, name, nameAlice, false));
+		Assert.assertEquals(1, res.size());
+		Assert.assertEquals(context1, res.iterator().next().getContext());		
+		
+	}
+	
 	@Override
 	@Ignore
 	public void testGetStatementsInSingleContext()
