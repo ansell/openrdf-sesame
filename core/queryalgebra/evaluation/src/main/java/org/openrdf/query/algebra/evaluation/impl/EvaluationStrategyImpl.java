@@ -657,12 +657,16 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 							// check that the binding assignment does not overwrite
 							// existing bindings.
 							if (b.hasBinding(name)) {
-								// if values are not equal there is no compatible merge
 								if (!assignedBinding.getValue().equals(b.getValue(name))) {
+									// if values are not equal there is no compatible
+									// merge and we should return no next element.
 									return null;
 								}
 							}
-							result.addBinding(assignedBinding);
+							else {
+								// we are not overwriting an existing binding.
+								result.addBinding(assignedBinding);
+							}
 						}
 					}
 				}
