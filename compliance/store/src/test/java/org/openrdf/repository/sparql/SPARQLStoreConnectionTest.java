@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -189,7 +191,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		// enable quad mode
-		((SPARQLRepository)testRepository).enableQuadMode(true);
+		enableQuadModeOnConnection((SPARQLConnection)testCon);
 		
 		testCon.clear();
 
@@ -215,6 +217,30 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		Assert.assertEquals(1, res.size());
 		Assert.assertEquals(context1, res.iterator().next().getContext());		
 		
+	}
+	
+	/**
+	 * Enable the quadMode on the given connection. This is done
+	 * via reflection here as the test setup already creates the
+	 * repository and connection and we do not have a chance to
+	 * set the mode easily inside the test (as quadMode is an
+	 * immutable field of the connection). 
+	 * 
+	 * Note: this is only done such that we can reuse the test
+	 * infrastructure of the base class.
+	 */
+	private void enableQuadModeOnConnection(SPARQLConnection con)
+		throws Exception
+	{
+		Field quadModeField = SPARQLConnection.class.getDeclaredField("quadMode");
+		quadModeField.setAccessible(true);
+
+		// remove final modifier from field
+		Field modifiersField = Field.class.getDeclaredField("modifiers");
+		modifiersField.setAccessible(true);
+		modifiersField.setInt(quadModeField, quadModeField.getModifiers() & ~Modifier.FINAL);
+
+		quadModeField.set(con, true);
 	}
 	
 	@Override
