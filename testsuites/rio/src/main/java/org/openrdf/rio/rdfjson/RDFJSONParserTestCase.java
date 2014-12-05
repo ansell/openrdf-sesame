@@ -27,7 +27,7 @@ import junit.framework.TestSuite;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -243,7 +243,7 @@ public abstract class RDFJSONParserTestCase {
 				in.close();
 
 				// Check equality of the two models
-				if (!ModelUtil.equals(inputCollection, outputCollection)) {
+				if (!Models.equals(inputCollection, outputCollection)) {
 					System.err.println("===models not equal===");
 					System.err.println("Expected: " + outputCollection);
 					System.err.println("Actual  : " + inputCollection);

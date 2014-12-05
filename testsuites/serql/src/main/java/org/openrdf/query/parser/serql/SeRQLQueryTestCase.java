@@ -43,7 +43,7 @@ import info.aduna.iteration.Iterations;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.QueryLanguage;
@@ -152,7 +152,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		discardRepository(expectedResultRep);
 
 		// Compare query result to expected data
-		if (!ModelUtil.equals(actualStatements, expectedStatements)) {
+		if (!Models.equals(actualStatements, expectedStatements)) {
 			// Found differences between expected and actual results
 			StringBuilder message = new StringBuilder(128);
 

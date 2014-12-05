@@ -32,7 +32,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
@@ -329,7 +329,7 @@ public class CustomTurtleParserTest {
 		assertFalse(statementCollector.getStatements().isEmpty());
 		assertEquals(5, statementCollector.getStatements().size());
 
-		ModelUtil.equals(statementCollector.getStatements(), Rio.parse(
+		Models.equals(statementCollector.getStatements(), Rio.parse(
 				this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.nt"), "",
 				RDFFormat.NTRIPLES));
 	}

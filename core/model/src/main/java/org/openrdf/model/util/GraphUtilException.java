@@ -24,6 +24,7 @@ import org.openrdf.OpenRDFException;
  * 
  * @author Arjohn Kampman
  */
+@Deprecated
 public class GraphUtilException extends OpenRDFException {
 
 	private static final long serialVersionUID = 3886967415616842867L;

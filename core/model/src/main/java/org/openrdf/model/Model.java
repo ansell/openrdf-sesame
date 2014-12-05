@@ -28,6 +28,8 @@ import org.openrdf.model.util.ModelException;
  * 
  * @since 2.7.0
  * @author James Leigh
+ * @see {@link Models} for additional utility functionality in working with
+ *      Models.
  */
 public interface Model extends Graph, Set<Statement>, Serializable {
 

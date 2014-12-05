@@ -34,7 +34,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.ModelException;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 
 /**
  * Provides basic operations that are common to all Models.
@@ -264,7 +264,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		}
 		if (o instanceof Model) {
 			Model model = (Model) o;
-			return ModelUtil.equals(this, model);
+			return Models.isomorphic(this, model);
 		}
 		return false;
 	}

@@ -40,7 +40,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -214,7 +214,7 @@ public abstract class RDFXMLParserTestCase {
 			in.close();
 
 			// Check equality of the two models
-			if (!ModelUtil.equals(inputCollection, outputCollection)) {
+			if (!Models.equals(inputCollection, outputCollection)) {
 				StringBuilder sb = new StringBuilder(1024);
 				sb.append("models not equal\n");
 				sb.append("Expected:\n");

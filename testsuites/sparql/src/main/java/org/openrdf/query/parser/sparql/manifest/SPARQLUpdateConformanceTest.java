@@ -39,7 +39,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -256,7 +256,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	private void compareGraphs(Iterable<? extends Statement> actual, Iterable<? extends Statement> expected)
 		throws Exception
 	{
-		if (!ModelUtil.equals(expected, actual)) {
+		if (!Models.equals(expected, actual)) {
 			StringBuilder message = new StringBuilder(128);
 			message.append("\n============ ");
 			message.append(getName());

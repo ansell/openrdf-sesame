@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
@@ -129,7 +129,7 @@ public class PositiveParserTest extends TestCase {
 			}
 
 			// Check equality of the two models
-			if (!ModelUtil.equals(inputCollection, outputCollection)) {
+			if (!Models.equals(inputCollection, outputCollection)) {
 				System.err.println("===models not equal===");
 				System.err.println("Expected: " + outputCollection);
 				System.err.println("Actual  : " + inputCollection);

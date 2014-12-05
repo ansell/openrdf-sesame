@@ -30,7 +30,7 @@ import org.junit.Test;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -120,7 +120,7 @@ public abstract class InferencingTest {
 
 		// Check whether all expected statements are present in the entailment
 		// closure set.
-		boolean outputEntailed = ModelUtil.isSubset(expectedStatements, entailedStatements);
+		boolean outputEntailed = Models.isSubset(expectedStatements, entailedStatements);
 
 		if (isPositiveTest && !outputEntailed) {
 			File dumpFile = dumpStatements(name,

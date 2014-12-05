@@ -23,6 +23,7 @@ import java.util.Set;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -36,8 +37,11 @@ import org.openrdf.util.iterators.Iterators;
  * convenient form) in the {@link org.openrdf.model.Model} interface, which
  * extends {@link Graph}.
  * 
+ * @deprecated since 2.8.0. Use equivalent functionality in {@link Model} and
+ *             {@link Models} instead.
  * @author Arjohn Kampman
  */
+@Deprecated
 public class GraphUtil {
 
 	/**
@@ -47,7 +51,12 @@ public class GraphUtil {
 	 * extracting the subjects of the matching statements from the returned
 	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
 	 * description of the parameter values.
+	 * 
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#subjects()} instead.
 	 */
+	@Deprecated
 	public static Iterator<Resource> getSubjectIterator(Graph graph, URI pred, Value obj, Resource... contexts)
 	{
 		Iterator<Statement> iter = graph.match(null, pred, obj, contexts);
@@ -71,7 +80,12 @@ public class GraphUtil {
 	 * adding the subjects of the matching statements to a set. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
+	 * 
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#subjects()} instead.
 	 */
+	@Deprecated
 	public static Set<Resource> getSubjects(Graph graph, URI pred, Value obj, Resource... contexts) {
 		Iterator<Resource> iter = getSubjectIterator(graph, pred, obj, contexts);
 		return Iterators.addAll(iter, new LinkedHashSet<Resource>());
@@ -91,7 +105,11 @@ public class GraphUtil {
 	 * @throws GraphUtilException
 	 *         If the statements matched by the specified parameters do not have
 	 *         exactly one unique subject.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#subjectResource()} instead.
 	 */
+	@Deprecated
 	public static Resource getUniqueSubject(Graph graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
@@ -118,7 +136,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getUniqueSubject(Graph, URI, Value, Resource[])} or if its
 	 *         return value is not a URI.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#subjectURI()} instead.
 	 */
+	@Deprecated
 	public static URI getUniqueSubjectURI(Graph graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
@@ -146,7 +168,11 @@ public class GraphUtil {
 	 * @throws GraphUtilException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#subjectResource()} instead.
 	 */
+	@Deprecated
 	public static Resource getOptionalSubject(Graph graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
@@ -174,7 +200,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalSubject(Graph, URI, Value, Resource[])} or if
 	 *         its return value is not a URI.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#subjectURI()} instead.
 	 */
+	@Deprecated
 	public static URI getOptionalSubjectURI(Graph graph, URI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
@@ -195,7 +225,12 @@ public class GraphUtil {
 	 * extracting the objects of the matching statements from the returned
 	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
 	 * description of the parameter values.
+	 * 
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#objects()} instead.
 	 */
+	@Deprecated
 	public static Iterator<Value> getObjectIterator(Graph graph, Resource subj, URI pred, Resource... contexts)
 	{
 		Iterator<Statement> iter = graph.match(subj, pred, null, contexts);
@@ -219,7 +254,12 @@ public class GraphUtil {
 	 * adding the objects of the matching statements to a set. See
 	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
 	 * the parameter values.
+	 * 
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#objects()} instead.
 	 */
+	@Deprecated
 	public static Set<Value> getObjects(Graph graph, Resource subj, URI pred, Resource... contexts) {
 		Iterator<Value> iter = getObjectIterator(graph, subj, pred, contexts);
 		return Iterators.addAll(iter, new LinkedHashSet<Value>());
@@ -239,7 +279,11 @@ public class GraphUtil {
 	 * @throws GraphUtilException
 	 *         If the statements matched by the specified parameters do not have
 	 *         exactly one unique object.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#objectValue()} instead.
 	 */
+	@Deprecated
 	public static Value getUniqueObject(Graph graph, Resource subj, URI pred, Resource... contexts)
 		throws GraphUtilException
 	{
@@ -262,7 +306,12 @@ public class GraphUtil {
 	 * are specified, the (subj, pred) pair will occur exactly once in each
 	 * context, else the (subj, pred) pair will occur exactly once in the entire
 	 * Graph.
+	 * 
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Models#setProperty(Model, Resource, URI, Value, Resource...) }
+	 *             instead.
 	 */
+	@Deprecated
 	public static void setUniqueObject(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
 		Iterator<Statement> iter = graph.match(subj, pred, null, contexts);
 
@@ -284,7 +333,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Resource.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectResource() } instead.
 	 */
+	@Deprecated
 	public static Resource getUniqueObjectResource(Graph graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
@@ -308,7 +361,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a URI.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectURI() } instead.
 	 */
+	@Deprecated
 	public static URI getUniqueObjectURI(Graph graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
@@ -332,7 +389,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Literal.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectLiteral() } instead.
 	 */
+	@Deprecated
 	public static Literal getUniqueObjectLiteral(Graph graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
@@ -360,7 +421,11 @@ public class GraphUtil {
 	 * @throws GraphUtilException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectValue() } instead.
 	 */
+	@Deprecated
 	public static Value getOptionalObject(Graph graph, Resource subj, URI pred, Resource... contexts)
 		throws GraphUtilException
 	{
@@ -388,7 +453,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Resource.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectResource() } instead.
 	 */
+	@Deprecated
 	public static Resource getOptionalObjectResource(Graph graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
@@ -413,7 +482,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a URI.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectURI() } instead.
 	 */
+	@Deprecated
 	public static URI getOptionalObjectURI(Graph graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
@@ -438,7 +511,11 @@ public class GraphUtil {
 	 *         If such an exception is thrown by
 	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
 	 *         its return value is not a Literal.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#objectLiteral() } instead.
 	 */
+	@Deprecated
 	public static Literal getOptionalObjectLiteral(Graph graph, Resource subj, URI pred)
 		throws GraphUtilException
 	{
@@ -477,7 +554,11 @@ public class GraphUtil {
 	 *         <tt>contexts</tt>. See
 	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
 	 *         info.
+	 * @deprecated since 2.8.0. Use
+	 *             {@link Model#remove(Resource, URI, Value, Resource...) }
+	 *             instead.
 	 */
+	@Deprecated
 	public static void remove(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
 		Iterator<Statement> statements = graph.match(subj, pred, obj, contexts);
 		while (statements.hasNext()) {
