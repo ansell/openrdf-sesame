@@ -256,7 +256,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	private void compareGraphs(Iterable<? extends Statement> actual, Iterable<? extends Statement> expected)
 		throws Exception
 	{
-		if (!Models.equals(expected, actual)) {
+		if (!Models.isomorphic(expected, actual)) {
 			StringBuilder message = new StringBuilder(128);
 			message.append("\n============ ");
 			message.append(getName());

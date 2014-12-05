@@ -413,7 +413,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)
 		throws Exception
 	{
-		if (!Models.equals(expectedResult, queryResult)) {
+		if (!Models.isomorphic(expectedResult, queryResult)) {
 			// Don't use RepositoryUtil.difference, it reports incorrect diffs
 			/*
 			 * Collection<? extends Statement> unexpectedStatements =

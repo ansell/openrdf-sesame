@@ -243,7 +243,7 @@ public abstract class RDFJSONParserTestCase {
 				in.close();
 
 				// Check equality of the two models
-				if (!Models.equals(inputCollection, outputCollection)) {
+				if (!Models.isomorphic(inputCollection, outputCollection)) {
 					System.err.println("===models not equal===");
 					System.err.println("Expected: " + outputCollection);
 					System.err.println("Actual  : " + inputCollection);

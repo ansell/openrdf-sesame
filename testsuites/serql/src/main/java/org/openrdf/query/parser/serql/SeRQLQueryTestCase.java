@@ -152,7 +152,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		discardRepository(expectedResultRep);
 
 		// Compare query result to expected data
-		if (!Models.equals(actualStatements, expectedStatements)) {
+		if (!Models.isomorphic(actualStatements, expectedStatements)) {
 			// Found differences between expected and actual results
 			StringBuilder message = new StringBuilder(128);
 

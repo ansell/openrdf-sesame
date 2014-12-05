@@ -329,7 +329,7 @@ public class CustomTurtleParserTest {
 		assertFalse(statementCollector.getStatements().isEmpty());
 		assertEquals(5, statementCollector.getStatements().size());
 
-		Models.equals(statementCollector.getStatements(), Rio.parse(
+		Models.isomorphic(statementCollector.getStatements(), Rio.parse(
 				this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.nt"), "",
 				RDFFormat.NTRIPLES));
 	}

@@ -77,7 +77,7 @@ public class RepositoryUtil {
 			con2.close();
 		}
 
-		return Models.equals(model1, model2);
+		return Models.isomorphic(model1, model2);
 	}
 
 	/**

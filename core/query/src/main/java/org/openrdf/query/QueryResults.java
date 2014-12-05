@@ -245,7 +245,7 @@ public class QueryResults extends Iterations {
 		Set<? extends Statement> graph1 = Iterations.asSet(result1);
 		Set<? extends Statement> graph2 = Iterations.asSet(result1);
 
-		return Models.equals(graph1, graph2);
+		return Models.isomorphic(graph1, graph2);
 	}
 
 	private static boolean matchBindingSets(List<? extends BindingSet> queryResult1,

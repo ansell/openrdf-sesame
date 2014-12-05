@@ -214,7 +214,7 @@ public abstract class RDFXMLParserTestCase {
 			in.close();
 
 			// Check equality of the two models
-			if (!Models.equals(inputCollection, outputCollection)) {
+			if (!Models.isomorphic(inputCollection, outputCollection)) {
 				StringBuilder sb = new StringBuilder(1024);
 				sb.append("models not equal\n");
 				sb.append("Expected:\n");

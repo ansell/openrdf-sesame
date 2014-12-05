@@ -888,7 +888,7 @@ public abstract class AbstractParserHandlingTest {
 			logger.trace("Expected: {}", expectedModel);
 			logger.trace("Actual: {}", testStatements);
 		}
-		assertTrue("Did not find expected statements", Models.equals(expectedModel, testStatements));
+		assertTrue("Did not find expected statements", Models.isomorphic(expectedModel, testStatements));
 	}
 
 	private void assertErrorListener(int expectedWarnings, int expectedErrors, int expectedFatalErrors) {
