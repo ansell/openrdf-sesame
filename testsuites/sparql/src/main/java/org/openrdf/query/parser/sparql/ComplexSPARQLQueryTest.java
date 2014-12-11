@@ -1917,6 +1917,7 @@ public abstract class ComplexSPARQLQueryTest {
 
 	}
 
+	@Test
 	public void testSES2147PropertyPathsWithIdenticalSubsPreds()
 		throws Exception
 	{

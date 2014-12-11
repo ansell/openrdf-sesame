@@ -315,7 +315,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			throw new IllegalArgumentException("value can not be null");
 		}
 
-		String uniqueStringForValue = Integer.toString(value.stringValue().hashCode());
+		String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
 
 		if (value instanceof Literal) {
 			uniqueStringForValue += "-lit";
@@ -461,7 +461,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			// to the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
-				Var var = createAnonVar("-anon-" + anonVarID++);
+				Var var = createAnonVar("_anon-" + anonVarID++);
 
 				// replace occurrence of the operator in the filter expression
 				// with the variable.
@@ -506,7 +506,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Extension extension = new Extension();
 
 				for (AggregateOperator operator : collector.getOperators()) {
-					Var var = createAnonVar("-anon-" + anonVarID++);
+					Var var = createAnonVar("_anon-" + anonVarID++);
 
 					// replace occurrence of the operator in the order condition
 					// with the variable.
@@ -1474,7 +1474,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						Var objVar = mapValueExprToVar(objectList.get(objectList.indexOf(subjVar)));
 						objVarReplacement = new Var[] {
 								objVar,
-								createAnonVar(objVar.getName() + "-" + UUID.randomUUID().toString()) };
+								createAnonVar("_anon-" + UUID.randomUUID().toString()) };
 						objectList.remove(objVar);
 						objectList.add(objVarReplacement[1]);
 					}
@@ -1484,7 +1484,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 				else {
 					// not last element in path.
-					Var nextVar = createAnonVar(subjVar.getName() + startVar.getName() + "-property-set-" + i);
+					Var nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 
 					List<ValueExpr> nextVarList = new ArrayList<ValueExpr>();
 					nextVarList.add(nextVar);
@@ -1516,8 +1516,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					for (ValueExpr object : objectList) {
 						Var objVar = mapValueExprToVar(object);
 						if (objVar.equals(subjVar)) { // see SES-1685
-							Var objVarReplacement = createAnonVar(objVar.getName() + "-"
-									+ UUID.randomUUID().toString());
+							Var objVarReplacement = createAnonVar("_anon-" + UUID.randomUUID().toString());
 							te = handlePathModifiers(scope, startVar, te, objVarReplacement, contextVar, lowerBound,
 									upperBound);
 							SameTerm condition = new SameTerm(objVar, objVarReplacement);
@@ -1532,7 +1531,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				else {
 					// not the last element in the path, introduce an anonymous var
 					// to connect.
-					Var nextVar = createAnonVar(subjVar.getName() + "-nested-" + i);
+					Var nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 
 					pathElement.jjtGetChild(0).jjtAccept(this, startVar);
 
@@ -1565,7 +1564,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						// See SES-1685 we introduce a new var and a SameTerm filter
 						// to avoid problems in cyclic paths
 						if (objVar.equals(subjVar)) {
-							objVar = createAnonVar(objVar.getName() + "-" + UUID.randomUUID().toString());
+							objVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 							replaced = true;
 						}
 						Var endVar = objVar;
@@ -1598,7 +1597,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				else {
 					// not the last element in the path, introduce an anonymous var
 					// to connect.
-					Var nextVar = createAnonVar(subjVar.getName() + predVar.getName() + "-" + i);
+					Var nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 
 					if (invertSequence && startVar.equals(subjVar)) { // first
 																						// element in
@@ -1657,7 +1656,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	private TupleExpr createTupleExprForNegatedPropertySet(NegatedPropertySet nps, int index) {
 		Var subjVar = nps.getSubjectVar();
 
-		Var predVar = createAnonVar("nps-" + subjVar.getName() + "-" + index);
+		Var predVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 		// Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() +
 		// "-" + index);
 
@@ -1829,7 +1828,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				for (long i = 0L; i < length; i++) {
 					if (i < length - 1) {
-						nextVar = createAnonVar(subjVar.getName() + predVar.getName() + "-path-" + length + "-" + i);
+						nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 					}
 					else {
 						nextVar = endVar;
@@ -1852,7 +1851,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Var nextVar = null;
 				for (long i = 0L; i < length; i++) {
 					if (i < length - 1L) {
-						nextVar = createAnonVar(subjVar.getName() + "-expression-path-" + length + "-" + i);
+						nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
 					}
 					else {
 						nextVar = endVar;
