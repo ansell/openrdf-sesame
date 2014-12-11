@@ -235,8 +235,6 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	GraphPattern graphPattern = new GraphPattern();
 
-	private int anonVarID = 1;
-
 	// private Map<ValueConstant, Var> mappedValueConstants = new
 	// HashMap<ValueConstant, Var>();
 
@@ -315,6 +313,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			throw new IllegalArgumentException("value can not be null");
 		}
 
+		// We use toHexString to get a more compact stringrep.
 		String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
 
 		if (value instanceof Literal) {
@@ -337,14 +336,20 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			uniqueStringForValue += "-uri";
 		}
 
-		Var var = createAnonVar("_const-" + uniqueStringForValue);
+		Var var = new Var("_const-" + uniqueStringForValue);
 		var.setConstant(true);
+		var.setAnonymous(true);
 		var.setValue(value);
 		return var;
 	}
 
-	private Var createAnonVar(String varName) {
-		Var var = new Var(varName);
+	/**
+	 * Creates an anonymous Var with a unique, randomly generated, variable name.
+	 * 
+	 * @return an anonymous Var with a unique, randomly generated, variable name
+	 */
+	private Var createAnonVar() {
+		final Var var = new Var("_anon-" + UUID.randomUUID().toString());
 		var.setAnonymous(true);
 		return var;
 	}
@@ -461,7 +466,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			// to the group
 			Extension extension = new Extension();
 			for (AggregateOperator operator : collector.getOperators()) {
-				Var var = createAnonVar("_anon-" + anonVarID++);
+				Var var = createAnonVar();
 
 				// replace occurrence of the operator in the filter expression
 				// with the variable.
@@ -506,7 +511,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Extension extension = new Extension();
 
 				for (AggregateOperator operator : collector.getOperators()) {
-					Var var = createAnonVar("_anon-" + anonVarID++);
+					Var var = createAnonVar();
 
 					// replace occurrence of the operator in the order condition
 					// with the variable.
@@ -600,7 +605,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							ValueExpr expr = (ValueExpr)operator.getParentNode();
 
 							Extension anonymousExtension = new Extension();
-							Var anonVar = createAnonVar("_anon_" + anonVarID++);
+							Var anonVar = createAnonVar();
 							expr.replaceChildNode(operator, anonVar);
 							anonymousExtension.addElement(new ExtensionElem(operator, anonVar.getName()));
 
@@ -1112,7 +1117,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			}
 			else {
 				aliased = true;
-				Var v = createAnonVar("_anon_" + node.getName());
+				Var v = createAnonVar();
 				name = v.getName();
 			}
 		}
@@ -1472,9 +1477,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				if (i == pathLength - 1) {
 					if (objectList.contains(subjVar)) { // See SES-1685
 						Var objVar = mapValueExprToVar(objectList.get(objectList.indexOf(subjVar)));
-						objVarReplacement = new Var[] {
-								objVar,
-								createAnonVar("_anon-" + UUID.randomUUID().toString()) };
+						objVarReplacement = new Var[] { objVar, createAnonVar() };
 						objectList.remove(objVar);
 						objectList.add(objVarReplacement[1]);
 					}
@@ -1484,7 +1487,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				}
 				else {
 					// not last element in path.
-					Var nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
+					Var nextVar = createAnonVar();
 
 					List<ValueExpr> nextVarList = new ArrayList<ValueExpr>();
 					nextVarList.add(nextVar);
@@ -1516,7 +1519,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					for (ValueExpr object : objectList) {
 						Var objVar = mapValueExprToVar(object);
 						if (objVar.equals(subjVar)) { // see SES-1685
-							Var objVarReplacement = createAnonVar("_anon-" + UUID.randomUUID().toString());
+							Var objVarReplacement = createAnonVar();
 							te = handlePathModifiers(scope, startVar, te, objVarReplacement, contextVar, lowerBound,
 									upperBound);
 							SameTerm condition = new SameTerm(objVar, objVarReplacement);
@@ -1531,7 +1534,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				else {
 					// not the last element in the path, introduce an anonymous var
 					// to connect.
-					Var nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
+					Var nextVar = createAnonVar();
 
 					pathElement.jjtGetChild(0).jjtAccept(this, startVar);
 
@@ -1564,7 +1567,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						// See SES-1685 we introduce a new var and a SameTerm filter
 						// to avoid problems in cyclic paths
 						if (objVar.equals(subjVar)) {
-							objVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
+							objVar = createAnonVar();
 							replaced = true;
 						}
 						Var endVar = objVar;
@@ -1597,7 +1600,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				else {
 					// not the last element in the path, introduce an anonymous var
 					// to connect.
-					Var nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
+					Var nextVar = createAnonVar();
 
 					if (invertSequence && startVar.equals(subjVar)) { // first
 																						// element in
@@ -1656,9 +1659,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	private TupleExpr createTupleExprForNegatedPropertySet(NegatedPropertySet nps, int index) {
 		Var subjVar = nps.getSubjectVar();
 
-		Var predVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
-		// Var predVarInverse = createAnonVar("nps-inverse-" + subjVar.getName() +
-		// "-" + index);
+		Var predVar = createAnonVar();
 
 		ValueExpr filterCondition = null;
 		ValueExpr filterConditionInverse = null;
@@ -1828,7 +1829,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 				for (long i = 0L; i < length; i++) {
 					if (i < length - 1) {
-						nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
+						nextVar = createAnonVar();
 					}
 					else {
 						nextVar = endVar;
@@ -1851,7 +1852,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				Var nextVar = null;
 				for (long i = 0L; i < length; i++) {
 					if (i < length - 1L) {
-						nextVar = createAnonVar("_anon-" + UUID.randomUUID().toString());
+						nextVar = createAnonVar();
 					}
 					else {
 						nextVar = endVar;
@@ -1980,7 +1981,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Var visit(ASTBlankNodePropertyList node, Object data)
 		throws VisitorException
 	{
-		Var bnodeVar = createAnonVar(node.getVarName());
+		Var bnodeVar = createAnonVar();
 		super.visit(node, bnodeVar);
 		return bnodeVar;
 	}
@@ -1989,8 +1990,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public Var visit(ASTCollection node, Object data)
 		throws VisitorException
 	{
-		String listVarName = node.getVarName();
-		Var rootListVar = createAnonVar(listVarName);
+		Var rootListVar = createAnonVar();
 
 		Var listVar = rootListVar;
 
@@ -2006,7 +2006,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				nextListVar = createConstVar(RDF.NIL);
 			}
 			else {
-				nextListVar = createAnonVar(listVarName + "-" + (i + 1));
+				nextListVar = createAnonVar();
 			}
 
 			graphPattern.addRequiredSP(listVar, createConstVar(RDF.REST), nextListVar);
