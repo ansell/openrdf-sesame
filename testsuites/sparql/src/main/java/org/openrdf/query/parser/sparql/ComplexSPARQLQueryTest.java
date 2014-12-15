@@ -949,7 +949,9 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
-	public void testSES2121URIFunction() throws Exception {
+	public void testSES2121URIFunction()
+		throws Exception
+	{
 		String query = "SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 		TupleQueryResult result = tq.evaluate();
@@ -958,7 +960,7 @@ public abstract class ComplexSPARQLQueryTest {
 		BindingSet bs = result.next();
 		URI uri = (URI)bs.getValue("uri");
 		assertTrue("uri result for invalid URI should be unbound", uri == null);
-		
+
 		query = "BASE <http://example.org/> SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
 		tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 		result = tq.evaluate();
@@ -968,56 +970,57 @@ public abstract class ComplexSPARQLQueryTest {
 		uri = (URI)bs.getValue("uri");
 		assertTrue("uri result for valid URI reference should be bound", uri != null);
 	}
-	
+
 	@Test
-	public void testSES869ValueOfNow() 
-	throws Exception 
+	public void testSES869ValueOfNow()
+		throws Exception
 	{
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT ?p ( NOW() as ?n ) { BIND (NOW() as ?p ) }" );
-		
+		query.append("SELECT ?p ( NOW() as ?n ) { BIND (NOW() as ?p ) }");
+
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		
+
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
 		assertTrue(result.hasNext());
-		
+
 		BindingSet bs = result.next();
 		Value p = bs.getValue("p");
 		Value n = bs.getValue("n");
-		
+
 		assertNotNull(p);
 		assertNotNull(n);
 		assertEquals(p, n);
-		
+
 	}
 
-	@Test 
-	public void testSES2136() throws Exception 
+	@Test
+	public void testSES2136()
+		throws Exception
 	{
 		loadTestData("/testcases-sparql-1.1-w3c/bindings/data02.ttl");
 		StringBuilder query = new StringBuilder();
 		query.append("PREFIX : <http://example.org/>\n");
-		query.append("SELECT ?s ?o { \n"); 
+		query.append("SELECT ?s ?o { \n");
 		query.append(" { SELECT * WHERE { ?s ?p ?o . } }\n");
 		query.append("	VALUES (?o) { (:b) }\n");
 		query.append("}\n");
-	
+
 		ValueFactory vf = conn.getValueFactory();
 		final URI a = vf.createURI("http://example.org/a");
 		final URI b = vf.createURI("http://example.org/b");
-		
+
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		
+
 		TupleQueryResult result = tq.evaluate();
 		assertNotNull(result);
 		assertTrue(result.hasNext());
-		BindingSet bs =result.next();
-		assertFalse("only one result expected", result.hasNext()); 
+		BindingSet bs = result.next();
+		assertFalse("only one result expected", result.hasNext());
 		assertEquals(a, bs.getValue("s"));
 		assertEquals(b, bs.getValue("o"));
 	}
-	
+
 	@Test
 	public void testValuesInOptional()
 		throws Exception
@@ -1912,6 +1915,47 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
+	}
+
+	@Test
+	public void testSES2147PropertyPathsWithIdenticalSubsPreds()
+		throws Exception
+	{
+
+		StringBuilder data = new StringBuilder();
+		data.append("<urn:s1> <urn:p> <urn:s2> .\n");
+		data.append("<urn:s2> <urn:p> <urn:s3> .\n");
+		data.append("<urn:s3> <urn:q> <urn:s4> .\n");
+		data.append("<urn:s1> <urn:p> <urn:s5> .\n");
+		data.append("<urn:s5> <urn:q> <urn:s6> .\n");
+
+		conn.begin();
+		conn.add(new StringReader(data.toString()), "", RDFFormat.NTRIPLES);
+		conn.commit();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?x \n");
+		query.append("WHERE { ?x <urn:p>*/<urn:q> <urn:s4> . \n");
+		query.append("        ?x <urn:p>*/<urn:q> <urn:s6> . \n");
+		query.append("} \n");
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+			assertTrue(result.hasNext());
+			
+			Value x = result.next().getValue("x");
+			assertNotNull(x);
+			assertTrue(x instanceof URI);
+			assertEquals("urn:s1", x.stringValue());
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
