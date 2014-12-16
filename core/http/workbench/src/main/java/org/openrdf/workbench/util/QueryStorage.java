@@ -217,7 +217,7 @@ public class QueryStorage {
 					+ queryLanguage.toString());
 		}
 		if (0 != rowsPerPage && 10 != rowsPerPage && 20 != rowsPerPage && 50 != rowsPerPage
-				&& 100 != rowsPerPage)
+				&& 100 != rowsPerPage && 200 != rowsPerPage)
 		{
 			throw new RepositoryException("Illegal value for rows per page: " + rowsPerPage);
 		}
