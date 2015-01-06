@@ -20,7 +20,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Value;
 
 /**
- * An exception thrown by {@link Model} and {@link Models} when specific
+ * An exception thrown by {@link Model} and {@link org.openrdf.model.util.Models Models} when specific
  * conditions are not met.
  * 
  * @author Arjohn Kampman

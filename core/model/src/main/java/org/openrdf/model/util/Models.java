@@ -36,7 +36,7 @@ import org.openrdf.util.iterators.Iterators;
  * @author Jeen Broekstra
  * @author Arjohn Kampman
  * @since 2.8.0
- * @see {@link Model}
+ * @see org.openrdf.model.Model
  */
 public class Models {
 
@@ -54,7 +54,7 @@ public class Models {
 	 *        the model from which to retrieve an object value.
 	 * @return an object value from the given model, or <code>null</code> if no
 	 *         such value exists.
-	 * @see {@link Model#objectValue()}
+	 * @see Model#objectValue()
 	 */
 	public static Value anyObject(Model m) {
 		Value result = null;
@@ -74,7 +74,7 @@ public class Models {
 	 *        the model from which to retrieve an object Literal value.
 	 * @return an object Literal value from the given model, or <code>null</code>
 	 *         if no such value exists.
-	 * @see {@link Model#objectLiteral()}
+	 * @see Model#objectLiteral()
 	 */
 	public static Literal anyObjectLiteral(Model m) {
 		Literal result = null;
@@ -99,7 +99,7 @@ public class Models {
 	 *        the model from which to retrieve an object Resource value.
 	 * @return an object Resource value from the given model, or
 	 *         <code>null</code> if no such value exists.
-	 * @see {@link Model#objectResource() }
+	 * @see Model#objectResource()
 	 */
 	public static Resource anyObjectResource(Model m) {
 		Resource result = null;
@@ -124,7 +124,7 @@ public class Models {
 	 *        the model from which to retrieve an object URI value.
 	 * @return an object URI value from the given model, or <code>null</code> if
 	 *         no such value exists.
-	 * @see {@link Model#objectURI()}
+	 * @see Model#objectURI()
 	 */
 	public static URI anyObjectURI(Model m) {
 		URI result = null;
@@ -149,7 +149,7 @@ public class Models {
 	 *        the model from which to retrieve a subject value.
 	 * @return an subject value from the given model, or <code>null</code> if no
 	 *         such value exists.
-	 * @see {@link Model#subjectResource()}
+	 * @see Model#subjectResource()
 	 */
 	public static Resource anySubject(Model m) {
 		Resource result = null;
@@ -169,7 +169,7 @@ public class Models {
 	 *        the model from which to retrieve a subject URI value.
 	 * @return an subject URI value from the given model, or <code>null</code> if
 	 *         no such value exists.
-	 * @see {@link Model#subjectURI()}
+	 * @see Model#subjectURI()
 	 */
 	public static URI anySubjectURI(Model m) {
 		URI result = null;
@@ -194,7 +194,7 @@ public class Models {
 	 *        the model from which to retrieve a subject BNode value.
 	 * @return a subject BNode value from the given model, or <code>null</code>
 	 *         if no such value exists.
-	 * @see {@link Model#subjectBNode()}
+	 * @see Model#subjectBNode()
 	 */
 	public static BNode anySubjectBNode(Model m) {
 		BNode result = null;
