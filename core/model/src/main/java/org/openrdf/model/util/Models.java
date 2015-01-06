@@ -36,7 +36,7 @@ import org.openrdf.util.iterators.Iterators;
  * @author Jeen Broekstra
  * @author Arjohn Kampman
  * @since 2.8.0
- * @see {@link Model}
+ * @see {@link org.openrdf.model.Model}
  */
 public class Models {
 
