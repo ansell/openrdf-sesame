@@ -25,6 +25,9 @@ import org.openrdf.model.util.ModelException;
  * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s
  * with predictable iteration order. Model is a feature-rich extension of the
  * basic {@link Graph} interface.
+ * <p>
+ * Additional utility functionality for working with Model objects is available
+ * in the {@link org.openrdf.model.Util.Models Models} utility class.
  * 
  * @since 2.7.0
  * @author James Leigh
