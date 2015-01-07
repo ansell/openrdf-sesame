@@ -48,7 +48,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.EARL;
@@ -637,8 +637,8 @@ public abstract class RDFWriterTest {
 			if (storeParsedStatements) {
 				if (model.size() != parsedModel.size()) {
 					if (model.size() < 1000) {
-						boolean originalIsSubset = ModelUtil.isSubset(model, parsedModel);
-						boolean parsedIsSubset = ModelUtil.isSubset(parsedModel, model);
+						boolean originalIsSubset = Models.isSubset(model, parsedModel);
+						boolean parsedIsSubset = Models.isSubset(parsedModel, model);
 						System.out.println("originalIsSubset=" + originalIsSubset);
 						System.out.println("parsedIsSubset=" + parsedIsSubset);
 

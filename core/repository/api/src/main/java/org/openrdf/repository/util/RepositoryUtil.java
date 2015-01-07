@@ -32,7 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -77,7 +77,7 @@ public class RepositoryUtil {
 			con2.close();
 		}
 
-		return ModelUtil.equals(model1, model2);
+		return Models.isomorphic(model1, model2);
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class RepositoryUtil {
 			con2.close();
 		}
 
-		return ModelUtil.isSubset(model1, model2);
+		return Models.isSubset(model1, model2);
 	}
 
 	/**

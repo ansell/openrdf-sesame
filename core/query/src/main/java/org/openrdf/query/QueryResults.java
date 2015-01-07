@@ -37,7 +37,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
@@ -245,7 +245,7 @@ public class QueryResults extends Iterations {
 		Set<? extends Statement> graph1 = Iterations.asSet(result1);
 		Set<? extends Statement> graph2 = Iterations.asSet(result1);
 
-		return ModelUtil.equals(graph1, graph2);
+		return Models.isomorphic(graph1, graph2);
 	}
 
 	private static boolean matchBindingSets(List<? extends BindingSet> queryResult1,

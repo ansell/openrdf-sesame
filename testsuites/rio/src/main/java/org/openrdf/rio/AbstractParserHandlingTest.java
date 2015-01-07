@@ -35,7 +35,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -888,7 +888,7 @@ public abstract class AbstractParserHandlingTest {
 			logger.trace("Expected: {}", expectedModel);
 			logger.trace("Actual: {}", testStatements);
 		}
-		assertTrue("Did not find expected statements", ModelUtil.equals(expectedModel, testStatements));
+		assertTrue("Did not find expected statements", Models.isomorphic(expectedModel, testStatements));
 	}
 
 	private void assertErrorListener(int expectedWarnings, int expectedErrors, int expectedFatalErrors) {
