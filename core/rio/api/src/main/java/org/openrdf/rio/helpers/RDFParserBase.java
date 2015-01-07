@@ -153,7 +153,6 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Methods *
 	 *---------*/
 
-	
 	@Override
 	public void setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
@@ -616,8 +615,8 @@ public abstract class RDFParserBase implements RDFParser {
 	 * This method also throws an {@link RDFParseException} when the given
 	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
-	 * @param msg
-	 *        The message to use for
+	 * @param e
+	 *        The exception whose message will be used for
 	 *        {@link ParseErrorListener#error(String, int, int)} and for
 	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
 	 * @param lineNo
@@ -703,7 +702,7 @@ public abstract class RDFParserBase implements RDFParser {
 	{
 		RDFParserHelper.reportFatalError(e, lineNo, columnNo, getParseErrorListener());
 	}
-	
+
 	private final String createUniqueBNodePrefix() {
 		return "genid-" + UUID.randomUUID().toString().replaceAll("-", "") + "-";
 	}

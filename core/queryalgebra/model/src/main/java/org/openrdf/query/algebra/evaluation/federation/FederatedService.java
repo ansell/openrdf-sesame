@@ -36,7 +36,7 @@ public interface FederatedService {
 
 	/**
 	 * <p>
-	 * Evaluate the provided SPARQL query at this federated service.
+	 * Evaluate the provided SPARQL ASK query at this federated service.
 	 * </p>
 	 * 
 	 * <pre>
@@ -49,8 +49,6 @@ public interface FederatedService {
 	 * @param bindings
 	 *        the bindings serving as additional constraints
 	 * @param baseUri
-	 * @param type
-	 *        the {@link QueryType}, either ASK or SELECT
 	 * @return <code>true</code> if at least one result exists
 	 * @throws QueryEvaluationException
 	 *         If there was an exception generated while evaluating the query.
@@ -64,7 +62,7 @@ public interface FederatedService {
 	 * </p>
 	 * <p>
 	 * <b>Important:</b> The original bindings need to be inserted into the
-	 * result, e.g. via {@link InsertBindingSetCursor}.
+	 * result.
 	 * </p>
 	 * 
 	 * <pre>
@@ -94,8 +92,7 @@ public interface FederatedService {
 	 * <p>
 	 * <b>Contracts:</b>
 	 * <ul>
-	 * <li>The original bindings need to be inserted into the result, e.g. via
-	 * {@link InsertBindingSetCursor}.</li>
+	 * <li>The original bindings need to be inserted into the result</li>
 	 * <li>SILENT service must be dealt with in the method</li>
 	 * </ul>
 	 * <p>

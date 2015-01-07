@@ -18,7 +18,7 @@ package org.openrdf.model.util;
 
 
 /**
- * Utility functions for working with {@link Model}s and other statement collections.
+ * Utility functions for working with {@link org.openrdf.model.Model}s and other statement collections.
  * 
  * @author Jeen Broekstra
  * @deprecated since 2.8.0. Use {@link Models} instead.

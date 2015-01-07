@@ -23,11 +23,12 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
 
 /**
- * An interface for an RDF Storage. RDF Sails can store RDF statements and
- * evaluate queries over them. Statements can be stored in named contexts or in
- * the null context. Contexts can be used to group sets of statements that
- * logically belong together, for example because they come from the same
- * source. Both URIs and bnodes can be used as context identifiers.
+ * Sail (Storage And Inference Layer) is an interface for RDF storage. RDF Sails
+ * can store RDF statements and evaluate queries over them. Statements can be
+ * stored in named contexts or in the null context. Contexts can be used to
+ * group sets of statements that logically belong together, for example because
+ * they come from the same source. Both URIs and blank nodes can be used as
+ * context identifiers.
  * 
  * @author Arjohn Kampman
  */
@@ -123,9 +124,9 @@ public interface Sail {
 	 * Retrieves the default {@link IsolationLevel} level on which transactions
 	 * in this Sail operate.
 	 * 
-	 * @return the {@link IsolationLevel} that will be used with 
-	 *         {@link SailConnection#begin()}, for SAIL connections returned by 
-	 *         {@link #getConnection().
+	 * @return the {@link IsolationLevel} that will be used with
+	 *         {@link SailConnection#begin()}, for SAIL connections returned by
+	 *         {@link #getConnection()}.
 	 * @since 2.8.0
 	 */
 	IsolationLevel getDefaultIsolationLevel();

@@ -123,8 +123,6 @@ public class TurtleUtil {
 	 * [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] |
 	 * [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 	 * 
-	 * @param c
-	 * @return
 	 */
 	public static boolean isPN_CHARS_BASE(int c) {
 		return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >= 0x00D8 && c <= 0x00F6 || c >= 0x00F8
@@ -141,8 +139,6 @@ public class TurtleUtil {
 	 * <p>
 	 * [164s] PN_CHARS_U ::= PN_CHARS_BASE | '_'
 	 * 
-	 * @param c
-	 * @return
 	 */
 	public static boolean isPN_CHARS_U(int c) {
 		return isPN_CHARS_BASE(c) || c == '_';
@@ -156,8 +152,6 @@ public class TurtleUtil {
 	 * [166s] PN_CHARS ::= PN_CHARS_U | '-' | [0-9] | #x00B7 | [#x0300-#x036F] |
 	 * [#x203F-#x2040]
 	 * 
-	 * @param c
-	 * @return
 	 */
 	public static boolean isPN_CHARS(int c) {
 		return isPN_CHARS_U(c) || ASCIIUtil.isNumber(c) || c == '-' || c == 0x00B7 || c >= 0x0300
@@ -296,10 +290,6 @@ public class TurtleUtil {
 		return false;
 	}
 
-	/**
-	 * @param substring
-	 * @return
-	 */
 	public static boolean isPERCENT(String name) {
 		if (name.length() != 3) {
 			return false;

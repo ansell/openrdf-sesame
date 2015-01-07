@@ -631,7 +631,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String)}, adding line number
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting}, adding line number
 	 * information to the error.
 	 */
 	@Override
@@ -681,8 +681,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * substantially. However, you have to watch out for side-effects and convert
 	 * the buffer to a {@link String} before the buffer is reused.
 	 * 
-	 * @param capacityIsIgnored
-	 * @return
+	 * @return a buffer of zero length and non-zero capacity.
 	 */
 	private StringBuilder getBuffer() {
 		buffer.setLength(0);
@@ -698,8 +697,8 @@ public class NTriplesParser extends RDFParserBase {
 	 * However, you have to watch out for side-effects and convert the buffer to
 	 * a {@link String} before the buffer is reused.
 	 * 
-	 * @param capacityIsIgnored
-	 * @return
+	 * @return a buffer of zero length and non-zero capacity, for the use of
+	 *         parsing literal language tags.
 	 */
 	private StringBuilder getLanguageTagBuffer() {
 		languageTagBuffer.setLength(0);
@@ -715,8 +714,8 @@ public class NTriplesParser extends RDFParserBase {
 	 * However, you have to watch out for side-effects and convert the buffer to
 	 * a {@link String} before the buffer is reused.
 	 * 
-	 * @param capacityIsIgnored
-	 * @return
+	 * @return a buffer of zero length and non-zero capacity, for the user of
+	 *         parsing literal datatype URIs.
 	 */
 	private StringBuilder getDatatypeUriBuffer() {
 		datatypeUriBuffer.setLength(0);

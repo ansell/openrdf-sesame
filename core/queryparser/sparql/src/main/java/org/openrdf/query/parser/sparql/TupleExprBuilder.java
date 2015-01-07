@@ -308,7 +308,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	 * name will be derived from the actual value to guarantee uniqueness.
 	 * 
 	 * @param value
-	 * @return
+	 * @return an (anonymous) Var representing a constant value.
 	 */
 	private Var createConstVar(Value value) {
 		if (value == null) {

@@ -426,7 +426,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 *        the query result
 	 * @param highlighter
 	 *        a Highlighter for the query
-	 * @return
+	 * @return a LinkedHashSet containing generated bindings
 	 * @throws SailException
 	 */
 	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, TopDocs hits,

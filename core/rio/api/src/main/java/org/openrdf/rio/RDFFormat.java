@@ -313,8 +313,8 @@ public class RDFFormat extends FileFormat {
 	 * @param fileExt
 	 *        The (default) file extension for the RDF file format, e.g.
 	 *        <tt>rdf</tt> for RDF/XML files.
-	 * @deprecated Use {@link RDFParserRegistry#add(RDFParserFactory)} to insert
-	 *             new parsers into the system.
+	 * @deprecated Use {@link RDFParserRegistry#add} to insert new parsers into
+	 *             the system.
 	 */
 	@Deprecated
 	public static RDFFormat register(String name, String mimeType, String fileExt, Charset charset) {
@@ -326,8 +326,8 @@ public class RDFFormat extends FileFormat {
 	/**
 	 * Registers the specified RDF file format.
 	 * 
-	 * @deprecated Use {@link RDFParserRegistry#add(RDFParserFactory)} to insert
-	 *             new parsers into the system.
+	 * @deprecated Use {@link RDFParserRegistry#add} to insert new parsers into
+	 *             the system.
 	 */
 	@Deprecated
 	public static void register(RDFFormat rdfFormat) {

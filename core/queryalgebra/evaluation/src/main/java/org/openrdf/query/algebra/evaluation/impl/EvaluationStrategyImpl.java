@@ -196,16 +196,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		this.serviceResolver = serviceResolver;
 	}
 
-	/**
-	 * Retrieve the {@link FederatedService} registered for serviceUrl. If there
-	 * is no service registered for serviceUrl, a new
-	 * {@link SPARQLFederatedService} is created and registered.
-	 * 
-	 * @param serviceUrl
-	 * @return
-	 * @throws RepositoryException
-	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
-	 */
 	public FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException
 	{

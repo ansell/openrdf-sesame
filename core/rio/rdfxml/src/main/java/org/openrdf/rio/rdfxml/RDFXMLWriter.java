@@ -482,11 +482,12 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 	 * is necessary because RDF/XML syntax enforces the blank node id is a valid
 	 * NCName.
 	 * 
-	 * @see http://www.w3.org/TR/REC-rdf-syntax/#rdf-id
 	 * @param bNode
 	 *        a blank node identifier
 	 * @return the blank node identifier converted to a form that is a valid
 	 *         NCName.
+	 * @see <a href="http://www.w3.org/TR/REC-rdf-syntax/#rdf-id">section 7.2.34
+	 *      of the RDF/XML Syntax specification</a>
 	 */
 	protected String getValidNodeId(BNode bNode)
 		throws IOException

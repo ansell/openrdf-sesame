@@ -93,7 +93,7 @@
 						</group>
 					 </groups>
 					 <links>
-						<link>http://download.oracle.com/javase/1.6.0/docs/api</link>
+					     <link>http://docs.oracle.com/javase/6/docs/api/</link>
 					 </links>
 				  </configuration>
 				  <reportSets>

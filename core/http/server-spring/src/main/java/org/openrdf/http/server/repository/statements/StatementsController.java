@@ -147,15 +147,6 @@ public class StatementsController extends AbstractController {
 		return result;
 	}
 
-	/**
-	 * @param repository
-	 * @param repositoryCon
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws ServerHTTPException
-	 * @throws ClientHTTPException
-	 */
 	private ModelAndView getSparqlUpdateResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response)
 		throws ServerHTTPException, ClientHTTPException, HTTPException
@@ -300,11 +291,6 @@ public class StatementsController extends AbstractController {
 		}
 	}
 
-	/**
-	 * @param repository
-	 * @param graphURI
-	 * @return
-	 */
 	private URI createURIOrNull(Repository repository, String graphURI) {
 		if ("null".equals(graphURI))
 			return null;

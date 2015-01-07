@@ -591,8 +591,8 @@ public class Rio {
 	}
 
 	/**
-	 * Writes the given single statement to the given {@link OutputStream} in the given
-	 * format.
+	 * Writes the given single statement to the given {@link OutputStream} in the
+	 * given format.
 	 * 
 	 * @param st
 	 *        The statement to be written.
@@ -609,22 +609,21 @@ public class Rio {
 	 *         If no {@link RDFWriter} is available for the specified RDF format.
 	 * @since 2.8.0
 	 */
-	public static void write(Statement st, OutputStream output, RDFFormat dataFormat,
-			WriterConfig settings)
+	public static void write(Statement st, OutputStream output, RDFFormat dataFormat, WriterConfig settings)
 		throws RDFHandlerException
 	{
 		final RDFWriter writer = Rio.createWriter(dataFormat, output);
 		writer.setWriterConfig(settings);
 		write(st, writer);
 	}
-	
+
 	/**
 	 * Writes the given single statement to the given {@link Writer} in the given
 	 * format.
 	 * <p>
 	 * 
-	 * @param Statement
-	 *        A statements to be written.
+	 * @param statement
+	 *        A statement to be written.
 	 * @param output
 	 *        The {@link Writer} to write the statement to.
 	 * @param dataFormat
@@ -646,7 +645,7 @@ public class Rio {
 	 * format.
 	 * <p>
 	 * 
-	 * @param model
+	 * @param statement
 	 *        A statement to be written.
 	 * @param output
 	 *        The {@link Writer} to write the statement to.
@@ -673,7 +672,7 @@ public class Rio {
 	 * Writes the given single statement to the given {@link RDFHandler}.
 	 * <p>
 	 * 
-	 * @param Statement
+	 * @param statement
 	 *        A statement, to be written.
 	 * @throws RDFHandlerException
 	 *         Thrown if there is an error writing the statement.

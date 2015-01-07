@@ -148,11 +148,11 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 	 * 
 	 * @param object
 	 *        The RDF value to serialise
-	 * @param valueArray
-	 *        The JSON Array to serialise the object to
 	 * @param contexts
 	 *        The set of contexts that are relevant to this object, including
 	 *        null contexts as they are found.
+	 * @param jg
+	 *        the {@link JsonGenerator} to write to.
 	 * @throws IOException
 	 * @throws JsonGenerationException
 	 * @throws JSONException

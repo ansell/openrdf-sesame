@@ -358,11 +358,6 @@ public class RepositoryController extends AbstractController {
 		return result;
 	}
 
-	/**
-	 * @param repository
-	 * @param graphURI
-	 * @return
-	 */
 	private URI createURIOrNull(Repository repository, String graphURI) {
 		if ("null".equals(graphURI))
 			return null;
