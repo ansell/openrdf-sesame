@@ -52,13 +52,7 @@ class ConsoleIO {
 		this.appInfo = info;
 	}
 
-	/**
-	 * Reads multiple lines from the input until a line that ends with a '.' is
-	 * read.
-	 */
-	protected String readMultiLineInput()
-		throws IOException
-	{
+	protected String readCommand() throws IOException {
 		String repositoryID = appInfo.getRepositoryID();
 		if (!quiet) {
 			if (repositoryID != null) {
@@ -66,12 +60,26 @@ class ConsoleIO {
 			}
 			write("> ");
 		}
+		String line = input.readLine().trim();
+		if (line.endsWith(".")) {
+			line = line.substring(0, line.length() - 1); 
+		}
+		return line;
+	}
+	
+	/**
+	 * Reads multiple lines from the input until a line that with a '.' on its own is
+	 * read.
+	 */
+	protected String readMultiLineInput()
+		throws IOException
+	{
 		String line = input.readLine();
 		String result = null;
 		if (line != null) {
 			final StringBuilder buf = new StringBuilder(256);
 			buf.append(line);
-			while (line != null && !line.endsWith(".")) {
+			while (line != null && !(line.length() == 1 && line.endsWith("."))) {
 				line = input.readLine();
 				buf.append('\n');
 				buf.append(line);

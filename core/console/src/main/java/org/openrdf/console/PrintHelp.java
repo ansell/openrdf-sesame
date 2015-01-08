@@ -70,12 +70,23 @@ public class PrintHelp implements Command {
 	protected static final String CLEAR = USAGE + "clear                   Clears the entire repository\n"
 			+ "clear (<uri>|null)...   Clears the specified context(s)\n";
 
+	protected static final String SPARQL = USAGE 
+			+ "sparql <query>                       Evaluates the SPARQL query on the currently open repository.\n"
+			+ "sparql                               Starts multi-line input for large SPARQL queries.\n" 
+			+ "select|construct|ask|describe|prefix|base <rest-of-query>\n" 
+			+ "                                     Evaluates a SPARQL query on the currently open repository.\n"; 
+	     
+	
+	protected static final String SERQL = USAGE 
+			+ "serql <query>                 Evaluates the SeRQL query on the currently open repository\n"
+			+ "serql                         Starts multi-line input for large SeRQL queries.\n" ;
+	
 	protected static final String SET = USAGE
 			+ "set                            Shows all parameter values\n"
 			+ "set width=<number>             Set the width for query result tables\n"
 			+ "set log=<level>                Set the logging level (none, error, warning, info or debug)\n"
 			+ "set showPrefix=<true|false>    Toggles use of prefixed names in query results\n"
-			+ "set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries (warning: buggy!)\n";
+			+ "set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries\n";
 
 	protected static final String FEDERATE = USAGE
 			+ "federate [distinct=<true|false>] [readonly=<true|false>] <fedID> <repoID_1> <repoID_2> [<repoID_n>]*\n"
@@ -102,6 +113,8 @@ public class PrintHelp implements Command {
 		topics.put("verify", VERIFY);
 		topics.put("clear", CLEAR);
 		topics.put("set", SET);
+		topics.put("sparql", SPARQL);
+		topics.put("serql", SERQL);
 		topics.put("federate", FEDERATE);
 	}
 
@@ -136,8 +149,8 @@ public class PrintHelp implements Command {
 		consoleIO.writeln("load        Loads a data file into a repository, takes a file path or URL as argument");
 		consoleIO.writeln("verify      Verifies the syntax of an RDF data file, takes a file path or URL as argument");
 		consoleIO.writeln("clear       Removes data from a repository");
-		consoleIO.writeln("serql       Evaluates the SeRQL query, takes a query as argument");
-		consoleIO.writeln("sparql      Evaluates the SPARQL query, takes a query as argument");
+		consoleIO.writeln("sparql      Evaluate a SPARQL query");
+		consoleIO.writeln("serql       Evaluate a SeRQL query");
 		consoleIO.writeln("set         Allows various console parameters to be set");
 		consoleIO.writeln("exit, quit  Exit the console");
 	}

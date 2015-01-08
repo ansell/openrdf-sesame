@@ -262,14 +262,14 @@ public class Console implements ConsoleState, ConsoleParameters {
 	public void start()
 		throws IOException
 	{
+		consoleIO.writeln("Sesame Console, an interactive shell to communicate with Sesame repositories.");
 		consoleIO.writeln();
-		consoleIO.writeln("Commands end with '.' at the end of a line");
-		consoleIO.writeln("Type 'help.' for help");
+		consoleIO.writeln("Type 'help' for help.");
 		int exitCode = 0;
 		try {
 			boolean exitFlag = false;
 			while (!exitFlag) {
-				final String command = consoleIO.readMultiLineInput();
+				final String command = consoleIO.readCommand();
 				if (command == null) {
 					// EOF
 					break;
