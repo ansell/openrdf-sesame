@@ -631,7 +631,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String, RioSetting}, adding line number
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding line number
 	 * information to the error.
 	 */
 	@Override
