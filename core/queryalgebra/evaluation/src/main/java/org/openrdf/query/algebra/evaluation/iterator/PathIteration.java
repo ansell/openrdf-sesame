@@ -219,7 +219,7 @@ public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluatio
 	}
 
 	/**
-	 * @param valueQueue2
+	 * @param valueSet
 	 * @param vp
 	 */
 	protected boolean add(Set<ValuePair> valueSet, ValuePair vp)

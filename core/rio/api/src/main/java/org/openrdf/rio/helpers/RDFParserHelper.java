@@ -356,8 +356,8 @@ public class RDFParserHelper {
 	 * This method also throws an {@link RDFParseException} when the given
 	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
-	 * @param msg
-	 *        The message to use for
+	 * @param e
+	 *        The exception whose message to use for
 	 *        {@link ParseErrorListener#error(String, int, int)} and for
 	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
 	 * @param lineNo
@@ -412,7 +412,7 @@ public class RDFParserHelper {
 	/**
 	 * Reports a fatal error to the registered ParseErrorListener, if any, and
 	 * throws a <tt>ParseException</tt> afterwards. This method simply calls
-	 * {@link #reportFatalError(String,int,int)} supplying <tt>-1</tt> for the
+	 * {@link #reportFatalError(String, int, int, ParseErrorListener)} supplying <tt>-1</tt> for the
 	 * line- and column number.
 	 * 
 	 * @since 2.7.1
@@ -448,7 +448,7 @@ public class RDFParserHelper {
 	 * the error message is not reported to the ParseErrorListener, assuming that
 	 * it has already been reported when the original ParseException was thrown.
 	 * <p>
-	 * This method simply calls {@link #reportFatalError(Exception,int,int)}
+	 * This method simply calls {@link #reportFatalError(Exception, int, int, ParseErrorListener)}
 	 * supplying <tt>-1</tt> for the line- and column number.
 	 * 
 	 * @since 2.7.1

@@ -285,7 +285,7 @@ public class Models {
 	 * statements in which the blank nodes occur.
 	 * 
 	 * @see <a href="http://www.w3.org/TR/rdf11-concepts/#graph-isomorphism">RDF
-	 *      Concepts &amp; Abstract Syntax, section 3.6 (Graph Comparison)</a>.
+	 *      Concepts &amp; Abstract Syntax, section 3.6 (Graph Comparison)</a>
 	 * @since 2.8.0
 	 */
 	public static boolean isomorphic(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2)

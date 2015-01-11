@@ -27,7 +27,7 @@ import org.openrdf.model.util.ModelException;
  * basic {@link Graph} interface.
  * <p>
  * Additional utility functionality for working with Model objects is available
- * in the {@link org.openrdf.model.Util.Models Models} utility class.
+ * in the {@link org.openrdf.model.util.Models Models} utility class.
  * 
  * @since 2.7.0
  * @author James Leigh

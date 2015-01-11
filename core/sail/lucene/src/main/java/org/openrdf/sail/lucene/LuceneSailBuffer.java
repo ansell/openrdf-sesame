@@ -197,7 +197,6 @@ public class LuceneSailBuffer {
 	/**
 	 * Iterator over the operations
 	 * 
-	 * @return
 	 */
 	public synchronized Iterator<Operation> operationsIterator() {
 		return operations.iterator();
@@ -206,7 +205,6 @@ public class LuceneSailBuffer {
 	/**
 	 * the list of operations. You must not change it
 	 * 
-	 * @return
 	 */
 	public synchronized List<Operation> operations() {
 		return operations;

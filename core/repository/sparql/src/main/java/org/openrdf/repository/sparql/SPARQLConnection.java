@@ -832,13 +832,6 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		sparqlTransaction.append("; ");
 	}
 
-	/**
-	 * @param subject
-	 * @param predicate
-	 * @param object
-	 * @param contexts
-	 * @return
-	 */
 	private String createDeletePatternCommand(Resource subject, URI predicate, Value object,
 			Resource[] contexts)
 	{

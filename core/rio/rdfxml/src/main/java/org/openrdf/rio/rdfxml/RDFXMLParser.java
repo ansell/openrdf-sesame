@@ -274,10 +274,10 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	{
 		try {
 			documentURI = inputSource.getSystemId();
-			
+
 			saxFilter.setParseStandAloneDocuments(getParserConfig().get(
 					XMLParserSettings.PARSE_STANDALONE_DOCUMENTS));
-			
+
 			// saxFilter.clear();
 			saxFilter.setDocumentURI(documentURI);
 
@@ -1257,8 +1257,8 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String)}, adding line- and
-	 * column number information to the error.
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding
+	 * line- and column number information to the error.
 	 */
 	@Override
 	protected void reportError(String msg, RioSetting<Boolean> setting)

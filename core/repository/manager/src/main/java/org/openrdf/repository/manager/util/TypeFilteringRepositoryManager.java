@@ -54,7 +54,6 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	/**
-	 * @return
 	 * @see org.openrdf.repository.manager.RepositoryManager#getHttpClient()
 	 */
 	public HttpClient getHttpClient() {
@@ -77,7 +76,9 @@ public class TypeFilteringRepositoryManager extends RepositoryManager {
 	}
 
 	@Override
-	public URL getLocation() throws MalformedURLException {
+	public URL getLocation()
+		throws MalformedURLException
+	{
 		return delegate.getLocation();
 	}
 
