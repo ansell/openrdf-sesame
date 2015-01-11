@@ -8,32 +8,16 @@
 
 	<baseDirectory>openrdf-sesame-${project.version}</baseDirectory>
 
-	<moduleSets>
-		<moduleSet>
-			<includes>
-				<include>*:jar:*</include>
-			</includes>
-			<binaries>
-				<unpack>false</unpack>
-				<outputDirectory>lib</outputDirectory>
-				<dependencySets>
-				    <dependencySet>
-					<unpack>false</unpack>
-					<outputDirectory>lib</outputDirectory>
-					<scope>runtime</scope>
-					<useTransitiveFiltering>false</useTransitiveFiltering>
-					<excludes>
-					    <exclude>org.openrdf.sesame:*:jar:*</exclude>
-					</excludes>
-				    </dependencySet>
-				</dependencySets>
-			</binaries>
-		</moduleSet>
-	</moduleSets>
+	<dependencySets>
+	    <dependencySet>
+		<useProjectArtifact>false</useProjectArtifact>
+		<outputDirectory>lib</outputDirectory>
+	    </dependencySet>
+	</dependencySets>
 
 	<fileSets>
 		<fileSet>
-			<directory>.</directory>
+			<directory>..</directory>
 			<outputDirectory/>
 			<includes>
 				<include>*.txt</include>
@@ -49,11 +33,11 @@
 
 	<files>
 		<file>
-			<source>http/server/target/openrdf-sesame.war</source>
+		    <source>http/server/target/openrdf-sesame.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
 		<file>
-			<source>http/workbench/target/openrdf-workbench.war</source>
+		    <source>http/workbench/target/openrdf-workbench.war</source>
 			<outputDirectory>war</outputDirectory>
 		</file>
 
