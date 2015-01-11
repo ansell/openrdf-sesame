@@ -178,9 +178,9 @@ public class URIUtil {
 	 *         RDF URI reference, <code>false</code> otherwise.
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-concepts-20040210/#section-Graph-URIref">section
-	 *      6.4 of the RDF Concepts and Abstract Syntax specification</a>.
-	 * @see <a href="http://www.ietf.org/rfc/rfc3986.txt">RFC 3986</a>.
-	 * @see <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>.
+	 *      6.4 of the RDF Concepts and Abstract Syntax specification</a>
+	 * @see <a href="http://www.ietf.org/rfc/rfc3986.txt">RFC 3986</a>
+	 * @see <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>
 	 * @since 2.7.14
 	 */
 	public static boolean isValidURIReference(String uriRef) {
@@ -240,7 +240,7 @@ public class URIUtil {
 	 *        a (relative or absolute) uri reference.
 	 * @return a (relative or absolute) uri reference with all characters that
 	 *         can not appear as-is in a URI %-escaped.
-	 * @see <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>.
+	 * @see <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>
 	 */
 	private static String escapeExcludedChars(String unescaped) {
 		final StringBuilder escaped = new StringBuilder();

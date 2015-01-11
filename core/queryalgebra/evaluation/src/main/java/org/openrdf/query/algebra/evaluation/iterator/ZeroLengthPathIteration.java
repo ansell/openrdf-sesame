@@ -171,9 +171,6 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 		return iter;
 	}
 
-	/**
-	 * @return
-	 */
 	private Set<Value> makeSet() {
 		return new HashSet<Value>();
 	}

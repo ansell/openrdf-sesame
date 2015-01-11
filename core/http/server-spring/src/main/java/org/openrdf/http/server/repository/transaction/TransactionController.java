@@ -516,15 +516,6 @@ public class TransactionController extends AbstractController {
 		return result;
 	}
 
-	/**
-	 * @param repository
-	 * @param repositoryCon
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws ServerHTTPException
-	 * @throws ClientHTTPException
-	 */
 	private ModelAndView getSparqlUpdateResult(RepositoryConnection conn, HttpServletRequest request,
 			HttpServletResponse response)
 		throws ServerHTTPException, ClientHTTPException, HTTPException

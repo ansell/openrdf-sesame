@@ -43,8 +43,9 @@ public interface EvaluationStrategy extends FederatedServiceResolver {
 	 * {@link SPARQLFederatedService} is created and registered.
 	 * 
 	 * @param serviceUrl
-	 * @return
-	 * @throws RepositoryException
+	 *        URL of the service.
+	 * @return the {@link FederatedService} registered for the serviceUrl.
+	 * @throws QueryEvaluationException
 	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
 	 */
 	public FederatedService getService(String serviceUrl)
@@ -56,15 +57,16 @@ public interface EvaluationStrategy extends FederatedServiceResolver {
 	 * 
 	 * @param expr
 	 *        The Service Expression to evaluate
-	 * @param serviceUri TODO
+	 * @param serviceUri
+	 *        TODO
 	 * @param bindings
 	 *        The variables bindings iterator to use for evaluating the
 	 *        expression, if applicable.
 	 * @return A closeable iterator over all of variable binding sets that match
 	 *         the tuple expression.
 	 */
-	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service expr,
-			String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
+	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service expr, String serviceUri,
+			CloseableIteration<BindingSet, QueryEvaluationException> bindings)
 		throws QueryEvaluationException;
 
 	/**
@@ -105,8 +107,8 @@ public interface EvaluationStrategy extends FederatedServiceResolver {
 	 * @throws ValueExprEvaluationException
 	 *         If the value expression could not be evaluated, for example when
 	 *         comparing two incompatible operands. When thrown, the result of
-	 *         the boolean expression is neither <tt>true</tt> nor
-	 *         <tt>false</tt>, but unknown.
+	 *         the boolean expression is neither <tt>true</tt> nor <tt>false</tt>
+	 *         , but unknown.
 	 */
 	public boolean isTrue(ValueExpr expr, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException;

@@ -31,14 +31,14 @@ import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.MapBindingSet;
 
 /**
- * An implementation of the {@link BindingSet} interface that is used to evalate
- * query object models. This implementations differs from {@link MapBindingSet}
- * in that it maps variable names to Value objects and that the Binding objects
- * are created lazily.
- * 
- * Note that this class is a fully equivalent copy of {@link QueryBindingSet},
- * and is only included here to avoid a circular dependency between the
- * algebra-evaluation module and the sparql-repository module.
+ * An implementation of the {@link BindingSet} interface that is used to
+ * evaluate query object models. This implementations differs from
+ * {@link MapBindingSet} in that it maps variable names to Value objects and
+ * that the Binding objects are created lazily. Note that this class is a fully
+ * equivalent copy of
+ * {@link org.openrdf.query.algebra.evaluation.QueryBindingSet}, and is only
+ * included here to avoid a circular dependency between the algebra-evaluation
+ * module and the sparql-repository module.
  */
 public class SPARQLQueryBindingSet implements BindingSet {
 
@@ -63,8 +63,9 @@ public class SPARQLQueryBindingSet implements BindingSet {
 
 	public void addAll(BindingSet bindingSet) {
 		if (bindingSet instanceof SPARQLQueryBindingSet) {
-			bindings.putAll(((SPARQLQueryBindingSet) bindingSet).bindings);
-		} else {
+			bindings.putAll(((SPARQLQueryBindingSet)bindingSet).bindings);
+		}
+		else {
 			for (Binding binding : bindingSet) {
 				this.addBinding(binding);
 			}
@@ -72,25 +73,24 @@ public class SPARQLQueryBindingSet implements BindingSet {
 	}
 
 	/**
-	 * Adds a new binding to the binding set. The binding's name must not
-	 * already be part of this binding set.
+	 * Adds a new binding to the binding set. The binding's name must not already
+	 * be part of this binding set.
 	 * 
 	 * @param binding
-	 *            The binding to add this this BindingSet.
+	 *        The binding to add this this BindingSet.
 	 */
 	public void addBinding(Binding binding) {
 		addBinding(binding.getName(), binding.getValue());
 	}
 
 	/**
-	 * Adds a new binding to the binding set. The binding's name must not
-	 * already be part of this binding set.
+	 * Adds a new binding to the binding set. The binding's name must not already
+	 * be part of this binding set.
 	 * 
 	 * @param name
-	 *            The binding's name, must not be bound in this binding set
-	 *            already.
+	 *        The binding's name, must not be bound in this binding set already.
 	 * @param value
-	 *            The binding's value.
+	 *        The binding's value.
 	 */
 	public void addBinding(String name, Value value) {
 		assert !bindings.containsKey(name) : "variable already bound: " + name;
@@ -141,11 +141,9 @@ public class SPARQLQueryBindingSet implements BindingSet {
 	}
 
 	public Iterator<Binding> iterator() {
-		Iterator<Map.Entry<String, Value>> entries = bindings.entrySet()
-				.iterator();
+		Iterator<Map.Entry<String, Value>> entries = bindings.entrySet().iterator();
 
-		return new ConvertingIterator<Map.Entry<String, Value>, Binding>(
-				entries) {
+		return new ConvertingIterator<Map.Entry<String, Value>, Binding>(entries) {
 
 			@Override
 			protected Binding convert(Map.Entry<String, Value> entry) {
@@ -162,13 +160,15 @@ public class SPARQLQueryBindingSet implements BindingSet {
 	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
-		} else if (other instanceof SPARQLQueryBindingSet) {
-			return bindings.equals(((SPARQLQueryBindingSet) other).bindings);
-		} else if (other instanceof BindingSet) {
+		}
+		else if (other instanceof SPARQLQueryBindingSet) {
+			return bindings.equals(((SPARQLQueryBindingSet)other).bindings);
+		}
+		else if (other instanceof BindingSet) {
 			int otherSize = 0;
 
 			// Compare other's bindings to own
-			for (Binding binding : (BindingSet) other) {
+			for (Binding binding : (BindingSet)other) {
 				Value ownValue = getValue(binding.getName());
 
 				if (!binding.getValue().equals(ownValue)) {

@@ -108,7 +108,8 @@ public class ReaderMonitor {
 	/**
 	 * This method is called in LecenIndex invalidateReaders or on commit
 	 * 
-	 * @return
+	 * @return <code>true</code> if the close succeeded, <code>false</code>
+	 *         otherwise.
 	 * @throws IOException
 	 */
 	public boolean closeWhenPossible()
@@ -124,7 +125,6 @@ public class ReaderMonitor {
 	/**
 	 * @throws IOException
 	 */
-
 	public void doClose()
 		throws IOException
 	{

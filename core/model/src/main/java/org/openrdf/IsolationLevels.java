@@ -58,27 +58,27 @@ public enum IsolationLevels implements IsolationLevel {
 	READ_COMMITTED(READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Snapshot Read: in addition to {@link IsolationLevel#READ_COMMITTED}, query
-	 * results in this isolation level that are observed within a successful
-	 * transaction will observe a consistent snapshot. Changes to the data
-	 * occurring while a query is evaluated will not affect that query result.
+	 * Snapshot Read: in addition to {@link #READ_COMMITTED}, query results in
+	 * this isolation level that are observed within a successful transaction
+	 * will observe a consistent snapshot. Changes to the data occurring while a
+	 * query is evaluated will not affect that query result.
 	 */
 	SNAPSHOT_READ(READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Snapshot: in addition to {@link IsolationLevel#REPEATABLE_READ} and
-	 * {@link IsolationLevel#SNAPSHOT_READ}, successful transactions in this
-	 * isolation level will operate against a particular dataset snapshot.
-	 * Transactions in this isolation level will see either the complete effects
-	 * of other transactions (consistently throughout) or not at all.
+	 * Snapshot: in addition to {@link #SNAPSHOT_READ}, successful transactions
+	 * in this isolation level will operate against a particular dataset
+	 * snapshot. Transactions in this isolation level will see either the
+	 * complete effects of other transactions (consistently throughout) or not at
+	 * all.
 	 */
 	SNAPSHOT(SNAPSHOT_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE),
 
 	/**
-	 * Serializable: in addition to {@link IsolationLevel#SNAPSHOT}, this
-	 * isolation level requires that all other successful transactions must
-	 * appear to occur either completely before or completely after a successful
-	 * serializable transaction.
+	 * Serializable: in addition to {@link #SNAPSHOT}, this isolation level
+	 * requires that all other successful transactions must appear to occur
+	 * either completely before or completely after a successful serializable
+	 * transaction.
 	 */
 	SERIALIZABLE(SNAPSHOT, SNAPSHOT_READ, READ_COMMITTED, READ_UNCOMMITTED, NONE);
 
@@ -137,7 +137,7 @@ public enum IsolationLevels implements IsolationLevel {
 			return level;
 		}
 	}
-	
+
 	public URI getURI() {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 		return f.createURI(SESAME.NAMESPACE, this.name());

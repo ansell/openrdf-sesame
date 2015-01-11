@@ -71,7 +71,7 @@ import org.openrdf.sail.SailException;
  * of proper synchronization of IndexReaders, IndexWriters and IndexSearchers in
  * a way that is suitable for a LuceneSail.
  * 
- * @see {@link LuceneSail}
+ * @see LuceneSail
  */
 public class LuceneIndex {
 
@@ -632,7 +632,7 @@ public class LuceneIndex {
 	 * searches (concatenation basically means loss of information). NOTE: The
 	 * TEXT_FIELD_NAME has to be stored, see in LuceneSail
 	 * 
-	 * @see LuceneSail#storedindexed
+	 * @see LuceneSail
 	 */
 	private void addProperty(String predicate, String text, Document document) {
 		// store this predicate

@@ -16,15 +16,11 @@
  */
 package org.openrdf.query.algebra;
 
-
 /**
  * @author Jeen Broekstra
  */
 public class DescribeOperator extends UnaryTupleOperator {
 
-	/**
-	 * @param e
-	 */
 	public DescribeOperator(TupleExpr arg) {
 		super(arg);
 	}
@@ -35,7 +31,5 @@ public class DescribeOperator extends UnaryTupleOperator {
 	{
 		visitor.meet(this);
 	}
-
-
 
 }

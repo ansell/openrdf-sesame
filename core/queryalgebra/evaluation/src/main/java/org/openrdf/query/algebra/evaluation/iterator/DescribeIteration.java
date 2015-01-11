@@ -43,7 +43,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
  * 
  * @author Jeen Broekstra
  * @since 2.7.4
- * @see http://www.w3.org/Submission/CBD/#alternatives
+ * @see <a href="http://www.w3.org/Submission/CBD/#alternatives">Concise Bounded Description - alternatives</a> 
  */
 public class DescribeIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 

@@ -46,7 +46,7 @@ public class QueryStringUtil {
 	 * 
 	 * @param queryString
 	 * @param bindings
-	 * @return
+	 * @return the modified queryString
 	 */
 	public static String getQueryString(String queryString, BindingSet bindings) {
 		if (bindings.size() == 0) {

@@ -231,11 +231,12 @@ public class NTriplesUtil {
 	}
 
 	/**
-	 * Creates an N-Triples string for the supplied value, optionally ignoring
-	 * the xsd:string datatype as it is implied for RDF-1.1.
+	 * Creates an N-Triples string for the supplied value. If the supplied value
+	 * is a {@link Literal}, it optionally ignores the xsd:string datatype, since
+	 * this datatype is implicit in RDF-1.1.
 	 * 
-	 * @param lit
-	 *        The literal to write.
+	 * @param value
+	 *        The value to write.
 	 * @param xsdStringToPlainLiteral
 	 *        True to omit serialising the xsd:string datatype and false to
 	 *        always serialise the datatype for literals.
@@ -361,13 +362,12 @@ public class NTriplesUtil {
 			appendable.append("genid");
 			appendable.append(Integer.toHexString(bNode.hashCode()));
 		}
-		else
-		{
+		else {
 			if (!isLetter(nextId.charAt(0))) {
 				appendable.append("genid");
 				appendable.append(Integer.toHexString(nextId.charAt(0)));
 			}
-			
+
 			for (int i = 0; i < nextId.length(); i++) {
 				if (isLetterOrNumber(nextId.charAt(i))) {
 					appendable.append(nextId.charAt(i));

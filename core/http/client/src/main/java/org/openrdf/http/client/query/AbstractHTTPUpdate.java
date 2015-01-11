@@ -25,7 +25,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.query.impl.AbstractUpdate;
 
-
 /**
  * Base class for any {@link Update} operation over HTTP.
  * 
@@ -33,7 +32,6 @@ import org.openrdf.query.impl.AbstractUpdate;
  */
 public abstract class AbstractHTTPUpdate extends AbstractUpdate {
 
-	
 	private final SparqlSession httpClient;
 
 	protected final QueryLanguage queryLanguage;
@@ -42,29 +40,23 @@ public abstract class AbstractHTTPUpdate extends AbstractUpdate {
 
 	protected final String baseURI;
 
-	
-	/**
-	 * @param httpClient
-	 * @param queryLanguage
-	 * @param queryString
-	 * @param baseURI
-	 */
-	public AbstractHTTPUpdate(SparqlSession httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
+	public AbstractHTTPUpdate(SparqlSession httpClient, QueryLanguage queryLanguage, String queryString,
+			String baseURI)
+	{
 		super();
 		this.httpClient = httpClient;
 		this.queryLanguage = queryLanguage;
 		this.queryString = queryString;
 		this.baseURI = baseURI;
 	}
-	
+
 	/**
-	 * Return the {@link SparqlSession} to be used for all HTTP based interaction
-	 * @return
+	 * @return Returns the {@link SparqlSession} to be used for all HTTP based interaction
 	 */
 	protected SparqlSession getHttpClient() {
 		return httpClient;
 	}
-		
+
 	public Binding[] getBindingsArray() {
 		BindingSet bindings = this.getBindings();
 
@@ -77,7 +69,7 @@ public abstract class AbstractHTTPUpdate extends AbstractUpdate {
 
 		return bindingsArray;
 	}
-	
+
 	/**
 	 * @return Returns the baseURI.
 	 */
@@ -98,7 +90,7 @@ public abstract class AbstractHTTPUpdate extends AbstractUpdate {
 	public String getQueryString() {
 		return queryString;
 	}
-	
+
 	@Override
 	public String toString() {
 		return queryString;

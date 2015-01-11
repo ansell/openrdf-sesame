@@ -25,7 +25,6 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.impl.AbstractQuery;
 
-
 /**
  * Base class for any {@link Query} operation over HTTP.
  * 
@@ -33,7 +32,6 @@ import org.openrdf.query.impl.AbstractQuery;
  */
 public abstract class AbstractHTTPQuery extends AbstractQuery {
 
-	
 	private final SparqlSession httpClient;
 
 	protected final QueryLanguage queryLanguage;
@@ -42,32 +40,28 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 
 	protected final String baseURI;
 
-	
-	/**
-	 * @param httpClient
-	 * @param queryLanguage
-	 * @param queryString
-	 * @param baseURI
-	 */
-	public AbstractHTTPQuery(SparqlSession httpClient, QueryLanguage queryLanguage, String queryString, String baseURI) {
+	public AbstractHTTPQuery(SparqlSession httpClient, QueryLanguage queryLanguage, String queryString,
+			String baseURI)
+	{
 		super();
 		this.httpClient = httpClient;
 		this.queryLanguage = queryLanguage;
 		this.queryString = queryString;
 		// TODO think about the following
 		// for legacy reasons we should support the empty string for baseURI
-		// this is used in the SPARQL repository in several places, e.g. in getStatements
-		this.baseURI = baseURI!=null && baseURI.length()>0 ? baseURI : null;
+		// this is used in the SPARQL repository in several places, e.g. in
+		// getStatements
+		this.baseURI = baseURI != null && baseURI.length() > 0 ? baseURI : null;
 	}
-	
+
 	/**
-	 * Return the {@link SparqlSession} to be used for all HTTP based interaction
-	 * @return
+	 * @return Returns the {@link SparqlSession} to be used for all HTTP based
+	 *         interaction
 	 */
 	protected SparqlSession getHttpClient() {
 		return httpClient;
 	}
-		
+
 	public Binding[] getBindingsArray() {
 		BindingSet bindings = this.getBindings();
 
@@ -80,13 +74,13 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 
 		return bindingsArray;
 	}
-	
+
 	@Override
 	public void setMaxQueryTime(int maxQueryTime) {
 		super.setMaxQueryTime(maxQueryTime);
 		this.httpClient.setConnectionTimeout(1000L * this.maxQueryTime);
 	}
-	
+
 	@Override
 	public String toString() {
 		return queryString;
