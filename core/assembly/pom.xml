@@ -14,7 +14,6 @@
     <name>OpenRDF Sesame: Assembly</name>
     <description>Distribution bundle assembly</description>
 
-
     <dependencies>
 	<dependency>
 	    <groupId>org.openrdf.sesame</groupId>
@@ -257,9 +256,9 @@
 	<plugins>
 	    <plugin>
 		<artifactId>maven-assembly-plugin</artifactId>
-		<inherited>false</inherited>
 		<configuration>
 		    <finalName>openrdf-sesame-${project.version}</finalName>
+		    <attach>false</attach>
 		    <descriptors>
 			<!-- <descriptor>src/main/assembly/onejar.xml</descriptor> -->
 			<descriptor>src/main/assembly/sdk.xml</descriptor>
@@ -275,8 +274,34 @@
 		    </execution>
 		</executions>
 	    </plugin>
+	    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-shade-plugin</artifactId>
+		<version>2.3</version>
+		<configuration>
+		    <artifactSet>
+			<includes>
+			    <include>org.openrdf.sesame:*</include>
+			</includes>
+		    </artifactSet>
+		    <outputFile>target/openrdf-sesame-${project.version}-onejar.jar</outputFile>.
+		    <createDependencyReducedPom>false</createDependencyReducedPom>
+		    <shadedArtifactAttached>false</shadedArtifactAttached>
+		    <transformers>
+			<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+		    </transformers>
+		</configuration>
+		<executions>
+		    <execution>
+			<phase>package</phase>
+			<goals>
+			    <goal>shade</goal>
+			</goals>
+		    </execution>
+		</executions>
+	    </plugin>
 	</plugins>
     </build>
-	
+
 
 </project>
