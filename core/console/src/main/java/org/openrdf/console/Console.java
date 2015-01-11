@@ -293,8 +293,10 @@ public class Console implements ConsoleState, ConsoleParameters {
 	private boolean executeCommand(final String command)
 		throws IOException
 	{
-		boolean exit = (0 == command.length());
-		if (!exit) {
+		boolean exit = false;
+		
+		// only try to parse the command if non-empty.
+		if (0 < command.length()) {
 			final String[] tokens = parse(command);
 			final String operation = tokens[0].toLowerCase(Locale.ENGLISH);
 			exit = "quit".equals(operation) || "exit".equals(operation);

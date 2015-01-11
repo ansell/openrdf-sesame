@@ -43,10 +43,9 @@ public class PrintHelp implements Command {
 	protected static final String DROP = USAGE
 			+ "drop <repositoryID>   Drops the repository with the specified id\n";
 
-	private final Map<String, String> topics = new HashMap<String, String>();
-
-	private final ConsoleIO consoleIO;
-
+	protected static final String INFO = USAGE 
+			+ "info                  Shows information about the console\n";
+	
 	protected static final String OPEN = USAGE
 			+ "open <repositoryID>   Opens the repository with the specified ID\n";
 
@@ -99,23 +98,28 @@ public class PrintHelp implements Command {
 			+ "  [<repoID_n>]*            The id's of 0 or mare additional repositories to federate.\n\n"
 			+ "You will be prompted to enter a description for the federated repository as well.";
 
+	private final Map<String, String> topics = new HashMap<String, String>();
+
+	private final ConsoleIO consoleIO;
+	
 	PrintHelp(ConsoleIO consoleIO) {
 		super();
 		this.consoleIO = consoleIO;
-		topics.put("connect", CONNECT);
-		topics.put("disconnect", DISCONNECT);
-		topics.put("create", CREATE);
-		topics.put("drop", DROP);
-		topics.put("open", OPEN);
-		topics.put("close", CLOSE);
-		topics.put("show", SHOW);
-		topics.put("load", LOAD);
-		topics.put("verify", VERIFY);
 		topics.put("clear", CLEAR);
-		topics.put("set", SET);
-		topics.put("sparql", SPARQL);
-		topics.put("serql", SERQL);
+		topics.put("close", CLOSE);
+		topics.put("connect", CONNECT);
+		topics.put("create", CREATE);
+		topics.put("disconnect", DISCONNECT);
+		topics.put("drop", DROP);
 		topics.put("federate", FEDERATE);
+		topics.put("info", INFO);
+		topics.put("load", LOAD);
+		topics.put("open", OPEN);
+		topics.put("serql", SERQL);
+		topics.put("set", SET);
+		topics.put("show", SHOW);
+		topics.put("sparql", SPARQL);
+		topics.put("verify", VERIFY);
 	}
 
 	public void execute(String... parameters) {
@@ -128,13 +132,13 @@ public class PrintHelp implements Command {
 				consoleIO.writeln(topics.get(target));
 			}
 			else {
-				consoleIO.writeln("No info available for command " + parameters[1]);
+				consoleIO.writeln("No additional info available for command " + parameters[1]);
 			}
 		}
 	}
 
 	private void printCommandOverview() {
-		consoleIO.writeln("For more information on a specific command, try 'help <command>.'");
+		consoleIO.writeln("For more information on a specific command, try 'help <command>'.");
 		consoleIO.writeln("List of all commands:");
 		consoleIO.writeln("help        Displays this help message");
 		consoleIO.writeln("info        Shows info about the console");
