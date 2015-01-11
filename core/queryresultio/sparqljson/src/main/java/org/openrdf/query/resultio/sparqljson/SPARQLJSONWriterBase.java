@@ -29,7 +29,7 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter.Lf2SpacesIndenter;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -247,7 +247,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 			if (getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
 				// SES-2011: Always use \n for consistency
-				Lf2SpacesIndenter indenter = Lf2SpacesIndenter.instance.withLinefeed("\n");
+				DefaultIndenter indenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE.withLinefeed("\n");
 				// By default Jackson does not pretty print, so enable this unless
 				// PRETTY_PRINT setting is disabled
 				DefaultPrettyPrinter pp = new DefaultPrettyPrinter().withArrayIndenter(indenter).withObjectIndenter(
