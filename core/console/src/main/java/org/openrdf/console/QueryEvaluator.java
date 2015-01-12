@@ -19,7 +19,10 @@ package org.openrdf.console;
 import static org.openrdf.query.QueryLanguage.SERQL;
 import static org.openrdf.query.QueryLanguage.SPARQL;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import org.slf4j.Logger;
@@ -69,15 +72,9 @@ public class QueryEvaluator {
 	}
 
 	public void executeQuery(final String command, final String operation) {
-		if ("select".equals(operation)) {
-			// TODO: should this be removed now that the 'serql' command is
-			// supported?
-			evaluateQuery(QueryLanguage.SERQL, command);
-		}
-		else if ("construct".equals(operation)) {
-			// TODO: should this be removed now that the 'serql' command is
-			// supported?
-			evaluateQuery(QueryLanguage.SERQL, command);
+		final List<String> sparqlQueryStart = Arrays.asList(new String[]{ "select", "construct", "describe", "ask", "prefix", "base"});
+		if (sparqlQueryStart.contains(operation)) {
+			evaluateQuery(QueryLanguage.SPARQL, command);
 		}
 		else if ("serql".equals(operation)) {
 			evaluateQuery(QueryLanguage.SERQL, command.substring("serql".length()));
@@ -90,8 +87,12 @@ public class QueryEvaluator {
 		}
 	}
 
-	private void evaluateQuery(final QueryLanguage queryLn, final String queryText) {
+	private void evaluateQuery(final QueryLanguage queryLn, String queryText) {
 		try {
+			if (queryText.trim().isEmpty()) {
+				consoleIO.writeln("enter multi-line " + queryLn.getName() + " query (terminate with line containing single '.')");
+				queryText = consoleIO.readMultiLineInput();
+			}
 			final String queryString = addQueryPrefixes(queryLn, queryText);
 			final ParsedOperation query = QueryParserUtil.parseOperation(queryLn, queryString, null);
 			evaluateQuery(queryLn, queryString, query);
@@ -117,6 +118,10 @@ public class QueryEvaluator {
 		catch (UpdateExecutionException e) {
 			consoleIO.writeError("Failed to execute update: " + e.getMessage());
 			LOGGER.error("Failed to execute update", e);
+		}
+		catch (IOException e) {
+			consoleIO.writeError("I/O error: " + e.getMessage());
+			LOGGER.error("Failed to read query", e);
 		}
 	}
 
@@ -215,7 +220,7 @@ public class QueryEvaluator {
 		}
 		final RepositoryConnection con = repository.getConnection();
 		try {
-			consoleIO.writeln("Evaluating query...");
+			consoleIO.writeln("Evaluating " + queryLn.getName() + " query...");
 			final long startTime = System.nanoTime();
 			final boolean result = con.prepareBooleanQuery(queryLn, queryString).evaluate();
 			consoleIO.writeln("Answer: " + result);
