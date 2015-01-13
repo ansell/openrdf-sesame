@@ -37,7 +37,7 @@
 			<configuration>
 			    <target>
 				<mkdir dir="target/services/META-INF/services" />
-				<ant antfile="../build.xml" target="create-service-files" dir="${basedir}" />
+				<ant antfile="build.xml" target="create-service-files" dir="${basedir}" />
 			    </target>
 			</configuration>
 			<goals>
