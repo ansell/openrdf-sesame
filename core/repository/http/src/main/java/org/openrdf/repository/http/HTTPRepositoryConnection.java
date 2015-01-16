@@ -427,8 +427,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		if (!isActive()) {
 			// operation is not part of a transaction - just send directly
 			OpenRDFUtil.verifyContextNotNull(contexts);
+
 			final Model m = new LinkedHashModel();
-			m.add(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+
+			if (contexts.length == 0) { 
+				// if no context is specified in the method call, statement's own context (if any) is used.
+				m.add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+			}
+			else {
+				m.add(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
+			}
 			addModel(m);
 		}
 		else {
@@ -441,6 +449,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws RepositoryException
 	{
 		if (!isActive()) {
+			logger.debug("adding statement directly: {} {} {} {}", new Object[] {
+					subject,
+					predicate,
+					object,
+					contexts });
 			// operation is not part of a transaction - just send directly
 			OpenRDFUtil.verifyContextNotNull(contexts);
 			final Model m = new LinkedHashModel();
@@ -448,6 +461,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			addModel(m);
 		}
 		else {
+			logger.debug("adding statement in txn: {} {} {} {}", new Object[] {
+					subject,
+					predicate,
+					object,
+					contexts });
 			super.add(subject, predicate, object, contexts);
 		}
 	}
