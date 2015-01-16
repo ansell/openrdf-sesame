@@ -17,17 +17,11 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 	</bean>
 
-	<bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
-		<property name="major" value="2" />
-		<property name="minor" value="8" />
-		<property name="micro" value="0" />
-	</bean>
-
 	<bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration"
 		init-method="init" destroy-method="destroy">
 		<property name="applicationId" value="OpenRDF Sesame" />
 		<property name="longName" value="OpenRDF Sesame" />
-		<property name="version" ref="adunaAppVersion" />
+		<property name="version" value="${project.version}" />
 	</bean>
 
 	<bean id="adunaWebappNavigation" class="info.aduna.webapp.navigation.NavigationModel">

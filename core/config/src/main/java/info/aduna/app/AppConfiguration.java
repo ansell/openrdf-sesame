@@ -253,6 +253,11 @@ public class AppConfiguration implements Configuration {
 		this.fullName = longName + " " + version.toString();
 	}
 
+	public final void setVersion(String fullVersion) {
+		AppVersion v = new AppVersion(fullVersion);
+		this.setVersion(v);
+	}
+	
 	/**
 	 * Get the command line arguments of the application.
 	 * 

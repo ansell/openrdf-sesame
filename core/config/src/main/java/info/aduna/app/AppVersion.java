@@ -56,6 +56,36 @@ public class AppVersion implements Comparable<AppVersion> {
 	}
 
 	/**
+	 * Creates a new <tt>major.minor.micro[-modifier]</tt> Version by parsing the
+	 * supplied full version string.
+	 * 
+	 * @param fullVersion
+	 *        a fully formed version string with an optional modifier, e.g.
+	 *        "2.8.0", or "1.0.1-beta1"
+	 * @throws IllegalArgumentException
+	 *         if the supplied version string can not be parsed.
+	 */
+	public AppVersion(String fullVersion) {
+		String[] versionParts = fullVersion.split("[\\.-]");
+		try {
+			setMajor(Integer.parseInt(versionParts[0]));
+			setMinor(Integer.parseInt(versionParts[1]));
+			setMicro(Integer.parseInt(versionParts[2]));
+			if (versionParts.length > 3) {
+				String modifier = "";
+				for (int i = 3; i < versionParts.length; i++) {
+					modifier += versionParts[i] + "-";
+				}
+				modifier = modifier.substring(0, modifier.length() - 1);
+				setModifier(modifier) ;
+			}
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException("version '" + fullVersion + "' not a parseable version string.", e);
+		}
+	}
+
+	/**
 	 * Creates a new <tt>major.minor</tt> version number, e.g. <tt>1.0</tt>.
 	 */
 	public AppVersion(int major, int minor) {
