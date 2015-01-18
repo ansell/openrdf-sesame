@@ -42,7 +42,6 @@ import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.QueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.query.resultio.TupleQueryResultWriter;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -103,14 +102,17 @@ public abstract class BaseServlet implements Servlet {
 
 	protected AppConfiguration appConfig;
 
+	@Override
 	public ServletConfig getServletConfig() {
 		return config;
 	}
 
+	@Override
 	public String getServletInfo() {
 		return getClass().getSimpleName();
 	}
 
+	@Override
 	public void init(final ServletConfig config)
 		throws ServletException
 	{
@@ -126,9 +128,11 @@ public abstract class BaseServlet implements Servlet {
 		}
 	}
 
+	@Override
 	public void destroy() {
 	}
 
+	@Override
 	public final void service(final ServletRequest req, final ServletResponse resp)
 		throws ServletException, IOException
 	{
@@ -226,65 +230,17 @@ public abstract class BaseServlet implements Servlet {
 		throws UnsupportedQueryResultFormatException, IOException
 	{
 		String contentType = null;
-		QueryResultWriter resultWriter = null;
+		QueryResultWriter resultWriter = checkJSONP(req, outputStream);
 
-		// HACK : SES-2043 : Need to support Chrome who decide to send Accept: */*
-		// instead of application/javascript for JSONP queries, so need to check
-		// it first as other algorithm fails in this case.
-		// JSONP is enabled in the default properties, but if users setup their
-		// own application.properties file then it must be inserted explicitly
-		// to be enabled
-		if (appConfig != null && appConfig.getProperties().containsKey(JSONP_ENABLED)) {
-
-			String jsonpEnabledProperty = appConfig.getProperties().getProperty(JSONP_ENABLED);
-
-			// check if jsonp is a property and it is set to true
-			if (jsonpEnabledProperty != null && Boolean.parseBoolean(jsonpEnabledProperty)) {
-				String parameterName = null;
-
-				// check whether they customised the parameter to use to identify
-				// the jsonp callback
-				if (appConfig.getProperties().containsKey(JSONP_CALLBACK_PARAMETER)) {
-					parameterName = appConfig.getProperties().getProperty(JSONP_CALLBACK_PARAMETER);
-				}
-
-				// Use default parameter name if it was missing in the
-				// configuration after jsonp was enabled
-				if (parameterName == null || parameterName.trim().isEmpty()) {
-					parameterName = DEFAULT_JSONP_CALLBACK_PARAMETER;
-				}
-
-				String parameter = req.getParameter(parameterName);
-
-				if (parameter != null) {
-					parameter = parameter.trim();
-
-					if (parameter.isEmpty()) {
-						parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
-					}
-
-					// check callback function name is a valid javascript function
-					// name
-					if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
-						throw new IOException("Callback function name was invalid");
-					}
-
-					// explicitly set the content type to "application/javascript"
-					// to fit JSONP best practices
-					contentType = APPLICATION_JAVASCRIPT;
-
-					resultWriter = QueryResultIO.createWriter(TupleQueryResultFormat.JSON, outputStream);
-
-					resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
-				}
-			}
+		if (resultWriter != null) {
+			// explicitly set the content type to "application/javascript"
+			// to fit JSONP best practices
+			contentType = APPLICATION_JAVASCRIPT;
 		}
-
-		// If the JSON-P check above failed, use the normal methods to determine
-		// output format
-		if (contentType == null) {
+		else {
+			// If the JSON-P check above failed, use the normal methods to determine
+			// output format
 			resultWriter = getResultWriter(req, resp, resp.getOutputStream());
-
 			contentType = resultWriter.getQueryResultFormat().getDefaultMIMEType();
 		}
 
@@ -337,5 +293,59 @@ public abstract class BaseServlet implements Servlet {
 		}
 
 		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());
+	}
+
+	protected QueryResultWriter checkJSONP(HttpServletRequest req, OutputStream outputStream)
+		throws IOException
+	{
+		QueryResultWriter resultWriter = null;
+		// HACK : SES-2043 : Need to support Chrome who decide to send Accept: */*
+		// instead of application/javascript for JSONP queries, so need to check
+		// it first as other algorithm fails in this case.
+		// JSONP is enabled in the default properties, but if users setup their
+		// own application.properties file then it must be inserted explicitly
+		// to be enabled
+		if (appConfig != null && appConfig.getProperties().containsKey(JSONP_ENABLED)) {
+
+			String jsonpEnabledProperty = appConfig.getProperties().getProperty(JSONP_ENABLED);
+
+			// check if jsonp is a property and it is set to true
+			if (jsonpEnabledProperty != null && Boolean.parseBoolean(jsonpEnabledProperty)) {
+				String parameterName = null;
+
+				// check whether they customised the parameter to use to identify
+				// the jsonp callback
+				if (appConfig.getProperties().containsKey(JSONP_CALLBACK_PARAMETER)) {
+					parameterName = appConfig.getProperties().getProperty(JSONP_CALLBACK_PARAMETER);
+				}
+
+				// Use default parameter name if it was missing in the
+				// configuration after jsonp was enabled
+				if (parameterName == null || parameterName.trim().isEmpty()) {
+					parameterName = DEFAULT_JSONP_CALLBACK_PARAMETER;
+				}
+
+				String parameter = req.getParameter(parameterName);
+
+				if (parameter != null) {
+					parameter = parameter.trim();
+
+					if (parameter.isEmpty()) {
+						parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+					}
+
+					// check callback function name is a valid javascript function
+					// name
+					if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
+						throw new IOException("Callback function name was invalid");
+					}
+
+					resultWriter = QueryResultIO.createWriter(TupleQueryResultFormat.JSON, outputStream);
+
+					resultWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
+				}
+			}
+		}
+		return resultWriter;
 	}
 }
