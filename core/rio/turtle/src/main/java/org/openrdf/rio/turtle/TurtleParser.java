@@ -458,7 +458,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	protected URI parsePredicate()
-		throws IOException, RDFParseException
+		throws IOException, RDFParseException, RDFHandlerException
 	{
 		// Check if the short-cut 'a' is used
 		int c1 = read();
@@ -605,7 +605,7 @@ public class TurtleParser extends RDFParserBase {
 	 * literal, integer, double and boolean.
 	 */
 	protected Value parseValue()
-		throws IOException, RDFParseException
+		throws IOException, RDFParseException, RDFHandlerException
 	{
 		int c = peek();
 
@@ -643,7 +643,7 @@ public class TurtleParser extends RDFParserBase {
 	 * Parses a quoted string, optionally followed by a language tag or datatype.
 	 */
 	protected Literal parseQuotedLiteral()
-		throws IOException, RDFParseException
+		throws IOException, RDFParseException, RDFHandlerException
 	{
 		String label = parseQuotedString();
 
@@ -694,6 +694,8 @@ public class TurtleParser extends RDFParserBase {
 
 			// next character should be another '^'
 			verifyCharacterOrFail(read(), "^");
+
+			skipWSC();
 
 			// Read datatype
 			Value datatype = parseValue();
@@ -1138,8 +1140,7 @@ public class TurtleParser extends RDFParserBase {
 				break;
 			}
 			name.append((char)previous);
-			if(!TurtleUtil.isNameChar(c))
-			{
+			if (!TurtleUtil.isNameChar(c)) {
 				unread(c);
 			}
 		}
