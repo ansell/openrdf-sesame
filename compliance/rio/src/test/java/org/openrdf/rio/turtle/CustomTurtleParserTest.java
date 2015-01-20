@@ -402,4 +402,65 @@ public class CustomTurtleParserTest {
 		}
 	}
 
+	@Test
+	public void testSES2165LiteralSpaceDatatypeNewline()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^\n<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeTab()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^\t<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeCarriageReturn()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^\r<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeSpace()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^ <urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+	
+	@Test
+	public void testSES2165LiteralSpaceDatatypeComment()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^#comment\n<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+
 }

@@ -1,5 +1,6 @@
 /// <reference path="template.ts" />
 /// <reference path="jquery.d.ts" />
+/// <reference path="yasqe.d.ts" />
 /// <reference path="yasqeHelper.ts" />
 
 // WARNING: Do not edit the *.js version of this file. Instead, always edit the
@@ -9,14 +10,14 @@
 module workbench {
 
     export module query {
-        //need to declar YASQE library for typescript compilation
-        declare var YASQE: any;
+        //need to declare YASQE library for typescript compilation
+        declare var YASQE: YASQE_Static;
         declare var sparqlNamespaces: any;
         /**
          * Holds the current selected query language.
          */
         var currentQueryLn = '';
-        var yasqe: any = null;
+        var yasqe: YASQE_Instance = null;
         
         /**
          * Populate reasonable default name space declarations into the query text area.
@@ -28,7 +29,7 @@ module workbench {
                 currentQueryLn = queryLn;
             }
 
-            var query = workbench.query.getQueryValue();
+            var query: string = workbench.query.getQueryValue();
             var queryLn = $('#queryLn').val();
             var namespaces = $('#' + queryLn + '-namespaces');
             var last = $('#' + currentQueryLn + '-namespaces');
@@ -189,15 +190,19 @@ module workbench {
             // submission.
             return allowPageToSubmitForm;
         }
-        export function setQueryValue(queryString: string) {
-            $('#query').val(queryString);
+
+        export function setQueryValue(queryString: string): void {
+            yasqe.setValue(queryString.trim());
         }
-        export function getQueryValue() {
-            return $('#query').val();
+
+        export function getQueryValue(): string {
+            return yasqe.getValue().trim();
         }
-        export function getYasqe(): any {
+
+        export function getYasqe(): YASQE_Instance {
             return yasqe;
         }
+
         export function updateYasqe() {
             if ($("#queryLn").val() == "SPARQL") {
                 initYasqe();
@@ -205,6 +210,7 @@ module workbench {
                 closeYasqe();
             }
         }
+
         function initYasqe() {
             workbench.yasqeHelper.setupCompleters(sparqlNamespaces);
             
@@ -218,6 +224,7 @@ module workbench {
             //we made a change to the css wrapper element (and did so after initialization). So, force a manual update of the yasqe instance
             yasqe.refresh();
         }
+
         function closeYasqe() {
             if (yasqe) {
                 //store yasqe value in text area (not sure whether this is desired, but it mimics current behavior)
@@ -311,7 +318,10 @@ workbench.addLoad(function queryPageLoaded() {
 
     // Add event handlers to the query text area to react to changes in it.
     $('#query').bind('keydown cut paste', workbench.query.clearFeedback);
-    if (workbench.query.getYasqe()) workbench.query.getYasqe().on('change', workbench.query.clearFeedback);
+    if (workbench.query.getYasqe()) {
+        workbench.query.getYasqe().on('change',
+            workbench.query.clearFeedback);
+    }
     
     // Detect if there is no current authenticated user, and if so, disable
     // the 'save privately' option.

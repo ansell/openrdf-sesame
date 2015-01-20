@@ -24,7 +24,8 @@ import org.openrdf.repository.RepositoryException;
  */
 public abstract class RepositoryBase implements Repository {
 
-	private boolean initialized = false;
+	// "volatile" guarantees access ordering in JDK5+
+	private volatile boolean initialized = false;
 
 	private final Object initLock = new Object();
 
@@ -53,7 +54,7 @@ public abstract class RepositoryBase implements Repository {
 		}
 	}
 
-	public synchronized final boolean isInitialized() {
+	public final boolean isInitialized() {
 		return initialized;
 	}
 
