@@ -149,6 +149,28 @@ var workbench;
         paging.getURLqueryParameter = getURLqueryParameter;
 
         /**
+        * Gets whether a URL query parameter with the given name is present.
+        *
+        * @param {String}
+        *            name The name of the parameter to retrieve.
+        * @returns {Boolean} True, if a parameter with the given name is in
+        *                    the URL. Otherwise, false.
+        */
+        function hasURLqueryParameter(name) {
+            var rval = false;
+            var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
+            for (var i = 0; elements.length - i; i++) {
+                var pair = elements[i].split('=');
+                if (name == pair[0]) {
+                    rval = true;
+                    break;
+                }
+            }
+            return rval;
+        }
+        paging.hasURLqueryParameter = hasURLqueryParameter;
+
+        /**
         * Convenience function for returning the tail of a string after a given
         * character.
         *

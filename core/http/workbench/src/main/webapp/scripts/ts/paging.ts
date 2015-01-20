@@ -145,6 +145,27 @@ module workbench {
         }
 
         /**
+         * Gets whether a URL query parameter with the given name is present.
+         * 
+         * @param {String}
+         *            name The name of the parameter to retrieve.
+         * @returns {Boolean} True, if a parameter with the given name is in
+         *                    the URL. Otherwise, false.
+         */
+        export function hasURLqueryParameter(name: string) {
+            var rval = false;
+            var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
+            for (var i = 0; elements.length - i; i++) {
+                var pair = elements[i].split('=');
+                if (name == pair[0]) {
+                    rval = true;
+                    break;
+                }
+            }
+            return rval;
+        }
+
+        /**
          * Convenience function for returning the tail of a string after a given
          * character.
          *   
