@@ -9,6 +9,12 @@ module workbench {
 
     export module paging {
 
+        var KT = 'know_total'
+
+        export var LIMIT = 'limit'
+
+        export var LIM_ID = '#' + LIMIT
+
         /**
          * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
          * document element by name, and creates a request with it as a parameter.
@@ -78,9 +84,8 @@ module workbench {
             var amp = decodeURIComponent('%26');
             var sep = hasParams ? amp : ';';
             url = url + sep + name + '=' + value;
-            var know_total = getURLqueryParameter('know_total');
-            if ('false' == know_total || know_total.length == 0) {
-                url = url + amp + 'know_total=' + getTotalResultCount();
+            if (!hasQueryParameter(KT) || 'false' == getQueryParameter(KT)) {
+                url += amp + KT + '=' + getTotalResultCount();
             }
             document.location.href = simplifyParameters(url);
         }
@@ -90,7 +95,7 @@ module workbench {
          * and navigates to the new URL.
          */
         export function addLimit() {
-            addPagingParam('limit', $('#limit').val());
+            addPagingParam(LIMIT, $(LIM_ID).val());
         }
 
         /**
@@ -111,7 +116,7 @@ module workbench {
          * @returns {number} The value of the offset query parameter.
          */
         export function getOffset() {
-            var offset = getURLqueryParameter('offset');
+            var offset = getQueryParameter('offset');
             return ('' == offset) ? 0 : parseInt(offset, 10);
         }
 
@@ -123,14 +128,14 @@ module workbench {
         }
 
         /**
-         * Retrieves the query parameter with the given name.
+         * Retrieves the URL query parameter with the given name.
          * 
          * @param {String}
          *            name The name of the parameter to retrieve.
          * @returns {String} The value of the given parameter, or an empty string if
          *          it doesn't exist.
          */
-        export function getURLqueryParameter(name: string) {
+        export function getQueryParameter(name: string) {
             var rval = '';
             var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {
@@ -152,7 +157,7 @@ module workbench {
          * @returns {Boolean} True, if a parameter with the given name is in
          *                    the URL. Otherwise, false.
          */
-        export function hasURLqueryParameter(name: string) {
+        export function hasQueryParameter(name: string) {
             var rval = false;
             var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {
@@ -215,7 +220,7 @@ module workbench {
          */
         export function getTotalResultCount() {
             var total_result_count = 0;
-            var s_trc = workbench.paging.getURLqueryParameter('know_total');
+            var s_trc = workbench.paging.getQueryParameter(KT);
             if (s_trc.length == 0) {
                 s_trc = workbench.getCookie('total_result_count');
             }
@@ -231,8 +236,9 @@ module workbench {
             function setCookie(c_name: string, value: boolean, exdays: number) {
                 var exdate = new Date();
                 exdate.setDate(exdate.getDate() + exdays);
-                document.cookie = c_name + "=" + value + ((exdays == null) ? "" : "; expires=" +
-                exdate.toUTCString());
+                document.cookie = c_name + "=" + value + 
+                    ((exdays == null) ? "" : 
+                    "; expires=" + exdate.toUTCString());
             }
 
             export function setShow(show: boolean) {

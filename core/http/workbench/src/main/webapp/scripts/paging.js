@@ -6,6 +6,12 @@
 var workbench;
 (function (workbench) {
     (function (paging) {
+        var KT = 'know_total';
+
+        paging.LIMIT = 'limit';
+
+        paging.LIM_ID = '#' + paging.LIMIT;
+
         /**
         * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
         * document element by name, and creates a request with it as a parameter.
@@ -75,9 +81,8 @@ var workbench;
             var amp = decodeURIComponent('%26');
             var sep = hasParams ? amp : ';';
             url = url + sep + name + '=' + value;
-            var know_total = getURLqueryParameter('know_total');
-            if ('false' == know_total || know_total.length == 0) {
-                url = url + amp + 'know_total=' + getTotalResultCount();
+            if (!hasQueryParameter(KT) || 'false' == getQueryParameter(KT)) {
+                url += amp + KT + '=' + getTotalResultCount();
             }
             document.location.href = simplifyParameters(url);
         }
@@ -88,7 +93,7 @@ var workbench;
         * and navigates to the new URL.
         */
         function addLimit() {
-            addPagingParam('limit', $('#limit').val());
+            addPagingParam(paging.LIMIT, $(paging.LIM_ID).val());
         }
         paging.addLimit = addLimit;
 
@@ -112,7 +117,7 @@ var workbench;
         * @returns {number} The value of the offset query parameter.
         */
         function getOffset() {
-            var offset = getURLqueryParameter('offset');
+            var offset = getQueryParameter('offset');
             return ('' == offset) ? 0 : parseInt(offset, 10);
         }
         paging.getOffset = getOffset;
@@ -126,14 +131,14 @@ var workbench;
         paging.getLimit = getLimit;
 
         /**
-        * Retrieves the query parameter with the given name.
+        * Retrieves the URL query parameter with the given name.
         *
         * @param {String}
         *            name The name of the parameter to retrieve.
         * @returns {String} The value of the given parameter, or an empty string if
         *          it doesn't exist.
         */
-        function getURLqueryParameter(name) {
+        function getQueryParameter(name) {
             var rval = '';
             var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {
@@ -146,7 +151,7 @@ var workbench;
             }
             return rval;
         }
-        paging.getURLqueryParameter = getURLqueryParameter;
+        paging.getQueryParameter = getQueryParameter;
 
         /**
         * Gets whether a URL query parameter with the given name is present.
@@ -156,7 +161,7 @@ var workbench;
         * @returns {Boolean} True, if a parameter with the given name is in
         *                    the URL. Otherwise, false.
         */
-        function hasURLqueryParameter(name) {
+        function hasQueryParameter(name) {
             var rval = false;
             var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {
@@ -168,7 +173,7 @@ var workbench;
             }
             return rval;
         }
-        paging.hasURLqueryParameter = hasURLqueryParameter;
+        paging.hasQueryParameter = hasQueryParameter;
 
         /**
         * Convenience function for returning the tail of a string after a given
@@ -220,7 +225,7 @@ var workbench;
         */
         function getTotalResultCount() {
             var total_result_count = 0;
-            var s_trc = workbench.paging.getURLqueryParameter('know_total');
+            var s_trc = workbench.paging.getQueryParameter(KT);
             if (s_trc.length == 0) {
                 s_trc = workbench.getCookie('total_result_count');
             }
