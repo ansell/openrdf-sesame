@@ -297,31 +297,31 @@
 				select="$info//sparql:binding[@name='default-limit']/sparql:literal/text()" />
 			<option value="0">
 				<xsl:if test="$limit = '0'">
-					<xsl:attribute name="selected">true</xsl:attribute>
+					<xsl:attribute name="selected">selected</xsl:attribute>
 				</xsl:if>
 				<xsl:value-of select="$all.label" />
 			</option>
 			<option value="10">
 				<xsl:if test="$limit = '10'">
-					<xsl:attribute name="selected">true</xsl:attribute>
+					<xsl:attribute name="selected">selected</xsl:attribute>
 				</xsl:if>
 				<xsl:value-of select="$limit10.label" />
 			</option>
 			<option value="50">
 				<xsl:if test="$limit = '50'">
-					<xsl:attribute name="selected">true</xsl:attribute>
+					<xsl:attribute name="selected">selected</xsl:attribute>
 				</xsl:if>
 				<xsl:value-of select="$limit50.label" />
 			</option>
 			<option value="100">
 				<xsl:if test="$limit = '100'">
-					<xsl:attribute name="selected">true</xsl:attribute>
+					<xsl:attribute name="selected">selected</xsl:attribute>
 				</xsl:if>
 				<xsl:value-of select="$limit100.label" />
 			</option>
 			<option value="200">
 				<xsl:if test="$limit = '200'">
-					<xsl:attribute name="selected">true</xsl:attribute>
+					<xsl:attribute name="selected">selected</xsl:attribute>
 				</xsl:if>
 				<xsl:value-of select="$limit200.label" />
 			</option>
