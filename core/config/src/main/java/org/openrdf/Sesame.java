@@ -23,9 +23,9 @@ import info.aduna.io.MavenUtil;
  */
 public class Sesame {
 
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-console", "dev");
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-config", "dev");
 	
-	public static String getVersion() {
+	public final static String getVersion() {
 		return VERSION;
 	}
 }

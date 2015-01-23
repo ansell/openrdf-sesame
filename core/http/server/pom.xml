@@ -63,18 +63,6 @@
 				<configuration>
 					<warName>openrdf-sesame</warName>
 					<archiveClasses>true</archiveClasses>
-					<configuration>
-						<webResources>
-							<webResource>
-								<directory>${basedir}/src/main/webapp/WEB-INF</directory>
-								<includes>
-									<include>openrdf-http-server-servlet.xml</include>
-								</includes>
-								<targetPath>WEB-INF</targetPath>
-								<filtering>true</filtering>
-							</webResource>
-						</webResources>
-					</configuration>
 				</configuration>
 			</plugin>
 			<plugin>
