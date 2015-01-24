@@ -19,9 +19,9 @@ package org.openrdf.http.server;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_ACCEPTABLE;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -88,23 +88,23 @@ public class ProtocolUtil {
 					+ paramValue);
 		}
 	}
-	
+
 	public static URI parseGraphParam(HttpServletRequest request, ValueFactory vf)
-			throws ClientHTTPException
-		{
-			String paramValue = request.getParameter(Protocol.GRAPH_PARAM_NAME);
-			if (paramValue == null) {
-				return null;
-			}
-			
-			try {
-				return Protocol.decodeURI("<" + paramValue + ">", vf);
-			}
-			catch (IllegalArgumentException e) {
-				throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '" + Protocol.GRAPH_PARAM_NAME + "': "
-						+ paramValue);
-			}
+		throws ClientHTTPException
+	{
+		String paramValue = request.getParameter(Protocol.GRAPH_PARAM_NAME);
+		if (paramValue == null) {
+			return null;
 		}
+
+		try {
+			return Protocol.decodeURI("<" + paramValue + ">", vf);
+		}
+		catch (IllegalArgumentException e) {
+			throw new ClientHTTPException(SC_BAD_REQUEST, "Invalid value for parameter '"
+					+ Protocol.GRAPH_PARAM_NAME + "': " + paramValue);
+		}
+	}
 
 	public static Resource[] parseContextParam(HttpServletRequest request, String paramName, ValueFactory vf)
 		throws ClientHTTPException
@@ -159,7 +159,11 @@ public class ProtocolUtil {
 			// Find an acceptable MIME type based on the request headers
 			logAcceptableFormats(request);
 
-			Collection<String> mimeTypes = new ArrayList<String>(16);
+			Collection<String> mimeTypes = new LinkedHashSet<String>(16);
+			// Prefer the default mime types, explicitly before non-default
+			for (FileFormat format : serviceRegistry.getKeys()) {
+				mimeTypes.add(format.getDefaultMIMEType());
+			}
 			for (FileFormat format : serviceRegistry.getKeys()) {
 				mimeTypes.addAll(format.getMIMETypes());
 			}
