@@ -37,10 +37,10 @@ workbench.addLoad(function () {
     for (var i = 0; elements.length - i; i++) {
         var pair = elements[i].split('=');
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
-        if (pair[0] == 'resource') {
+        if ('resource' == pair[0]) {
             resource.val(value);
-        } else if (pair[0] == 'limit') {
-            $('#limit').val(value);
+        } else if (workbench.paging.LIMIT == pair[0]) {
+            $(workbench.paging.LIM_ID).val(value);
         }
     }
     workbench.paging.correctButtons();
