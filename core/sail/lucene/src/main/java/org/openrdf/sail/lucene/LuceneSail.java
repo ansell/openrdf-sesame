@@ -588,10 +588,6 @@ public class LuceneSail extends NotifyingSailWrapper {
 		return (filter != null) ? filter.accept(s) : true;
 	}
 
-	/**
-	 * @param statement
-	 * @return
-	 */
 	public Statement mapStatement(Statement statement) {
 		URI p = statement.getPredicate();
 		boolean predicateChanged = false;

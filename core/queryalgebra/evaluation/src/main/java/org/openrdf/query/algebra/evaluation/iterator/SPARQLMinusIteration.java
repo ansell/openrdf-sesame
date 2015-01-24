@@ -136,9 +136,6 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 		return !compatible;
 	}
 
-	/**
-	 * @return
-	 */
 	protected Set<BindingSet> makeSet()
 		throws X
 	{
@@ -171,7 +168,7 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 	protected Iteration<BindingSet, X> getRightArg() {
 		return rightArg;
 	}
-	
+
 	protected long clearExcludeSet() {
 		int size = excludeSet.size();
 		excludeSet.clear();

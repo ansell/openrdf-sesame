@@ -26,6 +26,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 
 /**
+ * Utility methods for rendering (parts of) SeRQL and SPARQL query strings.
+ * 
  * @author Michael Grove
  * @since 2.7.0
  */
@@ -43,31 +45,60 @@ public final class RenderUtils {
 	 * @param theValue
 	 *        the value to render
 	 * @return the value rendered in its query string representation
+	 * @deprecated since 2.8.0. Use {@link #toSPARQL(Value)} instead.
 	 */
+	@Deprecated
 	public static String getSPARQLQueryString(Value theValue) {
-		StringBuilder aBuffer = new StringBuilder();
+		return toSPARQL(theValue);
+	}
 
-		if (theValue instanceof URI) {
-			URI aURI = (URI)theValue;
-			aBuffer.append("<").append(aURI.toString()).append(">");
-		}
-		else if (theValue instanceof BNode) {
-			aBuffer.append("_:").append(((BNode)theValue).getID());
-		}
-		else if (theValue instanceof Literal) {
-			Literal aLit = (Literal)theValue;
+	/**
+	 * Return the SPARQL query string rendering of the
+	 * {@link org.openrdf.model.Value}
+	 * 
+	 * @param theValue
+	 *        the value to render
+	 * @return the value rendered in its SPARQL query string representation
+	 * @since 2.8.0
+	 */
+	public static String toSPARQL(Value theValue) {
+		StringBuilder aBuffer = toSPARQL(theValue, new StringBuilder());
+		return aBuffer.toString();
+	}
 
-			aBuffer.append("\"\"\"").append(escape(aLit.getLabel())).append("\"\"\"");
+	/**
+	 * Append the SPARQL query string rendering of the
+	 * {@link org.openrdf.model.Value} to the supplied {@link StringBuilder}.
+	 * 
+	 * @param value
+	 *        the value to render
+	 * @param builder
+	 *        the {@link StringBuilder} to append to
+	 * @return the original {@link StringBuilder} with the value appended.
+	 * @since 2.8.0
+	 */
+	public static StringBuilder toSPARQL(Value value, StringBuilder builder) {
+		if (value instanceof URI) {
+			URI aURI = (URI)value;
+			builder.append("<").append(aURI.toString()).append(">");
+		}
+		else if (value instanceof BNode) {
+			builder.append("_:").append(((BNode)value).getID());
+		}
+		else if (value instanceof Literal) {
+			Literal aLit = (Literal)value;
+
+			builder.append("\"\"\"").append(escape(aLit.getLabel())).append("\"\"\"");
 
 			if (Literals.isLanguageLiteral(aLit)) {
-				aBuffer.append("@").append(aLit.getLanguage());
+				builder.append("@").append(aLit.getLanguage());
 			}
 			else {
-				aBuffer.append("^^<").append(aLit.getDatatype().toString()).append(">");
+				builder.append("^^<").append(aLit.getDatatype().toString()).append(">");
 			}
 		}
 
-		return aBuffer.toString();
+		return builder;
 	}
 
 	/**
@@ -76,8 +107,22 @@ public final class RenderUtils {
 	 * @param theValue
 	 *        the value to render
 	 * @return the value rendered in its query string representation
+	 * @deprecated since 2.8.0. Use {{@link #toSeRQL(Value)} instead.
 	 */
+	@Deprecated
 	public static String getSerqlQueryString(Value theValue) {
+		return toSeRQL(theValue);
+	}
+
+	/**
+	 * Return the query string rendering of the {@link Value}
+	 * 
+	 * @param theValue
+	 *        the value to render
+	 * @return the value rendered in its query string representation
+	 * @since 2.8.0
+	 */
+	public static String toSeRQL(Value theValue) {
 		StringBuilder aBuffer = new StringBuilder();
 
 		if (theValue instanceof URI) {

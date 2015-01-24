@@ -43,10 +43,9 @@ public class PrintHelp implements Command {
 	protected static final String DROP = USAGE
 			+ "drop <repositoryID>   Drops the repository with the specified id\n";
 
-	private final Map<String, String> topics = new HashMap<String, String>();
-
-	private final ConsoleIO consoleIO;
-
+	protected static final String INFO = USAGE 
+			+ "info                  Shows information about the console\n";
+	
 	protected static final String OPEN = USAGE
 			+ "open <repositoryID>   Opens the repository with the specified ID\n";
 
@@ -70,12 +69,23 @@ public class PrintHelp implements Command {
 	protected static final String CLEAR = USAGE + "clear                   Clears the entire repository\n"
 			+ "clear (<uri>|null)...   Clears the specified context(s)\n";
 
+	protected static final String SPARQL = USAGE 
+			+ "sparql <query>                       Evaluates the SPARQL query on the currently open repository.\n"
+			+ "sparql                               Starts multi-line input for large SPARQL queries.\n" 
+			+ "select|construct|ask|describe|prefix|base <rest-of-query>\n" 
+			+ "                                     Evaluates a SPARQL query on the currently open repository.\n"; 
+	     
+	
+	protected static final String SERQL = USAGE 
+			+ "serql <query>                 Evaluates the SeRQL query on the currently open repository\n"
+			+ "serql                         Starts multi-line input for large SeRQL queries.\n" ;
+	
 	protected static final String SET = USAGE
 			+ "set                            Shows all parameter values\n"
 			+ "set width=<number>             Set the width for query result tables\n"
 			+ "set log=<level>                Set the logging level (none, error, warning, info or debug)\n"
 			+ "set showPrefix=<true|false>    Toggles use of prefixed names in query results\n"
-			+ "set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries (warning: buggy!)\n";
+			+ "set queryPrefix=<true|false>   Toggles automatic use of known namespace prefixes in queries\n";
 
 	protected static final String FEDERATE = USAGE
 			+ "federate [distinct=<true|false>] [readonly=<true|false>] <fedID> <repoID_1> <repoID_2> [<repoID_n>]*\n"
@@ -88,21 +98,28 @@ public class PrintHelp implements Command {
 			+ "  [<repoID_n>]*            The id's of 0 or mare additional repositories to federate.\n\n"
 			+ "You will be prompted to enter a description for the federated repository as well.";
 
+	private final Map<String, String> topics = new HashMap<String, String>();
+
+	private final ConsoleIO consoleIO;
+	
 	PrintHelp(ConsoleIO consoleIO) {
 		super();
 		this.consoleIO = consoleIO;
-		topics.put("connect", CONNECT);
-		topics.put("disconnect", DISCONNECT);
-		topics.put("create", CREATE);
-		topics.put("drop", DROP);
-		topics.put("open", OPEN);
-		topics.put("close", CLOSE);
-		topics.put("show", SHOW);
-		topics.put("load", LOAD);
-		topics.put("verify", VERIFY);
 		topics.put("clear", CLEAR);
-		topics.put("set", SET);
+		topics.put("close", CLOSE);
+		topics.put("connect", CONNECT);
+		topics.put("create", CREATE);
+		topics.put("disconnect", DISCONNECT);
+		topics.put("drop", DROP);
 		topics.put("federate", FEDERATE);
+		topics.put("info", INFO);
+		topics.put("load", LOAD);
+		topics.put("open", OPEN);
+		topics.put("serql", SERQL);
+		topics.put("set", SET);
+		topics.put("show", SHOW);
+		topics.put("sparql", SPARQL);
+		topics.put("verify", VERIFY);
 	}
 
 	public void execute(String... parameters) {
@@ -115,13 +132,13 @@ public class PrintHelp implements Command {
 				consoleIO.writeln(topics.get(target));
 			}
 			else {
-				consoleIO.writeln("No info available for command " + parameters[1]);
+				consoleIO.writeln("No additional info available for command " + parameters[1]);
 			}
 		}
 	}
 
 	private void printCommandOverview() {
-		consoleIO.writeln("For more information on a specific command, try 'help <command>.'");
+		consoleIO.writeln("For more information on a specific command, try 'help <command>'.");
 		consoleIO.writeln("List of all commands:");
 		consoleIO.writeln("help        Displays this help message");
 		consoleIO.writeln("info        Shows info about the console");
@@ -136,8 +153,8 @@ public class PrintHelp implements Command {
 		consoleIO.writeln("load        Loads a data file into a repository, takes a file path or URL as argument");
 		consoleIO.writeln("verify      Verifies the syntax of an RDF data file, takes a file path or URL as argument");
 		consoleIO.writeln("clear       Removes data from a repository");
-		consoleIO.writeln("serql       Evaluates the SeRQL query, takes a query as argument");
-		consoleIO.writeln("sparql      Evaluates the SPARQL query, takes a query as argument");
+		consoleIO.writeln("sparql      Evaluate a SPARQL query");
+		consoleIO.writeln("serql       Evaluate a SeRQL query");
 		consoleIO.writeln("set         Allows various console parameters to be set");
 		consoleIO.writeln("exit, quit  Exit the console");
 	}

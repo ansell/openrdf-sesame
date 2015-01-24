@@ -222,7 +222,8 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Verifies that there is only whitespace or comments until the end of the line.
+	 * Verifies that there is only whitespace or comments until the end of the
+	 * line.
 	 */
 	protected int assertLineTerminates(int c)
 		throws IOException, RDFParseException
@@ -230,21 +231,22 @@ public class NTriplesParser extends RDFParserBase {
 		c = reader.read();
 
 		c = skipWhitespace(c);
-		
+
 		if (c == '#') {
-			//c = skipToEndOfLine(c);
+			// c = skipToEndOfLine(c);
 		}
 		else {
 			if (c != -1 && c != '\r' && c != '\n') {
 				reportFatalError("Content after '.' is not allowed");
 			}
 		}
-		
+
 		return c;
 	}
 
 	/**
-	 * Reads characters from reader until the first EOL has been read. The EOL character or -1 is returned.
+	 * Reads characters from reader until the first EOL has been read. The EOL
+	 * character or -1 is returned.
 	 */
 	protected int skipToEndOfLine(int c)
 		throws IOException
@@ -252,10 +254,10 @@ public class NTriplesParser extends RDFParserBase {
 		while (c != -1 && c != '\r' && c != '\n') {
 			c = reader.read();
 		}
-		
+
 		return c;
 	}
-	
+
 	/**
 	 * Reads characters from reader until the first EOL has been read. The first
 	 * character after the EOL is returned. In case the end of the character
@@ -440,7 +442,25 @@ public class NTriplesParser extends RDFParserBase {
 			if (c == -1) {
 				throwEOFException();
 			}
+			if (c == ' ') {
+				reportError("IRI included an unencoded space: " + (char)c,
+						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			}
 			uriRef.append((char)c);
+
+			if (c == '\\') {
+				// This escapes the next character, which might be a '>'
+				c = reader.read();
+				if (c == -1) {
+					throwEOFException();
+				}
+				if (c != 'u' && c != 'U') {
+					reportError("IRI includes string escapes: '\\" + c + "'",
+							NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+				}
+				uriRef.append((char)c);
+			}
+
 			c = reader.read();
 		}
 
@@ -520,12 +540,12 @@ public class NTriplesParser extends RDFParserBase {
 		if (c == '@') {
 			// Read language
 			c = reader.read();
-			
-			if(!NTriplesUtil.isLetter(c)) {
+
+			if (!NTriplesUtil.isLetter(c)) {
 				reportError("Expected a letter, found: " + (char)c,
 						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
-			
+
 			while (c != -1 && c != '.' && c != '^' && c != ' ' && c != '\t') {
 				lang.append((char)c);
 				c = reader.read();
@@ -611,7 +631,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String)}, adding line number
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding line number
 	 * information to the error.
 	 */
 	@Override
@@ -661,8 +681,7 @@ public class NTriplesParser extends RDFParserBase {
 	 * substantially. However, you have to watch out for side-effects and convert
 	 * the buffer to a {@link String} before the buffer is reused.
 	 * 
-	 * @param capacityIsIgnored
-	 * @return
+	 * @return a buffer of zero length and non-zero capacity.
 	 */
 	private StringBuilder getBuffer() {
 		buffer.setLength(0);
@@ -678,8 +697,8 @@ public class NTriplesParser extends RDFParserBase {
 	 * However, you have to watch out for side-effects and convert the buffer to
 	 * a {@link String} before the buffer is reused.
 	 * 
-	 * @param capacityIsIgnored
-	 * @return
+	 * @return a buffer of zero length and non-zero capacity, for the use of
+	 *         parsing literal language tags.
 	 */
 	private StringBuilder getLanguageTagBuffer() {
 		languageTagBuffer.setLength(0);
@@ -695,8 +714,8 @@ public class NTriplesParser extends RDFParserBase {
 	 * However, you have to watch out for side-effects and convert the buffer to
 	 * a {@link String} before the buffer is reused.
 	 * 
-	 * @param capacityIsIgnored
-	 * @return
+	 * @return a buffer of zero length and non-zero capacity, for the user of
+	 *         parsing literal datatype URIs.
 	 */
 	private StringBuilder getDatatypeUriBuffer() {
 		datatypeUriBuffer.setLength(0);

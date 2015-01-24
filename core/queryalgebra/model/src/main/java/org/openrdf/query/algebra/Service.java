@@ -135,8 +135,7 @@ public class Service extends UnaryTupleOperator {
 	/**
 	 * Returns an ASK query string using no projection vars.
 	 * 
-	 * @param projectionVars
-	 * @return ASK query string
+	 * @return an ASK query string
 	 */
 	public String getAskQueryString() {
 		return preparedAskQueryString;

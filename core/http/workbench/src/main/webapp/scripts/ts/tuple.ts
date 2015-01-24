@@ -7,9 +7,11 @@
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 
 workbench.addLoad(function() {
-	var limit = parseInt(0 + workbench.paging.getURLqueryParameter('limit'), 
-	                     10);
-	$('#limit').val(String(limit));
+	if (workbench.paging.hasQueryParameter(workbench.paging.LIMIT)) {
+		var limit = parseInt(0 +
+			workbench.paging.getQueryParameter(workbench.paging.LIMIT), 10);
+		$(workbench.paging.LIM_ID).val(String(limit));
+	}
 	workbench.paging.correctButtons();
 	limit = workbench.paging.getLimit(); // Number
 

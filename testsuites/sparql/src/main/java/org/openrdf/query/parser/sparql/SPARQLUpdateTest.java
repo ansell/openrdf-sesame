@@ -814,15 +814,17 @@ public abstract class SPARQLUpdateTest {
 
 		URI book1 = f.createURI(EX_NS, "book1");
 
-		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("the number four", XMLSchema.INTEGER), true));
+		assertFalse(con.hasStatement(book1, DC.TITLE, f.createLiteral("the number four", XMLSchema.INTEGER),
+				true));
 
 		operation.execute();
 
 		String msg = "new statement about ex:book1 should have been inserted";
 
-		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("the number four", XMLSchema.INTEGER), true));
+		assertTrue(msg,
+				con.hasStatement(book1, DC.TITLE, f.createLiteral("the number four", XMLSchema.INTEGER), true));
 	}
-	
+
 	@Test
 	public void testInsertDataLangTaggedLiteral()
 		throws Exception
@@ -844,73 +846,80 @@ public abstract class SPARQLUpdateTest {
 		String msg = "new statement about ex:book1 should have been inserted";
 		assertTrue(msg, con.hasStatement(book1, DC.TITLE, f.createLiteral("book 1", "en"), true));
 	}
-	
-	@Test 
-	public void testInsertDataGraph1() 
-	throws Exception
+
+	@Test
+	public void testInsertDataGraph1()
+		throws Exception
 	{
 		logger.debug("executing testInsertDataGraph1");
-		
-		StringBuilder update = new StringBuilder();
-		update.append("INSERT DATA { \n");
-		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> . } \n" );
-		update.append("<urn:s1> a <urn:C1> . \n");
-		update.append("}");
 
-		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
-		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
-		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
-		operation.execute();
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
-	}
-	
-	@Test 
-	public void testInsertDataGraph2() 
-	throws Exception
-	{
-		logger.debug("executing testInsertDataGraph2");
-		
 		StringBuilder update = new StringBuilder();
 		update.append("INSERT DATA { \n");
+		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> . } \n");
 		update.append("<urn:s1> a <urn:C1> . \n");
-		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> . } \n" );
 		update.append("}");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
-		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,
+				f.createURI("urn:g1")));
 		operation.execute();
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,
+				f.createURI("urn:g1")));
 	}
-	
-	
-	@Test 
-	public void testInsertDataGraph3() 
-	throws Exception
+
+	@Test
+	public void testInsertDataGraph2()
+		throws Exception
 	{
-		logger.debug("executing testInsertDataGraph3");
-		
+		logger.debug("executing testInsertDataGraph2");
+
 		StringBuilder update = new StringBuilder();
 		update.append("INSERT DATA { \n");
 		update.append("<urn:s1> a <urn:C1> . \n");
-		update.append("GRAPH <urn:g1>{ <urn:s1> <urn:p1> <urn:o1> . <urn:s2> <urn:p2> <urn:o2> } \n" );
+		update.append("GRAPH <urn:g1> { <urn:s1> <urn:p1> <urn:o1> . } \n");
+		update.append("}");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,
+				f.createURI("urn:g1")));
+		operation.execute();
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,
+				f.createURI("urn:g1")));
+	}
+
+	@Test
+	public void testInsertDataGraph3()
+		throws Exception
+	{
+		logger.debug("executing testInsertDataGraph3");
+
+		StringBuilder update = new StringBuilder();
+		update.append("INSERT DATA { \n");
+		update.append("<urn:s1> a <urn:C1> . \n");
+		update.append("GRAPH <urn:g1>{ <urn:s1> <urn:p1> <urn:o1> . <urn:s2> <urn:p2> <urn:o2> } \n");
 		update.append("<urn:s2> a <urn:C2> \n");
 		update.append("}");
 
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 		assertFalse(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
-		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true, f.createURI("urn:g1")));
+		assertFalse(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,
+				f.createURI("urn:g1")));
 
-		assertFalse(con.hasStatement(f.createURI("urn:s2"), f.createURI("urn:p2"), f.createURI("urn:o2"), true, f.createURI("urn:g1")));
+		assertFalse(con.hasStatement(f.createURI("urn:s2"), f.createURI("urn:p2"), f.createURI("urn:o2"), true,
+				f.createURI("urn:g1")));
 		operation.execute();
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true,  (Resource)null));
-		assertTrue(con.hasStatement(f.createURI("urn:s2"), RDF.TYPE, null, true,  (Resource)null));
-		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,  f.createURI("urn:g1")));
-		assertTrue(con.hasStatement(f.createURI("urn:s2"), f.createURI("urn:p2"), f.createURI("urn:o2"), true, f.createURI("urn:g1")));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), RDF.TYPE, null, true, (Resource)null));
+		assertTrue(con.hasStatement(f.createURI("urn:s2"), RDF.TYPE, null, true, (Resource)null));
+		assertTrue(con.hasStatement(f.createURI("urn:s1"), f.createURI("urn:p1"), f.createURI("urn:o1"), true,
+				f.createURI("urn:g1")));
+		assertTrue(con.hasStatement(f.createURI("urn:s2"), f.createURI("urn:p2"), f.createURI("urn:o2"), true,
+				f.createURI("urn:g1")));
 	}
-	
+
 	@Test
 	public void testInsertDataBlankNode()
 		throws Exception
@@ -1148,6 +1157,7 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("CREATE GRAPH <" + graph1 + "> ");
 
+		con.begin();
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		try {
@@ -1157,7 +1167,9 @@ public abstract class SPARQLUpdateTest {
 		}
 		catch (UpdateExecutionException e) {
 			// expected behavior
-			con.rollback();
+			if (con.isActive()) {
+				con.rollback();
+			}
 		}
 	}
 
@@ -1666,7 +1678,6 @@ public abstract class SPARQLUpdateTest {
 
 		// replace the standard dataset with one specific to this case.
 		con.clear();
-		con.commit();
 		loadDataset("/testdata-update/dataset-update-example9.trig");
 
 		URI book1 = f.createURI("http://example/book1");

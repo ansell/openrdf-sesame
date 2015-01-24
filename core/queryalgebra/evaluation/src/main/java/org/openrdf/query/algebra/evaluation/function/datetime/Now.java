@@ -49,21 +49,20 @@ public class Now implements Function {
 		if (args.length != 0) {
 			throw new ValueExprEvaluationException("NOW requires 0 argument, got " + args.length);
 		}
-		
+
 		Calendar cal = Calendar.getInstance();
-		
+
 		Date now = cal.getTime();
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(now);
 		try {
 			XMLGregorianCalendar date = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			
+
 			return valueFactory.createLiteral(date);
 		}
 		catch (DatatypeConfigurationException e) {
 			throw new ValueExprEvaluationException(e);
 		}
-
 
 	}
 

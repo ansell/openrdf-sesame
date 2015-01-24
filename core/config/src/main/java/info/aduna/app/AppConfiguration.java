@@ -24,7 +24,10 @@ import info.aduna.app.config.Configuration;
 import info.aduna.app.logging.LogConfiguration;
 import info.aduna.app.net.ProxySettings;
 import info.aduna.app.util.ConfigurationUtil;
+import info.aduna.io.MavenUtil;
 import info.aduna.platform.PlatformFactory;
+
+import org.openrdf.Sesame;
 
 /**
  * @author Herko ter Horst
@@ -100,6 +103,19 @@ public class AppConfiguration implements Configuration {
 		setVersion(version);
 	}
 
+	/**
+	 * Create the application configuration.
+	 * 
+	 * @param applicationId
+	 *        the ID of the application
+	 * @param longName
+	 *        the long name of the application
+	 */
+	public AppConfiguration(final String applicationId, final String longName) {
+		this(applicationId);
+		setLongName(longName);
+	}
+	
 	/**
 	 * Create the application configuration.
 	 * 
@@ -239,6 +255,9 @@ public class AppConfiguration implements Configuration {
 	 * @return the version of the application
 	 */
 	public AppVersion getVersion() {
+		if (version == null) {
+			version = AppVersion.parse(Sesame.getVersion());
+		}
 		return version;
 	}
 

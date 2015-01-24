@@ -77,8 +77,8 @@ public class TupleAndGraphQueryEvaluator {
 		}
 		final RepositoryConnection con = repository.getConnection();
 		try {
-			consoleIO.writeln("Evaluating query...");
 			final long startTime = System.nanoTime();
+			consoleIO.writeln("Evaluating " + queryLn.getName() + " query...");
 			final TupleQueryResult tupleQueryResult = con.prepareTupleQuery(queryLn, queryString).evaluate();
 			try {
 				int resultCount = 0;
@@ -157,7 +157,7 @@ public class TupleAndGraphQueryEvaluator {
 		final RepositoryConnection con = repository.getConnection();
 		con.setParserConfig(nonVerifyingParserConfig);
 		try {
-			consoleIO.writeln("Evaluating query...");
+			consoleIO.writeln("Evaluating " + queryLn.getName() + " query...");
 			final long startTime = System.nanoTime();
 			final Collection<Namespace> namespaces = Iterations.asList(con.getNamespaces());
 			final GraphQueryResult queryResult = con.prepareGraphQuery(queryLn, queryString).evaluate();

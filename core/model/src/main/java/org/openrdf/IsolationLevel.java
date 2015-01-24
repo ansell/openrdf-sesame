@@ -16,6 +16,8 @@
  */
 package org.openrdf;
 
+import org.openrdf.model.URI;
+
 /**
  * A Transaction Isolation Level. Defaul levels supported by Sesame are provided
  * by {@link IsolationLevels}, third-party triplestore implementors may choose
@@ -39,4 +41,12 @@ public interface IsolationLevel {
 	 *         other isolation level, false otherwise.
 	 */
 	boolean isCompatibleWith(IsolationLevel otherLevel);
+	
+	/**
+	 * Get a URI uniquely representing this isolation level.
+	 * 
+	 * @return a URI that uniquely represents this isolation level. 
+	 */
+	URI getURI();
+	
 }

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -10,7 +11,7 @@
 
 	<groupId>org.openrdf.sesame</groupId>
 	<artifactId>sesame</artifactId>
-	<version>2.9.0-SNAPSHOT</version>
+	<version>4.0.0-alpha1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenRDF Sesame</name>
@@ -68,9 +69,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<slf4j.version>1.7.7</slf4j.version>
+		<slf4j.version>1.7.10</slf4j.version>
 		<logback.version>1.1.2</logback.version>
-		<spring.version>4.0.5.RELEASE</spring.version>
+		<spring.version>4.1.4.RELEASE</spring.version>
+		<jackson.version>2.4.4</jackson.version>
+		<jsonldjava.version>0.5.1</jsonldjava.version>
 	</properties>
 
 	<dependencyManagement>
@@ -131,7 +134,7 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.9</version>
+				<version>1.10</version>
 				<scope>runtime</scope>
 			</dependency>
 
@@ -294,14 +297,14 @@
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.11</version>
+				<version>4.12</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<!-- needs extra dependencies: objenesis & hamcrest -->
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>1.9.5</version>
+				<version>1.10.19</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -314,32 +317,32 @@
 			<dependency>
 				<groupId>com.github.jsonld-java</groupId>
 				<artifactId>jsonld-java</artifactId>
-				<version>0.5.0</version>
+				<version>${jsonldjava.version}</version>
 				<type>jar</type>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.github.jsonld-java</groupId>
 				<artifactId>jsonld-java</artifactId>
-				<version>0.5.0</version>
+				<version>${jsonldjava.version}</version>
 				<type>test-jar</type>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
-				<version>2.4.0</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.4.0</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
-				<version>2.4.0</version>
-			</dependency>			
+				<version>${jackson.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -354,8 +357,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<!--<version>2.2.1</version> -->
-					<version>2.2-beta-1</version>
+					<version>2.4.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -370,7 +372,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>2.2</version>
+					<version>2.8</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -405,7 +407,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.0</version>
+					<version>3.3</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -421,6 +423,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>2.17</version>
+					<configuration>
+					    <encoding>UTF-8</encoding>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -428,9 +433,9 @@
 					<version>2.1.1</version>
 				</plugin>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>tomcat-maven-plugin</artifactId>
-					<version>1.1</version>
+					<groupId>org.apache.tomcat.maven</groupId>
+					<artifactId>tomcat7-maven-plugin</artifactId>
+					<version>2.2</version>
 				</plugin>
 
 				<plugin>
@@ -485,9 +490,25 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.1</version>
+				<executions>
+					<execution>
+						<id>bundle-sources</id>
+						<phase>package</phase>
+						<goals>
+							<!-- produce source artifact for main project sources -->
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>animal-sniffer-maven-plugin</artifactId>
-				<version>1.9</version>
+				<version>1.13</version>
 				<executions>
 					<execution>
 						<phase>test</phase>

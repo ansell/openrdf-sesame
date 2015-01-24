@@ -32,7 +32,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
@@ -329,7 +329,7 @@ public class CustomTurtleParserTest {
 		assertFalse(statementCollector.getStatements().isEmpty());
 		assertEquals(5, statementCollector.getStatements().size());
 
-		ModelUtil.equals(statementCollector.getStatements(), Rio.parse(
+		Models.isomorphic(statementCollector.getStatements(), Rio.parse(
 				this.getClass().getResourceAsStream("/testcases/turtle/turtle-long-literals-test.nt"), "",
 				RDFFormat.NTRIPLES));
 	}
@@ -401,5 +401,66 @@ public class CustomTurtleParserTest {
 			assertTrue(e.getMessage().contains("Expected an RDF value here, found ';'"));
 		}
 	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeNewline()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^\n<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeTab()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^\t<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeCarriageReturn()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^\r<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
+	@Test
+	public void testSES2165LiteralSpaceDatatypeSpace()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^ <urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+	
+	@Test
+	public void testSES2165LiteralSpaceDatatypeComment()
+		throws Exception
+	{
+		Model model = Rio.parse(new StringReader("<urn:a> <urn:b> \"testliteral\"^^#comment\n<urn:datatype> ."), "",
+				RDFFormat.TURTLE);
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:b"),
+				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
+	}
+
 
 }

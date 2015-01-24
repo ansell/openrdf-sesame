@@ -17,12 +17,14 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Extension;
@@ -88,7 +90,17 @@ public class SameTermFilterOptimizer implements QueryOptimizer {
 				}
 
 				if (leftArg instanceof Var || rightArg instanceof Var) {
-
+					if (filterArg instanceof ArbitraryLengthPath && leftArg instanceof Var && rightArg instanceof Var) {
+						final ArbitraryLengthPath alp = (ArbitraryLengthPath)filterArg;
+						final List<Var> sameTermArgs = Arrays.asList((Var)leftArg, (Var)rightArg);
+						
+						if (sameTermArgs.contains(alp.getSubjectVar()) && sameTermArgs.contains(alp.getObjectVar())) {
+							// SameTerm provides a deferred mapping to allow arbitrary-length property path to produce cyclic paths. See SES-1685. 
+							// we can not inline.
+							return;
+						}
+					}
+					
 					BindingSetAssignmentCollector collector = new BindingSetAssignmentCollector();
 					filterArg.visit(collector);
 

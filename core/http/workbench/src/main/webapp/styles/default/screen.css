@@ -11,13 +11,13 @@ html,body {
 }
 
 html {
-	background: #FFF url(images/bg_html.png);
-	background-repeat: repeat-x;
 	overflow: scroll;
 }
 
 body {
-	background: url(images/bg_body.png);
+	background: linear-gradient(#757575, #D0D0D0 150px, #FFFFFF);
+	filter: progid:DXImageTransform.Microsoft.gradient(
+		startColorstr='#757575', endColorstr='#ffffff',GradientType=0 ); /* IE6-9 */
 	background-repeat: no-repeat;
 }
 
@@ -141,6 +141,7 @@ div.resource:hover > a.resourceURL {
 	padding: 0;
 	width: 190px;
 	background: url(images/hr_menu.png);
+	background: #D0D0D0;
 	background-repeat: no-repeat;
 	font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
 	font-weight: bold;

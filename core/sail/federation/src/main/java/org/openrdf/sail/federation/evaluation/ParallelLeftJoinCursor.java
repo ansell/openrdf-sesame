@@ -126,7 +126,7 @@ public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, Query
 	}
 
 	@Override
-	public BindingSet getNextElement()
+	public synchronized BindingSet getNextElement()
 		throws QueryEvaluationException
 	{
 		BindingSet result = null;
@@ -148,7 +148,7 @@ public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, Query
 	}
 
 	@Override
-	public void handleClose()
+	public synchronized void handleClose()
 		throws QueryEvaluationException
 	{
 		closed = true;

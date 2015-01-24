@@ -20,6 +20,8 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
+import info.aduna.io.MavenUtil;
+
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
@@ -37,6 +39,18 @@ import org.openrdf.repository.base.RepositoryBase;
  * @author James Leigh
  */
 public class SPARQLRepository extends RepositoryBase {
+
+	private static final String APP_NAME = "OpenRDF.org SPARQLConnection";
+
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
+			"sesame-repository-sparql", "devel");
+	
+	/**
+	 * Flag indicating if quad mode is enabled in newly created
+	 * {@link SPARQLConnection}s.
+	 * @see #enableQuadMode(boolean) 
+	 */
+	private boolean quadMode = false;
 
 	/**
 	 * The HTTP client that takes care of the client-server communication.
@@ -118,7 +132,7 @@ public class SPARQLRepository extends RepositoryBase {
 		if (!isInitialized()) {
 			throw new RepositoryException("SPARQLRepository not initialized.");
 		}
-		return new SPARQLConnection(this, createHTTPClient());
+		return new SPARQLConnection(this, createHTTPClient(), quadMode);
 	}
 
 	public File getDataDir() {
@@ -200,5 +214,19 @@ public class SPARQLRepository extends RepositoryBase {
 		else {
 			this.additionalHttpHeaders = additionalHttpHeaders;
 		}
+	}
+	
+	/**
+	 * Activate quad mode for this {@link SPARQLRepository}, i.e. for 
+	 * retrieval of statements also retrieve the graph.<p>
+	 * 
+	 * Note: the setting is only applied in newly created {@link SPARQLConnection}s
+	 * as the setting is an immutable configuration of a connection instance.
+	 * 
+	 * @param flag flag to enable or disable the quad mode
+	 * @see SPARQLConnection#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, boolean, org.openrdf.model.Resource...)
+	 */
+	public void enableQuadMode(boolean flag) {
+		this.quadMode = flag;
 	}
 }

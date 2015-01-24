@@ -17,6 +17,7 @@
 package org.openrdf.http.protocol;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -26,9 +27,33 @@ import org.openrdf.rio.ntriples.NTriplesUtil;
 public abstract class Protocol {
 
 	/**
+	 * Defines the action a particular transaction update is executing.  
+	 *
+	 * @author Jeen Broekstra
+	 */
+	public static enum Action {
+		/** adding data */
+		ADD,
+		/** deleting data */
+		DELETE,
+		/** getStatements or exportStatements */
+		GET,
+		/** retrieving repository size */
+		SIZE,
+		/** SPARQL or SeRQL query */
+		QUERY,
+		/** SPARQL Update */
+		UPDATE,
+		/** commit */
+		COMMIT,
+		/** rollback */
+		ROLLBACK;
+	}
+
+	/**
 	 * Protocol version.
 	 */
-	public static final String VERSION = "6";
+	public static final String VERSION = "7";
 
 	/**
 	 * Parameter name for the 'subject' parameter of a statement query.
@@ -124,6 +149,16 @@ public abstract class Protocol {
 	public static final String ACCEPT_PARAM_NAME = "Accept";
 
 	/**
+	 * Parameter name for the isolation level used in transactions.
+	 */
+	public static final String ISOLATION_LEVEL_PARAM_NAME = "isolation-level";
+	
+	/**
+	 * Parameter name for the action parameter used in transactions.
+	 */
+	public static final String ACTION_PARAM_NAME = "action";
+
+	/**
 	 * Relative location of the protocol resource.
 	 */
 	public static final String PROTOCOL = "protocol";
@@ -142,6 +177,11 @@ public abstract class Protocol {
 	 * Relative location of the statement list resource of a repository.
 	 */
 	public static final String STATEMENTS = "statements";
+
+	/**
+	 * Relative location of the transaction resources of a repository.
+	 */
+	public static final String TRANSACTIONS = "transactions";
 
 	/**
 	 * Relative location of the context list resource of a repository.
@@ -172,6 +212,14 @@ public abstract class Protocol {
 	 * MIME type for www forms: <tt>application/x-www-form-urlencoded</tt>.
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
+
+	/**
+	 * Parameter for server instruction to preserve blank node ids when parsing
+	 * request data.
+	 * 
+	 * @since 2.8.0
+	 */
+	public static final String PRESERVE_BNODE_ID_PARAM_NAME = "preserveNodeId";
 
 	private static String getServerDir(String serverLocation) {
 		if (serverLocation.endsWith("/")) {
@@ -246,6 +294,19 @@ public abstract class Protocol {
 	}
 
 	/**
+	 * Get the location of the transaction resources for a specific repository.
+	 * 
+	 * @param repositoryLocation
+	 *        the location of a repository implementing this REST protocol.
+	 * @return the location of the transaction resources for the specified
+	 *         repository
+	 * @since 2.8.0
+	 */
+	public static final String getTransactionsLocation(String repositoryLocation) {
+		return repositoryLocation + "/" + TRANSACTIONS;
+	}
+
+	/**
 	 * Extracts the server location from the repository location.
 	 * 
 	 * @param repositoryLocation
@@ -257,7 +318,6 @@ public abstract class Protocol {
 		serverLocation = serverLocation.substring(0, serverLocation.lastIndexOf('/'));
 		return serverLocation;
 	}
-	
 
 	/**
 	 * Extracts the repository ID from the repository location.
@@ -270,8 +330,6 @@ public abstract class Protocol {
 		String repositoryID = repositoryLocation.substring(repositoryLocation.lastIndexOf('/') + 1);
 		return repositoryID;
 	}
-	
-	
 
 	/**
 	 * Get the location of the contexts lists resource for a specific repository.
@@ -327,14 +385,20 @@ public abstract class Protocol {
 	}
 
 	/**
-	 * Encodes a value for use in a URL.
+	 * Encodes a value in a canonical serialized string format, for use in a URL query parameter.
 	 * 
 	 * @param value
 	 *        The value to encode, possibly <tt>null</tt>.
-	 * @return The N-Triples representation of the supplied value, or
+	 * @return The protocol-serialized representation of the supplied value, or
 	 *         {@link #NULL_PARAM_VALUE} if the supplied value was <tt>null</tt>.
 	 */
 	public static String encodeValue(Value value) {
+		if (value instanceof BNode) {
+			// SES-2129 special treatment of blank node names to avoid problems with round-tripping.
+			return "_:" + ((BNode)value).getID();
+		}
+		
+		// for everything else we just use N-Triples serialization.
 		return NTriplesUtil.toNTriplesString(value);
 	}
 
@@ -397,7 +461,7 @@ public abstract class Protocol {
 	 * 
 	 * @param context
 	 *        The context to encode, possibly <tt>null</tt>.
-	 * @return The N-Triples representation of the supplied context, or
+	 * @return The protocol-serialized representation of the supplied context, or
 	 *         {@link #NULL_PARAM_VALUE} if the supplied value was <tt>null</tt>.
 	 */
 	public static String encodeContext(Resource context) {

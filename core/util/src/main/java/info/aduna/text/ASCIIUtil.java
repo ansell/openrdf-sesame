@@ -64,7 +64,7 @@ public class ASCIIUtil {
 	 * Check whether the supplied character is a Hexadecimal character.
 	 * 
 	 * @param c
-	 * @return
+	 * @return <code>true</code> if c is a hexadecimal character, <code>false</code> otherwise.
 	 */
 	public static boolean isHex(int c) {
 		return isNumber(c) || isUpperCaseHexLetter(c) || isLowerCaseHexLetter(c);

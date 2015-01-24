@@ -124,7 +124,7 @@ public class QuerySpec {
 	}
 
 	/**
-	 * the type of query, must equal {@link LuceneSailSchema#}. A null type is
+	 * the type of query, must equal {@link LuceneSailSchema#LUCENE_QUERY}. A null type is
 	 * possible, but not valid.
 	 * 
 	 * @return the type of the Query or null, if no type assigned.

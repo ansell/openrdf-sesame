@@ -70,6 +70,7 @@ import org.openrdf.IsolationLevels;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -109,8 +110,8 @@ public abstract class RepositoryConnectionTest {
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
-	@Rule
-	public Timeout to = new Timeout(60000);
+//	@Rule
+//	public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
@@ -273,6 +274,18 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
+	public void testAddStatementWithContext()
+		throws Exception
+	{
+		Statement statement = vf.createStatement(alice, name, nameAlice, context1);
+		testCon.add(statement);
+
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(statement, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(alice, name, nameAlice, false, context1));
+	}
+
+	@Test
 	public void testAddLiteralWithNewline()
 		throws Exception
 	{
@@ -295,7 +308,6 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon2.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
 	}
 
-
 	@Test
 	@Ignore("this test is no longer generally applicable, since the outcome depends on the transaction isolation level selected by the store")
 	public void testTransactionIsolationForRead()
@@ -317,6 +329,18 @@ public abstract class RepositoryConnectionTest {
 				assertFalse(
 						"Should not be able to see uncommitted statement on separate connection inside transaction",
 						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+				String query = "CONSTRUCT WHERE { <" + OWL.CLASS + "> <" + RDFS.COMMENT + ">  ?obj . }";
+				GraphQueryResult queryResult = testCon2.prepareGraphQuery(QueryLanguage.SPARQL, query).evaluate();
+				try {
+					assertFalse(
+							"Should not be able to see uncommitted statement on separate connection inside transaction",
+							queryResult.hasNext());
+				}
+				finally {
+					queryResult.close();
+				}
+
 			}
 			finally {
 				testCon2.rollback();
@@ -1471,14 +1495,8 @@ public abstract class RepositoryConnectionTest {
 		testCon.add(bob, name, nameBob);
 		testCon.add(alice, name, nameAlice);
 
-		Graph graph;
 		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
-		try {
-			graph = new LinkedHashModel(Iterations.asList(statements));
-		}
-		finally {
-			statements.close();
-		}
+		Model	graph = Iterations.addAll(statements, new LinkedHashModel());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(baos);
@@ -1487,13 +1505,14 @@ public abstract class RepositoryConnectionTest {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream in = new ObjectInputStream(bais);
-		Graph deserializedGraph = (Graph)in.readObject();
+		Model deserializedGraph = (Model)in.readObject();
 		in.close();
 
 		assertThat(deserializedGraph.isEmpty(), is(equalTo(false)));
-
+		
 		for (Statement st : deserializedGraph) {
 			assertThat(graph, hasItem(st));
+			System.out.println(st);
 			assertThat(testCon.hasStatement(st, true), is(equalTo(true)));
 		}
 	}

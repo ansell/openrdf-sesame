@@ -26,9 +26,7 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sparql.SPARQLConnection;
 import org.openrdf.repository.sparql.SPARQLRepository;
-
 
 /**
  * Update operation of the {@link SPARQLRepository}
@@ -38,13 +36,6 @@ import org.openrdf.repository.sparql.SPARQLRepository;
  */
 public class SPARQLUpdate extends AbstractHTTPUpdate {
 
-	
-	/**
-	 * @param client
-	 * @param url
-	 * @param base
-	 * @param operation
-	 */
 	public SPARQLUpdate(SparqlSession httpClient, String baseURI, String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}
@@ -53,7 +44,7 @@ public class SPARQLUpdate extends AbstractHTTPUpdate {
 	public void execute()
 		throws UpdateExecutionException
 	{
-		
+
 		try {
 			// execute update immediately
 			SparqlSession client = getHttpClient();
@@ -77,9 +68,9 @@ public class SPARQLUpdate extends AbstractHTTPUpdate {
 		catch (RepositoryException e) {
 			throw new UpdateExecutionException(e.getMessage(), e);
 		}
-		
+
 	}
-		
+
 	@Override
 	public String getQueryString() {
 		return QueryStringUtil.getQueryString(queryString, getBindings());

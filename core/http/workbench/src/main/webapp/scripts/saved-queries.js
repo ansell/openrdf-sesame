@@ -6,6 +6,8 @@
 var workbench;
 (function (workbench) {
     (function (savedQueries) {
+        
+
         function deleteQuery(savedBy, name, urn) {
             var currentUser = workbench.getCookie("server-user");
             if ((!savedBy || currentUser == savedBy)) {
@@ -22,10 +24,35 @@ var workbench;
             var htmlElement = document.getElementById(urn + suffix);
             htmlElement.style.display = (htmlElement.style.display == 'none') ? '' : 'none';
         }
+        var yasqeInstances = {};
+        function toggleYasqe(urn) {
+            if (yasqeInstances[urn]) {
+                //hide it
+                if (yasqeInstances[urn]) {
+                    yasqeInstances[urn].toTextArea(); //simple way to close instances
+                    yasqeInstances[urn] = null;
+                }
+
+                //now we only have the text-area. Hide that element as well
+                document.getElementById(urn + '-text').style.display = 'none';
+            } else {
+                //show it
+                var el = document.getElementById(urn + '-text');
+
+                //but: somehow the xsl adds lots of spaces before/after the saved query. Couldnt figure out why, so just trim the string before initialization
+                el.value = el.value.trim();
+                yasqeInstances[urn] = YASQE.fromTextArea(el, { readOnly: 'nocursor', createShareLink: null }); //initialize as read-only
+                $(yasqeInstances[urn].getWrapperElement()).css({ "fontSize": "14px", "height": "auto" }); //set height to auto, i.e. resize to fit content
+
+                //we made a change to the css wrapper element (and did so after initialization). So, force a manual update of the yasqe instance
+                yasqeInstances[urn].refresh();
+            }
+        }
 
         function toggle(urn) {
             toggleElement(urn, '-metadata');
-            toggleElement(urn, '-text');
+            toggleYasqe(urn);
+
             var toggle = document.getElementById(urn + '-toggle');
             var attr = 'value';
             var show = 'Show';

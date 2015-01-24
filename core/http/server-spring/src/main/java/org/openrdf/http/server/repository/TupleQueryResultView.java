@@ -23,6 +23,7 @@ import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +36,7 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
@@ -50,6 +52,10 @@ public class TupleQueryResultView extends QueryResultView {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	protected static final String DEFAULT_JSONP_CALLBACK_PARAMETER = "callback";
+
+	protected static final Pattern JSONP_VALIDATOR = Pattern.compile("^[A-Za-z]\\w+$");
+	
 	private static final TupleQueryResultView INSTANCE = new TupleQueryResultView();
 
 	public static TupleQueryResultView getInstance() {
@@ -81,6 +87,28 @@ public class TupleQueryResultView extends QueryResultView {
 			try {
 				TupleQueryResultWriter qrWriter = qrWriterFactory.getWriter(out);
 				TupleQueryResult tupleQueryResult = (TupleQueryResult)model.get(QUERY_RESULT_KEY);
+
+				if(qrWriter.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK))
+				{
+					String parameter = request.getParameter(DEFAULT_JSONP_CALLBACK_PARAMETER);
+	
+					if (parameter != null) {
+						parameter = parameter.trim();
+	
+						if (parameter.isEmpty()) {
+							parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
+						}
+	
+						// check callback function name is a valid javascript function
+						// name
+						if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
+							throw new IOException("Callback function name was invalid");
+						}
+	
+						qrWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
+					}
+				}
+				
 				QueryResults.report(tupleQueryResult, qrWriter);
 			}
 			catch (QueryInterruptedException e) {

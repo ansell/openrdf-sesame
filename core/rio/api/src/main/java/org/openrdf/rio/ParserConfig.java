@@ -109,9 +109,7 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 * exception.
 	 * <p>
 	 * Calls to this method will override previous calls, including the
-	 * backwards-compatibility settings setup in the deprecated
-	 * {@link ParserConfig#ParserConfig(boolean, boolean, boolean, DatatypeHandling)}
-	 * constructor.
+	 * backwards-compatibility settings setup in the deprecated constructor.
 	 * <p>
 	 * Non-Fatal errors that are detected MUST be reported to the error listener.
 	 * 
@@ -172,7 +170,7 @@ public class ParserConfig extends RioConfig implements Serializable {
 
 	/**
 	 * @deprecated All non-fatal verification errors must be specified using
-	 *             {@link #addNonFatalErrors(RioSetting)} and checked using
+	 *             {@link #addNonFatalError(RioSetting)} and checked using
 	 *             {@link #isNonFatalError(RioSetting)}.
 	 */
 	@Deprecated

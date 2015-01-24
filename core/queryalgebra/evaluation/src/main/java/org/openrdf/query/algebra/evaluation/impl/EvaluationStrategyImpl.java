@@ -32,6 +32,7 @@ import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.IntersectIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.LimitIteration;
+import info.aduna.iteration.LookAheadIteration;
 import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
@@ -45,6 +46,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -125,6 +127,7 @@ import org.openrdf.query.algebra.evaluation.federation.SPARQLFederatedService;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.datetime.Now;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
@@ -151,9 +154,11 @@ import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.repository.RepositoryException;
 
 /**
- * Evaluates the TupleExpr and ValueExpr using Iterators and common tripleSource
- * API.
+ * Default evaluation strategy for Sesame queries, to evaluate one
+ * {@link TupleExpr} on the given {@link TripleSource}, optionally using the
+ * given {@link Dataset}.
  * 
+ * @author Jeen Broekstra
  * @author James Leigh
  * @author Arjohn Kampman
  * @author David Huynh
@@ -171,6 +176,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 	protected final FederatedServiceResolver serviceResolver;
 
+	// shared return value for successive calls of the NOW() function within the
+	// same query. Will be reset upon each new query being evaluated. See
+	// SES-869.
+	private Value sharedValueOfNow;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -187,16 +197,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		this.serviceResolver = serviceResolver;
 	}
 
-	/**
-	 * Retrieve the {@link FederatedService} registered for serviceUrl. If there
-	 * is no service registered for serviceUrl, a new
-	 * {@link SPARQLFederatedService} is created and registered.
-	 * 
-	 * @param serviceUrl
-	 * @return
-	 * @throws RepositoryException
-	 * @see org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver#getService(java.lang.String)
-	 */
 	public FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException
 	{
@@ -582,7 +582,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				if (objVar != null && !objVar.isConstant() && !result.hasBinding(objVar.getName())) {
 					result.addBinding(objVar.getName(), st.getObject());
 				}
-				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName()) && st.getContext() != null) {
+				if (conVar != null && !conVar.isConstant() && !result.hasBinding(conVar.getName())
+						&& st.getContext() != null)
+				{
 					result.addBinding(conVar.getName(), st.getContext());
 				}
 
@@ -638,6 +640,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			return evaluate((Order)expr, bindings);
 		}
 		else if (expr instanceof QueryRoot) {
+			// new query, reset shared return value for successive calls of NOW()
+			this.sharedValueOfNow = null;
 			return evaluate(((QueryRoot)expr).getArg(), bindings);
 		}
 		else if (expr instanceof DescribeOperator) {
@@ -660,28 +664,39 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
 
 		final QueryBindingSet b = new QueryBindingSet(bindings);
-		
-		result = new CloseableIterationBase<BindingSet, QueryEvaluationException>() {
 
-			public boolean hasNext()
+		result = new LookAheadIteration<BindingSet, QueryEvaluationException>() {
+
+			@Override
+			protected BindingSet getNextElement()
 				throws QueryEvaluationException
 			{
-				return iter.hasNext();
-			}
-
-			public BindingSet next()
-				throws QueryEvaluationException
-			{
-				final QueryBindingSet result = new QueryBindingSet(b);
-				result.addAll(iter.next());
+				QueryBindingSet result = null;
+				if (iter.hasNext()) {
+					result = new QueryBindingSet(b);
+					final BindingSet assignedBindings = iter.next();
+					for (String name : assignedBindings.getBindingNames()) {
+						final Binding assignedBinding = assignedBindings.getBinding(name);
+						if (assignedBinding != null) { // can be null if set to UNDEF
+							// check that the binding assignment does not overwrite
+							// existing bindings.
+							if (b.hasBinding(name)) {
+								if (!assignedBinding.getValue().equals(b.getValue(name))) {
+									// if values are not equal there is no compatible
+									// merge and we should return no next element.
+									return null;
+								}
+							}
+							else {
+								// we are not overwriting an existing binding.
+								result.addBinding(assignedBinding);
+							}
+						}
+					}
+				}
 				return result;
 			}
 
-			public void remove()
-				throws QueryEvaluationException
-			{
-				iter.remove();
-			}
 		};
 
 		return result;
@@ -1335,21 +1350,31 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value argValue = evaluate(node.getArg(), bindings);
 
 		if (argValue instanceof Literal) {
-			Literal lit = (Literal)argValue;
+			final Literal lit = (Literal)argValue;
 
-			String baseURI = node.getBaseURI();
+			String uriString = lit.getLabel();
+			final String baseURI = node.getBaseURI();
+
+			if (!URIUtil.isValidURIReference(uriString)) {
+				// uri string may be a relative reference. Try appending base URI
+				if (baseURI != null) {
+					uriString = baseURI + uriString;
+					if (!URIUtil.isValidURIReference(uriString)) {
+						throw new ValueExprEvaluationException("not a valid URI reference: " + uriString);
+					}
+				}
+				else {
+					throw new ValueExprEvaluationException("not a valid URI reference: " + uriString);
+				}
+			}
 
 			URI result = null;
+
 			try {
-				result = tripleSource.getValueFactory().createURI(lit.getLabel());
+				result = tripleSource.getValueFactory().createURI(uriString);
 			}
 			catch (IllegalArgumentException e) {
-				try {
-					result = tripleSource.getValueFactory().createURI(baseURI, lit.getLabel());
-				}
-				catch (IllegalArgumentException e1) {
-					throw new ValueExprEvaluationException(e1.getMessage());
-				}
+				throw new ValueExprEvaluationException(e.getMessage());
 			}
 			return result;
 		}
@@ -1563,6 +1588,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw new QueryEvaluationException("Unknown function '" + node.getURI() + "'");
 		}
 
+		// the NOW function is a special case as it needs to keep a shared return
+		// value for the duration of the query.
+		if (function instanceof Now) {
+			return evaluate((Now)function, bindings);
+		}
+
 		List<ValueExpr> args = node.getArgs();
 
 		Value[] argValues = new Value[args.size()];
@@ -1572,6 +1603,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		return function.evaluate(tripleSource.getValueFactory(), argValues);
+
 	}
 
 	public Value evaluate(And node, BindingSet bindings)
@@ -1638,6 +1670,15 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value argValue = evaluate(node.getArg(), bindings);
 		boolean argBoolean = QueryEvaluationUtil.getEffectiveBooleanValue(argValue);
 		return BooleanLiteralImpl.valueOf(!argBoolean);
+	}
+
+	public Value evaluate(Now node, BindingSet bindings)
+		throws ValueExprEvaluationException, QueryEvaluationException
+	{
+		if (sharedValueOfNow == null) {
+			sharedValueOfNow = node.evaluate(tripleSource.getValueFactory());
+		}
+		return sharedValueOfNow;
 	}
 
 	public Value evaluate(SameTerm node, BindingSet bindings)

@@ -1,15 +1,20 @@
 /// <reference path="template.ts" />
 /// <reference path="jquery.d.ts" />
+/// <reference path="yasqe.d.ts" />
+/// <reference path="yasqeHelper.ts" />
 // WARNING: Do not edit the *.js version of this file. Instead, always edit the
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 var workbench;
 (function (workbench) {
     (function (_query) {
+        
+
         /**
         * Holds the current selected query language.
         */
         var currentQueryLn = '';
+        var yasqe = null;
 
         /**
         * Populate reasonable default name space declarations into the query text area.
@@ -17,19 +22,19 @@ var workbench;
         */
         function loadNamespaces() {
             function toggleNamespaces() {
-                query.val(namespaces.text());
+                workbench.query.setQueryValue(namespaces.text());
                 currentQueryLn = queryLn;
             }
 
-            var query = $('#query');
+            var query = workbench.query.getQueryValue();
             var queryLn = $('#queryLn').val();
             var namespaces = $('#' + queryLn + '-namespaces');
             var last = $('#' + currentQueryLn + '-namespaces');
             if (namespaces.length) {
-                if (!query.val()) {
+                if (!query || query.trim().length == 0) {
                     toggleNamespaces();
                 }
-                if (last.length && (query.val() == last.text())) {
+                if (last.length && (query == last.text())) {
                     toggleNamespaces();
                 }
             }
@@ -37,12 +42,21 @@ var workbench;
         _query.loadNamespaces = loadNamespaces;
 
         /**
+        *Fires when the query language is changed
+        */
+        function onQlChange() {
+            workbench.query.loadNamespaces();
+            workbench.query.updateYasqe();
+        }
+        _query.onQlChange = onQlChange;
+
+        /**
         * After confirming with the user, clears the query text and loads the current
         * repository and query language name space declarations.
         */
         function resetNamespaces() {
             if (confirm('Click OK to clear the current query text and replace' + 'it with the ' + $('#queryLn').val() + ' namespace declarations.')) {
-                $('#query').val('');
+                workbench.query.setQueryValue('');
                 workbench.query.loadNamespaces();
             }
         }
@@ -127,6 +141,9 @@ var workbench;
         }
 
         function doSubmit() {
+            //if yasqe is instantiated, make sure we save the value to the textarea
+            if (yasqe)
+                yasqe.save();
             var allowPageToSubmitForm = false;
             var save = ($('#action').val() == 'save');
             if (save) {
@@ -166,6 +183,55 @@ var workbench;
             return allowPageToSubmitForm;
         }
         _query.doSubmit = doSubmit;
+
+        function setQueryValue(queryString) {
+            yasqe.setValue(queryString.trim());
+        }
+        _query.setQueryValue = setQueryValue;
+
+        function getQueryValue() {
+            return yasqe.getValue().trim();
+        }
+        _query.getQueryValue = getQueryValue;
+
+        function getYasqe() {
+            return yasqe;
+        }
+        _query.getYasqe = getYasqe;
+
+        function updateYasqe() {
+            if ($("#queryLn").val() == "SPARQL") {
+                initYasqe();
+            } else {
+                closeYasqe();
+            }
+        }
+        _query.updateYasqe = updateYasqe;
+
+        function initYasqe() {
+            workbench.yasqeHelper.setupCompleters(sparqlNamespaces);
+
+            yasqe = YASQE.fromTextArea(document.getElementById('query'), {
+                consumeShareLink: null
+            });
+
+            //some styling conflicts. Could add my own css file, but not a lot of things need changing, so just do this programmatically
+            //first, set the font size (otherwise font is as small as menu, which is too small)
+            //second, set the width. YASQE normally expands to 100%, but the use of a table requires us to set a fixed width
+            $(yasqe.getWrapperElement()).css({ "fontSize": "14px", "width": "900px" });
+
+            //we made a change to the css wrapper element (and did so after initialization). So, force a manual update of the yasqe instance
+            yasqe.refresh();
+        }
+
+        function closeYasqe() {
+            if (yasqe) {
+                //store yasqe value in text area (not sure whether this is desired, but it mimics current behavior)
+                //it closes the yasqe instance as well
+                yasqe.toTextArea();
+                yasqe = null;
+            }
+        }
     })(workbench.query || (workbench.query = {}));
     var query = workbench.query;
 })(workbench || (workbench = {}));
@@ -204,10 +270,14 @@ workbench.addLoad(function queryPageLoaded() {
             ref: refParam
         }, function (response) {
             if (response.queryText) {
-                $('#query').val(response.queryText);
+                workbench.query.setQueryValue(response.queryText);
             }
         });
     }
+
+    //Start with initializing our YASQE instance, given that 'SPARQL' is the selected query language
+    //(all the following 'set' and 'get' SPARQL query functions require an instantiated yasqe instance
+    workbench.query.updateYasqe();
 
     // Populate the query text area with the value of the URL query parameter,
     // only if it is present. If it is not present in the URL query, then
@@ -220,15 +290,14 @@ workbench.addLoad(function queryPageLoaded() {
         if (ref == 'id' || ref == 'hash') {
             getQueryTextFromServer(query, ref);
         } else {
-            $('#query').val(query);
+            workbench.query.setQueryValue(query);
         }
     }
     workbench.query.loadNamespaces();
 
     // Trim the query text area contents of any leading and/or trailing
     // whitespace.
-    var queryTA = $('#query');
-    queryTA.val($.trim(queryTA.val()));
+    workbench.query.setQueryValue($.trim(workbench.query.getQueryValue()));
 
     // Add click handlers identifying the clicked element in a hidden 'action'
     // form field.
@@ -244,7 +313,10 @@ workbench.addLoad(function queryPageLoaded() {
     $('#query-name').bind('keydown cut paste', workbench.query.handleNameChange);
 
     // Add event handlers to the query text area to react to changes in it.
-    queryTA.bind('keydown cut paste', workbench.query.clearFeedback);
+    $('#query').bind('keydown cut paste', workbench.query.clearFeedback);
+    if (workbench.query.getYasqe()) {
+        workbench.query.getYasqe().on('change', workbench.query.clearFeedback);
+    }
 
     // Detect if there is no current authenticated user, and if so, disable
     // the 'save privately' option.

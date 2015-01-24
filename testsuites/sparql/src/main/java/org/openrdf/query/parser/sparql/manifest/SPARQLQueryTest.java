@@ -41,7 +41,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.util.ModelUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
@@ -413,7 +413,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)
 		throws Exception
 	{
-		if (!ModelUtil.equals(expectedResult, queryResult)) {
+		if (!Models.isomorphic(expectedResult, queryResult)) {
 			// Don't use RepositoryUtil.difference, it reports incorrect diffs
 			/*
 			 * Collection<? extends Statement> unexpectedStatements =

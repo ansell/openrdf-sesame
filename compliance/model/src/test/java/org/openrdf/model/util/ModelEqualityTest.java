@@ -93,7 +93,7 @@ public class ModelEqualityTest {
 		Set<Statement> model2 = loadModel(file2);
 
 		// long startTime = System.currentTimeMillis();
-		boolean modelsEqual = ModelUtil.equals(model1, model2);
+		boolean modelsEqual = Models.isomorphic(model1, model2);
 		// long endTime = System.currentTimeMillis();
 		// System.out.println("Model equality checked in " + (endTime - startTime)
 		// + "ms (" + file1 + ", " + file2

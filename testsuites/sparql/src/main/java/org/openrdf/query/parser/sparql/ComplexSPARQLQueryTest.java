@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
 
@@ -382,6 +383,114 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testDescribeMultipleA()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . [] <urn:blank> <urn:1> . <urn:2> <urn:p2> <urn:3> . } ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI blank = vf.createURI("urn:blank");
+
+		Model result = QueryResults.asModel(gq.evaluate());
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(null, blank, urn1));
+		assertTrue(result.contains(urn2, p2, null));
+	}
+
+	@Test
+	public void testDescribeMultipleB()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . <urn:1> <urn:blank> [] . <urn:2> <urn:p2> <urn:3> . } ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI blank = vf.createURI("urn:blank");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(urn1, blank, null));
+		assertTrue(result.contains(urn2, p2, null));
+	}
+
+	@Test
+	public void testDescribeMultipleC()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . [] <urn:blank> <urn:1>. <urn:1> <urn:blank> [] . <urn:2> <urn:p2> <urn:3> . } ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI blank = vf.createURI("urn:blank");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(urn1, blank, null));
+		assertTrue(result.contains(null, blank, urn1));
+		assertTrue(result.contains(urn2, p2, null));
+	}
+
+	@Test
+	public void testDescribeMultipleD()
+		throws Exception
+	{
+		String update = "insert data { <urn:1> <urn:p1> <urn:v> . [] <urn:blank> <urn:1>. <urn:2> <urn:p2> <urn:3> . [] <urn:blank> <urn:2> . <urn:4> <urn:p2> <urn:3> . <urn:4> <urn:blank> [] .} ";
+		conn.prepareUpdate(QueryLanguage.SPARQL, update).execute();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("DESCRIBE <urn:1> <urn:2> <urn:4> ");
+
+		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
+
+		ValueFactory vf = conn.getValueFactory();
+		URI urn1 = vf.createURI("urn:1");
+		URI p1 = vf.createURI("urn:p1");
+		URI p2 = vf.createURI("urn:p2");
+		URI urn2 = vf.createURI("urn:2");
+		URI urn4 = vf.createURI("urn:4");
+		URI blank = vf.createURI("urn:blank");
+		Model result = QueryResults.asModel(gq.evaluate());
+
+		assertTrue(result.contains(urn1, p1, null));
+		assertTrue(result.contains(null, blank, urn1));
+		assertTrue(result.contains(urn2, p2, null));
+		assertTrue(result.contains(urn4, p2, null));
+		assertTrue(result.contains(urn4, blank, null));
+	}
+
+	@Test
 	public void testGroupConcatDistinct()
 		throws Exception
 	{
@@ -685,6 +794,48 @@ public abstract class ComplexSPARQLQueryTest {
 	}
 
 	@Test
+	public void testSES1685propPathSameVar()
+		throws Exception
+	{
+		final String queryStr = "PREFIX : <urn:> SELECT ?x WHERE {?x :p+ ?x}";
+
+		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . :b :p :a ."), "", RDFFormat.TURTLE);
+
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
+		TupleQueryResult result = query.evaluate();
+
+		assertNotNull(result);
+
+		int count = 0;
+		while (result.hasNext()) {
+			result.next();
+			count++;
+		}
+		// result should be both a and b.
+		assertEquals(2, count);
+	}
+
+	@Test
+	public void testSES2104ConstructBGPSameURI()
+		throws Exception
+	{
+		final String queryStr = "PREFIX : <urn:> CONSTRUCT {:x :p :x } WHERE {} ";
+
+		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . "), "", RDFFormat.TURTLE);
+
+		final URI x = conn.getValueFactory().createURI("urn:x");
+		final URI p = conn.getValueFactory().createURI("urn:p");
+
+		GraphQuery query = conn.prepareGraphQuery(QueryLanguage.SPARQL, queryStr);
+		Model result = QueryResults.asModel(query.evaluate());
+
+		assertNotNull(result);
+		assertFalse(result.isEmpty());
+		assertTrue(result.contains(x, p, x));
+
+	}
+
+	@Test
 	public void testSES1898LeftJoinSemantics2()
 		throws Exception
 	{
@@ -795,6 +946,79 @@ public abstract class ComplexSPARQLQueryTest {
 		assertNotNull(y);
 		assertTrue(y instanceof Literal);
 		assertEquals(f.createLiteral("1", XMLSchema.INTEGER), y);
+	}
+
+	@Test
+	public void testSES2121URIFunction()
+		throws Exception
+	{
+		String query = "SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		BindingSet bs = result.next();
+		URI uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for invalid URI should be unbound", uri == null);
+
+		query = "BASE <http://example.org/> SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
+		tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+		result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		bs = result.next();
+		uri = (URI)bs.getValue("uri");
+		assertTrue("uri result for valid URI reference should be bound", uri != null);
+	}
+
+	@Test
+	public void testSES869ValueOfNow()
+		throws Exception
+	{
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT ?p ( NOW() as ?n ) { BIND (NOW() as ?p ) }");
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+
+		BindingSet bs = result.next();
+		Value p = bs.getValue("p");
+		Value n = bs.getValue("n");
+
+		assertNotNull(p);
+		assertNotNull(n);
+		assertEquals(p, n);
+
+	}
+
+	@Test
+	public void testSES2136()
+		throws Exception
+	{
+		loadTestData("/testcases-sparql-1.1-w3c/bindings/data02.ttl");
+		StringBuilder query = new StringBuilder();
+		query.append("PREFIX : <http://example.org/>\n");
+		query.append("SELECT ?s ?o { \n");
+		query.append(" { SELECT * WHERE { ?s ?p ?o . } }\n");
+		query.append("	VALUES (?o) { (:b) }\n");
+		query.append("}\n");
+
+		ValueFactory vf = conn.getValueFactory();
+		final URI a = vf.createURI("http://example.org/a");
+		final URI b = vf.createURI("http://example.org/b");
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
+		TupleQueryResult result = tq.evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		BindingSet bs = result.next();
+		assertFalse("only one result expected", result.hasNext());
+		assertEquals(a, bs.getValue("s"));
+		assertEquals(b, bs.getValue("o"));
 	}
 
 	@Test
@@ -1691,6 +1915,47 @@ public abstract class ComplexSPARQLQueryTest {
 			fail(e.getMessage());
 		}
 
+	}
+
+	@Test
+	public void testSES2147PropertyPathsWithIdenticalSubsPreds()
+		throws Exception
+	{
+
+		StringBuilder data = new StringBuilder();
+		data.append("<urn:s1> <urn:p> <urn:s2> .\n");
+		data.append("<urn:s2> <urn:p> <urn:s3> .\n");
+		data.append("<urn:s3> <urn:q> <urn:s4> .\n");
+		data.append("<urn:s1> <urn:p> <urn:s5> .\n");
+		data.append("<urn:s5> <urn:q> <urn:s6> .\n");
+
+		conn.begin();
+		conn.add(new StringReader(data.toString()), "", RDFFormat.NTRIPLES);
+		conn.commit();
+
+		StringBuilder query = new StringBuilder();
+		query.append(getNamespaceDeclarations());
+		query.append("SELECT ?x \n");
+		query.append("WHERE { ?x <urn:p>*/<urn:q> <urn:s4> . \n");
+		query.append("        ?x <urn:p>*/<urn:q> <urn:s6> . \n");
+		query.append("} \n");
+
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
+
+		try {
+			TupleQueryResult result = tq.evaluate();
+			assertNotNull(result);
+			assertTrue(result.hasNext());
+			
+			Value x = result.next().getValue("x");
+			assertNotNull(x);
+			assertTrue(x instanceof URI);
+			assertEquals("urn:s1", x.stringValue());
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	@Test

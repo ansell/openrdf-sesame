@@ -56,6 +56,8 @@ public class ExportStatementsView implements View {
 	public static final String CONTEXTS_KEY = "contexts";
 
 	public static final String USE_INFERENCING_KEY = "useInferencing";
+	
+	public static final String CONNECTION_KEY = "connection";
 
 	public static final String FACTORY_KEY = "factory";
 
@@ -83,6 +85,7 @@ public class ExportStatementsView implements View {
 		Value obj = (Value)model.get(OBJECT_KEY);
 		Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
 		boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);
+		RepositoryConnection conn = (RepositoryConnection)model.get(CONNECTION_KEY);
 
 		boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
 
@@ -110,9 +113,11 @@ public class ExportStatementsView implements View {
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
 			if (!headersOnly) {
-				RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-				synchronized (repositoryCon) {
-					repositoryCon.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+				if (conn == null) {
+					conn = RepositoryInterceptor.getRepositoryConnection(request);
+				}
+				synchronized (conn) {
+					conn.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
 				}
 			}
 			out.close();
