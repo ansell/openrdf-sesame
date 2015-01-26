@@ -232,15 +232,15 @@ public class TurtleParser extends RDFParserBase {
 
 		StringBuilder sb = new StringBuilder(8);
 
-		int c;
+		int codePoint;
 		// longest valid directive @prefix
 		do {
-			c = read();
-			if (c == -1 || TurtleUtil.isWhitespace(c)) {
-				unread(c);
+			codePoint = read();
+			if (codePoint == -1 || TurtleUtil.isWhitespace(codePoint)) {
+				unread(codePoint);
 				break;
 			}
-			sb.append((char)c);
+			sb.append(Character.toChars(codePoint));
 		}
 		while (sb.length() < 8);
 
@@ -341,7 +341,7 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 
-			prefixID.append((char)c);
+			prefixID.append(Character.toChars(c));
 		}
 
 		skipWSC();
@@ -694,7 +694,7 @@ public class TurtleParser extends RDFParserBase {
 						BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			}
 
-			lang.append((char)c);
+			lang.append(Character.toChars(c));
 
 			c = read();
 			while (!TurtleUtil.isWhitespace(c)) {
@@ -708,7 +708,7 @@ public class TurtleParser extends RDFParserBase {
 					reportError("Illegal language tag char: '" + (char)c + "'",
 							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 				}
-				lang.append((char)c);
+				lang.append(Character.toChars(c));
 				c = read();
 			}
 
@@ -799,7 +799,7 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 
-			sb.append((char)c);
+			sb.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '"'
@@ -807,7 +807,7 @@ public class TurtleParser extends RDFParserBase {
 				if (c == -1) {
 					throwEOFException();
 				}
-				sb.append((char)c);
+				sb.append(Character.toChars(c));
 			}
 		}
 
@@ -839,7 +839,7 @@ public class TurtleParser extends RDFParserBase {
 				doubleQuoteCount = 0;
 			}
 
-			sb.append((char)c);
+			sb.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '"'
@@ -847,7 +847,7 @@ public class TurtleParser extends RDFParserBase {
 				if (c == -1) {
 					throwEOFException();
 				}
-				sb.append((char)c);
+				sb.append(Character.toChars(c));
 			}
 		}
 
@@ -864,12 +864,12 @@ public class TurtleParser extends RDFParserBase {
 
 		// read optional sign character
 		if (c == '+' || c == '-') {
-			value.append((char)c);
+			value.append(Character.toChars(c));
 			c = read();
 		}
 
 		while (ASCIIUtil.isNumber(c)) {
-			value.append((char)c);
+			value.append(Character.toChars(c));
 			c = read();
 		}
 
@@ -883,12 +883,12 @@ public class TurtleParser extends RDFParserBase {
 					// period to end the statement
 				}
 				else {
-					value.append((char)c);
+					value.append(Character.toChars(c));
 
 					c = read();
 
 					while (ASCIIUtil.isNumber(c)) {
-						value.append((char)c);
+						value.append(Character.toChars(c));
 						c = read();
 					}
 
@@ -911,11 +911,11 @@ public class TurtleParser extends RDFParserBase {
 			// read optional exponent
 			if (c == 'e' || c == 'E') {
 				datatype = XMLSchema.DOUBLE;
-				value.append((char)c);
+				value.append(Character.toChars(c));
 
 				c = read();
 				if (c == '+' || c == '-') {
-					value.append((char)c);
+					value.append(Character.toChars(c));
 					c = read();
 				}
 
@@ -923,11 +923,11 @@ public class TurtleParser extends RDFParserBase {
 					reportError("Exponent value missing", BasicParserSettings.VERIFY_DATATYPE_VALUES);
 				}
 
-				value.append((char)c);
+				value.append(Character.toChars(c));
 
 				c = read();
 				while (ASCIIUtil.isNumber(c)) {
-					value.append((char)c);
+					value.append(Character.toChars(c));
 					c = read();
 				}
 			}
@@ -976,7 +976,7 @@ public class TurtleParser extends RDFParserBase {
 				reportFatalError("IRI included an unencoded space: '" + c + "'");
 			}
 
-			uriBuf.append((char)c);
+			uriBuf.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '>'
@@ -987,7 +987,7 @@ public class TurtleParser extends RDFParserBase {
 				if (c != 'u' && c != 'U') {
 					reportFatalError("IRI includes string escapes: '\\" + c + "'");
 				}
-				uriBuf.append((char)c);
+				uriBuf.append(Character.toChars(c));
 			}
 		}
 
@@ -1036,12 +1036,12 @@ public class TurtleParser extends RDFParserBase {
 		else {
 			// c is the first letter of the prefix
 			StringBuilder prefix = new StringBuilder(8);
-			prefix.append((char)c);
+			prefix.append(Character.toChars(c));
 
 			int previousChar = c;
 			c = read();
 			while (TurtleUtil.isPrefixChar(c)) {
-				prefix.append((char)c);
+				prefix.append(Character.toChars(c));
 				previousChar = c;
 				c = read();
 			}
@@ -1074,7 +1074,7 @@ public class TurtleParser extends RDFParserBase {
 				localName.append(readLocalEscapedChar());
 			}
 			else {
-				localName.append((char)c);
+				localName.append(Character.toChars(c));
 			}
 
 			int previousChar = c;
@@ -1084,7 +1084,7 @@ public class TurtleParser extends RDFParserBase {
 					localName.append(readLocalEscapedChar());
 				}
 				else {
-					localName.append((char)c);
+					localName.append(Character.toChars(c));
 				}
 				previousChar = c;
 				c = read();
@@ -1159,7 +1159,7 @@ public class TurtleParser extends RDFParserBase {
 		}
 
 		StringBuilder name = new StringBuilder(32);
-		name.append((char)c);
+		name.append(Character.toChars(c));
 
 		// Read all following letter and numbers, they are part of the name
 		c = read();
@@ -1197,17 +1197,20 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Verifies that the supplied character <tt>c</tt> is one of the expected
+	 * Verifies that the supplied character code point <tt>codePoint</tt> is one of the expected
 	 * characters specified in <tt>expected</tt>. This method will throw a
 	 * <tt>ParseException</tt> if this is not the case.
 	 */
-	protected void verifyCharacterOrFail(int c, String expected)
+	protected void verifyCharacterOrFail(int codePoint, String expected)
 		throws RDFParseException
 	{
-		if (c == -1) {
+		if (codePoint == -1) {
 			throwEOFException();
 		}
-		else if (expected.indexOf((char)c) == -1) {
+		
+		final String supplied = new String(Character.toChars(codePoint));
+		
+	   if (expected.indexOf(supplied) == -1) {
 			StringBuilder msg = new StringBuilder(32);
 			msg.append("Expected ");
 			for (int i = 0; i < expected.length(); i++) {
@@ -1219,7 +1222,7 @@ public class TurtleParser extends RDFParserBase {
 				msg.append('\'');
 			}
 			msg.append(", found '");
-			msg.append((char)c);
+			msg.append(supplied);
 			msg.append("'");
 
 			reportFatalError(msg.toString());
@@ -1233,7 +1236,7 @@ public class TurtleParser extends RDFParserBase {
 	 * a non-ignorable character, or EOF. For convenience, this character is also
 	 * returned by this method.
 	 * 
-	 * @return The next character that will be returned by <tt>reader</tt>.
+	 * @return The next character code point that will be returned by <tt>reader</tt>.
 	 */
 	protected int skipWSC()
 		throws IOException, RDFHandlerException
@@ -1262,7 +1265,7 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder comment = new StringBuilder(64);
 		int c = read();
 		while (c != -1 && c != 0xD && c != 0xA) {
-			comment.append((char)c);
+			comment.append(Character.toChars(c));
 			c = read();
 		}
 
@@ -1281,27 +1284,57 @@ public class TurtleParser extends RDFParserBase {
 		reportLocation();
 	}
 
+	/**
+	 * Reads the next character and returns it as a Unicode code point.
+	 * 
+	 * @return a single Unicode character code point.
+	 * @throws IOException
+	 */
 	protected int read()
 		throws IOException
 	{
 		int next = reader.read();
-		// System.out.print((char)next);
+		if (Character.isHighSurrogate((char)next)) {
+			next = Character.toCodePoint((char)next, (char)reader.read());
+		}
 		return next;
 	}
 
+	/**
+	 * Pushes back a single character code point by copying it to the front of
+	 * the buffer. After this method returns, a call to {@link #read()} will
+	 * return the same code point c again.
+	 * 
+	 * @param c
+	 *        a single Unicode code point.
+	 * @throws IOException
+	 */
 	protected void unread(int c)
 		throws IOException
 	{
 		if (c != -1) {
-			reader.unread(c);
+			if (Character.isBmpCodePoint(c)) {
+				reader.unread(c);
+			}
+			else {
+				final char[] surrogatePair = Character.toChars(c);
+				reader.unread(surrogatePair);
+			}
 		}
 	}
 
 	protected void unread(String directive)
 		throws IOException
 	{
-		for (int i = directive.length() - 1; i >= 0; i--) {
-			reader.unread(directive.charAt(i));
+		for (int i = directive.codePointCount(0, directive.length()); i >= 0; i--) {
+			final int codePoint = directive.codePointBefore(i);
+			if (Character.isBmpCodePoint(codePoint)) {
+				reader.unread(codePoint);
+			}
+			else {
+				final char[] surrogatePair = Character.toChars(codePoint);
+				reader.unread(surrogatePair);
+			}
 		}
 	}
 
@@ -1327,8 +1360,8 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding line number
-	 * information to the error.
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding
+	 * line number information to the error.
 	 */
 	@Override
 	protected void reportError(String msg, RioSetting<Boolean> setting)
