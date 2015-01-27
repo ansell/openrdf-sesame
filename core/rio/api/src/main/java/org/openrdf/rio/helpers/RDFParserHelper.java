@@ -16,9 +16,6 @@
  */
 package org.openrdf.rio.helpers;
 
-import java.io.IOException;
-import java.io.Reader;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
