@@ -93,7 +93,7 @@ public class TriGParser extends TurtleParser {
 		int c;
 		// longest valid directive @prefix
 		do {
-			c = read();
+			c = readCodePoint();
 			if (c == -1 || TurtleUtil.isWhitespace(c)) {
 				unread(c);
 				break;
@@ -107,7 +107,7 @@ public class TriGParser extends TurtleParser {
 		if (directive.startsWith("@")) {
 			parseDirective(directive);
 			skipWSC();
-			verifyCharacterOrFail(read(), ".");
+			verifyCharacterOrFail(readCodePoint(), ".");
 		}
 		else if ((directive.length() >= 6 && directive.substring(0, 6).equalsIgnoreCase("prefix"))
 				|| (directive.length() >= 4 && directive.substring(0, 4).equalsIgnoreCase("base")))
@@ -132,13 +132,13 @@ public class TriGParser extends TurtleParser {
 	protected void parseGraph()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = read();
+		int c = readCodePoint();
 		int c2 = peek();
 		Resource contextOrSubject = null;
 		boolean foundContextOrSubject = false;
 		if (c == '[') {
 			skipWSC();
-			c2 = read();
+			c2 = readCodePoint();
 			if (c2 == ']') {
 				contextOrSubject = createBNode();
 				foundContextOrSubject = true;
@@ -148,7 +148,7 @@ public class TriGParser extends TurtleParser {
 				unread(c2);
 				unread(c);
 			}
-			c = read();
+			c = readCodePoint();
 		}
 		else if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
 				|| (c == '_' && c2 == ':'))
@@ -169,7 +169,7 @@ public class TriGParser extends TurtleParser {
 			}
 
 			skipWSC();
-			c = read();
+			c = readCodePoint();
 		}
 		else {
 			contextOrSubject = null;
@@ -179,9 +179,9 @@ public class TriGParser extends TurtleParser {
 		// the 2005/06/06 draft of the specification, as it doesn't appear in the
 		// 2007 or later drafts
 		// if (c == ':') {
-		// verifyCharacterOrFail(read(), "-");
+		// verifyCharacterOrFail(readCodePoint(), "-");
 		// skipWSC();
-		// c = read();
+		// c = readCodePoint();
 		// }
 
 		if (c == '{') {
@@ -195,7 +195,7 @@ public class TriGParser extends TurtleParser {
 				c = skipWSC();
 
 				while (c == '.') {
-					read();
+					readCodePoint();
 
 					c = skipWSC();
 
@@ -228,7 +228,7 @@ public class TriGParser extends TurtleParser {
 			}
 		}
 
-		read();
+		readCodePoint();
 	}
 
 	@Override
@@ -240,11 +240,11 @@ public class TriGParser extends TurtleParser {
 		// If the first character is an open bracket we need to decide which of
 		// the two parsing methods for blank nodes to use
 		if (c == '[') {
-			c = read();
+			c = readCodePoint();
 			skipWSC();
 			c = peek();
 			if (c == ']') {
-				c = read();
+				c = readCodePoint();
 				subject = createBNode();
 				skipWSC();
 				parsePredicateObjectList();

@@ -22,7 +22,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -39,7 +38,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFParserBase;
 
@@ -178,7 +176,7 @@ public class NTriplesParser extends RDFParserBase {
 		reportLocation(lineNo, 1);
 
 		try {
-			int c = reader.read();
+			int c = readCodePoint();
 			c = skipWhitespace(c);
 
 			while (c != -1) {
@@ -208,14 +206,14 @@ public class NTriplesParser extends RDFParserBase {
 
 	/**
 	 * Reads characters from reader until it finds a character that is not a
-	 * space or tab, and returns this last character. In case the end of the
-	 * character stream has been reached, -1 is returned.
+	 * space or tab, and returns this last character code point. In case the end
+	 * of the character stream has been reached, -1 is returned.
 	 */
 	protected int skipWhitespace(int c)
 		throws IOException
 	{
 		while (c == ' ' || c == '\t') {
-			c = reader.read();
+			c = readCodePoint();
 		}
 
 		return c;
@@ -228,7 +226,7 @@ public class NTriplesParser extends RDFParserBase {
 	protected int assertLineTerminates(int c)
 		throws IOException, RDFParseException
 	{
-		c = reader.read();
+		c = readCodePoint();
 
 		c = skipWhitespace(c);
 
@@ -252,7 +250,7 @@ public class NTriplesParser extends RDFParserBase {
 		throws IOException
 	{
 		while (c != -1 && c != '\r' && c != '\n') {
-			c = reader.read();
+			c = readCodePoint();
 		}
 
 		return c;
@@ -267,24 +265,24 @@ public class NTriplesParser extends RDFParserBase {
 		throws IOException
 	{
 		while (c != -1 && c != '\r' && c != '\n') {
-			c = reader.read();
+			c = readCodePoint();
 		}
 
 		// c is equal to -1, \r or \n. In case of a \r, we should
 		// check whether it is followed by a \n.
 
 		if (c == '\n') {
-			c = reader.read();
+			c = readCodePoint();
 
 			lineNo++;
 
 			reportLocation(lineNo, 1);
 		}
 		else if (c == '\r') {
-			c = reader.read();
+			c = readCodePoint();
 
 			if (c == '\n') {
-				c = reader.read();
+				c = readCodePoint();
 			}
 
 			lineNo++;
@@ -316,7 +314,7 @@ public class NTriplesParser extends RDFParserBase {
 				throwEOFException();
 			}
 			else if (c != '.') {
-				reportError("Expected '.', found: " + (char)c,
+				reportError("Expected '.', found: " + new String(Character.toChars(c)),
 						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
@@ -368,7 +366,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else {
-			reportFatalError("Expected '<' or '_', found: " + (char)c);
+			reportFatalError("Expected '<' or '_', found: " + new String(Character.toChars(c)));
 		}
 
 		return c;
@@ -389,7 +387,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else {
-			reportFatalError("Expected '<', found: " + (char)c);
+			reportFatalError("Expected '<', found: " + new String(Character.toChars(c)));
 		}
 
 		return c;
@@ -423,7 +421,7 @@ public class NTriplesParser extends RDFParserBase {
 			throwEOFException();
 		}
 		else {
-			reportFatalError("Expected '<', '_' or '\"', found: " + (char)c + "");
+			reportFatalError("Expected '<', '_' or '\"', found: " + new String(Character.toChars(c)) + "");
 		}
 
 		return c;
@@ -433,24 +431,24 @@ public class NTriplesParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		if (c != '<') {
-			reportError("Supplied char should be a '<', is: " + (char)c,
+			reportError("Supplied char should be a '<', is: " + new String(Character.toChars(c)),
 					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 		// Read up to the next '>' character
-		c = reader.read();
+		c = readCodePoint();
 		while (c != '>') {
 			if (c == -1) {
 				throwEOFException();
 			}
 			if (c == ' ') {
-				reportError("IRI included an unencoded space: " + (char)c,
+				reportError("IRI included an unencoded space: " + new String(Character.toChars(c)),
 						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
-			uriRef.append((char)c);
+			uriRef.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '>'
-				c = reader.read();
+				c = readCodePoint();
 				if (c == -1) {
 					throwEOFException();
 				}
@@ -458,14 +456,14 @@ public class NTriplesParser extends RDFParserBase {
 					reportError("IRI includes string escapes: '\\" + c + "'",
 							NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 				}
-				uriRef.append((char)c);
+				uriRef.append(Character.toChars(c));
 			}
 
-			c = reader.read();
+			c = readCodePoint();
 		}
 
 		// c == '>', read next char
-		c = reader.read();
+		c = readCodePoint();
 
 		return c;
 	}
@@ -474,33 +472,34 @@ public class NTriplesParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		if (c != '_') {
-			reportError("Supplied char should be a '_', is: " + (char)c,
+			reportError("Supplied char should be a '_', is: " + new String(Character.toChars(c)),
 					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
-		c = reader.read();
+		c = readCodePoint();
 		if (c == -1) {
 			throwEOFException();
 		}
 		else if (c != ':') {
-			reportError("Expected ':', found: " + (char)c, NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
+			reportError("Expected ':', found: " + new String(Character.toChars(c)),
+					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
 
-		c = reader.read();
+		c = readCodePoint();
 		if (c == -1) {
 			throwEOFException();
 		}
 		else if (!NTriplesUtil.isLetterOrNumber(c)) {
-			reportError("Expected a letter or number, found: " + (char)c,
+			reportError("Expected a letter or number, found: " + new String(Character.toChars(c)),
 					NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 		}
-		name.append((char)c);
+		name.append(Character.toChars(c));
 
 		// Read all following letter and numbers, they are part of the name
-		c = reader.read();
+		c = readCodePoint();
 		while (c != -1 && NTriplesUtil.isLetterOrNumber(c)) {
-			name.append((char)c);
-			c = reader.read();
+			name.append(Character.toChars(c));
+			c = readCodePoint();
 		}
 
 		return c;
@@ -515,63 +514,63 @@ public class NTriplesParser extends RDFParserBase {
 		}
 
 		// Read up to the next '"' character
-		c = reader.read();
+		c = readCodePoint();
 		while (c != '"') {
 			if (c == -1) {
 				throwEOFException();
 			}
-			value.append((char)c);
+			value.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a double quote
-				c = reader.read();
+				c = readCodePoint();
 				if (c == -1) {
 					throwEOFException();
 				}
-				value.append((char)c);
+				value.append(Character.toChars(c));
 			}
 
-			c = reader.read();
+			c = readCodePoint();
 		}
 
 		// c == '"', read next char
-		c = reader.read();
+		c = readCodePoint();
 
 		if (c == '@') {
 			// Read language
-			c = reader.read();
+			c = readCodePoint();
 
 			if (!NTriplesUtil.isLetter(c)) {
-				reportError("Expected a letter, found: " + (char)c,
+				reportError("Expected a letter, found: " + new String(Character.toChars(c)),
 						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
 			while (c != -1 && c != '.' && c != '^' && c != ' ' && c != '\t') {
-				lang.append((char)c);
-				c = reader.read();
+				lang.append(Character.toChars(c));
+				c = readCodePoint();
 			}
 		}
 		else if (c == '^') {
 			// Read datatype
-			c = reader.read();
+			c = readCodePoint();
 
 			// c should be another '^'
 			if (c == -1) {
 				throwEOFException();
 			}
 			else if (c != '^') {
-				reportError("Expected '^', found: " + (char)c,
+				reportError("Expected '^', found: " + new String(Character.toChars(c)),
 						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
-			c = reader.read();
+			c = readCodePoint();
 
 			// c should be a '<'
 			if (c == -1) {
 				throwEOFException();
 			}
 			else if (c != '<') {
-				reportError("Expected '<', found: " + (char)c,
+				reportError("Expected '<', found: " + new String(Character.toChars(c)),
 						NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
 			}
 
@@ -595,6 +594,23 @@ public class NTriplesParser extends RDFParserBase {
 		return super.createURI(uri);
 	}
 
+	/**
+	 * Reads the next Unicode code point.
+	 * 
+	 * @return the next Unicode code point, or -1 if the end of the stream has
+	 *         been reached.
+	 * @throws IOException
+	 */
+	protected int readCodePoint()
+		throws IOException
+	{
+		int next = reader.read();
+		if (Character.isHighSurrogate((char)next)) {
+			next = Character.toCodePoint((char)next, (char)reader.read());
+		}
+		return next;
+	}
+	
 	protected Literal createLiteral(String label, String lang, String datatype)
 		throws RDFParseException
 	{
@@ -631,8 +647,8 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding line number
-	 * information to the error.
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding
+	 * line number information to the error.
 	 */
 	@Override
 	protected void reportError(String msg, RioSetting<Boolean> setting)

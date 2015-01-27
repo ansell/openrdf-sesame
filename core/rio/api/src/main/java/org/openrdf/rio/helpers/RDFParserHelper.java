@@ -16,6 +16,9 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.io.IOException;
+import java.io.Reader;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
@@ -412,8 +415,8 @@ public class RDFParserHelper {
 	/**
 	 * Reports a fatal error to the registered ParseErrorListener, if any, and
 	 * throws a <tt>ParseException</tt> afterwards. This method simply calls
-	 * {@link #reportFatalError(String, int, int, ParseErrorListener)} supplying <tt>-1</tt> for the
-	 * line- and column number.
+	 * {@link #reportFatalError(String, int, int, ParseErrorListener)} supplying
+	 * <tt>-1</tt> for the line- and column number.
 	 * 
 	 * @since 2.7.1
 	 */
@@ -448,7 +451,8 @@ public class RDFParserHelper {
 	 * the error message is not reported to the ParseErrorListener, assuming that
 	 * it has already been reported when the original ParseException was thrown.
 	 * <p>
-	 * This method simply calls {@link #reportFatalError(Exception, int, int, ParseErrorListener)}
+	 * This method simply calls
+	 * {@link #reportFatalError(Exception, int, int, ParseErrorListener)}
 	 * supplying <tt>-1</tt> for the line- and column number.
 	 * 
 	 * @since 2.7.1
@@ -485,6 +489,8 @@ public class RDFParserHelper {
 			throw new RDFParseException(e, lineNo, columnNo);
 		}
 	}
+
+
 
 	/**
 	 * Protected constructor to prevent direct instantiation.
