@@ -105,13 +105,13 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		if (c == 'g' || c == 'G') {
 			StringBuilder sb = new StringBuilder(5);
 			do {
-				c = read();
+				c = readCodePoint();
 				if (c == -1 || TurtleUtil.isWhitespace(c)) {
 					unread(c);
 					break;
 				}
 
-				sb.append((char)c);
+				sb.append(Character.toChars(c));
 			}
 			while (sb.length() < 5);
 
