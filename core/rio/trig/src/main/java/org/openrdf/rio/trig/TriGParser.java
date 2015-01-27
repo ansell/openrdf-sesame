@@ -133,7 +133,7 @@ public class TriGParser extends TurtleParser {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		int c = readCodePoint();
-		int c2 = peek();
+		int c2 = peekCodePoint();
 		Resource contextOrSubject = null;
 		boolean foundContextOrSubject = false;
 		if (c == '[') {
@@ -235,14 +235,14 @@ public class TriGParser extends TurtleParser {
 	protected void parseTriples()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		// If the first character is an open bracket we need to decide which of
 		// the two parsing methods for blank nodes to use
 		if (c == '[') {
 			c = readCodePoint();
 			skipWSC();
-			c = peek();
+			c = peekCodePoint();
 			if (c == ']') {
 				c = readCodePoint();
 				subject = createBNode();
@@ -254,7 +254,7 @@ public class TriGParser extends TurtleParser {
 				subject = parseImplicitBlank();
 			}
 			skipWSC();
-			c = peek();
+			c = peekCodePoint();
 
 			// if this is not the end of the statement, recurse into the list of
 			// predicate and objects, using the subject parsed above as the subject

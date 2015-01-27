@@ -377,14 +377,14 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseTriples()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		// If the first character is an open bracket we need to decide which of
 		// the two parsing methods for blank nodes to use
 		if (c == '[') {
 			c = readCodePoint();
 			skipWSC();
-			c = peek();
+			c = peekCodePoint();
 			if (c == ']') {
 				c = readCodePoint();
 				subject = createBNode();
@@ -396,7 +396,7 @@ public class TurtleParser extends RDFParserBase {
 				subject = parseImplicitBlank();
 			}
 			skipWSC();
-			c = peek();
+			c = peekCodePoint();
 
 			// if this is not the end of the statement, recurse into the list of
 			// predicate and objects, using the subject parsed above as the subject
@@ -464,7 +464,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseSubject()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '(') {
 			subject = parseCollection();
@@ -517,7 +517,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseObject()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '(') {
 			object = parseCollection();
@@ -634,7 +634,7 @@ public class TurtleParser extends RDFParserBase {
 	protected Value parseValue()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '<') {
 			// uriref, e.g. <foo://bar>
@@ -675,7 +675,7 @@ public class TurtleParser extends RDFParserBase {
 		String label = parseQuotedString();
 
 		// Check for presence of a language tag or datatype
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '@') {
 			readCodePoint();
@@ -878,7 +878,7 @@ public class TurtleParser extends RDFParserBase {
 			// read optional fractional digits
 			if (c == '.') {
 
-				if (TurtleUtil.isWhitespace(peek())) {
+				if (TurtleUtil.isWhitespace(peekCodePoint())) {
 					// We're parsing an integer that did not have a space before the
 					// period to end the statement
 				}
@@ -1303,34 +1303,18 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Pushes back a single character code point by copying it to the front of
-	 * the buffer. After this method returns, a call to
-	 * {@link #readCodePoint()} will return the same code
-	 * point c again.
+	 * Pushes back a single code point by copying it to the front of the buffer.
+	 * After this method returns, a call to {@link #readCodePoint()} will return
+	 * the same code point c again.
 	 * 
-	 * @param c
+	 * @param codePoint
 	 *        a single Unicode code point.
 	 * @throws IOException
 	 */
-	protected void unread(int c)
+	protected void unread(int codePoint)
 		throws IOException
 	{
-		if (c != -1) {
-			if (Character.isBmpCodePoint(c)) {
-				reader.unread(c);
-			}
-			else {
-				final char[] surrogatePair = Character.toChars(c);
-				reader.unread(surrogatePair);
-			}
-		}
-	}
-
-	protected void unread(String directive)
-		throws IOException
-	{
-		for (int i = directive.codePointCount(0, directive.length()); i >= 1; i--) {
-			final int codePoint = directive.codePointBefore(i);
+		if (codePoint != -1) {
 			if (Character.isBmpCodePoint(codePoint)) {
 				reader.unread(codePoint);
 			}
@@ -1341,7 +1325,39 @@ public class TurtleParser extends RDFParserBase {
 		}
 	}
 
-	protected int peek()
+	/**
+	 * Pushes back the supplied string by copying it to the front of the buffer.
+	 * After this method returns, successive calls to {@link #readCodePoint()}
+	 * will return the code points in the supplied string again, starting at the
+	 * first in the String..
+	 * 
+	 * @param string the string to un-read.
+	 * @throws IOException
+	 */
+	protected void unread(String string)
+		throws IOException
+	{
+		for (int i = string.codePointCount(0, string.length()); i >= 1; i--) {
+			final int codePoint = string.codePointBefore(i);
+			if (Character.isBmpCodePoint(codePoint)) {
+				reader.unread(codePoint);
+			}
+			else {
+				final char[] surrogatePair = Character.toChars(codePoint);
+				reader.unread(surrogatePair);
+			}
+		}
+	}
+
+	/**
+	 * Peeks at the next Unicode code point without advancing the reader, and
+	 * returns its value.
+	 * 
+	 * @return the next Unicode code point, or -1 if the end of the stream has
+	 *         been reached.
+	 * @throws IOException
+	 */
+	protected int peekCodePoint()
 		throws IOException
 	{
 		int result = readCodePoint();

@@ -101,7 +101,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		boolean isGraphKeyword = false;
-		int c = peek();
+		int c = peekCodePoint();
 		if (c == 'g' || c == 'G') {
 			StringBuilder sb = new StringBuilder(5);
 			do {
