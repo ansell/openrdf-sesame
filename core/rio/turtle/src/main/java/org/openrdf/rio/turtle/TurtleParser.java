@@ -1326,7 +1326,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void unread(String directive)
 		throws IOException
 	{
-		for (int i = directive.codePointCount(0, directive.length()); i >= 0; i--) {
+		for (int i = directive.codePointCount(0, directive.length()); i >= 1; i--) {
 			final int codePoint = directive.codePointBefore(i);
 			if (Character.isBmpCodePoint(codePoint)) {
 				reader.unread(codePoint);

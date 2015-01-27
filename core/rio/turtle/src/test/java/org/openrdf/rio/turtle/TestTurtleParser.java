@@ -111,7 +111,6 @@ public class TestTurtleParser {
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
 	@Test
 	public void testParsePrefixUTF8()
 		throws Exception
@@ -126,14 +125,13 @@ public class TestTurtleParser {
 		assertTrue(errorCollector.getFatalErrors().isEmpty());
 
 		assertFalse(statementCollector.getStatements().isEmpty());
-		assertEquals(2, statementCollector.getStatements().size());
+		assertEquals(1, statementCollector.getStatements().size());
 
 		for (Statement st : statementCollector.getStatements()) {
 			System.out.println(st);
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
 	@Test
 	public void testParseTurtleLiteralUTF8()
 		throws Exception
@@ -154,7 +152,6 @@ public class TestTurtleParser {
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
 	@Test
 	public void testParseNTriplesLiteralUTF8()
 		throws Exception

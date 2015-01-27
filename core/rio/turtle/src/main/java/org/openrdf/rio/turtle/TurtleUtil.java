@@ -25,6 +25,7 @@ import info.aduna.text.ASCIIUtil;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.rio.helpers.CodePointIterator;
+import org.openrdf.rio.helpers.CodePointSequence;
 
 /**
  * Utility methods for Turtle encoding/decoding.
@@ -346,7 +347,6 @@ public class TurtleUtil {
 					prefix.charAt(0), prefix);
 			return false;
 		}
-
 		
 		final int numberOfCodePoints = prefix.codePointCount(0, prefix.length());
 		for (int i = 1; i < numberOfCodePoints; i++) {
