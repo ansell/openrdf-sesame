@@ -586,8 +586,8 @@ public class TurtleUtil {
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 6);
 
 				try {
-					c = (char)Integer.parseInt(xx, 16);
-					sb.append(c);
+					final int codePoint = Integer.parseInt(xx, 16);
+					sb.append(Character.toChars(codePoint));
 
 					startIdx = backSlashIdx + 6;
 				}
@@ -603,8 +603,8 @@ public class TurtleUtil {
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
 
 				try {
-					c = (char)Integer.parseInt(xx, 16);
-					sb.append(c);
+					final int codePoint = Integer.parseInt(xx, 16);
+					sb.append(Character.toChars(codePoint));
 
 					startIdx = backSlashIdx + 10;
 				}
