@@ -1315,12 +1315,12 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException
 	{
 		if (codePoint != -1) {
-			if (Character.isBmpCodePoint(codePoint)) {
-				reader.unread(codePoint);
-			}
-			else {
+			if (Character.isSupplementaryCodePoint(codePoint)) {
 				final char[] surrogatePair = Character.toChars(codePoint);
 				reader.unread(surrogatePair);
+			}
+			else {
+				reader.unread(codePoint);
 			}
 		}
 	}
@@ -1339,12 +1339,12 @@ public class TurtleParser extends RDFParserBase {
 	{
 		for (int i = string.codePointCount(0, string.length()); i >= 1; i--) {
 			final int codePoint = string.codePointBefore(i);
-			if (Character.isBmpCodePoint(codePoint)) {
-				reader.unread(codePoint);
-			}
-			else {
+			if (Character.isSupplementaryCodePoint(codePoint)) {
 				final char[] surrogatePair = Character.toChars(codePoint);
 				reader.unread(surrogatePair);
+			}
+			else {
+				reader.unread(codePoint);
 			}
 		}
 	}
