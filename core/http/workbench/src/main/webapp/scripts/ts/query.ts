@@ -11,6 +11,9 @@ module workbench {
 
     export module query {
 
+        /**
+         * JSON value provided by script element in document (see query.xsl).
+         */
         declare var sparqlNamespaces: any;
 
         /**
