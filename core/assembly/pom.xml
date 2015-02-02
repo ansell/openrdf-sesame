@@ -263,7 +263,7 @@
 		    <encoding>utf8</encoding>
 		    <source>1.6</source>
 		    <quiet>true</quiet>
-		    <windowtitle>OpenRDF Sesame ${project.version} API
+		    <windowtitle>OpenRDF Sesame ${project.version} API</windowtitle>
 		    <groups>
 			<group>
 			    <title>Repository API</title>
