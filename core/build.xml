@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="sesame-assembly" default="help" basedir=".">
+    <target name="help" description="Usage information">
+	<echo message="Sesame 2 Assembly Builder" />
+	<echo message="========================" />
+	<echo message="The purpose of this Ant build file is to create release artifacts for Sesame 2." />
+	<echo message="It is not intended to capture every aspect of project development. Please use Maven for development purposes." />
+	<echo message=" " />
+	<echo message="Available targets: " />
+	<echo message=" " />
+	<echo message="- assembly: package everything and create release distribution files. " />
+    </target>
+
+    <target name="package-project">
+	<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" failonerror="true">
+	    <arg line="package" />
+	</exec>
+
+	<exec os="Linux" executable="mvn" failonerror="true">
+	    <arg line="package" />
+	</exec>
+
+	<exec os="Mac OS X" executable="mvn" failonerror="true">
+	    <arg line="package" />
+	</exec>
+    </target>
+
+    <target name="assembly" depends="package-project" description="build release distribution bundles">
+
+	<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" dir="assembly" failonerror="true">
+	    <env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
+	    <arg line="javadoc:aggregate assembly:single shade:shade" />
+	</exec>
+
+	<exec os="Linux" executable="mvn" failonerror="true" dir="assembly">
+	    <env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
+	    <arg line="javadoc:aggregate assembly:single shade:shade" />
+	</exec>
+
+	<exec os="Mac OS X" executable="mvn" failonerror="true" dir="assembly">
+	    <env key="MAVEN_OPTS" value="-Xmx2048m -XX:MaxPermSize=512m"/>
+	    <arg line="javadoc:aggregate assembly:single shade:shade" />
+	</exec>
+
+	<echo message="Distribution files (onejar and SDK bundles) can be found in assembly/target/"/>
+    </target>
+
+</project>
