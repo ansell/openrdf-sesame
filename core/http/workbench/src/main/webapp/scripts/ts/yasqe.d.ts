@@ -1,25 +1,21 @@
-interface YASQE_Instance extends JQuery {
+/// <reference path="codemirror.d.ts" />
+
+interface YASQE_Instance extends CodeMirror.EditorFromTextArea {
 
 	getValue(): string;
 
 	setValue(query: string): void;
 
 	refresh(): void;
-
-	save(): void;
-
-	toTextArea(): HTMLElement;
-
-	getWrapperElement(): Element;
 }
 
-interface YASQE_Config {
+interface YASQE_Config extends CodeMirror.EditorConfiguration {
 	consumeShareLink(): any;
 }
 
 interface YASQE_Static {
 	
-	fromTextArea(textArea: HTMLElement, config: YASQE_Config): YASQE_Instance;
+	fromTextArea(host: HTMLTextAreaElement, options?: YASQE_Config): YASQE_Instance;
 }
 
 declare module "yasqe" {

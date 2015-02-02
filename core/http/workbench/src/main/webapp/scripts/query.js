@@ -8,8 +8,6 @@
 var workbench;
 (function (workbench) {
     (function (_query) {
-        
-
         /**
         * Holds the current selected query language.
         */
