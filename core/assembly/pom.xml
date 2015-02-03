@@ -255,24 +255,64 @@
     <build>
 	<plugins>
 	    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-javadoc-plugin</artifactId>
+		<inherited>false</inherited>
+		<configuration>
+		    <includeDependencySources>true</includeDependencySources>
+		    <encoding>utf8</encoding>
+		    <source>1.6</source>
+		    <quiet>true</quiet>
+		    <doctitle>Sesame ${project.version} API</doctitle>
+		    <windowtitle>Sesame ${project.version} API</windowtitle>
+		    <groups>
+			<group>
+			    <title>Repository API</title>
+			    <packages>org.openrdf.repository*</packages>
+			</group>
+			<group>
+			    <title>RDF Model API</title>
+			    <packages>org.openrdf.model*</packages>
+			</group>
+			<group>
+			    <title>Storage And Inference Layer (SAIL) API</title>
+			    <packages>org.openrdf.sail*</packages>
+			</group>
+			<group>
+			    <title>Rio: RDF Parsers and Writers </title>
+			    <packages>org.openrdf.rio*</packages>
+			</group>
+			<group>
+			    <title>Query API and query engines</title>
+			    <packages>org.openrdf.query:org.openrdf.query.impl:org.openrdf.query.algebra*:org.openrdf.query.parser*</packages>
+			</group>
+			<group>
+			    <title>Query Result Parsers and Writers</title>
+			    <packages>org.openrdf.query.resultio*</packages>
+			</group>
+			<group>
+			    <title>OpenRDF Web Client</title>
+			    <packages>org.openrdf.http.webclient*</packages>
+			</group>
+			<group>
+			    <title>HTTP Protocol for Client/Server Communication</title>
+			    <packages>org.openrdf.http*</packages>
+			</group>
+		    </groups>
+		    <links>
+			<link>http://docs.oracle.com/javase/6/docs/api/</link>
+		    </links>
+		</configuration>
+	    </plugin>
+	    <plugin>
 		<artifactId>maven-assembly-plugin</artifactId>
 		<configuration>
 		    <finalName>openrdf-sesame-${project.version}</finalName>
 		    <attach>false</attach>
 		    <descriptors>
-			<!-- <descriptor>src/main/assembly/onejar.xml</descriptor> -->
 			<descriptor>src/main/assembly/sdk.xml</descriptor>
 		    </descriptors>
 		</configuration>
-		<executions>
-		    <execution>
-			<id>create-sdk-distro</id>
-			<phase>package</phase>
-			<goals>
-			    <goal>single</goal>
-			</goals>
-		    </execution>
-		</executions>
 	    </plugin>
 	    <plugin>
 		<groupId>org.apache.maven.plugins</groupId>
@@ -291,17 +331,7 @@
 			<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 		    </transformers>
 		</configuration>
-		<executions>
-		    <execution>
-			<phase>package</phase>
-			<goals>
-			    <goal>shade</goal>
-			</goals>
-		    </execution>
-		</executions>
 	    </plugin>
 	</plugins>
     </build>
-
-
 </project>
