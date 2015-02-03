@@ -1245,7 +1245,9 @@ public class TurtleParser extends RDFParserBase {
 			if (c == '#') {
 				processComment();
 			}
-			else if (c == '\r' || c == '\n') {
+			else if (c == '\n') {
+				// we only count line feeds (LF), not carriage return (CR), as
+				// normally a CR is immediately followed by a LF.
 				lineNumber++;
 			}
 
