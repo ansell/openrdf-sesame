@@ -21,7 +21,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
@@ -39,8 +41,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.ParseErrorCollector;
+import org.openrdf.rio.helpers.ParseErrorLogger;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -152,6 +156,28 @@ public class TestTurtleParser {
 			System.out.println(st);
 		}
 	}
+	
+	@Test 
+	public void testLineNumberReporting() throws Exception {
+		
+		InputStream in = this.getClass().getResourceAsStream("/test-newlines.ttl");
+		
+		try {
+			parser.parse(in, baseURI);
+			fail("expected to fail parsing input file");
+		}
+		catch (RDFParseException e) {
+			// expected
+			assertFalse(errorCollector.getFatalErrors().isEmpty());
+			
+			final String error = errorCollector.getFatalErrors().get(0);
+			
+			// expected to fail at line 9.
+			assertTrue(error.contains("(9,"));
+			
+		}
+
+	}
 
 	@Test
 	public void testParseTurtleLiteralUTF8()
@@ -172,6 +198,27 @@ public class TestTurtleParser {
 			System.out.println(st);
 		}
 	}
+	
+	@Test
+	public void testParseTurtleLiteralCarriageReturn()
+		throws Exception
+	{
+		URL url = new URL("http://www.w3.org/2013/TurtleTests/literal_with_CARRIAGE_RETURN.ttl");
+
+		parser.parse(url.openStream(), baseURI);
+
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(1, statementCollector.getStatements().size());
+
+		for (Statement st : statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
+
 
 	@Test
 	public void testParseNTriplesLiteralUTF8()
