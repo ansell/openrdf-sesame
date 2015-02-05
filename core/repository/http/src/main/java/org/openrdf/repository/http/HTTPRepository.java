@@ -293,14 +293,21 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	/**
-	 * @return Returns the compatibleMode. <code>null</code> if not yet queried, <code>true</code> if
-	 *         server protocol is older than client protocol, <code>false</code> otherwise.
+	 * Returns the current setting of compatibleMode. Do not use directly.
+	 * Instead use {@link HTTPRepositoryConnection#useCompatibleMode()}.
+	 * 
+	 * @return Returns the compatibleMode. <code>null</code> if not yet queried,
+	 *         <code>true</code> if server protocol is older than client
+	 *         protocol, <code>false</code> otherwise.
 	 */
 	Boolean getCompatibleMode() {
 		return compatibleMode;
 	}
 
 	/**
+	 * Set the compatibility mode. Do not use directly. Instead use
+	 * {@link HTTPRepositoryConnection#useCompatibleMode()}.
+	 * 
 	 * @param compatibleMode
 	 *        The compatibleMode to set.
 	 */
