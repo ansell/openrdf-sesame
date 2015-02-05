@@ -104,8 +104,6 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 	private boolean active;
 
-	private Boolean compatibleMode = null;
-
 	private Model toAdd;
 
 	private Model toRemove;
@@ -316,19 +314,23 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	boolean useCompatibleMode()
 		throws RepositoryException
 	{
-		if (compatibleMode == null) {
-			try {
-				final String serverProtocolVersion = client.getServerProtocol();
+		Boolean compatibleMode = null;
+		synchronized (this.getRepository()) {
+			compatibleMode = this.getRepository().getCompatibleMode();
+			if (compatibleMode == null) {
+				try {
+					final String serverProtocolVersion = client.getServerProtocol();
 
-				// protocol version 7 supports the new transaction handling. If the
-				// server is older, we need to run in backward-compatible mode.
-				compatibleMode = (Integer.parseInt(serverProtocolVersion) < 7);
-			}
-			catch (NumberFormatException e) {
-				throw new RepositoryException("could not read protocol version from server: ", e);
-			}
-			catch (IOException e) {
-				throw new RepositoryException("could not read protocol version from server: ", e);
+					// protocol version 7 supports the new transaction handling. If
+					// the server is older, we need to run in backward-compatible mode.
+					this.getRepository().setCompatibleMode((Integer.parseInt(serverProtocolVersion) < 7));
+				}
+				catch (NumberFormatException e) {
+					throw new RepositoryException("could not read protocol version from server: ", e);
+				}
+				catch (IOException e) {
+					throw new RepositoryException("could not read protocol version from server: ", e);
+				}
 			}
 		}
 		return compatibleMode;
@@ -344,6 +346,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 					try {
 						client.sendTransaction(txn);
 						txn.clear();
+						active = false;
 					}
 					catch (IOException e) {
 						throw new RepositoryException(e);
@@ -664,7 +667,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			// no need to flush, using old-style transactions.
 			return;
 		}
-		
+
 		if (isActive()) {
 			switch (action) {
 				case ADD:
