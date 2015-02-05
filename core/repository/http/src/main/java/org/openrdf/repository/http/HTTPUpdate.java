@@ -40,9 +40,7 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 
 	private final HTTPRepositoryConnection httpCon;
 
-	public HTTPUpdate(HTTPRepositoryConnection con, QueryLanguage ql,
-			String queryString, String baseURI)
-	{
+	public HTTPUpdate(HTTPRepositoryConnection con, QueryLanguage ql, String queryString, String baseURI) {
 		super(con.getSesameSession(), ql, queryString, baseURI);
 		this.httpCon = con;
 	}
@@ -52,6 +50,34 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 		throws UpdateExecutionException
 	{
 		try {
+			if (httpCon.useCompatibleMode()) {
+				if (httpCon.isAutoCommit()) {
+					// execute update immediately
+					SparqlSession client = getHttpClient();
+					try {
+						client.sendUpdate(getQueryLanguage(), getQueryString(), getBaseURI(), dataset,
+								includeInferred, getBindingsArray());
+					}
+					catch (UnauthorizedException e) {
+						throw new HTTPUpdateExecutionException(e.getMessage(), e);
+					}
+					catch (QueryInterruptedException e) {
+						throw new HTTPUpdateExecutionException(e.getMessage(), e);
+					}
+					catch (MalformedQueryException e) {
+						throw new HTTPUpdateExecutionException(e.getMessage(), e);
+					}
+					catch (IOException e) {
+						throw new HTTPUpdateExecutionException(e.getMessage(), e);
+					}
+				}
+				else {
+					// defer execution as part of transaction.
+					httpCon.scheduleUpdate(this);
+				}
+				return;
+			}
+
 			SparqlSession client = getHttpClient();
 			try {
 				httpCon.flushTransactionState(Action.UPDATE);
