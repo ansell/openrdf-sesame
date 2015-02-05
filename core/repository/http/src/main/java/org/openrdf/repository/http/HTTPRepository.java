@@ -296,8 +296,8 @@ public class HTTPRepository extends RepositoryBase {
 	 * Verify if transaction handling should be done in backward-compatible mode
 	 * (this is the case when communicating with an older Sesame Server).
 	 * 
-	 * @return <code>true</code> if the Server does not support the extended transaction
-	 *         protocol, <code>false</code> otherwise.
+	 * @return <code>true</code> if the Server does not support the extended
+	 *         transaction protocol, <code>false</code> otherwise.
 	 * @throws RepositoryException
 	 *         if something went wrong while querying the server for the protocol
 	 *         version.
