@@ -150,7 +150,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		verifyIsOpen();
 		verifyNotTxnActive("Connection already has an active transaction");
 
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			active = true;
 			return;
 		}
@@ -301,46 +301,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	/**
-	 * Verify if transaction handling should be done in backward-compatible mode
-	 * (this is the case when communicating with an older Sesame Server).
-	 * 
-	 * @return true if the Server does not support the extended transaction
-	 *         protocol, false otherwise.
-	 * @throws RepositoryException
-	 *         if something went wrong while querying the server for the protocol
-	 *         version.
-	 */
-	boolean useCompatibleMode()
-		throws RepositoryException
-	{
-		Boolean compatibleMode = null;
-		synchronized (this.getRepository()) {
-			compatibleMode = this.getRepository().getCompatibleMode();
-			if (compatibleMode == null) {
-				try {
-					final String serverProtocolVersion = client.getServerProtocol();
-
-					// protocol version 7 supports the new transaction handling. If
-					// the server is older, we need to run in backward-compatible mode.
-					this.getRepository().setCompatibleMode((Integer.parseInt(serverProtocolVersion) < 7));
-				}
-				catch (NumberFormatException e) {
-					throw new RepositoryException("could not read protocol version from server: ", e);
-				}
-				catch (IOException e) {
-					throw new RepositoryException("could not read protocol version from server: ", e);
-				}
-			}
-		}
-		return compatibleMode;
-	}
-
 	public void commit()
 		throws RepositoryException
 	{
 
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			synchronized (txn) {
 				if (txn.size() > 0) {
 					try {
@@ -375,7 +340,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void rollback()
 		throws RepositoryException
 	{
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			txn.clear();
 			active = false;
 			return;
@@ -480,7 +445,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			if (!isActive()) {
 				// Send bytes directly to the server
 				client.upload(in, baseURI, dataFormat, false, false, contexts);
@@ -502,7 +467,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws IOException, RDFParseException, RepositoryException
 	{
 
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			if (!isActive()) {
 				// Send bytes directly to the server
 				client.upload(reader, baseURI, dataFormat, false, false, contexts);
@@ -601,7 +566,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			txn.add(new AddStatementOperation(subject, predicate, object, contexts));
 			return;
 		}
@@ -663,7 +628,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void flushTransactionState(Action action)
 		throws RepositoryException
 	{
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			// no need to flush, using old-style transactions.
 			return;
 		}
@@ -717,7 +682,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
 			return;
 		}
@@ -745,7 +710,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		boolean localTransaction = startLocalTransaction();
 
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			txn.add(new ClearOperation(contexts));
 		}
 		else {
@@ -765,7 +730,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		boolean localTransaction = startLocalTransaction();
 
 		try {
-			if (useCompatibleMode()) {
+			if (this.getRepository().useCompatibleMode()) {
 				txn.add(new RemoveNamespaceOperation(prefix));
 			}
 			else {
@@ -786,7 +751,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clearNamespaces()
 		throws RepositoryException
 	{
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			boolean localTransaction = startLocalTransaction();
 			txn.add(new ClearNamespacesOperation());
 			conditionalCommit(localTransaction);
@@ -811,7 +776,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 			throw new NullPointerException("name must not be null");
 		}
 
-		if (useCompatibleMode()) {
+		if (this.getRepository().useCompatibleMode()) {
 			boolean localTransaction = startLocalTransaction();
 			txn.add(new SetNamespaceOperation(prefix, name));
 			conditionalCommit(localTransaction);

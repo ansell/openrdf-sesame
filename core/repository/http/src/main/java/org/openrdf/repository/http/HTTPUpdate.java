@@ -50,7 +50,7 @@ public class HTTPUpdate extends AbstractHTTPUpdate {
 		throws UpdateExecutionException
 	{
 		try {
-			if (httpCon.useCompatibleMode()) {
+			if (httpCon.getRepository().useCompatibleMode()) {
 				if (httpCon.isAutoCommit()) {
 					// execute update immediately
 					SparqlSession client = getHttpClient();

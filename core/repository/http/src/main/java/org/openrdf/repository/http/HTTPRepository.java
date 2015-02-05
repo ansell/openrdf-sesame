@@ -293,25 +293,33 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	/**
-	 * Returns the current setting of compatibleMode. Do not use directly.
-	 * Instead use {@link HTTPRepositoryConnection#useCompatibleMode()}.
+	 * Verify if transaction handling should be done in backward-compatible mode
+	 * (this is the case when communicating with an older Sesame Server).
 	 * 
-	 * @return Returns the compatibleMode. <code>null</code> if not yet queried,
-	 *         <code>true</code> if server protocol is older than client
+	 * @return <code>true</code> if the Server does not support the extended transaction
 	 *         protocol, <code>false</code> otherwise.
+	 * @throws RepositoryException
+	 *         if something went wrong while querying the server for the protocol
+	 *         version.
 	 */
-	Boolean getCompatibleMode() {
-		return compatibleMode;
-	}
+	synchronized boolean useCompatibleMode()
+		throws RepositoryException
+	{
+		if (compatibleMode == null) {
+			try {
+				final String serverProtocolVersion = createHTTPClient().getServerProtocol();
 
-	/**
-	 * Set the compatibility mode. Do not use directly. Instead use
-	 * {@link HTTPRepositoryConnection#useCompatibleMode()}.
-	 * 
-	 * @param compatibleMode
-	 *        The compatibleMode to set.
-	 */
-	void setCompatibleMode(Boolean compatibleMode) {
-		this.compatibleMode = compatibleMode;
+				// protocol version 7 supports the new transaction handling. If
+				// the server is older, we need to run in backward-compatible mode.
+				this.compatibleMode = (Integer.parseInt(serverProtocolVersion) < 7);
+			}
+			catch (NumberFormatException e) {
+				throw new RepositoryException("could not read protocol version from server: ", e);
+			}
+			catch (IOException e) {
+				throw new RepositoryException("could not read protocol version from server: ", e);
+			}
+		}
+		return compatibleMode;
 	}
 }
