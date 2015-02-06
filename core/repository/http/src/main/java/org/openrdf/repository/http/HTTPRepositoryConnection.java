@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -80,6 +81,8 @@ import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
+
+import static org.openrdf.rio.RDFFormat.NTRIPLES;
 
 /**
  * RepositoryConnection that communicates with a server using the HTTP protocol.
@@ -446,6 +449,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (this.getRepository().useCompatibleMode()) {
+		
+			dataFormat = getBackwardCompatibleFormat(dataFormat);
+			
 			if (!isActive()) {
 				// Send bytes directly to the server
 				client.upload(in, baseURI, dataFormat, false, false, contexts);
@@ -463,11 +469,27 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		client.upload(in, baseURI, dataFormat, false, false, contexts);
 	}
 
+	private RDFFormat getBackwardCompatibleFormat(RDFFormat format) {
+		// In Sesame 2.8, the default MIME-type for N-Triples changed. To stay backward compatible, we 'fake' the 
+		// default MIME-type back to the older value (text/plain) when running in compatibility mode.  
+		if (NTRIPLES.equals(format)) {
+			// create a new format constant with identical properties as the N-Triples format, just with a different
+			// default MIME-type.
+			return new RDFFormat(NTRIPLES.getName(), Arrays.asList("text/plain"), NTRIPLES.getCharset(),
+					NTRIPLES.getFileExtensions(), NTRIPLES.supportsNamespaces(), NTRIPLES.supportsContexts());
+		}
+		
+		return format;
+	}
+	
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
 
 		if (this.getRepository().useCompatibleMode()) {
+
+			dataFormat = getBackwardCompatibleFormat(dataFormat);
+			
 			if (!isActive()) {
 				// Send bytes directly to the server
 				client.upload(reader, baseURI, dataFormat, false, false, contexts);
