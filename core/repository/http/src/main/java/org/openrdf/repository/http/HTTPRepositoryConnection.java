@@ -311,12 +311,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 					try {
 						client.sendTransaction(txn);
 						txn.clear();
-						active = false;
 					}
 					catch (IOException e) {
 						throw new RepositoryException(e);
 					}
 				}
+				active = false;
 			}
 			return;
 		}
