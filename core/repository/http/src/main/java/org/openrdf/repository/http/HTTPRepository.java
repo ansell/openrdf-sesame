@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -47,7 +47,7 @@ import org.openrdf.rio.RDFFormat;
  * 
  * @see org.openrdf.http.protocol.UnauthorizedException
  * @author Arjohn Kampman
- * @author jeen
+ * @author Jeen Broekstra
  * @author Herko ter Horst
  */
 public class HTTPRepository extends RepositoryBase {
@@ -60,14 +60,22 @@ public class HTTPRepository extends RepositoryBase {
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private SesameClient client;
+
 	private String username;
+
 	private String password;
+
 	private String serverURL;
+
 	private String repositoryURL;
+
 	private RDFFormat rdfFormat;
+
 	private TupleQueryResultFormat tupleFormat;
 
 	private File dataDir;
+
+	private Boolean compatibleMode = null;
 
 	/*--------------*
 	 * Constructors *
@@ -91,7 +99,8 @@ public class HTTPRepository extends RepositoryBase {
 
 		if (matcher.matches() && matcher.groupCount() == 1) {
 			this.serverURL = matcher.group(1);
-		} else {
+		}
+		else {
 			throw new IllegalArgumentException("URL must be to a Sesame Repository (not just the server)");
 		}
 		this.repositoryURL = repositoryURL;
@@ -116,7 +125,7 @@ public class HTTPRepository extends RepositoryBase {
 		return client;
 	}
 
-	public synchronized  void setSesameClient(SesameClient client) {
+	public synchronized void setSesameClient(SesameClient client) {
 		this.client = client;
 	}
 
@@ -169,10 +178,10 @@ public class HTTPRepository extends RepositoryBase {
 
 	/**
 	 * Sets the preferred serialization format for tuple query results to the
-	 * supplied {@link TupleQueryResultFormat}, overriding the {@link SparqlSession}
-	 * 's default preference. Setting this parameter is not necessary in most
-	 * cases as the {@link SparqlSession} by default indicates a preference for the
-	 * most compact and efficient format available.
+	 * supplied {@link TupleQueryResultFormat}, overriding the
+	 * {@link SparqlSession} 's default preference. Setting this parameter is not
+	 * necessary in most cases as the {@link SparqlSession} by default indicates
+	 * a preference for the most compact and efficient format available.
 	 * 
 	 * @param format
 	 *        the preferred {@link TupleQueryResultFormat}. If set to 'null' no
@@ -194,10 +203,10 @@ public class HTTPRepository extends RepositoryBase {
 
 	/**
 	 * Sets the preferred serialization format for RDF to the supplied
-	 * {@link RDFFormat}, overriding the {@link SparqlSession}'s default preference.
-	 * Setting this parameter is not necessary in most cases as the
-	 * {@link SparqlSession} by default indicates a preference for the most compact
-	 * and efficient format available.
+	 * {@link RDFFormat}, overriding the {@link SparqlSession}'s default
+	 * preference. Setting this parameter is not necessary in most cases as the
+	 * {@link SparqlSession} by default indicates a preference for the most
+	 * compact and efficient format available.
 	 * <p>
 	 * Use with caution: if set to a format that does not support context
 	 * serialization any context info contained in the query result will be lost.
@@ -281,5 +290,36 @@ public class HTTPRepository extends RepositoryBase {
 			httpClient.setUsernameAndPassword(username, password);
 		}
 		return httpClient;
+	}
+
+	/**
+	 * Verify if transaction handling should be done in backward-compatible mode
+	 * (this is the case when communicating with an older Sesame Server).
+	 * 
+	 * @return <code>true</code> if the Server does not support the extended
+	 *         transaction protocol, <code>false</code> otherwise.
+	 * @throws RepositoryException
+	 *         if something went wrong while querying the server for the protocol
+	 *         version.
+	 */
+	synchronized boolean useCompatibleMode()
+		throws RepositoryException
+	{
+		if (compatibleMode == null) {
+			try {
+				final String serverProtocolVersion = createHTTPClient().getServerProtocol();
+
+				// protocol version 7 supports the new transaction handling. If
+				// the server is older, we need to run in backward-compatible mode.
+				this.compatibleMode = (Integer.parseInt(serverProtocolVersion) < 7);
+			}
+			catch (NumberFormatException e) {
+				throw new RepositoryException("could not read protocol version from server: ", e);
+			}
+			catch (IOException e) {
+				throw new RepositoryException("could not read protocol version from server: ", e);
+			}
+		}
+		return compatibleMode;
 	}
 }
