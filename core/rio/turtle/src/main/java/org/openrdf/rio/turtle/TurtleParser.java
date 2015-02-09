@@ -19,7 +19,6 @@ package org.openrdf.rio.turtle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -78,8 +77,6 @@ public class TurtleParser extends RDFParserBase {
 	 * Variables *
 	 *-----------*/
 
-	private LineNumberReader lineReader;
-
 	private PushbackReader reader;
 
 	protected Resource subject;
@@ -87,6 +84,8 @@ public class TurtleParser extends RDFParserBase {
 	protected URI predicate;
 
 	protected Value object;
+
+	private int lineNumber = 1;
 
 	/*--------------*
 	 * Constructors *
@@ -197,12 +196,11 @@ public class TurtleParser extends RDFParserBase {
 			rdfHandler.startRDF();
 		}
 
-		lineReader = new LineNumberReader(reader);
 		// Start counting lines at 1:
-		lineReader.setLineNumber(1);
+		lineNumber = 1;
 
 		// Allow at most 8 characters to be pushed back:
-		this.reader = new PushbackReader(lineReader, 8);
+		this.reader = new PushbackReader(reader, 8);
 
 		// Store normalized base URI
 		setBaseURI(baseURI);
@@ -714,7 +712,7 @@ public class TurtleParser extends RDFParserBase {
 
 			unread(c);
 
-			return createLiteral(label, lang.toString(), null, lineReader.getLineNumber(), -1);
+			return createLiteral(label, lang.toString(), null, getLineNumber(), -1);
 		}
 		else if (c == '^') {
 			readCodePoint();
@@ -727,7 +725,7 @@ public class TurtleParser extends RDFParserBase {
 			// Read datatype
 			Value datatype = parseValue();
 			if (datatype instanceof URI) {
-				return createLiteral(label, null, (URI)datatype, lineReader.getLineNumber(), -1);
+				return createLiteral(label, null, (URI)datatype, getLineNumber(), -1);
 			}
 			else {
 				reportFatalError("Illegal datatype value: " + datatype);
@@ -735,7 +733,7 @@ public class TurtleParser extends RDFParserBase {
 			}
 		}
 		else {
-			return createLiteral(label, null, null, lineReader.getLineNumber(), -1);
+			return createLiteral(label, null, null, getLineNumber(), -1);
 		}
 	}
 
@@ -949,7 +947,7 @@ public class TurtleParser extends RDFParserBase {
 		// return createLiteral(label, null, datatype);
 
 		// Return result as a typed literal
-		return createLiteral(value.toString(), null, datatype, lineReader.getLineNumber(), -1);
+		return createLiteral(value.toString(), null, datatype, getLineNumber(), -1);
 	}
 
 	protected URI parseURI()
@@ -1051,7 +1049,7 @@ public class TurtleParser extends RDFParserBase {
 				String value = prefix.toString();
 
 				if (value.equals("true") || value.equals("false")) {
-					return createLiteral(value, null, XMLSchema.BOOLEAN, lineReader.getLineNumber(), -1);
+					return createLiteral(value, null, XMLSchema.BOOLEAN, getLineNumber(), -1);
 				}
 			}
 			else {
@@ -1247,6 +1245,11 @@ public class TurtleParser extends RDFParserBase {
 			if (c == '#') {
 				processComment();
 			}
+			else if (c == '\n') {
+				// we only count line feeds (LF), not carriage return (CR), as
+				// normally a CR is immediately followed by a LF.
+				lineNumber++;
+			}
 
 			c = readCodePoint();
 		}
@@ -1331,7 +1334,8 @@ public class TurtleParser extends RDFParserBase {
 	 * will return the code points in the supplied string again, starting at the
 	 * first in the String..
 	 * 
-	 * @param string the string to un-read.
+	 * @param string
+	 *        the string to un-read.
 	 * @throws IOException
 	 */
 	protected void unread(String string)
@@ -1366,7 +1370,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	protected void reportLocation() {
-		reportLocation(lineReader.getLineNumber(), -1);
+		reportLocation(getLineNumber(), -1);
 	}
 
 	/**
@@ -1375,7 +1379,7 @@ public class TurtleParser extends RDFParserBase {
 	 */
 	@Override
 	protected void reportWarning(String msg) {
-		reportWarning(msg, lineReader.getLineNumber(), -1);
+		reportWarning(msg, getLineNumber(), -1);
 	}
 
 	/**
@@ -1386,7 +1390,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void reportError(String msg, RioSetting<Boolean> setting)
 		throws RDFParseException
 	{
-		reportError(msg, lineReader.getLineNumber(), -1, setting);
+		reportError(msg, getLineNumber(), -1, setting);
 	}
 
 	/**
@@ -1397,7 +1401,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void reportFatalError(String msg)
 		throws RDFParseException
 	{
-		reportFatalError(msg, lineReader.getLineNumber(), -1);
+		reportFatalError(msg, getLineNumber(), -1);
 	}
 
 	/**
@@ -1408,12 +1412,16 @@ public class TurtleParser extends RDFParserBase {
 	protected void reportFatalError(Exception e)
 		throws RDFParseException
 	{
-		reportFatalError(e, lineReader.getLineNumber(), -1);
+		reportFatalError(e, getLineNumber(), -1);
 	}
 
 	protected void throwEOFException()
 		throws RDFParseException
 	{
 		throw new RDFParseException("Unexpected end of file");
+	}
+
+	private int getLineNumber() {
+		return lineNumber;
 	}
 }
