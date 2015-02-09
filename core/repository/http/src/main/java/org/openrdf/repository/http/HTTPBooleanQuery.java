@@ -52,7 +52,7 @@ public class HTTPBooleanQuery extends AbstractHTTPQuery implements BooleanQuery 
 
 		try {
 			conn.flushTransactionState(Protocol.Action.QUERY);
-			return client.sendBooleanQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime,
+			return client.sendBooleanQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), getMaxExecutionTime(),
 					getBindingsArray());
 		}
 		catch (IOException e) {

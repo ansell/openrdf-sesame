@@ -38,6 +38,8 @@ public abstract class AbstractOperation implements Operation {
 
 	protected boolean includeInferred = true;
 
+	private int maxExecutionTime = 0;
+
 
 	/*--------------*
 	 * Constructors *
@@ -85,4 +87,13 @@ public abstract class AbstractOperation implements Operation {
 		return includeInferred;
 	}
 
+	@Override
+	public void setMaxExecutionTime(int maxExecutionTime) {
+		this.maxExecutionTime = maxExecutionTime;
+	}
+
+	@Override
+	public int getMaxExecutionTime() {
+		return maxExecutionTime;
+	}
 }

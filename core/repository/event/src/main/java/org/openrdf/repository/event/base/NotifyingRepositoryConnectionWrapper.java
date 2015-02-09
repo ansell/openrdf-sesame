@@ -277,7 +277,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 			}
 		}
 	}
-	
+
 	@Override
 	public void rollback()
 		throws RepositoryException
@@ -376,6 +376,16 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 
 				public boolean getIncludeInferred() {
 					return delegate.getIncludeInferred();
+				}
+
+				@Override
+				public void setMaxExecutionTime(int maxExecTime) {
+					delegate.setMaxExecutionTime(maxExecTime);
+				}
+
+				@Override
+				public int getMaxExecutionTime() {
+					return delegate.getMaxExecutionTime();
 				}
 			};
 		}

@@ -23,12 +23,6 @@ import org.openrdf.query.Query;
  */
 public abstract class AbstractQuery extends AbstractOperation implements Query {
 
-	/*------------*
-	 * Attributes *
-	 *------------*/
-
-	protected int maxQueryTime = 0;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -44,11 +38,14 @@ public abstract class AbstractQuery extends AbstractOperation implements Query {
 	 * Methods *
 	 *---------*/
 
+	@Deprecated
 	public void setMaxQueryTime(int maxQueryTime) {
-		this.maxQueryTime = maxQueryTime;
+			setMaxExecutionTime(maxQueryTime);
+			
 	}
 
+	@Deprecated
 	public int getMaxQueryTime() {
-		return maxQueryTime;
+		return getMaxExecutionTime();
 	}
 }

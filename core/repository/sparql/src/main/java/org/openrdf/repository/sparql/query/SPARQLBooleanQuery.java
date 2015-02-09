@@ -44,7 +44,7 @@ public class SPARQLBooleanQuery extends AbstractHTTPQuery implements BooleanQuer
 		SparqlSession client = getHttpClient();
 
 		try {
-			return client.sendBooleanQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime,
+			return client.sendBooleanQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), getMaxExecutionTime(),
 					getBindingsArray());
 		}
 		catch (IOException e) {

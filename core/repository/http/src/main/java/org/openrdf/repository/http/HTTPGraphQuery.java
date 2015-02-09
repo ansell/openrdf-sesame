@@ -44,30 +44,32 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
 	private final HTTPRepositoryConnection conn;
 
-	public HTTPGraphQuery(HTTPRepositoryConnection conn, QueryLanguage ql, String queryString, String baseURI) {
+	public HTTPGraphQuery(HTTPRepositoryConnection conn, QueryLanguage ql, String queryString, String baseURI)
+	{
 		super(conn.getSesameSession(), ql, queryString, baseURI);
 		this.conn = conn;
 	}
 
 	public GraphQueryResult evaluate()
-			throws QueryEvaluationException
-		{
-			SparqlSession client = getHttpClient();
-			try {
-				conn.flushTransactionState(Protocol.Action.QUERY);
-				return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
-			}
-			catch (IOException e) {
-				throw new HTTPQueryEvaluationException(e.getMessage(), e);
-			}
-			catch (RepositoryException e) {
-				throw new HTTPQueryEvaluationException(e.getMessage(), e);
-			}
-			catch (MalformedQueryException e) {
-				throw new HTTPQueryEvaluationException(e.getMessage(), e);
-			}
+		throws QueryEvaluationException
+	{
+		SparqlSession client = getHttpClient();
+		try {
+			conn.flushTransactionState(Protocol.Action.QUERY);
+			return client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, getIncludeInferred(),
+					getMaxExecutionTime(), getBindingsArray());
 		}
-	
+		catch (IOException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (RepositoryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+		catch (MalformedQueryException e) {
+			throw new HTTPQueryEvaluationException(e.getMessage(), e);
+		}
+	}
+
 	/*
 	public GraphQueryResult evaluate()
 		throws QueryEvaluationException
@@ -97,8 +99,8 @@ public class HTTPGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 		SparqlSession client = getHttpClient();
 		try {
 			conn.flushTransactionState(Protocol.Action.QUERY);
-			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred, maxQueryTime, handler,
-					getBindingsArray());
+			client.sendGraphQuery(queryLanguage, queryString, baseURI, dataset, includeInferred,
+					getMaxExecutionTime(), handler, getBindingsArray());
 		}
 		catch (IOException e) {
 			throw new HTTPQueryEvaluationException(e.getMessage(), e);
