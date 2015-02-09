@@ -34,21 +34,23 @@ import org.openrdf.rio.RDFHandlerException;
  * 
  * @author James Leigh
  * @author Andreas Schwarte
- * 
  */
 public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 
-	public SPARQLGraphQuery(SparqlSession httpClient, String baseURI,
-			String queryString) {
+	public SPARQLGraphQuery(SparqlSession httpClient, String baseURI, String queryString) {
 		super(httpClient, QueryLanguage.SPARQL, queryString, baseURI);
 	}
 
-	public GraphQueryResult evaluate() throws QueryEvaluationException {
+	public GraphQueryResult evaluate()
+		throws QueryEvaluationException
+	{
 		SparqlSession client = getHttpClient();
 		try {
-			// TODO getQueryString() already inserts bindings, use emptybindingset as last argument?
-			return client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime, getBindingsArray());
-		} 
+			// TODO getQueryString() already inserts bindings, use emptybindingset
+			// as last argument?
+			return client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset,
+					getIncludeInferred(), getMaxExecutionTime(), getBindingsArray());
+		}
 		catch (IOException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
@@ -60,13 +62,14 @@ public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 		}
 	}
 
-	public void evaluate(RDFHandler handler) throws QueryEvaluationException,
-			RDFHandlerException {
-		
+	public void evaluate(RDFHandler handler)
+		throws QueryEvaluationException, RDFHandlerException
+	{
+
 		SparqlSession client = getHttpClient();
 		try {
-			client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(), maxQueryTime, handler,
-					getBindingsArray());
+			client.sendGraphQuery(queryLanguage, getQueryString(), baseURI, dataset, getIncludeInferred(),
+					getMaxExecutionTime(), handler, getBindingsArray());
 		}
 		catch (IOException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
@@ -78,7 +81,7 @@ public class SPARQLGraphQuery extends AbstractHTTPQuery implements GraphQuery {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
 	}
-	
+
 	private String getQueryString() {
 		return QueryStringUtil.getQueryString(queryString, getBindings());
 	}

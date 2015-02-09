@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import info.aduna.io.FileUtil;
 import info.aduna.io.IOUtil;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -150,7 +149,7 @@ public abstract class SPARQL11SyntaxTest extends TestCase {
 							try {
 								conn.begin();
 								SailUpdateExecutor exec = new SailUpdateExecutor(conn, store.getValueFactory(), null);
-								exec.executeUpdate(updateExpr, null, null, true);
+								exec.executeUpdate(updateExpr, null, null, true, -1);
 								conn.rollback();
 								fail("Negative test case should have failed to parse");
 							}

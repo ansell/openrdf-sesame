@@ -93,4 +93,27 @@ public interface Operation {
 	 */
 	public boolean getIncludeInferred();
 
+	/**
+	 * Specifies the maximum time that an operation is allowed to run. The
+	 * operation will be interrupted when it exceeds the time limit. Any
+	 * consecutive requests to fetch query results will result in
+	 * {@link QueryInterruptedException}s or {@link UpdateInterruptedException}s
+	 * (depending on whether the operation is a query or an update).
+	 * 
+	 * @param maxQueryTime
+	 *        The maximum query time, measured in seconds. A negative or zero
+	 *        value indicates an unlimited execution time (which is the default).
+	 * @since 2.8.0
+	 */
+	public void setMaxExecutionTime(int maxExecTime);
+
+	/**
+	 * Returns the maximum operation execution time.
+	 * 
+	 * @return The maximum operation execution time, measured in seconds.
+	 * @see #setMaxExecutionTime(int)
+	 * @since 2.8.0
+	 */
+	public int getMaxExecutionTime();
+
 }

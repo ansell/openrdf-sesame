@@ -76,9 +76,9 @@ public abstract class AbstractHTTPQuery extends AbstractQuery {
 	}
 
 	@Override
-	public void setMaxQueryTime(int maxQueryTime) {
-		super.setMaxQueryTime(maxQueryTime);
-		this.httpClient.setConnectionTimeout(1000L * this.maxQueryTime);
+	public void setMaxExecutionTime(int maxExecutionTime) {
+		super.setMaxExecutionTime(maxExecutionTime);
+		this.httpClient.setConnectionTimeout(1000L * this.getMaxExecutionTime());
 	}
 
 	@Override
