@@ -467,20 +467,26 @@ public abstract class RDFParserBase implements RDFParser {
 			// This is consistent as long as nextBNodePrefix is not modified
 			// between parser runs
 
-			byte[] chars = null;
-			try {
-				chars = nodeID.getBytes("UTF-8");
-			}
-			catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
+			String toAppend = nodeID;
+			if (nodeID.length() > 32) {
+				// we only hash the node ID if it is longer than the hash string
+				// itself would be.
+				byte[] chars = null;
+				try {
+					chars = nodeID.getBytes("UTF-8");
+				}
+				catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+
+				// we use an MD5 hash rather than the node ID itself to get a
+				// fixed-length generated id, rather than
+				// an ever-growing one (see SES-2171)
+				toAppend = (new HexBinaryAdapter()).marshal(md5.digest(chars));
 			}
 
-			// we use an MD5 hash rather than the node ID itself to get a
-			// fixed-length generated id, rather than
-			// an ever-growing one (see SES-2171)
-			final String hex = (new HexBinaryAdapter()).marshal(md5.digest(chars));
+			return valueFactory.createBNode(nextBNodePrefix + toAppend);
 
-			return valueFactory.createBNode(nextBNodePrefix + hex);
 		}
 	}
 
