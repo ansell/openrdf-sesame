@@ -16,6 +16,9 @@
  */
 package org.openrdf.rio.helpers;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +26,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import info.aduna.net.ParsedURI;
 
@@ -37,10 +42,10 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
-import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RioSetting;
 
 /**
  * Base class for {@link RDFParser}s offering common functionality for RDF
@@ -75,6 +80,8 @@ public abstract class RDFParserBase implements RDFParser {
 		map.put("xsd", "http://www.w3.org/2001/XMLSchema#");
 		defaultPrefix = Collections.unmodifiableMap(new HashMap<String, String>(map));
 	}
+
+	private final MessageDigest md5;
 
 	/*-----------*
 	 * Variables *
@@ -143,6 +150,13 @@ public abstract class RDFParserBase implements RDFParser {
 	 *        A ValueFactory.
 	 */
 	public RDFParserBase(ValueFactory valueFactory) {
+		try {
+			md5 = MessageDigest.getInstance("MD5");
+		}
+		catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+
 		namespaceTable = new HashMap<String, String>(16);
 		nextBNodePrefix = createUniqueBNodePrefix();
 		setValueFactory(valueFactory);
@@ -153,7 +167,6 @@ public abstract class RDFParserBase implements RDFParser {
 	 * Methods *
 	 *---------*/
 
-	
 	@Override
 	public void setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
@@ -453,7 +466,27 @@ public abstract class RDFParserBase implements RDFParser {
 			// cross-document clashes
 			// This is consistent as long as nextBNodePrefix is not modified
 			// between parser runs
-			return valueFactory.createBNode(nextBNodePrefix + nodeID);
+
+			String toAppend = nodeID;
+			if (nodeID.length() > 32) {
+				// we only hash the node ID if it is longer than the hash string
+				// itself would be.
+				byte[] chars = null;
+				try {
+					chars = nodeID.getBytes("UTF-8");
+				}
+				catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+
+				// we use an MD5 hash rather than the node ID itself to get a
+				// fixed-length generated id, rather than
+				// an ever-growing one (see SES-2171)
+				toAppend = (new HexBinaryAdapter()).marshal(md5.digest(chars));
+			}
+
+			return valueFactory.createBNode(nextBNodePrefix + toAppend);
+
 		}
 	}
 
@@ -703,7 +736,7 @@ public abstract class RDFParserBase implements RDFParser {
 	{
 		RDFParserHelper.reportFatalError(e, lineNo, columnNo, getParseErrorListener());
 	}
-	
+
 	private final String createUniqueBNodePrefix() {
 		return "genid-" + UUID.randomUUID().toString().replaceAll("-", "") + "-";
 	}
