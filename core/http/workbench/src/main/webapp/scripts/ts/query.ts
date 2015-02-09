@@ -10,9 +10,12 @@
 module workbench {
 
     export module query {
-        //need to declare YASQE library for typescript compilation
-        declare var YASQE: YASQE_Static;
+
+        /**
+         * JSON value provided by script element in document (see query.xsl).
+         */
         declare var sparqlNamespaces: any;
+
         /**
          * Holds the current selected query language.
          */
@@ -214,7 +217,7 @@ module workbench {
         function initYasqe() {
             workbench.yasqeHelper.setupCompleters(sparqlNamespaces);
             
-            yasqe = YASQE.fromTextArea(document.getElementById('query'), {
+            yasqe = YASQE.fromTextArea(<HTMLTextAreaElement>document.getElementById('query'), {
                 consumeShareLink: null,//don't try to parse the url args. this is already done by the addLoad function below
             });
             //some styling conflicts. Could add my own css file, but not a lot of things need changing, so just do this programmatically
