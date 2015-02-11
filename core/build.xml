@@ -14,15 +14,15 @@
 
     <target name="package-project">
 	<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" failonerror="true">
-	    <arg line="package" />
+	    <arg line="package site" />
 	</exec>
 
 	<exec os="Linux" executable="mvn" failonerror="true">
-	    <arg line="package" />
+	    <arg line="package site" />
 	</exec>
 
 	<exec os="Mac OS X" executable="mvn" failonerror="true">
-	    <arg line="package" />
+	    <arg line="package site" />
 	</exec>
     </target>
 
@@ -30,17 +30,17 @@
 
 	<exec os="Windows XP, Windows Vista, Windows 7" executable="mvn.bat" dir="assembly" failonerror="true">
 	    <env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
-	    <arg line="javadoc:aggregate assembly:single shade:shade" />
+	    <arg line="assembly:single shade:shade" />
 	</exec>
 
 	<exec os="Linux" executable="mvn" failonerror="true" dir="assembly">
 	    <env key="MAVEN_OPTS" value="-Xmx1024m -XX:MaxPermSize=256m"/>
-	    <arg line="javadoc:aggregate assembly:single shade:shade" />
+	    <arg line="assembly:single shade:shade" />
 	</exec>
 
 	<exec os="Mac OS X" executable="mvn" failonerror="true" dir="assembly">
 	    <env key="MAVEN_OPTS" value="-Xmx2048m -XX:MaxPermSize=512m"/>
-	    <arg line="javadoc:aggregate assembly:single shade:shade" />
+	    <arg line="assembly:single shade:shade" />
 	</exec>
 
 	<echo message="Distribution files (onejar and SDK bundles) can be found in assembly/target/"/>
