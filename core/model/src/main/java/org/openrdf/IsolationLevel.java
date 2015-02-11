@@ -48,4 +48,5 @@ public interface IsolationLevel {
 	 * @return a URI that uniquely represents this isolation level.
 	 */
 	URI getURI();
+
 }
