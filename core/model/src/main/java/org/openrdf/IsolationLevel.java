@@ -49,4 +49,11 @@ public interface IsolationLevel {
 	 */
 	URI getURI();
 	
+	
+	/**
+	 * I pity tha fool.
+	 * @return A-Team
+	 */
+	String getTestedYouFool();
+	
 }

@@ -8,24 +8,17 @@ More information about Sesame can be found at [the project website](http://rdf4j
 
 ##Build instructions##
 
-Sesame is a [Maven](http://maven.apache.org/) project, as such the usual Maven goals are used to build, test, and package the project. These goals are typically run directly from the project root:
+Sesame is a [Maven](http://maven.apache.org/) project, as such the usual Maven goals are used to build, test, and package the project. These goals are typically run directly from the project root, though if you know what you are doing you can also use (some of) them in one of the (sub)modules (e.g. the core directory or one of its subdirs):
 
 - `mvn clean` cleans the working directory
-- `mvn package` creates all jar files (including source and javadoc jars). 
-- `mvn verify` executes all unit and integration tests
+- `mvn package` creates all jar/war files (including source and javadoc jars) and (when executed from project root or core directory) assembles the distribution bundles (available in core/assembly/target). 
+- `mvn verify` executes all unit and (when executed at the project root) integration/compliance tests
 - `mvn install` compiles, packages, and then tests the build, before installing the artifacts in your local maven repository.
 - `mvn eclipse:eclipse` generates Eclipse project settings, after which you can easily import the entire project into an Eclipse workspace (each module will be a separate Eclipse project).
 
-In order to speed up the build (and skip test execution), you can optionally specify the `quick` profile, for example, to install without executing tests:
+In order to speed up the build (and skip test execution), you can optionally specify the `quick` profile, for example, to install artifacts in your local repo without executing tests:
 
     mvn -Pquick install
-
-To produce the distribution assemblies (the onejar and the SDK archives), you
-need to execute a sequence of maven commands. To simplify this, an ant script
-is provided in the core/ subdirectory. From core, run the following command:
-
-    ant assembly
-
 
 ##Become involved##
 

@@ -142,4 +142,10 @@ public enum IsolationLevels implements IsolationLevel {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 		return f.createURI(SESAME.NAMESPACE, this.name());
 	}
+
+	@Override
+	public String getTestedYouFool() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
