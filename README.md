@@ -11,8 +11,8 @@ More information about Sesame can be found at [the project website](http://rdf4j
 Sesame is a [Maven](http://maven.apache.org/) project, as such the usual Maven goals are used to build, test, and package the project. These goals are typically run directly from the project root, though if you know what you are doing you can also use (some of) them in one of the (sub)modules (e.g. the core directory or one of its subdirs):
 
 - `mvn clean` cleans the working directory
-- `mvn package` creates all jar/war files (including source and javadoc jars) and (when executed from project root or core directory) assembles the distribution bundles (available in core/assembly/target). 
-- `mvn verify` executes all unit and (when executed at the project root) integration/compliance tests
+- `mvn package` creates all binary artifacts (jar/war files) and (when executed from project root or core directory) assembles the distribution bundles (available in core/assembly/target). 
+- `mvn verify` executes all unit and (when executed at the project root) integration/compliance tests. It also creates source and javadoc jars for each module, in preparation for installation/deployment.
 - `mvn install` compiles, packages, and then tests the build, before installing the artifacts in your local maven repository.
 - `mvn eclipse:eclipse` generates Eclipse project settings, after which you can easily import the entire project into an Eclipse workspace (each module will be a separate Eclipse project).
 
