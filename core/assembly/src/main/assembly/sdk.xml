@@ -25,7 +25,7 @@
 		</fileSet>
 
 		<fileSet>
-			<directory>target/site/apidocs</directory>
+			<directory>../target/apidocs</directory>
 			<outputDirectory>docs/apidocs</outputDirectory>
 		</fileSet>
 
