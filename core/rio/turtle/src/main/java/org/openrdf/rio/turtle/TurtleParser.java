@@ -1212,6 +1212,7 @@ public class TurtleParser extends RDFParserBase {
 				// normally a CR is immediately followed by a LF.
 				lineNumber++;
 			}
+			c = readCodePoint();
 		}
 
 		unread(c);
