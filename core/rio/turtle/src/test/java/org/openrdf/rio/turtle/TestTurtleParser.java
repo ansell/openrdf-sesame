@@ -99,7 +99,6 @@ public class TestTurtleParser {
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
 	@Test
 	public void testParsePrefixUTF8()
 		throws Exception
@@ -114,14 +113,34 @@ public class TestTurtleParser {
 		assertTrue(errorCollector.getFatalErrors().isEmpty());
 
 		assertFalse(statementCollector.getStatements().isEmpty());
-		assertEquals(2, statementCollector.getStatements().size());
+		assertEquals(1, statementCollector.getStatements().size());
 
 		for (Statement st : statementCollector.getStatements()) {
 			System.out.println(st);
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
+	@Test
+	public void testW3C1()
+
+		throws Exception
+
+	{
+		URL url = new URL(
+				"http://www.w3.org/2013/TurtleTests/localName_with_assigned_nfc_PN_CHARS_BASE_character_boundaries.ttl");
+		URL nturl = new URL(
+				"http://www.w3.org/2013/TurtleTests/localName_with_assigned_nfc_PN_CHARS_BASE_character_boundaries.nt");
+		parser.parse(url.openStream(), baseURI);
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(1, statementCollector.getStatements().size());
+		for (Statement st : statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
+
 	@Test
 	public void testParseTurtleLiteralUTF8()
 		throws Exception
@@ -142,7 +161,6 @@ public class TestTurtleParser {
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
 	@Test
 	public void testParseNTriplesLiteralUTF8()
 		throws Exception

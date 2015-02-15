@@ -93,7 +93,7 @@ public class TriGParser extends TurtleParser {
 		int c;
 		// longest valid directive @prefix
 		do {
-			c = read();
+			c = readCodePoint();
 			if (c == -1 || TurtleUtil.isWhitespace(c)) {
 				unread(c);
 				break;
@@ -111,7 +111,7 @@ public class TriGParser extends TurtleParser {
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
 			if (directive.startsWith("@")) {
-				verifyCharacterOrFail(read(), ".");
+				verifyCharacterOrFail(readCodePoint(), ".");
 			}
 		}
 		else {
@@ -123,8 +123,8 @@ public class TriGParser extends TurtleParser {
 	protected void parseGraph()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = read();
-		int c2 = peek();
+		int c = readCodePoint();
+		int c2 = peekCodePoint();
 
 		if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-') || (c == '_' && c2 == ':')) {
 			unread(c);
@@ -139,16 +139,16 @@ public class TriGParser extends TurtleParser {
 			}
 
 			skipWSC();
-			c = read();
+			c = readCodePoint();
 		}
 		else {
 			setContext(null);
 		}
 
 		if (c == ':') {
-			verifyCharacterOrFail(read(), "-");
+			verifyCharacterOrFail(readCodePoint(), "-");
 			skipWSC();
-			c = read();
+			c = readCodePoint();
 		}
 
 		verifyCharacterOrFail(c, "{");
@@ -161,7 +161,7 @@ public class TriGParser extends TurtleParser {
 			c = skipWSC();
 
 			while (c == '.') {
-				read();
+				readCodePoint();
 
 				c = skipWSC();
 
@@ -177,7 +177,7 @@ public class TriGParser extends TurtleParser {
 			verifyCharacterOrFail(c, "}");
 		}
 
-		read();
+		readCodePoint();
 
 		// FIXME: Blank nodes are scoped to the named graph?
 		// clearBNodeIDMap();

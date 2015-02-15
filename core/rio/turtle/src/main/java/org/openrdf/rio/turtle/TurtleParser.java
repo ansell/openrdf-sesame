@@ -232,15 +232,15 @@ public class TurtleParser extends RDFParserBase {
 
 		StringBuilder sb = new StringBuilder(8);
 
-		int c;
+		int codePoint;
 		// longest valid directive @prefix
 		do {
-			c = read();
-			if (c == -1 || TurtleUtil.isWhitespace(c)) {
-				unread(c);
+			codePoint = readCodePoint();
+			if (codePoint == -1 || TurtleUtil.isWhitespace(codePoint)) {
+				unread(codePoint);
 				break;
 			}
-			sb.append((char)c);
+			sb.append(Character.toChars(codePoint));
 		}
 		while (sb.length() < 8);
 
@@ -253,14 +253,14 @@ public class TurtleParser extends RDFParserBase {
 			skipWSC();
 			// SPARQL BASE and PREFIX lines do not end in .
 			if (directive.startsWith("@")) {
-				verifyCharacterOrFail(read(), ".");
+				verifyCharacterOrFail(readCodePoint(), ".");
 			}
 		}
 		else {
 			unread(directive);
 			parseTriples();
 			skipWSC();
-			verifyCharacterOrFail(read(), ".");
+			verifyCharacterOrFail(readCodePoint(), ".");
 		}
 	}
 
@@ -302,7 +302,7 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder prefixID = new StringBuilder(8);
 
 		while (true) {
-			int c = read();
+			int c = readCodePoint();
 
 			if (c == ':') {
 				unread(c);
@@ -315,12 +315,12 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 
-			prefixID.append((char)c);
+			prefixID.append(Character.toChars(c));
 		}
 
 		skipWSC();
 
-		verifyCharacterOrFail(read(), ":");
+		verifyCharacterOrFail(readCodePoint(), ":");
 
 		skipWSC();
 
@@ -351,16 +351,16 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseTriples()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		// If the first character is an open bracket we need to decide which of
 		// the two parsing methods for blank nodes to use
 		if (c == '[') {
-			c = read();
+			c = readCodePoint();
 			skipWSC();
-			c = peek();
+			c = peekCodePoint();
 			if (c == ']') {
-				c = read();
+				c = readCodePoint();
 				subject = createBNode();
 				skipWSC();
 				parsePredicateObjectList();
@@ -370,7 +370,7 @@ public class TurtleParser extends RDFParserBase {
 				subject = parseImplicitBlank();
 			}
 			skipWSC();
-			c = peek();
+			c = peekCodePoint();
 
 			// if this is not the end of the statement, recurse into the list of
 			// predicate and objects, using the subject parsed above as the subject
@@ -400,7 +400,7 @@ public class TurtleParser extends RDFParserBase {
 		parseObjectList();
 
 		while (skipWSC() == ';') {
-			read();
+			readCodePoint();
 
 			int c = skipWSC();
 
@@ -428,7 +428,7 @@ public class TurtleParser extends RDFParserBase {
 		parseObject();
 
 		while (skipWSC() == ',') {
-			read();
+			readCodePoint();
 			skipWSC();
 			parseObject();
 		}
@@ -437,7 +437,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseSubject()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '(') {
 			subject = parseCollection();
@@ -461,10 +461,10 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		// Check if the short-cut 'a' is used
-		int c1 = read();
+		int c1 = readCodePoint();
 
 		if (c1 == 'a') {
-			int c2 = read();
+			int c2 = readCodePoint();
 
 			if (TurtleUtil.isWhitespace(c2)) {
 				// Short-cut is used, return the rdf:type URI
@@ -490,7 +490,7 @@ public class TurtleParser extends RDFParserBase {
 	protected void parseObject()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '(') {
 			object = parseCollection();
@@ -511,13 +511,13 @@ public class TurtleParser extends RDFParserBase {
 	protected Resource parseCollection()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		verifyCharacterOrFail(read(), "(");
+		verifyCharacterOrFail(readCodePoint(), "(");
 
 		int c = skipWSC();
 
 		if (c == ')') {
 			// Empty list
-			read();
+			readCodePoint();
 			return RDF.NIL;
 		}
 		else {
@@ -547,7 +547,7 @@ public class TurtleParser extends RDFParserBase {
 			}
 
 			// Skip ')'
-			read();
+			readCodePoint();
 
 			// Close the list
 			reportStatement(bNode, RDF.REST, RDF.NIL);
@@ -567,11 +567,11 @@ public class TurtleParser extends RDFParserBase {
 	protected Resource parseImplicitBlank()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		verifyCharacterOrFail(read(), "[");
+		verifyCharacterOrFail(readCodePoint(), "[");
 
 		BNode bNode = createBNode();
 
-		int c = read();
+		int c = readCodePoint();
 		if (c != ']') {
 			unread(c);
 
@@ -590,7 +590,7 @@ public class TurtleParser extends RDFParserBase {
 			skipWSC();
 
 			// Read closing bracket
-			verifyCharacterOrFail(read(), "]");
+			verifyCharacterOrFail(readCodePoint(), "]");
 
 			// Restore previous subject and predicate
 			subject = oldSubject;
@@ -607,7 +607,7 @@ public class TurtleParser extends RDFParserBase {
 	protected Value parseValue()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '<') {
 			// uriref, e.g. <foo://bar>
@@ -634,7 +634,7 @@ public class TurtleParser extends RDFParserBase {
 			return null;
 		}
 		else {
-			reportFatalError("Expected an RDF value here, found '" + (char)c + "'");
+			reportFatalError("Expected an RDF value here, found '" + new String(Character.toChars(c)) + "'");
 			return null;
 		}
 	}
@@ -648,28 +648,28 @@ public class TurtleParser extends RDFParserBase {
 		String label = parseQuotedString();
 
 		// Check for presence of a language tag or datatype
-		int c = peek();
+		int c = peekCodePoint();
 
 		if (c == '@') {
-			read();
+			readCodePoint();
 
 			// Read language
 			StringBuilder lang = new StringBuilder(8);
 
-			c = read();
+			c = readCodePoint();
 			if (c == -1) {
 				throwEOFException();
 			}
 
 			boolean verifyLanguageTag = getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			if (verifyLanguageTag && !TurtleUtil.isLanguageStartChar(c)) {
-				reportError("Expected a letter, found '" + (char)c + "'",
+				reportError("Expected a letter, found '" + new String(Character.toChars(c)) + "'",
 						BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			}
 
-			lang.append((char)c);
+			lang.append(Character.toChars(c));
 
-			c = read();
+			c = readCodePoint();
 			while (!TurtleUtil.isWhitespace(c)) {
 				// SES-1887 : Flexibility introduced for SES-1985 and SES-1821 needs
 				// to be counterbalanced against legitimate situations where Turtle
@@ -678,11 +678,11 @@ public class TurtleParser extends RDFParserBase {
 					break;
 				}
 				if (verifyLanguageTag && !TurtleUtil.isLanguageChar(c)) {
-					reportError("Illegal language tag char: '" + (char)c + "'",
+					reportError("Illegal language tag char: '" + new String(Character.toChars(c)) + "'",
 							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 				}
-				lang.append((char)c);
-				c = read();
+				lang.append(Character.toChars(c));
+				c = readCodePoint();
 			}
 
 			unread(c);
@@ -690,10 +690,10 @@ public class TurtleParser extends RDFParserBase {
 			return createLiteral(label, lang.toString(), null, lineReader.getLineNumber(), -1);
 		}
 		else if (c == '^') {
-			read();
+			readCodePoint();
 
 			// next character should be another '^'
-			verifyCharacterOrFail(read(), "^");
+			verifyCharacterOrFail(readCodePoint(), "^");
 
 			skipWSC();
 
@@ -721,14 +721,14 @@ public class TurtleParser extends RDFParserBase {
 	{
 		String result = null;
 
-		int c1 = read();
+		int c1 = readCodePoint();
 
 		// First character should be '"' or "'"
 		verifyCharacterOrFail(c1, "\"\'");
 
 		// Check for long-string, which starts and ends with three double quotes
-		int c2 = read();
-		int c3 = read();
+		int c2 = readCodePoint();
+		int c3 = readCodePoint();
 
 		if ((c1 == '"' && c2 == '"' && c3 == '"') || (c1 == '\'' && c2 == '\'' && c3 == '\'')) {
 			// Long string
@@ -763,7 +763,7 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder sb = new StringBuilder(32);
 
 		while (true) {
-			int c = read();
+			int c = readCodePoint();
 
 			if (c == closingCharacter) {
 				break;
@@ -772,15 +772,15 @@ public class TurtleParser extends RDFParserBase {
 				throwEOFException();
 			}
 
-			sb.append((char)c);
+			sb.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '"'
-				c = read();
+				c = readCodePoint();
 				if (c == -1) {
 					throwEOFException();
 				}
-				sb.append((char)c);
+				sb.append(Character.toChars(c));
 			}
 		}
 
@@ -800,7 +800,7 @@ public class TurtleParser extends RDFParserBase {
 		int c;
 
 		while (doubleQuoteCount < 3) {
-			c = read();
+			c = readCodePoint();
 
 			if (c == -1) {
 				throwEOFException();
@@ -812,15 +812,15 @@ public class TurtleParser extends RDFParserBase {
 				doubleQuoteCount = 0;
 			}
 
-			sb.append((char)c);
+			sb.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '"'
-				c = read();
+				c = readCodePoint();
 				if (c == -1) {
 					throwEOFException();
 				}
-				sb.append((char)c);
+				sb.append(Character.toChars(c));
 			}
 		}
 
@@ -833,17 +833,17 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder value = new StringBuilder(8);
 		URI datatype = XMLSchema.INTEGER;
 
-		int c = read();
+		int c = readCodePoint();
 
 		// read optional sign character
 		if (c == '+' || c == '-') {
-			value.append((char)c);
-			c = read();
+			value.append(Character.toChars(c));
+			c = readCodePoint();
 		}
 
 		while (ASCIIUtil.isNumber(c)) {
-			value.append((char)c);
-			c = read();
+			value.append(Character.toChars(c));
+			c = readCodePoint();
 		}
 
 		if (c == '.' || c == 'e' || c == 'E') {
@@ -851,18 +851,18 @@ public class TurtleParser extends RDFParserBase {
 			// read optional fractional digits
 			if (c == '.') {
 
-				if (TurtleUtil.isWhitespace(peek())) {
+				if (TurtleUtil.isWhitespace(peekCodePoint())) {
 					// We're parsing an integer that did not have a space before the
 					// period to end the statement
 				}
 				else {
-					value.append((char)c);
+					value.append(Character.toChars(c));
 
-					c = read();
+					c = readCodePoint();
 
 					while (ASCIIUtil.isNumber(c)) {
-						value.append((char)c);
-						c = read();
+						value.append(Character.toChars(c));
+						c = readCodePoint();
 					}
 
 					if (value.length() == 1) {
@@ -884,24 +884,24 @@ public class TurtleParser extends RDFParserBase {
 			// read optional exponent
 			if (c == 'e' || c == 'E') {
 				datatype = XMLSchema.DOUBLE;
-				value.append((char)c);
+				value.append(Character.toChars(c));
 
-				c = read();
+				c = readCodePoint();
 				if (c == '+' || c == '-') {
-					value.append((char)c);
-					c = read();
+					value.append(Character.toChars(c));
+					c = readCodePoint();
 				}
 
 				if (!ASCIIUtil.isNumber(c)) {
 					reportError("Exponent value missing", BasicParserSettings.VERIFY_DATATYPE_VALUES);
 				}
 
-				value.append((char)c);
+				value.append(Character.toChars(c));
 
-				c = read();
+				c = readCodePoint();
 				while (ASCIIUtil.isNumber(c)) {
-					value.append((char)c);
-					c = read();
+					value.append(Character.toChars(c));
+					c = readCodePoint();
 				}
 			}
 		}
@@ -931,12 +931,12 @@ public class TurtleParser extends RDFParserBase {
 		StringBuilder uriBuf = new StringBuilder(100);
 
 		// First character should be '<'
-		int c = read();
+		int c = readCodePoint();
 		verifyCharacterOrFail(c, "<");
 
 		// Read up to the next '>' character
 		while (true) {
-			c = read();
+			c = readCodePoint();
 
 			if (c == '>') {
 				break;
@@ -949,18 +949,18 @@ public class TurtleParser extends RDFParserBase {
 				reportFatalError("IRI included an unencoded space: '" + c + "'");
 			}
 
-			uriBuf.append((char)c);
+			uriBuf.append(Character.toChars(c));
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '>'
-				c = read();
+				c = readCodePoint();
 				if (c == -1) {
 					throwEOFException();
 				}
 				if (c != 'u' && c != 'U') {
 					reportFatalError("IRI includes string escapes: '\\" + c + "'");
 				}
-				uriBuf.append((char)c);
+				uriBuf.append(Character.toChars(c));
 			}
 		}
 
@@ -991,12 +991,12 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		// First character should be a ':' or a letter
-		int c = read();
+		int c = readCodePoint();
 		if (c == -1) {
 			throwEOFException();
 		}
 		if (c != ':' && !TurtleUtil.isPrefixStartChar(c)) {
-			reportError("Expected a ':' or a letter, found '" + (char)c + "'",
+			reportError("Expected a ':' or a letter, found '" + new String(Character.toChars(c)) + "'",
 					BasicParserSettings.VERIFY_RELATIVE_URIS);
 		}
 
@@ -1009,14 +1009,14 @@ public class TurtleParser extends RDFParserBase {
 		else {
 			// c is the first letter of the prefix
 			StringBuilder prefix = new StringBuilder(8);
-			prefix.append((char)c);
+			prefix.append(Character.toChars(c));
 
 			int previousChar = c;
-			c = read();
+			c = readCodePoint();
 			while (TurtleUtil.isPrefixChar(c)) {
-				prefix.append((char)c);
+				prefix.append(Character.toChars(c));
 				previousChar = c;
-				c = read();
+				c = readCodePoint();
 			}
 
 			if (c != ':') {
@@ -1041,26 +1041,26 @@ public class TurtleParser extends RDFParserBase {
 
 		// c == ':', read optional local name
 		StringBuilder localName = new StringBuilder(16);
-		c = read();
+		c = readCodePoint();
 		if (TurtleUtil.isNameStartChar(c)) {
 			if (c == '\\') {
 				localName.append(readLocalEscapedChar());
 			}
 			else {
-				localName.append((char)c);
+				localName.append(Character.toChars(c));
 			}
 
 			int previousChar = c;
-			c = read();
+			c = readCodePoint();
 			while (TurtleUtil.isNameChar(c)) {
 				if (c == '\\') {
 					localName.append(readLocalEscapedChar());
 				}
 				else {
-					localName.append((char)c);
+					localName.append(Character.toChars(c));
 				}
 				previousChar = c;
-				c = read();
+				c = readCodePoint();
 			}
 
 			// Unread last character
@@ -1089,13 +1089,13 @@ public class TurtleParser extends RDFParserBase {
 	private char readLocalEscapedChar()
 		throws RDFParseException, IOException
 	{
-		int c = read();
+		int c = readCodePoint();
 
 		if (TurtleUtil.isLocalEscapedChar(c)) {
 			return (char)c;
 		}
 		else {
-			throw new RDFParseException("found '" + (char)c + "', expected one of: "
+			throw new RDFParseException("found '" + new String(Character.toChars(c)) + "', expected one of: "
 					+ Arrays.toString(TurtleUtil.LOCAL_ESCAPED_CHARS));
 		}
 	}
@@ -1107,23 +1107,24 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		// Node ID should start with "_:"
-		verifyCharacterOrFail(read(), "_");
-		verifyCharacterOrFail(read(), ":");
+		verifyCharacterOrFail(readCodePoint(), "_");
+		verifyCharacterOrFail(readCodePoint(), ":");
 
 		// Read the node ID
-		int c = read();
+		int c = readCodePoint();
 		if (c == -1) {
 			throwEOFException();
 		}
 		else if (!TurtleUtil.isNameStartChar(c)) {
-			reportError("Expected a letter, found '" + (char)c + "'", BasicParserSettings.PRESERVE_BNODE_IDS);
+			reportError("Expected a letter, found '" + new String(Character.toChars(c)) + "'",
+					BasicParserSettings.PRESERVE_BNODE_IDS);
 		}
 
 		StringBuilder name = new StringBuilder(32);
-		name.append((char)c);
+		name.append(Character.toChars(c));
 
 		// Read all following letter and numbers, they are part of the name
-		c = read();
+		c = readCodePoint();
 
 		// If we would never go into the loop we must unread now
 		if (!TurtleUtil.isNameChar(c)) {
@@ -1132,7 +1133,7 @@ public class TurtleParser extends RDFParserBase {
 
 		while (TurtleUtil.isNameChar(c)) {
 			int previous = c;
-			c = read();
+			c = readCodePoint();
 
 			if (previous == '.' && (c == -1 || TurtleUtil.isWhitespace(c) || c == '<' || c == '_')) {
 				unread(c);
@@ -1162,13 +1163,16 @@ public class TurtleParser extends RDFParserBase {
 	 * characters specified in <tt>expected</tt>. This method will throw a
 	 * <tt>ParseException</tt> if this is not the case.
 	 */
-	protected void verifyCharacterOrFail(int c, String expected)
+	protected void verifyCharacterOrFail(int codePoint, String expected)
 		throws RDFParseException
 	{
-		if (c == -1) {
+		if (codePoint == -1) {
 			throwEOFException();
 		}
-		else if (expected.indexOf((char)c) == -1) {
+
+		final String supplied = new String(Character.toChars(codePoint));
+
+		if (expected.indexOf(supplied) == -1) {
 			StringBuilder msg = new StringBuilder(32);
 			msg.append("Expected ");
 			for (int i = 0; i < expected.length(); i++) {
@@ -1180,7 +1184,7 @@ public class TurtleParser extends RDFParserBase {
 				msg.append('\'');
 			}
 			msg.append(", found '");
-			msg.append((char)c);
+			msg.append(supplied);
 			msg.append("'");
 
 			reportFatalError(msg.toString());
@@ -1199,13 +1203,13 @@ public class TurtleParser extends RDFParserBase {
 	protected int skipWSC()
 		throws IOException, RDFHandlerException
 	{
-		int c = read();
+		int c = readCodePoint();
 		while (TurtleUtil.isWhitespace(c) || c == '#') {
 			if (c == '#') {
 				processComment();
 			}
 
-			c = read();
+			c = readCodePoint();
 		}
 
 		unread(c);
@@ -1221,16 +1225,16 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException, RDFHandlerException
 	{
 		StringBuilder comment = new StringBuilder(64);
-		int c = read();
+		int c = readCodePoint();
 		while (c != -1 && c != 0xD && c != 0xA) {
 			comment.append((char)c);
-			c = read();
+			c = readCodePoint();
 		}
 
 		// c is equal to -1, \r or \n.
 		// In case c is equal to \r, we should also read a following \n.
 		if (c == 0xD) {
-			c = read();
+			c = readCodePoint();
 
 			if (c != 0xA) {
 				unread(c);
@@ -1242,32 +1246,83 @@ public class TurtleParser extends RDFParserBase {
 		reportLocation();
 	}
 
-	protected int read()
+	/**
+	 * Reads the next Unicode code point.
+	 * 
+	 * @return the next Unicode code point, or -1 if the end of the stream has
+	 *         been reached.
+	 * @throws IOException
+	 */
+	protected int readCodePoint()
 		throws IOException
 	{
-		return reader.read();
+		int next = reader.read();
+		if (Character.isHighSurrogate((char)next)) {
+			next = Character.toCodePoint((char)next, (char)reader.read());
+		}
+		return next;
 	}
 
-	protected void unread(int c)
+	/**
+	 * Pushes back a single code point by copying it to the front of the buffer.
+	 * After this method returns, a call to {@link #readCodePoint()} will return
+	 * the same code point c again.
+	 * 
+	 * @param codePoint
+	 *        a single Unicode code point.
+	 * @throws IOException
+	 */
+	protected void unread(int codePoint)
 		throws IOException
 	{
-		if (c != -1) {
-			reader.unread(c);
+		if (codePoint != -1) {
+			if (Character.isSupplementaryCodePoint(codePoint)) {
+				final char[] surrogatePair = Character.toChars(codePoint);
+				reader.unread(surrogatePair);
+			}
+			else {
+				reader.unread(codePoint);
+			}
 		}
 	}
 
-	protected void unread(String directive)
+	/**
+	 * Pushes back the supplied string by copying it to the front of the buffer.
+	 * After this method returns, successive calls to {@link #readCodePoint()}
+	 * will return the code points in the supplied string again, starting at the
+	 * first in the String..
+	 * 
+	 * @param string
+	 *        the string to un-read.
+	 * @throws IOException
+	 */
+	protected void unread(String string)
 		throws IOException
 	{
-		for (int i = directive.length() - 1; i >= 0; i--) {
-			reader.unread(directive.charAt(i));
+		for (int i = string.codePointCount(0, string.length()); i >= 1; i--) {
+			final int codePoint = string.codePointBefore(i);
+			if (Character.isSupplementaryCodePoint(codePoint)) {
+				final char[] surrogatePair = Character.toChars(codePoint);
+				reader.unread(surrogatePair);
+			}
+			else {
+				reader.unread(codePoint);
+			}
 		}
 	}
 
-	protected int peek()
+	/**
+	 * Peeks at the next Unicode code point without advancing the reader, and
+	 * returns its value.
+	 * 
+	 * @return the next Unicode code point, or -1 if the end of the stream has
+	 *         been reached.
+	 * @throws IOException
+	 */
+	protected int peekCodePoint()
 		throws IOException
 	{
-		int result = read();
+		int result = readCodePoint();
 		unread(result);
 		return result;
 	}
@@ -1277,7 +1332,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportWarning(String)}, adding line number
+	 * Overrides {@link RDFParserBase#reportWarning(String, RioSetting)}, adding line number
 	 * information to the error.
 	 */
 	@Override
@@ -1286,7 +1341,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String)}, adding line number
+	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding line number
 	 * information to the error.
 	 */
 	@Override
