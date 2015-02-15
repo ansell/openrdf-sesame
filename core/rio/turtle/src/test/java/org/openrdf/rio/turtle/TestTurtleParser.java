@@ -19,7 +19,9 @@ package org.openrdf.rio.turtle;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
 
@@ -28,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Statement;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
 
@@ -158,6 +161,25 @@ public class TestTurtleParser {
 
 		for (Statement st : statementCollector.getStatements()) {
 			System.out.println(st);
+		}
+	}
+
+	@Test
+	public void testLineNumberReporting()
+		throws Exception
+	{
+
+		InputStream in = this.getClass().getResourceAsStream("/test-newlines.ttl");
+		try {
+			parser.parse(in, baseURI);
+			fail("expected to fail parsing input file");
+		}
+		catch (RDFParseException e) {
+			// expected
+			assertFalse(errorCollector.getFatalErrors().isEmpty());
+			final String error = errorCollector.getFatalErrors().get(0);
+			// expected to fail at line 9.
+			assertTrue(error.contains("(9,"));
 		}
 	}
 
