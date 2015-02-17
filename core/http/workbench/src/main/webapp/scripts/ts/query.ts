@@ -218,7 +218,7 @@ module workbench {
             workbench.yasqeHelper.setupCompleters(sparqlNamespaces);
             
             yasqe = YASQE.fromTextArea(<HTMLTextAreaElement>document.getElementById('query'), {
-                consumeShareLink: null,//don't try to parse the url args. this is already done by the addLoad function below
+                consumeShareLink: null//don't try to parse the url args. this is already done by the addLoad function below
             });
             //some styling conflicts. Could add my own css file, but not a lot of things need changing, so just do this programmatically
             //first, set the font size (otherwise font is as small as menu, which is too small)
