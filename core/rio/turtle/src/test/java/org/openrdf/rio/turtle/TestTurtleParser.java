@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 
@@ -182,7 +183,64 @@ public class TestTurtleParser {
 			assertTrue(error.contains("(9,"));
 		}
 	}
+	
+	@Test
+	public void testParseBooleanLiteralComma() throws Exception{
+		String data = "<urn:a> <urn:b> true, false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
 
+	@Test
+	public void testParseBooleanLiteralWhitespaceComma() throws Exception{
+		String data = "<urn:a> <urn:b> true , false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralSemicolumn() throws Exception{
+		String data = "<urn:a> <urn:b> true; <urn:c> false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralWhitespaceSemicolumn() throws Exception{
+		String data = "<urn:a> <urn:b> true ; <urn:c> false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	
 	@Test
 	public void testParseNTriplesLiteralUTF8()
 		throws Exception
