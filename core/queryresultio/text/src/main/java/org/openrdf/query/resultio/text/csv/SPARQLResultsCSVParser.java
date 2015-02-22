@@ -45,8 +45,6 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
  */
 public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implements TupleQueryResultParser {
 
-	private List<String> bindingNames;
-
 	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.CSV;
@@ -57,12 +55,17 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		CSVReader reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+		
+		List<String> bindingNames = null;
+
 		String[] nextLine;
 		while ((nextLine = reader.readNext()) != null) {
 			if (bindingNames == null) {
 				// header is mandatory in SPARQL CSV
 				bindingNames = Arrays.asList(nextLine);
-				handler.startQueryResult(bindingNames);
+				if (handler != null) {
+					handler.startQueryResult(bindingNames);
+				}
 			}
 			else {
 				// process solution
@@ -112,11 +115,13 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 				}
 
 				BindingSet bindingSet = new ListBindingSet(bindingNames, values.toArray(new Value[values.size()]));
-				handler.handleSolution(bindingSet);
+				if (handler != null) {
+					handler.handleSolution(bindingSet);
+				}
 			}
 		}
 		
-		if(bindingNames != null) {
+		if (bindingNames != null && handler != null) {
 			handler.endQueryResult();
 		}
 	}
