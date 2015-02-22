@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
+import info.aduna.iteration.TimeLimitIteration;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
@@ -39,6 +40,7 @@ import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.algebra.Add;
 import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.Copy;
@@ -77,6 +79,7 @@ import org.openrdf.sail.UpdateContext;
  * 
  * @author jeen
  * @author James Leigh
+ * @param <E>
  * @see SailConnection#startUpdate(UpdateContext)
  * @see SailConnection#endUpdate(UpdateContext)
  * @see SailConnection#addStatement(UpdateContext, Resource, URI, Value,
@@ -116,7 +119,7 @@ public class SailUpdateExecutor {
 	}
 
 	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
-			boolean includeInferred)
+			boolean includeInferred, int maxExecutionTime)
 		throws SailException, RDFParseException, IOException
 	{
 		UpdateContext uc = new UpdateContext(updateExpr, dataset, bindings, includeInferred);
@@ -128,28 +131,28 @@ public class SailUpdateExecutor {
 				executeLoad((Load)updateExpr, uc);
 			}
 			else if (updateExpr instanceof Modify) {
-				executeModify((Modify)updateExpr, uc);
+				executeModify((Modify)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof InsertData) {
-				executeInsertData((InsertData)updateExpr, uc);
+				executeInsertData((InsertData)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof DeleteData) {
-				executeDeleteData((DeleteData)updateExpr, uc);
+				executeDeleteData((DeleteData)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof Clear) {
-				executeClear((Clear)updateExpr, uc);
+				executeClear((Clear)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof Create) {
 				executeCreate((Create)updateExpr, uc);
 			}
 			else if (updateExpr instanceof Copy) {
-				executeCopy((Copy)updateExpr, uc);
+				executeCopy((Copy)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof Add) {
-				executeAdd((Add)updateExpr, uc);
+				executeAdd((Add)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof Move) {
-				executeMove((Move)updateExpr, uc);
+				executeMove((Move)updateExpr, uc, maxExecutionTime);
 			}
 			else if (updateExpr instanceof Load) {
 				throw new SailException("load operations can not be handled directly by the SAIL");
@@ -212,7 +215,7 @@ public class SailUpdateExecutor {
 	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeCopy(Copy copy, UpdateContext uc)
+	protected void executeCopy(Copy copy, UpdateContext uc, int maxExecutionTime)
 		throws SailException
 	{
 		ValueConstant sourceGraph = copy.getSourceGraph();
@@ -227,11 +230,34 @@ public class SailUpdateExecutor {
 		}
 
 		// clear destination
+		final long start = System.currentTimeMillis();
 		con.clear((Resource)destination);
+		final long clearTime = (System.currentTimeMillis() - start) / 1000;
+
+		if (maxExecutionTime > 0) {
+			if (clearTime > maxExecutionTime) {
+				throw new SailException("execution took too long");
+			}
+		}
 
 		// get all statements from source and add them to destination
 		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
 				uc.isIncludeInferred(), (Resource)source);
+
+		if (maxExecutionTime > 0) {
+			statements = new TimeLimitIteration<Statement, SailException>(statements,
+					1000L * (maxExecutionTime - clearTime))
+			{
+
+				@Override
+				protected void throwInterruptedException()
+					throws SailException
+				{
+					throw new SailException("execution took too long");
+				}
+			};
+		}
+
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
@@ -248,7 +274,7 @@ public class SailUpdateExecutor {
 	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeAdd(Add add, UpdateContext uc)
+	protected void executeAdd(Add add, UpdateContext uc, int maxExecTime)
 		throws SailException
 	{
 		ValueConstant sourceGraph = add.getSourceGraph();
@@ -265,6 +291,19 @@ public class SailUpdateExecutor {
 		// get all statements from source and add them to destination
 		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
 				uc.isIncludeInferred(), (Resource)source);
+
+		if (maxExecTime > 0) {
+			statements = new TimeLimitIteration<Statement, SailException>(statements, 1000L * maxExecTime) {
+
+				@Override
+				protected void throwInterruptedException()
+					throws SailException
+				{
+					throw new SailException("execution took too long");
+				}
+			};
+		}
+
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
@@ -281,7 +320,7 @@ public class SailUpdateExecutor {
 	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeMove(Move move, UpdateContext uc)
+	protected void executeMove(Move move, UpdateContext uc, int maxExecutionTime)
 		throws SailException
 	{
 		ValueConstant sourceGraph = move.getSourceGraph();
@@ -296,11 +335,32 @@ public class SailUpdateExecutor {
 		}
 
 		// clear destination
+		final long start = System.currentTimeMillis();
 		con.clear((Resource)destination);
+		final long clearTime = (System.currentTimeMillis() - start) / 1000;
+
+		if (maxExecutionTime > 0 && clearTime > maxExecutionTime) {
+			throw new SailException("execution took too long");
+		}
 
 		// remove all statements from source and add them to destination
 		CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null, null,
 				uc.isIncludeInferred(), (Resource)source);
+
+		if (maxExecutionTime > 0) {
+			statements = new TimeLimitIteration<Statement, SailException>(statements,
+					1000L * (maxExecutionTime - clearTime))
+			{
+
+				@Override
+				protected void throwInterruptedException()
+					throws SailException
+				{
+					throw new SailException("execution took too long");
+				}
+			};
+		}
+
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
@@ -318,7 +378,7 @@ public class SailUpdateExecutor {
 	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeClear(Clear clearExpr, UpdateContext uc)
+	protected void executeClear(Clear clearExpr, UpdateContext uc, int maxExecutionTime)
 		throws SailException
 	{
 		try {
@@ -332,6 +392,19 @@ public class SailUpdateExecutor {
 				Scope scope = clearExpr.getScope();
 				if (Scope.NAMED_CONTEXTS.equals(scope)) {
 					CloseableIteration<? extends Resource, SailException> contextIDs = con.getContextIDs();
+					if (maxExecutionTime > 0) {
+						contextIDs = new TimeLimitIteration<Resource, SailException>(contextIDs,
+								1000L * maxExecutionTime)
+						{
+
+							@Override
+							protected void throwInterruptedException()
+								throws SailException
+							{
+								throw new SailException("execution took too long");
+							}
+						};
+					}
 					try {
 						while (contextIDs.hasNext()) {
 							con.clear(contextIDs.next());
@@ -361,9 +434,11 @@ public class SailUpdateExecutor {
 	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeInsertData(InsertData insertDataExpr, UpdateContext uc)
+	protected void executeInsertData(InsertData insertDataExpr, UpdateContext uc, int maxExecutionTime)
 		throws SailException
 	{
+
+		// FIXME maxExecutionTime currently ignored
 
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
 		parser.setRDFHandler(new RDFSailInserter(con, vf, uc));
@@ -371,7 +446,7 @@ public class SailUpdateExecutor {
 		parser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		try {
 			// TODO process update context somehow? dataset, base URI, etc.
-			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes()), "");
+			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes("UTF-8")), "");
 		}
 		catch (RDFParseException e) {
 			throw new SailException(e);
@@ -389,11 +464,15 @@ public class SailUpdateExecutor {
 	 * @param uc
 	 * @throws SailException
 	 */
-	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc)
+	protected void executeDeleteData(DeleteData deleteDataExpr, UpdateContext uc, int maxExecutionTime)
 		throws SailException
 	{
+
+		// FIXME maxExecutionTime currently ignored
+
 		SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(vf);
-		parser.setAllowBlankNodes(false); // no blank nodes allowed in DELETE DATA.
+		parser.setAllowBlankNodes(false); // no blank nodes allowed in DELETE
+														// DATA.
 		parser.setRDFHandler(new RDFSailRemover(con, vf, uc));
 
 		try {
@@ -411,7 +490,7 @@ public class SailUpdateExecutor {
 		}
 	}
 
-	protected void executeModify(Modify modify, UpdateContext uc)
+	protected void executeModify(Modify modify, UpdateContext uc, int maxExecutionTime)
 		throws SailException
 	{
 		try {
@@ -422,7 +501,7 @@ public class SailUpdateExecutor {
 			}
 
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
-			sourceBindings = evaluateWhereClause(whereClause, uc);
+			sourceBindings = evaluateWhereClause(whereClause, uc, maxExecutionTime);
 			try {
 				while (sourceBindings.hasNext()) {
 					BindingSet sourceBinding = sourceBindings.next();
@@ -450,11 +529,25 @@ public class SailUpdateExecutor {
 	}
 
 	private CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateWhereClause(
-			final TupleExpr whereClause, final UpdateContext uc)
+			final TupleExpr whereClause, final UpdateContext uc, final int maxExecutionTime)
 		throws SailException, QueryEvaluationException
 	{
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
 		sourceBindings = con.evaluate(whereClause, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
+
+		if (maxExecutionTime > 0) {
+			sourceBindings = new TimeLimitIteration<BindingSet, QueryEvaluationException>(sourceBindings,
+					1000L * maxExecutionTime)
+			{
+
+				@Override
+				protected void throwInterruptedException()
+					throws QueryEvaluationException
+				{
+					throw new QueryInterruptedException("execution took too long");
+				}
+			};
+		}
 
 		return new ConvertingIteration<BindingSet, BindingSet, QueryEvaluationException>(sourceBindings) {
 

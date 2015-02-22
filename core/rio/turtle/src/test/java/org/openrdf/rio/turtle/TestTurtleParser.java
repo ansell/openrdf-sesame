@@ -21,8 +21,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Collection;
@@ -39,8 +42,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.ParseErrorCollector;
+import org.openrdf.rio.helpers.ParseErrorLogger;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -111,7 +116,6 @@ public class TestTurtleParser {
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
 	@Test
 	public void testParsePrefixUTF8()
 		throws Exception
@@ -126,14 +130,33 @@ public class TestTurtleParser {
 		assertTrue(errorCollector.getFatalErrors().isEmpty());
 
 		assertFalse(statementCollector.getStatements().isEmpty());
-		assertEquals(2, statementCollector.getStatements().size());
+		assertEquals(1, statementCollector.getStatements().size());
 
 		for (Statement st : statementCollector.getStatements()) {
 			System.out.println(st);
 		}
 	}
 
-	@Ignore("TODO: Implement support for UTF8")
+	@Test
+	public void testW3C1()
+		throws Exception
+	{
+		URL url = new URL("http://www.w3.org/2013/TurtleTests/localName_with_assigned_nfc_PN_CHARS_BASE_character_boundaries.ttl");
+		URL nturl = new URL("http://www.w3.org/2013/TurtleTests/localName_with_assigned_nfc_PN_CHARS_BASE_character_boundaries.nt");
+
+		parser.parse(url.openStream(), baseURI);
+
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(1, statementCollector.getStatements().size());
+		for (Statement st : statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
+	
 	@Test
 	public void testParseTurtleLiteralUTF8()
 		throws Exception
@@ -153,8 +176,102 @@ public class TestTurtleParser {
 			System.out.println(st);
 		}
 	}
+	
+	@Test
+	public void testParseTurtleLiteralCarriageReturn()
+		throws Exception
+	{
+		URL url = new URL("http://www.w3.org/2013/TurtleTests/literal_with_CARRIAGE_RETURN.ttl");
 
-	@Ignore("TODO: Implement support for UTF8")
+		parser.parse(url.openStream(), baseURI);
+
+		assertTrue(errorCollector.getWarnings().isEmpty());
+		assertTrue(errorCollector.getErrors().isEmpty());
+		assertTrue(errorCollector.getFatalErrors().isEmpty());
+
+		assertFalse(statementCollector.getStatements().isEmpty());
+		assertEquals(1, statementCollector.getStatements().size());
+
+		for (Statement st : statementCollector.getStatements()) {
+			System.out.println(st);
+		}
+	}
+
+	@Test
+	public void testLineNumberReporting()
+		throws Exception
+	{
+
+		InputStream in = this.getClass().getResourceAsStream("/test-newlines.ttl");
+		try {
+			parser.parse(in, baseURI);
+			fail("expected to fail parsing input file");
+		}
+		catch (RDFParseException e) {
+			// expected
+			assertFalse(errorCollector.getFatalErrors().isEmpty());
+			final String error = errorCollector.getFatalErrors().get(0);
+			// expected to fail at line 9.
+			assertTrue(error.contains("(9,"));
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralComma() throws Exception{
+		String data = "<urn:a> <urn:b> true, false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+
+	@Test
+	public void testParseBooleanLiteralWhitespaceComma() throws Exception{
+		String data = "<urn:a> <urn:b> true , false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralSemicolumn() throws Exception{
+		String data = "<urn:a> <urn:b> true; <urn:c> false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralWhitespaceSemicolumn() throws Exception{
+		String data = "<urn:a> <urn:b> true ; <urn:c> false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
 	@Test
 	public void testParseNTriplesLiteralUTF8()
 		throws Exception

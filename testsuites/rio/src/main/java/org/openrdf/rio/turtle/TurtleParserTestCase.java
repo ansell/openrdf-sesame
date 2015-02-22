@@ -215,19 +215,12 @@ public abstract class TurtleParserTestCase {
 
 			String nextBaseUrl = testBaseUrl + nextTestFile;
 
-			if (nextTestName.contains("CARRIAGE_RETURN")) {
-				// FIXME: Sesame seems not to preserve the CARRIAGE_RETURN character
-				// right now
-				System.err.println("Ignoring Turtle Positive Parser Eval Test: " + nextInputURL);
-				continue;
-			}
-			else if (nextTestName.contains("UTF8_boundaries")
-					|| nextTestName.contains("PN_CHARS_BASE_character_boundaries"))
-			{
-				// FIXME: UTF8 support not implemented yet
-				System.err.println("Ignoring Turtle Positive Parser Eval Test: " + nextInputURL);
-				continue;
-			}
+//			if (nextTestName.contains("CARRIAGE_RETURN")) {
+//				// FIXME: Sesame seems not to preserve the CARRIAGE_RETURN character
+//				// right now
+//				System.err.println("Ignoring Turtle Positive Parser Eval Test: " + nextInputURL);
+//				continue;
+//			}
 
 			suite.addTest(new PositiveParserTest(nextTestUri, nextTestName, nextInputURL, nextOutputURL,
 					nextBaseUrl, createTurtleParser(), createNTriplesParser()));

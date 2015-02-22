@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVReader;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -58,66 +58,73 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 	{
 		CSVReader reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")));
 		String[] nextLine;
-		while ((nextLine = reader.readNext()) != null) {
-			if (bindingNames == null) {
-				// header is mandatory in SPARQL CSV
-				bindingNames = Arrays.asList(nextLine);
-				if (handler != null) {
-					handler.startQueryResult(bindingNames);
-				}
-			}
-			else {
-				// process solution
-				List<Value> values = new ArrayList<Value>();
-				for (String valueString : nextLine) {
-					Value v = null;
-					if (valueString.startsWith("_:")) {
-						v = valueFactory.createBNode(valueString.substring(2));
+
+		try {
+			while ((nextLine = reader.readNext()) != null) {
+				if (bindingNames == null) {
+					// header is mandatory in SPARQL CSV
+					bindingNames = Arrays.asList(nextLine);
+					if (handler != null) {
+						handler.startQueryResult(bindingNames);
 					}
-					else if (!"".equals(valueString)) {
-						if (valueString.matches("^[\\+\\-]?[\\d\\.].*")) {
+				}
+				else {
+					// process solution
+					List<Value> values = new ArrayList<Value>();
+					for (String valueString : nextLine) {
+						Value v = null;
+						if (valueString.startsWith("_:")) {
+							v = valueFactory.createBNode(valueString.substring(2));
+						}
+						else if (!"".equals(valueString)) {
+							if (valueString.matches("^[\\+\\-]?[\\d\\.].*")) {
 
-							URI datatype = null;
+								URI datatype = null;
 
-							if (XMLDatatypeUtil.isValidInteger(valueString)) {
-								if (XMLDatatypeUtil.isValidNegativeInteger(valueString)) {
-									datatype = XMLSchema.NEGATIVE_INTEGER;
+								if (XMLDatatypeUtil.isValidInteger(valueString)) {
+									if (XMLDatatypeUtil.isValidNegativeInteger(valueString)) {
+										datatype = XMLSchema.NEGATIVE_INTEGER;
+									}
+									else {
+										datatype = XMLSchema.INTEGER;
+									}
+								}
+								else if (XMLDatatypeUtil.isValidDecimal(valueString)) {
+									datatype = XMLSchema.DECIMAL;
+								}
+								else if (XMLDatatypeUtil.isValidDouble(valueString)) {
+									datatype = XMLSchema.DOUBLE;
+								}
+
+								if (datatype != null) {
+									v = valueFactory.createLiteral(valueString, datatype);
 								}
 								else {
-									datatype = XMLSchema.INTEGER;
+									v = valueFactory.createLiteral(valueString);
 								}
 							}
-							else if (XMLDatatypeUtil.isValidDecimal(valueString)) {
-								datatype = XMLSchema.DECIMAL;
-							}
-							else if (XMLDatatypeUtil.isValidDouble(valueString)) {
-								datatype = XMLSchema.DOUBLE;
-							}
-
-							if (datatype != null) {
-								v = valueFactory.createLiteral(valueString, datatype);
-							}
 							else {
-								v = valueFactory.createLiteral(valueString);
+								try {
+									v = valueFactory.createURI(valueString);
+								}
+								catch (IllegalArgumentException e) {
+									v = valueFactory.createLiteral(valueString);
+								}
 							}
 						}
-						else {
-							try {
-								v = valueFactory.createURI(valueString);
-							}
-							catch (IllegalArgumentException e) {
-								v = valueFactory.createLiteral(valueString);
-							}
-						}
+						values.add(v);
 					}
-					values.add(v);
-				}
 
-				BindingSet bindingSet = new ListBindingSet(bindingNames, values.toArray(new Value[values.size()]));
-				if (handler != null) {
-					handler.handleSolution(bindingSet);
+					BindingSet bindingSet = new ListBindingSet(bindingNames,
+							values.toArray(new Value[values.size()]));
+					if (handler != null) {
+						handler.handleSolution(bindingSet);
+					}
 				}
 			}
+		}
+		finally {
+			reader.close();
 		}
 	}
 

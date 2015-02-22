@@ -26,6 +26,8 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +38,14 @@ import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.Protocol.Action;
+import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
+import org.openrdf.http.protocol.transaction.operations.ClearNamespacesOperation;
+import org.openrdf.http.protocol.transaction.operations.ClearOperation;
+import org.openrdf.http.protocol.transaction.operations.RemoveNamespaceOperation;
+import org.openrdf.http.protocol.transaction.operations.RemoveStatementsOperation;
+import org.openrdf.http.protocol.transaction.operations.SPARQLUpdateOperation;
+import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
+import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -72,6 +82,8 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
+import static org.openrdf.rio.RDFFormat.NTRIPLES;
+
 /**
  * RepositoryConnection that communicates with a server using the HTTP protocol.
  * Methods in this class may throw the specific RepositoryException subclasses
@@ -89,8 +101,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	 * Variables *
 	 *-----------*/
 
-	// private List<TransactionOperation> txn = Collections.synchronizedList(new
-	// ArrayList<TransactionOperation>());
+	private List<TransactionOperation> txn = Collections.synchronizedList(new ArrayList<TransactionOperation>());
 
 	private final SesameSession client;
 
@@ -141,6 +152,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		verifyIsOpen();
 		verifyNotTxnActive("Connection already has an active transaction");
+
+		if (this.getRepository().useCompatibleMode()) {
+			active = true;
+			return;
+		}
+
 		try {
 			client.beginTransaction(this.getIsolationLevel());
 			active = true;
@@ -290,6 +307,23 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void commit()
 		throws RepositoryException
 	{
+
+		if (this.getRepository().useCompatibleMode()) {
+			synchronized (txn) {
+				if (txn.size() > 0) {
+					try {
+						client.sendTransaction(txn);
+						txn.clear();
+					}
+					catch (IOException e) {
+						throw new RepositoryException(e);
+					}
+				}
+				active = false;
+			}
+			return;
+		}
+
 		flushTransactionState(Action.COMMIT);
 		try {
 			client.commitTransaction();
@@ -309,6 +343,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void rollback()
 		throws RepositoryException
 	{
+		if (this.getRepository().useCompatibleMode()) {
+			txn.clear();
+			active = false;
+			return;
+		}
+
 		flushTransactionState(Action.ROLLBACK);
 		try {
 			client.rollbackTransaction();
@@ -408,14 +448,60 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
+		if (this.getRepository().useCompatibleMode()) {
+		
+			dataFormat = getBackwardCompatibleFormat(dataFormat);
+			
+			if (!isActive()) {
+				// Send bytes directly to the server
+				client.upload(in, baseURI, dataFormat, false, false, contexts);
+			}
+			else {
+				// Parse files locally
+				super.add(in, baseURI, dataFormat, contexts);
+
+			}
+			return;
+		}
+
 		flushTransactionState(Action.ADD);
 		// Send bytes directly to the server
 		client.upload(in, baseURI, dataFormat, false, false, contexts);
 	}
 
+	private RDFFormat getBackwardCompatibleFormat(RDFFormat format) {
+		// In Sesame 2.8, the default MIME-type for N-Triples changed. To stay backward compatible, we 'fake' the 
+		// default MIME-type back to the older value (text/plain) when running in compatibility mode.  
+		if (NTRIPLES.equals(format)) {
+			// create a new format constant with identical properties as the N-Triples format, just with a different
+			// default MIME-type.
+			return new RDFFormat(NTRIPLES.getName(), Arrays.asList("text/plain"), NTRIPLES.getCharset(),
+					NTRIPLES.getFileExtensions(), NTRIPLES.supportsNamespaces(), NTRIPLES.supportsContexts());
+		}
+		
+		return format;
+	}
+	
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
+
+		if (this.getRepository().useCompatibleMode()) {
+
+			dataFormat = getBackwardCompatibleFormat(dataFormat);
+			
+			if (!isActive()) {
+				// Send bytes directly to the server
+				client.upload(reader, baseURI, dataFormat, false, false, contexts);
+			}
+			else {
+				// Parse files locally
+				super.add(reader, baseURI, dataFormat, contexts);
+
+			}
+			return;
+		}
+
 		flushTransactionState(Action.ADD);
 		client.upload(reader, baseURI, dataFormat, false, false, contexts);
 	}
@@ -430,8 +516,9 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 
 			final Model m = new LinkedHashModel();
 
-			if (contexts.length == 0) { 
-				// if no context is specified in the method call, statement's own context (if any) is used.
+			if (contexts.length == 0) {
+				// if no context is specified in the method call, statement's own
+				// context (if any) is used.
 				m.add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 			else {
@@ -501,6 +588,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
+		if (this.getRepository().useCompatibleMode()) {
+			txn.add(new AddStatementOperation(subject, predicate, object, contexts));
+			return;
+		}
+
 		flushTransactionState(Protocol.Action.ADD);
 
 		if (toAdd == null) {
@@ -558,6 +650,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void flushTransactionState(Action action)
 		throws RepositoryException
 	{
+		if (this.getRepository().useCompatibleMode()) {
+			// no need to flush, using old-style transactions.
+			return;
+		}
+
 		if (isActive()) {
 			switch (action) {
 				case ADD:
@@ -607,6 +704,11 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
+		if (this.getRepository().useCompatibleMode()) {
+			txn.add(new RemoveStatementsOperation(subject, predicate, object, contexts));
+			return;
+		}
+
 		flushTransactionState(Protocol.Action.DELETE);
 
 		if (toRemove == null) {
@@ -630,7 +732,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	{
 		boolean localTransaction = startLocalTransaction();
 
-		remove(null, null, null, contexts);
+		if (this.getRepository().useCompatibleMode()) {
+			txn.add(new ClearOperation(contexts));
+		}
+		else {
+			remove(null, null, null, contexts);
+		}
 
 		conditionalCommit(localTransaction);
 	}
@@ -645,7 +752,12 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		boolean localTransaction = startLocalTransaction();
 
 		try {
-			client.removeNamespacePrefix(prefix);
+			if (this.getRepository().useCompatibleMode()) {
+				txn.add(new RemoveNamespaceOperation(prefix));
+			}
+			else {
+				client.removeNamespacePrefix(prefix);
+			}
 			conditionalCommit(localTransaction);
 		}
 		catch (IOException e) {
@@ -661,6 +773,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	public void clearNamespaces()
 		throws RepositoryException
 	{
+		if (this.getRepository().useCompatibleMode()) {
+			boolean localTransaction = startLocalTransaction();
+			txn.add(new ClearNamespacesOperation());
+			conditionalCommit(localTransaction);
+			return;
+		}
+
 		try {
 			client.clearNamespaces();
 		}
@@ -677,6 +796,13 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 		if (name == null) {
 			throw new NullPointerException("name must not be null");
+		}
+
+		if (this.getRepository().useCompatibleMode()) {
+			boolean localTransaction = startLocalTransaction();
+			txn.add(new SetNamespaceOperation(prefix, name));
+			conditionalCommit(localTransaction);
+			return;
 		}
 
 		try {
@@ -733,6 +859,16 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		catch (IOException e) {
 			throw new RepositoryException(e);
 		}
+	}
+
+	protected void scheduleUpdate(HTTPUpdate update) {
+		SPARQLUpdateOperation op = new SPARQLUpdateOperation();
+		op.setUpdateString(update.getQueryString());
+		op.setBaseURI(update.getBaseURI());
+		op.setBindings(update.getBindingsArray());
+		op.setIncludeInferred(update.getIncludeInferred());
+		op.setDataset(update.getDataset());
+		txn.add(op);
 	}
 
 	/**

@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import info.aduna.text.ASCIIUtil;
 import info.aduna.text.StringUtil;
 
+import org.openrdf.rio.helpers.CodePointIterator;
+import org.openrdf.rio.helpers.CodePointSequence;
+
 /**
  * Utility methods for Turtle encoding/decoding.
  * 
@@ -108,12 +111,23 @@ public class TurtleUtil {
 		return -1;
 	}
 
-	public static boolean isWhitespace(int c) {
+	/**
+	 * Check if the supplied code point represents a whitespace character
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point
+	 * @return <code>true</code> iff the supplied code point represents a
+	 *         whitespace character, <code>false</code> otherwise.
+	 */
+	public static boolean isWhitespace(int codePoint) {
 		// Whitespace character are space, tab, newline and carriage return:
-		return c == 0x20 || c == 0x9 || c == 0xA || c == 0xD;
+		return codePoint == 0x20 || codePoint == 0x9 || codePoint == 0xA || codePoint == 0xD;
 	}
 
 	/**
+	 * Check if the supplied code point represents a valid prefixed name base
+	 * character.
+	 * <p>
 	 * From Turtle Spec:
 	 * <p>
 	 * http://www.w3.org/TR/turtle/#grammar-production-PN_CHARS_BASE
@@ -122,94 +136,202 @@ public class TurtleUtil {
 	 * | [#x00F8-#x02FF] | [#x0370-#x037D] | [#x037F-#x1FFF] | [#x200C-#x200D] |
 	 * [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] |
 	 * [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
-	 * 
 	 */
-	public static boolean isPN_CHARS_BASE(int c) {
-		return ASCIIUtil.isLetter(c) || c >= 0x00C0 && c <= 0x00D6 || c >= 0x00D8 && c <= 0x00F6 || c >= 0x00F8
-				&& c <= 0x02FF || c >= 0x0370 && c <= 0x037D || c >= 0x037F && c <= 0x1FFF || c >= 0x200C
-				&& c <= 0x200D || c >= 0x2070 && c <= 0x218F || c >= 0x2C00 && c <= 0x2FEF || c >= 0x3001
-				&& c <= 0xD7FF || c >= 0xF900 && c <= 0xFDCF || c >= 0xFDF0 && c <= 0xFFFD || c >= 0x10000
-				&& c <= 0xEFFFF;
+	public static boolean isPN_CHARS_BASE(int codePoint) {
+		return ASCIIUtil.isLetter(codePoint) || codePoint >= 0x00C0 && codePoint <= 0x00D6
+				|| codePoint >= 0x00D8 && codePoint <= 0x00F6 || codePoint >= 0x00F8 && codePoint <= 0x02FF
+				|| codePoint >= 0x0370 && codePoint <= 0x037D || codePoint >= 0x037F && codePoint <= 0x1FFF
+				|| codePoint >= 0x200C && codePoint <= 0x200D || codePoint >= 0x2070 && codePoint <= 0x218F
+				|| codePoint >= 0x2C00 && codePoint <= 0x2FEF || codePoint >= 0x3001 && codePoint <= 0xD7FF
+				|| codePoint >= 0xF900 && codePoint <= 0xFDCF || codePoint >= 0xFDF0 && codePoint <= 0xFFFD
+				|| codePoint >= 0x10000 && codePoint <= 0xEFFFF;
 	}
 
 	/**
+	 * Check if the supplied code point represents either a valid prefixed name
+	 * base character or an underscore.
+	 * <p>
 	 * From Turtle Spec:
 	 * <p>
 	 * http://www.w3.org/TR/turtle/#grammar-production-PN_CHARS_U
 	 * <p>
 	 * [164s] PN_CHARS_U ::= PN_CHARS_BASE | '_'
-	 * 
 	 */
-	public static boolean isPN_CHARS_U(int c) {
-		return isPN_CHARS_BASE(c) || c == '_';
+	public static boolean isPN_CHARS_U(int codePoint) {
+		return isPN_CHARS_BASE(codePoint) || codePoint == '_';
 	}
 
 	/**
+	 * Check if the supplied code point represents a valid prefixed name
+	 * character.
+	 * <p>
 	 * From Turtle Spec:
 	 * <p>
 	 * http://www.w3.org/TR/turtle/#grammar-production-PN_CHARS
 	 * <p>
 	 * [166s] PN_CHARS ::= PN_CHARS_U | '-' | [0-9] | #x00B7 | [#x0300-#x036F] |
 	 * [#x203F-#x2040]
-	 * 
 	 */
-	public static boolean isPN_CHARS(int c) {
-		return isPN_CHARS_U(c) || ASCIIUtil.isNumber(c) || c == '-' || c == 0x00B7 || c >= 0x0300
-				&& c <= 0x036F || c >= 0x203F && c <= 0x2040;
-	}
-
-	public static boolean isPrefixStartChar(int c) {
-		return isPN_CHARS_BASE(c);
-	}
-
-	public static boolean isBLANK_NODE_LABEL_StartChar(int c) {
-		return isPN_CHARS_U(c) || ASCIIUtil.isNumber(c);
-	}
-
-	public static boolean isBLANK_NODE_LABEL_Char(int c) {
-		return isPN_CHARS(c) || c == '.';
-	}
-
-	public static boolean isBLANK_NODE_LABEL_EndChar(int c) {
-		return isPN_CHARS(c);
-	}
-
-	public static boolean isNameStartChar(int c) {
-		return isPN_CHARS_U(c) || c == ':' || ASCIIUtil.isNumber(c) || c == '\\' || c == '%';
-	}
-
-	public static boolean isNameChar(int c) {
-		return isPN_CHARS(c) || c == '.' || c == ':' | c == '\\' || c == '%';
-	}
-
-	public static boolean isNameEndChar(int c) {
-		return isPN_CHARS(c) || c == ':';
-	}
-
-	public static boolean isLocalEscapedChar(int c) {
-		return Arrays.binarySearch(LOCAL_ESCAPED_CHARS, (char)c) > -1;
-	}
-
-	public static boolean isPrefixChar(int c) {
-		return isPN_CHARS_BASE(c) || isPN_CHARS(c) || c == '.';
-	}
-
-	public static boolean isLanguageStartChar(int c) {
-		return ASCIIUtil.isLetter(c);
-	}
-
-	public static boolean isLanguageChar(int c) {
-		return ASCIIUtil.isLetter(c) || ASCIIUtil.isNumber(c) || c == '-';
+	public static boolean isPN_CHARS(int codePoint) {
+		return isPN_CHARS_U(codePoint) || ASCIIUtil.isNumber(codePoint) || codePoint == '-'
+				|| codePoint == 0x00B7 || codePoint >= 0x0300 && codePoint <= 0x036F || codePoint >= 0x203F
+				&& codePoint <= 0x2040;
 	}
 
 	/**
+	 * Check if the supplied code point represents a valid prefixed name start
+	 * character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         prefixed name start char, false otherwise.
+	 */
+	public static boolean isPrefixStartChar(int codePoint) {
+		return isPN_CHARS_BASE(codePoint);
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid start character for a
+	 * blank node label.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         blank node label start char, <code>false</code> otherwise.
+	 */
+	public static boolean isBLANK_NODE_LABEL_StartChar(int codePoint) {
+		return isPN_CHARS_U(codePoint) || ASCIIUtil.isNumber(codePoint);
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * blank node label character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         blank node label char, <code>false</code> otherwise.
+	 */
+	public static boolean isBLANK_NODE_LABEL_Char(int codePoint) {
+		return isPN_CHARS(codePoint) || codePoint == '.';
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * blank node label end character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         blank node label end char, <code>false</code> otherwise.
+	 */
+	public static boolean isBLANK_NODE_LABEL_EndChar(int codePoint) {
+		return isPN_CHARS(codePoint);
+	}
+
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * name start character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         name start char, <code>false</code> otherwise.
+	 */
+	public static boolean isNameStartChar(int codePoint) {
+		return isPN_CHARS_U(codePoint) || codePoint == ':' || ASCIIUtil.isNumber(codePoint) || codePoint == '\\' || codePoint == '%';
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * name character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         name char, <code>false</code> otherwise.
+	 */
+	public static boolean isNameChar(int codePoint) {
+		return isPN_CHARS(codePoint) || codePoint == '.' || codePoint == ':' | codePoint == '\\' || codePoint == '%';
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * name end character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         name end char, <code>false</code> otherwise.
+	 */
+	public static boolean isNameEndChar(int codePoint) {
+		return isPN_CHARS(codePoint) || codePoint == ':';
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * local escaped character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         local escaped char, <code>false</code> otherwise.
+	 */
+	public static boolean isLocalEscapedChar(int codePoint) {
+		return Arrays.binarySearch(LOCAL_ESCAPED_CHARS, (char)codePoint) > -1;
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * prefix character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         prefix char, <code>false</code> otherwise.
+	 */
+	public static boolean isPrefixChar(int codePoint) {
+		return isPN_CHARS_BASE(codePoint) || isPN_CHARS(codePoint) || codePoint == '.';
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * language tag start character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         language tag start char, <code>false</code> otherwise.
+	 */
+	public static boolean isLanguageStartChar(int codePoint) {
+		return ASCIIUtil.isLetter(codePoint);
+	}
+
+	/**
+	 * Check if the supplied code point represents a valid 
+	 * language tag character.
+	 * 
+	 * @param codePoint
+	 *        a Unicode code point.
+	 * @return <code>true</code> iff the supplied code point represents a valid
+	 *         language tag char, <code>false</code> otherwise.
+	 */
+	public static boolean isLanguageChar(int codePoint) {
+		return ASCIIUtil.isLetter(codePoint) || ASCIIUtil.isNumber(codePoint) || codePoint == '-';
+	}
+
+	/**
+	 * Checks if the supplied prefix string is a valid Turtle namespace prefix.
+	 * 
 	 * From Turtle Spec:
 	 * <p>
 	 * http://www.w3.org/TR/turtle/#grammar-production-PN_PREFIX
 	 * <p>
 	 * [167s] PN_PREFIX ::= PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
 	 * 
-	 * @param prefix
+	 * @param prefix a prefix string.
 	 * @return true iff the supplied prefix conforms to Turtle grammar rules
 	 */
 	public static boolean isPN_PREFIX(String prefix) {
@@ -219,64 +341,39 @@ public class TurtleUtil {
 			return false;
 		}
 
+		
 		if (!isPN_CHARS_BASE(prefix.charAt(0))) {
 			logger.debug("PN_PREFIX was not valid (start character invalid) i=0 nextchar={} prefix=",
 					prefix.charAt(0), prefix);
 			return false;
 		}
+		
+		final int numberOfCodePoints = prefix.codePointCount(0, prefix.length());
+		for (int i = 1; i < numberOfCodePoints; i++) {
+			final int codePoint = prefix.codePointAt(i);
 
-		for (int i = 1; i < prefix.length(); i++) {
-			if (!isPN_CHARS(prefix.charAt(i)) || (prefix.charAt(i) == '.' && i < (prefix.length() - 1))) {
+			if (!isPN_CHARS(codePoint) || (codePoint == '.' && i < (numberOfCodePoints - 1))) {
 				logger.debug("PN_PREFIX was not valid (intermediate character invalid) i=" + i
-						+ " nextchar={} prefix={}", prefix.charAt(i), prefix);
+						+ " nextchar={} prefix={}", Character.toChars(codePoint), prefix);
 				return false;
 			}
 
 			// Check if the percent encoding was less than two characters from the
 			// end of the prefix, in which case it is invalid
-			if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
+			if (codePoint == '%' && (prefix.length() - i) < 2) {
 				logger.debug("PN_PREFIX was not valid (percent encoding) i=" + i + " nextchar={} prefix={}",
-						prefix.charAt(i), prefix);
+						Character.toChars(codePoint), prefix);
 				return false;
+			}
+			
+			if (Character.isHighSurrogate((char)codePoint)) {
+				// surrogate pair, skip second member in char sequence.
+				i++;
 			}
 		}
 
 		return true;
 	}
-
-	// public static boolean isLegalPrefix(String prefix) {
-	// // Empty prefixes are not legal, they should always have a colon
-	// if (prefix.length() == 0) {
-	// System.err.println("prefix was not valid (empty)");
-	// return false;
-	// }
-	// if (!isPrefixStartChar(prefix.charAt(0))) {
-	// System.err.println("prefix was not valid (start character invalid) i=" + 0
-	// + " nextchar="
-	// + prefix.charAt(0) + " prefix=" + prefix);
-	// return false;
-	// }
-	//
-	// for (int i = 1; i < prefix.length(); i++) {
-	// if (!isPrefixChar(prefix.charAt(i))) {
-	// System.err.println("prefix was not valid (intermediate character invalid) i="
-	// + i + " nextchar="
-	// + prefix.charAt(i) + " prefix=" + prefix);
-	// return false;
-	// }
-	//
-	// // Check if the percent encoding was less than two characters from the
-	// // end of the prefix, in which case it is invalid
-	// if (prefix.charAt(i) == '%' && (prefix.length() - i) < 2) {
-	// System.err.println("prefix was not valid i=" + i + " nextchar=" +
-	// prefix.charAt(i) + " prefix="
-	// + prefix);
-	// return false;
-	// }
-	// }
-	//
-	// return true;
-	// }
 
 	public static boolean isPLX_START(String name) {
 		if (name.length() >= 3 && isPERCENT(name.substring(0, 3))) {
@@ -489,8 +586,8 @@ public class TurtleUtil {
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 6);
 
 				try {
-					c = (char)Integer.parseInt(xx, 16);
-					sb.append(c);
+					final int codePoint = Integer.parseInt(xx, 16);
+					sb.append(Character.toChars(codePoint));
 
 					startIdx = backSlashIdx + 6;
 				}
@@ -506,8 +603,8 @@ public class TurtleUtil {
 				String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
 
 				try {
-					c = (char)Integer.parseInt(xx, 16);
-					sb.append(c);
+					final int codePoint = Integer.parseInt(xx, 16);
+					sb.append(Character.toChars(codePoint));
 
 					startIdx = backSlashIdx + 10;
 				}

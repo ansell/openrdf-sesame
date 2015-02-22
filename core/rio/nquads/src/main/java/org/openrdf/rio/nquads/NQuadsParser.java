@@ -88,7 +88,7 @@ public class NQuadsParser extends NTriplesParser {
 		reportLocation(lineNo, 1);
 
 		try {
-			int c = reader.read();
+			int c = readCodePoint();
 			c = skipWhitespace(c);
 
 			while (c != -1) {
@@ -143,7 +143,7 @@ public class NQuadsParser extends NTriplesParser {
 				throwEOFException();
 			}
 			else if (c != '.') {
-				reportFatalError("Expected '.', found: " + (char)c);
+				reportFatalError("Expected '.', found: " + new String(Character.toChars(c)));
 			}
 
 			c = assertLineTerminates(c);
@@ -195,7 +195,7 @@ public class NQuadsParser extends NTriplesParser {
 			throwEOFException();
 		}
 		else {
-			reportFatalError("Expected '<' or '_', found: " + (char)c);
+			reportFatalError("Expected '<' or '_', found: " + new String(Character.toChars(c)));
 		}
 
 		return c;

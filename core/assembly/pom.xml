@@ -232,6 +232,11 @@
 	</dependency>
 	<dependency>
 	    <groupId>org.openrdf.sesame</groupId>
+	    <artifactId>sesame-sail-lucenesail</artifactId>
+	    <version>${project.version}</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.openrdf.sesame</groupId>
 	    <artifactId>sesame-sail-memory</artifactId>
 	    <version>${project.version}</version>
 	</dependency>
@@ -260,13 +265,12 @@
 		    <finalName>openrdf-sesame-${project.version}</finalName>
 		    <attach>false</attach>
 		    <descriptors>
-			<!-- <descriptor>src/main/assembly/onejar.xml</descriptor> -->
 			<descriptor>src/main/assembly/sdk.xml</descriptor>
 		    </descriptors>
 		</configuration>
 		<executions>
 		    <execution>
-			<id>create-sdk-distro</id>
+			<id>create-sdk</id>
 			<phase>package</phase>
 			<goals>
 			    <goal>single</goal>
@@ -283,8 +287,11 @@
 			<includes>
 			    <include>org.openrdf.sesame:*</include>
 			</includes>
+			<excludes>
+			    <exclude>org.openrdf.sesame:sesame-runtime-osgi</exclude>
+			</excludes>
 		    </artifactSet>
-		    <outputFile>target/openrdf-sesame-${project.version}-onejar.jar</outputFile>.
+		    <outputFile>target/openrdf-sesame-${project.version}-onejar.jar</outputFile>
 		    <createDependencyReducedPom>false</createDependencyReducedPom>
 		    <shadedArtifactAttached>false</shadedArtifactAttached>
 		    <transformers>
@@ -293,6 +300,7 @@
 		</configuration>
 		<executions>
 		    <execution>
+			<id>create-onejar</id>
 			<phase>package</phase>
 			<goals>
 			    <goal>shade</goal>
@@ -302,6 +310,4 @@
 	    </plugin>
 	</plugins>
     </build>
-
-
 </project>

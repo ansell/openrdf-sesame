@@ -8,7 +8,7 @@
 module workbench {
 
     export module yasqeHelper {
-        declare var YASQE: any;
+
         export function setupCompleters(namespaces: any) {//namespace in form {"rdf:":"http://bla"}
             var newPrefixCompleterName = "customPrefixCompleter";
             //take the current prefix completer as base, to present our own namespaces for prefix autocompletion
@@ -28,8 +28,10 @@ module workbench {
                         }
                         return completerArray
                     },
-                    isValidCompletionPosition: function(){return YASQE.Autocompleters.prefixes.isValidCompletionPosition(yasqe);},
-                    preProcessToken: function(token: any) {return YASQE.Autocompleters.prefixes.preprocessPrefixTokenForCompletion(yasqe, token);},
+                    isValidCompletionPosition: function() {
+                        return YASQE.Autocompleters.prefixes.isValidCompletionPosition(yasqe);},
+                    preProcessToken: function(token: Token) {
+                        return YASQE.Autocompleters.prefixes.preprocessPrefixTokenForCompletion(yasqe, token);},
                 }
             });
             

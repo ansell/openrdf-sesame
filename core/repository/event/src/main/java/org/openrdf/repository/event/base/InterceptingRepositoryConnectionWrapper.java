@@ -358,6 +358,16 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 				public boolean getIncludeInferred() {
 					return delegate.getIncludeInferred();
 				}
+
+				@Override
+				public void setMaxExecutionTime(int maxExecTime) {
+					delegate.setMaxExecutionTime(maxExecTime);
+				}
+
+				@Override
+				public int getMaxExecutionTime() {
+					return delegate.getMaxExecutionTime();
+				}
 			};
 		}
 		else {

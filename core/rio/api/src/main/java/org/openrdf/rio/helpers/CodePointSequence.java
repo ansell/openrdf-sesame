@@ -14,38 +14,32 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.query.impl;
+package org.openrdf.rio.helpers;
 
-import org.openrdf.query.Query;
+import java.util.Iterator;
 
 /**
- * Abstract super class of all query types.
+ * Helper class for working with Strings as sequences of Unicode code points.
+ * 
+ * @author Jeen Broekstra
+ * @since 2.8.0
+ * @see CodePointIterator
  */
-public abstract class AbstractQuery extends AbstractOperation implements Query {
+public class CodePointSequence implements Iterable<Integer> {
 
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
+	private final String charSequence;
 
-	/**
-	 * Creates a new query object.
-	 */
-	protected AbstractQuery() {
-		super();
+	public CodePointSequence(String charSequence) {
+		this.charSequence = charSequence;
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	@Deprecated
-	public void setMaxQueryTime(int maxQueryTime) {
-			setMaxExecutionTime(maxQueryTime);
-			
+	@Override
+	public Iterator<Integer> iterator() {
+		return new CodePointIterator(charSequence);
+	}
+	
+	public int length() {
+		return charSequence.codePointCount(0, charSequence.length());
 	}
 
-	@Deprecated
-	public int getMaxQueryTime() {
-		return getMaxExecutionTime();
-	}
 }

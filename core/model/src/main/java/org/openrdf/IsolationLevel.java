@@ -41,12 +41,12 @@ public interface IsolationLevel {
 	 *         other isolation level, false otherwise.
 	 */
 	boolean isCompatibleWith(IsolationLevel otherLevel);
-	
+
 	/**
 	 * Get a URI uniquely representing this isolation level.
 	 * 
-	 * @return a URI that uniquely represents this isolation level. 
+	 * @return a URI that uniquely represents this isolation level.
 	 */
 	URI getURI();
-	
+
 }

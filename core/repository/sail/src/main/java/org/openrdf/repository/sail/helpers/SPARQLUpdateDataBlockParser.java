@@ -101,17 +101,17 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		boolean isGraphKeyword = false;
-		int c = peek();
+		int c = peekCodePoint();
 		if (c == 'g' || c == 'G') {
 			StringBuilder sb = new StringBuilder(5);
 			do {
-				c = read();
+				c = readCodePoint();
 				if (c == -1 || TurtleUtil.isWhitespace(c)) {
 					unread(c);
 					break;
 				}
 
-				sb.append((char)c);
+				sb.append(Character.toChars(c));
 			}
 			while (sb.length() < 5);
 
@@ -134,8 +134,8 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				reportFatalError("nested named graph not allowed.");
 			}
 			skipWSC();
-			int c = read();
-			final int c2 = peek();
+			int c = readCodePoint();
+			final int c2 = peekCodePoint();
 
 			if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
 					|| (c == '_' && c2 == ':'))
@@ -159,7 +159,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		int c = skipWSC();
 
 		if (c == '{') {
-			read();
+			readCodePoint();
 			c = skipWSC();
 		}
 
@@ -168,11 +168,11 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 			c = skipWSC();
 
 			while (c == '.') {
-				read();
+				readCodePoint();
 				c = skipWSC();
 
 				if (c == '}' || c == -1) {
-					read();
+					readCodePoint();
 					setContext(null);
 					return;
 				}
@@ -185,7 +185,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 			}
 		}
 		
-		c = read();
+		c = readCodePoint();
 		if (c == '}') {
 			setContext(null);
 		}

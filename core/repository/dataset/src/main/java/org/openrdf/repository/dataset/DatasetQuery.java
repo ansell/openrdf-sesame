@@ -68,12 +68,24 @@ abstract class DatasetQuery implements Query {
 		return sailQuery.getIncludeInferred();
 	}
 
+	@Override
+	public void setMaxExecutionTime(int maxExecTime) {
+		sailQuery.setMaxExecutionTime(maxExecTime);
+	}
+	
+	@Override
+	public int getMaxExecutionTime() {
+		return sailQuery.getMaxExecutionTime();
+	}
+	
+	@Deprecated
 	public void setMaxQueryTime(int maxQueryTime) {
-		sailQuery.setMaxQueryTime(maxQueryTime);
+		setMaxExecutionTime(maxQueryTime);
 	}
 
+	@Deprecated
 	public int getMaxQueryTime() {
-		return sailQuery.getMaxQueryTime();
+		return getMaxExecutionTime();
 	}
 
 	@Override

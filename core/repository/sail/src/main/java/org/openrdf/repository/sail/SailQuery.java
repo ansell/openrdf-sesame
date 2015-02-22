@@ -53,8 +53,8 @@ public abstract class SailQuery extends AbstractQuery {
 	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> enforceMaxQueryTime(
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter)
 	{
-		if (maxQueryTime > 0) {
-			bindingsIter = new QueryInterruptIteration(bindingsIter, 1000L * maxQueryTime);
+		if (getMaxExecutionTime() > 0) {
+			bindingsIter = new QueryInterruptIteration(bindingsIter, 1000L * getMaxExecutionTime());
 		}
 
 		return bindingsIter;
