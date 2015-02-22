@@ -240,7 +240,6 @@ public class NTriplesUtil {
 	 * @param xsdStringToPlainLiteral
 	 *        True to omit serialising the xsd:string datatype and false to
 	 *        always serialise the datatype for literals.
-	 * @throws IOException
 	 * @since 2.8.0
 	 */
 	public static String toNTriplesString(Value value, boolean xsdStringToPlainLiteral) {
@@ -398,7 +397,6 @@ public class NTriplesUtil {
 	 * @param xsdStringToPlainLiteral
 	 *        True to omit serialising the xsd:string datatype and false to
 	 *        always serialise the datatype for literals.
-	 * @throws IOException
 	 * @since 2.8.0
 	 */
 	public static String toNTriplesString(Literal lit, boolean xsdStringToPlainLiteral) {

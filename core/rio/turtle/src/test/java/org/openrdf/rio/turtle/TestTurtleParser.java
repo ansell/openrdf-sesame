@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Collection;
@@ -151,34 +152,11 @@ public class TestTurtleParser {
 
 		assertFalse(statementCollector.getStatements().isEmpty());
 		assertEquals(1, statementCollector.getStatements().size());
-
 		for (Statement st : statementCollector.getStatements()) {
 			System.out.println(st);
 		}
 	}
 	
-	@Test 
-	public void testLineNumberReporting() throws Exception {
-		
-		InputStream in = this.getClass().getResourceAsStream("/test-newlines.ttl");
-		
-		try {
-			parser.parse(in, baseURI);
-			fail("expected to fail parsing input file");
-		}
-		catch (RDFParseException e) {
-			// expected
-			assertFalse(errorCollector.getFatalErrors().isEmpty());
-			
-			final String error = errorCollector.getFatalErrors().get(0);
-			
-			// expected to fail at line 9.
-			assertTrue(error.contains("(9,"));
-			
-		}
-
-	}
-
 	@Test
 	public void testParseTurtleLiteralUTF8()
 		throws Exception
@@ -219,7 +197,81 @@ public class TestTurtleParser {
 		}
 	}
 
+	@Test
+	public void testLineNumberReporting()
+		throws Exception
+	{
 
+		InputStream in = this.getClass().getResourceAsStream("/test-newlines.ttl");
+		try {
+			parser.parse(in, baseURI);
+			fail("expected to fail parsing input file");
+		}
+		catch (RDFParseException e) {
+			// expected
+			assertFalse(errorCollector.getFatalErrors().isEmpty());
+			final String error = errorCollector.getFatalErrors().get(0);
+			// expected to fail at line 9.
+			assertTrue(error.contains("(9,"));
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralComma() throws Exception{
+		String data = "<urn:a> <urn:b> true, false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+
+	@Test
+	public void testParseBooleanLiteralWhitespaceComma() throws Exception{
+		String data = "<urn:a> <urn:b> true , false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralSemicolumn() throws Exception{
+		String data = "<urn:a> <urn:b> true; <urn:c> false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testParseBooleanLiteralWhitespaceSemicolumn() throws Exception{
+		String data = "<urn:a> <urn:b> true ; <urn:c> false .";
+		Reader r = new StringReader(data);
+		
+		try {
+			parser.parse(r, baseURI);
+			assertTrue(statementCollector.getStatements().size() == 2);
+		}
+		catch (RDFParseException e) {
+			fail("parse error on correct data: " + e.getMessage());
+		}
+	}
+	
 	@Test
 	public void testParseNTriplesLiteralUTF8()
 		throws Exception

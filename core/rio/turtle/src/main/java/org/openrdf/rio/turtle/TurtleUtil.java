@@ -217,7 +217,6 @@ public class TurtleUtil {
 		return isPN_CHARS(codePoint) || codePoint == '.';
 	}
 
-
 	/**
 	 * Check if the supplied code point represents a valid 
 	 * blank node label end character.
@@ -241,8 +240,8 @@ public class TurtleUtil {
 	 * @return <code>true</code> iff the supplied code point represents a valid
 	 *         name start char, <code>false</code> otherwise.
 	 */
-	public static boolean isNameStartChar(int c) {
-		return isPN_CHARS_U(c) || c == ':' || ASCIIUtil.isNumber(c) || c == '\\' || c == '%';
+	public static boolean isNameStartChar(int codePoint) {
+		return isPN_CHARS_U(codePoint) || codePoint == ':' || ASCIIUtil.isNumber(codePoint) || codePoint == '\\' || codePoint == '%';
 	}
 
 	/**
@@ -293,8 +292,8 @@ public class TurtleUtil {
 	 * @return <code>true</code> iff the supplied code point represents a valid
 	 *         prefix char, <code>false</code> otherwise.
 	 */
-	public static boolean isPrefixChar(int c) {
-		return isPN_CHARS_BASE(c) || isPN_CHARS(c) || c == '.';
+	public static boolean isPrefixChar(int codePoint) {
+		return isPN_CHARS_BASE(codePoint) || isPN_CHARS(codePoint) || codePoint == '.';
 	}
 
 	/**
@@ -306,8 +305,8 @@ public class TurtleUtil {
 	 * @return <code>true</code> iff the supplied code point represents a valid
 	 *         language tag start char, <code>false</code> otherwise.
 	 */
-	public static boolean isLanguageStartChar(int c) {
-		return ASCIIUtil.isLetter(c);
+	public static boolean isLanguageStartChar(int codePoint) {
+		return ASCIIUtil.isLetter(codePoint);
 	}
 
 	/**
@@ -319,8 +318,8 @@ public class TurtleUtil {
 	 * @return <code>true</code> iff the supplied code point represents a valid
 	 *         language tag char, <code>false</code> otherwise.
 	 */
-	public static boolean isLanguageChar(int c) {
-		return ASCIIUtil.isLetter(c) || ASCIIUtil.isNumber(c) || c == '-';
+	public static boolean isLanguageChar(int codePoint) {
+		return ASCIIUtil.isLetter(codePoint) || ASCIIUtil.isNumber(codePoint) || codePoint == '-';
 	}
 
 	/**
@@ -342,6 +341,7 @@ public class TurtleUtil {
 			return false;
 		}
 
+		
 		if (!isPN_CHARS_BASE(prefix.charAt(0))) {
 			logger.debug("PN_PREFIX was not valid (start character invalid) i=0 nextchar={} prefix=",
 					prefix.charAt(0), prefix);

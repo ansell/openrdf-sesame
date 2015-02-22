@@ -89,6 +89,7 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
@@ -1755,6 +1756,33 @@ public abstract class RepositoryConnectionTest {
 		}
 		finally {
 			tqr.close();
+		}
+	}
+	
+	@Test
+	public void testSES2172ChineseChars() throws Exception
+	{
+		String updateString = "INSERT DATA { <urn:subject1> rdfs:label \"\\u8BBE\\u5907\". }";
+		
+		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, updateString);
+		update.execute();
+		
+		assertFalse(testCon.isEmpty());
+		
+		String queryString = "SELECT ?o WHERE { <urn:subject1> rdfs:label ?o . }";
+		
+		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+		TupleQueryResult result = query.evaluate();
+		
+		assertNotNull(result);
+		
+		final String expected = "设备";
+		while (result.hasNext()) {
+			Value o = result.next().getValue("o");
+
+			System.out.println("o = " + o);
+			
+			assertEquals(expected, o.stringValue());
 		}
 	}
 

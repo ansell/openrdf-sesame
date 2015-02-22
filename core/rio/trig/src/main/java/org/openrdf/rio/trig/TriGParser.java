@@ -172,17 +172,8 @@ public class TriGParser extends TurtleParser {
 			c = readCodePoint();
 		}
 		else {
-			contextOrSubject = null;
+			setContext(null);
 		}
-
-		// The following syntax for naming graph seems to have only appeared in
-		// the 2005/06/06 draft of the specification, as it doesn't appear in the
-		// 2007 or later drafts
-		// if (c == ':') {
-		// verifyCharacterOrFail(readCodePoint(), "-");
-		// skipWSC();
-		// c = readCodePoint();
-		// }
 
 		if (c == '{') {
 			setContext(contextOrSubject);

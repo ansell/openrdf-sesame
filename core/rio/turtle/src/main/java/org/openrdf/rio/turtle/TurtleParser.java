@@ -659,7 +659,7 @@ public class TurtleParser extends RDFParserBase {
 			return null;
 		}
 		else {
-			reportFatalError("Expected an RDF value here, found '" + (char)c + "'");
+			reportFatalError("Expected an RDF value here, found '" + new String(Character.toChars(c)) + "'");
 			return null;
 		}
 	}
@@ -688,7 +688,7 @@ public class TurtleParser extends RDFParserBase {
 
 			boolean verifyLanguageTag = getParserConfig().get(BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			if (verifyLanguageTag && !TurtleUtil.isLanguageStartChar(c)) {
-				reportError("Expected a letter, found '" + (char)c + "'",
+				reportError("Expected a letter, found '" + new String(Character.toChars(c)) + "'",
 						BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 			}
 
@@ -703,7 +703,7 @@ public class TurtleParser extends RDFParserBase {
 					break;
 				}
 				if (verifyLanguageTag && !TurtleUtil.isLanguageChar(c)) {
-					reportError("Illegal language tag char: '" + (char)c + "'",
+					reportError("Illegal language tag char: '" + new String(Character.toChars(c)) + "'",
 							BasicParserSettings.VERIFY_LANGUAGE_TAGS);
 				}
 				lang.append(Character.toChars(c));
@@ -1021,7 +1021,7 @@ public class TurtleParser extends RDFParserBase {
 			throwEOFException();
 		}
 		if (c != ':' && !TurtleUtil.isPrefixStartChar(c)) {
-			reportError("Expected a ':' or a letter, found '" + (char)c + "'",
+			reportError("Expected a ':' or a letter, found '" + new String(Character.toChars(c)) + "'",
 					BasicParserSettings.VERIFY_RELATIVE_URIS);
 		}
 
@@ -1049,6 +1049,7 @@ public class TurtleParser extends RDFParserBase {
 				String value = prefix.toString();
 
 				if (value.equals("true") || value.equals("false")) {
+					unread(c);
 					return createLiteral(value, null, XMLSchema.BOOLEAN, getLineNumber(), -1);
 				}
 			}
@@ -1132,7 +1133,7 @@ public class TurtleParser extends RDFParserBase {
 			return (char)c;
 		}
 		else {
-			throw new RDFParseException("found '" + (char)c + "', expected one of: "
+			throw new RDFParseException("found '" + new String(Character.toChars(c)) + "', expected one of: "
 					+ Arrays.toString(TurtleUtil.LOCAL_ESCAPED_CHARS));
 		}
 	}

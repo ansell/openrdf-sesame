@@ -446,7 +446,7 @@ public class SailUpdateExecutor {
 		parser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		try {
 			// TODO process update context somehow? dataset, base URI, etc.
-			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes()), "");
+			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes("UTF-8")), "");
 		}
 		catch (RDFParseException e) {
 			throw new SailException(e);
