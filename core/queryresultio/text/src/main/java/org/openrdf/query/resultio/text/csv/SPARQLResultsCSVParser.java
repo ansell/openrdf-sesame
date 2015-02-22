@@ -115,6 +115,10 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 				handler.handleSolution(bindingSet);
 			}
 		}
+		
+		if(bindingNames != null) {
+			handler.endQueryResult();
+		}
 	}
 
 }
