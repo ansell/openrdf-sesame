@@ -1023,6 +1023,7 @@ public class TurtleParser extends RDFParserBase {
 				String value = prefix.toString();
 
 				if (value.equals("true") || value.equals("false")) {
+					unread(c);
 					return createLiteral(value, null, XMLSchema.BOOLEAN, getLineNumber(), -1);
 				}
 			}
