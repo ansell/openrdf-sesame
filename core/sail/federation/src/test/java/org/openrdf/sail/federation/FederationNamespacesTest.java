@@ -24,6 +24,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -62,7 +63,8 @@ public class FederationNamespacesTest extends TestCase {
 		RepositoryConnection con = createFederationWithMemberNamespaces("a", "a");
 		try {
 			assertThat(con.getNamespace(PREFIX), is(equalTo(EXPECTED_NAME)));
-			assertThat(Iterations.asList(con.getNamespaces()), hasItem(EXPECTED_NAMESPACE));
+			List<Namespace> asList = Iterations.asList(con.getNamespaces());
+			assertThat(asList, hasItem(EXPECTED_NAMESPACE));
 		}
 		finally {
 			con.close();
@@ -76,7 +78,8 @@ public class FederationNamespacesTest extends TestCase {
 		RepositoryConnection con = createFederationWithMemberNamespaces("a", "a", "a");
 		try {
 			assertThat(con.getNamespace(PREFIX), is(equalTo(EXPECTED_NAME)));
-			assertThat(Iterations.asList(con.getNamespaces()), hasItem(EXPECTED_NAMESPACE));
+			List<Namespace> asList = Iterations.asList(con.getNamespaces());
+			assertThat(asList, hasItem(EXPECTED_NAMESPACE));
 		}
 		finally {
 			con.close();
@@ -90,7 +93,8 @@ public class FederationNamespacesTest extends TestCase {
 		RepositoryConnection con = createFederationWithMemberNamespaces("a", "b");
 		try {
 			assertThat(con.getNamespace(PREFIX), is(nullValue()));
-			assertThat(Iterations.asList(con.getNamespaces()), not(hasItem(EXPECTED_NAMESPACE)));
+			List<Namespace> asList = Iterations.asList(con.getNamespaces());
+			assertThat(asList, not(hasItem(EXPECTED_NAMESPACE)));
 		}
 		finally {
 			con.close();
@@ -104,7 +108,8 @@ public class FederationNamespacesTest extends TestCase {
 		RepositoryConnection con = createFederationWithMemberNamespaces("a", "b", "c");
 		try {
 			assertThat(con.getNamespace(PREFIX), is(nullValue()));
-			assertThat(Iterations.asList(con.getNamespaces()), not(hasItem(EXPECTED_NAMESPACE)));
+			List<Namespace> asList = Iterations.asList(con.getNamespaces());
+			assertThat(asList, not(hasItem(EXPECTED_NAMESPACE)));
 		}
 		finally {
 			con.close();
