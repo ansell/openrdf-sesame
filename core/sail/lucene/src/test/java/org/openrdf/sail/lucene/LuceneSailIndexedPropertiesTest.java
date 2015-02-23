@@ -16,6 +16,10 @@
  */
 package org.openrdf.sail.lucene;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
 import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
@@ -26,7 +30,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
@@ -44,7 +50,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class LuceneSailIndexedPropertiesTest extends TestCase {
+public class LuceneSailIndexedPropertiesTest {
 
 	protected LuceneSail sail;
 
@@ -76,7 +82,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 
 	public static final URI FOAFPLAN = new URIImpl("http://xmlns.com/foaf/0.1/plan");
 
-	@Override
+	@Before
 	public void setUp()
 		throws IOException, RepositoryException
 	{
@@ -122,7 +128,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		connection.commit();
 	}
 
-	@Override
+	@After
 	public void tearDown()
 		throws RepositoryException
 	{
@@ -130,6 +136,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		repository.shutDown();
 	}
 
+	@Test
 	public void testTriplesStored()
 		throws Exception
 	{
@@ -154,6 +161,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 																							// indexed
 	}
 
+	@Test
 	public void testRegularQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
