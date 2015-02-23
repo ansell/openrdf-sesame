@@ -460,6 +460,7 @@
 				<plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
+					<version>2.5.3</version>
 					<configuration>
 						<remoteOBR>repository.xml</remoteOBR>
 					</configuration>
@@ -494,62 +495,34 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>animal-sniffer-maven-plugin</artifactId>
+					<version>1.13</version>
+					<executions>
+						<execution>
+							<phase>test</phase>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<signature>
+							<groupId>org.codehaus.mojo.signature</groupId>
+							<artifactId>java16</artifactId>
+							<version>1.0</version>
+						</signature>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>bundle-sources</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>bundle-javadocs</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>animal-sniffer-maven-plugin</artifactId>
-				<version>1.13</version>
-				<executions>
-					<execution>
-						<phase>test</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<signature>
-						<groupId>org.codehaus.mojo.signature</groupId>
-						<artifactId>java16</artifactId>
-						<version>1.0</version>
-					</signature>
-				</configuration>
-			</plugin>
-		</plugins>
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ssh-external</artifactId>
-				<version>1.0-beta-7</version>
+				<version>2.8</version>
 			</extension>
 		</extensions>
 	</build>
