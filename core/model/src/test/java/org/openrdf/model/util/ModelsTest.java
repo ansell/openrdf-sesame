@@ -16,7 +16,14 @@
  */
 package org.openrdf.model.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -32,10 +39,10 @@ import org.openrdf.model.vocabulary.RDFS;
 
 /**
  * Unit tests on {@link Models} utility methods.
- * 
+ *
  * @author Jeen Broekstra
  */
-public class ModelsTest extends TestCase {
+public class ModelsTest {
 
 	private Model model1;
 
@@ -47,8 +54,8 @@ public class ModelsTest extends TestCase {
 
 	private URI bar;
 
-	@Override
-	protected void setUp() {
+	@Before
+	public void setUp() {
 		model1 = new LinkedHashModel();
 		model2 = new LinkedHashModel();
 
@@ -56,6 +63,7 @@ public class ModelsTest extends TestCase {
 		bar = VF.createURI("http://example.org/bar");
 	}
 
+	@Test
 	public void testModelsIsomorphic() {
 
 		// two identical statements, no bnodes
@@ -100,6 +108,7 @@ public class ModelsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testIsSubset() {
 
 		// two empty sets
@@ -154,6 +163,7 @@ public class ModelsTest extends TestCase {
 		assertFalse(Models.isSubset(model2, model1));
 	}
 
+	@Test
 	public void testAnyObject() {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
@@ -172,6 +182,7 @@ public class ModelsTest extends TestCase {
 		assertTrue(result.equals(lit) || result.equals(foo));
 	}
 
+	@Test
 	public void testAnyObjectURI() {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
@@ -190,6 +201,7 @@ public class ModelsTest extends TestCase {
 		assertEquals(foo, result);
 	}
 
+	@Test
 	public void testAnyObjectLiteral() {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
@@ -207,7 +219,8 @@ public class ModelsTest extends TestCase {
 		assertNotNull(result);
 		assertEquals(lit, result);
 	}
-	
+
+	@Test
 	public void testAnyPredicate() {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
@@ -217,6 +230,7 @@ public class ModelsTest extends TestCase {
 		assertTrue(result.equals(bar) || result.equals(foo));
 	}
 
+	@Test
 	public void testAnySubject() {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
@@ -227,6 +241,7 @@ public class ModelsTest extends TestCase {
 		assertTrue(result.equals(bar) || result.equals(foo));
 	}
 
+	@Test
 	public void testSetProperty() {
 		Literal lit1 = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit1);
@@ -244,6 +259,7 @@ public class ModelsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSetPropertyWithContext1() {
 		Literal lit1 = VF.createLiteral(1.0);
 		URI graph1 = VF.createURI("urn:g1");
@@ -266,6 +282,7 @@ public class ModelsTest extends TestCase {
 		assertTrue(model1.contains(foo, bar, lit2));
 	}
 
+	@Test
 	public void testSetPropertyWithContext2() {
 		Literal lit1 = VF.createLiteral(1.0);
 		URI graph1 = VF.createURI("urn:g1");

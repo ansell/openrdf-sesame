@@ -17,29 +17,27 @@
 package org.openrdf.http.server;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 import javax.xml.XMLConstants;
 import javax.xml.validation.SchemaFactory;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import info.aduna.xml.DocumentUtil;
 
 /**
  * @author Herko ter Horst
  */
-public class WebXmlValidationTest extends TestCase {
+public class WebXmlValidationTest {
 
-	public void testValidXml() {
-		try {
-			File webXml = new File("src/main/webapp/WEB-INF/web.xml");
+	@Test
+	public void testValidXml() throws MalformedURLException, IOException, SAXException {
+		File webXml = new File("src/main/webapp/WEB-INF/web.xml");
 
-			DocumentUtil.getDocument(webXml.toURL(), SchemaFactory.newInstance(
-					XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		DocumentUtil.getDocument(webXml.toURL(), SchemaFactory.newInstance(
+				XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema());
 	}
 }

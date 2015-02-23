@@ -16,8 +16,12 @@
  */
 package info.aduna.iteration;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.Test;
 
 public class OffsetIterationTest extends CloseableIterationTest {
 
@@ -37,6 +41,7 @@ public class OffsetIterationTest extends CloseableIterationTest {
 		return 5;
 	}
 
+	@Test
 	public void testInRangeOffset()
 		throws Exception
 	{
@@ -48,6 +53,7 @@ public class OffsetIterationTest extends CloseableIterationTest {
 		}
 	}
 
+	@Test
 	public void testOutOfRangeOffset()
 		throws Exception
 	{

@@ -16,13 +16,14 @@
  */
 package org.openrdf.repository.event;
 
+import static org.junit.Assert.assertEquals;
 import static org.openrdf.query.QueryLanguage.SPARQL;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -46,7 +47,7 @@ import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
 /**
  * @author James Leigh
  */
-public class NotifyingTest extends TestCase {
+public class NotifyingTest {
 
 	static class InvocationHandlerStub implements InvocationHandler {
 
@@ -106,6 +107,7 @@ public class NotifyingTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testUpdate()
 		throws Exception
 	{
@@ -136,6 +138,7 @@ public class NotifyingTest extends TestCase {
 		update.execute();
 	}
 
+	@Test
 	public void testRemove()
 		throws Exception
 	{
