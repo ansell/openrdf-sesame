@@ -16,22 +16,31 @@
  */
 package info.aduna.webapp.navigation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
-public class NavigationTest extends TestCase {
-	
+public class NavigationTest {
+
 	private NavigationModel model = null;
-	
+
+	@Before
 	public void setUp() {
 		model = new NavigationModel();
 		List<String> navigationModelLocations = new ArrayList<String>();
 		navigationModelLocations.add("/navigation.xml");
 		model.setNavigationModels(navigationModelLocations);
 	}
-	
+
+	@Test
 	public void testParse() {
 		assertNotNull("Parsed model is null", model);
 		assertEquals("Model should have one group", 1, model.getGroups().size());
@@ -51,7 +60,8 @@ public class NavigationTest extends TestCase {
 		View loggingOverview = loggingGroup.getViews().get(0);
 		assertFalse("logging overview should be disabled", loggingOverview.isEnabled());	
 	}
-	
+
+	@Test
 	public void testFind() {
 		assertNotNull("Find should have succeeded", model.findView("/system/logging/overview.view"));
 		assertNull("Find should not have succeeded", model.findView("/system/logging/bogus.view"));

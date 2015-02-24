@@ -24,10 +24,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -65,15 +63,6 @@ public class HttpServerUtilTest {
 		for (FileFormat format : registry.getKeys()) {
 			tupleQueryMimeTypes.addAll(format.getMIMETypes());
 		}
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown()
-		throws Exception
-	{
 	}
 
 	/**

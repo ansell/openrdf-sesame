@@ -16,12 +16,14 @@
  */
 package info.aduna.iteration;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public abstract class IterationTest extends TestCase {
+public abstract class IterationTest {
 
 	protected static final List<String> stringList1 = Arrays.asList("1", "2", "3", "4", "5", "1", "2", "3",
 			"4", "5");
@@ -41,6 +43,7 @@ public abstract class IterationTest extends TestCase {
 
 	protected abstract int getTestIterationSize();
 
+	@Test
 	public void testFullIteration()
 		throws Exception
 	{

@@ -16,23 +16,20 @@
  */
 package org.openrdf.sail.lucene;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * @author grimnes
  */
-public class TestAll extends TestCase {
-
-	static public Test suite() {
-		TestSuite suite = new TestSuite("Test for openrdf-lucenesail");
-		suite.addTest(new TestSuite(GraphQueryTest.class));
-		suite.addTest(new TestSuite(LuceneIndexTest.class));
-		suite.addTest(new TestSuite(LuceneSailTest.class));
-		suite.addTest(new TestSuite(LuceneSailIndexedPropertiesTest.class));
-		suite.addTest(new TestSuite(QuerySpecBuilderTest.class));
-		return suite;
-	}
-
+@RunWith(Suite.class)
+@SuiteClasses({
+	GraphQueryTest.class,
+	LuceneIndexTest.class,
+	LuceneSailTest.class,
+	LuceneSailIndexedPropertiesTest.class,
+	QuerySpecBuilderTest.class
+})
+public class TestAll {
 }

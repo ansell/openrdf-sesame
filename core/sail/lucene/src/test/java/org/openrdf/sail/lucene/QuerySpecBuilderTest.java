@@ -16,6 +16,9 @@
  */
 package org.openrdf.sail.lucene;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.openrdf.model.vocabulary.RDF.TYPE;
 import static org.openrdf.sail.lucene.LuceneSailSchema.LUCENE_QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
@@ -26,7 +29,8 @@ import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.query.algebra.TupleExpr;
@@ -34,13 +38,13 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.serql.SeRQLParser;
 
-public class QuerySpecBuilderTest extends TestCase {
+public class QuerySpecBuilderTest {
 
 	private QuerySpecBuilder interpreter;
 
 	private SeRQLParser parser;
 
-	@Override
+	@Before
 	public void setUp()
 		throws Exception
 	{
@@ -48,10 +52,7 @@ public class QuerySpecBuilderTest extends TestCase {
 		parser = new SeRQLParser();
 	}
 
-	@Override
-	public void tearDown() {
-	}
-
+	@Test
 	public void testQueryInterpretation()
 		throws Exception
 	{
@@ -79,6 +80,7 @@ public class QuerySpecBuilderTest extends TestCase {
 		assertNull(querySpec.getSubject());
 	}
 
+	@Test
 	public void testMultipleQueriesInterpretation()
 		throws Exception
 	{
@@ -142,9 +144,10 @@ public class QuerySpecBuilderTest extends TestCase {
 
 	/**
 	 * Incomplete queries should fail, if configured
-	 * 
+	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testIncompleteFail()
 		throws Exception
 	{
@@ -202,7 +205,7 @@ public class QuerySpecBuilderTest extends TestCase {
 	/**
 	 * Checks if the querystring contains exactly one lucene query throws
 	 * exceptions if not or if the query is incomplete
-	 * 
+	 *
 	 * @param queryString
 	 */
 	private void checkQuery(String queryString)

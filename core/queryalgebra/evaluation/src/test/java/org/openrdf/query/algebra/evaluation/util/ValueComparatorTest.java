@@ -16,11 +16,13 @@
  */
 package org.openrdf.query.algebra.evaluation.util;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -30,11 +32,11 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * 
+ *
  * @author james
- * 
+ *
  */
-public class ValueComparatorTest extends TestCase {
+public class ValueComparatorTest {
 
 	private ValueFactory vf = ValueFactoryImpl.getInstance();
 
@@ -52,24 +54,28 @@ public class ValueComparatorTest extends TestCase {
 
 	private ValueComparator cmp = new ValueComparator();
 
+	@Test
 	public void testBothNull()
 		throws Exception
 	{
 		assertTrue(cmp.compare(null, null) == 0);
 	}
 
+	@Test
 	public void testLeftNull()
 		throws Exception
 	{
 		assertTrue(cmp.compare(null, typed1) < 0);
 	}
 
+	@Test
 	public void testRightNull()
 		throws Exception
 	{
 		assertTrue(cmp.compare(typed1, null) > 0);
 	}
 
+	@Test
 	public void testBothBnode()
 		throws Exception
 	{
@@ -79,18 +85,21 @@ public class ValueComparatorTest extends TestCase {
 		assertTrue(cmp.compare(bnode1, bnode2) == -1 * cmp.compare(bnode2, bnode1));
 	}
 
+	@Test
 	public void testLeftBnode()
 		throws Exception
 	{
 		assertTrue(cmp.compare(bnode1, typed1) < 0);
 	}
 
+	@Test
 	public void testRightBnode()
 		throws Exception
 	{
 		assertTrue(cmp.compare(typed1, bnode1) > 0);
 	}
 
+	@Test
 	public void testBothURI()
 		throws Exception
 	{
@@ -105,12 +114,14 @@ public class ValueComparatorTest extends TestCase {
 		assertTrue(cmp.compare(uri3, uri3) == 0);
 	}
 
+	@Test
 	public void testLeftURI()
 		throws Exception
 	{
 		assertTrue(cmp.compare(uri1, typed1) < 0);
 	}
 
+	@Test
 	public void testRightURI()
 		throws Exception
 	{
@@ -121,6 +132,7 @@ public class ValueComparatorTest extends TestCase {
 	 * Tests whether xsd:int's are properly sorted in a list with mixed value
 	 * types.
 	 */
+	@Test
 	public void testOrder1()
 		throws Exception
 	{
@@ -138,6 +150,7 @@ public class ValueComparatorTest extends TestCase {
 	 * Tests whether various numerics are properly sorted in a list with mixed
 	 * value types.
 	 */
+	@Test
 	public void testOrder2()
 		throws Exception
 	{
@@ -166,6 +179,7 @@ public class ValueComparatorTest extends TestCase {
 	 * also contains a datatype that would be sorted between the numerics if the
 	 * datatypes were to be sorted alphabetically.
 	 */
+	@Test
 	public void testOrder3()
 		throws Exception
 	{

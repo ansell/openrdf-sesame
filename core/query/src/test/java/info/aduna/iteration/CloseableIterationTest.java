@@ -16,7 +16,12 @@
  */
 package info.aduna.iteration;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import java.util.NoSuchElementException;
+
+import org.junit.Test;
 
 /**
  *
@@ -26,6 +31,7 @@ public abstract class CloseableIterationTest extends IterationTest {
 	protected abstract CloseableIteration<String, Exception> createTestIteration()
 		throws Exception;
 
+	@Test
 	public void testClosedIteration()
 		throws Exception
 	{

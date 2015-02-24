@@ -16,9 +16,14 @@
  */
 package org.openrdf.sail.lucene;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
 import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 
@@ -32,11 +37,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -56,7 +63,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class LuceneSailTest extends TestCase {
+public class LuceneSailTest {
 
 	public static final String QUERY_STRING;
 
@@ -99,7 +106,7 @@ public class LuceneSailTest extends TestCase {
 		QUERY_STRING = buffer.toString();
 	}
 
-	@Override
+	@Before
 	public void setUp()
 		throws IOException, RepositoryException
 	{
@@ -137,7 +144,7 @@ public class LuceneSailTest extends TestCase {
 		connection.commit();
 	}
 
-	@Override
+	@After
 	public void tearDown()
 		throws RepositoryException
 	{
@@ -145,6 +152,7 @@ public class LuceneSailTest extends TestCase {
 		repository.shutDown();
 	}
 
+	@Test
 	public void testTriplesStored()
 		throws Exception
 	{
@@ -160,6 +168,7 @@ public class LuceneSailTest extends TestCase {
 		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_3, SUBJECT_2, false));
 	}
 
+	@Test
 	public void testRegularQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
@@ -197,7 +206,8 @@ public class LuceneSailTest extends TestCase {
 		assertTrue(uris.contains(SUBJECT_3));
 	}
 
-	public void testComlexQueryOne()
+	@Test
+	public void testComplexQueryOne()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
 		// prepare the query
@@ -237,7 +247,8 @@ public class LuceneSailTest extends TestCase {
 		assertTrue(results.contains("<" + SUBJECT_3 + ">, <" + SUBJECT_2 + ">"));
 	}
 
-	public void testComlexQueryTwo()
+	@Test
+	public void testComplexQueryTwo()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
 		// prepare the query
@@ -265,6 +276,7 @@ public class LuceneSailTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testMultipleLuceneQueries()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
@@ -489,6 +501,7 @@ public class LuceneSailTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPredicateLuceneQueries()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
@@ -548,6 +561,7 @@ public class LuceneSailTest extends TestCase {
 		evaluate(queries, results);
 	}
 
+	@Test
 	public void testSnippetQueries()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
@@ -597,6 +611,7 @@ public class LuceneSailTest extends TestCase {
 	 * Test if the snippets do not accidentially come from the "text" field while
 	 * we actually expect them to come from the predicate field.
 	 */
+	@Test
 	public void testSnippetLimitedToPredicate()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
@@ -737,6 +752,8 @@ public class LuceneSailTest extends TestCase {
 		}
 	}
 
+	@Ignore
+	@Test
 	public void testGraphQuery()
 		throws QueryEvaluationException, MalformedQueryException, RepositoryException
 	{
@@ -790,6 +807,7 @@ public class LuceneSailTest extends TestCase {
 		// assertEquals(7, r);
 	}
 
+	@Test
 	public void testQueryWithSpecifiedSubject()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
@@ -839,6 +857,7 @@ public class LuceneSailTest extends TestCase {
 	}
 	*/
 
+	@Test
 	public void testContextHandling()
 		throws Exception
 	{
@@ -869,6 +888,7 @@ public class LuceneSailTest extends TestCase {
 		assertQueryResult("sfiveptwoctwo", PREDICATE_2, SUBJECT_5);
 	}
 
+	@Test
 	public void testConcurrentReadingAndWriting()
 		throws Exception
 	{
@@ -921,9 +941,10 @@ public class LuceneSailTest extends TestCase {
 	 * This test simulates possible flow of calls to the LuceneIndex. It assert
 	 * does InexReader and IndexSearcher are not closed while iterating but are
 	 * finally close.
-	 * 
+	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testClosingIndexReaderAndSearcherAllCases()
 		throws Exception
 	{
@@ -1007,9 +1028,10 @@ public class LuceneSailTest extends TestCase {
 	/**
 	 * we experienced problems with the NULL context and lucenesail in August
 	 * 2008
-	 * 
+	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testNullContextHandling()
 		throws Exception
 	{
@@ -1040,6 +1062,7 @@ public class LuceneSailTest extends TestCase {
 		assertQueryResult("sfiveptwoctwo", PREDICATE_2, SUBJECT_5);
 	}
 
+	@Test
 	public void testFuzzyQuery()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
@@ -1085,11 +1108,12 @@ public class LuceneSailTest extends TestCase {
 		result.close();
 	}
 
+	@Test
 	public void testReindexing()
 		throws Exception
 	{
 		sail.reindex();
-		testComlexQueryTwo();
+		testComplexQueryTwo();
 	}
 
 	protected void assertQueryResult(String literal, URI predicate, Resource resultUri)

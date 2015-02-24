@@ -25,8 +25,6 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 
 import info.aduna.iteration.Iterations;
@@ -44,10 +42,10 @@ import org.openrdf.sail.memory.MemoryStore;
 /**
  * Tests for correct behavior when members define matching or conflicting
  * prefix/namespace maps.
- * 
+ *
  * @author Dale Visser
  */
-public class FederationNamespacesTest extends TestCase {
+public class FederationNamespacesTest {
 
 	private static String PREFIX = "test";
 

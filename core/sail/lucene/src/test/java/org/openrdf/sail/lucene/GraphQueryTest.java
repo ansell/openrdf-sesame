@@ -16,12 +16,22 @@
  */
 package org.openrdf.sail.lucene;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
+import org.openrdf.model.Statement;
+import org.openrdf.model.impl.URIImpl;
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -38,16 +48,16 @@ import org.openrdf.sail.memory.MemoryStore;
  * https://dev.nepomuk.semanticdesktop.org/wiki/LuceneSailFlavors This test, as
  * well as the one in LuceneSailTest, is turned ON in the Sesame 2.0 branch of
  * LuceneSail and is turned OFF in the LuceneSail trunk, which is Sesame >= 2.1.
- * 
+ *
  * @author Enrico Minack
  */
-public class GraphQueryTest extends TestCase {
+public class GraphQueryTest {
 
 	protected Repository repository;
 
 	protected RepositoryConnection connection;
 
-	@Override
+	@Before
 	public void setUp()
 		throws IOException, RepositoryException
 	{
@@ -61,7 +71,7 @@ public class GraphQueryTest extends TestCase {
 		connection = repository.getConnection();
 	}
 
-	@Override
+	@After
 	public void tearDown()
 		throws RepositoryException
 	{
@@ -69,27 +79,29 @@ public class GraphQueryTest extends TestCase {
 		repository.shutDown();
 	}
 
+	@Ignore
+	@Test
 	public void test()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
-		// StringBuilder query = new StringBuilder();
-		// query.append("CONSTRUCT DISTINCT \n");
-		// query.append("    {r1} <uri:p> {r2} , \n");
-		// query.append("    {r1} <uri:p> {r3} \n");
-		//
-		// GraphQuery tq = connection.prepareGraphQuery(QueryLanguage.SERQL,
-		// query.toString());
-		// tq.setBinding("r1", new URIImpl("uri:one"));
-		// tq.setBinding("r2", new URIImpl("uri:two"));
-		// tq.setBinding("r3", new URIImpl("uri:three"));
-		// GraphQueryResult result = tq.evaluate();
-		//
-		// int i=0;
-		// while(result.hasNext()) {
-		// Statement statement = result.next();
-		// i++;
-		// }
-		// assertEquals(2, i);
+		 StringBuilder query = new StringBuilder();
+		 query.append("CONSTRUCT DISTINCT \n");
+		 query.append("    {r1} <uri:p> {r2} , \n");
+		 query.append("    {r1} <uri:p> {r3} \n");
+
+		 GraphQuery tq = connection.prepareGraphQuery(QueryLanguage.SERQL,
+		 query.toString());
+		 tq.setBinding("r1", new URIImpl("uri:one"));
+		 tq.setBinding("r2", new URIImpl("uri:two"));
+		 tq.setBinding("r3", new URIImpl("uri:three"));
+		 GraphQueryResult result = tq.evaluate();
+
+		 int i=0;
+		 while(result.hasNext()) {
+		 Statement statement = result.next();
+		 i++;
+		 }
+		 assertEquals(2, i);
 	}
 
 }

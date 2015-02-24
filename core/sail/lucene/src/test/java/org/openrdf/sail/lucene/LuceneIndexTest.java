@@ -16,11 +16,16 @@
  */
 package org.openrdf.sail.lucene;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -35,6 +40,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -48,7 +56,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class LuceneIndexTest extends TestCase {
+public class LuceneIndexTest {
 
 	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
 
@@ -107,8 +115,8 @@ public class LuceneIndexTest extends TestCase {
 
 	LuceneIndex index;
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		directory = new RAMDirectory();
@@ -116,14 +124,14 @@ public class LuceneIndexTest extends TestCase {
 		index = new LuceneIndex(directory, analyzer);
 	}
 
-	@Override
-	protected void tearDown()
+	@After
+	public void tearDown()
 		throws Exception
 	{
 		index.shutDown();
-		super.tearDown();
 	}
 
+	@Test
 	public void testAddStatement()
 		throws IOException, ParseException
 	{
@@ -217,6 +225,7 @@ public class LuceneIndexTest extends TestCase {
 		reader.close();
 	}
 
+	@Test
 	public void testAddMultiple()
 		throws Exception
 	{
@@ -279,9 +288,10 @@ public class LuceneIndexTest extends TestCase {
 	/**
 	 * Contexts can only be tested in combination with a sail, as the triples
 	 * have to be retrieved from the sail
-	 * 
+	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testContexts()
 		throws Exception
 	{
@@ -335,9 +345,10 @@ public class LuceneIndexTest extends TestCase {
 	/**
 	 * Contexts can only be tested in combination with a sail, as the triples
 	 * have to be retrieved from the sail
-	 * 
+	 *
 	 * @throws Exception
 	 */
+	@Test
 	public void testContextsRemoveContext2()
 		throws Exception
 	{
@@ -388,6 +399,7 @@ public class LuceneIndexTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRejectedDatatypes() {
 		URI STRING = new URIImpl("http://www.w3.org/2001/XMLSchema#string");
 		URI FLOAT = new URIImpl("http://www.w3.org/2001/XMLSchema#float");
@@ -455,13 +467,13 @@ public class LuceneIndexTest extends TestCase {
 			// is the field value expected and not yet been found?
 			if(toFind.remove(field.stringValue())) {
 				// add it to the found set
-				// (it was already remove from the toFind list in the if clause) 
+				// (it was already remove from the toFind list in the if clause)
 				found.add(field.stringValue());
 			} else {
 				assertEquals("Was the text value '" + field.stringValue() + "' expected to exist?", false, true);
 			}
 		}
-		
+
 		for(String notFound : toFind) {
 			assertEquals("Was the expected text value '" + notFound + "' found?", true, false);
 		}
