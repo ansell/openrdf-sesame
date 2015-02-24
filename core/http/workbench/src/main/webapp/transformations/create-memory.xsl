@@ -54,10 +54,10 @@
 							<xsl:value-of select="$repository-persist.label" />
 						</th>
 						<td>
-							<input type="radio" id="persist" name="Persist" size="48"
+							<input type="radio" name="Persist" size="48"
 								value="true" checked="true" />
 							<xsl:value-of select="$true.label" />
-							<input type="radio" id="persist" name="Persist" size="48"
+							<input type="radio" name="Persist" size="48"
 								value="false" />
 							<xsl:value-of select="$false.label" />
 						</td>
@@ -77,7 +77,8 @@
 						<td></td>
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
-								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
+								data-href="repositories"
+                                onclick="document.location.href=this.getAttribute('data-href')" />
 							<input id="create" type="button" value="{$create.label}"
 								onclick="checkOverwrite()" />
 						</td>

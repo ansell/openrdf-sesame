@@ -88,7 +88,8 @@
 						<td></td>
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
-								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
+								data-href="repositories"
+                                onclick="document.location.href=this.getAttribute('data-href')" />
 							<input id="create" type="submit" value="{$create.label}" />
 						</td>
 					</tr>
