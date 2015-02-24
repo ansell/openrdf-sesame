@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.lucene;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
 import org.junit.After;
@@ -23,8 +25,13 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.model.Statement;
+import org.openrdf.model.impl.URIImpl;
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -77,24 +84,24 @@ public class GraphQueryTest {
 	public void test()
 		throws MalformedQueryException, RepositoryException, QueryEvaluationException
 	{
-		// StringBuilder query = new StringBuilder();
-		// query.append("CONSTRUCT DISTINCT \n");
-		// query.append("    {r1} <uri:p> {r2} , \n");
-		// query.append("    {r1} <uri:p> {r3} \n");
-		//
-		// GraphQuery tq = connection.prepareGraphQuery(QueryLanguage.SERQL,
-		// query.toString());
-		// tq.setBinding("r1", new URIImpl("uri:one"));
-		// tq.setBinding("r2", new URIImpl("uri:two"));
-		// tq.setBinding("r3", new URIImpl("uri:three"));
-		// GraphQueryResult result = tq.evaluate();
-		//
-		// int i=0;
-		// while(result.hasNext()) {
-		// Statement statement = result.next();
-		// i++;
-		// }
-		// assertEquals(2, i);
+		 StringBuilder query = new StringBuilder();
+		 query.append("CONSTRUCT DISTINCT \n");
+		 query.append("    {r1} <uri:p> {r2} , \n");
+		 query.append("    {r1} <uri:p> {r3} \n");
+
+		 GraphQuery tq = connection.prepareGraphQuery(QueryLanguage.SERQL,
+		 query.toString());
+		 tq.setBinding("r1", new URIImpl("uri:one"));
+		 tq.setBinding("r2", new URIImpl("uri:two"));
+		 tq.setBinding("r3", new URIImpl("uri:three"));
+		 GraphQueryResult result = tq.evaluate();
+
+		 int i=0;
+		 while(result.hasNext()) {
+		 Statement statement = result.next();
+		 i++;
+		 }
+		 assertEquals(2, i);
 	}
 
 }
