@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
@@ -16,7 +16,7 @@
 			select="sparql:results/sparql:result/sparql:binding[@name='queryLn']" />
 		<xsl:variable name="query"
 			select="sparql:results/sparql:result/sparql:binding[@name='query']" />
-		<form action="query" method="POST" onsubmit="return workbench.query.doSubmit()">
+		<form action="query" method="post" onsubmit="return workbench.query.doSubmit()">
 			<input type="hidden" name="action" id="action" />
 			<table class="dataentry">
 				<tbody>
@@ -99,7 +99,7 @@
 							<input type="button" onclick="workbench.query.resetNamespaces()" value="Clear" />
 							<input id="exec" type="submit" value="{$execute.label}" />
 							<input id="save" type="submit" value="{$save.label}"
-								disabled="true" />
+								disabled="disabled" />
 							<input id="query-name" name="query-name" type="text" size="32"
 								maxlength="32" value="" />
 							<span id="save-feedback"></span>
