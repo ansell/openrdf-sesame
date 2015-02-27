@@ -142,7 +142,7 @@ module workbench {
          * @returns {String} The value of the given parameter, or an empty string if
          *          it doesn't exist.
          */
-        export function getQueryParameter(name: string) {
+        export function getQueryParameter(name: string): string {
             var rval = '';
             var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {

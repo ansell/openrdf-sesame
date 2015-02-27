@@ -5,15 +5,18 @@
 // the corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 workbench.addLoad(function () {
-    var suffix = '_query';
-    var limitParam = workbench.paging.LIMIT + suffix;
-    if (workbench.paging.hasQueryParameter(limitParam)) {
-        var limit = parseInt(0 + workbench.paging.getQueryParameter(limitParam), 10);
-        $(workbench.paging.LIM_ID + suffix).val(String(limit));
-    }
     var query = 'query';
+    var suffix = '_' + query;
+    var limitParam = workbench.paging.LIMIT + suffix;
+    var limitElement = $(workbench.paging.LIM_ID + suffix);
+
+    function setElement(num) {
+        limitElement.val(String(parseInt(0 + num, 10)));
+    }
+
+    setElement(workbench.paging.hasQueryParameter(limitParam) ? workbench.paging.getQueryParameter(limitParam) : workbench.getCookie(limitParam));
     workbench.paging.correctButtons(query);
-    limit = workbench.paging.getLimit(query); // Number
+    var limit = workbench.paging.getLimit(query);
 
     // Modify title to reflect total_result_count cookie
     if (limit > 0) {

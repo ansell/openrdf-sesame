@@ -37,6 +37,7 @@ workbench.addLoad(function () {
     var suffix = '_explore';
     var limit_param = workbench.paging.LIMIT + suffix;
     var limit_id = workbench.paging.LIM_ID + suffix;
+    var limit_param_found = false;
     for (var i = 0; elements.length - i; i++) {
         var pair = elements[i].split('=');
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
@@ -44,6 +45,13 @@ workbench.addLoad(function () {
             resource.val(value);
         } else if (limit_param == pair[0]) {
             $(limit_id).val(value);
+            limit_param_found = true;
+        }
+    }
+    if (!limit_param_found) {
+        var limit_cookie = workbench.getCookie(limit_param);
+        if (limit_cookie) {
+            $(limit_id).val(limit_cookie);
         }
     }
     var explore = 'explore';
