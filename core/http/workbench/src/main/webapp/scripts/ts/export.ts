@@ -9,9 +9,14 @@
 workbench.addLoad(function () {
     var suffix = '_explore';
     var limitParam = workbench.paging.LIMIT + suffix;
-    if (workbench.paging.hasQueryParameter(limitParam)) {
-        var limit = parseInt(0 +
-            workbench.paging.getQueryParameter(limitParam), 10);
-        $(workbench.paging.LIM_ID + suffix).val(String(limit));
+    var limitElement = $(workbench.paging.LIM_ID + suffix);
+
+    function setElement(num: string) {
+        limitElement.val(String(parseInt(0 + num, 10)));
     }
+
+    setElement(workbench.paging.hasQueryParameter(limitParam) ?
+            workbench.paging.getQueryParameter(limitParam) :
+            workbench.getCookie(limitParam)
+    );
 });
