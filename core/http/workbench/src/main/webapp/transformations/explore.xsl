@@ -112,7 +112,8 @@
 						</th>
 						<td>
 							<xsl:call-template name="limit-select">
-								<xsl:with-param name="onchange">workbench.paging.addLimit();</xsl:with-param>
+								<xsl:with-param name="onchange">workbench.paging.addLimit('explore');</xsl:with-param>
+                                <xsl:with-param name="limit_id">limit_explore</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td></td>
@@ -123,11 +124,11 @@
 				        </th>
 						<td>
 							<input id="previousX" type="button"
-								value="{$previousX.label}" onclick="workbench.paging.previousOffset();" />
+								value="{$previousX.label}" onclick="workbench.paging.previousOffset('explore');" />
 						</td>
 						<td>
 							<input id="nextX" type="button"
-								value="{$nextX.label}" onclick="workbench.paging.nextOffset();" />
+								value="{$nextX.label}" onclick="workbench.paging.nextOffset('explore');" />
 						</td>
 					</tr>
 						<tr>

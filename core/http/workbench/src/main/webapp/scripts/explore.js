@@ -34,23 +34,27 @@ workbench.addLoad(function () {
     // Populate parameters
     var elements = workbench.getQueryStringElements();
     var resource = $('#resource');
+    var suffix = '_explore';
+    var limit_param = workbench.paging.LIMIT + suffix;
+    var limit_id = workbench.paging.LIM_ID + suffix;
     for (var i = 0; elements.length - i; i++) {
         var pair = elements[i].split('=');
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
         if ('resource' == pair[0]) {
             resource.val(value);
-        } else if (workbench.paging.LIMIT == pair[0]) {
-            $(workbench.paging.LIM_ID).val(value);
+        } else if (limit_param == pair[0]) {
+            $(limit_id).val(value);
         }
     }
-    workbench.paging.correctButtons();
+    var explore = 'explore';
+    workbench.paging.correctButtons(explore);
     var content = document.getElementById('content');
     var h1 = content.getElementsByTagName('h1')[0];
     var rvalue = resource.val();
     if (rvalue) {
         h1.appendChild(document.createTextNode(' (' + rvalue + ')'));
         removeDuplicates(rvalue);
-        var limit = workbench.paging.getLimit();
+        var limit = workbench.paging.getLimit(explore);
 
         // Modify title to reflect total_result_count cookie
         var total_result_count = workbench.paging.getTotalResultCount();
