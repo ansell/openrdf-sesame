@@ -31,15 +31,13 @@ import org.openrdf.workbench.util.WorkbenchRequest;
 
 public class ExportServlet extends TupleServlet {
 
-	private static final int LIMIT_DEFAULT = 100;
-
 	public ExportServlet() {
 		super("export.xsl", "subject", "predicate", "object", "context");
 	}
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "Accept" };
+		return new String[] { ExploreServlet.LIMIT, "Accept" };
 	}
 
 	@Override
@@ -79,9 +77,9 @@ public class ExportServlet extends TupleServlet {
 			TupleResultBuilder builder, RepositoryConnection con) 
 		throws Exception
 	{
-		int limit = LIMIT_DEFAULT;
-		if (req.getInt("limit") > 0) {
-			limit = req.getInt("limit");
+		int limit = ExploreServlet.LIMIT_DEFAULT;
+		if (req.getInt(ExploreServlet.LIMIT) > 0) {
+			limit = req.getInt(ExploreServlet.LIMIT);
 		}
 		RepositoryResult<Statement> result = con.getStatements(null, null, null, false);
 		try {

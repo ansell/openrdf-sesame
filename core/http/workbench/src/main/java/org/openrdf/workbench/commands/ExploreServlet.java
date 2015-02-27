@@ -41,7 +41,9 @@ public class ExploreServlet extends TupleServlet {
 
 	private final Logger logger = LoggerFactory.getLogger(ExploreServlet.class);
 
-	private static final String LIMIT = "limit_explore";
+	protected static final String LIMIT = "limit_explore";
+	
+	protected static final int LIMIT_DEFAULT = 100;
 
 	public ExploreServlet() {
 		super("explore.xsl", "subject", "predicate", "object", "context");
@@ -86,7 +88,7 @@ public class ExploreServlet extends TupleServlet {
 		}
 		this.cookies.addTotalResultCountCookie(req, resp, (int)count);
 		final int offset = req.getInt("offset");
-		int limit = 100;
+		int limit = LIMIT_DEFAULT;
 		if (req.isParameterPresent(LIMIT)) {
 			limit = req.getInt(LIMIT);
 			if (0 == limit) {
