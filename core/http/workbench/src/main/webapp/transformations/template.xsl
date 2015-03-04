@@ -287,7 +287,14 @@
 
 	<xsl:template name="limit-select">
 		<xsl:param name="onchange" />
-		<select id="limit" name="limit">
+        <xsl:param name="limit_id" />
+		<select>
+            <xsl:attribute name="id">
+                <xsl:value-of select="$limit_id" />
+            </xsl:attribute>
+            <xsl:attribute name="name">
+                <xsl:value-of select="$limit_id" />
+            </xsl:attribute>
 			<xsl:if test="$onchange">
 				<xsl:attribute name="onchange">
 					<xsl:value-of select="$onchange" />

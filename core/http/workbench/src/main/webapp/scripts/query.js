@@ -159,7 +159,7 @@ var workbench;
                 workbench.addParam(url, 'action');
                 workbench.addParam(url, 'queryLn');
                 workbench.addParam(url, 'query');
-                workbench.addParam(url, 'limit');
+                workbench.addParam(url, 'limit_query');
                 workbench.addParam(url, 'infer');
                 var href = url.join('');
                 var loc = document.location;

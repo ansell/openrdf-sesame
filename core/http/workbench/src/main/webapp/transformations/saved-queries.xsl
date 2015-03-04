@@ -28,7 +28,7 @@
 			<xsl:variable name="query"
 				select="normalize-space(sparql:binding[@name='query'])" />
 			<xsl:variable name="queryHREF"
-				select="concat('query?action=exec&amp;queryLn=', $queryLn, '&amp;query=', $query-url-encoded, '&amp;infer=', $infer, '&amp;limit=', $rowsPerPage)" />
+				select="concat('query?action=exec&amp;queryLn=', $queryLn, '&amp;query=', $query-url-encoded, '&amp;infer=', $infer, '&amp;limit_query=', $rowsPerPage)" />
 			<xsl:variable name="user"
 				select="normalize-space(sparql:binding[@name='user'])" />
 			<xsl:variable name="previousUser"
@@ -54,7 +54,7 @@
 								<input type="hidden" name="ref" value="id" />
 								<input type="hidden" name="owner" value="{$user}" />
 								<input type="hidden" name="infer" value="{$infer}" />
-								<input type="hidden" name="limit" value="{$rowsPerPage}" />
+								<input type="hidden" name="limit_query" value="{$rowsPerPage}" />
 								<input type="submit" value="Execute" />
 							</form>
 						</td>
@@ -84,7 +84,7 @@
 								<input type="hidden" name="ref" value="id" />
 								<input type="hidden" name="owner" value="{$user}" />
 								<input type="hidden" name="infer" value="{$infer}" />
-								<input type="hidden" name="limit" value="{$rowsPerPage}" />
+								<input type="hidden" name="limit_query" value="{$rowsPerPage}" />
 								<input type="submit" value="Edit" />
 							</form>
 						</td>

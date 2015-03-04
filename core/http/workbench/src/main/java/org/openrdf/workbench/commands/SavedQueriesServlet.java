@@ -45,7 +45,7 @@ public class SavedQueriesServlet extends TransformationServlet {
 
 	@Override
 	public String[] getCookieNames() {
-		return new String[] { "limit", "queryLn", "infer", "total_result_count" };
+		return new String[] { QueryServlet.LIMIT, "queryLn", "infer", "total_result_count" };
 	}
 
 	@Override
