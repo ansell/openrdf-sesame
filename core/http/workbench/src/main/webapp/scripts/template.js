@@ -28,8 +28,7 @@ var workbench;
     /**
     * Retrieves the value of the cookie with the given name.
     *
-    * @param {String}
-    *            name The name of the cookie to retrieve.
+    * @param {String} name The name of the cookie to retrieve.
     * @returns {String} The value of the given cookie, or an empty string if it
     *          doesn't exist.
     */

@@ -45,8 +45,6 @@ import org.openrdf.query.resultio.TupleQueryResultParserBase;
  */
 public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implements TupleQueryResultParser {
 
-	private List<String> bindingNames;
-
 	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {
 		return TupleQueryResultFormat.CSV;
@@ -57,6 +55,9 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		CSVReader reader = new CSVReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+
+		List<String> bindingNames = null;
+
 		String[] nextLine;
 
 		try {
@@ -122,10 +123,13 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 					}
 				}
 			}
+
+			if (bindingNames != null && handler != null) {
+				handler.endQueryResult();
+			}
 		}
 		finally {
 			reader.close();
 		}
 	}
-
 }

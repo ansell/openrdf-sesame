@@ -98,24 +98,25 @@ var workbench;
         * Invoked in tuple.xsl and explore.xsl. Changes the limit query parameter,
         * and navigates to the new URL.
         */
-        function addLimit() {
-            addPagingParam(paging.LIMIT, $(paging.LIM_ID).val());
+        function addLimit(page) {
+            var suffix = '_' + page;
+            addPagingParam(paging.LIMIT + suffix, $(paging.LIM_ID + suffix).val());
         }
         paging.addLimit = addLimit;
 
         /**
         * Increments the offset query parameter, and navigates to the new URL.
         */
-        function nextOffset() {
-            addPagingParam(OFFSET, getOffset() + getLimit());
+        function nextOffset(page) {
+            addPagingParam(OFFSET, getOffset() + getLimit(page));
         }
         paging.nextOffset = nextOffset;
 
         /**
         * Decrements the offset query parameter, and navigates to the new URL.
         */
-        function previousOffset() {
-            addPagingParam(OFFSET, Math.max(0, getOffset() - getLimit()));
+        function previousOffset(page) {
+            addPagingParam(OFFSET, Math.max(0, getOffset() - getLimit(page)));
         }
         paging.previousOffset = previousOffset;
 
@@ -131,8 +132,8 @@ var workbench;
         /**
         * @returns {number} The value of the limit query parameter.
         */
-        function getLimit() {
-            return parseInt($(paging.LIM_ID).val(), 10);
+        function getLimit(page) {
+            return parseInt($(paging.LIM_ID + '_' + page).val(), 10);
         }
         paging.getLimit = getLimit;
 
@@ -206,12 +207,12 @@ var workbench;
         * Next and Previous buttons. Makes use of RegExp to preserve any
         * localization.
         */
-        function correctButtons() {
+        function correctButtons(page) {
             var buttonWordPattern = /^[A-z]+\s+/;
             var nextButton = $('#nextX');
             var oldNext = nextButton.val();
             var count = parseInt(/\d+$/.exec(oldNext)[0], 10);
-            var limit = workbench.paging.getLimit();
+            var limit = workbench.paging.getLimit(page);
             nextButton.val(buttonWordPattern.exec(oldNext)[0] + limit);
             var previousButton = $('#previousX');
             previousButton.val(buttonWordPattern.exec(previousButton.val())[0] + limit);
