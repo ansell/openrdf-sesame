@@ -282,15 +282,28 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * statements, all these statements should have the same subject. A
 	 * {@link ModelException} is thrown if this is not the case.
 	 * 
-	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The subject of the matched statement(s), or
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
 	 * @since 2.8.0
 	 */
-	public Resource subjectResource()
-		throws ModelException;
+	public default Optional<Resource> subjectResource()
+		throws ModelException
+	{
+		Set<Resource> result = stream().map(st -> st.getSubject()).distinct().limit(2).collect(
+				Collectors.toSet());
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		else if (result.size() > 1) {
+			throw new ModelException("Did not find a unique subject resource");
+		}
+		else {
+			return Optional.of(result.iterator().next());
+		}
+	}
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
@@ -303,8 +316,22 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         its return value is not a URI.
 	 * @since 2.8.0
 	 */
-	public URI subjectURI()
-		throws ModelException;
+	public default Optional<URI> subjectURI()
+		throws ModelException
+	{
+		Optional<Resource> subjectResource = subjectResource();
+		if (subjectResource.isPresent()) {
+			if (subjectResource.get() instanceof URI) {
+				return Optional.of((URI)subjectResource.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique subject URI");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
@@ -317,8 +344,22 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         its return value is not a BNode.
 	 * @since 2.8.0
 	 */
-	public BNode subjectBNode()
-		throws ModelException;
+	public default Optional<BNode> subjectBNode()
+		throws ModelException
+	{
+		Optional<Resource> subjectResource = subjectResource();
+		if (subjectResource.isPresent()) {
+			if (subjectResource.get() instanceof BNode) {
+				return Optional.of((BNode)subjectResource.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique subject URI");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Returns a {@link Set} view of the predicates contained in this model. The
