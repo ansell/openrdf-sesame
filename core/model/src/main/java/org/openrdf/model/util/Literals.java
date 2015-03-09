@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -615,11 +616,7 @@ public class Literals {
 	 * @since 2.8.0
 	 */
 	public static boolean isLanguageLiteral(Literal literal) {
-		if (literal == null) {
-			throw new NullPointerException("Literal cannot be null");
-		}
-
-		return literal.getLanguage() != null;
+		return Objects.requireNonNull(literal, "Literal cannot be null").getLanguage().isPresent();
 	}
 
 	protected Literals() {
