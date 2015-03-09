@@ -373,8 +373,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars, bindings,
-					baseUri);
+			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars,
+					bindings, baseUri);
 
 			if (service.isSilent())
 				return new SilentIteration(result);
@@ -1191,13 +1191,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
-
-			String langTag = literal.getLanguage();
-			if (langTag == null) {
-				langTag = "";
-			}
-
-			return tripleSource.getValueFactory().createLiteral(langTag);
+			return tripleSource.getValueFactory().createLiteral(literal.getLanguage().orElse(""));
 		}
 
 		throw new ValueExprEvaluationException();
@@ -1215,7 +1209,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				// literal with datatype
 				return literal.getDatatype();
 			}
-			else if (literal.getLanguage() != null) {
+			else if (literal.getLanguage().isPresent()) {
 				return RDF.LANGSTRING;
 			}
 			else {

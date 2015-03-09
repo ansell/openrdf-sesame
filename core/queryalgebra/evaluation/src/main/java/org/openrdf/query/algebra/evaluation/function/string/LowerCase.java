@@ -16,6 +16,8 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
+import java.util.Optional;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -53,10 +55,10 @@ public class LowerCase implements Function {
 			if (QueryEvaluationUtil.isStringLiteral(literal))
 			{
 				String lexicalValue = literal.getLabel().toLowerCase();
-				String language = literal.getLanguage();
+				Optional<String> language = literal.getLanguage();
 
-				if (language != null) {
-					return valueFactory.createLiteral(lexicalValue, language);
+				if (language.isPresent()) {
+					return valueFactory.createLiteral(lexicalValue, language.get());
 				}
 				else if (XMLSchema.STRING.equals(literal.getDatatype())) {
 					return valueFactory.createLiteral(lexicalValue, XMLSchema.STRING);
