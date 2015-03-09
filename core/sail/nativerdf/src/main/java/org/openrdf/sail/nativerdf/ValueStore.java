@@ -498,7 +498,7 @@ public class ValueStore extends ValueFactoryBase {
 		byte[] langData = null;
 		int langDataLength = 0;
 		if (Literals.isLanguageLiteral(literal)) {
-			langData = literal.getLanguage().getBytes("UTF-8");
+			langData = literal.getLanguage().get().getBytes("UTF-8");
 			langDataLength = langData.length;
 		}
 
@@ -740,7 +740,7 @@ public class ValueStore extends ValueFactoryBase {
 		}
 
 		if (Literals.isLanguageLiteral(l)) {
-			return new NativeLiteral(revision, l.getLabel(), l.getLanguage());
+			return new NativeLiteral(revision, l.getLabel(), l.getLanguage().get());
 		}
 		else {
 			NativeURI datatype = getNativeURI(l.getDatatype());
