@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -102,14 +103,13 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	}
 
 	@Override
-	public Namespace getNamespace(String prefix) {
+	public Optional<Namespace> getNamespace(String prefix) {
 		for (Namespace nextNamespace : namespaces) {
 			if (prefix.equals(nextNamespace.getPrefix())) {
-				return nextNamespace;
+				return Optional.of(nextNamespace);
 			}
 		}
-
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
@@ -118,28 +118,28 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	}
 
 	@Override
-	public Namespace setNamespace(String prefix, String name) {
-		Namespace result = getNamespace(prefix);
-		if (result == null || !result.getName().equals(name)) {
-			result = new NamespaceImpl(prefix, name);
-			namespaces.add(result);
+	public Optional<Namespace> setNamespace(String prefix, String name) {
+		Optional<Namespace> result = getNamespace(prefix);
+		if (!result.isPresent() || !result.get().getName().equals(name)) {
+			result = Optional.of(new NamespaceImpl(prefix, name));
+			namespaces.add(result.get());
 		}
 		return result;
 	}
 
 	@Override
 	public void setNamespace(Namespace namespace) {
-		Namespace existing = getNamespace(namespace.getPrefix());
-		if (existing == null || !existing.getName().equals(namespace.getName())) {
+		Optional<Namespace> existing = getNamespace(namespace.getPrefix());
+		if (!existing.isPresent() || !existing.get().getName().equals(namespace.getName())) {
 			namespaces.add(namespace);
 		}
 	}
 
 	@Override
-	public Namespace removeNamespace(String prefix) {
-		Namespace result = getNamespace(prefix);
-		if (result != null) {
-			namespaces.remove(result);
+	public Optional<Namespace> removeNamespace(String prefix) {
+		Optional<Namespace> result = getNamespace(prefix);
+		if (result.isPresent()) {
+			namespaces.remove(result.get());
 		}
 		return result;
 	}
@@ -758,7 +758,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			this.hiInclusive = hiInclusive;
 		}
 
-		public Namespace getNamespace(String prefix) {
+		public Optional<Namespace> getNamespace(String prefix) {
 			return model.getNamespace(prefix);
 		}
 
@@ -766,7 +766,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return model.getNamespaces();
 		}
 
-		public Namespace setNamespace(String prefix, String name) {
+		public Optional<Namespace> setNamespace(String prefix, String name) {
 			return model.setNamespace(prefix, name);
 		}
 
@@ -774,7 +774,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			model.setNamespace(namespace);
 		}
 
-		public Namespace removeNamespace(String prefix) {
+		public Optional<Namespace> removeNamespace(String prefix) {
 			return model.removeNamespace(prefix);
 		}
 

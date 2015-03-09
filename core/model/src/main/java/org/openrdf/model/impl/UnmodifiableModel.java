@@ -18,6 +18,7 @@ package org.openrdf.model.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.Model;
@@ -46,12 +47,12 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public Namespace getNamespace(String prefix) {
+	public Optional<Namespace> getNamespace(String prefix) {
 		return model.getNamespace(prefix);
 	}
 
 	@Override
-	public Namespace setNamespace(String prefix, String name) {
+	public Optional<Namespace> setNamespace(String prefix, String name) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -61,7 +62,7 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public Namespace removeNamespace(String prefix) {
+	public Optional<Namespace> removeNamespace(String prefix) {
 		throw new UnsupportedOperationException();
 	}
 

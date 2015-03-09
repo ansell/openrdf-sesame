@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.Model;
@@ -113,14 +114,13 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public Namespace getNamespace(String prefix) {
+	public Optional<Namespace> getNamespace(String prefix) {
 		for (Namespace nextNamespace : namespaces) {
 			if (prefix.equals(nextNamespace.getPrefix())) {
-				return nextNamespace;
+				return Optional.of(nextNamespace);
 			}
 		}
-
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
@@ -129,28 +129,28 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public Namespace setNamespace(String prefix, String name) {
-		Namespace result = getNamespace(prefix);
-		if (result == null || !result.getName().equals(name)) {
-			result = new NamespaceImpl(prefix, name);
-			namespaces.add(result);
+	public Optional<Namespace> setNamespace(String prefix, String name) {
+		Optional<Namespace> result = getNamespace(prefix);
+		if (!result.isPresent() || !result.get().getName().equals(name)) {
+			result = Optional.of(new NamespaceImpl(prefix, name));
+			namespaces.add(result.get());
 		}
 		return result;
 	}
 
 	@Override
 	public void setNamespace(Namespace namespace) {
-		Namespace existing = getNamespace(namespace.getPrefix());
-		if (existing == null || !existing.getName().equals(namespace.getName())) {
+		Optional<Namespace> existing = getNamespace(namespace.getPrefix());
+		if (!existing.isPresent() || !existing.get().getName().equals(namespace.getName())) {
 			namespaces.add(namespace);
 		}
 	}
 
 	@Override
-	public Namespace removeNamespace(String prefix) {
-		Namespace result = getNamespace(prefix);
-		if (result != null) {
-			namespaces.remove(result);
+	public Optional<Namespace> removeNamespace(String prefix) {
+		Optional<Namespace> result = getNamespace(prefix);
+		if (result.isPresent()) {
+			namespaces.remove(result.get());
 		}
 		return result;
 	}

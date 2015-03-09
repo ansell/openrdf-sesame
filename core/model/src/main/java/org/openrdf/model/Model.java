@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.util.ModelException;
 
 /**
@@ -63,9 +64,11 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @param prefix
 	 *        A namespace prefix.
 	 * @return The namespace name that is associated with the specified prefix,
-	 *         or <tt>null</tt> if there is no such namespace.
+	 *         or {@link Optional#empty()} if there is no such namespace.
 	 */
-	public Namespace getNamespace(String prefix);
+	public default Optional<Namespace> getNamespace(String prefix) {
+		return getNamespaces().stream().filter(t -> t.getPrefix().equals(prefix)).findAny();
+	}
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -76,7 +79,14 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        The namespace name that the prefix maps to.
 	 * @return The {@link Namespace} object for the given namespace.
 	 */
-	public Namespace setNamespace(String prefix, String name);
+	public default Optional<Namespace> setNamespace(String prefix, String name) {
+		Optional<Namespace> result = getNamespace(prefix);
+		if (!result.isPresent() || !result.get().getName().equals(name)) {
+			result = Optional.of(new NamespaceImpl(prefix, name));
+			setNamespace(result.get());
+		}
+		return result;
+	}
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -93,9 +103,10 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @param prefix
 	 *        The namespace prefix of which the assocation with a namespace name
 	 *        is to be removed.
-	 * @return the previous namespace bound to the prefix or null
+	 * @return the previous namespace bound to the prefix or
+	 *         {@link Optional#empty()}
 	 */
-	public Namespace removeNamespace(String prefix);
+	public Optional<Namespace> removeNamespace(String prefix);
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object and

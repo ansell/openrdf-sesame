@@ -360,7 +360,7 @@ public abstract class RDFWriterTest {
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
 			assertTrue("Expected at least one namespace, found" + model.getNamespaces().size(),
 					model.getNamespaces().size() >= 1);
-			assertEquals(exNs, model.getNamespace("ex").getName());
+			assertEquals(exNs, model.getNamespace("ex").get().getName());
 		}
 
 		// Test for four unique statements for blank nodes in subject position
@@ -654,7 +654,7 @@ public abstract class RDFWriterTest {
 				if (rdfParser.getRDFFormat().supportsNamespaces()) {
 					assertTrue("Expected at least 5 namespaces, found " + parsedModel.getNamespaces().size(),
 							parsedModel.getNamespaces().size() >= 5);
-					assertEquals(exNs, parsedModel.getNamespace("ex").getName());
+					assertEquals(exNs, parsedModel.getNamespace("ex").get().getName());
 				}
 			}
 		}
