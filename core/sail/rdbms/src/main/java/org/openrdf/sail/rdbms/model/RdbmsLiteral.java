@@ -18,6 +18,7 @@ package org.openrdf.sail.rdbms.model;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -78,7 +79,7 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 		return lit.getLabel();
 	}
 
-	public String getLanguage() {
+	public Optional<String> getLanguage() {
 		return lit.getLanguage();
 	}
 
