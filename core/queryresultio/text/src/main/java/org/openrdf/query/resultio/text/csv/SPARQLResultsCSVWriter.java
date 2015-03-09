@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -185,7 +186,7 @@ public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements Tup
 	{
 		String label = literal.getLabel();
 		URI datatype = literal.getDatatype();
-		String language = literal.getLanguage();
+		Optional<String> language = literal.getLanguage();
 
 		boolean quoted = false;
 
