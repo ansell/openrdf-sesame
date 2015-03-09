@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -434,9 +435,9 @@ public class Literals {
 		Locale result = fallback;
 
 		try {
-			String lang = l.getLanguage();
-			if (lang != null) {
-				LanguageTag tag = new LanguageTag(lang);
+			Optional<String> lang = l.getLanguage();
+			if (lang.isPresent()) {
+				LanguageTag tag = new LanguageTag(lang.get());
 				result = tag.toLocale();
 			}
 		}

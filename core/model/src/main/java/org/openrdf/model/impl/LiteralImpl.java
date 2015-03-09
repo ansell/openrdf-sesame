@@ -18,6 +18,7 @@ package org.openrdf.model.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -52,9 +53,9 @@ public class LiteralImpl implements Literal {
 	private String label;
 
 	/**
-	 * The literal's language tag (null if not applicable).
+	 * The literal's language tag (Optional.empty() if not applicable).
 	 */
-	private String language;
+	private Optional<String> language;
 
 	/**
 	 * The literal's datatype.
@@ -84,7 +85,7 @@ public class LiteralImpl implements Literal {
 	 * @param label
 	 *        The label for the literal, must not be <tt>null</tt>.
 	 * @param language
-	 *        The language tag for the literal.
+	 *        The language tag for the literal, must not be <tt>null</tt>.
 	 */
 	public LiteralImpl(String label, String language) {
 		this(label, language, RDF.LANGSTRING);
@@ -136,11 +137,11 @@ public class LiteralImpl implements Literal {
 	}
 
 	protected void setLanguage(String language) {
-		this.language = language;
+		this.language = Optional.of(language);
 		setDatatype(RDF.LANGSTRING);
 	}
 
-	public String getLanguage() {
+	public Optional<String> getLanguage() {
 		return language;
 	}
 
