@@ -43,6 +43,7 @@ public final class Repositories {
 		RepositoryConnection conn = repository.getConnection();
 
 		try {
+			conn.begin();
 			processFunction.accept(conn);
 			conn.commit();
 		}
