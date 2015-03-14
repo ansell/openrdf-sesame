@@ -72,17 +72,40 @@ public final class Repositories {
 	 *        The {@link Repository} to open a connection to.
 	 * @param processFunction
 	 *        A {@link Consumer} that performs an action on the connection.
+	 * @param exceptionHandler
+	 *        A {@link Consumer} that handles an exception if one was generated.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
 	 * @since 4.0
 	 */
-	public static void commitOrRollbackSilent(Repository repository,
-			Consumer<RepositoryConnection> processFunction)
+	public static void commitOrRollback(Repository repository, Consumer<RepositoryConnection> processFunction,
+			Consumer<RepositoryException> exceptionHandler)
 	{
 		try {
 			commitOrRollback(repository, processFunction);
 		}
 		catch (RepositoryException e) {
-			// Silent pattern, so no rethrowing
+			exceptionHandler.accept(e);
 		}
+	}
+
+	/**
+	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
+	 * connection to the given {@link Consumer}, before either rolling back the
+	 * transaction if it failed, or committing the transaction if it was
+	 * successful.
+	 * 
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param processFunction
+	 *        A {@link Consumer} that performs an action on the connection.
+	 * @since 4.0
+	 */
+	public static void commitOrRollbackSilent(Repository repository,
+			Consumer<RepositoryConnection> processFunction)
+	{
+		commitOrRollback(repository, processFunction, e -> {
+		});
 	}
 
 	/**
