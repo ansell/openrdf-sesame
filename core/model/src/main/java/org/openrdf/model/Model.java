@@ -17,8 +17,12 @@
 package org.openrdf.model;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.util.ModelException;
 
 /**
@@ -60,9 +64,11 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @param prefix
 	 *        A namespace prefix.
 	 * @return The namespace name that is associated with the specified prefix,
-	 *         or <tt>null</tt> if there is no such namespace.
+	 *         or {@link Optional#empty()} if there is no such namespace.
 	 */
-	public Namespace getNamespace(String prefix);
+	public default Optional<Namespace> getNamespace(String prefix) {
+		return getNamespaces().stream().filter(t -> t.getPrefix().equals(prefix)).findAny();
+	}
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -73,7 +79,14 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        The namespace name that the prefix maps to.
 	 * @return The {@link Namespace} object for the given namespace.
 	 */
-	public Namespace setNamespace(String prefix, String name);
+	public default Optional<Namespace> setNamespace(String prefix, String name) {
+		Optional<Namespace> result = getNamespace(prefix);
+		if (!result.isPresent() || !result.get().getName().equals(name)) {
+			result = Optional.of(new NamespaceImpl(prefix, name));
+			setNamespace(result.get());
+		}
+		return result;
+	}
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -90,9 +103,10 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @param prefix
 	 *        The namespace prefix of which the assocation with a namespace name
 	 *        is to be removed.
-	 * @return the previous namespace bound to the prefix or null
+	 * @return the previous namespace bound to the prefix or
+	 *         {@link Optional#empty()}
 	 */
-	public Namespace removeNamespace(String prefix);
+	public Optional<Namespace> removeNamespace(String prefix);
 
 	/**
 	 * Determines if statements with the specified subject, predicate, object and
@@ -269,22 +283,38 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the subjects contained in this model
 	 */
-	public Set<Resource> subjects();
+	public default Set<Resource> subjects() {
+		Set<Resource> subjects = stream().map(st -> st.getSubject()).collect(Collectors.toSet());
+		return subjects;
+	};
 
 	/**
 	 * Gets the subject of the statement(s). If the model contains one or more
 	 * statements, all these statements should have the same subject. A
 	 * {@link ModelException} is thrown if this is not the case.
 	 * 
-	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The subject of the matched statement(s), or
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
 	 * @since 2.8.0
 	 */
-	public Resource subjectResource()
-		throws ModelException;
+	public default Optional<Resource> subjectResource()
+		throws ModelException
+	{
+		Set<Resource> result = stream().map(st -> st.getSubject()).distinct().limit(2).collect(
+				Collectors.toSet());
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		else if (result.size() > 1) {
+			throw new ModelException("Did not find a unique subject resource");
+		}
+		else {
+			return Optional.of(result.iterator().next());
+		}
+	}
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
@@ -297,8 +327,22 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         its return value is not a URI.
 	 * @since 2.8.0
 	 */
-	public URI subjectURI()
-		throws ModelException;
+	public default Optional<URI> subjectURI()
+		throws ModelException
+	{
+		Optional<Resource> subjectResource = subjectResource();
+		if (subjectResource.isPresent()) {
+			if (subjectResource.get() instanceof URI) {
+				return Optional.of((URI)subjectResource.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique subject URI");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
@@ -311,8 +355,22 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         its return value is not a BNode.
 	 * @since 2.8.0
 	 */
-	public BNode subjectBNode()
-		throws ModelException;
+	public default Optional<BNode> subjectBNode()
+		throws ModelException
+	{
+		Optional<Resource> subjectResource = subjectResource();
+		if (subjectResource.isPresent()) {
+			if (subjectResource.get() instanceof BNode) {
+				return Optional.of((BNode)subjectResource.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique subject URI");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Returns a {@link Set} view of the predicates contained in this model. The
@@ -328,7 +386,10 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the predicates contained in this model
 	 */
-	public Set<URI> predicates();
+	public default Set<URI> predicates() {
+		Set<URI> predicates = stream().map(st -> st.getPredicate()).collect(Collectors.toSet());
+		return predicates;
+	};
 
 	/**
 	 * Returns a {@link Set} view of the objects contained in this model. The set
@@ -344,7 +405,10 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the objects contained in this model
 	 */
-	public Set<Value> objects();
+	public default Set<Value> objects() {
+		Set<Value> objects = stream().map(st -> st.getObject()).collect(Collectors.toSet());
+		return objects;
+	}
 
 	/**
 	 * Returns a {@link Set} view of the contexts contained in this model. The
@@ -360,70 +424,217 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the contexts contained in this model
 	 */
-	public Set<Resource> contexts();
+	public default Set<Resource> contexts() {
+		Set<Resource> subjects = stream().map(st -> st.getContext()).collect(Collectors.toSet());
+		return subjects;
+	};
 
 	/**
 	 * Gets the object of the statement(s). If the model contains one or more
 	 * statements, all these statements should have the same object. A
 	 * {@link ModelException} is thrown if this is not the case.
 	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The object of the matched statement(s), or
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
 	 */
-	public Value objectValue()
-		throws ModelException;
+	public default Optional<Value> objectValue()
+		throws ModelException
+	{
+		Set<Value> result = stream().map(st -> st.getObject()).distinct().limit(2).collect(Collectors.toSet());
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		else if (result.size() > 1) {
+			throw new ModelException("Did not find a unique object value");
+		}
+		else {
+			return Optional.of(result.iterator().next());
+		}
+	};
 
 	/**
 	 * Utility method that casts the return value of {@link #objectValue()} to a
 	 * Literal, or throws a ModelUtilException if that value is not a Literal.
 	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The object of the matched statement(s), or
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a Literal.
 	 */
-	public Literal objectLiteral()
-		throws ModelException;
+	public default Optional<Literal> objectLiteral()
+		throws ModelException
+	{
+		Optional<Value> objectValue = objectValue();
+		if (objectValue.isPresent()) {
+			if (objectValue.get() instanceof Literal) {
+				return Optional.of((Literal)objectValue.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique object literal");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Utility method that casts the return value of {@link #objectValue()} to a
 	 * Resource, or throws a ModelUtilException if that value is not a Resource.
 	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The object of the matched statement(s), or
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a Resource.
 	 */
-	public Resource objectResource()
-		throws ModelException;
+	public default Optional<Resource> objectResource()
+		throws ModelException
+	{
+		Optional<Value> objectValue = objectValue();
+		if (objectValue.isPresent()) {
+			if (objectValue.get() instanceof Resource) {
+				return Optional.of((Resource)objectValue.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique object resource");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Utility method that casts the return value of {@link #objectValue()} to a
 	 * URI, or throws a ModelUtilException if that value is not a URI.
 	 * 
-	 * @return The object of the matched statement(s), or <tt>null</tt> if no
-	 *         matching statements were found.
+	 * @return The object of the matched statement(s), or
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a URI.
 	 */
-	public URI objectURI()
-		throws ModelException;
+	public default Optional<URI> objectURI()
+		throws ModelException
+	{
+		Optional<Value> objectValue = objectValue();
+		if (objectValue.isPresent()) {
+			if (objectValue.get() instanceof URI) {
+				return Optional.of((URI)objectValue.get());
+			}
+			else {
+				throw new ModelException("Did not find a unique object URI");
+			}
+		}
+		else {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Utility method that returns the string value of {@link #objectValue()}.
 	 * 
 	 * @return The object string value of the matched statement(s), or
-	 *         <tt>null</tt> if no matching statements were found.
+	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
 	 */
-	public String objectString()
-		throws ModelException;
+	public default Optional<String> objectString()
+		throws ModelException
+	{
+		Optional<Value> objectValue = objectValue();
+		if (objectValue.isPresent()) {
+			return Optional.of(objectValue.get().toString());
+		}
+		else {
+			return Optional.empty();
+		}
+	}
+
+	/**
+	 * Utility method that finds a single literal object in the model and returns
+	 * it if it exists. If multiple literal objects exist in the model it throws
+	 * a ModelException.
+	 * 
+	 * @return A unique literal appearing as the object of the matched
+	 *         statement(s), or {@link Optional#empty()} if no matching
+	 *         statements were found.
+	 * @throws ModelException
+	 *         If there is more than one unique object literal in the model.
+	 */
+	public default Optional<Literal> anObjectLiteral()
+		throws ModelException
+	{
+		Set<Literal> result = stream().filter(st -> st.getObject() instanceof Literal).map(
+				st -> (Literal)st.getObject()).distinct().limit(2).collect(Collectors.toSet());
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		else if (result.size() > 1) {
+			throw new ModelException("Did not find a unique object literal");
+		}
+		else {
+			return Optional.of(result.iterator().next());
+		}
+	}
+
+	/**
+	 * Utility method that finds a single resource object, including both URI and
+	 * BNodes, in the model and returns it if it exists. If multiple resource
+	 * objects exist in the model it throws a ModelException.
+	 * 
+	 * @return A unique resource appearing as an object of the matched
+	 *         statement(s), or {@link Optional#empty()} if no matching
+	 *         statements were found.
+	 * @throws ModelException
+	 *         If there is more than one unique object resource in the model.
+	 */
+	public default Optional<Resource> anObjectResource()
+		throws ModelException
+	{
+		Set<Resource> result = stream().filter(st -> st.getObject() instanceof Resource).map(
+				st -> (Resource)st.getObject()).distinct().limit(2).collect(Collectors.toSet());
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		else if (result.size() > 1) {
+			throw new ModelException("Did not find a unique object resource");
+		}
+		else {
+			return Optional.of(result.iterator().next());
+		}
+	}
+
+	/**
+	 * Utility method that finds a single URI object in the model and returns it
+	 * if it exists. If multiple URI objects exist in the model it throws a
+	 * ModelException.
+	 * 
+	 * @return A unique URI appearing as an object of the matched statement(s),
+	 *         or {@link Optional#empty()} if no matching statements were found.
+	 * @throws ModelException
+	 *         If there is more than one unique object URI in the model.
+	 */
+	public default Optional<URI> anObjectURI()
+		throws ModelException
+	{
+		Set<URI> result = stream().filter(st -> st.getObject() instanceof URI).map(st -> (URI)st.getObject()).distinct().limit(
+				2).collect(Collectors.toSet());
+
+		if (result.isEmpty()) {
+			return Optional.empty();
+		}
+		else if (result.size() > 1) {
+			throw new ModelException("Did not find a unique object URI");
+		}
+		else {
+			return Optional.of(result.iterator().next());
+		}
+	}
 }

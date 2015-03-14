@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.BNode;
@@ -39,8 +40,8 @@ import org.openrdf.model.util.Models;
 /**
  * Provides basic operations that are common to all Models.
  */
-public abstract class AbstractModel extends AbstractSet<Statement> implements
-		Model {
+public abstract class AbstractModel extends AbstractSet<Statement> implements Model {
+
 	private static final long serialVersionUID = 4254119331281455614L;
 
 	public Model unmodifiable() {
@@ -49,8 +50,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 
 	@Override
 	public boolean add(Statement st) {
-		return add(st.getSubject(), st.getPredicate(), st.getObject(),
-				st.getContext());
+		return add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 	}
 
 	@Override
@@ -63,10 +63,11 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		Iterator<?> e = c.iterator();
 		try {
 			while (e.hasNext())
-			    if (!contains(e.next()))
-			        return false;
+				if (!contains(e.next()))
+					return false;
 			return true;
-		} finally {
+		}
+		finally {
 			closeIterator(c, e);
 		}
 	}
@@ -77,21 +78,24 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		if (size() > c.size()) {
 			Iterator<?> i = c.iterator();
 			try {
-			    while (i.hasNext())
-			        modified |= remove(i.next());
-			} finally {
+				while (i.hasNext())
+					modified |= remove(i.next());
+			}
+			finally {
 				closeIterator(c, i);
 			}
-		} else {
+		}
+		else {
 			Iterator<?> i = iterator();
 			try {
-			    while (i.hasNext()) {
-			        if (c.contains(i.next())) {
-			            i.remove();
-			            modified = true;
-			        }
-			    }
-			} finally {
+				while (i.hasNext()) {
+					if (c.contains(i.next())) {
+						i.remove();
+						modified = true;
+					}
+				}
+			}
+			finally {
 				closeIterator(i);
 			}
 		}
@@ -108,7 +112,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				r.add(it.next());
 			}
 			return r.toArray();
-		} finally {
+		}
+		finally {
 			closeIterator(it);
 		}
 	}
@@ -123,7 +128,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				r.add(it.next());
 			}
 			return r.toArray(a);
-		} finally {
+		}
+		finally {
 			closeIterator(it);
 		}
 	}
@@ -134,11 +140,12 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		try {
 			boolean modified = false;
 			while (e.hasNext()) {
-			    if (add(e.next()))
-			        modified = true;
+				if (add(e.next()))
+					modified = true;
 			}
 			return modified;
-		} finally {
+		}
+		finally {
 			closeIterator(c, e);
 		}
 	}
@@ -149,13 +156,14 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		try {
 			boolean modified = false;
 			while (e.hasNext()) {
-			    if (!c.contains(e.next())) {
-			        e.remove();
-			        modified = true;
-			    }
+				if (!c.contains(e.next())) {
+					e.remove();
+					modified = true;
+				}
 			}
 			return modified;
-		} finally {
+		}
+		finally {
 			closeIterator(e);
 		}
 	}
@@ -173,9 +181,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	@Override
 	public boolean remove(Object o) {
 		if (o instanceof Statement) {
-			Statement st = (Statement) o;
-			return remove(st.getSubject(), st.getPredicate(), st.getObject(),
-					st.getContext());
+			Statement st = (Statement)o;
+			return remove(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 		}
 		return false;
 	}
@@ -183,15 +190,16 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	@Override
 	public boolean contains(Object o) {
 		if (o instanceof Statement) {
-			Statement st = (Statement) o;
-			return contains(st.getSubject(), st.getPredicate(), st.getObject(),
-					st.getContext());
+			Statement st = (Statement)o;
+			return contains(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 		}
 		return false;
 	}
 
 	@Override
-	public Value objectValue() throws ModelException {
+	public Optional<Value> objectValue()
+		throws ModelException
+	{
 		Iterator<Value> iter = objects().iterator();
 		try {
 			if (iter.hasNext()) {
@@ -199,57 +207,72 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				if (iter.hasNext()) {
 					throw new ModelException(obj, iter.next());
 				}
-				return obj;
+				return Optional.of(obj);
 			}
-			return null;
-		} finally {
+			return Optional.empty();
+		}
+		finally {
 			closeIterator(iter);
 		}
 	}
 
 	@Override
-	public Literal objectLiteral() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
+	public Optional<Literal> objectLiteral()
+		throws ModelException
+	{
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			if (obj.get() instanceof Literal) {
+				return Optional.of((Literal)obj.get());
+			}
+			else {
+				throw new ModelException(obj.get());
+			}
 		}
-		if (obj instanceof Literal) {
-			return (Literal) obj;
-		}
-		throw new ModelException(obj);
+		return Optional.empty();
 	}
 
 	@Override
-	public Resource objectResource() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
+	public Optional<Resource> objectResource()
+		throws ModelException
+	{
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			if (obj.get() instanceof Resource) {
+				return Optional.of((Resource)obj.get());
+			}
+			else {
+				throw new ModelException(obj.get());
+			}
 		}
-		if (obj instanceof Resource) {
-			return (Resource) obj;
-		}
-		throw new ModelException(obj);
+		return Optional.empty();
 	}
 
 	@Override
-	public URI objectURI() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
+	public Optional<URI> objectURI()
+		throws ModelException
+	{
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			if (obj.get() instanceof URI) {
+				return Optional.of((URI)obj.get());
+			}
+			else {
+				throw new ModelException(obj.get());
+			}
 		}
-		if (obj instanceof URI) {
-			return (URI) obj;
-		}
-		throw new ModelException(obj);
+		return Optional.empty();
 	}
 
 	@Override
-	public String objectString() throws ModelException {
-		Value obj = objectValue();
-		if (obj == null) {
-			return null;
+	public Optional<String> objectString()
+		throws ModelException
+	{
+		Optional<Value> obj = objectValue();
+		if (obj.isPresent()) {
+			return Optional.of(obj.get().stringValue());
 		}
-		return obj.stringValue();
+		return Optional.empty();
 	}
 
 	@Override
@@ -263,7 +286,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			return true;
 		}
 		if (o instanceof Model) {
-			Model model = (Model) o;
+			Model model = (Model)o;
 			return Models.isomorphic(this, model);
 		}
 		return false;
@@ -276,8 +299,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof Resource) {
-					return AbstractModel.this
-							.contains((Resource) o, null, null);
+					return AbstractModel.this.contains((Resource)o, null, null);
 				}
 				return false;
 			}
@@ -285,7 +307,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Resource) {
-					return AbstractModel.this.remove((Resource) o, null, null);
+					return AbstractModel.this.remove((Resource)o, null, null);
 				}
 				return false;
 			}
@@ -301,15 +323,16 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			}
 
 			@Override
-			protected void removeIteration(Iterator<Statement> iter,
-					Resource subj) {
+			protected void removeIteration(Iterator<Statement> iter, Resource subj) {
 				AbstractModel.this.removeTermIteration(iter, subj, null, null);
 			}
 		};
 	}
 
 	@Override
-	public Resource subjectResource() throws ModelException {
+	public Optional<Resource> subjectResource()
+		throws ModelException
+	{
 		Iterator<Resource> iter = subjects().iterator();
 		try {
 			if (iter.hasNext()) {
@@ -317,39 +340,43 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 				if (iter.hasNext()) {
 					throw new ModelException(subj, iter.next());
 				}
-				return subj;
+				return Optional.of(subj);
 			}
-			return null;
-		} finally {
+			return Optional.empty();
+		}
+		finally {
 			closeIterator(iter);
 		}
 	}
-	
+
 	@Override
-	public URI subjectURI() throws ModelException {
-		Resource subj = subjectResource();
-		if (subj == null) {
-			return null;
+	public Optional<URI> subjectURI()
+		throws ModelException
+	{
+		Optional<Resource> subj = subjectResource();
+		if (!subj.isPresent()) {
+			return Optional.empty();
 		}
-		if (subj instanceof URI) {
-			return (URI) subj;
+		if (subj.get() instanceof URI) {
+			return Optional.of((URI)subj.get());
 		}
-		throw new ModelException(subj);
+		throw new ModelException(subj.get());
 	}
-	
+
 	@Override
-	public BNode subjectBNode() throws ModelException {
-		Resource subj = subjectResource();
-		if (subj == null) {
-			return null;
+	public Optional<BNode> subjectBNode()
+		throws ModelException
+	{
+		Optional<Resource> subj = subjectResource();
+		if (!subj.isPresent()) {
+			return Optional.empty();
 		}
-		if (subj instanceof BNode) {
-			return (BNode) subj;
+		if (subj.get() instanceof BNode) {
+			return Optional.of((BNode)subj.get());
 		}
-		throw new ModelException(subj);
+		throw new ModelException(subj.get());
 	}
-	
-	
+
 	@Override
 	public Set<URI> predicates() {
 		return new ValueSet<URI>() {
@@ -357,7 +384,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof URI) {
-					return AbstractModel.this.contains(null, (URI) o, null);
+					return AbstractModel.this.contains(null, (URI)o, null);
 				}
 				return false;
 			}
@@ -365,7 +392,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof URI) {
-					return AbstractModel.this.remove(null, (URI) o, null);
+					return AbstractModel.this.remove(null, (URI)o, null);
 				}
 				return false;
 			}
@@ -394,7 +421,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof Value) {
-					return AbstractModel.this.contains(null, null, (Value) o);
+					return AbstractModel.this.contains(null, null, (Value)o);
 				}
 				return false;
 			}
@@ -402,7 +429,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Value) {
-					return AbstractModel.this.remove(null, null, (Value) o);
+					return AbstractModel.this.remove(null, null, (Value)o);
 				}
 				return false;
 			}
@@ -431,8 +458,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean contains(Object o) {
 				if (o instanceof Resource || o == null) {
-					return AbstractModel.this.contains(null, null, null,
-							(Resource) o);
+					return AbstractModel.this.contains(null, null, null, (Resource)o);
 				}
 				return false;
 			}
@@ -440,8 +466,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			@Override
 			public boolean remove(Object o) {
 				if (o instanceof Resource || o == null) {
-					return AbstractModel.this.remove(null, null, null,
-							(Resource) o);
+					return AbstractModel.this.remove(null, null, null, (Resource)o);
 				}
 				return false;
 			}
@@ -457,10 +482,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			}
 
 			@Override
-			protected void removeIteration(Iterator<Statement> iter,
-					Resource term) {
-				AbstractModel.this
-						.removeTermIteration(iter, null, null, null, term);
+			protected void removeIteration(Iterator<Statement> iter, Resource term) {
+				AbstractModel.this.removeTermIteration(iter, null, null, null, term);
 			}
 		};
 	}
@@ -468,9 +491,13 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	private abstract class ValueSet<V extends Value> extends AbstractSet<V> {
 
 		private final class ValueSetIterator implements Iterator<V> {
+
 			private final Iterator<Statement> iter;
+
 			private final Set<V> set = new LinkedHashSet<V>();
+
 			private Statement current;
+
 			private Statement next;
 
 			private ValueSetIterator(Iterator<Statement> iter) {
@@ -548,7 +575,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 					set.add(term(iter.next()));
 				}
 				return set.size();
-			} finally {
+			}
+			finally {
 				AbstractModel.this.closeIterator(iter);
 			}
 		}
@@ -558,9 +586,10 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			boolean modified = false;
 			Iterator<?> i = c.iterator();
 			try {
-			    while (i.hasNext())
-			        modified |= remove(i.next());
-			} finally {
+				while (i.hasNext())
+					modified |= remove(i.next());
+			}
+			finally {
 				closeIterator(c, i);
 			}
 			return modified;
@@ -575,7 +604,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 					set.add(term(iter.next()));
 				}
 				return set.toArray();
-			} finally {
+			}
+			finally {
 				AbstractModel.this.closeIterator(iter);
 			}
 		}
@@ -589,7 +619,8 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 					set.add(term(iter.next()));
 				}
 				return set.toArray(a);
-			} finally {
+			}
+			finally {
 				AbstractModel.this.closeIterator(iter);
 			}
 		}
@@ -599,10 +630,11 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			Iterator<?> e = c.iterator();
 			try {
 				while (e.hasNext())
-				    if (!contains(e.next()))
-				        return false;
+					if (!contains(e.next()))
+						return false;
 				return true;
-			} finally {
+			}
+			finally {
 				closeIterator(c, e);
 			}
 		}
@@ -613,11 +645,12 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			try {
 				boolean modified = false;
 				while (e.hasNext()) {
-				    if (add(e.next()))
-				        modified = true;
+					if (add(e.next()))
+						modified = true;
 				}
 				return modified;
-			} finally {
+			}
+			finally {
 				closeIterator(c, e);
 			}
 		}
@@ -628,13 +661,14 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 			try {
 				boolean modified = false;
 				while (e.hasNext()) {
-				    if (!c.contains(e.next())) {
-				        e.remove();
-				        modified = true;
-				    }
+					if (!c.contains(e.next())) {
+						e.remove();
+						modified = true;
+					}
 				}
 				return modified;
-			} finally {
+			}
+			finally {
 				closeIterator(e);
 			}
 		}
@@ -647,14 +681,15 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		protected abstract void removeIteration(Iterator<Statement> iter, V term);
 
 		protected void closeIterator(Iterator<?> iter) {
-			AbstractModel.this.closeIterator(((ValueSetIterator) iter).iter);
+			AbstractModel.this.closeIterator(((ValueSetIterator)iter).iter);
 		}
 
 		private void closeIterator(Collection<?> c, Iterator<?> e) {
 			if (c instanceof AbstractModel) {
-				((AbstractModel) c).closeIterator(e);
-			} else if (c instanceof ValueSet) {
-				((ValueSet<?>) c).closeIterator(e);
+				((AbstractModel)c).closeIterator(e);
+			}
+			else if (c instanceof ValueSet) {
+				((ValueSet<?>)c).closeIterator(e);
 			}
 		}
 	}
@@ -664,36 +699,38 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	 * iterator. Exactly one of the last four terms will be non-empty.
 	 * 
 	 * @param iter
-	 *            The iterator used to navigate the live set (never null)
+	 *        The iterator used to navigate the live set (never null)
 	 * @param subj
-	 *            the subject term to be removed or null
+	 *        the subject term to be removed or null
 	 * @param pred
-	 *            the predicate term to be removed or null
+	 *        the predicate term to be removed or null
 	 * @param obj
-	 *            the object term to be removed or null
+	 *        the object term to be removed or null
 	 * @param contexts
-	 *            an array of one context term to be removed or an empty array
+	 *        an array of one context term to be removed or an empty array
 	 */
-	public abstract void removeTermIteration(Iterator<Statement> iter,
-			Resource subj, URI pred, Value obj, Resource... contexts);
+	public abstract void removeTermIteration(Iterator<Statement> iter, Resource subj, URI pred, Value obj,
+			Resource... contexts);
 
 	/**
 	 * Cleans up any resources used by this iterator. After this call the given
 	 * iterator should not be used.
 	 * 
-	 * @param iter Iterator to clean up
+	 * @param iter
+	 *        Iterator to clean up
 	 */
 	protected void closeIterator(Iterator<?> iter) {
 		if (iter instanceof ValueSet.ValueSetIterator) {
-			closeIterator(((ValueSet.ValueSetIterator) iter).iter);
+			closeIterator(((ValueSet.ValueSetIterator)iter).iter);
 		}
 	}
 
 	private void closeIterator(Collection<?> c, Iterator<?> e) {
 		if (c instanceof AbstractModel) {
-			((AbstractModel) c).closeIterator(e);
-		} else if (c instanceof ValueSet) {
-			((ValueSet<?>) c).closeIterator(e);
+			((AbstractModel)c).closeIterator(e);
+		}
+		else if (c instanceof ValueSet) {
+			((ValueSet<?>)c).closeIterator(e);
 		}
 	}
 
@@ -710,5 +747,5 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 	public ValueFactory getValueFactory() {
 		return ValueFactoryImpl.getInstance();
 	}
-	
+
 }

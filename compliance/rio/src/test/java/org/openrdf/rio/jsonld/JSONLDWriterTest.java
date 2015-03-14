@@ -114,7 +114,7 @@ public class JSONLDWriterTest extends RDFWriterTest {
 		if (rdfParser.getRDFFormat().supportsNamespaces()) {
 			assertTrue("Expected at least one namespace, found " + model.getNamespaces().size(),
 					model.getNamespaces().size() >= 1);
-			assertEquals(exNs, model.getNamespace("ex").getName());
+			assertEquals(exNs, model.getNamespace("ex").get().getName());
 		}
 	}
 }
