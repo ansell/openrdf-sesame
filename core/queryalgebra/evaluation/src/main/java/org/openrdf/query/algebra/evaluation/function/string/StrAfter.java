@@ -16,6 +16,8 @@
  */
 package org.openrdf.query.algebra.evaluation.function.string;
 
+import java.util.Optional;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -58,7 +60,7 @@ public class StrAfter implements Function {
 				String lexicalValue = leftLit.getLabel();
 				String substring = rightLit.getLabel();
 
-				String leftLanguage = leftLit.getLanguage();
+				Optional<String> leftLanguage = leftLit.getLanguage();
 				URI leftDt = leftLit.getDatatype();
 
 				int index = lexicalValue.indexOf(substring);
@@ -70,12 +72,12 @@ public class StrAfter implements Function {
 				}
 				else {
 					// no match, return empty string with no language or datatype
-					leftLanguage = null;
+					leftLanguage = Optional.empty();
 					leftDt = null;
 				}
 				
-				if (leftLanguage != null) {
-					return valueFactory.createLiteral(substringAfter, leftLanguage);
+				if (leftLanguage.isPresent()) {
+					return valueFactory.createLiteral(substringAfter, leftLanguage.get());
 				}
 				else if (leftDt != null) {
 					return valueFactory.createLiteral(substringAfter, leftDt);

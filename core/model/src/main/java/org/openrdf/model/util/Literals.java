@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -434,9 +436,9 @@ public class Literals {
 		Locale result = fallback;
 
 		try {
-			String lang = l.getLanguage();
-			if (lang != null) {
-				LanguageTag tag = new LanguageTag(lang);
+			Optional<String> lang = l.getLanguage();
+			if (lang.isPresent()) {
+				LanguageTag tag = new LanguageTag(lang.get());
 				result = tag.toLocale();
 			}
 		}
@@ -614,11 +616,7 @@ public class Literals {
 	 * @since 2.8.0
 	 */
 	public static boolean isLanguageLiteral(Literal literal) {
-		if (literal == null) {
-			throw new NullPointerException("Literal cannot be null");
-		}
-
-		return literal.getLanguage() != null;
+		return Objects.requireNonNull(literal, "Literal cannot be null").getLanguage().isPresent();
 	}
 
 	protected Literals() {

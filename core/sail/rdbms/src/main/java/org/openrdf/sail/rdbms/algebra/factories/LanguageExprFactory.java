@@ -40,7 +40,6 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * Creates an SQL expression of a literal's language.
  * 
  * @author James Leigh
- * 
  */
 public class LanguageExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
 
@@ -111,7 +110,7 @@ public class LanguageExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsO
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
-			return str(lit.getLanguage());
+			return str(lit.getLanguage().orElse(null));
 		}
 		return sqlNull();
 	}

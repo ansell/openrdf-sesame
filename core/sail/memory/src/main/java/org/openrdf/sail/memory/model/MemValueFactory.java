@@ -311,7 +311,7 @@ public class MemValueFactory extends ValueFactoryBase {
 			URI datatype = literal.getDatatype();
 
 			if (Literals.isLanguageLiteral(literal)) {
-				memLiteral = new MemLiteral(this, label, literal.getLanguage());
+				memLiteral = new MemLiteral(this, label, literal.getLanguage().get());
 			}
 			else {
 				try {

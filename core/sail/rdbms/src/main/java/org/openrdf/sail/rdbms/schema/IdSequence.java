@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -141,7 +142,7 @@ public abstract class IdSequence {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
 			if (Literals.isLanguageLiteral(lit)) {
-				return hash(digest, lit.getLanguage());
+				return hash(digest, lit.getLanguage().get());
 			}
 			else {
 				return hash(digest, lit.getDatatype().stringValue());
@@ -170,10 +171,10 @@ public abstract class IdSequence {
 	}
 
 	protected ValueType valueOf(Literal lit) {
-		String lang = lit.getLanguage();
+		Optional<String> lang = lit.getLanguage();
 		URI dt = lit.getDatatype();
 		int length = lit.stringValue().length();
-		if (lang != null) {
+		if (lang.isPresent()) {
 			// language
 			if (length > LONG)
 				return ValueType.LANG_LONG;

@@ -207,7 +207,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			writer.write("@");
-			writer.write(lit.getLanguage());
+			writer.write(lit.getLanguage().get());
 		}
 		else if (!XMLSchema.STRING.equals(datatype) || !xsdStringToPlainLiteral()) {
 			// Append the literal's datatype
