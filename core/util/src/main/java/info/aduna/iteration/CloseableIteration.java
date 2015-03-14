@@ -22,7 +22,7 @@ package info.aduna.iteration;
  * CloseableIterations automatically free their resources when exhausted. If not
  * read until exhaustion or if you want to make sure the iteration is properly
  * closed, any code using the iterator should be placed in a try-with-resources
- * block, closing the iteration in the finally, e.g.:
+ * block, closing the iteration automatically, e.g.:
  * 
  * <pre>
  * 
