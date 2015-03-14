@@ -97,7 +97,7 @@ import org.openrdf.rio.UnsupportedRDFormatException;
  * @author Arjohn Kampman
  * @author Jeen Broekstra
  */
-public interface RepositoryConnection {
+public interface RepositoryConnection extends AutoCloseable {
 
 	/**
 	 * Returns the Repository object to which this connection belongs.
@@ -145,6 +145,7 @@ public interface RepositoryConnection {
 	 * @throws RepositoryException
 	 *         If the connection could not be closed.
 	 */
+	@Override
 	public void close()
 		throws RepositoryException;
 
