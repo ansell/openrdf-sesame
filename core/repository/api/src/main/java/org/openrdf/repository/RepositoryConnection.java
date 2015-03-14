@@ -145,6 +145,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * @throws RepositoryException
 	 *         If the connection could not be closed.
 	 */
+	@Override
 	public void close()
 		throws RepositoryException;
 
