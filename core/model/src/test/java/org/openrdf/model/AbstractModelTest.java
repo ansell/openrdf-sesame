@@ -1222,7 +1222,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleLiteral();
 		Optional<String> value = model.objectString();
 		assertTrue(value.isPresent());
-		assertEquals(literal1.toString(), value.get());
+		assertEquals(literal1.stringValue(), value.get());
 	}
 
 	/**
@@ -1244,7 +1244,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleBNode();
 		Optional<String> value = model.objectString();
 		assertTrue(value.isPresent());
-		assertEquals(bnode1.toString(), value.get());
+		assertEquals(bnode1.stringValue(), value.get());
 	}
 
 	/**

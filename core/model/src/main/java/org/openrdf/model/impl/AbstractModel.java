@@ -270,7 +270,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 	{
 		Optional<Value> obj = objectValue();
 		if (obj.isPresent()) {
-			return Optional.of(obj.get().toString());
+			return Optional.of(obj.get().stringValue());
 		}
 		return Optional.empty();
 	}
