@@ -17,6 +17,7 @@
 package org.openrdf.repository;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Utility for dealing with {@link Repository} and {@link RepositoryConnection}
@@ -111,6 +112,112 @@ public final class Repositories {
 			Consumer<RepositoryConnection> processFunction)
 	{
 		commitOrRollback(repository, processFunction, e -> {
+		});
+	}
+
+	/**
+	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
+	 * connection to the given {@link Consumer}, before either rolling back the
+	 * transaction if it failed, or committing the transaction if it was
+	 * successful.
+	 * 
+	 * @param <T>
+	 *        The type of the return value.
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param processFunction
+	 *        A {@link Function} that performs an action on the connection and
+	 *        returns a result.
+	 * @return The result of applying the function.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
+	 * @since 4.0
+	 */
+	public static <T> T commitOrRollback(Repository repository,
+			Function<RepositoryConnection, T> processFunction)
+	{
+		RepositoryConnection conn = repository.getConnection();
+
+		try {
+			conn.begin();
+			T result = processFunction.apply(conn);
+			conn.commit();
+			return result;
+		}
+		catch (RepositoryException e) {
+			if (conn != null) {
+				conn.rollback();
+			}
+			throw e;
+		}
+		finally {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+
+	/**
+	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
+	 * connection to the given {@link Consumer}, before either rolling back the
+	 * transaction if it failed, or committing the transaction if it was
+	 * successful.
+	 * 
+	 * @param <T>
+	 *        The type of the return value.
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param processFunction
+	 *        A {@link Function} that performs an action on the connection and
+	 *        returns a result.
+	 * @param exceptionHandler
+	 *        A {@link Consumer} that handles an exception if one was generated.
+	 * @return The result of applying the function, or <tt>null</tt> if an
+	 *         exception occurs and the exception handler does not rethrow the
+	 *         exception.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
+	 * @since 4.0
+	 */
+	public static <T> T commitOrRollback(Repository repository,
+			Function<RepositoryConnection, T> processFunction, Consumer<RepositoryException> exceptionHandler)
+	{
+		try {
+			return commitOrRollback(repository, processFunction);
+		}
+		catch (RepositoryException e) {
+			exceptionHandler.accept(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
+	 * connection to the given {@link Consumer}, before either rolling back the
+	 * transaction if it failed, or committing the transaction if it was
+	 * successful.
+	 * 
+	 * @param <T>
+	 *        The type of the return value.
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param processFunction
+	 *        A {@link Function} that performs an action on the connection and
+	 *        returns a result.
+	 * @return The result of applying the function, or <tt>null</tt> if an
+	 *         exception is thrown.
+	 * @since 4.0
+	 */
+	public static <T> T commitOrRollbackSilent(Repository repository,
+			Function<RepositoryConnection, T> processFunction)
+	{
+		return commitOrRollback(repository, processFunction, e -> {
 		});
 	}
 
