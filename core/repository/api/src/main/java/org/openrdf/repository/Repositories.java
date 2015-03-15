@@ -45,21 +45,22 @@ public final class Repositories {
 	 * @since 4.0
 	 */
 	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction) {
-		RepositoryConnection conn = repository.getConnection();
+		RepositoryConnection conn = null;
 
 		try {
+			conn = repository.getConnection();
 			conn.begin();
 			processFunction.accept(conn);
 			conn.commit();
 		}
 		catch (RepositoryException e) {
-			if (conn != null) {
+			if (conn != null && conn.isActive()) {
 				conn.rollback();
 			}
 			throw e;
 		}
 		finally {
-			if (conn != null) {
+			if (conn != null && conn.isOpen()) {
 				conn.close();
 			}
 		}
@@ -134,22 +135,23 @@ public final class Repositories {
 	 * @since 4.0
 	 */
 	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction) {
-		RepositoryConnection conn = repository.getConnection();
+		RepositoryConnection conn = null;
 
 		try {
+			conn = repository.getConnection();
 			conn.begin();
 			T result = processFunction.apply(conn);
 			conn.commit();
 			return result;
 		}
 		catch (RepositoryException e) {
-			if (conn != null) {
+			if (conn != null && conn.isActive()) {
 				conn.rollback();
 			}
 			throw e;
 		}
 		finally {
-			if (conn != null) {
+			if (conn != null && conn.isOpen()) {
 				conn.close();
 			}
 		}
