@@ -247,8 +247,9 @@ public final class Repositories {
 	{
 		return get(repository, conn -> {
 			TupleQuery preparedQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
-			TupleQueryResult queryResult = preparedQuery.evaluate();
-			return processFunction.apply(queryResult);
+			try (TupleQueryResult queryResult = preparedQuery.evaluate();) {
+				return processFunction.apply(queryResult);
+			}
 		});
 	}
 
@@ -284,8 +285,9 @@ public final class Repositories {
 	{
 		return get(repository, conn -> {
 			GraphQuery preparedQuery = conn.prepareGraphQuery(QueryLanguage.SPARQL, query);
-			GraphQueryResult queryResult = preparedQuery.evaluate();
-			return processFunction.apply(queryResult);
+			try (GraphQueryResult queryResult = preparedQuery.evaluate();) {
+				return processFunction.apply(queryResult);
+			}
 		});
 	}
 
