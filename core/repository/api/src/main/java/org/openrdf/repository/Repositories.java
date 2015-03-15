@@ -38,6 +38,9 @@ public final class Repositories {
 	 *        A {@link Consumer} that performs an action on the connection.
 	 * @throws RepositoryException
 	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
 	 * @since 4.0
 	 */
 	public static void commitOrRollback(Repository repository, Consumer<RepositoryConnection> processFunction)
@@ -76,6 +79,9 @@ public final class Repositories {
 	 *        A {@link Consumer} that handles an exception if one was generated.
 	 * @throws RepositoryException
 	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
 	 * @since 4.0
 	 */
 	public static void commitOrRollback(Repository repository, Consumer<RepositoryConnection> processFunction,
