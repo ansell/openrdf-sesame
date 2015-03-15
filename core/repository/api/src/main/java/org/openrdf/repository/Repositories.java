@@ -45,25 +45,10 @@ public final class Repositories {
 	 * @since 4.0
 	 */
 	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction) {
-		RepositoryConnection conn = null;
-
-		try {
-			conn = repository.getConnection();
-			conn.begin();
+		get(repository, conn -> {
 			processFunction.accept(conn);
-			conn.commit();
-		}
-		catch (RepositoryException e) {
-			if (conn != null && conn.isActive()) {
-				conn.rollback();
-			}
-			throw e;
-		}
-		finally {
-			if (conn != null && conn.isOpen()) {
-				conn.close();
-			}
-		}
+			return null;
+		});
 	}
 
 	/**
