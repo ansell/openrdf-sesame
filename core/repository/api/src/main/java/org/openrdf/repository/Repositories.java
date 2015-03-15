@@ -44,8 +44,7 @@ public final class Repositories {
 	 *         specific exception)
 	 * @since 4.0
 	 */
-	public static void commitOrRollback(Repository repository, Consumer<RepositoryConnection> processFunction)
-	{
+	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction) {
 		RepositoryConnection conn = repository.getConnection();
 
 		try {
@@ -85,11 +84,11 @@ public final class Repositories {
 	 *         specific exception)
 	 * @since 4.0
 	 */
-	public static void commitOrRollback(Repository repository, Consumer<RepositoryConnection> processFunction,
+	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction,
 			Consumer<RepositoryException> exceptionHandler)
 	{
 		try {
-			commitOrRollback(repository, processFunction);
+			consume(repository, processFunction);
 		}
 		catch (RepositoryException e) {
 			exceptionHandler.accept(e);
@@ -108,10 +107,8 @@ public final class Repositories {
 	 *        A {@link Consumer} that performs an action on the connection.
 	 * @since 4.0
 	 */
-	public static void commitOrRollbackSilent(Repository repository,
-			Consumer<RepositoryConnection> processFunction)
-	{
-		commitOrRollback(repository, processFunction, e -> {
+	public static void consumeSilent(Repository repository, Consumer<RepositoryConnection> processFunction) {
+		consume(repository, processFunction, e -> {
 		});
 	}
 
@@ -136,9 +133,7 @@ public final class Repositories {
 	 *         specific exception)
 	 * @since 4.0
 	 */
-	public static <T> T commitOrRollback(Repository repository,
-			Function<RepositoryConnection, T> processFunction)
-	{
+	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction) {
 		RepositoryConnection conn = repository.getConnection();
 
 		try {
@@ -185,11 +180,11 @@ public final class Repositories {
 	 *         specific exception)
 	 * @since 4.0
 	 */
-	public static <T> T commitOrRollback(Repository repository,
-			Function<RepositoryConnection, T> processFunction, Consumer<RepositoryException> exceptionHandler)
+	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction,
+			Consumer<RepositoryException> exceptionHandler)
 	{
 		try {
-			return commitOrRollback(repository, processFunction);
+			return get(repository, processFunction);
 		}
 		catch (RepositoryException e) {
 			exceptionHandler.accept(e);
@@ -214,10 +209,8 @@ public final class Repositories {
 	 *         exception is thrown.
 	 * @since 4.0
 	 */
-	public static <T> T commitOrRollbackSilent(Repository repository,
-			Function<RepositoryConnection, T> processFunction)
-	{
-		return commitOrRollback(repository, processFunction, e -> {
+	public static <T> T getSilent(Repository repository, Function<RepositoryConnection, T> processFunction) {
+		return get(repository, processFunction, e -> {
 		});
 	}
 
