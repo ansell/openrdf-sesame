@@ -114,7 +114,7 @@ public final class Repositories {
 
 	/**
 	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
-	 * connection to the given {@link Consumer}, before either rolling back the
+	 * connection to the given {@link Function}, before either rolling back the
 	 * transaction if it failed, or committing the transaction if it was
 	 * successful.
 	 * 
@@ -157,7 +157,7 @@ public final class Repositories {
 
 	/**
 	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
-	 * connection to the given {@link Consumer}, before either rolling back the
+	 * connection to the given {@link Function}, before either rolling back the
 	 * transaction if it failed, or committing the transaction if it was
 	 * successful.
 	 * 
@@ -194,7 +194,7 @@ public final class Repositories {
 
 	/**
 	 * Opens a {@link RepositoryConnection} to the given Repository, sends the
-	 * connection to the given {@link Consumer}, before either rolling back the
+	 * connection to the given {@link Function}, before either rolling back the
 	 * transaction if it failed, or committing the transaction if it was
 	 * successful.
 	 * 
