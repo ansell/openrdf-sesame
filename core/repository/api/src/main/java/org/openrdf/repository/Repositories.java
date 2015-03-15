@@ -19,6 +19,14 @@ package org.openrdf.repository;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
+
 /**
  * Utility for dealing with {@link Repository} and {@link RepositoryConnection}
  * objects.
@@ -44,7 +52,9 @@ public final class Repositories {
 	 *         specific exception)
 	 * @since 4.0
 	 */
-	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction) {
+	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction)
+		throws RepositoryException, UnknownTransactionStateException
+	{
 		get(repository, conn -> {
 			processFunction.accept(conn);
 			return null;
@@ -72,6 +82,7 @@ public final class Repositories {
 	 */
 	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction,
 			Consumer<RepositoryException> exceptionHandler)
+		throws RepositoryException, UnknownTransactionStateException
 	{
 		try {
 			consume(repository, processFunction);
@@ -119,7 +130,9 @@ public final class Repositories {
 	 *         specific exception)
 	 * @since 4.0
 	 */
-	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction) {
+	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction)
+		throws RepositoryException, UnknownTransactionStateException
+	{
 		RepositoryConnection conn = null;
 
 		try {
@@ -169,6 +182,7 @@ public final class Repositories {
 	 */
 	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction,
 			Consumer<RepositoryException> exceptionHandler)
+		throws RepositoryException, UnknownTransactionStateException
 	{
 		try {
 			return get(repository, processFunction);
@@ -198,6 +212,80 @@ public final class Repositories {
 	 */
 	public static <T> T getSilent(Repository repository, Function<RepositoryConnection, T> processFunction) {
 		return get(repository, processFunction, e -> {
+		});
+	}
+
+	/**
+	 * Performs a SPARQL Select query on the given Repository and passes the
+	 * results to the given {@link Function} with the result from the function
+	 * returned by the method.
+	 * 
+	 * @param <T>
+	 *        The type of the return value.
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param query
+	 *        The SPARQL Select query to execute.
+	 * @param processFunction
+	 *        A {@link Function} that performs an action on the results of the
+	 *        query and returns a result.
+	 * @return The result of processing the query results.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed
+	 * @throws QueryEvaluationException
+	 *         If there was an error evaluating the query
+	 */
+	public static <T> T tupleQuery(Repository repository, String query,
+			Function<TupleQueryResult, T> processFunction)
+		throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
+		QueryEvaluationException
+	{
+		return get(repository, conn -> {
+			TupleQuery preparedQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+			TupleQueryResult queryResult = preparedQuery.evaluate();
+			return processFunction.apply(queryResult);
+		});
+	}
+
+	/**
+	 * Performs a SPARQL Construct or Describe query on the given Repository and
+	 * passes the results to the given {@link Function} with the result from the
+	 * function returned by the method.
+	 * 
+	 * @param <T>
+	 *        The type of the return value.
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param query
+	 *        The SPARQL Construct or Describe query to execute.
+	 * @param processFunction
+	 *        A {@link Function} that performs an action on the results of the
+	 *        query and returns a result.
+	 * @return The result of processing the query results.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed
+	 * @throws QueryEvaluationException
+	 *         If there was an error evaluating the query
+	 */
+	public static <T> T graphQuery(Repository repository, String query,
+			Function<GraphQueryResult, T> processFunction)
+		throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
+		QueryEvaluationException
+	{
+		return get(repository, conn -> {
+			GraphQuery preparedQuery = conn.prepareGraphQuery(QueryLanguage.SPARQL, query);
+			GraphQueryResult queryResult = preparedQuery.evaluate();
+			return processFunction.apply(queryResult);
 		});
 	}
 
