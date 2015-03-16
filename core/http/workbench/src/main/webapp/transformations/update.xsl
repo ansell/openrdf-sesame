@@ -44,14 +44,13 @@
 		</form>
 		<script type="text/javascript">
         var namespaces = {
-          <xsl:for-each
+            <xsl:for-each
                 select="document(//sparql:link[@href='namespaces']/@href)//sparql:results/sparql:result">
                 <xsl:value-of
                     select="concat('&quot;', sparql:binding[@name='prefix']/sparql:literal, ':&quot;:&quot;', sparql:binding[@name='namespace']/sparql:literal, '&quot;,')" />
                 <xsl:text>
                 </xsl:text>
             </xsl:for-each>
-        
         };
         </script>
 		<script src="../../scripts/codemirror.4.5.0.min.js" type="text/javascript"></script>
