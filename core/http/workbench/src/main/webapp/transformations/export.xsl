@@ -58,6 +58,7 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">this.form.submit();</xsl:with-param>
+								<xsl:with-param name="limit_id">limit_explore</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td id="result-limited">
@@ -74,6 +75,8 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
+        <script src="../../scripts/paging.js" type="text/javascript">  </script>
+        <script src="../../scripts/export.js" type="text/javascript">  </script>
 	</xsl:template>
 
 </xsl:stylesheet>

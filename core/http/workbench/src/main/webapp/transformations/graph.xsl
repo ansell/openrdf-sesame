@@ -56,8 +56,9 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">
-									workbench.paging.addGraphParam('limit');
+									workbench.paging.addGraphParam('limit_query');
 								</xsl:with-param>
+                                <xsl:with-param name="limit_id">limit_query</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td id="result-limited">

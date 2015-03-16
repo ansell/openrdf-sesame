@@ -17,7 +17,6 @@
 package org.openrdf.workbench.commands;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
@@ -50,11 +49,10 @@ public class UpdateServlet extends TransformationServlet {
 	protected void doPost(WorkbenchRequest req, HttpServletResponse resp, String xslPath)
 		throws Exception, IOException
 	{
+		// All POST requests are expected to contain a SPARQL/Update 'update' parameter.
 		try {
 			String updateString = req.getParameter("update");
-
 			executeUpdate(updateString);
-
 			resp.sendRedirect("summary");
 		}
 		catch (BadRequestException exc) {
@@ -97,6 +95,7 @@ public class UpdateServlet extends TransformationServlet {
 	public void service(TupleResultBuilder builder, String xslPath)
 		throws RepositoryException, QueryResultHandlerException
 	{
+		// All GET requests are assumed to be to present the update editor page.
 		builder.transform(xslPath, "update.xsl");
 		builder.start();
 		builder.link(Arrays.asList(INFO, "namespaces"));

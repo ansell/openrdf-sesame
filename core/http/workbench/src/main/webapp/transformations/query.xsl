@@ -70,7 +70,9 @@
 							<xsl:value-of select="$result-limit.label" />
 						</th>
 						<td>
-							<xsl:call-template name="limit-select" />
+							<xsl:call-template name="limit-select">
+                                <xsl:with-param name="limit_id">limit_query</xsl:with-param>
+                            </xsl:call-template>
 						</td>
 						<td></td>
 					</tr>
