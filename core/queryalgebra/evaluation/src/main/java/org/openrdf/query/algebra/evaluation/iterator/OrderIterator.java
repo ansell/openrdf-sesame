@@ -69,6 +69,12 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 	private final DB db;
 
+	/**
+	 * Number of items cached before internal collection is synced to disk 
+	 */
+	// TODO should be made configurable
+	private long itemCacheSize = 10000L;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -131,6 +137,11 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 					else if (!distinct) {
 						map.put(next, ++count);
 						size++;
+					}
+					
+					if (size % itemCacheSize == 0) {
+						// sync collection to disk every X new entries (where X is a multiple of the cache size)
+						db.commit();
 					}
 
 					if (size > limit) {
