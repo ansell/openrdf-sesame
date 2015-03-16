@@ -143,6 +143,7 @@ import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
+import org.openrdf.query.algebra.evaluation.util.EvaluationStrategies;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -190,6 +191,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset) {
 		this.tripleSource = tripleSource;
 		this.dataset = dataset;
+		
+
+		EvaluationStrategies.register(this.hashCode(), this);
 	}
 
 	/*---------*
