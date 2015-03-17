@@ -70,7 +70,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	private final DB db;
 
 	/**
-	 * Number of items cached before internal collection is synced to disk 
+	 * Number of items cached before internal collection is synced to disk
 	 */
 	// TODO should be made configurable
 	private long itemCacheSize = 10000L;
@@ -114,7 +114,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 		final NavigableMap<BindingSet, Integer> map = db.createTreeMap("iteration").comparator(comparator).makeOrGet();
 
-		int size = 0;
+		long size = 0;
 
 		try {
 			while (iter.hasNext()) {
@@ -136,11 +136,12 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 					}
 					else if (!distinct) {
 						map.put(next, ++count);
-						size++;
 					}
-					
-					if (size % itemCacheSize == 0) {
-						// sync collection to disk every X new entries (where X is a multiple of the cache size)
+					size++;
+
+					if (size % itemCacheSize == 0L) {
+						// sync collection to disk every X new entries (where X is a
+						// multiple of the cache size)
 						db.commit();
 					}
 
