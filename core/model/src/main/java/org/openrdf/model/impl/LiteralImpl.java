@@ -193,9 +193,7 @@ public class LiteralImpl implements Literal {
 	// overrides Object.hashCode(), implements hashCode()
 	@Override
 	public int hashCode() {
-		int hashCode = 4;
-		
-		hashCode = 31 * hashCode + label.hashCode();
+		int hashCode = label.hashCode();
 		if (language != null) {
 			hashCode = 31 * hashCode + language.hashCode();
 		}
