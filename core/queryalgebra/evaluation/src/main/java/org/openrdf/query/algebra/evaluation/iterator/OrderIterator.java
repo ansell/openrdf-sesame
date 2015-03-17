@@ -124,20 +124,16 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 				// it is sorted before the current lowest value
 				if (size < limit || comparator.compare(next, map.lastKey()) < 0) {
 
-					// if (list.iterator().hasNext()) {
-					// list = distinct ? makeOrderedSet() : makeList();
-					// put(map, next, list);
-					// }
-
 					Integer count = map.get(next);
 
 					if (count == null) {
 						map.put(next, 1);
+						size++;
 					}
 					else if (!distinct) {
 						map.put(next, ++count);
+						size++;
 					}
-					size++;
 
 					if (size % itemCacheSize == 0L) {
 						// sync collection to disk every X new entries (where X is a
@@ -190,19 +186,6 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		};
 	}
 
-	protected List<BindingSet> makeList() {
-		return new LinkedList<BindingSet>();
-	}
-
-	/**
-	 * This is used when distinct is set too true.
-	 * 
-	 * @return a new Set may be store specific.
-	 */
-	protected Set<BindingSet> makeOrderedSet() {
-		return new LinkedHashSet<BindingSet>();
-	}
-
 	protected void removeLast(Collection<BindingSet> lastResults) {
 		if (lastResults instanceof LinkedList<?>) {
 			((LinkedList<BindingSet>)lastResults).removeLast();
@@ -236,12 +219,6 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		throws QueryEvaluationException
 	{
 		return map.put(next, list);
-	}
-
-	protected NavigableMap<BindingSet, Collection<BindingSet>> makeOrderedMap(
-			Comparator<BindingSet> comparator2)
-	{
-		return db.createTreeMap("order").comparator(comparator2).makeOrGet();
 	}
 
 	@Override
