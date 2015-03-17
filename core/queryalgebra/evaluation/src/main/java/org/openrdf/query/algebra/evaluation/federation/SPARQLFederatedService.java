@@ -47,6 +47,7 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.evaluation.iterator.CollectionIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
@@ -109,17 +110,9 @@ public class SPARQLFederatedService implements FederatedService {
 		}
 	}
 
-	protected final SPARQLRepository rep;
-
-	protected RepositoryConnection conn = null;
-
-	/**
-	 * @param serviceUrl
-	 *        the serviceUrl use to initialize the inner {@link SPARQLRepository}
-	 */
-	public SPARQLFederatedService(String serviceUrl, SesameClient client) {
-		super();
-		this.rep = new SPARQLRepository(serviceUrl) {
+	private static SPARQLRepository createSPARQLRepository(String serviceUrl, SesameClient client)
+	{
+		SPARQLRepository repo = new SPARQLRepository(serviceUrl) {
 
 			@Override
 			protected void shutDownInternal()
@@ -129,7 +122,25 @@ public class SPARQLFederatedService implements FederatedService {
 				super.shutDownInternal();
 			}
 		};
-		this.rep.setSesameClient(client);
+		repo.setSesameClient(client);
+		return repo;
+	}
+
+	protected final Repository rep;
+
+	protected RepositoryConnection conn = null;
+
+	public SPARQLFederatedService(Repository repo) {
+		super();
+		this.rep = repo;
+	}
+
+	/**
+	 * @param serviceUrl
+	 *        the serviceUrl use to initialize the inner {@link SPARQLRepository}
+	 */
+	public SPARQLFederatedService(String serviceUrl, SesameClient client) {
+		this(createSPARQLRepository(serviceUrl, client));
 	}
 
 	/**
