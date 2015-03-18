@@ -7,7 +7,8 @@
 
 workbench.addLoad(function createFederatePageLoaded() {
     function respondToFormState() {
-	    var enoughMembers = $('input.memberID').filter(':checked').length >= 2;
+	    var memberID = $('input.memberID');
+	    var enoughMembers = memberID.filter(':checked').length >= 2;
 	    if (enoughMembers) {
 		    $('#create-feedback').hide();
 	    } else {
@@ -19,7 +20,7 @@ workbench.addLoad(function createFederatePageLoaded() {
 	    var matchExisting = false;
 
 	    // test that fedID not equal any existing id
-	    $('input.memberID').each(function() {
+	    memberID.each(function() {
 		    if (fedID == $(this).attr('value')) {
 			    disable = true;
 			    matchExisting = true;

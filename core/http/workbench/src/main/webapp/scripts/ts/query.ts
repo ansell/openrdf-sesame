@@ -54,8 +54,9 @@ module workbench {
             workbench.query.updateYasqe();
         }
         /**
-         * After confirming with the user, clears the query text and loads the current
-         * repository and query language name space declarations.
+         * Invoked by the "clear" button. After confirming with the user,
+         * clears the query text and loads the current repository and query
+         * language name space declarations.
          */
         export function resetNamespaces() {
             if (confirm('Click OK to clear the current query text and replace' +
@@ -150,6 +151,12 @@ module workbench {
             });
         }
 
+        /**
+         * Invoked by form submission.
+         *
+         * @returns {boolean} true if a form POST is performed, false if
+         *          a GET is instead performed
+         */
         export function doSubmit() {
             //if yasqe is instantiated, make sure we save the value to the textarea
             if (yasqe) yasqe.save();

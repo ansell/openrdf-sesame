@@ -51,8 +51,9 @@ var workbench;
         _query.onQlChange = onQlChange;
 
         /**
-        * After confirming with the user, clears the query text and loads the current
-        * repository and query language name space declarations.
+        * Invoked by the "clear" button. After confirming with the user,
+        * clears the query text and loads the current repository and query
+        * language name space declarations.
         */
         function resetNamespaces() {
             if (confirm('Click OK to clear the current query text and replace' + 'it with the ' + $('#queryLn').val() + ' namespace declarations.')) {
@@ -140,6 +141,12 @@ var workbench;
             });
         }
 
+        /**
+        * Invoked by form submission.
+        *
+        * @returns {boolean} true if a form POST is performed, false if
+        *          a GET is instead performed
+        */
         function doSubmit() {
             //if yasqe is instantiated, make sure we save the value to the textarea
             if (yasqe)

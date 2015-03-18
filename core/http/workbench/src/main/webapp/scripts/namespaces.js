@@ -6,6 +6,9 @@
 var workbench;
 (function (workbench) {
     (function (namespaces) {
+        /**
+        * Invoked by #prefix-select element in namespaces.xsl.
+        */
         function updatePrefix() {
             var select = $('#prefix-select');
             $('#prefix').val(select.find('option:selected').text());

@@ -41,10 +41,9 @@ var workbench;
         * Scans the given URI for duplicate query parameter names, and removes
         * all but the last occurrence for any duplicate case.
         *
-        * @param {String}
-        *            href The URI to simplify.
-        * @returns {String} The URI with only the last occurrence of any given
-        *          parameter name remaining.
+        * @param {String} href The URI to simplify.
+        * @returns {String} The URI with only the last occurrence of any
+        *          given parameter name remaining.
         */
         function simplifyParameters(href) {
             var params = {};
@@ -69,14 +68,13 @@ var workbench;
         }
 
         /**
-        * First, adds the given parameter to the URL query string. Second, adds a
-        * 'know_total' parameter if its current value is 'false' or non-existent.
-        * Third, simplifies the URL. Fourth, sends the browser to the modified URL.
+        * First, adds the given parameter to the URL query string. Second,
+        * adds a 'know_total' parameter if its current value is 'false' or
+        * non-existent. Third, simplifies the URL. Fourth, sends the browser
+        * to the modified URL.
         *
-        * @param {String}
-        *            name The name of the query parameter.
-        * @param {number
-        *            or string} value The value of the query parameter.
+        * @param {String} name The name of the query parameter.
+        * @param {number} value The value of the query parameter.
         */
         function addPagingParam(name, value) {
             var url = document.location.href;
@@ -95,8 +93,8 @@ var workbench;
         paging.addPagingParam = addPagingParam;
 
         /**
-        * Invoked in tuple.xsl and explore.xsl. Changes the limit query parameter,
-        * and navigates to the new URL.
+        * Invoked in tuple.xsl and explore.xsl. Changes the limit query
+        * parameter and navigates to the new URL.
         */
         function addLimit(page) {
             var suffix = '_' + page;
@@ -105,7 +103,8 @@ var workbench;
         paging.addLimit = addLimit;
 
         /**
-        * Increments the offset query parameter, and navigates to the new URL.
+        * Invoked in tuple.xsl and explore.xsl. Increments the offset query
+        * parameter, and navigates to the new URL.
         */
         function nextOffset(page) {
             addPagingParam(OFFSET, getOffset() + getLimit(page));
@@ -113,7 +112,8 @@ var workbench;
         paging.nextOffset = nextOffset;
 
         /**
-        * Decrements the offset query parameter, and navigates to the new URL.
+        * Invoked in tuple.xsl and explore.xsl. Decrements the offset query
+        * parameter and navigates to the new URL.
         */
         function previousOffset(page) {
             addPagingParam(OFFSET, Math.max(0, getOffset() - getLimit(page)));
@@ -140,10 +140,9 @@ var workbench;
         /**
         * Retrieves the URL query parameter with the given name.
         *
-        * @param {String}
-        *            name The name of the parameter to retrieve.
-        * @returns {String} The value of the given parameter, or an empty string if
-        *          it doesn't exist.
+        * @param {String} name The name of the parameter to retrieve.
+        * @returns {String} The value of the given parameter, or an empty
+        *          string if it doesn't exist.
         */
         function getQueryParameter(name) {
             var rval = '';
@@ -163,8 +162,7 @@ var workbench;
         /**
         * Gets whether a URL query parameter with the given name is present.
         *
-        * @param {String}
-        *            name The name of the parameter to retrieve.
+        * @param {String} name The name of the parameter to retrieve.
         * @returns {Boolean} True, if a parameter with the given name is in
         *                    the URL. Otherwise, false.
         */
@@ -183,11 +181,10 @@ var workbench;
         paging.hasQueryParameter = hasQueryParameter;
 
         /**
-        * Convenience function for returning the tail of a string after a given
-        * character.
+        * Convenience function for returning the tail of a string after a
+        * given character.
         *
-        * @param {String}
-        *            value The string to get the tail of.
+        * @param {String} value The string to get the tail of.
         * @param split
         *            character to give tail after
         * @returns The substring after the 'split' character, or the original

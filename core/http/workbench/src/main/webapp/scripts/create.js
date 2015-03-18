@@ -3,6 +3,14 @@
 // WARNING: Do not edit the *.js version of this file. Instead, always edit the
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
+var workbench;
+(function (workbench) {
+    (function (create) {
+        create.id = $('#id');
+    })(workbench.create || (workbench.create = {}));
+    var create = workbench.create;
+})(workbench || (workbench = {}));
+
 /**
 * Invoked by the "Create" button on the form for all but
 * create-federate.xsl. Checks with the InfoServlet for the user-provided id
@@ -13,7 +21,7 @@
 function checkOverwrite() {
     var submit = false;
     $.ajax({
-        url: '../' + $('#id').val() + '/info',
+        url: '../' + workbench.create.id.val() + '/info',
         async: false,
         success: function () {
             submit = confirm('WARNING: You are about to overwrite the ' + 'configuration of an existing repository!');
@@ -43,7 +51,7 @@ workbench.addLoad(function createPageLoaded() {
         var pair = elements[i].split('=');
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
         if (pair[0] == 'id') {
-            $('#id').val(value);
+            workbench.create.id.val(value);
         }
         if (pair[0] == 'title') {
             $('#title').val(value);
