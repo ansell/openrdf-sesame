@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE rdf:RDF [
-   <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
-   <!ENTITY rdf  "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+<!DOCTYPE xsl:stylesheet [
    <!ENTITY rdfs  "http://www.w3.org/2000/01/rdf-schema#" >
  ]>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
 	xmlns="http://www.w3.org/1999/xhtml">
 
@@ -112,7 +109,8 @@
 						</th>
 						<td>
 							<xsl:call-template name="limit-select">
-								<xsl:with-param name="onchange">workbench.paging.addLimit();</xsl:with-param>
+								<xsl:with-param name="onchange">workbench.paging.addLimit('explore');</xsl:with-param>
+                                <xsl:with-param name="limit_id">limit_explore</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td></td>
@@ -123,11 +121,11 @@
 				        </th>
 						<td>
 							<input id="previousX" type="button"
-								value="{$previousX.label}" onclick="workbench.paging.previousOffset();" />
+								value="{$previousX.label}" onclick="workbench.paging.previousOffset('explore');" />
 						</td>
 						<td>
 							<input id="nextX" type="button"
-								value="{$nextX.label}" onclick="workbench.paging.nextOffset();" />
+								value="{$nextX.label}" onclick="workbench.paging.nextOffset('explore');" />
 						</td>
 					</tr>
 						<tr>

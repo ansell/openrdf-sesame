@@ -45,6 +45,7 @@ import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.workbench.util.TupleResultBuilder;
+import org.openrdf.workbench.util.WorkbenchRequest;
 
 public abstract class BaseServlet implements Servlet {
 
@@ -149,10 +150,15 @@ public abstract class BaseServlet implements Servlet {
 
 	protected QueryResultFormat getTupleResultFormat(final HttpServletRequest req, final ServletResponse resp)
 	{
-		String header = req.getHeader(ACCEPT);
-
+		String header = null;
+		if (req instanceof WorkbenchRequest) {
+			header = ((WorkbenchRequest)req).getParameter(ACCEPT);
+		}
+		if (null == header) {
+			header = req.getHeader(ACCEPT);
+		}
 		if (header != null) {
-			TupleQueryResultFormat tupleFormat = QueryResultIO.getParserFormatForFileName(header);
+			TupleQueryResultFormat tupleFormat = QueryResultIO.getParserFormatForMIMEType(header);
 			if (tupleFormat != null) {
 				return tupleFormat;
 			}
@@ -238,8 +244,8 @@ public abstract class BaseServlet implements Servlet {
 			contentType = APPLICATION_JAVASCRIPT;
 		}
 		else {
-			// If the JSON-P check above failed, use the normal methods to determine
-			// output format
+			// If the JSON-P check above failed, use the normal methods to
+			// determine output format
 			resultWriter = getResultWriter(req, resp, resp.getOutputStream());
 			contentType = resultWriter.getQueryResultFormat().getDefaultMIMEType();
 		}

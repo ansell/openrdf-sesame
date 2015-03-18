@@ -94,7 +94,7 @@ public final class QueryEvaluator {
 		Query query = QueryFactory.prepareQuery(con, queryLn, queryText);
 		boolean evaluateCookie = false;
 		int offset = req.getInt("offset");
-		int limit = req.getInt("limit");
+		int limit = req.getInt("limit_query");
 		boolean paged = limit > 0;
 		if (query instanceof GraphQuery || query instanceof TupleQuery) {
 			final int know_total = req.getInt("know_total");

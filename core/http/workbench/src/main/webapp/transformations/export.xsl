@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#"
 	xmlns="http://www.w3.org/1999/xhtml">
 
@@ -59,6 +58,7 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">this.form.submit();</xsl:with-param>
+								<xsl:with-param name="limit_id">limit_explore</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td id="result-limited">
@@ -75,6 +75,8 @@
 		<table class="data">
 			<xsl:apply-templates select="*" />
 		</table>
+        <script src="../../scripts/paging.js" type="text/javascript">  </script>
+        <script src="../../scripts/export.js" type="text/javascript">  </script>
 	</xsl:template>
 
 </xsl:stylesheet>

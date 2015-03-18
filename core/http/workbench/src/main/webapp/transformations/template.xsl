@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE rdf:RDF [
-   <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
- ]>
+<!DOCTYPE xsl:stylesheet>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:output method="html" doctype-system="about:legacy-compat" />
@@ -131,14 +129,12 @@
 					<xsl:apply-templates select="*" />
 				</div>
 				<div id="footer">
-					<p>
 						<div>
 							<xsl:value-of select="$copyright.label" />
 						</div>
 						<a href="http://www.aduna-software.com/">
 							<xsl:value-of select="$aduna.label" />
 						</a>
-					</p>
 				</div>
 			</body>
 		</html>
@@ -287,7 +283,14 @@
 
 	<xsl:template name="limit-select">
 		<xsl:param name="onchange" />
-		<select id="limit" name="limit">
+        <xsl:param name="limit_id" />
+		<select>
+            <xsl:attribute name="id">
+                <xsl:value-of select="$limit_id" />
+            </xsl:attribute>
+            <xsl:attribute name="name">
+                <xsl:value-of select="$limit_id" />
+            </xsl:attribute>
 			<xsl:if test="$onchange">
 				<xsl:attribute name="onchange">
 					<xsl:value-of select="$onchange" />

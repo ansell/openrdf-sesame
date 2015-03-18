@@ -163,7 +163,7 @@ public class PrefixDeclProcessor {
 				throw new VisitorException("QName '" + qname + "' uses an undefined prefix");
 			}
 
-			localName = processEscapesAndHex(localName);
+			localName = processEscapes(localName);
 
 			// Replace the qname node with a new IRI node in the parent node
 			ASTIRI iriNode = new ASTIRI(SyntaxTreeBuilderTreeConstants.JJTIRI);
@@ -173,33 +173,13 @@ public class PrefixDeclProcessor {
 			return null;
 		}
 
-		private String processEscapesAndHex(String localName) {
+		private String processEscapes(String localName) {
 
-			// first process hex-encoded chars.
-			StringBuffer unencoded = new StringBuffer();
-			Pattern hexPattern = Pattern.compile("([^\\\\]|^)(%[A-F\\d][A-F\\d])", Pattern.CASE_INSENSITIVE);
-			Matcher m = hexPattern.matcher(localName);
-			boolean result = m.find();
-			while (result) {
-				// we match the previous char because we need to be sure we are not
-				// processing an escaped % char rather than
-				// an actual hex encoding, for example: 'foo\%bar'.
-				String previousChar = m.group(1);
-				String encoded = m.group(2);
-
-				int codePoint = Integer.parseInt(encoded.substring(1), 16);
-				String decoded = String.valueOf(Character.toChars(codePoint));
-
-				m.appendReplacement(unencoded, previousChar + decoded);
-				result = m.find();
-			}
-			m.appendTail(unencoded);
-
-			// then process escaped special chars.
+			// process escaped special chars.
 			StringBuffer unescaped = new StringBuffer();
 			Pattern escapedCharPattern = Pattern.compile("\\\\[_~\\.\\-!\\$\\&\\'\\(\\)\\*\\+\\,\\;\\=\\:\\/\\?#\\@\\%]");
-			m = escapedCharPattern.matcher(unencoded.toString());
-			result = m.find();
+			Matcher m = escapedCharPattern.matcher(localName);
+			boolean result = m.find();
 			while (result) {
 				String escaped = m.group();
 				m.appendReplacement(unescaped, escaped.substring(1));
