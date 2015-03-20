@@ -492,6 +492,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void startUpdate(UpdateContext op)
 		throws SailException
 	{
+		if (op != null) {
+			flushPendingUpdates();
+		}
 		synchronized (removed) {
 			assert !removed.containsKey(op);
 			removed.put(op, new LinkedList<Statement>());
