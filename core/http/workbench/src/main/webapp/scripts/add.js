@@ -34,9 +34,11 @@ var workbench;
             firstType.prop('disabled', true);
             $('#source-' + selected).prop('checked', true);
             var isfile = (selected == 'file');
-            $('#file').prop('disabled', !isfile);
+            var file = $('#file');
+            file.prop('disabled', !isfile);
             var isurl = (selected == 'url');
-            $('#url').prop('disabled', !isurl);
+            var url = $('#url');
+            url.prop('disabled', !isurl);
             if (istext) {
                 var turtle = contentType.find("option[value='application/x-turtle']");
                 if (turtle.length == 0) {
@@ -50,13 +52,12 @@ var workbench;
                 var baseURI = $('#baseURI');
                 var checked = $('#useForContext').prop('checked');
                 if (isfile) {
-                    var file = $('#file');
                     baseURI.val(file.val() == '' ? '' : encodeURI('file://' + file.val().replace(/\\/g, '/')));
                     if (checked) {
                         setContextFromBaseURI();
                     }
                 } else if (isurl) {
-                    baseURI.val($('#url').val());
+                    baseURI.val(url.val());
                     if (checked) {
                         setContextFromBaseURI();
                     }

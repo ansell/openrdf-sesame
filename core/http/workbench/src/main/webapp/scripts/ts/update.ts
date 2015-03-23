@@ -56,6 +56,11 @@ module workbench {
             }
         }
 
+        /**
+         * Invoked upon form submission.
+         *
+         * @returns {boolean} true, always
+         */
         export function doSubmit() {
             // Save yasqe content to text area.
             if (yasqe) {

@@ -51,6 +51,11 @@ var workbench;
         }
         _update.initYasqe = initYasqe;
 
+        /**
+        * Invoked upon form submission.
+        *
+        * @returns {boolean} true, always
+        */
         function doSubmit() {
             // Save yasqe content to text area.
             if (yasqe) {
