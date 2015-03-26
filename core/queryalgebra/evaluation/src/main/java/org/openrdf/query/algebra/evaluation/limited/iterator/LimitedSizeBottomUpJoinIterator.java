@@ -29,7 +29,9 @@ import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
 
 /**
  * @author Jerven Bolleman, SIB Swiss Institute of Bioinformatics
+ * @deprecated replaced by LimitedSizeHashJoinIteration
  */
+@Deprecated
 public class LimitedSizeBottomUpJoinIterator extends BottomUpJoinIterator {
 
 	private static final String SIZE_LIMIT_REACHED = "Size limited reached inside bottom up join operator, max size is:";
