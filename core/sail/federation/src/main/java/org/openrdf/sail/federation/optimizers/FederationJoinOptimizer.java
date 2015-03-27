@@ -335,6 +335,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 		{
 			RepositoryConnection result = null;
 
+			// Avoid querying repositories if given a set of explicit contexts only belonging to one federation member
 			if(contextToMemberMap == null) {
 				contextToMemberMap = createContextToMemberMap(members);
 			}
