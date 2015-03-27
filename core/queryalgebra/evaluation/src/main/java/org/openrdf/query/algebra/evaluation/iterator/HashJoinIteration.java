@@ -192,12 +192,24 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		throws QueryEvaluationException
 	{
 
-		Collection<BindingSet> leftArgResults = makeIterationCache(leftIter);
+		Collection<BindingSet> leftArgResults;
 		Collection<BindingSet> rightArgResults = makeIterationCache(rightIter);
+		if(!leftJoin)
+		{
+			leftArgResults = makeIterationCache(leftIter);
 
-		while (leftIter.hasNext() && rightIter.hasNext()) {
-			add(leftArgResults, leftIter.next());
-			add(rightArgResults, rightIter.next());
+			while (leftIter.hasNext() && rightIter.hasNext()) {
+				add(leftArgResults, leftIter.next());
+				add(rightArgResults, rightIter.next());
+			}
+		}
+		else
+		{
+			leftArgResults = Collections.emptyList();
+
+			while (rightIter.hasNext()) {
+				add(rightArgResults, rightIter.next());
+			}
 		}
 
 		Collection<BindingSet> smallestResult = null;
