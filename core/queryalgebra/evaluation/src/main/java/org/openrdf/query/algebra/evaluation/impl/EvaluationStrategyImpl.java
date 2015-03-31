@@ -171,6 +171,11 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * default value for the Iteration item cache size.
+	 */
+	public static final long DEFAULT_ITERATION_CACHE_SIZE = 10000L;
+	
 	protected final TripleSource tripleSource;
 
 	protected final Dataset dataset;
@@ -180,6 +185,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	// SES-869.
 	private Value sharedValueOfNow;
 
+	private final long iterationCacheSize;
+	
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -189,10 +196,14 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset) {
+		this(tripleSource, dataset, DEFAULT_ITERATION_CACHE_SIZE);
+	}
+	
+	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset, long iterationCacheSize) {
 		this.tripleSource = tripleSource;
 		this.dataset = dataset;
+		this.iterationCacheSize = iterationCacheSize;
 		
-
 		EvaluationStrategies.register(this.hashCode(), this);
 	}
 
@@ -774,7 +785,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		boolean reduced = isReducedOrDistinct(node);
 		long limit = getLimit(node);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced);
+		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced, iterationCacheSize);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,

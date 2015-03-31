@@ -53,6 +53,7 @@ import org.openrdf.query.QueryEvaluationException;
  */
 public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationException> {
 
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -72,8 +73,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	/**
 	 * Number of items cached before internal collection is synced to disk
 	 */
-	// TODO should be made configurable
-	private long itemCacheSize = 10000L;
+	private final long itemCacheSize;
 
 	/*--------------*
 	 * Constructors *
@@ -88,10 +88,17 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
 			Comparator<BindingSet> comparator, long limit, boolean distinct)
 	{
+		this(iter, comparator, limit, distinct, DEFAULT_ITEM_CACHE_SIZE);
+	}
+
+	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
+			Comparator<BindingSet> comparator, long limit, boolean distinct, long itemCacheSize)
+	{
 		this.iter = iter;
 		this.comparator = comparator;
 		this.limit = limit;
 		this.distinct = distinct;
+		this.itemCacheSize = itemCacheSize;
 
 		try {
 			this.tempFile = File.createTempFile("order-eval", null);
