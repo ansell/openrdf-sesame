@@ -48,7 +48,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -136,7 +136,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 * A set containing URIs that have been generated as a result of rdf:ID
 	 * attributes. These URIs should be unique within a single document.
 	 */
-	private Set<URI> usedIDs = new HashSet<URI>();
+	private Set<IRI> usedIDs = new HashSet<IRI>();
 
 	/*--------------*
 	 * Constructors *
@@ -592,7 +592,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		}
 
 		PropertyElement propEl = (PropertyElement)peekStack(0);
-		URI datatype = propEl.getDatatype();
+		IRI datatype = propEl.getDatatype();
 
 		Literal lit = createLiteral(text, xmlLang, datatype);
 
@@ -654,7 +654,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 
 		if (!localName.equals("Description") || !namespaceURI.equals(RDF.NAMESPACE)) {
 			// element name is uri's type
-			URI className = null;
+			IRI className = null;
 			if ("".equals(namespaceURI)) {
 				// No namespace, use base URI
 				className = buildResourceFromLocalName(localName);
@@ -668,7 +668,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		Att type = atts.removeAtt(RDF.NAMESPACE, "type");
 		if (type != null) {
 			// rdf:type attribute, value is a URI-reference
-			URI className = resolveURI(type.getValue());
+			IRI className = resolveURI(type.getValue());
 
 			reportStatement(nodeResource, RDF.TYPE, className);
 		}
@@ -747,7 +747,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		while (iter.hasNext()) {
 			Att att = iter.next();
 
-			URI predicate = createURI(att.getURI());
+			IRI predicate = createURI(att.getURI());
 			Literal lit = createLiteral(att.getValue(), xmlLang, null);
 
 			reportStatement(subject, predicate, lit);
@@ -764,7 +764,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		}
 
 		// Get the URI of the property
-		URI propURI = null;
+		IRI propURI = null;
 		if (namespaceURI.equals("")) {
 			// no namespace URI
 			reportError("unqualified property element <" + qName + "> not allowed",
@@ -789,7 +789,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		// Check if property has a reification ID
 		Att id = atts.removeAtt(RDF.NAMESPACE, "ID");
 		if (id != null) {
-			URI reifURI = buildURIFromID(id.getValue());
+			IRI reifURI = buildURIFromID(id.getValue());
 			predicate.setReificationURI(reifURI);
 		}
 
@@ -866,7 +866,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 				// rdf:ID and/or rdf:datatype attributes.
 				NodeElement subject = (NodeElement)peekStack(1);
 
-				URI dtURI = null;
+				IRI dtURI = null;
 				if (datatype != null) {
 					dtURI = createURI(datatype.getValue());
 				}
@@ -894,7 +894,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 				Att type = atts.removeAtt(RDF.NAMESPACE, "type");
 				if (type != null) {
 					// rdf:type attribute, value is a URI-reference
-					URI className = resolveURI(type.getValue());
+					IRI className = resolveURI(type.getValue());
 
 					reportStatement(resourceRes, RDF.TYPE, className);
 				}
@@ -908,7 +908,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			// Check for rdf:datatype attribute
 			Att datatype = atts.removeAtt(RDF.NAMESPACE, "datatype");
 			if (datatype != null) {
-				URI dtURI = resolveURI(datatype.getValue());
+				IRI dtURI = resolveURI(datatype.getValue());
 				predicate.setDatatype(dtURI);
 			}
 
@@ -981,12 +981,12 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 
 		if (predicate.isReified()) {
 			NodeElement subject = (NodeElement)peekStack(1);
-			URI reifRes = predicate.getReificationURI();
+			IRI reifRes = predicate.getReificationURI();
 			reifyStatement(reifRes, subject.getResource(), predicate.getURI(), value);
 		}
 	}
 
-	private void reifyStatement(Resource reifNode, Resource subj, URI pred, Value obj)
+	private void reifyStatement(Resource reifNode, Resource subj, IRI pred, Value obj)
 		throws RDFParseException, RDFHandlerException
 	{
 		reportStatement(reifNode, RDF.TYPE, RDF.STATEMENT);
@@ -998,7 +998,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	/**
 	 * Builds a Resource from a non-qualified localname.
 	 */
-	private URI buildResourceFromLocalName(String localName)
+	private IRI buildResourceFromLocalName(String localName)
 		throws RDFParseException
 	{
 		return resolveURI("#" + localName);
@@ -1007,7 +1007,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	/**
 	 * Builds a Resource from the value of an rdf:ID attribute.
 	 */
-	private URI buildURIFromID(String id)
+	private IRI buildURIFromID(String id)
 		throws RDFParseException
 	{
 		if (getParserConfig().get(XMLParserSettings.FAIL_ON_INVALID_NCNAME)) {
@@ -1017,7 +1017,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			}
 		}
 
-		URI uri = resolveURI("#" + id);
+		IRI uri = resolveURI("#" + id);
 
 		if (getParserConfig().get(XMLParserSettings.FAIL_ON_DUPLICATE_RDF_ID)) {
 			// ID (URI) should be unique in the current document
@@ -1219,7 +1219,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 *         If the configured RDFHandlerException throws an
 	 *         RDFHandlerException.
 	 */
-	private void reportStatement(Resource subject, URI predicate, Value object)
+	private void reportStatement(Resource subject, IRI predicate, Value object)
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subject, predicate, object);
@@ -1229,7 +1229,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	@Override
-	protected Literal createLiteral(String label, String lang, URI datatype)
+	protected Literal createLiteral(String label, String lang, IRI datatype)
 		throws RDFParseException
 	{
 		Locator locator = saxFilter.getLocator();
@@ -1343,13 +1343,13 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	static class PropertyElement {
 
 		/** The property URI. */
-		private URI uri;
+		private IRI uri;
 
 		/** An optional reification identifier. */
-		private URI reificationURI;
+		private IRI reificationURI;
 
 		/** An optional datatype. */
-		private URI datatype;
+		private IRI datatype;
 
 		/**
 		 * Flag indicating whether this PropertyElement has an attribute
@@ -1362,11 +1362,11 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 		 */
 		private Resource lastListResource;
 
-		public PropertyElement(URI uri) {
+		public PropertyElement(IRI uri) {
 			this.uri = uri;
 		}
 
-		public URI getURI() {
+		public IRI getURI() {
 			return uri;
 		}
 
@@ -1374,19 +1374,19 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 			return reificationURI != null;
 		}
 
-		public void setReificationURI(URI reifURI) {
+		public void setReificationURI(IRI reifURI) {
 			this.reificationURI = reifURI;
 		}
 
-		public URI getReificationURI() {
+		public IRI getReificationURI() {
 			return reificationURI;
 		}
 
-		public void setDatatype(URI datatype) {
+		public void setDatatype(IRI datatype) {
 			this.datatype = datatype;
 		}
 
-		public URI getDatatype() {
+		public IRI getDatatype() {
 			return datatype;
 		}
 

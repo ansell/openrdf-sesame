@@ -30,7 +30,7 @@ public class NQuadsEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new NQuadsParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createURI("http://www.w3.org/TR/n-quads/"));
+				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/n-quads/"));
 	}
 
 }

@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.ParserConfig;
@@ -81,8 +81,8 @@ public class JSONLDWriterTest extends RDFWriterTest {
 		throws Exception
 	{
 		String exNs = "http://example.org/";
-		URI uri1 = vf.createURI(exNs, "uri1");
-		URI uri2 = vf.createURI(exNs, "uri2");
+		IRI uri1 = vf.createIRI(exNs, "uri1");
+		IRI uri2 = vf.createIRI(exNs, "uri2");
 		Literal plainLit = vf.createLiteral("plain", XMLSchema.STRING);
 
 		Statement st1 = vf.createStatement(uri1, uri2, plainLit);

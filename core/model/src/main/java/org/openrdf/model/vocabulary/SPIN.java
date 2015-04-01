@@ -16,7 +16,7 @@
  */
 package org.openrdf.model.vocabulary;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
@@ -39,14 +39,14 @@ public class SPIN {
 	 * classes that are instances of this metaclass. Function calls are instances
 	 * of the function classes, with property values for the arguments.
 	 */
-	public static URI FUNCTION_CLASS;
+	public static IRI FUNCTION_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Module An abstract building block of a SPARQL
 	 * system. A Module can take Arguments as input and applies them on an input
 	 * RDF Graph. The Arguments should be declared as spin:constraints.
 	 */
-	public static URI MODULE_CLASS;
+	public static IRI MODULE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#body The body of a Function or Template. This
@@ -56,7 +56,7 @@ public class SPIN {
 	 * return variable. The first binding of this SELECT query will be returned
 	 * as result of the function call.
 	 */
-	public static URI BODY_PROPERTY;
+	public static IRI BODY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#TableDataProvider An abstraction of objects that
@@ -68,9 +68,9 @@ public class SPIN {
 	 * definitions of columns via spin:column, and these definitions can inform
 	 * rendering engines.
 	 */
-	public static URI TABLE_DATA_PROVIDER_CLASS;
+	public static IRI TABLE_DATA_PROVIDER_CLASS;
 
-	public static URI CONSTRUCT_TEMPLATE_CLASS;
+	public static IRI CONSTRUCT_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Template The metaclass of SPIN templates.
@@ -80,51 +80,51 @@ public class SPIN {
 	 * where normally a SPARQL query or update request is used, in particular as
 	 * spin:rules and spin:constraints.
 	 */
-	public static URI TEMPLATE_CLASS;
+	public static IRI TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Rule Groups together the kinds of SPARQL commands
 	 * that can appear as SPIN rules and constructors: CONSTRUCT, DELETE WHERE
 	 * and DELETE/INSERT. This class is never to be instantiated directly.
 	 */
-	public static URI RULE_CLASS;
+	public static IRI RULE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#AskTemplate A SPIN template that wraps an ASK
 	 * query.
 	 */
-	public static URI ASK_TEMPLATE_CLASS;
+	public static IRI ASK_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#UpdateTemplate A SPIN template that has an UPDATE
 	 * command as its body.
 	 */
-	public static URI UPDATE_TEMPLATE_CLASS;
+	public static IRI UPDATE_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#RuleProperty The metaclass of spin:rule and its
 	 * subproperties. spin:RuleProperties can have additional metadata attached
 	 * to them.
 	 */
-	public static URI RULE_PROPERTY_CLASS;
+	public static IRI RULE_PROPERTY_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#ConstraintViolation An object that can be created
 	 * by spin:constraints to provide information about a constraint violation.
 	 */
-	public static URI CONSTRAINT_VIOLATION_CLASS;
+	public static IRI CONSTRAINT_VIOLATION_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Modules An "artificial" parent class for all
 	 * Functions and Templates.
 	 */
-	public static URI MODULES_CLASS;
+	public static IRI MODULES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#SelectTemplate A SPIN template that wraps a SELECT
 	 * query.
 	 */
-	public static URI SELECT_TEMPLATE_CLASS;
+	public static IRI SELECT_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Column Provides metadata about a column in the
@@ -132,7 +132,7 @@ public class SPIN {
 	 * templates. Columns can define human-readable labels that serve as column
 	 * titles, using rdfs:label.
 	 */
-	public static URI COLUMN_CLASS;
+	public static IRI COLUMN_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#LibraryOntology A marker class that can be
@@ -145,27 +145,27 @@ public class SPIN {
 	 * themselves, because we don't want the system to reason about the SPIN
 	 * triples to speed up things.
 	 */
-	public static URI LIBRARY_ONTOLOGY_CLASS;
+	public static IRI LIBRARY_ONTOLOGY_CLASS;
 
-	public static URI MAGIC_PROPERTY_CLASS;
+	public static IRI MAGIC_PROPERTY_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#update Can be used to point from any resource to
 	 * an Update.
 	 */
-	public static URI UPDATE_PROPERTY;
+	public static IRI UPDATE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#command Can be used to link a resource with a
 	 * SPARQL query or update request (sp:Command).
 	 */
-	public static URI COMMAND_PROPERTY;
+	public static IRI COMMAND_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#returnType The return type of a Function, e.g.
 	 * xsd:string.
 	 */
-	public static URI RETURN_TYPE_PROPERTY;
+	public static IRI RETURN_TYPE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#systemProperty An "abstract" base property that
@@ -173,7 +173,7 @@ public class SPIN {
 	 * need to see in property trees. This property may be dropped in future
 	 * versions of this ontology - right now it's mainly here for convenience.
 	 */
-	public static URI SYSTEM_PROPERTY_PROPERTY;
+	public static IRI SYSTEM_PROPERTY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#column Can link a TableDataProvider (esp.
@@ -183,26 +183,26 @@ public class SPIN {
 	 * with 0). Not all result variables of the underlying query need to have a
 	 * matching spin:Column.
 	 */
-	public static URI COLUMN_PROPERTY;
+	public static IRI COLUMN_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#symbol The symbol of a function, e.g. "=" for the
 	 * eq function.
 	 */
-	public static URI SYMBOL_PROPERTY;
+	public static IRI SYMBOL_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#violationRoot The root resource of the violation
 	 * (often ?this in the constraint body).
 	 */
-	public static URI VIOLATION_ROOT_PROPERTY;
+	public static IRI VIOLATION_ROOT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#columnType The datatype or resource type of a
 	 * spin:Column. For example this is useful as metadata to inform a rendering
 	 * engine that numeric columns (e.g. xsd:float) need to be right-aligned.
 	 */
-	public static URI COLUMN_TYPE_PROPERTY;
+	public static IRI COLUMN_TYPE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#nextRuleProperty Can be used to link two
@@ -210,7 +210,7 @@ public class SPIN {
 	 * engine to execute one set of rules before another one. The values of the
 	 * subject property will be executed before those of the object property.
 	 */
-	public static URI NEXT_RULE_PROPERTY_PROPERTY;
+	public static IRI NEXT_RULE_PROPERTY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#private Can be set to true to indicate that a SPIN
@@ -219,7 +219,7 @@ public class SPIN {
 	 * functions. Furthermore, it tells potential users of this function that
 	 * they should avoid using this function, as it may not be stable.
 	 */
-	public static URI PRIVATE_PROPERTY;
+	public static IRI PRIVATE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#labelTemplate A template string for displaying
@@ -227,7 +227,7 @@ public class SPIN {
 	 * contain the argument variable names in curly braces to support
 	 * substitution. For example, "The number of values of the {?arg1} property."
 	 */
-	public static URI LABEL_TEMPLATE_PROPERTY;
+	public static IRI LABEL_TEMPLATE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#violationPath An optional attribute of
@@ -236,7 +236,7 @@ public class SPIN {
 	 * the predicate of a subject/predicate combination. Otherwise it should be a
 	 * blank node of type sp:Path.
 	 */
-	public static URI VIOLATION_PATH_PROPERTY;
+	public static IRI VIOLATION_PATH_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#constructor Can be used to attach a "constructor"
@@ -248,14 +248,14 @@ public class SPIN {
 	 * resources that have received a new rdf:type triple as a result of
 	 * spin:rules firing.
 	 */
-	public static URI CONSTRUCTOR_PROPERTY;
+	public static IRI CONSTRUCTOR_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#abstract Can be set to true to indicate that this
 	 * module shall not be instantiated. Abstract modules are only there to
 	 * organize other modules into hierarchies.
 	 */
-	public static URI ABSTRACT_PROPERTY;
+	public static IRI ABSTRACT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#constraint Links a class with constraints on its
@@ -267,26 +267,26 @@ public class SPIN {
 	 * spin:ConstraintViolation to provide details on the reason for the
 	 * violation.
 	 */
-	public static URI CONSTRAINT_PROPERTY;
+	public static IRI CONSTRAINT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#query Can be used to point from any resource to a
 	 * Query.
 	 */
-	public static URI QUERY_PROPERTY;
+	public static IRI QUERY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#fix Can be used to link a ConstraintViolation with
 	 * one or more UPDATE Templates that would help fix the violation.
 	 */
-	public static URI FIX_PROPERTY;
+	public static IRI FIX_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#columnWidth The preferred width of the associated
 	 * Column, for display purposes. Values in pixels (rendering engines may
 	 * multiply the values depending on resolution).
 	 */
-	public static URI COLUMN_WIDTH_PROPERTY;
+	public static IRI COLUMN_WIDTH_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#violationSource Can be used to link a
@@ -295,13 +295,13 @@ public class SPIN {
 	 * checking engine and does not need to be set manually. However, it can be
 	 * useful to learn more about the origin of a violation.
 	 */
-	public static URI VIOLATION_SOURCE_PROPERTY;
+	public static IRI VIOLATION_SOURCE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#columnIndex The index of a column (from left to
 	 * right) starting at 0.
 	 */
-	public static URI COLUMN_INDEX_PROPERTY;
+	public static IRI COLUMN_INDEX_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#thisUnbound Can be set to true for SPIN rules and
@@ -312,7 +312,7 @@ public class SPIN {
 	 * greatly improve performance of query execution, because it does not need
 	 * to add clauses to narrow down the WHERE clause.
 	 */
-	public static URI THIS_UNBOUND_PROPERTY;
+	public static IRI THIS_UNBOUND_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#rulePropertyMaxIterationCount Can be attached to
@@ -320,7 +320,7 @@ public class SPIN {
 	 * shall only execute the rules max times. If no value is specified, then the
 	 * rules will be executed with no specific limit.
 	 */
-	public static URI RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY;
+	public static IRI RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#imports Can be used to link an RDF graph (usually
@@ -330,19 +330,19 @@ public class SPIN {
 	 * explicitly importing them using owl:imports, because it does not force all
 	 * the SPIN triples into the RDF model.
 	 */
-	public static URI IMPORTS_PROPERTY;
+	public static IRI IMPORTS_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#ConstructTemplates Suggested abstract base class
 	 * for all ConstructTemplates.
 	 */
-	public static URI CONSTRUCT_TEMPLATES_CLASS;
+	public static IRI CONSTRUCT_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Templates Suggested abstract base class for all
 	 * Templates.
 	 */
-	public static URI TEMPLATES_CLASS;
+	public static IRI TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#eval Evaluates a given SPIN expression or SELECT
@@ -351,45 +351,45 @@ public class SPIN {
 	 * first a property name, and then a value. These name/value pairs will be
 	 * pre-bound variables for the execution of the expression.
 	 */
-	public static URI EVAL_CLASS;
+	public static IRI EVAL_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Functions An abstract base class for all defined
 	 * functions. This class mainly serves as a shared root so that the various
 	 * instances of the Function metaclass are grouped together.
 	 */
-	public static URI FUNCTIONS_CLASS;
+	public static IRI FUNCTIONS_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#AskTemplates Suggested abstract base class for all
 	 * AskTemplates.
 	 */
-	public static URI ASK_TEMPLATES_CLASS;
+	public static IRI ASK_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#SelectTemplates Suggested abstract base class for
 	 * all SelectTemplates.
 	 */
-	public static URI SELECT_TEMPLATES_CLASS;
+	public static IRI SELECT_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#MagicProperties An abstract superclass that can be
 	 * used to group all spin:MagicProperty instances under a single parent
 	 * class.
 	 */
-	public static URI MAGIC_PROPERTIES_CLASS;
+	public static IRI MAGIC_PROPERTIES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#_this A system variable representing the current
 	 * context instance in a rule or constraint.
 	 */
-	public static URI THIS_CONTEXT_INSTANCE;
+	public static IRI THIS_CONTEXT_INSTANCE;
 
 	/**
 	 * http://spinrdf.org/spin#UpdateTemplates Suggested abstract base class for
 	 * all UpdateTemplates.
 	 */
-	public static URI UPDATE_TEMPLATES_CLASS;
+	public static IRI UPDATE_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#rule An inferencing rule attached to a class.
@@ -398,58 +398,58 @@ public class SPIN {
 	 * These inferences can be used to derive new values from existing values at
 	 * the instance.
 	 */
-	public static URI RULE_PROPERTY;
+	public static IRI RULE_PROPERTY;
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
-		FUNCTION_CLASS = factory.createURI(NAMESPACE, "Function");
-		MODULE_CLASS = factory.createURI(NAMESPACE, "Module");
-		BODY_PROPERTY = factory.createURI(NAMESPACE, "body");
-		TABLE_DATA_PROVIDER_CLASS = factory.createURI(NAMESPACE, "TableDataProvider");
-		CONSTRUCT_TEMPLATE_CLASS = factory.createURI(NAMESPACE, "ConstructTemplate");
-		TEMPLATE_CLASS = factory.createURI(NAMESPACE, "Template");
-		RULE_CLASS = factory.createURI(NAMESPACE, "Rule");
-		ASK_TEMPLATE_CLASS = factory.createURI(NAMESPACE, "AskTemplate");
-		UPDATE_TEMPLATE_CLASS = factory.createURI(NAMESPACE, "UpdateTemplate");
-		RULE_PROPERTY_CLASS = factory.createURI(NAMESPACE, "RuleProperty");
-		CONSTRAINT_VIOLATION_CLASS = factory.createURI(NAMESPACE, "ConstraintViolation");
-		MODULES_CLASS = factory.createURI(NAMESPACE, "Modules");
-		SELECT_TEMPLATE_CLASS = factory.createURI(NAMESPACE, "SelectTemplate");
-		COLUMN_CLASS = factory.createURI(NAMESPACE, "Column");
-		LIBRARY_ONTOLOGY_CLASS = factory.createURI(NAMESPACE, "LibraryOntology");
-		MAGIC_PROPERTY_CLASS = factory.createURI(NAMESPACE, "MagicProperty");
-		UPDATE_PROPERTY = factory.createURI(NAMESPACE, "update");
-		COMMAND_PROPERTY = factory.createURI(NAMESPACE, "command");
-		RETURN_TYPE_PROPERTY = factory.createURI(NAMESPACE, "returnType");
-		SYSTEM_PROPERTY_PROPERTY = factory.createURI(NAMESPACE, "systemProperty");
-		COLUMN_PROPERTY = factory.createURI(NAMESPACE, "column");
-		SYMBOL_PROPERTY = factory.createURI(NAMESPACE, "symbol");
-		VIOLATION_ROOT_PROPERTY = factory.createURI(NAMESPACE, "violationRoot");
-		COLUMN_TYPE_PROPERTY = factory.createURI(NAMESPACE, "columnType");
-		NEXT_RULE_PROPERTY_PROPERTY = factory.createURI(NAMESPACE, "nextRuleProperty");
-		PRIVATE_PROPERTY = factory.createURI(NAMESPACE, "private");
-		LABEL_TEMPLATE_PROPERTY = factory.createURI(NAMESPACE, "labelTemplate");
-		VIOLATION_PATH_PROPERTY = factory.createURI(NAMESPACE, "violationPath");
-		CONSTRUCTOR_PROPERTY = factory.createURI(NAMESPACE, "constructor");
-		ABSTRACT_PROPERTY = factory.createURI(NAMESPACE, "abstract");
-		CONSTRAINT_PROPERTY = factory.createURI(NAMESPACE, "constraint");
-		QUERY_PROPERTY = factory.createURI(NAMESPACE, "query");
-		FIX_PROPERTY = factory.createURI(NAMESPACE, "fix");
-		COLUMN_WIDTH_PROPERTY = factory.createURI(NAMESPACE, "columnWidth");
-		VIOLATION_SOURCE_PROPERTY = factory.createURI(NAMESPACE, "violationSource");
-		COLUMN_INDEX_PROPERTY = factory.createURI(NAMESPACE, "columnIndex");
-		THIS_UNBOUND_PROPERTY = factory.createURI(NAMESPACE, "thisUnbound");
-		RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY = factory.createURI(NAMESPACE,
+		FUNCTION_CLASS = factory.createIRI(NAMESPACE, "Function");
+		MODULE_CLASS = factory.createIRI(NAMESPACE, "Module");
+		BODY_PROPERTY = factory.createIRI(NAMESPACE, "body");
+		TABLE_DATA_PROVIDER_CLASS = factory.createIRI(NAMESPACE, "TableDataProvider");
+		CONSTRUCT_TEMPLATE_CLASS = factory.createIRI(NAMESPACE, "ConstructTemplate");
+		TEMPLATE_CLASS = factory.createIRI(NAMESPACE, "Template");
+		RULE_CLASS = factory.createIRI(NAMESPACE, "Rule");
+		ASK_TEMPLATE_CLASS = factory.createIRI(NAMESPACE, "AskTemplate");
+		UPDATE_TEMPLATE_CLASS = factory.createIRI(NAMESPACE, "UpdateTemplate");
+		RULE_PROPERTY_CLASS = factory.createIRI(NAMESPACE, "RuleProperty");
+		CONSTRAINT_VIOLATION_CLASS = factory.createIRI(NAMESPACE, "ConstraintViolation");
+		MODULES_CLASS = factory.createIRI(NAMESPACE, "Modules");
+		SELECT_TEMPLATE_CLASS = factory.createIRI(NAMESPACE, "SelectTemplate");
+		COLUMN_CLASS = factory.createIRI(NAMESPACE, "Column");
+		LIBRARY_ONTOLOGY_CLASS = factory.createIRI(NAMESPACE, "LibraryOntology");
+		MAGIC_PROPERTY_CLASS = factory.createIRI(NAMESPACE, "MagicProperty");
+		UPDATE_PROPERTY = factory.createIRI(NAMESPACE, "update");
+		COMMAND_PROPERTY = factory.createIRI(NAMESPACE, "command");
+		RETURN_TYPE_PROPERTY = factory.createIRI(NAMESPACE, "returnType");
+		SYSTEM_PROPERTY_PROPERTY = factory.createIRI(NAMESPACE, "systemProperty");
+		COLUMN_PROPERTY = factory.createIRI(NAMESPACE, "column");
+		SYMBOL_PROPERTY = factory.createIRI(NAMESPACE, "symbol");
+		VIOLATION_ROOT_PROPERTY = factory.createIRI(NAMESPACE, "violationRoot");
+		COLUMN_TYPE_PROPERTY = factory.createIRI(NAMESPACE, "columnType");
+		NEXT_RULE_PROPERTY_PROPERTY = factory.createIRI(NAMESPACE, "nextRuleProperty");
+		PRIVATE_PROPERTY = factory.createIRI(NAMESPACE, "private");
+		LABEL_TEMPLATE_PROPERTY = factory.createIRI(NAMESPACE, "labelTemplate");
+		VIOLATION_PATH_PROPERTY = factory.createIRI(NAMESPACE, "violationPath");
+		CONSTRUCTOR_PROPERTY = factory.createIRI(NAMESPACE, "constructor");
+		ABSTRACT_PROPERTY = factory.createIRI(NAMESPACE, "abstract");
+		CONSTRAINT_PROPERTY = factory.createIRI(NAMESPACE, "constraint");
+		QUERY_PROPERTY = factory.createIRI(NAMESPACE, "query");
+		FIX_PROPERTY = factory.createIRI(NAMESPACE, "fix");
+		COLUMN_WIDTH_PROPERTY = factory.createIRI(NAMESPACE, "columnWidth");
+		VIOLATION_SOURCE_PROPERTY = factory.createIRI(NAMESPACE, "violationSource");
+		COLUMN_INDEX_PROPERTY = factory.createIRI(NAMESPACE, "columnIndex");
+		THIS_UNBOUND_PROPERTY = factory.createIRI(NAMESPACE, "thisUnbound");
+		RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY = factory.createIRI(NAMESPACE,
 				"rulePropertyMaxIterationCount");
-		IMPORTS_PROPERTY = factory.createURI(NAMESPACE, "imports");
-		CONSTRUCT_TEMPLATES_CLASS = factory.createURI(NAMESPACE, "ConstructTemplates");
-		TEMPLATES_CLASS = factory.createURI(NAMESPACE, "Templates");
-		EVAL_CLASS = factory.createURI(NAMESPACE, "eval");
-		FUNCTIONS_CLASS = factory.createURI(NAMESPACE, "Functions");
-		ASK_TEMPLATES_CLASS = factory.createURI(NAMESPACE, "AskTemplates");
-		SELECT_TEMPLATES_CLASS = factory.createURI(NAMESPACE, "SelectTemplates");
-		MAGIC_PROPERTIES_CLASS = factory.createURI(NAMESPACE, "MagicProperties");
-		THIS_CONTEXT_INSTANCE = factory.createURI(NAMESPACE, "_this");
-		UPDATE_TEMPLATES_CLASS = factory.createURI(NAMESPACE, "UpdateTemplates");
-		RULE_PROPERTY = factory.createURI(NAMESPACE, "rule");
+		IMPORTS_PROPERTY = factory.createIRI(NAMESPACE, "imports");
+		CONSTRUCT_TEMPLATES_CLASS = factory.createIRI(NAMESPACE, "ConstructTemplates");
+		TEMPLATES_CLASS = factory.createIRI(NAMESPACE, "Templates");
+		EVAL_CLASS = factory.createIRI(NAMESPACE, "eval");
+		FUNCTIONS_CLASS = factory.createIRI(NAMESPACE, "Functions");
+		ASK_TEMPLATES_CLASS = factory.createIRI(NAMESPACE, "AskTemplates");
+		SELECT_TEMPLATES_CLASS = factory.createIRI(NAMESPACE, "SelectTemplates");
+		MAGIC_PROPERTIES_CLASS = factory.createIRI(NAMESPACE, "MagicProperties");
+		THIS_CONTEXT_INSTANCE = factory.createIRI(NAMESPACE, "_this");
+		UPDATE_TEMPLATES_CLASS = factory.createIRI(NAMESPACE, "UpdateTemplates");
+		RULE_PROPERTY = factory.createIRI(NAMESPACE, "rule");
 	}
 }

@@ -29,7 +29,7 @@ import info.aduna.iteration.IteratorIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.query.BooleanQuery;
@@ -59,7 +59,7 @@ import org.openrdf.rio.RDFParseException;
  */
 public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
-	private static final URI[] ALL_CONTEXTS = new URI[0];
+	private static final IRI[] ALL_CONTEXTS = new IRI[0];
 
 	private final ContextAwareConnection next;
 
@@ -71,15 +71,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 	private String baseURI;
 
-	private URI[] readContexts = ALL_CONTEXTS;
+	private IRI[] readContexts = ALL_CONTEXTS;
 
-	private URI[] addContexts = ALL_CONTEXTS;
+	private IRI[] addContexts = ALL_CONTEXTS;
 
-	private URI[] removeContexts = ALL_CONTEXTS;
+	private IRI[] removeContexts = ALL_CONTEXTS;
 
-	private URI[] archiveContexts = ALL_CONTEXTS;
+	private IRI[] archiveContexts = ALL_CONTEXTS;
 
-	private URI insertContext = null;
+	private IRI insertContext = null;
 
 	public ContextAwareConnection(Repository repository)
 		throws RepositoryException
@@ -176,7 +176,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * and as such is optional. If no contexts are supplied the method operates
 	 * on the entire repository.
 	 */
-	public URI[] getReadContexts() {
+	public IRI[] getReadContexts() {
 		return readContexts;
 	}
 
@@ -185,7 +185,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * and as such is optional. If no contexts are supplied the method operates
 	 * on the entire repository.
 	 */
-	public void setReadContexts(URI... readContexts) {
+	public void setReadContexts(IRI... readContexts) {
 		this.readContexts = readContexts;
 		if (next != null) {
 			next.setReadContexts(readContexts);
@@ -201,9 +201,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * ignoring any context information in the statement itself.
 	 */
 	@Deprecated
-	public URI[] getAddContexts() {
+	public IRI[] getAddContexts() {
 		if (isNilContext(addContexts))
-			return new URI[] { getInsertContext() };
+			return new IRI[] { getInsertContext() };
 		return addContexts;
 	}
 
@@ -216,7 +216,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * ignoring any context information in the statement itself.
 	 */
 	@Deprecated
-	public void setAddContexts(URI... addContexts) {
+	public void setAddContexts(IRI... addContexts) {
 		this.addContexts = addContexts;
 		if (isNilContext(addContexts)) {
 			this.insertContext = null;
@@ -234,7 +234,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * operates on the contexts associated with the statement itself, and if no
 	 * context is associated with the statement, on the entire repository.
 	 */
-	public URI[] getRemoveContexts() {
+	public IRI[] getRemoveContexts() {
 		return removeContexts;
 	}
 
@@ -244,7 +244,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * operates on the contexts associated with the statement itself, and if no
 	 * context is associated with the statement, on the entire repository.
 	 */
-	public void setRemoveContexts(URI... removeContexts) {
+	public void setRemoveContexts(IRI... removeContexts) {
 		this.removeContexts = removeContexts;
 		if (next != null) {
 			next.setRemoveContexts(removeContexts);
@@ -255,7 +255,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * Before Statements are removed, they are first copied to these contexts.
 	 */
 	@Deprecated
-	public URI[] getArchiveContexts() {
+	public IRI[] getArchiveContexts() {
 		return archiveContexts;
 	}
 
@@ -263,7 +263,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * Before Statements are removed, they are first copied to these contexts.
 	 */
 	@Deprecated
-	public void setArchiveContexts(URI... archiveContexts) {
+	public void setArchiveContexts(IRI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
 		if (next != null) {
 			next.setArchiveContexts(archiveContexts);
@@ -276,7 +276,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * statement, or if the statement contains no context, it is added with the
 	 * context specified here.
 	 */
-	public URI getInsertContext() {
+	public IRI getInsertContext() {
 		return insertContext;
 	}
 
@@ -286,9 +286,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * statement, or if the statement contains no context, it is added with the
 	 * context specified here.
 	 */
-	public void setInsertContext(URI insertContext) {
+	public void setInsertContext(IRI insertContext) {
 		this.insertContext = insertContext;
-		this.addContexts = new URI[]{insertContext};
+		this.addContexts = new IRI[]{insertContext};
 		if (next != null) {
 			next.setInsertContext(insertContext);
 		}
@@ -363,7 +363,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			Resource... contexts)
 		throws RepositoryException, E
 	{
-		final URI insertContext = getInsertContext();
+		final IRI insertContext = getInsertContext();
 		if (isNilContext(contexts)) {
 			super.add(new ConvertingIteration<Statement, Statement, E>(statementIter) {
 
@@ -407,7 +407,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (isNilContext(contexts)) {
@@ -497,7 +497,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, RDFHandler handler, Resource... contexts)
+	public void exportStatements(Resource subj, IRI pred, Value obj, RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
 		if (isAllContext(contexts)) {
@@ -509,7 +509,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
@@ -540,7 +540,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws RepositoryException
 	{
 		if (isAllContext(contexts)) {
@@ -552,7 +552,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
@@ -565,7 +565,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws RepositoryException
 	{
@@ -604,7 +604,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getReadContexts()
 	 * @see #isIncludeInferred()
 	 */
-	public boolean hasStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws RepositoryException
 	{
 		if (isAllContext(contexts)) {
@@ -778,7 +778,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			Resource... contexts)
 		throws RepositoryException, E
 	{
-		final URI[] removeContexts = getRemoveContexts();
+		final IRI[] removeContexts = getRemoveContexts();
 		if (isAllContext(contexts) && removeContexts.length == 1) {
 			super.remove(new ConvertingIteration<Statement, Statement, E>(statementIter) {
 
@@ -811,7 +811,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	 * @see #getRemoveContexts()
 	 */
 	@Override
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void remove(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (isAllContext(contexts)) {
@@ -866,10 +866,10 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void removeWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
-		URI[] archiveContexts = getArchiveContexts();
+		IRI[] archiveContexts = getArchiveContexts();
 		if (archiveContexts.length > 0) {
 			RDFHandler handler = new RDFInserter(getDelegate());
 			try {
@@ -897,15 +897,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	private <O extends Operation> O initOperation(O op) {
-		URI[] readContexts = getReadContexts();
-		URI[] removeContexts = getRemoveContexts();
-		URI insertContext = getInsertContext();
+		IRI[] readContexts = getReadContexts();
+		IRI[] removeContexts = getRemoveContexts();
+		IRI insertContext = getInsertContext();
 		if (readContexts.length > 0 || removeContexts.length > 0 || insertContext != null) {
 			DatasetImpl ds = new DatasetImpl();
-			for (URI graph : readContexts) {
+			for (IRI graph : readContexts) {
 				ds.addDefaultGraph(graph);
 			}
-			for (URI graph : removeContexts) {
+			for (IRI graph : removeContexts) {
 				ds.addDefaultRemoveGraph(graph);
 			}
 			ds.setDefaultInsertGraph(insertContext);

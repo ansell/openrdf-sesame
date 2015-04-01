@@ -29,7 +29,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -197,7 +197,7 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 			return result;
 		}
 
-	private void addQueryNode(Graph graph, Resource implNode, URI predicate, String queryText) {
+	private void addQueryNode(Graph graph, Resource implNode, IRI predicate, String queryText) {
 		if (null != queryText) {
 			ValueFactory factory = ValueFactoryImpl.getInstance();
 			BNode queryNode = factory.createBNode();

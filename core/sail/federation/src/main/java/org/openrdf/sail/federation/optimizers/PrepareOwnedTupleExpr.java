@@ -20,7 +20,7 @@ import java.util.Map;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
@@ -349,8 +349,8 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryExcep
 		Var ctx = node.getContextVar();
 		boolean cokay = ctx == null && scope.equals(Scope.DEFAULT_CONTEXTS) || ctx != null
 				&& scope.equals(Scope.NAMED_CONTEXTS);
-		boolean sokay = !subj.hasValue() || subj.isAnonymous() || subj.getValue() instanceof URI;
-		boolean ookay = !obj.hasValue() || obj.isAnonymous() || obj.getValue() instanceof URI
+		boolean sokay = !subj.hasValue() || subj.isAnonymous() || subj.getValue() instanceof IRI;
+		boolean ookay = !obj.hasValue() || obj.isAnonymous() || obj.getValue() instanceof IRI
 				|| obj.getValue() instanceof Literal;
 		if (cokay && sokay && ookay) {
 			variables.clear();
@@ -427,15 +427,15 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryExcep
 	}
 
 	private void writeResource(StringBuilder builder, Resource res) {
-		if (res instanceof URI) {
-			writeURI(builder, (URI)res);
+		if (res instanceof IRI) {
+			writeURI(builder, (IRI)res);
 		}
 		else {
 			writeBNode(builder, (BNode)res);
 		}
 	}
 
-	private void writeURI(StringBuilder builder, URI uri) {
+	private void writeURI(StringBuilder builder, IRI uri) {
 		builder.append("<");
 		builder.append(TurtleUtil.encodeURIString(uri.stringValue()));
 		builder.append(">");
@@ -462,7 +462,7 @@ public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryExcep
 			builder.append("\"");
 		}
 
-		URI datatype = lit.getDatatype();
+		IRI datatype = lit.getDatatype();
 		if (Literals.isLanguageLiteral(lit)) {
 			// Append the literal's language
 			builder.append("@");

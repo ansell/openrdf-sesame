@@ -19,7 +19,7 @@ package org.openrdf.sail.memory.model;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -45,11 +45,11 @@ public class DecimalMemLiteral extends MemLiteral {
 		this(creator, value, XMLSchema.DECIMAL);
 	}
 
-	public DecimalMemLiteral(Object creator, BigDecimal value, URI datatype) {
+	public DecimalMemLiteral(Object creator, BigDecimal value, IRI datatype) {
 		this(creator, value.toPlainString(), value, datatype);
 	}
 
-	public DecimalMemLiteral(Object creator, String label, BigDecimal value, URI datatype) {
+	public DecimalMemLiteral(Object creator, String label, BigDecimal value, IRI datatype) {
 		super(creator, label, datatype);
 		this.value = value;
 	}

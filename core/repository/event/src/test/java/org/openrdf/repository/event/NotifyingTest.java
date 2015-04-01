@@ -25,7 +25,7 @@ import java.lang.reflect.Proxy;
 import junit.framework.TestCase;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.StatementImpl;
@@ -140,10 +140,10 @@ public class NotifyingTest extends TestCase {
 		throws Exception
 	{
 		ValueFactory vf = ValueFactoryImpl.getInstance();
-		final URI uri = vf.createURI("http://example.com/");
+		final IRI uri = vf.createIRI("http://example.com/");
 		final RepositoryConnection stub = new RepositoryConnectionStub() {
 
-			protected void removeWithoutCommit(Resource subject, URI predicate, Value object,
+			protected void removeWithoutCommit(Resource subject, IRI predicate, Value object,
 					Resource... contexts)
 				throws RepositoryException
 			{
@@ -153,7 +153,7 @@ public class NotifyingTest extends TestCase {
 		NotifyingRepositoryConnection con = new NotifyingRepositoryConnectionWrapper(repo, stub);
 		con.addRepositoryConnectionListener(new RepositoryConnectionListenerAdapter() {
 
-			public void remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+			public void remove(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 					Resource... contexts)
 			{
 				assertEquals(stub, conn);

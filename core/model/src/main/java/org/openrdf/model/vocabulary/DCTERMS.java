@@ -17,7 +17,7 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -55,77 +55,77 @@ public class DCTERMS {
 	/**
 	 * http://purl.org/dc/terms/contributor
 	 */
-	public static final URI CONTRIBUTOR;
+	public static final IRI CONTRIBUTOR;
 
 	/**
 	 * http://purl.org/dc/terms/coverage
 	 */
-	public static final URI COVERAGE;
+	public static final IRI COVERAGE;
 
 	/**
 	 * http://purl.org/dc/terms/creator
 	 */
-	public static final URI CREATOR;
+	public static final IRI CREATOR;
 
 	/**
 	 * http://purl.org/dc/terms/date
 	 */
-	public static final URI DATE;
+	public static final IRI DATE;
 
 	/**
 	 * http://purl.org/dc/terms/description
 	 */
-	public static final URI DESCRIPTION;
+	public static final IRI DESCRIPTION;
 
 	/**
 	 * http://purl.org/dc/terms/format
 	 */
-	public static final URI FORMAT;
+	public static final IRI FORMAT;
 
 	/**
 	 * http://purl.org/dc/terms/identifier
 	 */
-	public static final URI IDENTIFIER;
+	public static final IRI IDENTIFIER;
 
 	/**
 	 * http://purl.org/dc/terms/language
 	 */
-	public static final URI LANGUAGE;
+	public static final IRI LANGUAGE;
 
 	/**
 	 * http://purl.org/dc/terms/publisher
 	 */
-	public static final URI PUBLISHER;
+	public static final IRI PUBLISHER;
 
 	/**
 	 * http://purl.org/dc/terms/relation
 	 */
-	public static final URI RELATION;
+	public static final IRI RELATION;
 
 	/**
 	 * http://purl.org/dc/terms/rights
 	 */
-	public static final URI RIGHTS;
+	public static final IRI RIGHTS;
 
 	/**
 	 * http://purl.org/dc/terms/source
 	 */
-	public static final URI SOURCE;
+	public static final IRI SOURCE;
 
 	/**
 	 * http://purl.org/dc/terms/subject
 	 */
-	public static final URI SUBJECT;
+	public static final IRI SUBJECT;
 
 	/**
 	 * http://purl.org/dc/terms/title
 	 */
-	public static final URI TITLE;
+	public static final IRI TITLE;
 
 	/**
 	 * http://purl.org/dc/terms/type
 	 */
-	public static final URI TYPE;
+	public static final IRI TYPE;
 
 	// ----------------------------------------
 	// Properties unique to Dublin Core Terms set
@@ -134,202 +134,202 @@ public class DCTERMS {
 	/**
 	 * http://purl.org/dc/terms/abstract
 	 */
-	public static final URI ABSTRACT;
+	public static final IRI ABSTRACT;
 
 	/**
 	 * http://purl.org/dc/terms/accessRights
 	 */
-	public static final URI ACCESS_RIGHTS;
+	public static final IRI ACCESS_RIGHTS;
 
 	/**
 	 * http://purl.org/dc/terms/accrualMethod
 	 */
-	public static final URI ACCRUAL_METHOD;
+	public static final IRI ACCRUAL_METHOD;
 
 	/**
 	 * http://purl.org/dc/terms/accrualPeriodicity
 	 */
-	public static final URI ACCRUAL_PERIODICITY;
+	public static final IRI ACCRUAL_PERIODICITY;
 
 	/**
 	 * http://purl.org/dc/terms/ accrualPolicy
 	 */
-	public static final URI ACCRUAL_POLICY;
+	public static final IRI ACCRUAL_POLICY;
 
 	/**
 	 * http://purl.org/dc/terms/alternative
 	 */
-	public static final URI ALTERNATIVE;
+	public static final IRI ALTERNATIVE;
 
 	/**
 	 * http://purl.org/dc/terms/audience
 	 */
-	public static final URI AUDIENCE;
+	public static final IRI AUDIENCE;
 
 	/**
 	 * http://purl.org/dc/terms/available
 	 */
-	public static final URI AVAILABLE;
+	public static final IRI AVAILABLE;
 
 	/**
 	 * http://purl.org/dc/terms/bibliographicCitation
 	 */
-	public static final URI BIBLIOGRAPHIC_CITATION;
+	public static final IRI BIBLIOGRAPHIC_CITATION;
 
 	/**
 	 * http://purl.org/dc/terms/conformsTo
 	 */
-	public static final URI CONFORMS_TO;
+	public static final IRI CONFORMS_TO;
 
 	/**
 	 * http://purl.org/dc/terms/created
 	 */
-	public static final URI CREATED;
+	public static final IRI CREATED;
 
 	/**
 	 * http://purl.org/dc/terms/dateAccepted
 	 */
-	public static final URI DATE_ACCEPTED;
+	public static final IRI DATE_ACCEPTED;
 
 	/**
 	 * http://purl.org/dc/terms/dateCopyrighted
 	 */
-	public static final URI DATE_COPYRIGHTED;
+	public static final IRI DATE_COPYRIGHTED;
 
 	/**
 	 * http://purl.org/dc/terms/dateSubmitted
 	 */
-	public static final URI DATE_SUBMITTED;
+	public static final IRI DATE_SUBMITTED;
 
 	/**
 	 * http://purl.org/dc/terms/educationLevel
 	 */
-	public static final URI EDUCATION_LEVEL;
+	public static final IRI EDUCATION_LEVEL;
 
 	/**
 	 * http://purl.org/dc/terms/extent
 	 */
-	public static final URI EXTENT;
+	public static final IRI EXTENT;
 
 	/**
 	 * http://purl.org/dc/terms/hasFormat
 	 */
-	public static final URI HAS_FORMAT;
+	public static final IRI HAS_FORMAT;
 
 	/**
 	 * http://purl.org/dc/terms/hasPart
 	 */
-	public static final URI HAS_PART;
+	public static final IRI HAS_PART;
 
 	/**
 	 * http://purl.org/dc/terms/hasVersion
 	 */
-	public static final URI HAS_VERSION;
+	public static final IRI HAS_VERSION;
 
 	/**
 	 * http://purl.org/dc/terms/instructionalMethod
 	 */
-	public static final URI INSTRUCTIONAL_METHOD;
+	public static final IRI INSTRUCTIONAL_METHOD;
 
 	/**
 	 * http://purl.org/dc/terms/isFormatOf
 	 */
-	public static final URI IS_FORMAT_OF;
+	public static final IRI IS_FORMAT_OF;
 
 	/**
 	 * http://purl.org/dc/terms/isPartOf
 	 */
-	public static final URI IS_PART_OF;
+	public static final IRI IS_PART_OF;
 
 	/**
 	 * http://purl.org/dc/terms/isReferencedBy
 	 */
-	public static final URI IS_REFERENCED_BY;
+	public static final IRI IS_REFERENCED_BY;
 
 	/**
 	 * http://purl.org/dc/terms/isReplacedBy
 	 */
-	public static final URI IS_REPLACED_BY;
+	public static final IRI IS_REPLACED_BY;
 
 	/**
 	 * http://purl.org/dc/terms/isRequiredBy
 	 */
-	public static final URI IS_REQUIRED_BY;
+	public static final IRI IS_REQUIRED_BY;
 
 	/**
 	 * http://purl.org/dc/terms/issued
 	 */
-	public static final URI ISSUED;
+	public static final IRI ISSUED;
 
 	/**
 	 * http://purl.org/dc/terms/isVersionOf
 	 */
-	public static final URI IS_VERSION_OF;
+	public static final IRI IS_VERSION_OF;
 
 	/**
 	 * http://purl.org/dc/terms/license
 	 */
-	public static final URI LICENSE;
+	public static final IRI LICENSE;
 
 	/**
 	 * http://purl.org/dc/terms/mediator
 	 */
-	public static final URI MEDIATOR;
+	public static final IRI MEDIATOR;
 
 	/**
 	 * http://purl.org/dc/terms/medium
 	 */
-	public static final URI MEDIUM;
+	public static final IRI MEDIUM;
 
 	/**
 	 * http://purl.org/dc/terms/modified
 	 */
-	public static final URI MODIFIED;
+	public static final IRI MODIFIED;
 
 	/**
 	 * http://purl.org/dc/terms/provenance
 	 */
-	public static final URI PROVENANCE;
+	public static final IRI PROVENANCE;
 
 	/**
 	 * http://purl.org/dc/terms/references
 	 */
-	public static final URI REFERENCES;
+	public static final IRI REFERENCES;
 
 	/**
 	 * http://purl.org/dc/terms/replaces
 	 */
-	public static final URI REPLACES;
+	public static final IRI REPLACES;
 
 	/**
 	 * http://purl.org/dc/terms/requires
 	 */
-	public static final URI REQUIRES;
+	public static final IRI REQUIRES;
 
 	/**
 	 * http://purl.org/dc/terms/rightsHolder
 	 */
-	public static final URI RIGHTS_HOLDER;
+	public static final IRI RIGHTS_HOLDER;
 
 	/**
 	 * http://purl.org/dc/terms/spatial
 	 */
-	public static final URI SPATIAL;
+	public static final IRI SPATIAL;
 
 	/**
 	 * http://purl.org/dc/terms/tableOfContents
 	 */
-	public static final URI TABLE_OF_CONTENTS;
+	public static final IRI TABLE_OF_CONTENTS;
 
 	/**
 	 * http://purl.org/dc/terms/temporal
 	 */
-	public static final URI TEMPORAL;
+	public static final IRI TEMPORAL;
 
 	/**
 	 * http://purl.org/dc/terms/valid
 	 */
-	public static final URI VALID;
+	public static final IRI VALID;
 
 	// ----------------------------------------
 	// Vocabulary encoding schemes in Dublin Core Terms
@@ -338,47 +338,47 @@ public class DCTERMS {
 	/**
 	 * http://purl.org/dc/terms/DCMIType
 	 */
-	public static final URI DCMI_TYPE;
+	public static final IRI DCMI_TYPE;
 
 	/**
 	 * http://purl.org/dc/terms/DDC
 	 */
-	public static final URI DDC;
+	public static final IRI DDC;
 
 	/**
 	 * http://purl.org/dc/terms/IMT
 	 */
-	public static final URI IMT;
+	public static final IRI IMT;
 
 	/**
 	 * http://purl.org/dc/terms/LCC
 	 */
-	public static final URI LCC;
+	public static final IRI LCC;
 
 	/**
 	 * http://purl.org/dc/terms/LCSH
 	 */
-	public static final URI LCSH;
+	public static final IRI LCSH;
 
 	/**
 	 * http://purl.org/dc/terms/MESH
 	 */
-	public static final URI MESH;
+	public static final IRI MESH;
 
 	/**
 	 * http://purl.org/dc/terms/NLM
 	 */
-	public static final URI NLM;
+	public static final IRI NLM;
 
 	/**
 	 * http://purl.org/dc/terms/TGN
 	 */
-	public static final URI TGN;
+	public static final IRI TGN;
 
 	/**
 	 * http://purl.org/dc/terms/UDC
 	 */
-	public static final URI UDC;
+	public static final IRI UDC;
 
 	// ----------------------------------------
 	// Syntax encoding schemes in Dublin Core Terms
@@ -387,62 +387,62 @@ public class DCTERMS {
 	/**
 	 * http://purl.org/dc/terms/Box
 	 */
-	public static final URI BOX;
+	public static final IRI BOX;
 
 	/**
 	 * http://purl.org/dc/terms/ISO3166
 	 */
-	public static final URI ISO3166;
+	public static final IRI ISO3166;
 
 	/**
 	 * http://purl.org/dc/terms/ISO639-2
 	 */
-	public static final URI ISO639_2;
+	public static final IRI ISO639_2;
 
 	/**
 	 * http://purl.org/dc/terms/ISO639-3
 	 */
-	public static final URI ISO639_3;
+	public static final IRI ISO639_3;
 
 	/**
 	 * http://purl.org/dc/terms/Period
 	 */
-	public static final URI PERIOD;
+	public static final IRI PERIOD;
 
 	/**
 	 * http://purl.org/dc/terms/Point
 	 */
-	public static final URI POINT;
+	public static final IRI POINT;
 
 	/**
 	 * http://purl.org/dc/terms/RFC1766
 	 */
-	public static final URI RFC1766;
+	public static final IRI RFC1766;
 
 	/**
 	 * http://purl.org/dc/terms/RFC3066
 	 */
-	public static final URI RFC3066;
+	public static final IRI RFC3066;
 
 	/**
 	 * http://purl.org/dc/terms/RFC4646
 	 */
-	public static final URI RFC4646;
+	public static final IRI RFC4646;
 
 	/**
 	 * http://purl.org/dc/terms/RFC5646
 	 */
-	public static final URI RFC5646;
+	public static final IRI RFC5646;
 
 	/**
 	 * http://purl.org/dc/terms/URI
 	 */
-	public static final URI URI;
+	public static final IRI URI;
 
 	/**
 	 * http://purl.org/dc/terms/W3CDTF
 	 */
-	public static final URI W3CDTF;
+	public static final IRI W3CDTF;
 
 	// ----------------------------------------
 	// Classes in Dublin Core Terms
@@ -451,112 +451,112 @@ public class DCTERMS {
 	/**
 	 * http://purl.org/dc/terms/Agent
 	 */
-	public static final URI AGENT;
+	public static final IRI AGENT;
 
 	/**
 	 * http://purl.org/dc/terms/AgentClass
 	 */
-	public static final URI AGENT_CLASS;
+	public static final IRI AGENT_CLASS;
 
 	/**
 	 * http://purl.org/dc/terms/BibliographicResource
 	 */
-	public static final URI BIBLIOGRAPHIC_RESOURCE;
+	public static final IRI BIBLIOGRAPHIC_RESOURCE;
 
 	/**
 	 * http://purl.org/dc/terms/FileFormat
 	 */
-	public static final URI FILE_FORMAT;
+	public static final IRI FILE_FORMAT;
 
 	/**
 	 * http://purl.org/dc/terms/Frequency
 	 */
-	public static final URI FREQUENCY;
+	public static final IRI FREQUENCY;
 
 	/**
 	 * http://purl.org/dc/terms/Jurisdiction
 	 */
-	public static final URI JURISDICTION;
+	public static final IRI JURISDICTION;
 
 	/**
 	 * http://purl.org/dc/terms/LicenseDocument
 	 */
-	public static final URI LICENSE_DOCUMENT;
+	public static final IRI LICENSE_DOCUMENT;
 
 	/**
 	 * http://purl.org/dc/terms/LinguisticSystem
 	 */
-	public static final URI LINGUISTIC_SYSTEM;
+	public static final IRI LINGUISTIC_SYSTEM;
 
 	/**
 	 * http://purl.org/dc/terms/Location
 	 */
-	public static final URI LOCATION;
+	public static final IRI LOCATION;
 
 	/**
 	 * http://purl.org/dc/terms/LocationPeriodOrJurisdiction
 	 */
-	public static final URI LOCATION_PERIOD_OR_JURISDICTION;
+	public static final IRI LOCATION_PERIOD_OR_JURISDICTION;
 
 	/**
 	 * http://purl.org/dc/terms/MediaType
 	 */
-	public static final URI MEDIA_TYPE;
+	public static final IRI MEDIA_TYPE;
 
 	/**
 	 * http://purl.org/dc/terms/MediaTypeOrExtent
 	 */
-	public static final URI MEDIA_TYPE_OR_EXTENT;
+	public static final IRI MEDIA_TYPE_OR_EXTENT;
 
 	/**
 	 * http://purl.org/dc/terms/MethodOfAccrual
 	 */
-	public static final URI METHOD_OF_ACCRUAL;
+	public static final IRI METHOD_OF_ACCRUAL;
 
 	/**
 	 * http://purl.org/dc/terms/MethodOfInstruction
 	 */
-	public static final URI METHOD_OF_INSTRUCTION;
+	public static final IRI METHOD_OF_INSTRUCTION;
 
 	/**
 	 * http://purl.org/dc/terms/PeriodOfTime
 	 */
-	public static final URI PERIOD_OF_TIME;
+	public static final IRI PERIOD_OF_TIME;
 
 	/**
 	 * http://purl.org/dc/terms/PhysicalMedium
 	 */
-	public static final URI PHYSICAL_MEDIUM;
+	public static final IRI PHYSICAL_MEDIUM;
 
 	/**
 	 * http://purl.org/dc/terms/PhysicalResource
 	 */
-	public static final URI PHYSICAL_RESOURCE;
+	public static final IRI PHYSICAL_RESOURCE;
 
 	/**
 	 * http://purl.org/dc/terms/Policy
 	 */
-	public static final URI POLICY;
+	public static final IRI POLICY;
 
 	/**
 	 * http://purl.org/dc/terms/ProvenanceStatement
 	 */
-	public static final URI PROVENANCE_STATEMENT;
+	public static final IRI PROVENANCE_STATEMENT;
 
 	/**
 	 * http://purl.org/dc/terms/RightsStatement
 	 */
-	public static final URI RIGHTS_STATEMENT;
+	public static final IRI RIGHTS_STATEMENT;
 
 	/**
 	 * http://purl.org/dc/terms/SizeOrDuration
 	 */
-	public static final URI SIZE_OR_DURATION;
+	public static final IRI SIZE_OR_DURATION;
 
 	/**
 	 * http://purl.org/dc/terms/Standard
 	 */
-	public static final URI STANDARD;
+	public static final IRI STANDARD;
 
 	// Static initializer for fields
 
@@ -564,114 +564,114 @@ public class DCTERMS {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
 		// Properties common to Dublin Core Elements
-		CONTRIBUTOR = f.createURI(NAMESPACE, "contributor");
-		COVERAGE = f.createURI(NAMESPACE, "coverage");
-		CREATOR = f.createURI(NAMESPACE, "creator");
-		DATE = f.createURI(NAMESPACE, "date");
-		DESCRIPTION = f.createURI(NAMESPACE, "description");
-		FORMAT = f.createURI(NAMESPACE, "format");
-		IDENTIFIER = f.createURI(NAMESPACE, "identifier");
-		LANGUAGE = f.createURI(NAMESPACE, "language");
-		PUBLISHER = f.createURI(NAMESPACE, "publisher");
-		RELATION = f.createURI(NAMESPACE, "relation");
-		RIGHTS = f.createURI(NAMESPACE, "rights");
-		SOURCE = f.createURI(NAMESPACE, "source");
-		SUBJECT = f.createURI(NAMESPACE, "subject");
-		TITLE = f.createURI(NAMESPACE, "title");
-		TYPE = f.createURI(NAMESPACE, "type");
+		CONTRIBUTOR = f.createIRI(NAMESPACE, "contributor");
+		COVERAGE = f.createIRI(NAMESPACE, "coverage");
+		CREATOR = f.createIRI(NAMESPACE, "creator");
+		DATE = f.createIRI(NAMESPACE, "date");
+		DESCRIPTION = f.createIRI(NAMESPACE, "description");
+		FORMAT = f.createIRI(NAMESPACE, "format");
+		IDENTIFIER = f.createIRI(NAMESPACE, "identifier");
+		LANGUAGE = f.createIRI(NAMESPACE, "language");
+		PUBLISHER = f.createIRI(NAMESPACE, "publisher");
+		RELATION = f.createIRI(NAMESPACE, "relation");
+		RIGHTS = f.createIRI(NAMESPACE, "rights");
+		SOURCE = f.createIRI(NAMESPACE, "source");
+		SUBJECT = f.createIRI(NAMESPACE, "subject");
+		TITLE = f.createIRI(NAMESPACE, "title");
+		TYPE = f.createIRI(NAMESPACE, "type");
 
 		// Properties unique to Dublin Core Terms
-		ABSTRACT = f.createURI(NAMESPACE, "abstract");
-		ACCESS_RIGHTS = f.createURI(NAMESPACE, "accessRights");
-		ACCRUAL_METHOD = f.createURI(NAMESPACE, "accuralMethod");
-		ACCRUAL_PERIODICITY = f.createURI(NAMESPACE, "accrualPeriodicity");
-		ACCRUAL_POLICY = f.createURI(NAMESPACE, "accrualPolicy");
-		ALTERNATIVE = f.createURI(NAMESPACE, "alternative");
-		AUDIENCE = f.createURI(NAMESPACE, "audience");
-		AVAILABLE = f.createURI(NAMESPACE, "available");
-		BIBLIOGRAPHIC_CITATION = f.createURI(NAMESPACE, "bibliographicCitation");
-		CONFORMS_TO = f.createURI(NAMESPACE, "conformsTo");
-		CREATED = f.createURI(NAMESPACE, "created");
-		DATE_ACCEPTED = f.createURI(NAMESPACE, "dateAccepted");
-		DATE_COPYRIGHTED = f.createURI(NAMESPACE, "dateCopyrighted");
-		DATE_SUBMITTED = f.createURI(NAMESPACE, "dateSubmitted");
-		EDUCATION_LEVEL = f.createURI(NAMESPACE, "educationLevel");
-		EXTENT = f.createURI(NAMESPACE, "extent");
-		HAS_FORMAT = f.createURI(NAMESPACE, "hasFormat");
-		HAS_PART = f.createURI(NAMESPACE, "hasPart");
-		HAS_VERSION = f.createURI(NAMESPACE, "hasVersion");
-		INSTRUCTIONAL_METHOD = f.createURI(NAMESPACE, "instructionalMethod");
-		IS_FORMAT_OF = f.createURI(NAMESPACE, "isFormatOf");
-		IS_PART_OF = f.createURI(NAMESPACE, "isPartOf");
-		IS_REFERENCED_BY = f.createURI(NAMESPACE, "isReferencedBy");
-		IS_REPLACED_BY = f.createURI(NAMESPACE, "isReplacedBy");
-		IS_REQUIRED_BY = f.createURI(NAMESPACE, "isRequiredBy");
-		IS_VERSION_OF = f.createURI(NAMESPACE, "isVersionOf");
-		ISSUED = f.createURI(NAMESPACE, "issued");
-		LICENSE = f.createURI(NAMESPACE, "license");
-		MEDIATOR = f.createURI(NAMESPACE, "mediator");
-		MEDIUM = f.createURI(NAMESPACE, "medium");
-		MODIFIED = f.createURI(NAMESPACE, "modified");
-		PROVENANCE = f.createURI(NAMESPACE, "provenance");
-		REFERENCES = f.createURI(NAMESPACE, "references");
-		REPLACES = f.createURI(NAMESPACE, "replaces");
-		REQUIRES = f.createURI(NAMESPACE, "requires");
-		RIGHTS_HOLDER = f.createURI(NAMESPACE, "rightsHolder");
-		SPATIAL = f.createURI(NAMESPACE, "spatial");
-		TABLE_OF_CONTENTS = f.createURI(NAMESPACE, "tableOfContents");
-		TEMPORAL = f.createURI(NAMESPACE, "temporal");
-		VALID = f.createURI(NAMESPACE, "valid");
+		ABSTRACT = f.createIRI(NAMESPACE, "abstract");
+		ACCESS_RIGHTS = f.createIRI(NAMESPACE, "accessRights");
+		ACCRUAL_METHOD = f.createIRI(NAMESPACE, "accuralMethod");
+		ACCRUAL_PERIODICITY = f.createIRI(NAMESPACE, "accrualPeriodicity");
+		ACCRUAL_POLICY = f.createIRI(NAMESPACE, "accrualPolicy");
+		ALTERNATIVE = f.createIRI(NAMESPACE, "alternative");
+		AUDIENCE = f.createIRI(NAMESPACE, "audience");
+		AVAILABLE = f.createIRI(NAMESPACE, "available");
+		BIBLIOGRAPHIC_CITATION = f.createIRI(NAMESPACE, "bibliographicCitation");
+		CONFORMS_TO = f.createIRI(NAMESPACE, "conformsTo");
+		CREATED = f.createIRI(NAMESPACE, "created");
+		DATE_ACCEPTED = f.createIRI(NAMESPACE, "dateAccepted");
+		DATE_COPYRIGHTED = f.createIRI(NAMESPACE, "dateCopyrighted");
+		DATE_SUBMITTED = f.createIRI(NAMESPACE, "dateSubmitted");
+		EDUCATION_LEVEL = f.createIRI(NAMESPACE, "educationLevel");
+		EXTENT = f.createIRI(NAMESPACE, "extent");
+		HAS_FORMAT = f.createIRI(NAMESPACE, "hasFormat");
+		HAS_PART = f.createIRI(NAMESPACE, "hasPart");
+		HAS_VERSION = f.createIRI(NAMESPACE, "hasVersion");
+		INSTRUCTIONAL_METHOD = f.createIRI(NAMESPACE, "instructionalMethod");
+		IS_FORMAT_OF = f.createIRI(NAMESPACE, "isFormatOf");
+		IS_PART_OF = f.createIRI(NAMESPACE, "isPartOf");
+		IS_REFERENCED_BY = f.createIRI(NAMESPACE, "isReferencedBy");
+		IS_REPLACED_BY = f.createIRI(NAMESPACE, "isReplacedBy");
+		IS_REQUIRED_BY = f.createIRI(NAMESPACE, "isRequiredBy");
+		IS_VERSION_OF = f.createIRI(NAMESPACE, "isVersionOf");
+		ISSUED = f.createIRI(NAMESPACE, "issued");
+		LICENSE = f.createIRI(NAMESPACE, "license");
+		MEDIATOR = f.createIRI(NAMESPACE, "mediator");
+		MEDIUM = f.createIRI(NAMESPACE, "medium");
+		MODIFIED = f.createIRI(NAMESPACE, "modified");
+		PROVENANCE = f.createIRI(NAMESPACE, "provenance");
+		REFERENCES = f.createIRI(NAMESPACE, "references");
+		REPLACES = f.createIRI(NAMESPACE, "replaces");
+		REQUIRES = f.createIRI(NAMESPACE, "requires");
+		RIGHTS_HOLDER = f.createIRI(NAMESPACE, "rightsHolder");
+		SPATIAL = f.createIRI(NAMESPACE, "spatial");
+		TABLE_OF_CONTENTS = f.createIRI(NAMESPACE, "tableOfContents");
+		TEMPORAL = f.createIRI(NAMESPACE, "temporal");
+		VALID = f.createIRI(NAMESPACE, "valid");
 
 		// Vocabulary encoding schemes in Dublin Core Terms
 
-		DCMI_TYPE = f.createURI(NAMESPACE, "DCMIType");
-		DDC = f.createURI(NAMESPACE, "DDC");
-		IMT = f.createURI(NAMESPACE, "IMT");
-		LCC = f.createURI(NAMESPACE, "LCC");
-		LCSH = f.createURI(NAMESPACE, "LCSH");
-		MESH = f.createURI(NAMESPACE, "MESH");
-		NLM = f.createURI(NAMESPACE, "NLM");
-		TGN = f.createURI(NAMESPACE, "TGN");
-		UDC = f.createURI(NAMESPACE, "UDC");
+		DCMI_TYPE = f.createIRI(NAMESPACE, "DCMIType");
+		DDC = f.createIRI(NAMESPACE, "DDC");
+		IMT = f.createIRI(NAMESPACE, "IMT");
+		LCC = f.createIRI(NAMESPACE, "LCC");
+		LCSH = f.createIRI(NAMESPACE, "LCSH");
+		MESH = f.createIRI(NAMESPACE, "MESH");
+		NLM = f.createIRI(NAMESPACE, "NLM");
+		TGN = f.createIRI(NAMESPACE, "TGN");
+		UDC = f.createIRI(NAMESPACE, "UDC");
 
 		// Syntax encoding schemes in Dublin Core Terms
 
-		BOX = f.createURI(NAMESPACE, "Box");
-		ISO3166 = f.createURI(NAMESPACE, "ISO3166");
-		ISO639_2 = f.createURI(NAMESPACE, "ISO639-2");
-		ISO639_3 = f.createURI(NAMESPACE, "ISO639-3");
-		PERIOD = f.createURI(NAMESPACE, "Period");
-		POINT = f.createURI(NAMESPACE, "Point");
-		RFC1766 = f.createURI(NAMESPACE, "RFC1766");
-		RFC3066 = f.createURI(NAMESPACE, "RFC3066");
-		RFC4646 = f.createURI(NAMESPACE, "RFC4646");
-		RFC5646 = f.createURI(NAMESPACE, "RFC5646");
-		URI = f.createURI(NAMESPACE, "URI");
-		W3CDTF = f.createURI(NAMESPACE, "W3CDTF");
+		BOX = f.createIRI(NAMESPACE, "Box");
+		ISO3166 = f.createIRI(NAMESPACE, "ISO3166");
+		ISO639_2 = f.createIRI(NAMESPACE, "ISO639-2");
+		ISO639_3 = f.createIRI(NAMESPACE, "ISO639-3");
+		PERIOD = f.createIRI(NAMESPACE, "Period");
+		POINT = f.createIRI(NAMESPACE, "Point");
+		RFC1766 = f.createIRI(NAMESPACE, "RFC1766");
+		RFC3066 = f.createIRI(NAMESPACE, "RFC3066");
+		RFC4646 = f.createIRI(NAMESPACE, "RFC4646");
+		RFC5646 = f.createIRI(NAMESPACE, "RFC5646");
+		URI = f.createIRI(NAMESPACE, "URI");
+		W3CDTF = f.createIRI(NAMESPACE, "W3CDTF");
 
 		// Classes in Dublin Core Terms
 
-		AGENT = f.createURI(NAMESPACE, "Agent");
-		AGENT_CLASS = f.createURI(NAMESPACE, "AgentClass");
-		BIBLIOGRAPHIC_RESOURCE = f.createURI(NAMESPACE, "BibliographicResource");
-		FILE_FORMAT = f.createURI(NAMESPACE, "FileFormat");
-		FREQUENCY = f.createURI(NAMESPACE, "Frequency");
-		JURISDICTION = f.createURI(NAMESPACE, "Jurisdiction");
-		LICENSE_DOCUMENT = f.createURI(NAMESPACE, "LicenseDocument");
-		LINGUISTIC_SYSTEM = f.createURI(NAMESPACE, "LinguisticSystem");
-		LOCATION = f.createURI(NAMESPACE, "Location");
-		LOCATION_PERIOD_OR_JURISDICTION = f.createURI(NAMESPACE, "LocationPeriodOrJurisdiction");
-		MEDIA_TYPE = f.createURI(NAMESPACE, "MediaType");
-		MEDIA_TYPE_OR_EXTENT = f.createURI(NAMESPACE, "MediaTypeOrExtent");
-		METHOD_OF_ACCRUAL = f.createURI(NAMESPACE, "MethodOfAccrual");
-		METHOD_OF_INSTRUCTION = f.createURI(NAMESPACE, "MethodOfInstruction");
-		PERIOD_OF_TIME = f.createURI(NAMESPACE, "PeriodOfTime");
-		PHYSICAL_MEDIUM = f.createURI(NAMESPACE, "PhysicalMedium");
-		PHYSICAL_RESOURCE = f.createURI(NAMESPACE, "PhysicalResource");
-		POLICY = f.createURI(NAMESPACE, "Policy");
-		PROVENANCE_STATEMENT = f.createURI(NAMESPACE, "ProvenanceStatement");
-		RIGHTS_STATEMENT = f.createURI(NAMESPACE, "RightsStatement");
-		SIZE_OR_DURATION = f.createURI(NAMESPACE, "SizeOrDuration");
-		STANDARD = f.createURI(NAMESPACE, "Standard");
+		AGENT = f.createIRI(NAMESPACE, "Agent");
+		AGENT_CLASS = f.createIRI(NAMESPACE, "AgentClass");
+		BIBLIOGRAPHIC_RESOURCE = f.createIRI(NAMESPACE, "BibliographicResource");
+		FILE_FORMAT = f.createIRI(NAMESPACE, "FileFormat");
+		FREQUENCY = f.createIRI(NAMESPACE, "Frequency");
+		JURISDICTION = f.createIRI(NAMESPACE, "Jurisdiction");
+		LICENSE_DOCUMENT = f.createIRI(NAMESPACE, "LicenseDocument");
+		LINGUISTIC_SYSTEM = f.createIRI(NAMESPACE, "LinguisticSystem");
+		LOCATION = f.createIRI(NAMESPACE, "Location");
+		LOCATION_PERIOD_OR_JURISDICTION = f.createIRI(NAMESPACE, "LocationPeriodOrJurisdiction");
+		MEDIA_TYPE = f.createIRI(NAMESPACE, "MediaType");
+		MEDIA_TYPE_OR_EXTENT = f.createIRI(NAMESPACE, "MediaTypeOrExtent");
+		METHOD_OF_ACCRUAL = f.createIRI(NAMESPACE, "MethodOfAccrual");
+		METHOD_OF_INSTRUCTION = f.createIRI(NAMESPACE, "MethodOfInstruction");
+		PERIOD_OF_TIME = f.createIRI(NAMESPACE, "PeriodOfTime");
+		PHYSICAL_MEDIUM = f.createIRI(NAMESPACE, "PhysicalMedium");
+		PHYSICAL_RESOURCE = f.createIRI(NAMESPACE, "PhysicalResource");
+		POLICY = f.createIRI(NAMESPACE, "Policy");
+		PROVENANCE_STATEMENT = f.createIRI(NAMESPACE, "ProvenanceStatement");
+		RIGHTS_STATEMENT = f.createIRI(NAMESPACE, "RightsStatement");
+		SIZE_OR_DURATION = f.createIRI(NAMESPACE, "SizeOrDuration");
+		STANDARD = f.createIRI(NAMESPACE, "Standard");
 	}
 }

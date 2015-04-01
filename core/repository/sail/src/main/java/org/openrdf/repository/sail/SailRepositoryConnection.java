@@ -23,7 +23,7 @@ import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -230,7 +230,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
@@ -254,7 +254,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
@@ -301,7 +301,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void addWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		try {
@@ -316,7 +316,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void removeWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		try {

@@ -37,7 +37,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
@@ -217,8 +217,8 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 	private void writeValue(Value value)
 		throws IOException, RDFHandlerException
 	{
-		if (value instanceof URI) {
-			URI uri = (URI)value;
+		if (value instanceof IRI) {
+			IRI uri = (IRI)value;
 			xmlWriter.textElement(URI_TAG, uri.toString());
 		}
 		else if (value instanceof BNode) {
@@ -227,7 +227,7 @@ public class TriXWriter extends RDFWriterBase implements RDFWriter {
 		}
 		else if (value instanceof Literal) {
 			Literal literal = (Literal)value;
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 
 			if (Literals.isLanguageLiteral(literal)) {
 				xmlWriter.setAttribute(LANGUAGE_ATT, literal.getLanguage().get());

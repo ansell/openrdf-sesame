@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -59,12 +59,12 @@ public class EarlReport {
 	/**
 	 * Helper variable for tests run by Peter Ansell
 	 */
-	public static final URI ANSELL = ValueFactoryImpl.getInstance().createURI("https://github.com/ansell");
+	public static final IRI ANSELL = ValueFactoryImpl.getInstance().createIRI("https://github.com/ansell");
 
 	/**
 	 * Helper variable for tests run by Jeen Broekstra
 	 */
-	public static final URI BROEKSTRA = ValueFactoryImpl.getInstance().createURI(
+	public static final IRI BROEKSTRA = ValueFactoryImpl.getInstance().createIRI(
 			"https://bitbucket.org/jeenbroekstra");
 
 	protected Repository earlRepository;
@@ -79,7 +79,7 @@ public class EarlReport {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public void generateReport(TestSuite nextTestSuite, URI nextAsserterNode, URI specURI)
+	public void generateReport(TestSuite nextTestSuite, IRI nextAsserterNode, IRI specURI)
 		throws Exception
 	{
 		// IMPORTANT: Set this to whoever is running the tests
@@ -97,16 +97,16 @@ public class EarlReport {
 		con.setNamespace("earl", EARL.NAMESPACE);
 		con.setNamespace("dcterms", DCTERMS.NAMESPACE);
 
-		projectNode = vf.createURI("http://www.openrdf.org/#sesame");
+		projectNode = vf.createIRI("http://www.openrdf.org/#sesame");
 		BNode releaseNode = vf.createBNode();
 		con.add(projectNode, RDF.TYPE, DOAP.PROJECT);
 		con.add(projectNode, RDF.TYPE, EARL.TEST_SUBJECT);
 		con.add(projectNode, RDF.TYPE, EARL.SOFTWARE);
 		con.add(projectNode, DOAP.NAME, vf.createLiteral("OpenRDF Sesame"));
 		con.add(projectNode, DCTERMS.TITLE, vf.createLiteral("OpenRDF Sesame"));
-		con.add(projectNode, DOAP.HOMEPAGE, vf.createURI("http://www.openrdf.org/#sesame"));
+		con.add(projectNode, DOAP.HOMEPAGE, vf.createIRI("http://www.openrdf.org/#sesame"));
 		con.add(projectNode, DOAP.LICENSE,
-				vf.createURI("https://bitbucket.org/openrdf/sesame/src/master/core/LICENSE.txt"));
+				vf.createIRI("https://bitbucket.org/openrdf/sesame/src/master/core/LICENSE.txt"));
 		con.add(
 				projectNode,
 				DOAP.DESCRIPTION,
@@ -115,11 +115,11 @@ public class EarlReport {
 		con.add(projectNode, DOAP.CREATED, vf.createLiteral("2004-03-25", XMLSchema.DATE));
 		con.add(projectNode, DOAP.PROGRAMMING_LANGUAGE, vf.createLiteral("Java"));
 		con.add(projectNode, DOAP.IMPLEMENTS, specURI);
-		con.add(projectNode, DOAP.DOWNLOAD_PAGE, vf.createURI("http://sourceforge.net/projects/sesame/files/"));
+		con.add(projectNode, DOAP.DOWNLOAD_PAGE, vf.createIRI("http://sourceforge.net/projects/sesame/files/"));
 		con.add(projectNode, DOAP.MAILING_LIST,
-				vf.createURI("http://lists.sourceforge.net/lists/listinfo/sesame-general"));
-		con.add(projectNode, DOAP.BUG_DATABASE, vf.createURI("https://openrdf.atlassian.net/browse/SES"));
-		con.add(projectNode, DOAP.BLOG, vf.createURI("http://www.openrdf.org/news.jsp"));
+				vf.createIRI("http://lists.sourceforge.net/lists/listinfo/sesame-general"));
+		con.add(projectNode, DOAP.BUG_DATABASE, vf.createIRI("https://openrdf.atlassian.net/browse/SES"));
+		con.add(projectNode, DOAP.BLOG, vf.createIRI("http://www.openrdf.org/news.jsp"));
 
 		con.add(projectNode, DOAP.DEVELOPER, ANSELL);
 		con.add(projectNode, DOAP.DEVELOPER, BROEKSTRA);
@@ -178,7 +178,7 @@ public class EarlReport {
 		}
 
 		public void endTest(Test test) {
-			URI testURI = null;
+			IRI testURI = null;
 			boolean didIgnoreFailure = false;
 			if (test instanceof PositiveParserTest) {
 				testURI = ((PositiveParserTest)test).testUri;

@@ -23,7 +23,7 @@ import java.util.Optional;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.LiteralImpl;
 
 /**
@@ -71,7 +71,7 @@ public class RdbmsLiteral extends RdbmsValue implements Literal {
 		return lit.floatValue();
 	}
 
-	public URI getDatatype() {
+	public IRI getDatatype() {
 		return lit.getDatatype();
 	}
 

@@ -28,7 +28,7 @@ import java.util.UUID;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
@@ -2166,7 +2166,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		ValueConstant uriNode = (ValueConstant)node.jjtGetChild(0).jjtAccept(this, null);
-		URI functionURI = (URI)uriNode.getValue();
+		IRI functionURI = (IRI)uriNode.getValue();
 
 		FunctionCall functionCall = new FunctionCall(functionURI.toString());
 
@@ -2737,9 +2737,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	public ValueConstant visit(ASTIRI node, Object data)
 		throws VisitorException
 	{
-		URI uri;
+		IRI uri;
 		try {
-			uri = valueFactory.createURI(node.getValue());
+			uri = valueFactory.createIRI(node.getValue());
 		}
 		catch (IllegalArgumentException e) {
 			// invalid URI
@@ -2820,9 +2820,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		Literal literal;
 		if (datatypeNode != null) {
-			URI datatype;
+			IRI datatype;
 			try {
-				datatype = valueFactory.createURI(datatypeNode.getValue());
+				datatype = valueFactory.createIRI(datatypeNode.getValue());
 			}
 			catch (IllegalArgumentException e) {
 				// invalid URI

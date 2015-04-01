@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -307,7 +307,7 @@ public class TupleQueryResultFormat extends QueryResultFormat {
 	 * @since 2.8.0
 	 */
 	public TupleQueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
-			Collection<String> fileExtensions, URI standardURI)
+			Collection<String> fileExtensions, IRI standardURI)
 	{
 		super(name, mimeTypes, charset, fileExtensions, standardURI);
 	}

@@ -25,7 +25,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -33,7 +33,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 /**
  * Abstract base class for {@link ValueFactory} implementations that implements
  * the utility methods for creating literals for basic types by calling the
- * generic {@link ValueFactory#createLiteral(String, URI)} with the appropriate
+ * generic {@link ValueFactory#createLiteral(String, IRI)} with the appropriate
  * value and datatype.
  * 
  * @author Arjohn Kampman
@@ -102,7 +102,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link ValueFactory#createLiteral(String, URI)} with the
+	 * Calls {@link ValueFactory#createLiteral(String, IRI)} with the
 	 * String-value of the supplied value and {@link XMLSchema#BOOLEAN} as
 	 * parameters.
 	 */
@@ -112,7 +112,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createIntegerLiteral(Number, IRI)} with the supplied value
 	 * and {@link XMLSchema#BYTE} as parameters.
 	 */
 	@Override
@@ -121,7 +121,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createIntegerLiteral(Number, IRI)} with the supplied value
 	 * and {@link XMLSchema#SHORT} as parameters.
 	 */
 	@Override
@@ -130,7 +130,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createIntegerLiteral(Number, IRI)} with the supplied value
 	 * and {@link XMLSchema#INT} as parameters.
 	 */
 	@Override
@@ -139,7 +139,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createIntegerLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createIntegerLiteral(Number, IRI)} with the supplied value
 	 * and {@link XMLSchema#LONG} as parameters.
 	 */
 	@Override
@@ -148,15 +148,15 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createNumericLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createNumericLiteral(Number, IRI)} with the supplied value
 	 * and datatype as parameters.
 	 */
-	protected Literal createIntegerLiteral(Number value, URI datatype) {
+	protected Literal createIntegerLiteral(Number value, IRI datatype) {
 		return createNumericLiteral(value, datatype);
 	}
 
 	/**
-	 * Calls {@link #createFPLiteral(Number, URI)} with the supplied value and
+	 * Calls {@link #createFPLiteral(Number, IRI)} with the supplied value and
 	 * {@link XMLSchema#FLOAT} as parameters.
 	 */
 	@Override
@@ -165,7 +165,7 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createFPLiteral(Number, URI)} with the supplied value and
+	 * Calls {@link #createFPLiteral(Number, IRI)} with the supplied value and
 	 * {@link XMLSchema#DOUBLE} as parameters.
 	 */
 	@Override
@@ -174,24 +174,24 @@ public abstract class ValueFactoryBase implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link #createNumericLiteral(Number, URI)} with the supplied value
+	 * Calls {@link #createNumericLiteral(Number, IRI)} with the supplied value
 	 * and datatype as parameters.
 	 */
-	protected Literal createFPLiteral(Number value, URI datatype) {
+	protected Literal createFPLiteral(Number value, IRI datatype) {
 		return createNumericLiteral(value, datatype);
 	}
 
 	/**
-	 * Calls {@link ValueFactory#createLiteral(String, URI)} with the
+	 * Calls {@link ValueFactory#createLiteral(String, IRI)} with the
 	 * String-value of the supplied number and the supplied datatype as
 	 * parameters.
 	 */
-	protected Literal createNumericLiteral(Number number, URI datatype) {
+	protected Literal createNumericLiteral(Number number, IRI datatype) {
 		return createLiteral(number.toString(), datatype);
 	}
 
 	/**
-	 * Calls {@link ValueFactory#createLiteral(String, URI)} with the
+	 * Calls {@link ValueFactory#createLiteral(String, IRI)} with the
 	 * String-value of the supplied calendar and the appropriate datatype as
 	 * parameters.
 	 * 

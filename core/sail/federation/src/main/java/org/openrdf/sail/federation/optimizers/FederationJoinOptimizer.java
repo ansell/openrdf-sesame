@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -252,7 +252,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 		{
 			super.meet(node);
 			Resource subj = (Resource)node.getSubjectVar().getValue();
-			URI pred = (URI)node.getPredicateVar().getValue();
+			IRI pred = (IRI)node.getPredicateVar().getValue();
 			Value obj = node.getObjectVar().getValue();
 			Resource[] ctx = getContexts(node.getContextVar());
 			RepositoryConnection member = getSingleOwner(subj, pred, obj, ctx);
@@ -287,7 +287,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 					: new Resource[] { (Resource)var.getValue() };
 		}
 
-		private RepositoryConnection getSingleOwner(Resource subj, URI pred, Value obj, Resource[] ctx)
+		private RepositoryConnection getSingleOwner(Resource subj, IRI pred, Value obj, Resource[] ctx)
 			throws RepositoryException
 		{
 			RepositoryConnection result = null;
@@ -354,7 +354,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 			throws RepositoryException
 		{
 			super.meet(node);
-			URI pred = (URI)node.getPredicateVar().getValue();
+			IRI pred = (IRI)node.getPredicateVar().getValue();
 			if (pred != null && localSpace != null && localSpace.match(pred.stringValue())) {
 				local(node.getSubjectVar());
 			}

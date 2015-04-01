@@ -53,7 +53,7 @@ import info.aduna.xml.XMLWriter;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
@@ -462,8 +462,8 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	private void writeValue(Value value)
 		throws IOException
 	{
-		if (value instanceof URI) {
-			writeURI((URI)value);
+		if (value instanceof IRI) {
+			writeURI((IRI)value);
 		}
 		else if (value instanceof BNode) {
 			writeBNode((BNode)value);
@@ -473,7 +473,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		}
 	}
 
-	private boolean isQName(URI nextUri) {
+	private boolean isQName(IRI nextUri) {
 		return namespaceTable.containsKey(nextUri.getNamespace());
 	}
 
@@ -486,14 +486,14 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	 * @param nextUri
 	 *        The prefixed URI to be written as a sesame qname attribute.
 	 */
-	private void writeQName(URI nextUri) {
+	private void writeQName(IRI nextUri) {
 		if (getWriterConfig().get(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			xmlWriter.setAttribute(QNAME,
 					namespaceTable.get(nextUri.getNamespace()) + ":" + nextUri.getLocalName());
 		}
 	}
 
-	private void writeURI(URI uri)
+	private void writeURI(IRI uri)
 		throws IOException
 	{
 		if (isQName(uri)) {
@@ -517,7 +517,7 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 		// Only enter this section for non-language literals now, as the
 		// rdf:langString datatype is handled implicitly above
 		else {
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 			boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
 			if (!ignoreDatatype) {
 				if (isQName(datatype)) {

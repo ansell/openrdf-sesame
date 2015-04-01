@@ -17,7 +17,7 @@
 package org.openrdf.rio.datatypes;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
@@ -36,7 +36,7 @@ public class XMLSchemaDoubleDatatypeHandlerTest extends AbstractDatatypeHandlerT
 	// -------------------------------------
 
 	@Override
-	protected URI getRecognisedDatatypeUri() {
+	protected IRI getRecognisedDatatypeUri() {
 		return XMLSchema.DOUBLE;
 	}
 
@@ -70,7 +70,7 @@ public class XMLSchemaDoubleDatatypeHandlerTest extends AbstractDatatypeHandlerT
 	}
 
 	@Override
-	protected URI getUnrecognisedDatatypeUri() {
+	protected IRI getUnrecognisedDatatypeUri() {
 		return RDF.LANGSTRING;
 	}
 

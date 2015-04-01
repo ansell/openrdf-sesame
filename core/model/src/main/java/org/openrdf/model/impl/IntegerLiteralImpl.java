@@ -19,7 +19,7 @@ package org.openrdf.model.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -44,7 +44,7 @@ public class IntegerLiteralImpl extends LiteralImpl {
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public IntegerLiteralImpl(BigInteger value, URI datatype) {
+	public IntegerLiteralImpl(BigInteger value, IRI datatype) {
 		// TODO: maybe IntegerLiteralImpl should not extend LiteralImpl?
 		super(value.toString(), datatype);
 		this.value = value;

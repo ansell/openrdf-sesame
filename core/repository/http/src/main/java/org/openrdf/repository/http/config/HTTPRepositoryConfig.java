@@ -23,7 +23,7 @@ import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -88,7 +88,7 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		Resource implNode = super.export(graph);
 
 		if (url != null) {
-			graph.add(implNode, REPOSITORYURL, graph.getValueFactory().createURI(url));
+			graph.add(implNode, REPOSITORYURL, graph.getValueFactory().createIRI(url));
 		}
 //		if (username != null) {
 //			graph.add(implNode, USERNAME, graph.getValueFactory().createLiteral(username));
@@ -107,7 +107,7 @@ public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
+			IRI uri = GraphUtil.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
 			if (uri != null) {
 				setURL(uri.toString());
 			}

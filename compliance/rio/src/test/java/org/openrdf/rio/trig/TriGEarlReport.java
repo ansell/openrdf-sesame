@@ -30,7 +30,7 @@ public class TriGEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new TriGParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createURI("http://www.w3.org/TR/trig/"));
+				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/trig/"));
 	}
 
 }

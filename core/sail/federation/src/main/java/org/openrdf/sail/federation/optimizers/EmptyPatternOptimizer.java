@@ -20,7 +20,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collection;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -63,7 +63,7 @@ public class EmptyPatternOptimizer extends QueryModelVisitorBase<RepositoryExcep
 		throws RepositoryException
 	{
 		Resource subj = (Resource)node.getSubjectVar().getValue();
-		URI pred = (URI)node.getPredicateVar().getValue();
+		IRI pred = (IRI)node.getPredicateVar().getValue();
 		Value obj = node.getObjectVar().getValue();
 		Resource[] ctx = getContexts(node.getContextVar());
 		for (RepositoryConnection member : members) {

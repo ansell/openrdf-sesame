@@ -16,10 +16,10 @@
  */
 package org.openrdf.sail.nativerdf.model;
 
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.sail.nativerdf.ValueStoreRevision;
 
-public class NativeURI extends URIImpl implements NativeResource {
+public class NativeIRI extends IRIImpl implements NativeResource {
 
 	private static final long serialVersionUID = -5888138591826143179L;
 
@@ -35,25 +35,25 @@ public class NativeURI extends URIImpl implements NativeResource {
 	 * Constructors *
 	 *--------------*/
 
-	protected NativeURI(ValueStoreRevision revision, int internalID) {
+	protected NativeIRI(ValueStoreRevision revision, int internalID) {
 		super();
 		setInternalID(internalID, revision);
 	}
 
-	public NativeURI(ValueStoreRevision revision, String uri) {
+	public NativeIRI(ValueStoreRevision revision, String uri) {
 		this(revision, uri, UNKNOWN_ID);
 	}
 
-	public NativeURI(ValueStoreRevision revision, String uri, int internalID) {
+	public NativeIRI(ValueStoreRevision revision, String uri, int internalID) {
 		super(uri);
 		setInternalID(internalID, revision);
 	}
 
-	public NativeURI(ValueStoreRevision revision, String namespace, String localname) {
+	public NativeIRI(ValueStoreRevision revision, String namespace, String localname) {
 		this(revision, namespace + localname);
 	}
 
-	public NativeURI(ValueStoreRevision revision, String namespace, String localname, int internalID) {
+	public NativeIRI(ValueStoreRevision revision, String namespace, String localname, int internalID) {
 		this(revision, namespace + localname, internalID);
 	}
 
@@ -80,8 +80,8 @@ public class NativeURI extends URIImpl implements NativeResource {
 			return true;
 		}
 
-		if (o instanceof NativeURI && internalID != NativeValue.UNKNOWN_ID) {
-			NativeURI otherNativeURI = (NativeURI)o;
+		if (o instanceof NativeIRI && internalID != NativeValue.UNKNOWN_ID) {
+			NativeIRI otherNativeURI = (NativeIRI)o;
 
 			if (otherNativeURI.internalID != NativeValue.UNKNOWN_ID && revision.equals(otherNativeURI.revision))
 			{

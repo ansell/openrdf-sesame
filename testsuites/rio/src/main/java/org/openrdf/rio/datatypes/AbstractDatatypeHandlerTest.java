@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.rio.DatatypeHandler;
@@ -51,29 +51,29 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * @return A URI that must return true from
-	 *         {@link DatatypeHandler#isRecognizedDatatype(URI)} and not throw an
+	 *         {@link DatatypeHandler#isRecognizedDatatype(IRI)} and not throw an
 	 *         exception if used with a valid value when calling
-	 *         {@link DatatypeHandler#verifyDatatype(String, URI)} and
-	 *         {@link DatatypeHandler#normalizeDatatype(String, URI, ValueFactory)}
+	 *         {@link DatatypeHandler#verifyDatatype(String, IRI)} and
+	 *         {@link DatatypeHandler#normalizeDatatype(String, IRI, ValueFactory)}
 	 *         .
 	 */
-	protected abstract URI getRecognisedDatatypeUri();
+	protected abstract IRI getRecognisedDatatypeUri();
 
 	/**
 	 * @return A URI that must return false from
-	 *         {@link DatatypeHandler#isRecognizedDatatype(URI)} and throw an
+	 *         {@link DatatypeHandler#isRecognizedDatatype(IRI)} and throw an
 	 *         exception if used with
-	 *         {@link DatatypeHandler#verifyDatatype(String, URI)} and
-	 *         {@link DatatypeHandler#normalizeDatatype(String, URI, ValueFactory)}
+	 *         {@link DatatypeHandler#verifyDatatype(String, IRI)} and
+	 *         {@link DatatypeHandler#normalizeDatatype(String, IRI, ValueFactory)}
 	 *         .
 	 */
-	protected abstract URI getUnrecognisedDatatypeUri();
+	protected abstract IRI getUnrecognisedDatatypeUri();
 
 	/**
 	 * @return A string value that does match the recognised datatype URI, and
 	 *         will succeed when used with both
-	 *         {@link DatatypeHandler#verifyDatatype(String, URI)} and
-	 *         {@link DatatypeHandler#normalizeDatatype(String, URI, ValueFactory)}
+	 *         {@link DatatypeHandler#verifyDatatype(String, IRI)} and
+	 *         {@link DatatypeHandler#normalizeDatatype(String, IRI, ValueFactory)}
 	 *         .
 	 */
 	protected abstract String getValueMatchingRecognisedDatatypeUri();
@@ -81,8 +81,8 @@ public abstract class AbstractDatatypeHandlerTest {
 	/**
 	 * @return A string value that does not match the recognised datatype URI,
 	 *         and will fail when used with both
-	 *         {@link DatatypeHandler#verifyDatatype(String, URI)} and
-	 *         {@link DatatypeHandler#normalizeDatatype(String, URI, ValueFactory)}
+	 *         {@link DatatypeHandler#verifyDatatype(String, IRI)} and
+	 *         {@link DatatypeHandler#normalizeDatatype(String, IRI, ValueFactory)}
 	 *         .
 	 */
 	protected abstract String getValueNotMatchingRecognisedDatatypeUri();
@@ -90,7 +90,7 @@ public abstract class AbstractDatatypeHandlerTest {
 	/**
 	 * @return An instance of {@link Literal} that is equal to the expected
 	 *         output from a successful call to
-	 *         {@link DatatypeHandler#normalizeDatatype(String, URI, org.openrdf.model.ValueFactory)}
+	 *         {@link DatatypeHandler#normalizeDatatype(String, IRI, org.openrdf.model.ValueFactory)}
 	 *         ;
 	 */
 	protected abstract Literal getNormalisedLiteralForRecognisedDatatypeAndValue();
@@ -129,7 +129,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#isRecognizedDatatype(org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#isRecognizedDatatype(org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -142,7 +142,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#isRecognizedDatatype(org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#isRecognizedDatatype(org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -154,7 +154,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#isRecognizedDatatype(org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#isRecognizedDatatype(org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -166,7 +166,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -179,7 +179,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -192,7 +192,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -205,7 +205,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -218,7 +218,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -231,7 +231,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.rio.DatatypeHandler#verifyDatatype(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -244,7 +244,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.URI, org.openrdf.model.ValueFactory)}
+	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.IRI, org.openrdf.model.ValueFactory)}
 	 * .
 	 */
 	@Test
@@ -257,7 +257,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.URI, org.openrdf.model.ValueFactory)}
+	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.IRI, org.openrdf.model.ValueFactory)}
 	 * .
 	 */
 	@Test
@@ -270,7 +270,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.URI, org.openrdf.model.ValueFactory)}
+	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.IRI, org.openrdf.model.ValueFactory)}
 	 * .
 	 */
 	@Test
@@ -283,7 +283,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.URI, org.openrdf.model.ValueFactory)}
+	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.IRI, org.openrdf.model.ValueFactory)}
 	 * .
 	 */
 	@Test
@@ -297,7 +297,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.URI, org.openrdf.model.ValueFactory)}
+	 * {@link org.openrdf.rio.DatatypeHandler#normalizeDatatype(java.lang.String, org.openrdf.model.IRI, org.openrdf.model.ValueFactory)}
 	 * .
 	 */
 	@Test

@@ -17,7 +17,7 @@
 package org.openrdf.repository.event.base;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
@@ -29,7 +29,7 @@ import org.openrdf.repository.event.RepositoryConnectionInterceptor;
  */
 public class RepositoryConnectionInterceptorAdapter implements RepositoryConnectionInterceptor {
 
-	public boolean add(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+	public boolean add(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 			Resource... contexts)
 	{
 		return false;
@@ -55,7 +55,7 @@ public class RepositoryConnectionInterceptorAdapter implements RepositoryConnect
 		return false;
 	}
 
-	public boolean remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+	public boolean remove(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 			Resource... contexts)
 	{
 		return false;

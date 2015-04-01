@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -99,8 +99,8 @@ public abstract class SparqlRegexTest {
 	public void testExpr()
 		throws Exception
 	{
-		URI pattern = vf.createURI("http://example.org/ns#", "pattern");
-		URI flags = vf.createURI("http://example.org/ns#", "flags");
+		IRI pattern = vf.createIRI("http://example.org/ns#", "pattern");
+		IRI flags = vf.createIRI("http://example.org/ns#", "flags");
 		BNode bnode = vf.createBNode();
 		conn.add(bnode, pattern, vf.createLiteral("@Work.example"));
 		conn.add(bnode, flags, vf.createLiteral("i"));
@@ -158,11 +158,11 @@ public abstract class SparqlRegexTest {
 		throws RepositoryException
 	{
 		RepositoryConnection conn = repository.getConnection();
-		URI subj = vf.createURI("http://example.org/ns#", id);
-		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");
-		URI foafMbox = vf.createURI("http://xmlns.com/foaf/0.1/", "mbox");
+		IRI subj = vf.createIRI("http://example.org/ns#", id);
+		IRI foafName = vf.createIRI("http://xmlns.com/foaf/0.1/", "name");
+		IRI foafMbox = vf.createIRI("http://xmlns.com/foaf/0.1/", "mbox");
 		conn.add(subj, foafName, vf.createLiteral(name));
-		conn.add(subj, foafMbox, vf.createURI("mailto:", email));
+		conn.add(subj, foafMbox, vf.createIRI("mailto:", email));
 		conn.close();
 	}
 }

@@ -35,7 +35,7 @@ import info.aduna.iteration.EmptyIteration;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
@@ -49,7 +49,7 @@ import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementIterator;
 import org.openrdf.sail.memory.model.MemStatementList;
-import org.openrdf.sail.memory.model.MemURI;
+import org.openrdf.sail.memory.model.MemIRI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
@@ -464,7 +464,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 		return statements.size();
 	}
 
-	protected boolean hasStatement(Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
+	protected boolean hasStatement(Resource subj, IRI pred, Value obj, boolean explicitOnly, int snapshot,
 			ReadMode readMode, Resource... contexts)
 	{
 		CloseableIteration<MemStatement, RuntimeException> iter = createStatementIterator(
@@ -486,7 +486,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 * StatementIterator will assume the specified read mode.
 	 */
 	protected <X extends Exception> CloseableIteration<MemStatement, X> createStatementIterator(
-			Class<X> excClass, Resource subj, URI pred, Value obj, boolean explicitOnly, int snapshot,
+			Class<X> excClass, Resource subj, IRI pred, Value obj, boolean explicitOnly, int snapshot,
 			ReadMode readMode, Resource... contexts)
 	{
 		// Perform look-ups for value-equivalents of the specified values
@@ -496,7 +496,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 			return new EmptyIteration<MemStatement, X>();
 		}
 
-		MemURI memPred = valueFactory.getMemURI(pred);
+		MemIRI memPred = valueFactory.getMemURI(pred);
 		if (pred != null && memPred == null) {
 			// non-existent predicate
 			return new EmptyIteration<MemStatement, X>();
@@ -569,14 +569,14 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 				readMode, memContexts);
 	}
 
-	protected Statement addStatement(Resource subj, URI pred, Value obj, Resource context, boolean explicit)
+	protected Statement addStatement(Resource subj, IRI pred, Value obj, Resource context, boolean explicit)
 		throws SailException
 	{
 		assert txnStatements != null;
 
 		// Get or create MemValues for the operands
 		MemResource memSubj = valueFactory.getOrCreateMemResource(subj);
-		MemURI memPred = valueFactory.getOrCreateMemURI(pred);
+		MemIRI memPred = valueFactory.getOrCreateMemURI(pred);
 		MemValue memObj = valueFactory.getOrCreateMemValue(obj);
 		MemResource memContext = (context == null) ? null : valueFactory.getOrCreateMemResource(context);
 
@@ -936,7 +936,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 						subj.cleanSnapshotsFromSubjectStatements(currentSnapshot);
 					}
 
-					MemURI pred = st.getPredicate();
+					MemIRI pred = st.getPredicate();
 					if (processedPredicates.add(pred)) {
 						pred.cleanSnapshotsFromPredicateStatements(currentSnapshot);
 					}

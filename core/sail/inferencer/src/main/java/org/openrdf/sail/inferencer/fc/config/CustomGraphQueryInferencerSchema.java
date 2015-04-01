@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.inferencer.fc.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.sail.inferencer.fc.CustomGraphQueryInferencer;
@@ -35,18 +35,18 @@ public class CustomGraphQueryInferencerSchema {
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/customGraphQueryInferencer#";
 
 	/** <tt>http://www.openrdf.org/config/sail/customGraphQueryInferencer#queryLanguage</tt> */
-	public final static URI QUERY_LANGUAGE;
+	public final static IRI QUERY_LANGUAGE;
 
 	/** <tt>http://www.openrdf.org/config/sail/customGraphQueryInferencer#ruleQuery</tt> */
-	public final static URI RULE_QUERY;
+	public final static IRI RULE_QUERY;
 
 	/** <tt>http://www.openrdf.org/config/sail/customGraphQueryInferencer#matcherQuery</tt> */
-	public final static URI MATCHER_QUERY;
+	public final static IRI MATCHER_QUERY;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
-		QUERY_LANGUAGE = factory.createURI(NAMESPACE, "queryLanguage");
-		RULE_QUERY = factory.createURI(NAMESPACE, "ruleQuery");
-		MATCHER_QUERY = factory.createURI(NAMESPACE, "matcherQuery");
+		QUERY_LANGUAGE = factory.createIRI(NAMESPACE, "queryLanguage");
+		RULE_QUERY = factory.createIRI(NAMESPACE, "ruleQuery");
+		MATCHER_QUERY = factory.createIRI(NAMESPACE, "matcherQuery");
 	}
 }

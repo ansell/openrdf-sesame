@@ -35,7 +35,7 @@ import org.openrdf.http.protocol.transaction.operations.SetNamespaceOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -93,7 +93,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		throws SAXException
 	{
 		if (TransactionXMLConstants.URI_TAG.equals(tagName)) {
-			parsedValues.add(valueFactory.createURI(text));
+			parsedValues.add(valueFactory.createIRI(text));
 		}
 		else if (TransactionXMLConstants.BNODE_TAG.equals(tagName)) {
 			parsedValues.add(valueFactory.createBNode(text));
@@ -111,7 +111,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 				lit = valueFactory.createLiteral(text, lang);
 			}
 			else if (datatype != null) {
-				URI dtURI = valueFactory.createURI(datatype);
+				IRI dtURI = valueFactory.createIRI(datatype);
 				lit = valueFactory.createLiteral(text, dtURI);
 			}
 			else {
@@ -154,10 +154,10 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 			currentDataset = new DatasetImpl();
 		}
 		else if (TransactionXMLConstants.DEFAULT_INSERT_GRAPH.equals(tagName)) {
-			currentDataset.setDefaultInsertGraph(valueFactory.createURI(text));
+			currentDataset.setDefaultInsertGraph(valueFactory.createIRI(text));
 		}
 		else if (TransactionXMLConstants.GRAPH_TAG.equals(tagName)) {
-			parsedValues.add(valueFactory.createURI(text));
+			parsedValues.add(valueFactory.createIRI(text));
 		}
 		else if (TransactionXMLConstants.BINDINGS.equals(tagName)) {
 			if (bindings != null) {
@@ -181,7 +181,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 				Value v;
 
 				if (TransactionXMLConstants.BINDING_URI.equals(tagName)) {
-					v = valueFactory.createURI(value);
+					v = valueFactory.createIRI(value);
 				}
 				else if (TransactionXMLConstants.BINDING_BNODE.equals(tagName)) {
 					v = valueFactory.createBNode(value);
@@ -194,7 +194,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 						v = valueFactory.createLiteral(value, language);
 					}
 					else if (dataType != null) {
-						v = valueFactory.createLiteral(value, valueFactory.createURI(dataType));
+						v = valueFactory.createLiteral(value, valueFactory.createIRI(dataType));
 					}
 					else {
 						v = valueFactory.createLiteral(value);
@@ -225,7 +225,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.DEFAULT_GRAPHS_TAG.equals(tagName)) {
 			for (Value parsedValue : parsedValues) {
 				try {
-					currentDataset.addDefaultGraph((URI)parsedValue);
+					currentDataset.addDefaultGraph((IRI)parsedValue);
 				}
 				catch (ClassCastException e) {
 					throw new SAXException("unexpected value in default graph list: " + parsedValue);
@@ -236,7 +236,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.NAMED_GRAPHS_TAG.equals(tagName)) {
 			for (Value parsedValue : parsedValues) {
 				try {
-					currentDataset.addNamedGraph((URI)parsedValue);
+					currentDataset.addNamedGraph((IRI)parsedValue);
 				}
 				catch (ClassCastException e) {
 					throw new SAXException("unexpected value in named graph list: " + parsedValue);
@@ -247,7 +247,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 		else if (TransactionXMLConstants.DEFAULT_REMOVE_GRAPHS_TAG.equals(tagName)) {
 			for (Value parsedValue : parsedValues) {
 				try {
-					currentDataset.addDefaultRemoveGraph((URI)parsedValue);
+					currentDataset.addDefaultRemoveGraph((IRI)parsedValue);
 				}
 				catch (ClassCastException e) {
 					throw new SAXException("unexpected value in default remove graph list: " + parsedValue);
@@ -286,7 +286,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 
 		try {
 			Resource subject = (Resource)parsedValues.get(0);
-			URI predicate = (URI)parsedValues.get(1);
+			IRI predicate = (IRI)parsedValues.get(1);
 			Value object = parsedValues.get(2);
 			Resource[] contexts = createContexts(3);
 
@@ -313,7 +313,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 
 		try {
 			Resource subject = (Resource)parsedValues.get(0);
-			URI predicate = (URI)parsedValues.get(1);
+			IRI predicate = (IRI)parsedValues.get(1);
 			Value object = parsedValues.get(2);
 			Resource[] contexts = createContexts(3);
 

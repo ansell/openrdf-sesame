@@ -33,7 +33,7 @@ import info.aduna.iteration.TimeLimitIteration;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Binding;
@@ -82,13 +82,13 @@ import org.openrdf.sail.UpdateContext;
  * @param <E>
  * @see SailConnection#startUpdate(UpdateContext)
  * @see SailConnection#endUpdate(UpdateContext)
- * @see SailConnection#addStatement(UpdateContext, Resource, URI, Value,
+ * @see SailConnection#addStatement(UpdateContext, Resource, IRI, Value,
  *      Resource...)
- * @see SailConnection#removeStatement(UpdateContext, Resource, URI, Value,
+ * @see SailConnection#removeStatement(UpdateContext, Resource, IRI, Value,
  *      Resource...)
  * @see SailConnection#clear(Resource...)
  * @see SailConnection#getContextIDs()
- * @see SailConnection#getStatements(Resource, URI, Value, boolean, Resource...)
+ * @see SailConnection#getStatements(Resource, IRI, Value, boolean, Resource...)
  * @see SailConnection#evaluate(TupleExpr, Dataset, BindingSet, boolean)
  */
 public class SailUpdateExecutor {
@@ -519,13 +519,13 @@ public class SailUpdateExecutor {
 		}
 	}
 
-	private URI[] getDefaultRemoveGraphs(Dataset dataset) {
+	private IRI[] getDefaultRemoveGraphs(Dataset dataset) {
 		if (dataset == null)
-			return new URI[0];
-		Set<URI> set = dataset.getDefaultRemoveGraphs();
+			return new IRI[0];
+		Set<IRI> set = dataset.getDefaultRemoveGraphs();
 		if (set == null || set.isEmpty())
-			return new URI[0];
-		return set.toArray(new URI[set.size()]);
+			return new IRI[0];
+		return set.toArray(new IRI[set.size()]);
 	}
 
 	private CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateWhereClause(
@@ -596,7 +596,7 @@ public class SailUpdateExecutor {
 			for (StatementPattern deletePattern : deletePatterns) {
 
 				Resource subject = (Resource)getValueForVar(deletePattern.getSubjectVar(), whereBinding);
-				URI predicate = (URI)getValueForVar(deletePattern.getPredicateVar(), whereBinding);
+				IRI predicate = (IRI)getValueForVar(deletePattern.getPredicateVar(), whereBinding);
 				Value object = getValueForVar(deletePattern.getObjectVar(), whereBinding);
 
 				Resource context = null;
@@ -615,7 +615,7 @@ public class SailUpdateExecutor {
 					con.removeStatement(uc, subject, predicate, object, context);
 				}
 				else {
-					URI[] remove = getDefaultRemoveGraphs(uc.getDataset());
+					IRI[] remove = getDefaultRemoveGraphs(uc.getDataset());
 					con.removeStatement(uc, subject, predicate, object, remove);
 				}
 			}
@@ -640,7 +640,7 @@ public class SailUpdateExecutor {
 				Statement toBeInserted = createStatementFromPattern(insertPattern, whereBinding, bnodeMapping);
 
 				if (toBeInserted != null) {
-					URI with = uc.getDataset().getDefaultInsertGraph();
+					IRI with = uc.getDataset().getDefaultInsertGraph();
 					if (with == null && toBeInserted.getContext() == null) {
 						con.addStatement(uc, toBeInserted.getSubject(), toBeInserted.getPredicate(),
 								toBeInserted.getObject());
@@ -664,7 +664,7 @@ public class SailUpdateExecutor {
 	{
 
 		Resource subject = null;
-		URI predicate = null;
+		IRI predicate = null;
 		Value object = null;
 		Resource context = null;
 
@@ -688,10 +688,10 @@ public class SailUpdateExecutor {
 		}
 
 		if (pattern.getPredicateVar().hasValue()) {
-			predicate = (URI)pattern.getPredicateVar().getValue();
+			predicate = (IRI)pattern.getPredicateVar().getValue();
 		}
 		else {
-			predicate = (URI)sourceBinding.getValue(pattern.getPredicateVar().getName());
+			predicate = (IRI)sourceBinding.getValue(pattern.getPredicateVar().getName());
 		}
 
 		if (pattern.getObjectVar().hasValue()) {

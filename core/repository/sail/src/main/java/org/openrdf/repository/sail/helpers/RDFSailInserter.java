@@ -23,7 +23,7 @@ import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryException;
@@ -190,7 +190,7 @@ public class RDFSailInserter extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 		Resource ctxt = st.getContext();
 
@@ -214,7 +214,7 @@ public class RDFSailInserter extends RDFHandlerBase {
 			}
 			else {
 				if (ctxt == null) {
-					final URI insertGraph = uc.getDataset().getDefaultInsertGraph();
+					final IRI insertGraph = uc.getDataset().getDefaultInsertGraph();
 					if (insertGraph != null) {
 						con.addStatement(uc, subj, pred, obj, insertGraph);
 					}

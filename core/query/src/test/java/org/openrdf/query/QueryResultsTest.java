@@ -27,7 +27,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -54,9 +54,9 @@ public class QueryResultsTest extends TestCase {
 
 	private List<String> threeBindingNames = Arrays.asList("a", "b", "c");
 
-	private URI foo;
+	private IRI foo;
 
-	private URI bar;
+	private IRI bar;
 
 	private BNode bnode1;
 
@@ -66,15 +66,15 @@ public class QueryResultsTest extends TestCase {
 
 	private Literal lit2;
 
-	private URI a = VF.createURI("urn:a");
+	private IRI a = VF.createIRI("urn:a");
 
-	private URI b = VF.createURI("urn:b");
+	private IRI b = VF.createIRI("urn:b");
 
-	private URI c = VF.createURI("urn:c");
+	private IRI c = VF.createIRI("urn:c");
 
-	private URI p = VF.createURI("urn:p");
+	private IRI p = VF.createIRI("urn:p");
 
-	private URI q = VF.createURI("urn:q");
+	private IRI q = VF.createIRI("urn:q");
 
 	@Override
 	protected void setUp() {
@@ -84,8 +84,8 @@ public class QueryResultsTest extends TestCase {
 
 		gqr = new StubGraphQueryResult();
 
-		foo = VF.createURI("http://example.org/foo");
-		bar = VF.createURI("http://example.org/bar");
+		foo = VF.createIRI("http://example.org/foo");
+		bar = VF.createIRI("http://example.org/bar");
 
 		bnode1 = VF.createBNode();
 		bnode2 = VF.createBNode();

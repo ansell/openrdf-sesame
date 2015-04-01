@@ -19,7 +19,7 @@ package org.openrdf.sail.federation;
 import java.util.List;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.sail.SailException;
@@ -59,14 +59,14 @@ class ReadOnlyConnection extends AbstractFederationConnection {
 	}
 
 	@Override
-	public void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		throw new SailReadOnlyException("");
 	}
 
 	@Override
-	public void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... context)
+	public void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... context)
 		throws SailException
 	{
 		throw new SailReadOnlyException("");

@@ -17,7 +17,7 @@
 package org.openrdf.sail.lucene;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 
@@ -44,11 +44,11 @@ public class QuerySpec {
 
 	private final String queryString;
 
-	private final URI propertyURI;
+	private final IRI propertyURI;
 
 	public QuerySpec(StatementPattern matchesPattern, StatementPattern queryPattern,
 			StatementPattern propertyPattern, StatementPattern scorePattern, StatementPattern snippetPattern,
-			StatementPattern typePattern, Resource subject, String queryString, URI propertyURI)
+			StatementPattern typePattern, Resource subject, String queryString, IRI propertyURI)
 	{
 		this.matchesPattern = matchesPattern;
 		this.queryPattern = queryPattern;
@@ -129,9 +129,9 @@ public class QuerySpec {
 	 * 
 	 * @return the type of the Query or null, if no type assigned.
 	 */
-	public URI getQueryType() {
+	public IRI getQueryType() {
 		if (typePattern != null)
-			return (URI)typePattern.getObjectVar().getValue();
+			return (IRI)typePattern.getObjectVar().getValue();
 		else
 			return null;
 	}
@@ -156,7 +156,7 @@ public class QuerySpec {
 	 * @return The URI of the property who's literal values should be searched,
 	 *         or <code>null</code>
 	 */
-	public URI getPropertyURI() {
+	public IRI getPropertyURI() {
 		return propertyURI;
 	}
 

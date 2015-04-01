@@ -17,7 +17,7 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -61,7 +61,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Aggregate">Aggregate</a>
 	 */
-	public static final URI AGGREGATE;
+	public static final IRI AGGREGATE;
 
 	/**
 	 * available graph descriptions
@@ -76,7 +76,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#availableGraphs">availableGraphs</a>
 	 */
-	public static final URI AVAILBLE_GRAPHS;
+	public static final IRI AVAILBLE_GRAPHS;
 
 	/**
 	 * Basic Federated Query
@@ -90,7 +90,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#BasicFederatedQuery">BasicFederatedQuery</a>
 	 */
-	public static final URI BASIC_FEDERATED_QUERY;
+	public static final IRI BASIC_FEDERATED_QUERY;
 
 	/**
 	 * Dataset
@@ -103,7 +103,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Dataset">Dataset</a>
 	 */
-	public static final URI DATASET;
+	public static final IRI DATASET;
 
 	/**
 	 * default dataset description
@@ -117,7 +117,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#defaultDataset">defaultDataset</a>
 	 */
-	public static final URI DEFAULT_DATASET;
+	public static final IRI DEFAULT_DATASET;
 
 	/**
 	 * default entailment regime
@@ -135,7 +135,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#defaultEntailmentRegime">defaultEntailmentRegime</a>
 	 */
-	public static final URI DEFAULT_ENTAILMENT_REGIME;
+	public static final IRI DEFAULT_ENTAILMENT_REGIME;
 
 	/**
 	 * default graph
@@ -147,7 +147,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#defaultGraph">defaultGraph</a>
 	 */
-	public static final URI DEFAULT_GRAPH;
+	public static final IRI DEFAULT_GRAPH;
 
 	/**
 	 * default supported entailment profile
@@ -161,7 +161,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#defaultSupportedEntailmentProfile">defaultSupportedEntailmentProfile</a>
 	 */
-	public static final URI DEFAULT_SUPPORTED_ENTAILMENT_PROFILE;
+	public static final IRI DEFAULT_SUPPORTED_ENTAILMENT_PROFILE;
 
 	/**
 	 * Dereferences URIs
@@ -176,7 +176,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#DereferencesURIs">DereferencesURIs</a>
 	 */
-	public static final URI DEREFERENCES_URIS;
+	public static final IRI DEREFERENCES_URIS;
 
 	/**
 	 * Empty Graphs
@@ -191,7 +191,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#EmptyGraphs">EmptyGraphs</a>
 	 */
-	public static final URI EMPTY_GRAPHS;
+	public static final IRI EMPTY_GRAPHS;
 
 	/**
 	 * endpoint
@@ -204,7 +204,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#endpoint">endpoint</a>
 	 */
-	public static final URI ENDPOINT;
+	public static final IRI ENDPOINT;
 
 	/**
 	 * Entailment Profile
@@ -218,7 +218,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#EntailmentProfile">EntailmentProfile</a>
 	 */
-	public static final URI ENTAILMENT_PROFILE;
+	public static final IRI ENTAILMENT_PROFILE;
 
 	/**
 	 * Entailment Regime
@@ -231,7 +231,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#EntailmentRegime">EntailmentRegime</a>
 	 */
-	public static final URI ENTAILMENT_REGIME_CLASS;
+	public static final IRI ENTAILMENT_REGIME_CLASS;
 
 	/**
 	 * entailment regime
@@ -244,7 +244,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#entailmentRegime">entailmentRegime</a>
 	 */
-	public static final URI ENTAILMENT_REGIME_PROPERTY;
+	public static final IRI ENTAILMENT_REGIME_PROPERTY;
 
 	/**
 	 * extension aggregate
@@ -259,7 +259,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#extensionAggregate">extensionAggregate</a>
 	 */
-	public static final URI EXTENSION_AGGREGATE;
+	public static final IRI EXTENSION_AGGREGATE;
 
 	/**
 	 * extension function
@@ -273,7 +273,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#extensionFunction">extensionFunction</a>
 	 */
-	public static final URI EXTENSION_FUNCTION;
+	public static final IRI EXTENSION_FUNCTION;
 
 	/**
 	 * Feature
@@ -289,7 +289,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Feature">Feature</a>
 	 */
-	public static final URI FEATURE_CLASS;
+	public static final IRI FEATURE_CLASS;
 
 	/**
 	 * feature
@@ -302,7 +302,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#feature">feature</a>
 	 */
-	public static final URI FEATURE_PROPERTY;
+	public static final IRI FEATURE_PROPERTY;
 
 	/**
 	 * Function
@@ -316,7 +316,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Function">Function</a>
 	 */
-	public static final URI FUNCTION;
+	public static final IRI FUNCTION;
 
 	/**
 	 * graph
@@ -328,7 +328,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#graph">graph</a>
 	 */
-	public static final URI GRAPH_PROPERTY;
+	public static final IRI GRAPH_PROPERTY;
 
 	/**
 	 * Graph
@@ -340,7 +340,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Graph">Graph</a>
 	 */
-	public static final URI GRAPH_CLASS;
+	public static final IRI GRAPH_CLASS;
 
 	/**
 	 * Graph Collection
@@ -354,7 +354,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#GraphCollection">GraphCollection</a>
 	 */
-	public static final URI GRAPH_COLLECTION;
+	public static final IRI GRAPH_COLLECTION;
 
 	/**
 	 * input format
@@ -368,7 +368,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#inputFormat">inputFormat</a>
 	 */
-	public static final URI INPUT_FORMAT;
+	public static final IRI INPUT_FORMAT;
 
 	/**
 	 * Language
@@ -383,7 +383,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Language">Language</a>
 	 */
-	public static final URI LANGUAGE;
+	public static final IRI LANGUAGE;
 
 	/**
 	 * language extension
@@ -396,7 +396,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#languageExtension">languageExtension</a>
 	 */
-	public static final URI LANGUAGE_EXTENSION;
+	public static final IRI LANGUAGE_EXTENSION;
 
 	/**
 	 * name
@@ -409,7 +409,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#name">name</a>
 	 */
-	public static final URI NAME;
+	public static final IRI NAME;
 
 	/**
 	 * named graph
@@ -424,7 +424,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#namedGraph">namedGraph</a>
 	 */
-	public static final URI NAMED_GRAPH_PROPERTY;
+	public static final IRI NAMED_GRAPH_PROPERTY;
 
 	/**
 	 * Named Graph
@@ -437,7 +437,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#NamedGraph">NamedGraph</a>
 	 */
-	public static final URI NAMED_GRAPH_CLASS;
+	public static final IRI NAMED_GRAPH_CLASS;
 
 	/**
 	 * property feature
@@ -451,7 +451,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#propertyFeature">propertyFeature</a>
 	 */
-	public static final URI PROPERTY_FEATURE;
+	public static final IRI PROPERTY_FEATURE;
 
 	/**
 	 * Requires Dataset
@@ -466,7 +466,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#RequiresDataset">RequiresDataset</a>
 	 */
-	public static final URI REQUIRES_DATASET;
+	public static final IRI REQUIRES_DATASET;
 
 	/**
 	 * result format
@@ -479,7 +479,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#resultFormat">resultFormat</a>
 	 */
-	public static final URI RESULT_FORMAT;
+	public static final IRI RESULT_FORMAT;
 
 	/**
 	 * Service
@@ -492,7 +492,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#Service">Service</a>
 	 */
-	public static final URI SERVICE;
+	public static final IRI SERVICE;
 
 	/**
 	 * SPARQL 1.0 Query
@@ -505,7 +505,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#SPARQL10Query">SPARQL10Query</a>
 	 */
-	public static final URI SPARQL_10_QUERY;
+	public static final IRI SPARQL_10_QUERY;
 
 	/**
 	 * SPARQL 1.1 Query
@@ -518,7 +518,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#SPARQL11Query">SPARQL11Query</a>
 	 */
-	public static final URI SPARQL_11_QUERY;
+	public static final IRI SPARQL_11_QUERY;
 
 	/**
 	 * SPARQL 1.1 Update
@@ -531,7 +531,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#SPARQL11Update">SPARQL11Update</a>
 	 */
-	public static final URI SPARQL_11_UPDATE;
+	public static final IRI SPARQL_11_UPDATE;
 
 	/**
 	 * supported entailment profile
@@ -545,7 +545,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#supportedEntailmentProfile">supportedEntailmentProfile</a>
 	 */
-	public static final URI SUPPORTED_ENTAILMENT_PROFILE;
+	public static final IRI SUPPORTED_ENTAILMENT_PROFILE;
 
 	/**
 	 * supported language
@@ -558,7 +558,7 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#supportedLanguage">supportedLanguage</a>
 	 */
-	public static final URI SUPPORTED_LANGUAGE;
+	public static final IRI SUPPORTED_LANGUAGE;
 
 	/**
 	 * Union Default Graph
@@ -573,50 +573,50 @@ public class SD {
 	 * @see <a
 	 *      href="http://www.w3.org/ns/sparql-service-description#UnionDefaultGraph">UnionDefaultGraph</a>
 	 */
-	public static final URI UNION_DEFAULT_GRAPH;
+	public static final IRI UNION_DEFAULT_GRAPH;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 
-		AGGREGATE = factory.createURI(SD.NAMESPACE, "Aggregate");
-		AVAILBLE_GRAPHS = factory.createURI(SD.NAMESPACE, "availableGraphs");
-		BASIC_FEDERATED_QUERY = factory.createURI(SD.NAMESPACE, "BasicFederatedQuery");
-		DATASET = factory.createURI(SD.NAMESPACE, "Dataset");
-		DEFAULT_DATASET = factory.createURI(SD.NAMESPACE, "defaultDataset");
-		DEFAULT_ENTAILMENT_REGIME = factory.createURI(SD.NAMESPACE, "defaultEntailmentRegime");
-		DEFAULT_GRAPH = factory.createURI(SD.NAMESPACE, "defaultGraph");
-		DEFAULT_SUPPORTED_ENTAILMENT_PROFILE = factory.createURI(SD.NAMESPACE,
+		AGGREGATE = factory.createIRI(SD.NAMESPACE, "Aggregate");
+		AVAILBLE_GRAPHS = factory.createIRI(SD.NAMESPACE, "availableGraphs");
+		BASIC_FEDERATED_QUERY = factory.createIRI(SD.NAMESPACE, "BasicFederatedQuery");
+		DATASET = factory.createIRI(SD.NAMESPACE, "Dataset");
+		DEFAULT_DATASET = factory.createIRI(SD.NAMESPACE, "defaultDataset");
+		DEFAULT_ENTAILMENT_REGIME = factory.createIRI(SD.NAMESPACE, "defaultEntailmentRegime");
+		DEFAULT_GRAPH = factory.createIRI(SD.NAMESPACE, "defaultGraph");
+		DEFAULT_SUPPORTED_ENTAILMENT_PROFILE = factory.createIRI(SD.NAMESPACE,
 				"defaultSupportedEntailmentProfile");
-		DEREFERENCES_URIS = factory.createURI(SD.NAMESPACE, "DereferencesURIs");
-		EMPTY_GRAPHS = factory.createURI(SD.NAMESPACE, "EmptyGraphs");
-		ENDPOINT = factory.createURI(SD.NAMESPACE, "endpoint");
-		ENTAILMENT_PROFILE = factory.createURI(SD.NAMESPACE, "EntailmentProfile");
-		ENTAILMENT_REGIME_CLASS = factory.createURI(SD.NAMESPACE, "EntailmentRegime");
-		ENTAILMENT_REGIME_PROPERTY = factory.createURI(SD.NAMESPACE, "entailmentRegime");
-		EXTENSION_AGGREGATE = factory.createURI(SD.NAMESPACE, "extensionAggregate");
-		EXTENSION_FUNCTION = factory.createURI(SD.NAMESPACE, "extensionFunction");
-		FEATURE_CLASS = factory.createURI(SD.NAMESPACE, "Feature");
-		FEATURE_PROPERTY = factory.createURI(SD.NAMESPACE, "feature");
-		FUNCTION = factory.createURI(SD.NAMESPACE, "Function");
-		GRAPH_PROPERTY = factory.createURI(SD.NAMESPACE, "graph");
-		GRAPH_CLASS = factory.createURI(SD.NAMESPACE, "Graph");
-		GRAPH_COLLECTION = factory.createURI(SD.NAMESPACE, "GraphCollection");
-		INPUT_FORMAT = factory.createURI(SD.NAMESPACE, "inputFormat");
-		LANGUAGE = factory.createURI(SD.NAMESPACE, "Language");
-		LANGUAGE_EXTENSION = factory.createURI(SD.NAMESPACE, "languageExtension");
-		NAME = factory.createURI(SD.NAMESPACE, "name");
-		NAMED_GRAPH_PROPERTY = factory.createURI(SD.NAMESPACE, "namedGraph");
-		NAMED_GRAPH_CLASS = factory.createURI(SD.NAMESPACE, "NamedGraph");
-		PROPERTY_FEATURE = factory.createURI(SD.NAMESPACE, "propertyFeature");
-		REQUIRES_DATASET = factory.createURI(SD.NAMESPACE, "RequiresDataset");
-		RESULT_FORMAT = factory.createURI(SD.NAMESPACE, "resultFormat");
-		SERVICE = factory.createURI(SD.NAMESPACE, "Service");
-		SPARQL_10_QUERY = factory.createURI(SD.NAMESPACE, "SPARQL10Query");
-		SPARQL_11_QUERY = factory.createURI(SD.NAMESPACE, "SPARQL11Query");
-		SPARQL_11_UPDATE = factory.createURI(SD.NAMESPACE, "SPARQL11Update");
-		SUPPORTED_ENTAILMENT_PROFILE = factory.createURI(SD.NAMESPACE, "supportedEntailmentProfile");
-		SUPPORTED_LANGUAGE = factory.createURI(SD.NAMESPACE, "supportedLanguage");
-		UNION_DEFAULT_GRAPH = factory.createURI(SD.NAMESPACE, "UnionDefaultGraph");
+		DEREFERENCES_URIS = factory.createIRI(SD.NAMESPACE, "DereferencesURIs");
+		EMPTY_GRAPHS = factory.createIRI(SD.NAMESPACE, "EmptyGraphs");
+		ENDPOINT = factory.createIRI(SD.NAMESPACE, "endpoint");
+		ENTAILMENT_PROFILE = factory.createIRI(SD.NAMESPACE, "EntailmentProfile");
+		ENTAILMENT_REGIME_CLASS = factory.createIRI(SD.NAMESPACE, "EntailmentRegime");
+		ENTAILMENT_REGIME_PROPERTY = factory.createIRI(SD.NAMESPACE, "entailmentRegime");
+		EXTENSION_AGGREGATE = factory.createIRI(SD.NAMESPACE, "extensionAggregate");
+		EXTENSION_FUNCTION = factory.createIRI(SD.NAMESPACE, "extensionFunction");
+		FEATURE_CLASS = factory.createIRI(SD.NAMESPACE, "Feature");
+		FEATURE_PROPERTY = factory.createIRI(SD.NAMESPACE, "feature");
+		FUNCTION = factory.createIRI(SD.NAMESPACE, "Function");
+		GRAPH_PROPERTY = factory.createIRI(SD.NAMESPACE, "graph");
+		GRAPH_CLASS = factory.createIRI(SD.NAMESPACE, "Graph");
+		GRAPH_COLLECTION = factory.createIRI(SD.NAMESPACE, "GraphCollection");
+		INPUT_FORMAT = factory.createIRI(SD.NAMESPACE, "inputFormat");
+		LANGUAGE = factory.createIRI(SD.NAMESPACE, "Language");
+		LANGUAGE_EXTENSION = factory.createIRI(SD.NAMESPACE, "languageExtension");
+		NAME = factory.createIRI(SD.NAMESPACE, "name");
+		NAMED_GRAPH_PROPERTY = factory.createIRI(SD.NAMESPACE, "namedGraph");
+		NAMED_GRAPH_CLASS = factory.createIRI(SD.NAMESPACE, "NamedGraph");
+		PROPERTY_FEATURE = factory.createIRI(SD.NAMESPACE, "propertyFeature");
+		REQUIRES_DATASET = factory.createIRI(SD.NAMESPACE, "RequiresDataset");
+		RESULT_FORMAT = factory.createIRI(SD.NAMESPACE, "resultFormat");
+		SERVICE = factory.createIRI(SD.NAMESPACE, "Service");
+		SPARQL_10_QUERY = factory.createIRI(SD.NAMESPACE, "SPARQL10Query");
+		SPARQL_11_QUERY = factory.createIRI(SD.NAMESPACE, "SPARQL11Query");
+		SPARQL_11_UPDATE = factory.createIRI(SD.NAMESPACE, "SPARQL11Update");
+		SUPPORTED_ENTAILMENT_PROFILE = factory.createIRI(SD.NAMESPACE, "supportedEntailmentProfile");
+		SUPPORTED_LANGUAGE = factory.createIRI(SD.NAMESPACE, "supportedLanguage");
+		UNION_DEFAULT_GRAPH = factory.createIRI(SD.NAMESPACE, "UnionDefaultGraph");
 	}
 
 	private SD() {

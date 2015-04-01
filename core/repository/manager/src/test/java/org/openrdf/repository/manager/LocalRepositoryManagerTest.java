@@ -119,7 +119,7 @@ public class LocalRepositoryManagerTest {
 		assertTrue("Expected repository to be initialized.", rep.isInitialized());
 		RepositoryConnection conn = rep.getConnection();
 		try {
-			conn.add(conn.getValueFactory().createURI("urn:sesame:test:subject"), RDF.TYPE, OWL.ONTOLOGY);
+			conn.add(conn.getValueFactory().createIRI("urn:sesame:test:subject"), RDF.TYPE, OWL.ONTOLOGY);
 			assertEquals(1, conn.size());
 		}
 		finally {
@@ -155,7 +155,7 @@ public class LocalRepositoryManagerTest {
 		RepositoryConnection conn = rep.getConnection();
 		try {
 			conn.begin();
-			conn.add(conn.getValueFactory().createURI("urn:sesame:test:subject"), RDF.TYPE, OWL.ONTOLOGY);
+			conn.add(conn.getValueFactory().createIRI("urn:sesame:test:subject"), RDF.TYPE, OWL.ONTOLOGY);
 			conn.commit();
 			assertEquals(1, conn.size());
 		}

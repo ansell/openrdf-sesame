@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.FN;
@@ -114,7 +114,7 @@ public class Replace implements Function {
 			String result = p.matcher(argString).replaceAll(replacementString);
 
 			Optional<String> lang = arg.getLanguage();
-			URI dt = arg.getDatatype();
+			IRI dt = arg.getDatatype();
 
 			if (lang.isPresent()) {
 				return valueFactory.createLiteral(result, lang.get());

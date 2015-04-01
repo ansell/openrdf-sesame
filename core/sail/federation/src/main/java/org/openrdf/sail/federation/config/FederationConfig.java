@@ -27,11 +27,11 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -50,24 +50,24 @@ public class FederationConfig extends SailImplConfigBase {
 	/** http://www.openrdf.org/config/sail/federation# */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/federation#";
 
-	public static final URI MEMBER = new URIImpl(NAMESPACE + "member");
+	public static final IRI MEMBER = new IRIImpl(NAMESPACE + "member");
 
 	/**
 	 * For all triples with a predicate in this space, the container RDF store
 	 * contains all triples with that subject and any predicate in this space.
 	 */
-	public static final URI LOCALPROPERTYSPACE = new URIImpl(NAMESPACE // NOPMD
+	public static final IRI LOCALPROPERTYSPACE = new IRIImpl(NAMESPACE // NOPMD
 			+ "localPropertySpace");
 
 	/**
 	 * If no two members contain the same statement.
 	 */
-	public static final URI DISTINCT = new URIImpl(NAMESPACE + "distinct");
+	public static final IRI DISTINCT = new IRIImpl(NAMESPACE + "distinct");
 
 	/**
 	 * If the federation should not try and add statements to its members.
 	 */
-	public static final URI READ_ONLY = new URIImpl(NAMESPACE + "readOnly");
+	public static final IRI READ_ONLY = new IRIImpl(NAMESPACE + "readOnly");
 
 	private List<RepositoryImplConfig> members = new ArrayList<RepositoryImplConfig>();
 
@@ -121,7 +121,7 @@ public class FederationConfig extends SailImplConfigBase {
 			model.add(self, MEMBER, member.export(model));
 		}
 		for (String space : getLocalPropertySpace()) {
-			model.add(self, LOCALPROPERTYSPACE, valueFactory.createURI(space));
+			model.add(self, LOCALPROPERTYSPACE, valueFactory.createIRI(space));
 		}
 		model.add(self, DISTINCT, valueFactory.createLiteral(distinct));
 		model.add(self, READ_ONLY, valueFactory.createLiteral(readOnly));

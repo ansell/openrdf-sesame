@@ -35,7 +35,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -393,10 +393,10 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Resolves a URI-string against the base URI and creates a {@link URI}
+	 * Resolves a URI-string against the base URI and creates a {@link IRI}
 	 * object for it.
 	 */
-	protected URI resolveURI(String uriSpec)
+	protected IRI resolveURI(String uriSpec)
 		throws RDFParseException
 	{
 		// Resolve relative URIs against base URI
@@ -421,13 +421,13 @@ public abstract class RDFParserBase implements RDFParser {
 	}
 
 	/**
-	 * Creates a {@link URI} object for the specified URI-string.
+	 * Creates a {@link IRI} object for the specified URI-string.
 	 */
-	protected URI createURI(String uri)
+	protected IRI createURI(String uri)
 		throws RDFParseException
 	{
 		try {
-			return valueFactory.createURI(uri);
+			return valueFactory.createIRI(uri);
 		}
 		catch (Exception e) {
 			reportFatalError(e);
@@ -493,7 +493,7 @@ public abstract class RDFParserBase implements RDFParser {
 	/**
 	 * Creates a {@link Literal} object with the supplied parameters.
 	 */
-	protected Literal createLiteral(String label, String lang, URI datatype)
+	protected Literal createLiteral(String label, String lang, IRI datatype)
 		throws RDFParseException
 	{
 		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
@@ -507,9 +507,9 @@ public abstract class RDFParserBase implements RDFParser {
 	 * 
 	 * @since 2.7.4
 	 * @see org.openrdf.rio.helpers.RDFParserHelper#createLiteral(String, String,
-	 *      URI, ParserConfig, ParseErrorListener, ValueFactory, int, int)
+	 *      IRI, ParserConfig, ParseErrorListener, ValueFactory, int, int)
 	 */
-	protected Literal createLiteral(String label, String lang, URI datatype, int lineNo, int columnNo)
+	protected Literal createLiteral(String label, String lang, IRI datatype, int lineNo, int columnNo)
 		throws RDFParseException
 	{
 		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
@@ -519,7 +519,7 @@ public abstract class RDFParserBase implements RDFParser {
 	/**
 	 * Creates a new {@link Statement} object with the supplied components.
 	 */
-	protected Statement createStatement(Resource subj, URI pred, Value obj)
+	protected Statement createStatement(Resource subj, IRI pred, Value obj)
 		throws RDFParseException
 	{
 		try {
@@ -534,7 +534,7 @@ public abstract class RDFParserBase implements RDFParser {
 	/**
 	 * Creates a new {@link Statement} object with the supplied components.
 	 */
-	protected Statement createStatement(Resource subj, URI pred, Value obj, Resource context)
+	protected Statement createStatement(Resource subj, IRI pred, Value obj, Resource context)
 		throws RDFParseException
 	{
 		try {

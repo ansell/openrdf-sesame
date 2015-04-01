@@ -18,7 +18,7 @@ package org.openrdf.model.impl;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 
 /**
@@ -42,7 +42,7 @@ public class StatementImpl implements Statement {
 	/**
 	 * The statement's predicate.
 	 */
-	private final URI predicate;
+	private final IRI predicate;
 
 	/**
 	 * The statement's object.
@@ -63,7 +63,7 @@ public class StatementImpl implements Statement {
 	 * @param object
 	 *        The statement's object, must not be <tt>null</tt>.
 	 */
-	public StatementImpl(Resource subject, URI predicate, Value object) {
+	public StatementImpl(Resource subject, IRI predicate, Value object) {
 		assert (subject != null);
 		assert (predicate != null);
 		assert (object != null);
@@ -83,7 +83,7 @@ public class StatementImpl implements Statement {
 	}
 
 	// Implements Statement.getPredicate()
-	public URI getPredicate() {
+	public IRI getPredicate() {
 		return predicate;
 	}
 

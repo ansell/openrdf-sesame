@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.FOAF;
@@ -72,11 +72,11 @@ public class SPARQLServiceEvaluationTest {
 
 	private ValueFactory f;
 
-	private URI bob;
+	private IRI bob;
 
-	private URI alice;
+	private IRI alice;
 
-	private URI william;
+	private IRI william;
 
 	protected static final String EX_NS = "http://example.org/";
 
@@ -114,9 +114,9 @@ public class SPARQLServiceEvaluationTest {
 
 		f = localRepository.getValueFactory();
 
-		bob = f.createURI(EX_NS, "bob");
-		alice = f.createURI(EX_NS, "alice");
-		william = f.createURI(EX_NS, "william");
+		bob = f.createIRI(EX_NS, "bob");
+		alice = f.createIRI(EX_NS, "alice");
+		william = f.createIRI(EX_NS, "william");
 	}
 
 	protected void loadDataSet(Repository rep, String datasetFile)

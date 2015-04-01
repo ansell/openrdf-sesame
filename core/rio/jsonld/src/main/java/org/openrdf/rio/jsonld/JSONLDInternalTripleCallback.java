@@ -21,7 +21,7 @@ import java.util.Map.Entry;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
@@ -85,10 +85,10 @@ class JSONLDInternalTripleCallback implements JsonLdTripleCallback {
 		// predicate and
 		// object
 		if (graph == null) {
-			result = vf.createStatement(createResource(s), vf.createURI(p), createResource(o));
+			result = vf.createStatement(createResource(s), vf.createIRI(p), createResource(o));
 		}
 		else {
-			result = vf.createStatement(createResource(s), vf.createURI(p), createResource(o),
+			result = vf.createStatement(createResource(s), vf.createIRI(p), createResource(o),
 					createResource(graph));
 		}
 
@@ -111,7 +111,7 @@ class JSONLDInternalTripleCallback implements JsonLdTripleCallback {
 			return vf.createBNode(resource.substring(2));
 		}
 		else {
-			return vf.createURI(resource);
+			return vf.createIRI(resource);
 		}
 	}
 
@@ -124,8 +124,8 @@ class JSONLDInternalTripleCallback implements JsonLdTripleCallback {
 
 		final Resource subject = createResource(s);
 
-		final URI predicate = vf.createURI(p);
-		final URI datatypeURI = datatype == null ? null : vf.createURI(datatype);
+		final IRI predicate = vf.createIRI(p);
+		final IRI datatypeURI = datatype == null ? null : vf.createIRI(datatype);
 
 		Value object;
 		try {

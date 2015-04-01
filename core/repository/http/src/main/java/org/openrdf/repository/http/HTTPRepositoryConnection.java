@@ -51,7 +51,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.NamespaceImpl;
@@ -261,7 +261,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
@@ -276,7 +276,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RDFHandlerException, RepositoryException
 	{
@@ -532,7 +532,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (!isActive()) {
@@ -585,7 +585,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	*/
 
 	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void addWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (this.getRepository().useCompatibleMode()) {
@@ -701,7 +701,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void removeWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (this.getRepository().useCompatibleMode()) {

@@ -18,9 +18,9 @@ package org.openrdf.repository.sparql.config;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -33,10 +33,10 @@ import org.openrdf.repository.config.RepositoryImplConfigBase;
  */
 public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 
-	public static final URI QUERY_ENDPOINT = new URIImpl(
+	public static final IRI QUERY_ENDPOINT = new IRIImpl(
 			"http://www.openrdf.org/config/repository/sparql#query-endpoint");
 
-	public static final URI UPDATE_ENDPOINT = new URIImpl(
+	public static final IRI UPDATE_ENDPOINT = new IRIImpl(
 			"http://www.openrdf.org/config/repository/sparql#update-endpoint");
 
 	private String queryEndpointUrl;
@@ -86,10 +86,10 @@ public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 
 		ValueFactory vf = graph.getValueFactory();
 		if (getQueryEndpointUrl() != null) {
-			graph.add(implNode, QUERY_ENDPOINT, vf.createURI(getQueryEndpointUrl()));
+			graph.add(implNode, QUERY_ENDPOINT, vf.createIRI(getQueryEndpointUrl()));
 		}
 		if (getUpdateEndpointUrl() != null) {
-			graph.add(implNode, UPDATE_ENDPOINT, vf.createURI(getUpdateEndpointUrl()));
+			graph.add(implNode, UPDATE_ENDPOINT, vf.createIRI(getUpdateEndpointUrl()));
 		}
 
 		return implNode;
@@ -101,7 +101,7 @@ public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 		super.parse(graph, implNode);
 
 		try {
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, QUERY_ENDPOINT);
+			IRI uri = GraphUtil.getOptionalObjectURI(graph, implNode, QUERY_ENDPOINT);
 			if (uri != null) {
 				setQueryEndpointUrl(uri.stringValue());
 			}

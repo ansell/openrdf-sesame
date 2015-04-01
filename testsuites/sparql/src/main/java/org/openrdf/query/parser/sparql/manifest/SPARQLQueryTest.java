@@ -39,7 +39,7 @@ import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
@@ -469,12 +469,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 		RepositoryConnection con = dataRep.getConnection();
 		try {
 			// Merge default and named graphs to filter duplicates
-			Set<URI> graphURIs = new HashSet<URI>();
+			Set<IRI> graphURIs = new HashSet<IRI>();
 			graphURIs.addAll(dataset.getDefaultGraphs());
 			graphURIs.addAll(dataset.getNamedGraphs());
 
 			for (Resource graphURI : graphURIs) {
-				upload(((URI)graphURI), graphURI);
+				upload(((IRI)graphURI), graphURI);
 			}
 		}
 		finally {
@@ -482,7 +482,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		}
 	}
 
-	private void upload(URI graphURI, Resource context)
+	private void upload(IRI graphURI, Resource context)
 		throws Exception
 	{
 		RepositoryConnection con = dataRep.getConnection();
@@ -692,11 +692,11 @@ public abstract class SPARQLQueryTest extends TestCase {
 		while (testCases.hasNext()) {
 			BindingSet bindingSet = testCases.next();
 
-			URI testURI = (URI)bindingSet.getValue("testURI");
+			IRI testURI = (IRI)bindingSet.getValue("testURI");
 			String testName = bindingSet.getValue("testName").stringValue();
 			String resultFile = bindingSet.getValue("resultFile").stringValue();
 			String queryFile = bindingSet.getValue("queryFile").stringValue();
-			URI defaultGraphURI = (URI)bindingSet.getValue("defaultGraph");
+			IRI defaultGraphURI = (IRI)bindingSet.getValue("defaultGraph");
 			Value action = bindingSet.getValue("action");
 			Value ordered = bindingSet.getValue("ordered");
 
@@ -717,7 +717,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 				while (namedGraphs.hasNext()) {
 					BindingSet graphBindings = namedGraphs.next();
-					URI namedGraphURI = (URI)graphBindings.getValue("graph");
+					IRI namedGraphURI = (IRI)graphBindings.getValue("graph");
 					LOGGER.debug(" adding named graph : {}", namedGraphURI);
 					dataset.addNamedGraph(namedGraphURI);
 				}
@@ -786,7 +786,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		// Try to extract suite name from manifest file
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
 				"SELECT ManifestName FROM {ManifestURL} rdfs:label {ManifestName}");
-		manifestNameQuery.setBinding("ManifestURL", manifestRep.getValueFactory().createURI(manifestFileURL));
+		manifestNameQuery.setBinding("ManifestURL", manifestRep.getValueFactory().createIRI(manifestFileURL));
 		TupleQueryResult manifestNames = manifestNameQuery.evaluate();
 		try {
 			if (manifestNames.hasNext()) {

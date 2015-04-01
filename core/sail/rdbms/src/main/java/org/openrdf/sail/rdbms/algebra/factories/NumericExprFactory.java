@@ -20,7 +20,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.query.algebra.Datatype;
@@ -114,7 +114,7 @@ public class NumericExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOp
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
-			URI dt = lit.getDatatype();
+			IRI dt = lit.getDatatype();
 			if (dt != null && XMLDatatypeUtil.isNumericDatatype(dt)) {
 				try {
 					return new DoubleValue(lit.doubleValue());

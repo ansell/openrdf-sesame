@@ -52,11 +52,11 @@ public abstract class AbstractModelTest {
 
 	protected Literal literal3;
 
-	protected URI uri1;
+	protected IRI uri1;
 
-	protected URI uri2;
+	protected IRI uri2;
 
-	protected URI uri3;
+	protected IRI uri3;
 
 	protected BNode bnode1;
 
@@ -247,9 +247,9 @@ public abstract class AbstractModelTest {
 	public void setUp()
 		throws Exception
 	{
-		uri1 = vf.createURI("urn:test:uri:1");
-		uri2 = vf.createURI("urn:test:uri:2");
-		uri3 = vf.createURI("urn:test:uri:3");
+		uri1 = vf.createIRI("urn:test:uri:1");
+		uri2 = vf.createIRI("urn:test:uri:2");
+		uri3 = vf.createIRI("urn:test:uri:3");
 		bnode1 = vf.createBNode();
 		bnode2 = vf.createBNode("bnode2");
 		bnode3 = vf.createBNode("bnode3");
@@ -269,7 +269,7 @@ public abstract class AbstractModelTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.Model#filter(Resource, URI, Value, Resource...)}.
+	 * {@link org.openrdf.model.Model#filter(Resource, IRI, Value, Resource...)}.
 	 */
 	@Test
 	public final void testFilterSingleLiteral() {
@@ -282,7 +282,7 @@ public abstract class AbstractModelTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.Model#contains(Resource, URI, Value, Resource...)}
+	 * {@link org.openrdf.model.Model#contains(Resource, IRI, Value, Resource...)}
 	 * .
 	 */
 	@Test
@@ -986,222 +986,222 @@ public abstract class AbstractModelTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURIEmpty() {
 		Model model = getNewEmptyModel();
-		Optional<URI> value = model.objectURI();
+		Optional<IRI> value = model.objectIRI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleLiteral() {
 		Model model = getNewModelObjectSingleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleURI() {
 		Model model = getNewModelObjectSingleURI();
-		Optional<URI> value = model.objectURI();
+		Optional<IRI> value = model.objectIRI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleBNode() {
 		Model model = getNewModelObjectSingleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURIDoubleLiteral() {
 		Model model = getNewModelObjectDoubleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleLiteralSingleURI() {
 		Model model = getNewModelObjectSingleLiteralSingleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleLiteralSingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleURISingleBNode() {
 		Model model = getNewModelObjectSingleURISingleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURIDoubleURI() {
 		Model model = getNewModelObjectDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURIDoubleBNode() {
 		Model model = getNewModelObjectDoubleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURITripleLiteral() {
 		Model model = getNewModelObjectTripleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURITripleURI() {
 		Model model = getNewModelObjectTripleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURITripleBNode() {
 		Model model = getNewModelObjectTripleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleLiteralSingleURISingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleURISingleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleLiteralDoubleBNode() {
 		Model model = getNewModelObjectSingleLiteralDoubleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleLiteralDoubleURI() {
 		Model model = getNewModelObjectSingleLiteralDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleURIDoubleBNode() {
 		Model model = getNewModelObjectSingleURIDoubleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleURIDoubleLiteral() {
 		Model model = getNewModelObjectSingleURIDoubleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleBNodeDoubleURI() {
 		Model model = getNewModelObjectSingleBNodeDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testObjectURISingleBNodeDoubleLiteral() {
 		Model model = getNewModelObjectSingleBNodeDoubleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.objectURI();
+		model.objectIRI();
 	}
 
 	/**
@@ -1850,90 +1850,90 @@ public abstract class AbstractModelTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURIEmpty() {
 		Model model = getNewEmptyModel();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleLiteral() {
 		Model model = getNewModelObjectSingleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleURI() {
 		Model model = getNewModelObjectSingleURI();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleBNode() {
 		Model model = getNewModelObjectSingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURIDoubleLiteral() {
 		Model model = getNewModelObjectDoubleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleLiteralSingleURI() {
 		Model model = getNewModelObjectSingleLiteralSingleURI();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleLiteralSingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleURISingleBNode() {
 		Model model = getNewModelObjectSingleURISingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURIDoubleURI() {
@@ -1944,27 +1944,27 @@ public abstract class AbstractModelTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURIDoubleBNode() {
 		Model model = getNewModelObjectDoubleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURITripleLiteral() {
 		Model model = getNewModelObjectTripleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURITripleURI() {
@@ -1975,38 +1975,38 @@ public abstract class AbstractModelTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURITripleBNode() {
 		Model model = getNewModelObjectTripleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleLiteralSingleURISingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleURISingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleLiteralDoubleBNode() {
 		Model model = getNewModelObjectSingleLiteralDoubleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleLiteralDoubleURI() {
@@ -2017,29 +2017,29 @@ public abstract class AbstractModelTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleURIDoubleBNode() {
 		Model model = getNewModelObjectSingleURIDoubleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleURIDoubleLiteral() {
 		Model model = getNewModelObjectSingleURIDoubleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleBNodeDoubleURI() {
@@ -2050,12 +2050,12 @@ public abstract class AbstractModelTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.Model#objectURI()}.
+	 * Test method for {@link org.openrdf.model.Model#objectIRI()}.
 	 */
 	@Test
 	public final void testAnObjectURISingleBNodeDoubleLiteral() {
 		Model model = getNewModelObjectSingleBNodeDoubleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<IRI> value = model.anObjectURI();
 		assertFalse(value.isPresent());
 	}
 

@@ -23,7 +23,7 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
@@ -103,7 +103,7 @@ public class BufferedGroupingRDFHandler extends RDFHandlerWrapper {
 		for (Resource context : contexts) {
 			Set<Resource> subjects = GraphUtil.getSubjects(bufferedStatements, null, null, context);
 			for (Resource subject : subjects) {
-				Set<URI> processedPredicates = new HashSet<URI>();
+				Set<IRI> processedPredicates = new HashSet<IRI>();
 
 				// give rdf:type preference over other predicates.
 				Iterator<Statement> typeStatements = bufferedStatements.match(subject, RDF.TYPE, null, context);
@@ -119,7 +119,7 @@ public class BufferedGroupingRDFHandler extends RDFHandlerWrapper {
 				Iterator<Statement> subjectStatements = bufferedStatements.match(subject, null, null, context);
 				while (subjectStatements.hasNext()) {
 					Statement subjectStatement = subjectStatements.next();
-					URI predicate = subjectStatement.getPredicate();
+					IRI predicate = subjectStatement.getPredicate();
 					if (!processedPredicates.contains(predicate)) {
 						Iterator<Statement> toWrite = bufferedStatements.match(subject, predicate, null, context);
 						while (toWrite.hasNext()) {

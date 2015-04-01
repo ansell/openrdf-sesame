@@ -30,7 +30,7 @@ public class TurtleEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new TurtleParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createURI("http://www.w3.org/TR/turtle/"));
+				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/turtle/"));
 	}
 
 }

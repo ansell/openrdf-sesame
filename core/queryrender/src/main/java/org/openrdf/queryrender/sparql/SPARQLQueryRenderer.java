@@ -16,7 +16,7 @@
  */
 package org.openrdf.queryrender.sparql;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.ProjectionElem;
@@ -149,11 +149,11 @@ public class SPARQLQueryRenderer implements QueryRenderer {
 		}
 
 		if (theQuery.getDataset() != null) {
-			for (URI aURI : theQuery.getDataset().getDefaultGraphs()) {
+			for (IRI aURI : theQuery.getDataset().getDefaultGraphs()) {
 				aQuery.append("from <").append(aURI).append(">\n");
 			}
 
-			for (URI aURI : theQuery.getDataset().getNamedGraphs()) {
+			for (IRI aURI : theQuery.getDataset().getNamedGraphs()) {
 				aQuery.append("from named <").append(aURI).append(">\n");
 			}
 		}

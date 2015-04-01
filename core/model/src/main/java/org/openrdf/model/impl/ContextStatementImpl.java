@@ -17,7 +17,7 @@
 package org.openrdf.model.impl;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 
 /**
@@ -54,7 +54,7 @@ public class ContextStatementImpl extends StatementImpl {
 	 *        The statement's context, <tt>null</tt> to indicate no context is
 	 *        associated.
 	 */
-	public ContextStatementImpl(Resource subject, URI predicate, Value object, Resource context) {
+	public ContextStatementImpl(Resource subject, IRI predicate, Value object, Resource context) {
 		super(subject, predicate, object);
 		this.context = context;
 	}

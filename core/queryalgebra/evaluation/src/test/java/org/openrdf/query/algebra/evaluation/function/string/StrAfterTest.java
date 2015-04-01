@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
@@ -185,7 +185,7 @@ public class StrAfterTest {
 	@Test
 	public void testEvaluate7() {
 
-		URI leftArg = f.createURI("http://example.org/foobar");
+		IRI leftArg = f.createIRI("http://example.org/foobar");
 		Literal rightArg = f.createLiteral("b");
 
 		try {

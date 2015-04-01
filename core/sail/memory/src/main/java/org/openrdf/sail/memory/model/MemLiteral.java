@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -85,7 +85,7 @@ public class MemLiteral extends LiteralImpl implements MemValue {
 	 * @param datatype
 	 *        The datatype of the supplied label.
 	 */
-	public MemLiteral(Object creator, String label, URI datatype) {
+	public MemLiteral(Object creator, String label, IRI datatype) {
 		super(label, datatype);
 		this.creator = creator;
 	}

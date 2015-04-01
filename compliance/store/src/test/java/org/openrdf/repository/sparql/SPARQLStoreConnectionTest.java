@@ -36,7 +36,7 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
@@ -85,9 +85,9 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		super.setUp();
 		// overwrite bnode test values as SPARQL endpoints do not generally work
 		// well with bnodes
-		bob = testRepository.getValueFactory().createURI("urn:x-local:bob");
-		alice = testRepository.getValueFactory().createURI("urn:x-local:alice");
-		alexander = testRepository.getValueFactory().createURI("urn:x-local:alexander");
+		bob = testRepository.getValueFactory().createIRI("urn:x-local:bob");
+		alice = testRepository.getValueFactory().createIRI("urn:x-local:alice");
+		alexander = testRepository.getValueFactory().createIRI("urn:x-local:alexander");
 	}
 
 	@Override
@@ -591,7 +591,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 
-		URI foobar = vf.createURI("foo:bar");
+		IRI foobar = vf.createIRI("foo:bar");
 
 		String sparql = "INSERT DATA { <foo:bar> <foo:bar> <foo:bar> . } ";
 

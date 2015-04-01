@@ -27,7 +27,7 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
@@ -341,8 +341,8 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 					Value subj = bindings.getValue("subject");
 					Value pred = bindings.getValue("predicate");
 					Value obj = bindings.getValue("object");
-					if (subj instanceof Resource && pred instanceof URI && obj != null) {
-						statements.add(factory.createStatement((Resource)subj, (URI)pred, obj));
+					if (subj instanceof Resource && pred instanceof IRI && obj != null) {
+						statements.add(factory.createStatement((Resource)subj, (IRI)pred, obj));
 					}
 				}
 			}

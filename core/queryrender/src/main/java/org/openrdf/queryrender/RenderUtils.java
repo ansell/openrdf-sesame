@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 
@@ -78,8 +78,8 @@ public final class RenderUtils {
 	 * @since 2.8.0
 	 */
 	public static StringBuilder toSPARQL(Value value, StringBuilder builder) {
-		if (value instanceof URI) {
-			URI aURI = (URI)value;
+		if (value instanceof IRI) {
+			IRI aURI = (IRI)value;
 			builder.append("<").append(aURI.toString()).append(">");
 		}
 		else if (value instanceof BNode) {
@@ -125,8 +125,8 @@ public final class RenderUtils {
 	public static String toSeRQL(Value theValue) {
 		StringBuilder aBuffer = new StringBuilder();
 
-		if (theValue instanceof URI) {
-			URI aURI = (URI)theValue;
+		if (theValue instanceof IRI) {
+			IRI aURI = (IRI)theValue;
 			aBuffer.append("<").append(aURI.toString()).append(">");
 		}
 		else if (theValue instanceof BNode) {

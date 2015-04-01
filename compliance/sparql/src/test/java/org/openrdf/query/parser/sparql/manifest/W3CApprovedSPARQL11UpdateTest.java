@@ -20,7 +20,7 @@ import java.util.Map;
 
 import junit.framework.Test;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
 import org.openrdf.query.parser.sparql.manifest.SPARQLUpdateConformanceTest;
 import org.openrdf.repository.Repository;
@@ -35,8 +35,8 @@ import org.openrdf.sail.memory.MemoryStore;
 public class W3CApprovedSPARQL11UpdateTest extends SPARQLUpdateConformanceTest {
 
 	public W3CApprovedSPARQL11UpdateTest(String testURI, String name, String requestFile,
-			URI defaultGraphURI, Map<String, URI> inputNamedGraphs, URI resultDefaultGraphURI,
-			Map<String, URI> resultNamedGraphs)
+			IRI defaultGraphURI, Map<String, IRI> inputNamedGraphs, IRI resultDefaultGraphURI,
+			Map<String, IRI> resultNamedGraphs)
 	{
 		super(testURI, name, requestFile, defaultGraphURI, inputNamedGraphs, resultDefaultGraphURI,
 				resultNamedGraphs);
@@ -48,8 +48,8 @@ public class W3CApprovedSPARQL11UpdateTest extends SPARQLUpdateConformanceTest {
 		return SPARQL11ManifestTest.suite(new Factory() {
 
 			public W3CApprovedSPARQL11UpdateTest createSPARQLUpdateConformanceTest(String testURI,
-					String name, String requestFile, URI defaultGraphURI, Map<String, URI> inputNamedGraphs,
-					URI resultDefaultGraphURI, Map<String, URI> resultNamedGraphs)
+					String name, String requestFile, IRI defaultGraphURI, Map<String, IRI> inputNamedGraphs,
+					IRI resultDefaultGraphURI, Map<String, IRI> resultNamedGraphs)
 			{
 				return new W3CApprovedSPARQL11UpdateTest(testURI, name, requestFile, defaultGraphURI,
 						inputNamedGraphs, resultDefaultGraphURI, resultNamedGraphs);

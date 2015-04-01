@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.MalformedQueryException;
@@ -50,7 +50,7 @@ public class TestExploreServlet {
 
 	private ExploreServlet servlet;
 
-	private URI foo, bar, bang, foos[];
+	private IRI foo, bar, bang, foos[];
 
 	private static final String PREFIX = "PREFIX : <http://www.test.com/>\nINSERT DATA { GRAPH :foo { ";
 
@@ -75,12 +75,12 @@ public class TestExploreServlet {
 		connection = repo.getConnection();
 		servlet = new ExploreServlet();
 		ValueFactory factory = connection.getValueFactory();
-		foo = factory.createURI("http://www.test.com/foo");
-		bar = factory.createURI("http://www.test.com/bar");
-		bang = factory.createURI("http://www.test.com/bang");
-		foos = new URI[128];
+		foo = factory.createIRI("http://www.test.com/foo");
+		bar = factory.createIRI("http://www.test.com/bar");
+		bang = factory.createIRI("http://www.test.com/bang");
+		foos = new IRI[128];
 		for (int i = 0; i < foos.length; i++) {
-			foos[i] = factory.createURI("http://www.test.com/foo/" + i);
+			foos[i] = factory.createIRI("http://www.test.com/foo/" + i);
 		}
 		builder = mock(TupleResultBuilder.class);
 	}
@@ -209,14 +209,14 @@ public class TestExploreServlet {
 		connection.prepareUpdate(QueryLanguage.SPARQL, PREFIX + pattern + SUFFIX).execute();
 	}
 
-	private void assertStatementCount(URI uri, int expectedTotal, int expectedRendered)
+	private void assertStatementCount(IRI uri, int expectedTotal, int expectedRendered)
 		throws OpenRDFException
 	{
 		// limit = 0 means render all
 		assertStatementCount(uri, 0, expectedTotal, expectedRendered);
 	}
 
-	private void assertStatementCount(URI uri, int limit, int expectedTotal, int expectedRendered)
+	private void assertStatementCount(IRI uri, int limit, int expectedTotal, int expectedRendered)
 		throws OpenRDFException
 	{
 		ResultCursor cursor = servlet.processResource(connection, builder, uri, 0, limit, true);

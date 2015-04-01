@@ -21,7 +21,7 @@ import info.aduna.iteration.ExceptionConvertingIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
@@ -44,7 +44,7 @@ public class RepositoryTripleSource implements TripleSource {
 	}
 
 	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
-			URI pred, Value obj, Resource... contexts)
+			IRI pred, Value obj, Resource... contexts)
 		throws QueryEvaluationException
 	{
 		RepositoryResult<Statement> result;

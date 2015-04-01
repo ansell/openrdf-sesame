@@ -36,7 +36,7 @@ import java.util.Set;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -283,7 +283,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		JoinItem from = new JoinItem(alias, tableName, predId);
 
 		ColumnVar s = createSubj(alias, subjVar, (Resource)subjValue);
-		ColumnVar p = createPred(alias, predVar, (URI)predValue, !present);
+		ColumnVar p = createPred(alias, predVar, (IRI)predValue, !present);
 		ColumnVar o = createObj(alias, objVar, objValue);
 		ColumnVar c = createCtx(alias, ctxVar, (Resource)ctxValue);
 
@@ -476,7 +476,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 	}
 
 	private Resource[] getContexts(StatementPattern sp, Value ctxValue) {
-		Set<URI> graphs = getGraphs(sp);
+		Set<IRI> graphs = getGraphs(sp);
 		if (graphs == null) {
 			if (ctxValue != null)
 				return new Resource[] { (Resource)ctxValue };
@@ -493,7 +493,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 		return null;
 	}
 
-	private Set<URI> getGraphs(StatementPattern sp) {
+	private Set<IRI> getGraphs(StatementPattern sp) {
 		if (dataset == null)
 			return null;
 		if (dataset.getDefaultGraphs().isEmpty() && dataset.getNamedGraphs().isEmpty())
@@ -505,7 +505,7 @@ public class SelectQueryOptimizer extends RdbmsQueryModelVisitorBase<RuntimeExce
 
 	private String getTableAlias(Value predValue) {
 		if (predValue != null) {
-			String localName = ((URI)predValue).getLocalName();
+			String localName = ((IRI)predValue).getLocalName();
 			if (localName.length() >= 1) {
 				String alias = localName.substring(0, 1);
 				if (isLetters(alias)) {

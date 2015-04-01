@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -251,7 +251,7 @@ public class XMLDatatypeUtilTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.model.datatypes.XMLDatatypeUtil#isValidValue(java.lang.String, org.openrdf.model.URI)}
+	 * {@link org.openrdf.model.datatypes.XMLDatatypeUtil#isValidValue(java.lang.String, org.openrdf.model.IRI)}
 	 * .
 	 */
 	@Test
@@ -293,7 +293,7 @@ public class XMLDatatypeUtilTest {
 
 	}
 
-	private void testValidation(String[] values, URI datatype, boolean validValues) {
+	private void testValidation(String[] values, IRI datatype, boolean validValues) {
 		for (String value : values) {
 			boolean result = XMLDatatypeUtil.isValidValue(value, datatype);
 			if (validValues) {

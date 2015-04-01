@@ -119,7 +119,7 @@ public class TestStringCast {
 	@Test 
 	public void testCastUnknownDatatypedLiteral() {
 		String lexVal = "foobar";
-		Literal dtLit = f.createLiteral(lexVal, f.createURI("foo:unknownDt"));
+		Literal dtLit = f.createLiteral(lexVal, f.createIRI("foo:unknownDt"));
 		try {
 			Literal result = stringCast.evaluate(f, dtLit);
 			assertNotNull(result);

@@ -40,7 +40,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.StatementImpl;
@@ -116,7 +116,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		return client.getQueryURL();
 	}
 
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
@@ -195,7 +195,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
@@ -245,7 +245,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		}
 	}
 
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws RepositoryException
 	{
@@ -573,7 +573,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					sparqlTransaction.append("CLEAR DEFAULT ");
 					sparqlTransaction.append("; ");
 				}
-				else if (context instanceof URI) {
+				else if (context instanceof IRI) {
 					sparqlTransaction.append("CLEAR GRAPH <" + context.stringValue() + "> ");
 					sparqlTransaction.append("; ");
 				}
@@ -667,7 +667,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 
 	/* protected/private methods */
 
-	private void setBindings(Query query, Resource subj, URI pred, Value obj, Resource... contexts)
+	private void setBindings(Query query, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws RepositoryException
 	{
 		if (subj != null) {
@@ -682,8 +682,8 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		if (contexts != null && contexts.length > 0) {
 			DatasetImpl dataset = new DatasetImpl();
 			for (Resource ctx : contexts) {
-				if (ctx == null || ctx instanceof URI) {
-					dataset.addDefaultGraph((URI)ctx);
+				if (ctx == null || ctx instanceof IRI) {
+					dataset.addDefaultGraph((IRI)ctx);
 				}
 				else {
 					throw new RepositoryException("Contexts must be URIs");
@@ -817,7 +817,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void addWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		ValueFactory f = getValueFactory();
@@ -833,7 +833,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void removeWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		String sparqlCommand = "";
@@ -854,7 +854,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		sparqlTransaction.append("; ");
 	}
 
-	private String createDeletePatternCommand(Resource subject, URI predicate, Value object,
+	private String createDeletePatternCommand(Resource subject, IRI predicate, Value object,
 			Resource[] contexts)
 	{
 		StringBuilder qb = new StringBuilder();
@@ -873,7 +873,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 					qb.append("    GRAPH <" + namedGraph + "> { \n");
 				}
 				createBGP(qb, subject, predicate, object);
-				if (context != null && context instanceof URI) {
+				if (context != null && context instanceof IRI) {
 					qb.append(" } \n");
 				}
 			}
@@ -886,7 +886,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 		return qb.toString();
 	}
 
-	private void createBGP(StringBuilder qb, Resource subject, URI predicate, Value object) {
+	private void createBGP(StringBuilder qb, Resource subject, IRI predicate, Value object) {
 		if (subject != null) {
 			if (subject instanceof BNode) {
 				qb.append("_:" + subject.stringValue() + " ");
@@ -937,7 +937,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	
 	/**
 	 * Shall graph information also be retrieved, 
-	 * e.g. for {@link #getStatements(Resource, URI, Value, boolean, Resource...)
+	 * e.g. for {@link #getStatements(Resource, IRI, Value, boolean, Resource...)
 	 * 
 	 * @return
 	 */
@@ -952,12 +952,12 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	 * 
 	 * @param iter the {@link TupleQueryResult}
 	 * @param subj the subject {@link Resource} used as input or <code>null</code> if wildcard was used
-	 * @param pred the predicate {@link URI} used as input or <code>null</code> if wildcard was used
+	 * @param pred the predicate {@link IRI} used as input or <code>null</code> if wildcard was used
 	 * @param obj the object {@link Value} used as input or <code>null</code> if wildcard was used
 	 * 
 	 * @return the converted iteration
 	 */
-	protected Iteration<Statement, QueryEvaluationException> toStatementIteration(TupleQueryResult iter, final Resource subj, final URI pred, final Value obj) {
+	protected Iteration<Statement, QueryEvaluationException> toStatementIteration(TupleQueryResult iter, final Resource subj, final IRI pred, final Value obj) {
 		
 		return new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(iter) {
 			
@@ -965,7 +965,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 			protected Statement convert(BindingSet b) throws QueryEvaluationException {
 				
 				Resource s = subj==null ? (Resource)b.getValue("s") : subj;
-				URI p = pred==null ? (URI)b.getValue("p") : pred;
+				IRI p = pred==null ? (IRI)b.getValue("p") : pred;
 				Value o = obj==null ? b.getValue("o") : obj;
 				Resource ctx = (Resource)b.getValue("ctx");
 				

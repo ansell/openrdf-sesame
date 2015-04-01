@@ -32,7 +32,7 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
@@ -180,7 +180,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		return prepareUpdate(ql, update, null);
 	}
 
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws RepositoryException
 	{
@@ -498,7 +498,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		conditionalCommit(localTransaction);
 	}
 
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		boolean localTransaction = startLocalTransaction();
@@ -572,7 +572,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		conditionalCommit(localTransaction);
 	}
 
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void remove(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		boolean localTransaction = startLocalTransaction();
@@ -599,7 +599,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		addWithoutCommit(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
-	protected abstract void addWithoutCommit(Resource subject, URI predicate, Value object,
+	protected abstract void addWithoutCommit(Resource subject, IRI predicate, Value object,
 			Resource... contexts)
 		throws RepositoryException;
 
@@ -613,7 +613,7 @@ public abstract class RepositoryConnectionBase implements RepositoryConnection {
 		removeWithoutCommit(st.getSubject(), st.getPredicate(), st.getObject(), contexts);
 	}
 
-	protected abstract void removeWithoutCommit(Resource subject, URI predicate, Value object,
+	protected abstract void removeWithoutCommit(Resource subject, IRI predicate, Value object,
 			Resource... contexts)
 		throws RepositoryException;
 }

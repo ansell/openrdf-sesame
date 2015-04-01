@@ -19,12 +19,12 @@ package org.openrdf.model.util;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.URI;
 
 /**
+ * Utility functions for working with {@link URI URIs}.
  * @author Arjohn Kampman
  */
 public class URIUtil {

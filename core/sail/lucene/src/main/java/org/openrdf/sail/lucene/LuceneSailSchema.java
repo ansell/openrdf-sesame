@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.lucene;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
@@ -28,26 +28,26 @@ public class LuceneSailSchema {
 
 	public static final String NAMESPACE = "http://www.openrdf.org/contrib/lucenesail#";
 
-	public static final URI LUCENE_QUERY;
+	public static final IRI LUCENE_QUERY;
 
-	public static final URI SCORE;
+	public static final IRI SCORE;
 
-	public static final URI QUERY;
+	public static final IRI QUERY;
 
-	public static final URI PROPERTY;
+	public static final IRI PROPERTY;
 
-	public static final URI SNIPPET;
+	public static final IRI SNIPPET;
 
-	public static final URI MATCHES;
+	public static final IRI MATCHES;
 
 	static {
 		ValueFactory factory = new ValueFactoryImpl(); // compatible with beta4:
 																		// creating a new factory
-		LUCENE_QUERY = factory.createURI(NAMESPACE + "LuceneQuery");
-		SCORE = factory.createURI(NAMESPACE + "score");
-		QUERY = factory.createURI(NAMESPACE + "query");
-		PROPERTY = factory.createURI(NAMESPACE + "property");
-		SNIPPET = factory.createURI(NAMESPACE + "snippet");
-		MATCHES = factory.createURI(NAMESPACE + "matches");
+		LUCENE_QUERY = factory.createIRI(NAMESPACE + "LuceneQuery");
+		SCORE = factory.createIRI(NAMESPACE + "score");
+		QUERY = factory.createIRI(NAMESPACE + "query");
+		PROPERTY = factory.createIRI(NAMESPACE + "property");
+		SNIPPET = factory.createIRI(NAMESPACE + "snippet");
+		MATCHES = factory.createIRI(NAMESPACE + "matches");
 	}
 }

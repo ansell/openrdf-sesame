@@ -32,7 +32,7 @@ import static org.openrdf.http.protocol.Protocol.getServerLocation;
 import static org.openrdf.http.protocol.Protocol.getRepositoryID;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
@@ -94,10 +94,10 @@ public class ProtocolTest extends TestCase {
 	
 	public void testEncodeValueRoundtrip() {
 		final ValueFactory vf = ValueFactoryImpl.getInstance();
-		URI uri = vf.createURI("http://example.org/foo-bar");
+		IRI uri = vf.createIRI("http://example.org/foo-bar");
 		
 		String encodedUri = Protocol.encodeValue(uri);
-		URI decodedUri = (URI)Protocol.decodeValue(encodedUri, vf);
+		IRI decodedUri = (IRI)Protocol.decodeValue(encodedUri, vf);
 		
 		assertEquals(uri, decodedUri);
 		

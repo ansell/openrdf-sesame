@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
@@ -318,8 +318,8 @@ public class TestTurtleParser {
 		Statement stmt1 = iter.next(),
 				stmt2 = iter.next();
 
-		assertEquals(new URIImpl("http://www.example.com/#"), stmt1.getSubject());
-		assertEquals(new URIImpl("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
+		assertEquals(new IRIImpl("http://www.example.com/#"), stmt1.getSubject());
+		assertEquals(new IRIImpl("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
 
 		Resource res = (Resource) stmt1.getObject();
 

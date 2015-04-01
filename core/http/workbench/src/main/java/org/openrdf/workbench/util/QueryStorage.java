@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.app.AppConfiguration;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -173,7 +173,7 @@ public class QueryStorage {
 		RepositoryConnection con = repository.getConnection();
 		try {
 			// Manufacture an unlikely unique statement to check.
-			URI uri = con.getValueFactory().createURI("urn:uuid:" + UUID.randomUUID());
+			IRI uri = con.getValueFactory().createIRI("urn:uuid:" + UUID.randomUUID());
 			con.hasStatement(uri, uri, uri, false, uri);
 		}
 		catch (RepositoryException re) {
@@ -241,7 +241,7 @@ public class QueryStorage {
 	 * @return <tt>true</tt> if the given query was saved by the given user or
 	 *         the anonymous user
 	 */
-	public boolean canChange(final URI query, final String currentUser)
+	public boolean canChange(final IRI query, final String currentUser)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException
 	{
 		return performAccessQuery(ASK_UPDATABLE, query, currentUser);
@@ -258,13 +258,13 @@ public class QueryStorage {
 	 * @return <tt>true</tt> if the given query was saved by either the given
 	 *         user or the anonymous user, or is shared
 	 */
-	public boolean canRead(URI query, String currentUser)
+	public boolean canRead(IRI query, String currentUser)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException
 	{
 		return performAccessQuery(ASK_READABLE, query, currentUser);
 	}
 
-	private boolean performAccessQuery(String accessSPARQL, URI query, String currentUser)
+	private boolean performAccessQuery(String accessSPARQL, IRI query, String currentUser)
 		throws RepositoryException, QueryEvaluationException, MalformedQueryException
 	{
 		final QueryStringBuilder canDelete = new QueryStringBuilder(accessSPARQL);
@@ -308,7 +308,7 @@ public class QueryStorage {
 	 * @throws UpdateExecutionException
 	 * @throws MalformedQueryException
 	 */
-	public void deleteQuery(final URI query, final String userName)
+	public void deleteQuery(final IRI query, final String userName)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
 		final QueryStringBuilder delete = new QueryStringBuilder(DELETE);
@@ -341,7 +341,7 @@ public class QueryStorage {
 	 * @throws MalformedQueryException
 	 *         if a problem occurs during the update
 	 */
-	public void updateQuery(final URI query, final String userName, final boolean shared,
+	public void updateQuery(final IRI query, final String userName, final boolean shared,
 			final QueryLanguage queryLanguage, final String queryText, final boolean infer, final int rowsPerPage)
 		throws RepositoryException, UpdateExecutionException, MalformedQueryException
 	{
@@ -407,7 +407,7 @@ public class QueryStorage {
 	 * @throws BadRequestException
 	 *         if the the specified stored query doesn't exist
 	 */
-	public URI selectSavedQuery(final HTTPRepository repository, final String owner, final String queryName)
+	public IRI selectSavedQuery(final HTTPRepository repository, final String owner, final String queryName)
 		throws OpenRDFException, BadRequestException
 	{
 		final QueryStringBuilder select = new QueryStringBuilder(SELECT_URI);
@@ -419,7 +419,7 @@ public class QueryStorage {
 		try {
 			final TupleQueryResult result = query.evaluate();
 			if (result.hasNext()) {
-				return (URI)(result.next().getValue("query"));
+				return (IRI)(result.next().getValue("query"));
 			}
 			else {
 				throw new BadRequestException("Could not find query entry in storage.");

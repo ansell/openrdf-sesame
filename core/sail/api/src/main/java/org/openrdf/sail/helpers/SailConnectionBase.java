@@ -36,7 +36,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.StatementImpl;
@@ -317,7 +317,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	@Override
-	public final CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public final CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, IRI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
@@ -474,14 +474,14 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	@Override
-	public final void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public final void addStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		addStatement(null, subj, pred, obj, contexts);
 	}
 
 	@Override
-	public final void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+	public final void removeStatements(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		flushPendingUpdates();
@@ -508,7 +508,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * operation is complete.
 	 */
 	@Override
-	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(UpdateContext op, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		verifyIsOpen();
@@ -536,7 +536,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	 * operation is complete.
 	 */
 	@Override
-	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatement(UpdateContext op, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		verifyIsOpen();
@@ -809,7 +809,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		throws SailException;
 
 	protected abstract CloseableIteration<? extends Statement, SailException> getStatementsInternal(
-			Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+			Resource subj, IRI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException;
 
 	protected abstract long sizeInternal(Resource... contexts)
@@ -824,10 +824,10 @@ public abstract class SailConnectionBase implements SailConnection {
 	protected abstract void rollbackInternal()
 		throws SailException;
 
-	protected abstract void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected abstract void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
-	protected abstract void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected abstract void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	protected abstract void clearInternal(Resource... contexts)
@@ -916,7 +916,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		/**
 		 * The statement's predicate.
 		 */
-		private final URI predicate;
+		private final IRI predicate;
 
 		/**
 		 * The statement's object.
@@ -943,7 +943,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		 * @param object
 		 *        The statement's object, may be <tt>null</tt>.
 		 */
-		public WildStatement(Resource subject, URI predicate, Value object) {
+		public WildStatement(Resource subject, IRI predicate, Value object) {
 			this(subject, predicate, object, null);
 		}
 
@@ -961,7 +961,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		 *        The statement's context, <tt>null</tt> to indicate no context is
 		 *        associated.
 		 */
-		public WildStatement(Resource subject, URI predicate, Value object, Resource context) {
+		public WildStatement(Resource subject, IRI predicate, Value object, Resource context) {
 			this.subject = subject;
 			this.predicate = predicate;
 			this.object = object;
@@ -978,7 +978,7 @@ public abstract class SailConnectionBase implements SailConnection {
 		}
 
 		// Implements Statement.getPredicate()
-		public URI getPredicate() {
+		public IRI getPredicate() {
 			return predicate;
 		}
 

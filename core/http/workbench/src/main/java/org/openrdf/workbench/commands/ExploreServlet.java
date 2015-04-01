@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -121,8 +121,8 @@ public class ExploreServlet extends TupleServlet {
 			export(con, builder, cursor, (Resource)value, null, null);
 			logger.debug("After subject, total = {}", cursor.getTotalResultCount());
 		}
-		if (value instanceof URI) {
-			export(con, builder, cursor, null, (URI)value, null);
+		if (value instanceof IRI) {
+			export(con, builder, cursor, null, (IRI)value, null);
 			logger.debug("After predicate, total = {}", cursor.getTotalResultCount());
 		}
 		if (value != null) {
@@ -166,7 +166,7 @@ public class ExploreServlet extends TupleServlet {
 	 *        the triple context
 	 */
 	private void export(RepositoryConnection con, TupleResultBuilder builder, ResultCursor cursor,
-			Resource subj, URI pred, Value obj, Resource... context)
+			Resource subj, IRI pred, Value obj, Resource... context)
 		throws OpenRDFException, MalformedQueryException, QueryEvaluationException
 	{
 		RepositoryResult<Statement> result = con.getStatements(subj, pred, obj, true, context);
@@ -203,11 +203,11 @@ public class ExploreServlet extends TupleServlet {
 	 * @return true, if this is the first time the quad has been seen, false
 	 *         otherwise
 	 */
-	private boolean isFirstTimeSeen(Statement result, URI patternPredicate, Value patternObject,
+	private boolean isFirstTimeSeen(Statement result, IRI patternPredicate, Value patternObject,
 			Resource... patternContext)
 	{
 		Resource resultSubject = result.getSubject();
-		URI resultPredicate = result.getPredicate();
+		IRI resultPredicate = result.getPredicate();
 		Value resultObject = result.getObject();
 		boolean firstTimeSeen;
 		if (1 == patternContext.length) {

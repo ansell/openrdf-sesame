@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
@@ -298,7 +298,7 @@ public abstract class RDFXMLParserTestCase {
 		}
 
 		@Override
-		public Literal createLiteral(String value, URI datatype) {
+		public Literal createLiteral(String value, IRI datatype) {
 			if (RDF.XMLLITERAL.equals(datatype)) {
 				// Canonicalize the literal value
 				try {

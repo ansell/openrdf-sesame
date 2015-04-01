@@ -21,7 +21,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 import static org.openrdf.sail.rdbms.managers.LiteralManager.getCalendarValue;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.query.algebra.Datatype;
@@ -110,7 +110,7 @@ public class TimeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOpera
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
 			Literal lit = (Literal)value;
-			URI dt = lit.getDatatype();
+			IRI dt = lit.getDatatype();
 			if (dt != null && XMLDatatypeUtil.isCalendarDatatype(dt)) {
 				try {
 					return new NumberValue(getCalendarValue(lit.calendarValue()));

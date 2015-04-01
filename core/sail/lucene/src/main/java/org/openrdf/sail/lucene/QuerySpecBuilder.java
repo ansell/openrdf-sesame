@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.StatementPattern;
@@ -136,15 +136,15 @@ public class QuerySpecBuilder {
 			}
 
 			// check property restriction or variable
-			URI propertyURI = null;
+			IRI propertyURI = null;
 			if (propertyPattern != null) {
 				Var propertyVar = propertyPattern.getObjectVar();
 				Value propertyValue = propertyVar.hasValue() ? propertyVar.getValue()
 						: bindings.getValue(propertyVar.getName());
 
 				// if property is a restriction, it should be an URI
-				if (propertyValue instanceof URI) {
-					propertyURI = (URI)propertyValue;
+				if (propertyValue instanceof IRI) {
+					propertyURI = (IRI)propertyValue;
 				}
 				// otherwise, it should be a variable
 				else if (propertyValue != null) {

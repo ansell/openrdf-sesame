@@ -22,7 +22,7 @@ import info.aduna.iteration.FilterIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
@@ -71,7 +71,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 					Value context = bindingSet.getValue("context");
 
 					return bindingSet.getValue("subject") instanceof Resource
-							&& bindingSet.getValue("predicate") instanceof URI
+							&& bindingSet.getValue("predicate") instanceof IRI
 							&& bindingSet.getValue("object") instanceof Value
 							&& (context == null || context instanceof Resource);
 				}
@@ -87,7 +87,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 				@Override
 				protected Statement convert(BindingSet bindingSet) {
 					Resource subject = (Resource)bindingSet.getValue("subject");
-					URI predicate = (URI)bindingSet.getValue("predicate");
+					IRI predicate = (IRI)bindingSet.getValue("predicate");
 					Value object = bindingSet.getValue("object");
 					Resource context = (Resource)bindingSet.getValue("context");
 

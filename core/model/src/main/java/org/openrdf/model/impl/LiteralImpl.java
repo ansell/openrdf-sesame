@@ -23,7 +23,7 @@ import java.util.Optional;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
@@ -60,7 +60,7 @@ public class LiteralImpl implements Literal {
 	/**
 	 * The literal's datatype.
 	 */
-	private URI datatype;
+	private IRI datatype;
 
 	/*--------------*
 	 * Constructors *
@@ -99,7 +99,7 @@ public class LiteralImpl implements Literal {
 	 * @param datatype
 	 *        The datatype for the literal.
 	 */
-	public LiteralImpl(String label, URI datatype) {
+	public LiteralImpl(String label, IRI datatype) {
 		this(label, null, datatype);
 	}
 
@@ -107,7 +107,7 @@ public class LiteralImpl implements Literal {
 	 * Creates a new Literal object, initializing the variables with the supplied
 	 * parameters.
 	 */
-	private LiteralImpl(String label, String language, URI datatype) {
+	private LiteralImpl(String label, String language, IRI datatype) {
 		setLabel(label);
 		if (language != null) {
 			setLanguage(language.toLowerCase());
@@ -145,11 +145,11 @@ public class LiteralImpl implements Literal {
 		return language;
 	}
 
-	protected void setDatatype(URI datatype) {
+	protected void setDatatype(IRI datatype) {
 		this.datatype = datatype;
 	}
 
-	public URI getDatatype() {
+	public IRI getDatatype() {
 		return datatype;
 	}
 

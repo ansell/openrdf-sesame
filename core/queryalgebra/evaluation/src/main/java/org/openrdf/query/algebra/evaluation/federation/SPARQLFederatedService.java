@@ -32,7 +32,7 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.Binding;
@@ -467,8 +467,8 @@ public class SPARQLFederatedService implements FederatedService {
 		if (value == null)
 			return sb.append("UNDEF"); // see grammar for BINDINGs def
 
-		else if (value instanceof URI)
-			return appendURI(sb, (URI)value);
+		else if (value instanceof IRI)
+			return appendURI(sb, (IRI)value);
 
 		else if (value instanceof Literal)
 			return appendLiteral(sb, (Literal)value);
@@ -484,7 +484,7 @@ public class SPARQLFederatedService implements FederatedService {
 	 * @param uri
 	 * @return the StringBuilder, for convenience
 	 */
-	protected static StringBuilder appendURI(StringBuilder sb, URI uri) {
+	protected static StringBuilder appendURI(StringBuilder sb, IRI uri) {
 		sb.append("<").append(uri.stringValue()).append(">");
 		return sb;
 	}

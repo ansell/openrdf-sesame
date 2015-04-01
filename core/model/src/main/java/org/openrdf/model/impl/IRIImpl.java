@@ -16,13 +16,13 @@
  */
 package org.openrdf.model.impl;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.util.URIUtil;
 
 /**
- * The default implementation of the {@link URI} interface.
+ * The default implementation of the {@link IRI} interface.
  */
-public class URIImpl implements URI {
+public class IRIImpl implements IRI {
 
 	/*-----------*
 	 * Constants *
@@ -53,7 +53,7 @@ public class URIImpl implements URI {
 	 * Creates a new, unitialized URI. This URI's string value needs to be
 	 * {@link #setURIString(String) set} before the normal methods can be used.
 	 */
-	protected URIImpl() {
+	protected IRIImpl() {
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class URIImpl implements URI {
 	 * @throws IllegalArgumentException
 	 *         If the supplied URI is not a valid (absolute) URI.
 	 */
-	public URIImpl(String uriString) {
+	public IRIImpl(String uriString) {
 		setURIString(uriString);
 	}
 
@@ -116,7 +116,7 @@ public class URIImpl implements URI {
 			return true;
 		}
 
-		if (o instanceof URI) {
+		if (o instanceof IRI) {
 			return toString().equals(o.toString());
 		}
 

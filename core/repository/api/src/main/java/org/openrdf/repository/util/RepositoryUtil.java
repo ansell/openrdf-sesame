@@ -30,7 +30,7 @@ import info.aduna.iteration.Iterations;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Models;
 import org.openrdf.repository.Repository;
@@ -219,8 +219,8 @@ public class RepositoryUtil {
 	}
 
 	private static boolean statementsMatch(Statement st1, Statement st2, Map<BNode, BNode> bNodeMapping) {
-		URI pred1 = st1.getPredicate();
-		URI pred2 = st2.getPredicate();
+		IRI pred1 = st1.getPredicate();
+		IRI pred2 = st2.getPredicate();
 
 		if (!pred1.equals(pred2)) {
 			// predicates don't match

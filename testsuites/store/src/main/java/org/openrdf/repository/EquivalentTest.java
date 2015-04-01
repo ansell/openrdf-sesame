@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -57,9 +57,9 @@ public abstract class EquivalentTest {
 
 	private static Literal xyz_integer = vf.createLiteral("xyz", XMLSchema.INTEGER);
 
-	private static Literal xyz_unknown = vf.createLiteral("xyz", vf.createURI("http://example/unknown"));
+	private static Literal xyz_unknown = vf.createLiteral("xyz", vf.createIRI("http://example/unknown"));
 
-	private static URI xyz_uri = vf.createURI("http://example/xyz");
+	private static IRI xyz_uri = vf.createIRI("http://example/xyz");
 
 	private static Literal abc_simple = vf.createLiteral("abc");
 
@@ -71,13 +71,13 @@ public abstract class EquivalentTest {
 
 	private static Literal abc_integer = vf.createLiteral("abc", XMLSchema.INTEGER);
 
-	private static Literal abc_unknown = vf.createLiteral("abc", vf.createURI("http://example/unknown"));
+	private static Literal abc_unknown = vf.createLiteral("abc", vf.createIRI("http://example/unknown"));
 
-	private static URI abc_uri = vf.createURI("http://example/abc");
+	private static IRI abc_uri = vf.createIRI("http://example/abc");
 
-	private static URI t1 = vf.createURI("http://example/t1");
+	private static IRI t1 = vf.createIRI("http://example/t1");
 
-	private static URI t2 = vf.createURI("http://example/t2");
+	private static IRI t2 = vf.createIRI("http://example/t2");
 
 	private static final String IND = "?";
 

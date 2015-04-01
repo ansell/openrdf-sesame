@@ -37,7 +37,7 @@ import info.aduna.io.FileUtil;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
@@ -358,7 +358,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 		}
 
 		@Override
-		public void add(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+		public void add(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 				Resource... contexts)
 		{
 			registerModifiedContexts(conn, contexts);
@@ -370,7 +370,7 @@ public class LocalRepositoryManager extends RepositoryManager {
 		}
 
 		@Override
-		public void remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+		public void remove(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 				Resource... contexts)
 		{
 			if (object != null && object.equals(RepositoryConfigSchema.REPOSITORY_CONTEXT)) {

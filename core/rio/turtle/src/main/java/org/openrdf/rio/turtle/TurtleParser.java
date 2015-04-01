@@ -35,7 +35,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -81,7 +81,7 @@ public class TurtleParser extends RDFParserBase {
 
 	protected Resource subject;
 
-	protected URI predicate;
+	protected IRI predicate;
 
 	protected Value object;
 
@@ -349,7 +349,7 @@ public class TurtleParser extends RDFParserBase {
 		skipWSC();
 
 		// Read the namespace URI
-		URI namespace = parseURI();
+		IRI namespace = parseURI();
 
 		// Store and report this namespace mapping
 		String prefixStr = prefixID.toString();
@@ -367,7 +367,7 @@ public class TurtleParser extends RDFParserBase {
 	{
 		skipWSC();
 
-		URI baseURI = parseURI();
+		IRI baseURI = parseURI();
 
 		setBaseURI(baseURI.toString());
 	}
@@ -482,7 +482,7 @@ public class TurtleParser extends RDFParserBase {
 		}
 	}
 
-	protected URI parsePredicate()
+	protected IRI parsePredicate()
 		throws IOException, RDFParseException, RDFHandlerException
 	{
 		// Check if the short-cut 'a' is used
@@ -503,8 +503,8 @@ public class TurtleParser extends RDFParserBase {
 
 		// Predicate is a normal resource
 		Value predicate = parseValue();
-		if (predicate instanceof URI) {
-			return (URI)predicate;
+		if (predicate instanceof IRI) {
+			return (IRI)predicate;
 		}
 		else {
 			reportFatalError("Illegal predicate value: " + predicate);
@@ -550,7 +550,7 @@ public class TurtleParser extends RDFParserBase {
 
 			// Remember current subject and predicate
 			Resource oldSubject = subject;
-			URI oldPredicate = predicate;
+			IRI oldPredicate = predicate;
 
 			// generated bNode becomes subject, predicate becomes rdf:first
 			subject = listRoot;
@@ -602,7 +602,7 @@ public class TurtleParser extends RDFParserBase {
 
 			// Remember current subject and predicate
 			Resource oldSubject = subject;
-			URI oldPredicate = predicate;
+			IRI oldPredicate = predicate;
 
 			// generated bNode becomes subject
 			subject = bNode;
@@ -724,8 +724,8 @@ public class TurtleParser extends RDFParserBase {
 
 			// Read datatype
 			Value datatype = parseValue();
-			if (datatype instanceof URI) {
-				return createLiteral(label, null, (URI)datatype, getLineNumber(), -1);
+			if (datatype instanceof IRI) {
+				return createLiteral(label, null, (IRI)datatype, getLineNumber(), -1);
 			}
 			else {
 				reportFatalError("Illegal datatype value: " + datatype);
@@ -856,7 +856,7 @@ public class TurtleParser extends RDFParserBase {
 		throws IOException, RDFParseException
 	{
 		StringBuilder value = new StringBuilder(8);
-		URI datatype = XMLSchema.INTEGER;
+		IRI datatype = XMLSchema.INTEGER;
 
 		int c = readCodePoint();
 
@@ -950,7 +950,7 @@ public class TurtleParser extends RDFParserBase {
 		return createLiteral(value.toString(), null, datatype, getLineNumber(), -1);
 	}
 
-	protected URI parseURI()
+	protected IRI parseURI()
 		throws IOException, RDFParseException
 	{
 		StringBuilder uriBuf = new StringBuilder(100);
@@ -1186,7 +1186,7 @@ public class TurtleParser extends RDFParserBase {
 		return createBNode(name.toString());
 	}
 
-	protected void reportStatement(Resource subj, URI pred, Value obj)
+	protected void reportStatement(Resource subj, IRI pred, Value obj)
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj);

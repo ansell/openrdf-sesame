@@ -17,7 +17,7 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -49,121 +49,121 @@ public class FN {
 	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
 
 	/** fn:concat */
-	public static final URI CONCAT;
+	public static final IRI CONCAT;
 
 	/** fn:contains */
-	public static final URI CONTAINS;
+	public static final IRI CONTAINS;
 
 	/** fn:day-from-dateTime */
-	public static final URI DAY_FROM_DATETIME;
+	public static final IRI DAY_FROM_DATETIME;
 
 	/** fn:encode-for-uri */
-	public static final URI ENCODE_FOR_URI;
+	public static final IRI ENCODE_FOR_URI;
 
 	/** fn:ends-with */
-	public static final URI ENDS_WITH;
+	public static final IRI ENDS_WITH;
 
 	/** fn:hours-from-dateTime */
-	public static final URI HOURS_FROM_DATETIME;
+	public static final IRI HOURS_FROM_DATETIME;
 
 	/** fn:lower-case */
-	public static final URI LOWER_CASE;
+	public static final IRI LOWER_CASE;
 
 	/** fn:minutes-from-dateTime */
-	public static final URI MINUTES_FROM_DATETIME;
+	public static final IRI MINUTES_FROM_DATETIME;
 
 	/** fn:month-from-dateTime */
-	public static final URI MONTH_FROM_DATETIME;
+	public static final IRI MONTH_FROM_DATETIME;
 
 	/** fn:numeric-abs */
-	public static final URI NUMERIC_ABS;
+	public static final IRI NUMERIC_ABS;
 
 	/** fn:numeric-ceil */
-	public static final URI NUMERIC_CEIL;
+	public static final IRI NUMERIC_CEIL;
 
 	/** fn:numeric-floor */
-	public static final URI NUMERIC_FLOOR;
+	public static final IRI NUMERIC_FLOOR;
 
 	/** fn:numeric-round */
-	public static final URI NUMERIC_ROUND;
+	public static final IRI NUMERIC_ROUND;
 
 	/** fn:replace */
-	public static final URI REPLACE;
+	public static final IRI REPLACE;
 
 	/** fn:seconds-from-dateTime */
-	public static final URI SECONDS_FROM_DATETIME;
+	public static final IRI SECONDS_FROM_DATETIME;
 
 	/** fn:starts-with */
-	public static final URI STARTS_WITH;
+	public static final IRI STARTS_WITH;
 
 	/** fn:string-length */
-	public static final URI STRING_LENGTH;
+	public static final IRI STRING_LENGTH;
 
 	/** fn:substring */
-	public static final URI SUBSTRING;
+	public static final IRI SUBSTRING;
 
 	/** fn:substring-before */
-	public static final URI SUBSTRING_BEFORE;
+	public static final IRI SUBSTRING_BEFORE;
 
 	/** fn:substring-after */
-	public static final URI SUBSTRING_AFTER;
+	public static final IRI SUBSTRING_AFTER;
 
 	/** fn:timezone-from-dateTime */
-	public static final URI TIMEZONE_FROM_DATETIME;
+	public static final IRI TIMEZONE_FROM_DATETIME;
 
 	/** fn:upper-case */
-	public static final URI UPPER_CASE;
+	public static final IRI UPPER_CASE;
 
 	/** fn:year-from-dateTime */
-	public static final URI YEAR_FROM_DATETIME;
+	public static final IRI YEAR_FROM_DATETIME;
 
 	static {
 		ValueFactory f = new ValueFactoryImpl();
 
-		CONCAT = f.createURI(NAMESPACE, "concat");
+		CONCAT = f.createIRI(NAMESPACE, "concat");
 
-		CONTAINS = f.createURI(NAMESPACE, "contains");
+		CONTAINS = f.createIRI(NAMESPACE, "contains");
 
-		DAY_FROM_DATETIME = f.createURI(NAMESPACE, "day-from-dateTime");
+		DAY_FROM_DATETIME = f.createIRI(NAMESPACE, "day-from-dateTime");
 
-		ENCODE_FOR_URI = f.createURI(NAMESPACE, "encode-for-uri");
+		ENCODE_FOR_URI = f.createIRI(NAMESPACE, "encode-for-uri");
 
-		ENDS_WITH = f.createURI(NAMESPACE, "ends-with");
+		ENDS_WITH = f.createIRI(NAMESPACE, "ends-with");
 
-		HOURS_FROM_DATETIME = f.createURI(NAMESPACE, "hours-from-dateTime");
+		HOURS_FROM_DATETIME = f.createIRI(NAMESPACE, "hours-from-dateTime");
 
-		LOWER_CASE = f.createURI(NAMESPACE, "lower-case");
+		LOWER_CASE = f.createIRI(NAMESPACE, "lower-case");
 
-		MINUTES_FROM_DATETIME = f.createURI(NAMESPACE, "minutes-from-dateTime");
+		MINUTES_FROM_DATETIME = f.createIRI(NAMESPACE, "minutes-from-dateTime");
 
-		MONTH_FROM_DATETIME = f.createURI(NAMESPACE, "month-from-dateTime");
+		MONTH_FROM_DATETIME = f.createIRI(NAMESPACE, "month-from-dateTime");
 
-		NUMERIC_ABS = f.createURI(NAMESPACE, "numeric-abs");
+		NUMERIC_ABS = f.createIRI(NAMESPACE, "numeric-abs");
 
-		NUMERIC_CEIL = f.createURI(NAMESPACE, "numeric-ceil");
+		NUMERIC_CEIL = f.createIRI(NAMESPACE, "numeric-ceil");
 
-		NUMERIC_FLOOR = f.createURI(NAMESPACE, "numeric-floor");
+		NUMERIC_FLOOR = f.createIRI(NAMESPACE, "numeric-floor");
 
-		NUMERIC_ROUND = f.createURI(NAMESPACE, "numeric-round");
+		NUMERIC_ROUND = f.createIRI(NAMESPACE, "numeric-round");
 
-		REPLACE = f.createURI(NAMESPACE, "replace");
+		REPLACE = f.createIRI(NAMESPACE, "replace");
 
-		SECONDS_FROM_DATETIME = f.createURI(NAMESPACE, "seconds-from-dateTime");
+		SECONDS_FROM_DATETIME = f.createIRI(NAMESPACE, "seconds-from-dateTime");
 
-		STARTS_WITH = f.createURI(NAMESPACE, "starts-with");
+		STARTS_WITH = f.createIRI(NAMESPACE, "starts-with");
 
-		STRING_LENGTH = f.createURI(NAMESPACE, "string-length");
+		STRING_LENGTH = f.createIRI(NAMESPACE, "string-length");
 
-		SUBSTRING = f.createURI(NAMESPACE, "substring");
+		SUBSTRING = f.createIRI(NAMESPACE, "substring");
 
-		SUBSTRING_BEFORE = f.createURI(NAMESPACE, "substring-before");
+		SUBSTRING_BEFORE = f.createIRI(NAMESPACE, "substring-before");
 
-		SUBSTRING_AFTER = f.createURI(NAMESPACE, "substring-after");
+		SUBSTRING_AFTER = f.createIRI(NAMESPACE, "substring-after");
 
-		TIMEZONE_FROM_DATETIME = f.createURI(NAMESPACE, "timezone-from-dateTime");
+		TIMEZONE_FROM_DATETIME = f.createIRI(NAMESPACE, "timezone-from-dateTime");
 
-		UPPER_CASE = f.createURI(NAMESPACE, "upper-case");
+		UPPER_CASE = f.createIRI(NAMESPACE, "upper-case");
 
-		YEAR_FROM_DATETIME = f.createURI(NAMESPACE, "year-from-dateTime");
+		YEAR_FROM_DATETIME = f.createIRI(NAMESPACE, "year-from-dateTime");
 	}
 }

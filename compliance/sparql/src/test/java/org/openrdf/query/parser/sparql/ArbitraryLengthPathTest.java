@@ -106,11 +106,11 @@ public class ArbitraryLengthPathTest extends TestCase {
 	{
 		ValueFactory vf = con.getValueFactory();
 		for (int i = 0; i < n; i++) {
-			con.add(vf.createURI("urn:test:root"), vf.createURI("urn:test:hasChild"),
-					vf.createURI("urn:test:node" + i));
+			con.add(vf.createIRI("urn:test:root"), vf.createIRI("urn:test:hasChild"),
+					vf.createIRI("urn:test:node" + i));
 		}
-		con.add(vf.createURI("urn:test:root"), vf.createURI("urn:test:hasChild"),
-				vf.createURI("urn:test:node-end"));
+		con.add(vf.createIRI("urn:test:root"), vf.createIRI("urn:test:hasChild"),
+				vf.createIRI("urn:test:node-end"));
 	}
 
 }

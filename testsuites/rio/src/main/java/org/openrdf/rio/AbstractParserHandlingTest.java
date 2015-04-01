@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Model;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -66,7 +66,7 @@ public abstract class AbstractParserHandlingTest {
 	/**
 	 * Test URI used for testing unknown datatype support.
 	 */
-	private static final URI UNKNOWN_DATATYPE_URI = ValueFactoryImpl.getInstance().createURI(
+	private static final IRI UNKNOWN_DATATYPE_URI = ValueFactoryImpl.getInstance().createIRI(
 			"urn:test:unknowndatatype");
 
 	/**
@@ -80,7 +80,7 @@ public abstract class AbstractParserHandlingTest {
 	 * This may be anything, but it must match with the given
 	 * {@link DatatypeHandler}.
 	 */
-	private static final URI KNOWN_DATATYPE_URI = XMLSchema.INTEGER;
+	private static final IRI KNOWN_DATATYPE_URI = XMLSchema.INTEGER;
 
 	/**
 	 * Test value used for testing unknown language support.
@@ -898,7 +898,7 @@ public abstract class AbstractParserHandlingTest {
 		assertEquals("Unexpected number of warnings", expectedWarnings, testListener.getWarnings().size());
 	}
 
-	private final Model getTestModel(String datatypeValue, URI datatypeURI) {
+	private final Model getTestModel(String datatypeValue, IRI datatypeURI) {
 		Model result = new LinkedHashModel();
 		result.add(vf.createStatement(vf.createBNode(), DC.DESCRIPTION,
 				vf.createLiteral(datatypeValue, datatypeURI)));

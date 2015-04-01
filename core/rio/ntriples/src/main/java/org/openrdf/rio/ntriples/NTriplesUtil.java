@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.Literals;
@@ -102,13 +102,13 @@ public class NTriplesUtil {
 	 * @throws IllegalArgumentException
 	 *         If the supplied URI could not be parsed correctly.
 	 */
-	public static URI parseURI(String nTriplesURI, ValueFactory valueFactory)
+	public static IRI parseURI(String nTriplesURI, ValueFactory valueFactory)
 		throws IllegalArgumentException
 	{
 		if (nTriplesURI.startsWith("<") && nTriplesURI.endsWith(">")) {
 			String uri = nTriplesURI.substring(1, nTriplesURI.length() - 1);
 			uri = unescapeString(uri);
-			return valueFactory.createURI(uri);
+			return valueFactory.createIRI(uri);
 		}
 		else {
 			throw new IllegalArgumentException("Not a legal N-Triples URI: " + nTriplesURI);
@@ -177,7 +177,7 @@ public class NTriplesUtil {
 				else if (startDtIdx != -1) {
 					// Get datatype
 					String datatype = nTriplesLiteral.substring(startDtIdx + 2);
-					URI dtURI = parseURI(datatype, valueFactory);
+					IRI dtURI = parseURI(datatype, valueFactory);
 					return valueFactory.createLiteral(label, dtURI);
 				}
 				else {
@@ -297,8 +297,8 @@ public class NTriplesUtil {
 	 * Creates an N-Triples string for the supplied resource.
 	 */
 	public static String toNTriplesString(Resource resource) {
-		if (resource instanceof URI) {
-			return toNTriplesString((URI)resource);
+		if (resource instanceof IRI) {
+			return toNTriplesString((IRI)resource);
 		}
 		else if (resource instanceof BNode) {
 			return toNTriplesString((BNode)resource);
@@ -311,8 +311,8 @@ public class NTriplesUtil {
 	public static void append(Resource resource, Appendable appendable)
 		throws IOException
 	{
-		if (resource instanceof URI) {
-			append((URI)resource, appendable);
+		if (resource instanceof IRI) {
+			append((IRI)resource, appendable);
 		}
 		else if (resource instanceof BNode) {
 			append((BNode)resource, appendable);
@@ -325,11 +325,11 @@ public class NTriplesUtil {
 	/**
 	 * Creates an N-Triples string for the supplied URI.
 	 */
-	public static String toNTriplesString(URI uri) {
+	public static String toNTriplesString(IRI uri) {
 		return "<" + escapeString(uri.toString()) + ">";
 	}
 
-	public static void append(URI uri, Appendable appendable)
+	public static void append(IRI uri, Appendable appendable)
 		throws IOException
 	{
 		appendable.append("<");
@@ -450,7 +450,7 @@ public class NTriplesUtil {
 			// SES-1917 : In RDF-1.1, all literals have a type, and if they are not
 			// language literals we display the type for backwards compatibility
 			// Append the literal's datatype
-			URI datatype = lit.getDatatype();
+			IRI datatype = lit.getDatatype();
 			boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral;
 			if (!ignoreDatatype) {
 				appendable.append("^^");

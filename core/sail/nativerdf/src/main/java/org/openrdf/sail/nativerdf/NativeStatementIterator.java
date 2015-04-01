@@ -23,7 +23,7 @@ import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
@@ -72,7 +72,7 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 		Resource subj = (Resource)valueStore.getValue(subjID);
 
 		int predID = ByteArrayUtil.getInt(nextValue, TripleStore.PRED_IDX);
-		URI pred = (URI)valueStore.getValue(predID);
+		IRI pred = (IRI)valueStore.getValue(predID);
 
 		int objID = ByteArrayUtil.getInt(nextValue, TripleStore.OBJ_IDX);
 		Value obj = valueStore.getValue(objID);

@@ -25,7 +25,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -84,7 +84,7 @@ class JSONLDInternalRDFParser implements com.github.jsonldjava.core.RDFParser {
 		if (subject == null) {
 			return null;
 		}
-		else if (subject instanceof URI) {
+		else if (subject instanceof IRI) {
 			return subject.stringValue();
 		}
 		else if (subject instanceof BNode) {

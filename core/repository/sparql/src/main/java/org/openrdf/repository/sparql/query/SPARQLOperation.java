@@ -28,7 +28,7 @@ import org.apache.http.client.HttpClient;
 import info.aduna.net.ParsedURI;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
@@ -83,7 +83,7 @@ public abstract class SPARQLOperation implements Operation {
 	}
 
 	public void setBinding(String name, Value value) {
-		assert value instanceof Literal || value instanceof URI;
+		assert value instanceof Literal || value instanceof IRI;
 		bindings.addBinding(name, value);
 	}
 
@@ -144,8 +144,8 @@ public abstract class SPARQLOperation implements Operation {
 	
 	private String getReplacement(Value value) {
 		StringBuilder sb = new StringBuilder();
-		if (value instanceof URI) {
-			return appendValue(sb, (URI) value).toString();
+		if (value instanceof IRI) {
+			return appendValue(sb, (IRI) value).toString();
 		} else if (value instanceof Literal) {
 			return appendValue(sb, (Literal) value).toString();
 		} else {
@@ -154,7 +154,7 @@ public abstract class SPARQLOperation implements Operation {
 		}
 	}
 
-	private StringBuilder appendValue(StringBuilder sb, URI uri) {
+	private StringBuilder appendValue(StringBuilder sb, IRI uri) {
 		sb.append("<").append(uri.stringValue()).append(">");
 		return sb;
 	}

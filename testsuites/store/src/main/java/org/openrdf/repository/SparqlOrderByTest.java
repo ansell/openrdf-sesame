@@ -125,8 +125,8 @@ public abstract class SparqlOrderByTest {
 		String foafName = "http://xmlns.com/foaf/0.1/name";
 		String exEmpId = "http://example.org/ns#empId";
 		RepositoryConnection conn = repository.getConnection();
-		conn.add(vf.createURI("http://example.org/ns#" + id), vf.createURI(foafName), vf.createLiteral(name));
-		conn.add(vf.createURI("http://example.org/ns#" + id), vf.createURI(exEmpId), vf.createLiteral(empId));
+		conn.add(vf.createIRI("http://example.org/ns#" + id), vf.createIRI(foafName), vf.createLiteral(name));
+		conn.add(vf.createIRI("http://example.org/ns#" + id), vf.createIRI(exEmpId), vf.createLiteral(empId));
 		conn.close();
 	}
 

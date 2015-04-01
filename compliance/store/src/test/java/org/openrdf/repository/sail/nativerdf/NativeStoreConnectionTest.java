@@ -26,7 +26,7 @@ import org.junit.Test;
 import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
@@ -64,14 +64,14 @@ public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 		// load 1000 triples in two different contexts
 		testCon.begin();
 		ValueFactory vf = testCon.getValueFactory();
-		URI context1 = vf.createURI("http://my.context.1");
-		URI context2 = vf.createURI("http://my.context.2");
-		URI predicate = vf.createURI("http://my.predicate");
-		URI object = vf.createURI("http://my.object");
+		IRI context1 = vf.createIRI("http://my.context.1");
+		IRI context2 = vf.createIRI("http://my.context.2");
+		IRI predicate = vf.createIRI("http://my.predicate");
+		IRI object = vf.createIRI("http://my.object");
 
 		for (int j = 0; j < 1000; j++) {
-			testCon.add(vf.createURI("http://my.subject" + j), predicate, object, context1);
-			testCon.add(vf.createURI("http://my.subject" + j), predicate, object, context2);
+			testCon.add(vf.createIRI("http://my.subject" + j), predicate, object, context1);
+			testCon.add(vf.createIRI("http://my.subject" + j), predicate, object, context2);
 		}
 		assertEquals(1000, Iterations.asList(testCon.getStatements(null, null, null, false, context1)).size());
 		assertEquals(1000, Iterations.asList(testCon.getStatements(null, null, null, false, context2)).size());

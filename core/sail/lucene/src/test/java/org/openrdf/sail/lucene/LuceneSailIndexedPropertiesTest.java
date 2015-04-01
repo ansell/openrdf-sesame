@@ -28,9 +28,9 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -52,29 +52,29 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 
 	protected RepositoryConnection connection;
 
-	public static final URI SUBJECT_1 = new URIImpl("urn:subject1");
+	public static final IRI SUBJECT_1 = new IRIImpl("urn:subject1");
 
-	public static final URI SUBJECT_2 = new URIImpl("urn:subject2");
+	public static final IRI SUBJECT_2 = new IRIImpl("urn:subject2");
 
-	public static final URI SUBJECT_3 = new URIImpl("urn:subject3");
+	public static final IRI SUBJECT_3 = new IRIImpl("urn:subject3");
 
-	public static final URI SUBJECT_4 = new URIImpl("urn:subject4");
+	public static final IRI SUBJECT_4 = new IRIImpl("urn:subject4");
 
-	public static final URI SUBJECT_5 = new URIImpl("urn:subject5");
+	public static final IRI SUBJECT_5 = new IRIImpl("urn:subject5");
 
-	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
+	public static final IRI CONTEXT_1 = new IRIImpl("urn:context1");
 
-	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
+	public static final IRI CONTEXT_2 = new IRIImpl("urn:context2");
 
-	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
+	public static final IRI CONTEXT_3 = new IRIImpl("urn:context3");
 
-	public static final URI RDFSLABEL = RDFS.LABEL;
+	public static final IRI RDFSLABEL = RDFS.LABEL;
 
-	public static final URI RDFSCOMMENT = RDFS.COMMENT;
+	public static final IRI RDFSCOMMENT = RDFS.COMMENT;
 
-	public static final URI FOAFNAME = new URIImpl("http://xmlns.com/foaf/0.1/name");
+	public static final IRI FOAFNAME = new IRIImpl("http://xmlns.com/foaf/0.1/name");
 
-	public static final URI FOAFPLAN = new URIImpl("http://xmlns.com/foaf/0.1/plan");
+	public static final IRI FOAFPLAN = new IRIImpl("http://xmlns.com/foaf/0.1/plan");
 
 	@Override
 	public void setUp()
@@ -166,12 +166,12 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 			query.setBinding("Property", RDFSLABEL);
 			TupleQueryResult result = query.evaluate();
 			// check the results
-			ArrayList<URI> uris = new ArrayList<URI>();
+			ArrayList<IRI> uris = new ArrayList<IRI>();
 
 			BindingSet bindings = null;
 			while (result.hasNext()) {
 				bindings = result.next();
-				uris.add((URI)bindings.getValue("Subject"));
+				uris.add((IRI)bindings.getValue("Subject"));
 				assertNotNull(bindings.getValue("Score"));
 			}
 			result.close();
@@ -186,12 +186,12 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 			query.setBinding("Property", RDFSLABEL);
 			TupleQueryResult result = query.evaluate();
 			// check the results
-			ArrayList<URI> uris = new ArrayList<URI>();
+			ArrayList<IRI> uris = new ArrayList<IRI>();
 
 			BindingSet bindings = null;
 			while (result.hasNext()) {
 				bindings = result.next();
-				uris.add((URI)bindings.getValue("Subject"));
+				uris.add((IRI)bindings.getValue("Subject"));
 				assertNotNull(bindings.getValue("Score"));
 			}
 			result.close();

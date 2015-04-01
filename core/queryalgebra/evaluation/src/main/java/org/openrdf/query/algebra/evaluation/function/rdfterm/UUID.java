@@ -17,7 +17,7 @@
 package org.openrdf.query.algebra.evaluation.function.rdfterm;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -38,14 +38,14 @@ public class UUID implements Function {
 		return "UUID";
 	}
 
-	public URI evaluate(ValueFactory valueFactory, Value... args)
+	public IRI evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
 		if (args.length > 0) {
 			throw new ValueExprEvaluationException("UUID requires 0 arguments, got " + args.length);
 		}
 
-		URI uri = valueFactory.createURI("urn:uuid:" + java.util.UUID.randomUUID().toString());
+		IRI uri = valueFactory.createIRI("urn:uuid:" + java.util.UUID.randomUUID().toString());
 
 		return uri;
 	}

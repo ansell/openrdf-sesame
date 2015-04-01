@@ -22,7 +22,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.DecimalLiteralImpl;
 import org.openrdf.model.impl.IntegerLiteralImpl;
@@ -66,8 +66,8 @@ public class MathUtil {
 	public static Literal compute(Literal leftLit, Literal rightLit, MathOp op)
 		throws ValueExprEvaluationException
 	{
-		URI leftDatatype = leftLit.getDatatype();
-		URI rightDatatype = rightLit.getDatatype();
+		IRI leftDatatype = leftLit.getDatatype();
+		IRI rightDatatype = rightLit.getDatatype();
 
 		// Only numeric value can be used in math expressions
 		if (!XMLDatatypeUtil.isNumericDatatype(leftDatatype)) {
@@ -80,7 +80,7 @@ public class MathUtil {
 		// Determine most specific datatype that the arguments have in common,
 		// choosing from xsd:integer, xsd:decimal, xsd:float and xsd:double as
 		// per the SPARQL/XPATH spec
-		URI commonDatatype;
+		IRI commonDatatype;
 
 		if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
 			commonDatatype = XMLSchema.DOUBLE;

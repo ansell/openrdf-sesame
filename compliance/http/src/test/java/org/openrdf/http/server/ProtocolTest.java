@@ -38,7 +38,7 @@ import org.junit.Test;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.http.protocol.Protocol;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.QueryResultIO;
@@ -125,7 +125,7 @@ public class ProtocolTest {
 		throws Exception
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		String encContext = Protocol.encodeValue(new URIImpl("urn:x-local:graph1"));
+		String encContext = Protocol.encodeValue(new IRIImpl("urn:x-local:graph1"));
 		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		putFile(location, "/testcases/named-graph-1.ttl");
 	}
@@ -139,7 +139,7 @@ public class ProtocolTest {
 		throws Exception
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		String encContext = Protocol.encodeValue(new URIImpl("urn:x-local:graph1"));
+		String encContext = Protocol.encodeValue(new IRIImpl("urn:x-local:graph1"));
 		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		delete(location);
 	}

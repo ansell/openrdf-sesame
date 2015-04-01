@@ -34,9 +34,9 @@ import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 
 
 /**
@@ -45,16 +45,16 @@ import org.openrdf.model.impl.URIImpl;
  */
 public class TransactionReaderTest {
 
-	private static final URI bob = new URIImpl("http://example.org/bob");
-	private static final URI alice = new URIImpl("http://example.org/alice");
-	private static final URI knows = new URIImpl("http://example.org/knows");
+	private static final IRI bob = new IRIImpl("http://example.org/bob");
+	private static final IRI alice = new IRIImpl("http://example.org/alice");
+	private static final IRI knows = new IRIImpl("http://example.org/knows");
 	
 	private static final char ux0005 = 0x0005;
 	
 	private static final Literal controlCharText = new LiteralImpl("foobar." + ux0005 + " foo.");
 	
-	private static final URI context1 = new URIImpl("http://example.org/context1");
-	private static final URI context2 = new URIImpl("http://example.org/context2");
+	private static final IRI context1 = new IRIImpl("http://example.org/context1");
+	private static final IRI context2 = new IRIImpl("http://example.org/context2");
 	
 	/**
 	 * @throws java.lang.Exception

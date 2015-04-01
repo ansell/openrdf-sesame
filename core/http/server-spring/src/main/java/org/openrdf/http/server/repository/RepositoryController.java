@@ -56,7 +56,7 @@ import org.openrdf.http.server.ClientHTTPException;
 import org.openrdf.http.server.HTTPException;
 import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -289,7 +289,7 @@ public class RepositoryController extends AbstractController {
 			if (defaultGraphURIs != null) {
 				for (String defaultGraphURI : defaultGraphURIs) {
 					try {
-						URI uri = createURIOrNull(repository, defaultGraphURI);
+						IRI uri = createURIOrNull(repository, defaultGraphURI);
 						dataset.addDefaultGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
@@ -302,7 +302,7 @@ public class RepositoryController extends AbstractController {
 			if (namedGraphURIs != null) {
 				for (String namedGraphURI : namedGraphURIs) {
 					try {
-						URI uri = createURIOrNull(repository, namedGraphURI);
+						IRI uri = createURIOrNull(repository, namedGraphURI);
 						dataset.addNamedGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
@@ -358,9 +358,9 @@ public class RepositoryController extends AbstractController {
 		return result;
 	}
 
-	private URI createURIOrNull(Repository repository, String graphURI) {
+	private IRI createURIOrNull(Repository repository, String graphURI) {
 		if ("null".equals(graphURI))
 			return null;
-		return repository.getValueFactory().createURI(graphURI);
+		return repository.getValueFactory().createIRI(graphURI);
 	}
 }

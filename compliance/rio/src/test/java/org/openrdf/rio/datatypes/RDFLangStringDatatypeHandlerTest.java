@@ -20,7 +20,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
@@ -55,7 +55,7 @@ public class RDFLangStringDatatypeHandlerTest extends AbstractDatatypeHandlerTes
 	// -------------------------------------
 
 	@Override
-	protected URI getRecognisedDatatypeUri() {
+	protected IRI getRecognisedDatatypeUri() {
 		return RDF.LANGSTRING;
 	}
 
@@ -89,7 +89,7 @@ public class RDFLangStringDatatypeHandlerTest extends AbstractDatatypeHandlerTes
 	}
 
 	@Override
-	protected URI getUnrecognisedDatatypeUri() {
+	protected IRI getUnrecognisedDatatypeUri() {
 		return XMLSchema.DOUBLE;
 	}
 

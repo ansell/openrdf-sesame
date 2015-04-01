@@ -21,7 +21,7 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 
 public class LongIdSequenceTest extends TestCase {
 
@@ -83,8 +83,8 @@ public class LongIdSequenceTest extends TestCase {
 	public void testEncode()
 		throws Exception
 	{
-		assertEquals(ValueType.URI, ids.valueOf(ids.hashOf(new URIImpl("urn:root"))));
-		assertEquals(ValueType.URI, ids.valueOf(ids.hashOf(new URIImpl(
+		assertEquals(ValueType.URI, ids.valueOf(ids.hashOf(new IRIImpl("urn:root"))));
+		assertEquals(ValueType.URI, ids.valueOf(ids.hashOf(new IRIImpl(
 				"urn:The quick brown fox jumps over the lazy dog"))));
 	}
 

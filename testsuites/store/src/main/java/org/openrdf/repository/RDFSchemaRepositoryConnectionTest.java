@@ -22,7 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -32,11 +32,11 @@ import org.openrdf.model.vocabulary.RDFS;
  */
 public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnectionTest {
 
-	private URI person;
+	private IRI person;
 
-	private URI woman;
+	private IRI woman;
 
-	private URI man;
+	private IRI man;
 
 	@Override
 	public void setUp()
@@ -44,9 +44,9 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	{
 		super.setUp();
 
-		person = vf.createURI(FOAF_NS + "Person");
-		woman = vf.createURI("http://example.org/Woman");
-		man = vf.createURI("http://example.org/Man");
+		person = vf.createIRI(FOAF_NS + "Person");
+		woman = vf.createIRI("http://example.org/Woman");
+		man = vf.createIRI("http://example.org/Man");
 	}
 
 	@Test

@@ -20,7 +20,7 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -65,13 +65,13 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 		return (InferencerConnection)super.getWrappedConnection();
 	}
 
-	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean addInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		return getWrappedConnection().addInferredStatement(subj, pred, obj, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		return getWrappedConnection().removeInferredStatement(subj, pred, obj, contexts);
@@ -150,7 +150,7 @@ public class InferencerConnectionWrapper extends NotifyingSailConnectionWrapper 
 	 * connection.
 	 */
 	@Override
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, IRI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{

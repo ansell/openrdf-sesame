@@ -16,7 +16,7 @@
  */
 package org.openrdf.model.impl;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -34,7 +34,7 @@ public class NumericLiteralImpl extends LiteralImpl {
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public NumericLiteralImpl(Number number, URI datatype) {
+	public NumericLiteralImpl(Number number, IRI datatype) {
 		super(number.toString(), datatype);
 		this.number = number;
 	}

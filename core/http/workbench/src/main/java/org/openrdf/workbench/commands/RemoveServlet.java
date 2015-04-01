@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.RepositoryConnection;
@@ -50,7 +50,7 @@ public class RemoveServlet extends TransformationServlet {
 			RepositoryConnection con = repository.getConnection();
 			try {
 				Resource subj = req.getResource("subj");
-				URI pred = req.getURI("pred");
+				IRI pred = req.getURI("pred");
 				Value obj = req.getValue("obj");
 				if (subj == null && pred == null && obj == null && !req.isParameterPresent(CONTEXT)) {
 					throw new BadRequestException("No values");
@@ -82,7 +82,7 @@ public class RemoveServlet extends TransformationServlet {
 		}
 	}
 
-	private void remove(RepositoryConnection con, Resource subj, URI pred, Value obj, WorkbenchRequest req)
+	private void remove(RepositoryConnection con, Resource subj, IRI pred, Value obj, WorkbenchRequest req)
 		throws BadRequestException, RepositoryException
 	{
 		if (req.isParameterPresent(CONTEXT)) {

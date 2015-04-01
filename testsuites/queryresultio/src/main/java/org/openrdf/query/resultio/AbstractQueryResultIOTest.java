@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -94,7 +94,7 @@ public abstract class AbstractQueryResultIOTest {
 		List<String> bindingNames = Arrays.asList("a");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new URIImpl("foo:bar"));
+		solution1.addBinding("a", new IRIImpl("foo:bar"));
 
 		MapBindingSet solution2 = new MapBindingSet(bindingNames.size());
 		solution2.addBinding("a", new LiteralImpl("2.0", XMLSchema.DOUBLE));
@@ -132,7 +132,7 @@ public abstract class AbstractQueryResultIOTest {
 		List<String> bindingNames = Arrays.asList("a", "b", "c");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new URIImpl("foo:bar"));
+		solution1.addBinding("a", new IRIImpl("foo:bar"));
 		solution1.addBinding("b", new BNodeImpl("bnode"));
 		solution1.addBinding("c", new LiteralImpl("baz"));
 
@@ -141,9 +141,9 @@ public abstract class AbstractQueryResultIOTest {
 		solution2.addBinding("c", new LiteralImpl("Hello World!", "en"));
 
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
-		solution3.addBinding("a", new URIImpl("http://example.org/test/ns/bindingA"));
+		solution3.addBinding("a", new IRIImpl("http://example.org/test/ns/bindingA"));
 		solution3.addBinding("b", new LiteralImpl("http://example.com/other/ns/bindingB"));
-		solution3.addBinding("c", new URIImpl("http://example.com/other/ns/binding,C"));
+		solution3.addBinding("c", new IRIImpl("http://example.com/other/ns/binding,C"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
 		solution4.addBinding("a", new LiteralImpl("string with newline at the end       \n"));

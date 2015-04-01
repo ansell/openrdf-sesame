@@ -30,7 +30,7 @@ public class NTriplesEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new NTriplesParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createURI("http://www.w3.org/TR/n-triples/"));
+				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/n-triples/"));
 	}
 
 }

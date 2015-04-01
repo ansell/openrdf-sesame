@@ -26,7 +26,7 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
@@ -207,7 +207,7 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 		}
 
 		private void checkUpdatedStatement(Statement st) {
-			URI pred = st.getPredicate();
+			IRI pred = st.getPredicate();
 
 			if (pred.equals(RDF.TYPE) || pred.equals(RDFS.SUBCLASSOF) || pred.equals(RDFS.SUBPROPERTYOF)) {
 				updateNeeded = true;
@@ -301,8 +301,8 @@ public class DirectTypeHierarchyInferencer extends NotifyingSailWrapper {
 					Value pred = bindings.getValue("predicate");
 					Value obj = bindings.getValue("object");
 
-					if (subj instanceof Resource && pred instanceof URI && obj != null) {
-						statements.add(vf.createStatement((Resource)subj, (URI)pred, obj));
+					if (subj instanceof Resource && pred instanceof IRI && obj != null) {
+						statements.add(vf.createStatement((Resource)subj, (IRI)pred, obj));
 					}
 				}
 			}

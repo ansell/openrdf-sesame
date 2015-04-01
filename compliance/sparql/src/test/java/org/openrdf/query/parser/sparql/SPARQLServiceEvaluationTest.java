@@ -40,7 +40,7 @@ import info.aduna.iteration.Iterations;
 import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -249,9 +249,9 @@ public class SPARQLServiceEvaluationTest extends TestCase {
 		// test setup
 		String EX_NS = "http://example.org/";
 		ValueFactory f =localRepository.getValueFactory();
-		URI bob = f.createURI(EX_NS, "bob");
-		URI alice = f.createURI(EX_NS, "alice");
-		URI william = f.createURI(EX_NS, "william");
+		IRI bob = f.createIRI(EX_NS, "bob");
+		IRI alice = f.createIRI(EX_NS, "alice");
+		IRI william = f.createIRI(EX_NS, "william");
 		
 		// clears the repository and adds new data
 		try {

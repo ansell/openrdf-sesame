@@ -43,10 +43,10 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -192,7 +192,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	}
 
 	@Override
-	public synchronized void addStatement(Resource arg0, URI arg1, Value arg2, Resource... arg3)
+	public synchronized void addStatement(Resource arg0, IRI arg1, Value arg2, Resource... arg3)
 		throws SailException
 	{
 		super.addStatement(arg0, arg1, arg2, arg3);
@@ -521,7 +521,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 							snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
 
 							if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-								snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
+								snippetBindings.addBinding(query.getPropertyVariableName(), new IRIImpl(field.name()));
 							}
 
 							bindingSets.add(snippetBindings);
@@ -742,7 +742,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	}
 
 	@Override
-	public synchronized void removeStatements(Resource arg0, URI arg1, Value arg2, Resource... arg3)
+	public synchronized void removeStatements(Resource arg0, IRI arg1, Value arg2, Resource... arg3)
 		throws SailException
 	{
 		super.removeStatements(arg0, arg1, arg2, arg3);

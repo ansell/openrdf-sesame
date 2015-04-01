@@ -90,13 +90,13 @@ public abstract class TestModel extends TestCase {
 					Random rand = new Random(0);
 					List<Statement> list = new ArrayList<Statement>();
 					for (Object seed : seeds) {
-						URI s = createURI(seed);
-						URI p = createURI(seeds[rand.nextInt(seeds.length)]);
-						URI o = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI s = createURI(seed);
+						IRI p = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI o = createURI(seeds[rand.nextInt(seeds.length)]);
 						if (rand.nextInt() % 2 == 0) {
 							list.add(new StatementImpl(s, p, o));
 						} else {
-							URI c = createURI(seeds[rand.nextInt(seeds.length)]);
+							IRI c = createURI(seeds[rand.nextInt(seeds.length)]);
 							list.add(new ContextStatementImpl(s, p, o, c));
 						}
 					}
@@ -126,13 +126,13 @@ public abstract class TestModel extends TestCase {
 					Random rand = new Random(0);
 					List<Statement> list = new ArrayList<Statement>();
 					for (Object seed : seeds) {
-						URI s = createURI(seed);
-						URI p = createURI(seeds[rand.nextInt(seeds.length)]);
-						URI o = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI s = createURI(seed);
+						IRI p = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI o = createURI(seeds[rand.nextInt(seeds.length)]);
 						if (rand.nextInt() % 2 == 0) {
 							list.add(new StatementImpl(s, p, o));
 						} else {
-							URI c = createURI(seeds[rand.nextInt(seeds.length)]);
+							IRI c = createURI(seeds[rand.nextInt(seeds.length)]);
 							list.add(new ContextStatementImpl(s, p, o, c));
 						}
 					}
@@ -141,8 +141,8 @@ public abstract class TestModel extends TestCase {
 			}).runBare();
 		} else if ("cfiltered".equals(name[0])) {
 			(new ApacheSetTestCase(name[1]) {
-				private URI ctx0 = createURI("test0");
-				private URI ctx1 = createURI("test1");
+				private IRI ctx0 = createURI("test0");
+				private IRI ctx1 = createURI("test1");
 
 				@Override
 				public Set makeEmptySet() {
@@ -166,9 +166,9 @@ public abstract class TestModel extends TestCase {
 					Random rand = new Random(0);
 					List<Statement> list = new ArrayList<Statement>();
 					for (Object seed : seeds) {
-						URI s = createURI(seed);
-						URI p = createURI(seeds[rand.nextInt(seeds.length)]);
-						URI o = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI s = createURI(seed);
+						IRI p = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI o = createURI(seeds[rand.nextInt(seeds.length)]);
 						list.add(new ContextStatementImpl(s, p, o, ctx1));
 					}
 					return list.toArray();
@@ -194,7 +194,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<URI> list = new ArrayList<URI>();
+					List<IRI> list = new ArrayList<IRI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
@@ -221,7 +221,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<URI> list = new ArrayList<URI>();
+					List<IRI> list = new ArrayList<IRI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
@@ -275,7 +275,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<URI> list = new ArrayList<URI>();
+					List<IRI> list = new ArrayList<IRI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}

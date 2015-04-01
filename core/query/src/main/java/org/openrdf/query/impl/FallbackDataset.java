@@ -18,7 +18,7 @@ package org.openrdf.query.impl;
 
 import java.util.Set;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.Dataset;
 
 
@@ -46,29 +46,29 @@ public class FallbackDataset implements Dataset {
 		this.fallback = secondary;
 	}
 
-	public Set<URI> getDefaultGraphs() {
-		Set<URI> set = primary.getDefaultGraphs();
+	public Set<IRI> getDefaultGraphs() {
+		Set<IRI> set = primary.getDefaultGraphs();
 		if (set == null || set.isEmpty())
 			return fallback.getDefaultGraphs();
 		return set;
 	}
 
-	public Set<URI> getNamedGraphs() {
-		Set<URI> set = primary.getNamedGraphs();
+	public Set<IRI> getNamedGraphs() {
+		Set<IRI> set = primary.getNamedGraphs();
 		if (set == null || set.isEmpty())
 			return fallback.getNamedGraphs();
 		return set;
 	}
 
-	public URI getDefaultInsertGraph() {
-		URI graph = primary.getDefaultInsertGraph();
+	public IRI getDefaultInsertGraph() {
+		IRI graph = primary.getDefaultInsertGraph();
 		if (graph == null)
 			return fallback.getDefaultInsertGraph();
 		return graph;
 	}
 
-	public Set<URI> getDefaultRemoveGraphs() {
-		Set<URI> set = primary.getDefaultRemoveGraphs();
+	public Set<IRI> getDefaultRemoveGraphs() {
+		Set<IRI> set = primary.getDefaultRemoveGraphs();
 		if (set == null || set.isEmpty())
 			return fallback.getDefaultRemoveGraphs();
 		return set;
@@ -77,24 +77,24 @@ public class FallbackDataset implements Dataset {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (URI uri : getDefaultRemoveGraphs()) {
+		for (IRI uri : getDefaultRemoveGraphs()) {
 			sb.append("DELETE FROM ");
 			appendURI(sb, uri);
 		}
 		sb.append("INSERT INTO ");
 		appendURI(sb, getDefaultInsertGraph());
-		for (URI uri : getDefaultGraphs()) {
+		for (IRI uri : getDefaultGraphs()) {
 			sb.append("USING ");
 			appendURI(sb, uri);
 		}
-		for (URI uri : getNamedGraphs()) {
+		for (IRI uri : getNamedGraphs()) {
 			sb.append("USING NAMED ");
 			appendURI(sb, uri);
 		}
 		return sb.toString();
 	}
 
-	private void appendURI(StringBuilder sb, URI uri) {
+	private void appendURI(StringBuilder sb, IRI uri) {
 		String str = uri.toString();
 		if (str.length() > 50) {
 			sb.append("<").append(str, 0, 19).append("..");

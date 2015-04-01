@@ -25,15 +25,15 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.openrdf.model.vocabulary.RDF;
 
 /**
- * An RDF literal consisting of a label (the value) and optionally a language
- * tag or a datatype (but not both).
+ * An RDF literal consisting of a label (the lexical value), a datatype, and optionally a language
+ * tag.
  * 
  * @author Arjohn Kampman
  */
 public interface Literal extends Value {
 
 	/**
-	 * Gets the label of this literal.
+	 * Gets the label (the lexical value) of this literal.
 	 * 
 	 * @return The literal's label.
 	 */
@@ -53,7 +53,7 @@ public interface Literal extends Value {
 	 * @return The datatype for this literal. If {@link #getLanguage()} returns a
 	 *         non-empty value than this must return {@link RDF#LANGSTRING}.
 	 */
-	public URI getDatatype();
+	public IRI getDatatype();
 
 	/**
 	 * Compares a literal object to another object.

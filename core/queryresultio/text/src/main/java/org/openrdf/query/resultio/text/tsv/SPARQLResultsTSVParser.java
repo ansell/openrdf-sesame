@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -88,7 +88,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 					}
 					else if (valueString.startsWith("<") && valueString.endsWith(">")) {
 						try {
-							v = valueFactory.createURI(valueString.substring(1, valueString.length() - 1));
+							v = valueFactory.createIRI(valueString.substring(1, valueString.length() - 1));
 						}
 						catch (IllegalArgumentException e) {
 							v = valueFactory.createLiteral(valueString);
@@ -100,7 +100,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 					else if (!"".equals(valueString)) {
 						if (valueString.matches("^[\\+\\-]?[\\d\\.].*")) {
 
-							URI datatype = null;
+							IRI datatype = null;
 
 							if (XMLDatatypeUtil.isValidInteger(valueString)) {
 								if (XMLDatatypeUtil.isValidNegativeInteger(valueString)) {
@@ -180,7 +180,7 @@ public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implement
 					// Get datatype
 					String datatype = literal.substring(startDtIdx + 2);
 					datatype = datatype.substring(1, datatype.length() - 1);
-					URI dtURI = valueFactory.createURI(datatype);
+					IRI dtURI = valueFactory.createIRI(datatype);
 					return valueFactory.createLiteral(label, dtURI);
 				}
 				else {

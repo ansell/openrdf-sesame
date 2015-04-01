@@ -29,7 +29,7 @@ import java.util.List;
 import info.aduna.concurrent.locks.Lock;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -237,7 +237,7 @@ public class RdbmsTripleRepository {
 		}
 	}
 
-	public RdbmsStatementIteration find(Resource subj, URI pred, Value obj, Resource... ctxs)
+	public RdbmsStatementIteration find(Resource subj, IRI pred, Value obj, Resource... ctxs)
 		throws RdbmsException
 	{
 		try {
@@ -291,7 +291,7 @@ public class RdbmsTripleRepository {
 		return conn.isClosed();
 	}
 
-	public int remove(Resource subj, URI pred, Value obj, Resource... ctxs)
+	public int remove(Resource subj, IRI pred, Value obj, Resource... ctxs)
 		throws RdbmsException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);

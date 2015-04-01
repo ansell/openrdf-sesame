@@ -40,7 +40,7 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.IntegerLiteralImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -301,7 +301,7 @@ public class QueryServlet extends TransformationServlet {
 						: false;
 				final int rowsPerPage = Integer.valueOf(req.getParameter(LIMIT));
 				if (existed) {
-					final URI query = storage.selectSavedQuery(http, userName, queryName);
+					final IRI query = storage.selectSavedQuery(http, userName, queryName);
 					storage.updateQuery(query, userName, shared, queryLanguage, queryText, infer, rowsPerPage);
 				}
 				else {

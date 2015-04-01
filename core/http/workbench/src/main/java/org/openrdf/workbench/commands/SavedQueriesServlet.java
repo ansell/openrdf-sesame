@@ -25,7 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -90,7 +90,7 @@ public class SavedQueriesServlet extends TransformationServlet {
 			if (null == userName) {
 				userName = "";
 			}
-			final URIImpl queryURI = new URIImpl(urn);
+			final IRIImpl queryURI = new IRIImpl(urn);
 			if (storage.canChange(queryURI, userName)) {
 				storage.deleteQuery(queryURI, userName);
 			}

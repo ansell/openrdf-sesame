@@ -21,7 +21,7 @@ import java.net.MalformedURLException;
 
 import junit.framework.TestCase;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.BasicParserSettings;
@@ -39,7 +39,7 @@ public class NegativeParserTest extends TestCase {
 
 	private RDFParser targetParser;
 
-	protected URI testUri;
+	protected IRI testUri;
 
 	protected FailureMode failureMode;
 
@@ -49,7 +49,7 @@ public class NegativeParserTest extends TestCase {
 	 * Constructors *
 	 *--------------*/
 
-	public NegativeParserTest(URI testUri, String caseURI, String inputURL, String baseURL,
+	public NegativeParserTest(IRI testUri, String caseURI, String inputURL, String baseURL,
 			RDFParser targetParser, FailureMode failureMode)
 		throws MalformedURLException
 	{

@@ -24,7 +24,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Update;
@@ -133,22 +133,22 @@ public class SailUpdate extends AbstractOperation implements Update {
 
 			boolean merge = false;
 
-			Set<URI> dgs = sparqlDefinedDataset.getDefaultGraphs();
+			Set<IRI> dgs = sparqlDefinedDataset.getDefaultGraphs();
 			if (dgs != null && dgs.size() > 0) {
 				merge = true;
 				// one or more USING-clauses in the update itself, we need to define
 				// the default graphs by means of the update itself
-				for (URI graphURI : dgs) {
+				for (IRI graphURI : dgs) {
 					mergedDataset.addDefaultGraph(graphURI);
 				}
 			}
 
-			Set<URI> ngs = sparqlDefinedDataset.getNamedGraphs();
+			Set<IRI> ngs = sparqlDefinedDataset.getNamedGraphs();
 			if (ngs != null && ngs.size() > 0) {
 				merge = true;
 				// one or more USING NAMED-claused in the update, we need to define
 				// the named graphs by means of the update itself.
-				for (URI graphURI : ngs) {
+				for (IRI graphURI : ngs) {
 					mergedDataset.addNamedGraph(graphURI);
 				}
 			}
@@ -156,7 +156,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 			if (merge) {
 				mergedDataset.setDefaultInsertGraph(dataset.getDefaultInsertGraph());
 
-				for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
+				for (IRI graphURI : dataset.getDefaultRemoveGraphs()) {
 					mergedDataset.addDefaultRemoveGraph(graphURI);
 				}
 

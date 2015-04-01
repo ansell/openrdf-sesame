@@ -17,7 +17,7 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -54,235 +54,235 @@ public class XMLSchema {
 	 */
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#duration</tt> */
-	public final static URI DURATION;
+	public final static IRI DURATION;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#dateTime</tt> */
-	public final static URI DATETIME;
+	public final static IRI DATETIME;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#dayTimeDuration</tt> */
-	public static final URI DAYTIMEDURATION;
+	public static final IRI DAYTIMEDURATION;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#time</tt> */
-	public final static URI TIME;
+	public final static IRI TIME;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#date</tt> */
-	public final static URI DATE;
+	public final static IRI DATE;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#gYearMonth</tt> */
-	public final static URI GYEARMONTH;
+	public final static IRI GYEARMONTH;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#gYear</tt> */
-	public final static URI GYEAR;
+	public final static IRI GYEAR;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#gMonthDay</tt> */
-	public final static URI GMONTHDAY;
+	public final static IRI GMONTHDAY;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#gDay</tt> */
-	public final static URI GDAY;
+	public final static IRI GDAY;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#gMonth</tt> */
-	public final static URI GMONTH;
+	public final static IRI GMONTH;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#string</tt> */
-	public final static URI STRING;
+	public final static IRI STRING;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#boolean</tt> */
-	public final static URI BOOLEAN;
+	public final static IRI BOOLEAN;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#base64Binary</tt> */
-	public final static URI BASE64BINARY;
+	public final static IRI BASE64BINARY;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#hexBinary</tt> */
-	public final static URI HEXBINARY;
+	public final static IRI HEXBINARY;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#float</tt> */
-	public final static URI FLOAT;
+	public final static IRI FLOAT;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#decimal</tt> */
-	public final static URI DECIMAL;
+	public final static IRI DECIMAL;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#double</tt> */
-	public final static URI DOUBLE;
+	public final static IRI DOUBLE;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#anyURI</tt> */
-	public final static URI ANYURI;
+	public final static IRI ANYURI;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#QName</tt> */
-	public final static URI QNAME;
+	public final static IRI QNAME;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#NOTATION</tt> */
-	public final static URI NOTATION;
+	public final static IRI NOTATION;
 
 	/*
 	 * Derived datatypes
 	 */
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#normalizedString</tt> */
-	public final static URI NORMALIZEDSTRING;
+	public final static IRI NORMALIZEDSTRING;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#token</tt> */
-	public final static URI TOKEN;
+	public final static IRI TOKEN;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#language</tt> */
-	public final static URI LANGUAGE;
+	public final static IRI LANGUAGE;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#NMTOKEN</tt> */
-	public final static URI NMTOKEN;
+	public final static IRI NMTOKEN;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#NMTOKENS</tt> */
-	public final static URI NMTOKENS;
+	public final static IRI NMTOKENS;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#Name</tt> */
-	public final static URI NAME;
+	public final static IRI NAME;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#NCName</tt> */
-	public final static URI NCNAME;
+	public final static IRI NCNAME;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#ID</tt> */
-	public final static URI ID;
+	public final static IRI ID;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#IDREF</tt> */
-	public final static URI IDREF;
+	public final static IRI IDREF;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#IDREFS</tt> */
-	public final static URI IDREFS;
+	public final static IRI IDREFS;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#ENTITY</tt> */
-	public final static URI ENTITY;
+	public final static IRI ENTITY;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#ENTITIES</tt> */
-	public final static URI ENTITIES;
+	public final static IRI ENTITIES;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#integer</tt> */
-	public final static URI INTEGER;
+	public final static IRI INTEGER;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#long</tt> */
-	public final static URI LONG;
+	public final static IRI LONG;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#int</tt> */
-	public final static URI INT;
+	public final static IRI INT;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#short</tt> */
-	public final static URI SHORT;
+	public final static IRI SHORT;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#byte</tt> */
-	public final static URI BYTE;
+	public final static IRI BYTE;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#nonPositiveInteger</tt> */
-	public final static URI NON_POSITIVE_INTEGER;
+	public final static IRI NON_POSITIVE_INTEGER;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#negativeInteger</tt> */
-	public final static URI NEGATIVE_INTEGER;
+	public final static IRI NEGATIVE_INTEGER;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#nonNegativeInteger</tt> */
-	public final static URI NON_NEGATIVE_INTEGER;
+	public final static IRI NON_NEGATIVE_INTEGER;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#positiveInteger</tt> */
-	public final static URI POSITIVE_INTEGER;
+	public final static IRI POSITIVE_INTEGER;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#unsignedLong</tt> */
-	public final static URI UNSIGNED_LONG;
+	public final static IRI UNSIGNED_LONG;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#unsignedInt</tt> */
-	public final static URI UNSIGNED_INT;
+	public final static IRI UNSIGNED_INT;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#unsignedShort</tt> */
-	public final static URI UNSIGNED_SHORT;
+	public final static IRI UNSIGNED_SHORT;
 
 	/** <tt>http://www.w3.org/2001/XMLSchema#unsignedByte</tt> */
-	public final static URI UNSIGNED_BYTE;
+	public final static IRI UNSIGNED_BYTE;
 
 	static {
 		ValueFactory factory = new ValueFactoryImpl();
 
-		DURATION = factory.createURI(XMLSchema.NAMESPACE, "duration");
+		DURATION = factory.createIRI(XMLSchema.NAMESPACE, "duration");
 
-		DATETIME = factory.createURI(XMLSchema.NAMESPACE, "dateTime");
+		DATETIME = factory.createIRI(XMLSchema.NAMESPACE, "dateTime");
 
-		DAYTIMEDURATION = factory.createURI(NAMESPACE, "dayTimeDuration");
+		DAYTIMEDURATION = factory.createIRI(NAMESPACE, "dayTimeDuration");
 
-		TIME = factory.createURI(XMLSchema.NAMESPACE, "time");
+		TIME = factory.createIRI(XMLSchema.NAMESPACE, "time");
 
-		DATE = factory.createURI(XMLSchema.NAMESPACE, "date");
+		DATE = factory.createIRI(XMLSchema.NAMESPACE, "date");
 
-		GYEARMONTH = factory.createURI(XMLSchema.NAMESPACE, "gYearMonth");
+		GYEARMONTH = factory.createIRI(XMLSchema.NAMESPACE, "gYearMonth");
 
-		GYEAR = factory.createURI(XMLSchema.NAMESPACE, "gYear");
+		GYEAR = factory.createIRI(XMLSchema.NAMESPACE, "gYear");
 
-		GMONTHDAY = factory.createURI(XMLSchema.NAMESPACE, "gMonthDay");
+		GMONTHDAY = factory.createIRI(XMLSchema.NAMESPACE, "gMonthDay");
 
-		GDAY = factory.createURI(XMLSchema.NAMESPACE, "gDay");
+		GDAY = factory.createIRI(XMLSchema.NAMESPACE, "gDay");
 
-		GMONTH = factory.createURI(XMLSchema.NAMESPACE, "gMonth");
+		GMONTH = factory.createIRI(XMLSchema.NAMESPACE, "gMonth");
 
-		STRING = factory.createURI(XMLSchema.NAMESPACE, "string");
+		STRING = factory.createIRI(XMLSchema.NAMESPACE, "string");
 
-		BOOLEAN = factory.createURI(XMLSchema.NAMESPACE, "boolean");
+		BOOLEAN = factory.createIRI(XMLSchema.NAMESPACE, "boolean");
 
-		BASE64BINARY = factory.createURI(XMLSchema.NAMESPACE, "base64Binary");
+		BASE64BINARY = factory.createIRI(XMLSchema.NAMESPACE, "base64Binary");
 
-		HEXBINARY = factory.createURI(XMLSchema.NAMESPACE, "hexBinary");
+		HEXBINARY = factory.createIRI(XMLSchema.NAMESPACE, "hexBinary");
 
-		FLOAT = factory.createURI(XMLSchema.NAMESPACE, "float");
+		FLOAT = factory.createIRI(XMLSchema.NAMESPACE, "float");
 
-		DECIMAL = factory.createURI(XMLSchema.NAMESPACE, "decimal");
+		DECIMAL = factory.createIRI(XMLSchema.NAMESPACE, "decimal");
 
-		DOUBLE = factory.createURI(XMLSchema.NAMESPACE, "double");
+		DOUBLE = factory.createIRI(XMLSchema.NAMESPACE, "double");
 
-		ANYURI = factory.createURI(XMLSchema.NAMESPACE, "anyURI");
+		ANYURI = factory.createIRI(XMLSchema.NAMESPACE, "anyURI");
 
-		QNAME = factory.createURI(XMLSchema.NAMESPACE, "QName");
+		QNAME = factory.createIRI(XMLSchema.NAMESPACE, "QName");
 
-		NOTATION = factory.createURI(XMLSchema.NAMESPACE, "NOTATION");
+		NOTATION = factory.createIRI(XMLSchema.NAMESPACE, "NOTATION");
 
-		NORMALIZEDSTRING = factory.createURI(XMLSchema.NAMESPACE, "normalizedString");
+		NORMALIZEDSTRING = factory.createIRI(XMLSchema.NAMESPACE, "normalizedString");
 
-		TOKEN = factory.createURI(XMLSchema.NAMESPACE, "token");
+		TOKEN = factory.createIRI(XMLSchema.NAMESPACE, "token");
 
-		LANGUAGE = factory.createURI(XMLSchema.NAMESPACE, "language");
+		LANGUAGE = factory.createIRI(XMLSchema.NAMESPACE, "language");
 
-		NMTOKEN = factory.createURI(XMLSchema.NAMESPACE, "NMTOKEN");
+		NMTOKEN = factory.createIRI(XMLSchema.NAMESPACE, "NMTOKEN");
 
-		NMTOKENS = factory.createURI(XMLSchema.NAMESPACE, "NMTOKENS");
+		NMTOKENS = factory.createIRI(XMLSchema.NAMESPACE, "NMTOKENS");
 
-		NAME = factory.createURI(XMLSchema.NAMESPACE, "Name");
+		NAME = factory.createIRI(XMLSchema.NAMESPACE, "Name");
 
-		NCNAME = factory.createURI(XMLSchema.NAMESPACE, "NCName");
+		NCNAME = factory.createIRI(XMLSchema.NAMESPACE, "NCName");
 
-		ID = factory.createURI(XMLSchema.NAMESPACE, "ID");
+		ID = factory.createIRI(XMLSchema.NAMESPACE, "ID");
 
-		IDREF = factory.createURI(XMLSchema.NAMESPACE, "IDREF");
+		IDREF = factory.createIRI(XMLSchema.NAMESPACE, "IDREF");
 
-		IDREFS = factory.createURI(XMLSchema.NAMESPACE, "IDREFS");
+		IDREFS = factory.createIRI(XMLSchema.NAMESPACE, "IDREFS");
 
-		ENTITY = factory.createURI(XMLSchema.NAMESPACE, "ENTITY");
+		ENTITY = factory.createIRI(XMLSchema.NAMESPACE, "ENTITY");
 
-		ENTITIES = factory.createURI(XMLSchema.NAMESPACE, "ENTITIES");
+		ENTITIES = factory.createIRI(XMLSchema.NAMESPACE, "ENTITIES");
 
-		INTEGER = factory.createURI(XMLSchema.NAMESPACE, "integer");
+		INTEGER = factory.createIRI(XMLSchema.NAMESPACE, "integer");
 
-		LONG = factory.createURI(XMLSchema.NAMESPACE, "long");
+		LONG = factory.createIRI(XMLSchema.NAMESPACE, "long");
 
-		INT = factory.createURI(XMLSchema.NAMESPACE, "int");
+		INT = factory.createIRI(XMLSchema.NAMESPACE, "int");
 
-		SHORT = factory.createURI(XMLSchema.NAMESPACE, "short");
+		SHORT = factory.createIRI(XMLSchema.NAMESPACE, "short");
 
-		BYTE = factory.createURI(XMLSchema.NAMESPACE, "byte");
+		BYTE = factory.createIRI(XMLSchema.NAMESPACE, "byte");
 
-		NON_POSITIVE_INTEGER = factory.createURI(XMLSchema.NAMESPACE, "nonPositiveInteger");
+		NON_POSITIVE_INTEGER = factory.createIRI(XMLSchema.NAMESPACE, "nonPositiveInteger");
 
-		NEGATIVE_INTEGER = factory.createURI(XMLSchema.NAMESPACE, "negativeInteger");
+		NEGATIVE_INTEGER = factory.createIRI(XMLSchema.NAMESPACE, "negativeInteger");
 
-		NON_NEGATIVE_INTEGER = factory.createURI(XMLSchema.NAMESPACE, "nonNegativeInteger");
+		NON_NEGATIVE_INTEGER = factory.createIRI(XMLSchema.NAMESPACE, "nonNegativeInteger");
 
-		POSITIVE_INTEGER = factory.createURI(XMLSchema.NAMESPACE, "positiveInteger");
+		POSITIVE_INTEGER = factory.createIRI(XMLSchema.NAMESPACE, "positiveInteger");
 
-		UNSIGNED_LONG = factory.createURI(XMLSchema.NAMESPACE, "unsignedLong");
+		UNSIGNED_LONG = factory.createIRI(XMLSchema.NAMESPACE, "unsignedLong");
 
-		UNSIGNED_INT = factory.createURI(XMLSchema.NAMESPACE, "unsignedInt");
+		UNSIGNED_INT = factory.createIRI(XMLSchema.NAMESPACE, "unsignedInt");
 
-		UNSIGNED_SHORT = factory.createURI(XMLSchema.NAMESPACE, "unsignedShort");
+		UNSIGNED_SHORT = factory.createIRI(XMLSchema.NAMESPACE, "unsignedShort");
 
-		UNSIGNED_BYTE = factory.createURI(XMLSchema.NAMESPACE, "unsignedByte");
+		UNSIGNED_BYTE = factory.createIRI(XMLSchema.NAMESPACE, "unsignedByte");
 	}
 }

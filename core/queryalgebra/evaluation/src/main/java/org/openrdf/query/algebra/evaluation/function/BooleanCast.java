@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
@@ -49,7 +49,7 @@ public class BooleanCast implements Function {
 
 		if (args[0] instanceof Literal) {
 			Literal literal = (Literal)args[0];
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 
 			if (QueryEvaluationUtil.isStringLiteral(literal)) {
 				String booleanValue = XMLDatatypeUtil.collapseWhiteSpace(literal.getLabel());

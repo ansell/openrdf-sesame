@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
@@ -60,7 +60,7 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 					subj = null;
 				}
 				Value pred = getConstantValue(sp.getPredicateVar());
-				if (!(pred instanceof URI)) {
+				if (!(pred instanceof IRI)) {
 					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
 					pred = null;
 				}
@@ -70,7 +70,7 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
 					context = null;
 				}
-				return nativeStore.cardinality((Resource)subj, (URI)pred, obj, (Resource)context);
+				return nativeStore.cardinality((Resource)subj, (IRI)pred, obj, (Resource)context);
 			}
 			catch (IOException e) {
 				log.error(

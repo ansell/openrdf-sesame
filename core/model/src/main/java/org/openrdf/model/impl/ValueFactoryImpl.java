@@ -20,7 +20,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -47,13 +47,13 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	 *---------*/
 
 	@Override
-	public URI createURI(String uri) {
-		return new URIImpl(uri);
+	public IRI createIRI(String uri) {
+		return new IRIImpl(uri);
 	}
 
 	@Override
-	public URI createURI(String namespace, String localName) {
-		return createURI(namespace + localName);
+	public IRI createIRI(String namespace, String localName) {
+		return createIRI(namespace + localName);
 	}
 
 	@Override
@@ -72,17 +72,17 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	}
 
 	@Override
-	public Literal createLiteral(String value, URI datatype) {
+	public Literal createLiteral(String value, IRI datatype) {
 		return new LiteralImpl(value, datatype);
 	}
 
 	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object) {
+	public Statement createStatement(Resource subject, IRI predicate, Value object) {
 		return new StatementImpl(subject, predicate, object);
 	}
 
 	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
+	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
 		return new ContextStatementImpl(subject, predicate, object, context);
 	}
 }

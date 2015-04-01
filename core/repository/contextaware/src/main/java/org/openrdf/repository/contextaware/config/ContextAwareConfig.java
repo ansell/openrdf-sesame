@@ -31,7 +31,7 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.GraphUtil;
@@ -46,7 +46,7 @@ import org.openrdf.repository.contextaware.ContextAwareConnection;
  */
 public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
-	private static final URI[] ALL_CONTEXTS = new URI[0];
+	private static final IRI[] ALL_CONTEXTS = new IRI[0];
 
 	private Boolean includeInferred = true;
 
@@ -56,15 +56,15 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 
 	private String baseURI;
 
-	private URI[] readContexts = ALL_CONTEXTS;
+	private IRI[] readContexts = ALL_CONTEXTS;
 
-	private URI[] addContexts = ALL_CONTEXTS;
+	private IRI[] addContexts = ALL_CONTEXTS;
 
-	private URI[] removeContexts = ALL_CONTEXTS;
+	private IRI[] removeContexts = ALL_CONTEXTS;
 
-	private URI[] archiveContexts = ALL_CONTEXTS;
+	private IRI[] archiveContexts = ALL_CONTEXTS;
 
-	private URI insertContext = null;
+	private IRI insertContext = null;
 
 	public ContextAwareConfig() {
 		super(ContextAwareFactory.REPOSITORY_TYPE);
@@ -82,7 +82,7 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	 * @see ContextAwareConnection#getAddContexts()
 	 */
 	@Deprecated
-	public URI[] getAddContexts() {
+	public IRI[] getAddContexts() {
 		return addContexts;
 	}
 
@@ -90,14 +90,14 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	 * @see ContextAwareConnection#getArchiveContexts()
 	 */
 	@Deprecated
-	public URI[] getArchiveContexts() {
+	public IRI[] getArchiveContexts() {
 		return archiveContexts;
 	}
 
 	/**
 	 * @see ContextAwareConnection#getInsertContext()
 	 */
-	public URI getInsertContext() {
+	public IRI getInsertContext() {
 		return insertContext;
 	}
 
@@ -118,14 +118,14 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	/**
 	 * @see ContextAwareConnection#getReadContexts()
 	 */
-	public URI[] getReadContexts() {
+	public IRI[] getReadContexts() {
 		return readContexts;
 	}
 
 	/**
 	 * @see ContextAwareConnection#getRemoveContexts()
 	 */
-	public URI[] getRemoveContexts() {
+	public IRI[] getRemoveContexts() {
 		return removeContexts;
 	}
 
@@ -137,25 +137,25 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setAddContexts(URI[])
+	 * @see ContextAwareConnection#setAddContexts(IRI[])
 	 */
 	@Deprecated
-	public void setAddContexts(URI... addContexts) {
+	public void setAddContexts(IRI... addContexts) {
 		this.addContexts = addContexts;
 	}
 
 	/**
-	 * @see ContextAwareConnection#setArchiveContexts(URI[])
+	 * @see ContextAwareConnection#setArchiveContexts(IRI[])
 	 */
 	@Deprecated
-	public void setArchiveContexts(URI... archiveContexts) {
+	public void setArchiveContexts(IRI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
 	}
 
 	/**
-	 * @see ContextAwareConnection#setInsertContext(URI)
+	 * @see ContextAwareConnection#setInsertContext(IRI)
 	 */
-	public void setInsertContext(URI insertContext) {
+	public void setInsertContext(IRI insertContext) {
 		this.insertContext = insertContext;
 	}
 
@@ -181,16 +181,16 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setReadContexts(URI[])
+	 * @see ContextAwareConnection#setReadContexts(IRI[])
 	 */
-	public void setReadContexts(URI... readContexts) {
+	public void setReadContexts(IRI... readContexts) {
 		this.readContexts = readContexts;
 	}
 
 	/**
-	 * @see ContextAwareConnection#setRemoveContexts(URI[])
+	 * @see ContextAwareConnection#setRemoveContexts(IRI[])
 	 */
-	public void setRemoveContexts(URI... removeContexts) {
+	public void setRemoveContexts(IRI... removeContexts) {
 		this.removeContexts = removeContexts;
 	}
 
@@ -211,18 +211,18 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			graph.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
 		}
 		if (baseURI != null) {
-			graph.add(repImplNode, BASE_URI, vf.createURI(baseURI));
+			graph.add(repImplNode, BASE_URI, vf.createIRI(baseURI));
 		}
-		for (URI uri : readContexts) {
+		for (IRI uri : readContexts) {
 			graph.add(repImplNode, READ_CONTEXT, uri);
 		}
-		for (URI resource : addContexts) {
+		for (IRI resource : addContexts) {
 			graph.add(repImplNode, ADD_CONTEXT, resource);
 		}
-		for (URI resource : removeContexts) {
+		for (IRI resource : removeContexts) {
 			graph.add(repImplNode, REMOVE_CONTEXT, resource);
 		}
-		for (URI resource : archiveContexts) {
+		for (IRI resource : archiveContexts) {
 			graph.add(repImplNode, ARCHIVE_CONTEXT, resource);
 		}
 		if (insertContext != null) {
@@ -251,22 +251,22 @@ public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
 			if (lit != null) {
 				setQueryLanguage(QueryLanguage.valueOf(lit.getLabel()));
 			}
-			URI uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
+			IRI uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
 			if (uri != null) {
 				setBaseURI(uri.stringValue());
 			}
 
 			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
-			setReadContexts(objects.toArray(new URI[objects.size()]));
+			setReadContexts(objects.toArray(new IRI[objects.size()]));
 
 			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
-			setAddContexts(objects.toArray(new URI[objects.size()]));
+			setAddContexts(objects.toArray(new IRI[objects.size()]));
 
 			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
-			setRemoveContexts(objects.toArray(new URI[objects.size()]));
+			setRemoveContexts(objects.toArray(new IRI[objects.size()]));
 
 			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
-			setArchiveContexts(objects.toArray(new URI[objects.size()]));
+			setArchiveContexts(objects.toArray(new IRI[objects.size()]));
 
 			uri = GraphUtil.getOptionalObjectURI(graph, implNode, INSERT_CONTEXT);
 			if (uri != null) {

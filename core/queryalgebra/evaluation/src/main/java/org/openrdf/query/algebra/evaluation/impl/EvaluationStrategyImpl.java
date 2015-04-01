@@ -42,7 +42,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.BooleanLiteralImpl;
@@ -448,7 +448,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		try {
 			Resource[] contexts;
 
-			Set<URI> graphs = null;
+			Set<IRI> graphs = null;
 			boolean emptyGraph = false;
 
 			if (dataset != null) {
@@ -493,8 +493,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			else {
 				contexts = new Resource[graphs.size()];
 				int i = 0;
-				for (URI graph : graphs) {
-					URI context = null;
+				for (IRI graph : graphs) {
+					IRI context = null;
 					if (!SESAME.NIL.equals(graph)) {
 						context = graph;
 					}
@@ -502,7 +502,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				}
 			}
 
-			stIter = tripleSource.getStatements((Resource)subjValue, (URI)predValue, objValue, contexts);
+			stIter = tripleSource.getStatements((Resource)subjValue, (IRI)predValue, objValue, contexts);
 
 			if (contexts.length == 0 && sp.getScope() == Scope.NAMED_CONTEXTS) {
 				// Named contexts are matched by retrieving all statements from
@@ -531,7 +531,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			@Override
 			protected boolean accept(Statement st) {
 				Resource subj = st.getSubject();
-				URI pred = st.getPredicate();
+				IRI pred = st.getPredicate();
 				Value obj = st.getObject();
 				Resource context = st.getContext();
 
@@ -1145,7 +1145,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
-		if (argValue instanceof URI) {
+		if (argValue instanceof IRI) {
 			return tripleSource.getValueFactory().createLiteral(argValue.toString());
 		}
 		else if (argValue instanceof Literal) {
@@ -1227,9 +1227,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
-		if (argValue instanceof URI) {
-			URI uri = (URI)argValue;
-			return tripleSource.getValueFactory().createURI(uri.getNamespace());
+		if (argValue instanceof IRI) {
+			IRI uri = (IRI)argValue;
+			return tripleSource.getValueFactory().createIRI(uri.getNamespace());
 		}
 		else {
 			throw new ValueExprEvaluationException();
@@ -1241,8 +1241,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
-		if (argValue instanceof URI) {
-			URI uri = (URI)argValue;
+		if (argValue instanceof IRI) {
+			IRI uri = (IRI)argValue;
 			return tripleSource.getValueFactory().createLiteral(uri.getLocalName());
 		}
 		else {
@@ -1273,7 +1273,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
-		return BooleanLiteralImpl.valueOf(argValue instanceof URI);
+		return BooleanLiteralImpl.valueOf(argValue instanceof IRI);
 	}
 
 	/**
@@ -1317,7 +1317,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-			URI datatype = lit.getDatatype();
+			IRI datatype = lit.getDatatype();
 
 			return BooleanLiteralImpl.valueOf(XMLDatatypeUtil.isNumericDatatype(datatype));
 		}
@@ -1338,7 +1338,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * @throws ValueExprEvaluationException
 	 * @throws QueryEvaluationException
 	 */
-	public URI evaluate(IRIFunction node, BindingSet bindings)
+	public IRI evaluate(IRIFunction node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
@@ -1362,18 +1362,18 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				}
 			}
 
-			URI result = null;
+			IRI result = null;
 
 			try {
-				result = tripleSource.getValueFactory().createURI(uriString);
+				result = tripleSource.getValueFactory().createIRI(uriString);
 			}
 			catch (IllegalArgumentException e) {
 				throw new ValueExprEvaluationException(e.getMessage());
 			}
 			return result;
 		}
-		else if (argValue instanceof URI) {
-			return ((URI)argValue);
+		else if (argValue instanceof IRI) {
+			return ((IRI)argValue);
 		}
 
 		throw new ValueExprEvaluationException();
@@ -1487,8 +1487,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value val = evaluate(node.getArg(), bindings);
 		String strVal = null;
 
-		if (val instanceof URI) {
-			strVal = ((URI)val).toString();
+		if (val instanceof IRI) {
+			strVal = ((IRI)val).toString();
 		}
 		else if (val instanceof Literal) {
 			strVal = ((Literal)val).getLabel();

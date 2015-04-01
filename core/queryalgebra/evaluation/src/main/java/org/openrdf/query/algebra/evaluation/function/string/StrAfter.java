@@ -19,7 +19,7 @@ package org.openrdf.query.algebra.evaluation.function.string;
 import java.util.Optional;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.FN;
@@ -61,7 +61,7 @@ public class StrAfter implements Function {
 				String substring = rightLit.getLabel();
 
 				Optional<String> leftLanguage = leftLit.getLanguage();
-				URI leftDt = leftLit.getDatatype();
+				IRI leftDt = leftLit.getDatatype();
 
 				int index = lexicalValue.indexOf(substring);
 

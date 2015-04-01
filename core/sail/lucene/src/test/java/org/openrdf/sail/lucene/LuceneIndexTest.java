@@ -39,31 +39,31 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest extends TestCase {
 
-	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
+	public static final IRI CONTEXT_1 = new IRIImpl("urn:context1");
 
-	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
+	public static final IRI CONTEXT_2 = new IRIImpl("urn:context2");
 
-	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
+	public static final IRI CONTEXT_3 = new IRIImpl("urn:context3");
 
 	// create some objects that we will use throughout this test
-	URI subject = new URIImpl("urn:subj");
+	IRI subject = new IRIImpl("urn:subj");
 
-	URI subject2 = new URIImpl("urn:subj2");
+	IRI subject2 = new IRIImpl("urn:subj2");
 
-	URI predicate1 = new URIImpl("urn:pred1");
+	IRI predicate1 = new IRIImpl("urn:pred1");
 
-	URI predicate2 = new URIImpl("urn:pred2");
+	IRI predicate2 = new IRIImpl("urn:pred2");
 
 	Literal object1 = new LiteralImpl("object1");
 
@@ -389,8 +389,8 @@ public class LuceneIndexTest extends TestCase {
 	}
 
 	public void testRejectedDatatypes() {
-		URI STRING = new URIImpl("http://www.w3.org/2001/XMLSchema#string");
-		URI FLOAT = new URIImpl("http://www.w3.org/2001/XMLSchema#float");
+		IRI STRING = new IRIImpl("http://www.w3.org/2001/XMLSchema#string");
+		IRI FLOAT = new IRIImpl("http://www.w3.org/2001/XMLSchema#float");
 		Literal literal1 = new LiteralImpl("hi there");
 		Literal literal2 = new LiteralImpl("hi there, too", STRING);
 		Literal literal3 = new LiteralImpl("1.0");

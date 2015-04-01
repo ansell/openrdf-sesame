@@ -25,7 +25,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryBase;
@@ -145,19 +145,19 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	public RdbmsLiteral createLiteral(String label, URI datatype) {
+	public RdbmsLiteral createLiteral(String label, IRI datatype) {
 		if (LiteralTable.ONLY_INSERT_LABEL)
 			return createLiteral(label);
 		return asRdbmsLiteral(vf.createLiteral(label, datatype));
 	}
 
 	@Override
-	public RdbmsStatement createStatement(Resource subject, URI predicate, Value object) {
+	public RdbmsStatement createStatement(Resource subject, IRI predicate, Value object) {
 		return createStatement(subject, predicate, object, null);
 	}
 
 	@Override
-	public RdbmsStatement createStatement(Resource subject, URI predicate, Value object, Resource context) {
+	public RdbmsStatement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
 		RdbmsResource subj = asRdbmsResource(subject);
 		RdbmsURI pred = asRdbmsURI(predicate);
 		RdbmsValue obj = asRdbmsValue(object);
@@ -166,11 +166,11 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	public RdbmsURI createURI(String uri) {
+	public RdbmsURI createIRI(String uri) {
 		RdbmsURI resource = uris.findInCache(uri);
 		if (resource == null) {
 			try {
-				URI impl = vf.createURI(uri);
+				IRI impl = vf.createIRI(uri);
 				resource = new RdbmsURI(impl);
 				uris.cache(resource);
 			}
@@ -182,15 +182,15 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	public RdbmsURI createURI(String namespace, String localName) {
-		return createURI(namespace + localName);
+	public RdbmsURI createIRI(String namespace, String localName) {
+		return createIRI(namespace + localName);
 	}
 
 	public RdbmsResource getRdbmsResource(Number num, String stringValue) {
 		assert stringValue != null : "Null stringValue for ID: " + num;
 		Number id = ids.idOf(num);
 		if (ids.isURI(id))
-			return new RdbmsURI(id, uris.getIdVersion(), vf.createURI(stringValue));
+			return new RdbmsURI(id, uris.getIdVersion(), vf.createIRI(stringValue));
 		return new RdbmsBNode(id, bnodes.getIdVersion(), vf.createBNode(stringValue));
 	}
 
@@ -200,14 +200,14 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 			return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label));
 		if (datatype == null)
 			return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label, language));
-		return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label, vf.createURI(datatype)));
+		return new RdbmsLiteral(id, literals.getIdVersion(), vf.createLiteral(label, vf.createIRI(datatype)));
 	}
 
 	public RdbmsResource asRdbmsResource(Resource node) {
 		if (node == null)
 			return null;
-		if (node instanceof URI)
-			return asRdbmsURI((URI)node);
+		if (node instanceof IRI)
+			return asRdbmsURI((IRI)node);
 		if (node instanceof RdbmsBNode) {
 			try {
 				bnodes.cache((RdbmsBNode)node);
@@ -220,7 +220,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		return createBNode(((BNode)node).getID());
 	}
 
-	public RdbmsURI asRdbmsURI(URI uri) {
+	public RdbmsURI asRdbmsURI(IRI uri) {
 		if (uri == null)
 			return null;
 		if (uri instanceof RdbmsURI) {
@@ -232,7 +232,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 				throw new RdbmsRuntimeException(e);
 			}
 		}
-		return createURI(uri.stringValue());
+		return createIRI(uri.stringValue());
 	}
 
 	public RdbmsValue asRdbmsValue(Value value) {
@@ -273,7 +273,7 @@ public class RdbmsValueFactory extends ValueFactoryBase {
 		if (stmt instanceof RdbmsStatement)
 			return (RdbmsStatement)stmt;
 		Resource s = stmt.getSubject();
-		URI p = stmt.getPredicate();
+		IRI p = stmt.getPredicate();
 		Value o = stmt.getObject();
 		Resource c = stmt.getContext();
 		return createStatement(s, p, o, c);

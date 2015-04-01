@@ -19,7 +19,7 @@ package org.openrdf.sail.memory;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
@@ -48,7 +48,7 @@ class MemTripleSource implements TripleSource {
 	}
 
 	public CloseableIteration<MemStatement, QueryEvaluationException> getStatements(Resource subj,
-			URI pred, Value obj, Resource... contexts)
+			IRI pred, Value obj, Resource... contexts)
 	{
 		return store.createStatementIterator(QueryEvaluationException.class, subj, pred, obj,
 				!includeInferred, snapshot, readMode, contexts);

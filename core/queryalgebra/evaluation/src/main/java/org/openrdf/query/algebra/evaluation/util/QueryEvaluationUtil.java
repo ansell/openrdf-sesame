@@ -20,7 +20,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
@@ -66,7 +66,7 @@ public class QueryEvaluationUtil {
 		if (value instanceof Literal) {
 			Literal literal = (Literal)value;
 			String label = literal.getLabel();
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 
 			if (datatype.equals(XMLSchema.STRING)) {
 				return label.length() > 0;
@@ -148,8 +148,8 @@ public class QueryEvaluationUtil {
 		// - xsd:string
 		// - RDF term (equal and unequal only)
 
-		URI leftDatatype = leftLit.getDatatype();
-		URI rightDatatype = rightLit.getDatatype();
+		IRI leftDatatype = leftLit.getDatatype();
+		IRI rightDatatype = rightLit.getDatatype();
 
 		boolean leftLangLit = Literals.isLanguageLiteral(leftLit);
 		boolean rightLangLit = Literals.isLanguageLiteral(rightLit);
@@ -157,7 +157,7 @@ public class QueryEvaluationUtil {
 		// for purposes of query evaluation in SPARQL, simple literals and
 		// string-typed literals with the same
 		// lexical value are considered equal.
-		URI commonDatatype = null;
+		IRI commonDatatype = null;
 		if (QueryEvaluationUtil.isSimpleLiteral(leftLit) && QueryEvaluationUtil.isSimpleLiteral(rightLit)) {
 			commonDatatype = XMLSchema.STRING;
 		}
@@ -433,11 +433,11 @@ public class QueryEvaluationUtil {
 	 *      Functions on Strings Documentation</a>
 	 */
 	public static boolean isStringLiteral(Literal l) {
-		URI datatype = l.getDatatype();
+		IRI datatype = l.getDatatype();
 		return Literals.isLanguageLiteral(l) || datatype.equals(XMLSchema.STRING);
 	}
 
-	private static boolean isSupportedDatatype(URI datatype) {
+	private static boolean isSupportedDatatype(IRI datatype) {
 		return (XMLSchema.STRING.equals(datatype) || XMLDatatypeUtil.isNumericDatatype(datatype) || XMLDatatypeUtil.isCalendarDatatype(datatype));
 	}
 }

@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryLanguage;
@@ -48,7 +48,7 @@ public abstract class SparqlSetBindingTest {
 
 	private Literal ringo;
 
-	private URI ringoRes;
+	private IRI ringoRes;
 
 	@Test
 	public void testBinding()
@@ -81,7 +81,7 @@ public abstract class SparqlSetBindingTest {
 		repository = createRepository();
 		vf = repository.getValueFactory();
 		ringo = vf.createLiteral("Ringo Starr");
-		ringoRes = vf.createURI("http://example.org/ns#", "ringo");
+		ringoRes = vf.createIRI("http://example.org/ns#", "ringo");
 
 		createUser("john", "John Lennon", "john@example.org");
 		createUser("paul", "Paul McCartney", "paul@example.org");
@@ -123,13 +123,13 @@ public abstract class SparqlSetBindingTest {
 		throws RepositoryException
 	{
 		RepositoryConnection conn = repository.getConnection();
-		URI subj = vf.createURI("http://example.org/ns#", id);
-		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");
-		URI foafMbox = vf.createURI("http://xmlns.com/foaf/0.1/", "mbox");
+		IRI subj = vf.createIRI("http://example.org/ns#", id);
+		IRI foafName = vf.createIRI("http://xmlns.com/foaf/0.1/", "name");
+		IRI foafMbox = vf.createIRI("http://xmlns.com/foaf/0.1/", "mbox");
 
-		conn.add(subj, RDF.TYPE, vf.createURI("http://xmlns.com/foaf/0.1/", "Person"));
+		conn.add(subj, RDF.TYPE, vf.createIRI("http://xmlns.com/foaf/0.1/", "Person"));
 		conn.add(subj, foafName, vf.createLiteral(name));
-		conn.add(subj, foafMbox, vf.createURI("mailto:", email));
+		conn.add(subj, foafMbox, vf.createIRI("mailto:", email));
 		conn.close();
 	}
 }

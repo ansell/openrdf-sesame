@@ -56,7 +56,7 @@ public interface Graph extends Collection<Statement>, Serializable {
 	 * @param contexts
 	 *        The contexts to add statements to.
 	 */
-	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Gets the statements with the specified subject, predicate, object and
@@ -102,5 +102,5 @@ public interface Graph extends Collection<Statement>, Serializable {
 	 *         info.
 	 */
 	@Deprecated
-	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts);
+	public Iterator<Statement> match(Resource subj, IRI pred, Value obj, Resource... contexts);
 }

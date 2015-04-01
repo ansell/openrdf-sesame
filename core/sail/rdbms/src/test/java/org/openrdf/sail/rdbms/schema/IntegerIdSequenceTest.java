@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.TestCase;
 
 import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 
 public class IntegerIdSequenceTest extends TestCase {
 
@@ -84,8 +84,8 @@ public class IntegerIdSequenceTest extends TestCase {
 	public void testEncode()
 		throws Exception
 	{
-		assertEquals(ValueType.URI, ids.valueOf(ids.nextId(new URIImpl("urn:root"))));
-		assertEquals(ValueType.URI, ids.valueOf(ids.nextId(new URIImpl(
+		assertEquals(ValueType.URI, ids.valueOf(ids.nextId(new IRIImpl("urn:root"))));
+		assertEquals(ValueType.URI, ids.valueOf(ids.nextId(new IRIImpl(
 				"urn:The quick brown fox jumps over the lazy dog"))));
 	}
 

@@ -19,7 +19,7 @@ package org.openrdf;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.SESAME;
@@ -138,8 +138,8 @@ public enum IsolationLevels implements IsolationLevel {
 		}
 	}
 
-	public URI getURI() {
+	public IRI getURI() {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
-		return f.createURI(SESAME.NAMESPACE, this.name());
+		return f.createIRI(SESAME.NAMESPACE, this.name());
 	}
 }

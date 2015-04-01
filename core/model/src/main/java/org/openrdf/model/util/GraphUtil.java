@@ -26,7 +26,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.util.iterators.ConvertingIterator;
 import org.openrdf.util.iterators.Iterators;
@@ -49,15 +49,15 @@ public class GraphUtil {
 	 * and (optionally) contexts from the supplied graph. Calling this method is
 	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt> and
 	 * extracting the subjects of the matching statements from the returned
-	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
+	 * iterator. See {@link Graph#match(Resource, IRI, Value, Resource[])} for a
 	 * description of the parameter values.
 	 * 
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#subjects()} instead.
 	 */
 	@Deprecated
-	public static Iterator<Resource> getSubjectIterator(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static Iterator<Resource> getSubjectIterator(Graph graph, IRI pred, Value obj, Resource... contexts)
 	{
 		Iterator<Statement> iter = graph.match(null, pred, obj, contexts);
 
@@ -78,15 +78,15 @@ public class GraphUtil {
 	 * and (optionally) contexts from the supplied graph. Calling this method is
 	 * equivalent to calling <tt>graph.match(null, pred, obj, contexts)</tt> and
 	 * adding the subjects of the matching statements to a set. See
-	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
+	 * {@link Graph#match(Resource, IRI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#subjects()} instead.
 	 */
 	@Deprecated
-	public static Set<Resource> getSubjects(Graph graph, URI pred, Value obj, Resource... contexts) {
+	public static Set<Resource> getSubjects(Graph graph, IRI pred, Value obj, Resource... contexts) {
 		Iterator<Resource> iter = getSubjectIterator(graph, pred, obj, contexts);
 		return Iterators.addAll(iter, new LinkedHashSet<Resource>());
 	}
@@ -98,7 +98,7 @@ public class GraphUtil {
 	 * case more than one statement matches -- for example statements from
 	 * multiple contexts -- all these statements should have the same subject. A
 	 * {@link GraphUtilException} is thrown if these conditions are not met. See
-	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
+	 * {@link Graph#match(Resource, IRI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 
 	 * @return The subject of the matched statement(s).
@@ -106,11 +106,11 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters do not have
 	 *         exactly one unique subject.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#subjectResource()} instead.
 	 */
 	@Deprecated
-	public static Resource getUniqueSubject(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static Resource getUniqueSubject(Graph graph, IRI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Resource> subjects = getSubjects(graph, pred, obj, contexts);
@@ -128,26 +128,26 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getUniqueSubject(Graph, URI, Value, Resource[])} to a URI, or
+	 * {@link #getUniqueSubject(Graph, IRI, Value, Resource[])} to a URI, or
 	 * throws a GraphUtilException if that value is not a URI.
 	 * 
 	 * @return The subject of the matched statement(s).
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getUniqueSubject(Graph, URI, Value, Resource[])} or if its
+	 *         {@link #getUniqueSubject(Graph, IRI, Value, Resource[])} or if its
 	 *         return value is not a URI.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
-	 *             {@link Model#subjectURI()} instead.
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
+	 *             {@link Model#subjectIRI()} instead.
 	 */
 	@Deprecated
-	public static URI getUniqueSubjectURI(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static IRI getUniqueSubjectURI(Graph graph, IRI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Resource subject = getUniqueSubject(graph, pred, obj, contexts);
 
-		if (subject instanceof URI) {
-			return (URI)subject;
+		if (subject instanceof IRI) {
+			return (IRI)subject;
 		}
 		else {
 			throw new GraphUtilException("Expected URI for subject " + subject);
@@ -160,7 +160,7 @@ public class GraphUtil {
 	 * combination of predicate, object and contexts matches one or more
 	 * statements, all these statements should have the same subject. A
 	 * {@link GraphUtilException} is thrown if this is not the case. See
-	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
+	 * {@link Graph#match(Resource, IRI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 
 	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
@@ -169,11 +169,11 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#subjectResource()} instead.
 	 */
 	@Deprecated
-	public static Resource getOptionalSubject(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static Resource getOptionalSubject(Graph graph, IRI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Resource> subjects = getSubjects(graph, pred, obj, contexts);
@@ -191,27 +191,27 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getOptionalSubject(Graph, URI, Value, Resource[])} to a URI, or
+	 * {@link #getOptionalSubject(Graph, IRI, Value, Resource[])} to a URI, or
 	 * throws a GraphUtilException if that value is not a URI.
 	 * 
 	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getOptionalSubject(Graph, URI, Value, Resource[])} or if
+	 *         {@link #getOptionalSubject(Graph, IRI, Value, Resource[])} or if
 	 *         its return value is not a URI.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
-	 *             {@link Model#subjectURI()} instead.
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
+	 *             {@link Model#subjectIRI()} instead.
 	 */
 	@Deprecated
-	public static URI getOptionalSubjectURI(Graph graph, URI pred, Value obj, Resource... contexts)
+	public static IRI getOptionalSubjectURI(Graph graph, IRI pred, Value obj, Resource... contexts)
 		throws GraphUtilException
 	{
 		Resource subject = getOptionalSubject(graph, pred, obj, contexts);
 
-		if (subject == null || subject instanceof URI) {
-			return (URI)subject;
+		if (subject == null || subject instanceof IRI) {
+			return (IRI)subject;
 		}
 		else {
 			throw new GraphUtilException("Expected URI for subject " + subject);
@@ -223,15 +223,15 @@ public class GraphUtil {
 	 * and (optionally) contexts from the supplied graph. Calling this method is
 	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt> and
 	 * extracting the objects of the matching statements from the returned
-	 * iterator. See {@link Graph#match(Resource, URI, Value, Resource[])} for a
+	 * iterator. See {@link Graph#match(Resource, IRI, Value, Resource[])} for a
 	 * description of the parameter values.
 	 * 
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#objects()} instead.
 	 */
 	@Deprecated
-	public static Iterator<Value> getObjectIterator(Graph graph, Resource subj, URI pred, Resource... contexts)
+	public static Iterator<Value> getObjectIterator(Graph graph, Resource subj, IRI pred, Resource... contexts)
 	{
 		Iterator<Statement> iter = graph.match(subj, pred, null, contexts);
 
@@ -252,15 +252,15 @@ public class GraphUtil {
 	 * and (optionally) contexts from the supplied graph. Calling this method is
 	 * equivalent to calling <tt>graph.match(subj, pred, null, contexts)</tt> and
 	 * adding the objects of the matching statements to a set. See
-	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
+	 * {@link Graph#match(Resource, IRI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#objects()} instead.
 	 */
 	@Deprecated
-	public static Set<Value> getObjects(Graph graph, Resource subj, URI pred, Resource... contexts) {
+	public static Set<Value> getObjects(Graph graph, Resource subj, IRI pred, Resource... contexts) {
 		Iterator<Value> iter = getObjectIterator(graph, subj, pred, contexts);
 		return Iterators.addAll(iter, new LinkedHashSet<Value>());
 	}
@@ -272,7 +272,7 @@ public class GraphUtil {
 	 * statement. In case more than one statement matches -- for example
 	 * statements from multiple contexts -- all these statements should have the
 	 * same object. A {@link GraphUtilException} is thrown if these conditions
-	 * are not met. See {@link Graph#match(Resource, URI, Value, Resource[])} for
+	 * are not met. See {@link Graph#match(Resource, IRI, Value, Resource[])} for
 	 * a description of the parameter values.
 	 * 
 	 * @return The object of the matched statement(s).
@@ -280,11 +280,11 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters do not have
 	 *         exactly one unique object.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...)} and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...)} and
 	 *             {@link Model#objectValue()} instead.
 	 */
 	@Deprecated
-	public static Value getUniqueObject(Graph graph, Resource subj, URI pred, Resource... contexts)
+	public static Value getUniqueObject(Graph graph, Resource subj, IRI pred, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Value> objects = getObjects(graph, subj, pred, contexts);
@@ -308,11 +308,11 @@ public class GraphUtil {
 	 * Graph.
 	 * 
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Models#setProperty(Model, Resource, URI, Value, Resource...) }
+	 *             {@link Models#setProperty(Model, Resource, IRI, Value, Resource...) }
 	 *             instead.
 	 */
 	@Deprecated
-	public static void setUniqueObject(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
+	public static void setUniqueObject(Graph graph, Resource subj, IRI pred, Value obj, Resource... contexts) {
 		Iterator<Statement> iter = graph.match(subj, pred, null, contexts);
 
 		while (iter.hasNext()) {
@@ -325,20 +325,20 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getUniqueObject(Graph, Resource, URI, Resource[])} to a Resource,
+	 * {@link #getUniqueObject(Graph, Resource, IRI, Resource[])} to a Resource,
 	 * or throws a GraphUtilException if that value is not a Resource.
 	 * 
 	 * @return The object of the matched statement(s).
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
+	 *         {@link #getUniqueObject(Graph, Resource, IRI, Resource[])} or if
 	 *         its return value is not a Resource.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
 	 *             {@link Model#objectResource() } instead.
 	 */
 	@Deprecated
-	public static Resource getUniqueObjectResource(Graph graph, Resource subj, URI pred)
+	public static Resource getUniqueObjectResource(Graph graph, Resource subj, IRI pred)
 		throws GraphUtilException
 	{
 		Value obj = getUniqueObject(graph, subj, pred);
@@ -353,26 +353,26 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getUniqueObject(Graph, Resource, URI, Resource[])} to a URI, or
+	 * {@link #getUniqueObject(Graph, Resource, IRI, Resource[])} to a URI, or
 	 * throws a GraphUtilException if that value is not a URI.
 	 * 
 	 * @return The object of the matched statement(s).
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
+	 *         {@link #getUniqueObject(Graph, Resource, IRI, Resource[])} or if
 	 *         its return value is not a URI.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
-	 *             {@link Model#objectURI() } instead.
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
+	 *             {@link Model#objectIRI() } instead.
 	 */
 	@Deprecated
-	public static URI getUniqueObjectURI(Graph graph, Resource subj, URI pred)
+	public static IRI getUniqueObjectURI(Graph graph, Resource subj, IRI pred)
 		throws GraphUtilException
 	{
 		Value obj = getUniqueObject(graph, subj, pred);
 
-		if (obj instanceof URI) {
-			return (URI)obj;
+		if (obj instanceof IRI) {
+			return (IRI)obj;
 		}
 		else {
 			throw new GraphUtilException("Expected URI for property " + pred);
@@ -381,20 +381,20 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getUniqueObject(Graph, Resource, URI, Resource[])} to a Literal,
+	 * {@link #getUniqueObject(Graph, Resource, IRI, Resource[])} to a Literal,
 	 * or throws a GraphUtilException if that value is not a Literal.
 	 * 
 	 * @return The object of the matched statement(s).
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getUniqueObject(Graph, Resource, URI, Resource[])} or if
+	 *         {@link #getUniqueObject(Graph, Resource, IRI, Resource[])} or if
 	 *         its return value is not a Literal.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
 	 *             {@link Model#objectLiteral() } instead.
 	 */
 	@Deprecated
-	public static Literal getUniqueObjectLiteral(Graph graph, Resource subj, URI pred)
+	public static Literal getUniqueObjectLiteral(Graph graph, Resource subj, IRI pred)
 		throws GraphUtilException
 	{
 		Value obj = getUniqueObject(graph, subj, pred);
@@ -413,7 +413,7 @@ public class GraphUtil {
 	 * combination of subject, predicate and contexts matches one or more
 	 * statements, all these statements should have the same object. A
 	 * {@link GraphUtilException} is thrown if this is not the case. See
-	 * {@link Graph#match(Resource, URI, Value, Resource[])} for a description of
+	 * {@link Graph#match(Resource, IRI, Value, Resource[])} for a description of
 	 * the parameter values.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
@@ -422,11 +422,11 @@ public class GraphUtil {
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
 	 *             {@link Model#objectValue() } instead.
 	 */
 	@Deprecated
-	public static Value getOptionalObject(Graph graph, Resource subj, URI pred, Resource... contexts)
+	public static Value getOptionalObject(Graph graph, Resource subj, IRI pred, Resource... contexts)
 		throws GraphUtilException
 	{
 		Set<Value> objects = getObjects(graph, subj, pred, contexts);
@@ -444,21 +444,21 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getOptionalObject(Graph, Resource, URI, Resource[])} to a
+	 * {@link #getOptionalObject(Graph, Resource, IRI, Resource[])} to a
 	 * Resource, or throws a GraphUtilException if that value is not a Resource.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
+	 *         {@link #getOptionalObject(Graph, Resource, IRI, Resource[])} or if
 	 *         its return value is not a Resource.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
 	 *             {@link Model#objectResource() } instead.
 	 */
 	@Deprecated
-	public static Resource getOptionalObjectResource(Graph graph, Resource subj, URI pred)
+	public static Resource getOptionalObjectResource(Graph graph, Resource subj, IRI pred)
 		throws GraphUtilException
 	{
 		Value obj = getOptionalObject(graph, subj, pred);
@@ -473,27 +473,27 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getOptionalObject(Graph, Resource, URI, Resource[])} to a URI, or
+	 * {@link #getOptionalObject(Graph, Resource, IRI, Resource[])} to a URI, or
 	 * throws a GraphUtilException if that value is not a URI.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
+	 *         {@link #getOptionalObject(Graph, Resource, IRI, Resource[])} or if
 	 *         its return value is not a URI.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
-	 *             {@link Model#objectURI() } instead.
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
+	 *             {@link Model#objectIRI() } instead.
 	 */
 	@Deprecated
-	public static URI getOptionalObjectURI(Graph graph, Resource subj, URI pred)
+	public static IRI getOptionalObjectURI(Graph graph, Resource subj, IRI pred)
 		throws GraphUtilException
 	{
 		Value obj = getOptionalObject(graph, subj, pred);
 
-		if (obj == null || obj instanceof URI) {
-			return (URI)obj;
+		if (obj == null || obj instanceof IRI) {
+			return (IRI)obj;
 		}
 		else {
 			throw new GraphUtilException("Expected URI for property " + pred);
@@ -502,21 +502,21 @@ public class GraphUtil {
 
 	/**
 	 * Utility method that casts the return value of
-	 * {@link #getOptionalObject(Graph, Resource, URI, Resource[])} to a Literal,
+	 * {@link #getOptionalObject(Graph, Resource, IRI, Resource[])} to a Literal,
 	 * or throws a GraphUtilException if that value is not a Literal.
 	 * 
 	 * @return The object of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws GraphUtilException
 	 *         If such an exception is thrown by
-	 *         {@link #getOptionalObject(Graph, Resource, URI, Resource[])} or if
+	 *         {@link #getOptionalObject(Graph, Resource, IRI, Resource[])} or if
 	 *         its return value is not a Literal.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#filter(Resource, URI, Value, Resource...) } and
+	 *             {@link Model#filter(Resource, IRI, Value, Resource...) } and
 	 *             {@link Model#objectLiteral() } instead.
 	 */
 	@Deprecated
-	public static Literal getOptionalObjectLiteral(Graph graph, Resource subj, URI pred)
+	public static Literal getOptionalObjectLiteral(Graph graph, Resource subj, IRI pred)
 		throws GraphUtilException
 	{
 		Value obj = getOptionalObject(graph, subj, pred);
@@ -555,11 +555,11 @@ public class GraphUtil {
 	 *         {@link OpenRDFUtil#verifyContextNotNull(Resource[])} for more
 	 *         info.
 	 * @deprecated since 2.8.0. Use
-	 *             {@link Model#remove(Resource, URI, Value, Resource...) }
+	 *             {@link Model#remove(Resource, IRI, Value, Resource...) }
 	 *             instead.
 	 */
 	@Deprecated
-	public static void remove(Graph graph, Resource subj, URI pred, Value obj, Resource... contexts) {
+	public static void remove(Graph graph, Resource subj, IRI pred, Value obj, Resource... contexts) {
 		Iterator<Statement> statements = graph.match(subj, pred, obj, contexts);
 		while (statements.hasNext()) {
 			statements.next();

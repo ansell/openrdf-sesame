@@ -21,7 +21,7 @@ import java.util.Set;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.rio.RDFHandlerException;
@@ -120,7 +120,7 @@ class RDFSailRemover extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 		Resource ctxt = st.getContext();
 
@@ -130,9 +130,9 @@ class RDFSailRemover extends RDFHandlerBase {
 			}
 			else {
 				if (ctxt == null) {
-					final Set<URI> removeGraphs = uc.getDataset().getDefaultRemoveGraphs();
+					final Set<IRI> removeGraphs = uc.getDataset().getDefaultRemoveGraphs();
 					if (!removeGraphs.isEmpty()) {
-						con.removeStatement(uc, subj, pred, obj, new URI[removeGraphs.size()]);
+						con.removeStatement(uc, subj, pred, obj, new IRI[removeGraphs.size()]);
 					}
 					else {
 						con.removeStatement(uc, subj, pred, obj);

@@ -25,7 +25,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 
 /**
@@ -41,13 +41,13 @@ public abstract class FilteredModel extends AbstractModel {
 
 	private Resource subj;
 
-	private URI pred;
+	private IRI pred;
 
 	private Value obj;
 
 	private Resource[] contexts;
 
-	public FilteredModel(AbstractModel model, Resource subj, URI pred, Value obj, Resource... contexts) {
+	public FilteredModel(AbstractModel model, Resource subj, IRI pred, Value obj, Resource... contexts) {
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
 		this.model = model;
@@ -99,12 +99,12 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean add(Resource s, URI p, Value o, Resource... c) {
+	public boolean add(Resource s, IRI p, Value o, Resource... c) {
 		if (s == null) {
 			s = (Resource)subj;
 		}
 		if (p == null) {
-			p = (URI)pred;
+			p = (IRI)pred;
 		}
 		if (o == null) {
 			o = obj;
@@ -119,7 +119,7 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean remove(Resource s, URI p, Value o, Resource... c) {
+	public boolean remove(Resource s, IRI p, Value o, Resource... c) {
 		if (s == null) {
 			s = subj;
 		}
@@ -139,7 +139,7 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean contains(Resource s, URI p, Value o, Resource... c) {
+	public boolean contains(Resource s, IRI p, Value o, Resource... c) {
 		if (s == null) {
 			s = subj;
 		}
@@ -159,7 +159,7 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public Model filter(Resource s, URI p, Value o, Resource... c) {
+	public Model filter(Resource s, IRI p, Value o, Resource... c) {
 		if (s == null) {
 			s = subj;
 		}
@@ -179,13 +179,13 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public final void removeTermIteration(Iterator<Statement> iter, Resource s, URI p, Value o, Resource... c)
+	public final void removeTermIteration(Iterator<Statement> iter, Resource s, IRI p, Value o, Resource... c)
 	{
 		if (s == null) {
 			s = (Resource)subj;
 		}
 		if (p == null) {
-			p = (URI)pred;
+			p = (IRI)pred;
 		}
 		if (o == null) {
 			o = obj;
@@ -214,10 +214,10 @@ public abstract class FilteredModel extends AbstractModel {
 	 * @param contexts
 	 *        an array of one context term to be removed or an empty array
 	 */
-	protected abstract void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
+	protected abstract void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, IRI pred,
 			Value obj, Resource... contexts);
 
-	private boolean accept(Resource s, URI p, Value o, Resource... c) {
+	private boolean accept(Resource s, IRI p, Value o, Resource... c) {
 		if (subj != null && !subj.equals(s)) {
 			return false;
 		}
@@ -230,7 +230,7 @@ public abstract class FilteredModel extends AbstractModel {
 		if (!matches(c, contexts)) {
 			return false;
 		}
-		return (s == null || s instanceof Resource) && (p == null || p instanceof URI);
+		return (s == null || s instanceof Resource) && (p == null || p instanceof IRI);
 	}
 
 	private boolean matches(Resource[] stContext, Resource... contexts) {

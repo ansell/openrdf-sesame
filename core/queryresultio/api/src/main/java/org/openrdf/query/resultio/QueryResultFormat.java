@@ -21,7 +21,7 @@ import java.util.Collection;
 
 import info.aduna.lang.FileFormat;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
@@ -37,26 +37,26 @@ public class QueryResultFormat extends FileFormat {
 	 * Local constant reused across boolean and tuple formats for SPARQL Results
 	 * XML.
 	 */
-	protected static final URI SPARQL_RESULTS_XML_URI = ValueFactoryImpl.getInstance().createURI(
+	protected static final IRI SPARQL_RESULTS_XML_URI = ValueFactoryImpl.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_XML");
 
 	/**
 	 * Local constant reused across boolean and tuple formats for SPARQL Results
 	 * JSON.
 	 */
-	protected static final URI SPARQL_RESULTS_JSON_URI = ValueFactoryImpl.getInstance().createURI(
+	protected static final IRI SPARQL_RESULTS_JSON_URI = ValueFactoryImpl.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_JSON");
 
 	/**
 	 * Local constant for tuple formats for SPARQL Results CSV.
 	 */
-	protected static final URI SPARQL_RESULTS_CSV_URI = ValueFactoryImpl.getInstance().createURI(
+	protected static final IRI SPARQL_RESULTS_CSV_URI = ValueFactoryImpl.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_CSV");
 
 	/**
 	 * Local constant for tuple formats for SPARQL Results TSV.
 	 */
-	protected static final URI SPARQL_RESULTS_TSV_URI = ValueFactoryImpl.getInstance().createURI(
+	protected static final IRI SPARQL_RESULTS_TSV_URI = ValueFactoryImpl.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_TSV");
 
 	/**
@@ -66,7 +66,7 @@ public class QueryResultFormat extends FileFormat {
 	 * @see <a href="http://www.w3.org/ns/formats/">Unique URIs for File
 	 *      Formats</a>
 	 */
-	private URI standardURI;
+	private IRI standardURI;
 
 	/**
 	 * @param name
@@ -145,7 +145,7 @@ public class QueryResultFormat extends FileFormat {
 	 * @since 2.8.0
 	 */
 	public QueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
-			Collection<String> fileExtensions, URI standardURI)
+			Collection<String> fileExtensions, IRI standardURI)
 	{
 		super(name, mimeTypes, charset, fileExtensions);
 
@@ -167,7 +167,7 @@ public class QueryResultFormat extends FileFormat {
 	 *         standard URI.
 	 * @since 2.8.0
 	 */
-	public URI getStandardURI() {
+	public IRI getStandardURI() {
 		return standardURI;
 	}
 }

@@ -23,7 +23,7 @@ import java.net.URLConnection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -68,7 +68,7 @@ public class DatasetRepository extends RepositoryWrapper {
 		return new DatasetRepositoryConnection(this, getDelegate().getConnection());
 	}
 
-	public void loadDataset(URL url, URI context, ParserConfig config)
+	public void loadDataset(URL url, IRI context, ParserConfig config)
 		throws RepositoryException
 	{
 		try {
@@ -89,7 +89,7 @@ public class DatasetRepository extends RepositoryWrapper {
 		}
 	}
 
-	private synchronized void load(URL url, URLConnection urlCon, URI context, ParserConfig config)
+	private synchronized void load(URL url, URLConnection urlCon, IRI context, ParserConfig config)
 		throws RepositoryException, RDFParseException, IOException
 	{
 		long modified = urlCon.getLastModified();

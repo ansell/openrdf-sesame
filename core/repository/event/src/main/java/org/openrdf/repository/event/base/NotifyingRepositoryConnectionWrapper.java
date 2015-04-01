@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -118,7 +118,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
-	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void addWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		boolean reportEvent = activated;
@@ -182,7 +182,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 	}
 
 	@Override
-	public void removeWithoutCommit(Resource subj, URI pred, Value obj, Resource... ctx)
+	public void removeWithoutCommit(Resource subj, IRI pred, Value obj, Resource... ctx)
 		throws RepositoryException
 	{
 		if (activated && reportDeltas()) {
@@ -201,7 +201,7 @@ public class NotifyingRepositoryConnectionWrapper extends RepositoryConnectionWr
 			for (RepositoryConnectionListener listener : listeners) {
 				for (Statement stmt : list) {
 					Resource s = stmt.getSubject();
-					URI p = stmt.getPredicate();
+					IRI p = stmt.getPredicate();
 					Value o = stmt.getObject();
 					Resource c = stmt.getContext();
 					listener.remove(getDelegate(), s, p, o, c);

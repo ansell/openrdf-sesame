@@ -41,13 +41,13 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
-import org.openrdf.sail.memory.model.MemURI;
+import org.openrdf.sail.memory.model.MemIRI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.ReadMode;
 
@@ -281,7 +281,7 @@ class FileIO {
 		throws IOException, ClassCastException
 	{
 		MemResource memSubj = (MemResource)readValue(dataIn);
-		MemURI memPred = (MemURI)readValue(dataIn);
+		MemIRI memPred = (MemIRI)readValue(dataIn);
 		MemValue memObj = (MemValue)readValue(dataIn);
 		MemResource memContext = null;
 		if (hasContext) {
@@ -297,9 +297,9 @@ class FileIO {
 	private void writeValue(Value value, DataOutputStream dataOut)
 		throws IOException
 	{
-		if (value instanceof URI) {
+		if (value instanceof IRI) {
 			dataOut.writeByte(URI_MARKER);
-			writeString(((URI)value).toString(), dataOut);
+			writeString(((IRI)value).toString(), dataOut);
 		}
 		else if (value instanceof BNode) {
 			dataOut.writeByte(BNODE_MARKER);
@@ -309,7 +309,7 @@ class FileIO {
 			Literal lit = (Literal)value;
 
 			String label = lit.getLabel();
-			URI datatype = lit.getDatatype();
+			IRI datatype = lit.getDatatype();
 
 			if (Literals.isLanguageLiteral(lit)) {
 				dataOut.writeByte(LANG_LITERAL_MARKER);
@@ -334,7 +334,7 @@ class FileIO {
 
 		if (valueTypeMarker == URI_MARKER) {
 			String uriString = readString(dataIn);
-			return store.getValueFactory().createURI(uriString);
+			return store.getValueFactory().createIRI(uriString);
 		}
 		else if (valueTypeMarker == BNODE_MARKER) {
 			String bnodeID = readString(dataIn);
@@ -351,7 +351,7 @@ class FileIO {
 		}
 		else if (valueTypeMarker == DATATYPE_LITERAL_MARKER) {
 			String label = readString(dataIn);
-			URI datatype = (URI)readValue(dataIn);
+			IRI datatype = (IRI)readValue(dataIn);
 			return store.getValueFactory().createLiteral(label, datatype);
 		}
 		else {

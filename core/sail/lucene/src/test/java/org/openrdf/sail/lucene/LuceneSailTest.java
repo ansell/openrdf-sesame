@@ -40,10 +40,10 @@ import org.apache.lucene.util.Version;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -60,27 +60,27 @@ public class LuceneSailTest extends TestCase {
 
 	public static final String QUERY_STRING;
 
-	public static final URI SUBJECT_1 = new URIImpl("urn:subject1");
+	public static final IRI SUBJECT_1 = new IRIImpl("urn:subject1");
 
-	public static final URI SUBJECT_2 = new URIImpl("urn:subject2");
+	public static final IRI SUBJECT_2 = new IRIImpl("urn:subject2");
 
-	public static final URI SUBJECT_3 = new URIImpl("urn:subject3");
+	public static final IRI SUBJECT_3 = new IRIImpl("urn:subject3");
 
-	public static final URI SUBJECT_4 = new URIImpl("urn:subject4");
+	public static final IRI SUBJECT_4 = new IRIImpl("urn:subject4");
 
-	public static final URI SUBJECT_5 = new URIImpl("urn:subject5");
+	public static final IRI SUBJECT_5 = new IRIImpl("urn:subject5");
 
-	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
+	public static final IRI CONTEXT_1 = new IRIImpl("urn:context1");
 
-	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
+	public static final IRI CONTEXT_2 = new IRIImpl("urn:context2");
 
-	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
+	public static final IRI CONTEXT_3 = new IRIImpl("urn:context3");
 
-	public static final URI PREDICATE_1 = new URIImpl("urn:predicate1");
+	public static final IRI PREDICATE_1 = new IRIImpl("urn:predicate1");
 
-	public static final URI PREDICATE_2 = new URIImpl("urn:predicate2");
+	public static final IRI PREDICATE_2 = new IRIImpl("urn:predicate2");
 
-	public static final URI PREDICATE_3 = new URIImpl("urn:predicate3");
+	public static final IRI PREDICATE_3 = new IRIImpl("urn:predicate3");
 
 	protected LuceneSail sail;
 
@@ -169,23 +169,23 @@ public class LuceneSailTest extends TestCase {
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		ArrayList<URI> uris = new ArrayList<URI>();
+		ArrayList<IRI> uris = new ArrayList<IRI>();
 
 		BindingSet bindings = null;
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
+		uris.add((IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
+		uris.add((IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
+		uris.add((IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertFalse(result.hasNext());
@@ -219,13 +219,13 @@ public class LuceneSailTest extends TestCase {
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + (IRI)bindings.getValue("Resource") + ">, " + "<" + (IRI)bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + (IRI)bindings.getValue("Resource") + ">, " + "<" + (IRI)bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
@@ -256,8 +256,8 @@ public class LuceneSailTest extends TestCase {
 		// check the results
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_3, (URI)bindings.getValue("Resource"));
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Matching"));
+		assertEquals(SUBJECT_3, (IRI)bindings.getValue("Resource"));
+		assertEquals(SUBJECT_1, (IRI)bindings.getValue("Matching"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertFalse(result.hasNext());
@@ -572,7 +572,7 @@ public class LuceneSailTest extends TestCase {
 
 		// the first result is subject 1 and has a score
 		int results = 0;
-		Set<URI> expectedSubject = new HashSet<URI>();
+		Set<IRI> expectedSubject = new HashSet<IRI>();
 		expectedSubject.add(SUBJECT_1);
 		expectedSubject.add(SUBJECT_2);
 		while (result.hasNext()) {
@@ -581,7 +581,7 @@ public class LuceneSailTest extends TestCase {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove((IRI)bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
@@ -802,7 +802,7 @@ public class LuceneSailTest extends TestCase {
 		// check that this subject and only this subject is returned
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Subject"));
+		assertEquals(SUBJECT_1, (IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 		assertFalse(result.hasNext());
 
@@ -1063,7 +1063,7 @@ public class LuceneSailTest extends TestCase {
 
 		// the first result is subject 1 and has a score
 		int results = 0;
-		Set<URI> expectedSubject = new HashSet<URI>();
+		Set<IRI> expectedSubject = new HashSet<IRI>();
 		expectedSubject.add(SUBJECT_1);
 		expectedSubject.add(SUBJECT_2);
 		expectedSubject.add(SUBJECT_3);
@@ -1073,7 +1073,7 @@ public class LuceneSailTest extends TestCase {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove((IRI)bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
@@ -1092,7 +1092,7 @@ public class LuceneSailTest extends TestCase {
 		testComlexQueryTwo();
 	}
 
-	protected void assertQueryResult(String literal, URI predicate, Resource resultUri)
+	protected void assertQueryResult(String literal, IRI predicate, Resource resultUri)
 		throws Exception
 	{
 		// fire a query for all subjects with a given term

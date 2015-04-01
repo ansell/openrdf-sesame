@@ -18,7 +18,7 @@ package org.openrdf.query;
 
 import java.util.Set;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 
 /**
  * Represents a dataset against which operations can be evaluated. A dataset
@@ -40,14 +40,14 @@ public interface Dataset {
 	 * the the store's default behaviour should be used, if not otherwise
 	 * indicated in the operation.
 	 */
-	public Set<URI> getDefaultRemoveGraphs();
+	public Set<IRI> getDefaultRemoveGraphs();
 
 	/**
 	 * Gets the default insert graph URI of this dataset. An null value indicates
 	 * that the store's default behaviour should be used, if not otherwise
 	 * indicated in the operation.
 	 */
-	public URI getDefaultInsertGraph();
+	public IRI getDefaultInsertGraph();
 
 	/**
 	 * Gets the default graph URIs of this dataset. An empty default graph set
@@ -56,7 +56,7 @@ public interface Dataset {
 	 * set are empty, that indicates that the store's default behaviour should be
 	 * used.
 	 */
-	public Set<URI> getDefaultGraphs();
+	public Set<IRI> getDefaultGraphs();
 
 	/**
 	 * Gets the named graph URIs of this dataset. An empty named graph set and a
@@ -64,5 +64,5 @@ public interface Dataset {
 	 * However, if both the default graph set and the named graph set are empty,
 	 * that indicates that the store's default behaviour should be used.
 	 */
-	public Set<URI> getNamedGraphs();
+	public Set<IRI> getNamedGraphs();
 }

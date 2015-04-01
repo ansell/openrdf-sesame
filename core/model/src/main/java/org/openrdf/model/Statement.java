@@ -39,7 +39,7 @@ public interface Statement extends Serializable {
 	 * 
 	 * @return The statement's predicate.
 	 */
-	public URI getPredicate();
+	public IRI getPredicate();
 
 	/**
 	 * Gets the object of this statement.

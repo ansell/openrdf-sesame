@@ -29,7 +29,7 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
@@ -382,7 +382,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 *         {@link RepositoryException} when an error when a problem occurs
 	 *         during retrieval.
 	 */
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException;
 
@@ -406,7 +406,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * @return true If a matching statement is in the repository in the specified
 	 *         context, false otherwise.
 	 */
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws RepositoryException;
 
@@ -452,7 +452,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * @throws RDFHandlerException
 	 *         If the handler encounters an unrecoverable error.
 	 */
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException;
 
@@ -794,7 +794,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 *         If the data could not be added to the repository, for example
 	 *         because the repository is not writable.
 	 */
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException;
 
 	/**
@@ -880,7 +880,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 *         If the statement(s) could not be removed from the repository, for
 	 *         example because the repository is not writable.
 	 */
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void remove(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException;
 
 	/**

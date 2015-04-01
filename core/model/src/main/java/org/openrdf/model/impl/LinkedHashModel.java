@@ -33,7 +33,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.PatternIterator;
 
@@ -161,7 +161,7 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		if (subj == null || pred == null || obj == null)
 			throw new UnsupportedOperationException("Incomplete statement");
 		Value[] ctxs = notNull(contexts);
@@ -171,7 +171,7 @@ public class LinkedHashModel extends AbstractModel {
 		boolean changed = false;
 		for (Value ctx : ctxs) {
 			ModelNode<Resource> s = asNode(subj);
-			ModelNode<URI> p = asNode(pred);
+			ModelNode<IRI> p = asNode(pred);
 			ModelNode<Value> o = asNode(obj);
 			ModelNode<Resource> c = asNode((Resource)ctx);
 			ModelStatement st = new ModelStatement(s, p, o, c);
@@ -213,12 +213,12 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean contains(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		return matchPattern(subj, pred, obj, contexts).hasNext();
 	}
 
 	@Override
-	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean remove(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		Iterator iter = matchPattern(subj, pred, obj, contexts);
 		if (!iter.hasNext()) {
 			return false;
@@ -231,7 +231,7 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public Model filter(final Resource subj, final URI pred, final Value obj, final Resource... contexts) {
+	public Model filter(final Resource subj, final IRI pred, final Value obj, final Resource... contexts) {
 		return new FilteredModel(this, subj, pred, obj, contexts) {
 
 			private static final long serialVersionUID = 396293781006255959L;
@@ -242,7 +242,7 @@ public class LinkedHashModel extends AbstractModel {
 			}
 
 			@Override
-			protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
+			protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, IRI pred,
 					Value obj, Resource... contexts)
 			{
 				LinkedHashModel.this.removeTermIteration(iter, subj, pred, obj, contexts);
@@ -251,7 +251,7 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public void removeTermIteration(Iterator iterator, Resource subj, URI pred, Value obj,
+	public void removeTermIteration(Iterator iterator, Resource subj, IRI pred, Value obj,
 			Resource... contexts)
 	{
 		Set<ModelStatement> owner = ((ModelIterator)iterator).getOwner();
@@ -377,13 +377,13 @@ public class LinkedHashModel extends AbstractModel {
 
 		ModelNode<Resource> subj;
 
-		ModelNode<URI> pred;
+		ModelNode<IRI> pred;
 
 		ModelNode<Value> obj;
 
 		ModelNode<Resource> ctx;
 
-		public ModelStatement(ModelNode<Resource> subj, ModelNode<URI> pred, ModelNode<Value> obj,
+		public ModelStatement(ModelNode<Resource> subj, ModelNode<IRI> pred, ModelNode<Value> obj,
 				ModelNode<Resource> ctx)
 		{
 			super(subj.getValue(), pred.getValue(), obj.getValue(), ctx.getValue());
@@ -403,7 +403,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 
 		@Override
-		public URI getPredicate() {
+		public IRI getPredicate() {
 			return pred.getValue();
 		}
 
@@ -439,7 +439,7 @@ public class LinkedHashModel extends AbstractModel {
 		// Write in all elements
 		for (ModelStatement st : statements) {
 			Resource subj = st.getSubject();
-			URI pred = st.getPredicate();
+			IRI pred = st.getPredicate();
 			Value obj = st.getObject();
 			Resource ctx = st.getContext();
 			s.writeObject(new ContextStatementImpl(subj, pred, obj, ctx));
@@ -462,7 +462,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private ModelIterator matchPattern(Resource subj, URI pred, Value obj, Resource... contexts) {
+	private ModelIterator matchPattern(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		Set<ModelStatement> set = choose(subj, pred, obj, contexts);
 		Iterator<ModelStatement> it = set.iterator();
 		Iterator<ModelStatement> iter;
@@ -470,7 +470,7 @@ public class LinkedHashModel extends AbstractModel {
 		return new ModelIterator(iter, set);
 	}
 
-	private Set<ModelStatement> choose(Resource subj, URI pred, Value obj, Resource... contexts) {
+	private Set<ModelStatement> choose(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		contexts = notNull(contexts);
 		Set<ModelStatement> s = null;
 		Set<ModelStatement> p = null;
@@ -510,7 +510,7 @@ public class LinkedHashModel extends AbstractModel {
 
 	private Iterator find(Statement st) {
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 		Resource ctx = st.getContext();
 		return matchPattern(subj, pred, obj, ctx);

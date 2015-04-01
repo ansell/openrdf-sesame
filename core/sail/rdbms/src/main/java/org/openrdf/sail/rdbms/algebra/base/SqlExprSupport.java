@@ -18,7 +18,7 @@ package org.openrdf.sail.rdbms.algebra.base;
 
 import java.sql.Types;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.Compare.CompareOp;
@@ -200,7 +200,7 @@ public class SqlExprSupport {
 		return new StringValue(str);
 	}
 
-	public static SqlExpr str(URI uri) {
+	public static SqlExpr str(IRI uri) {
 		return new StringValue(uri.stringValue());
 	}
 

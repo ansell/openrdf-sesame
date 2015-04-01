@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.IRIImpl;
 import org.openrdf.model.vocabulary.RDF;
 
 import junit.framework.TestCase;
 
 /**
- * Unit tests for class {@link MemURI}.
+ * Unit tests for class {@link MemIRI}.
  * 
  * @author Arjohn Kampman
  */
@@ -45,8 +45,8 @@ public class MemURITest extends TestCase {
 	private void compareURIs(String uri)
 		throws Exception
 	{
-		URIImpl uriImpl = new URIImpl(uri);
-		MemURI memURI = new MemURI(this, uriImpl.getNamespace(), uriImpl.getLocalName());
+		IRIImpl uriImpl = new IRIImpl(uri);
+		MemIRI memURI = new MemIRI(this, uriImpl.getNamespace(), uriImpl.getLocalName());
 
 		assertEquals("MemURI not equal to URIImpl for: " + uri, uriImpl, memURI);
 		assertEquals("MemURI has different hash code than URIImpl for: " + uri, uriImpl.hashCode(),

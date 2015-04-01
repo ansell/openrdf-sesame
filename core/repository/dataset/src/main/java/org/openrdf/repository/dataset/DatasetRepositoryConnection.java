@@ -19,7 +19,7 @@ package org.openrdf.repository.dataset;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
@@ -83,10 +83,10 @@ public class DatasetRepositoryConnection extends RepositoryConnectionWrapper {
 			if (datasets == null) {
 				return;
 			}
-			for (URI dataset : datasets.getDefaultGraphs()) {
+			for (IRI dataset : datasets.getDefaultGraphs()) {
 				repository.loadDataset(new URL(dataset.toString()), dataset, getParserConfig());
 			}
-			for (URI dataset : datasets.getNamedGraphs()) {
+			for (IRI dataset : datasets.getNamedGraphs()) {
 				repository.loadDataset(new URL(dataset.toString()), dataset, getParserConfig());
 			}
 		}

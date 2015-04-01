@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
@@ -78,7 +78,7 @@ class ValueDecoder {
 					}
 					else {
 						if (value.charAt(0) == '<' && value.endsWith(">")) {
-							result = factory.createURI(value.substring(1, value.length() - 1));
+							result = factory.createIRI(value.substring(1, value.length() - 1));
 						}
 						else {
 							if (value.charAt(0) == '"') {
@@ -108,7 +108,7 @@ class ValueDecoder {
 		if (namespace == null) {
 			throw new BadRequestException("Undefined prefix: " + value);
 		}
-		return factory.createURI(namespace, localPart);
+		return factory.createIRI(namespace, localPart);
 	}
 
 	private Value parseLiteral(String value)
@@ -123,8 +123,8 @@ class ValueDecoder {
 			String rest = value.substring(label.length() + 2);
 			if (rest.startsWith("^^")) {
 				Value datatype = decodeValue(rest.substring(2));
-				if (datatype instanceof URI) {
-					result = factory.createLiteral(label, (URI)datatype);
+				if (datatype instanceof IRI) {
+					result = factory.createLiteral(label, (IRI)datatype);
 				}
 				else {
 					throw new BadRequestException("Malformed datatype: " + value);

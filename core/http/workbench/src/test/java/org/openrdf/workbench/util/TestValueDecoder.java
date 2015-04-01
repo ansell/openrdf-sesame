@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -78,8 +78,8 @@ public class TestValueDecoder {
 		throws BadRequestException
 	{
 		Value value = decoder.decodeValue("rdfs:label");
-		assertThat(value, is(instanceOf(URI.class)));
-		assertThat((URI)value, is(equalTo(RDFS.LABEL)));
+		assertThat(value, is(instanceOf(IRI.class)));
+		assertThat((IRI)value, is(equalTo(RDFS.LABEL)));
 	}
 
 	@Test

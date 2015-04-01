@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
@@ -277,8 +277,8 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 	private void writeValue(Value value)
 		throws RDFHandlerException, IOException
 	{
-		if (value instanceof URI) {
-			writeURI((URI)value);
+		if (value instanceof IRI) {
+			writeURI((IRI)value);
 		}
 		else if (value instanceof BNode) {
 			writeBNode((BNode)value);
@@ -291,7 +291,7 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 		}
 	}
 
-	private void writeURI(URI uri)
+	private void writeURI(IRI uri)
 		throws IOException
 	{
 		out.writeByte(URI_VALUE);
@@ -309,7 +309,7 @@ public class BinaryRDFWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		String label = literal.getLabel();
-		URI datatype = literal.getDatatype();
+		IRI datatype = literal.getDatatype();
 
 		if (Literals.isLanguageLiteral(literal)) {
 			out.writeByte(LANG_LITERAL_VALUE);

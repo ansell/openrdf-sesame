@@ -17,7 +17,7 @@
 package org.openrdf.rio.datatypes;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.LiteralUtilException;
@@ -32,7 +32,7 @@ import org.openrdf.rio.DatatypeHandler;
  */
 public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 
-	private static final URI VIRTRDF_GEOMETRY = ValueFactoryImpl.getInstance().createURI(
+	private static final IRI VIRTRDF_GEOMETRY = ValueFactoryImpl.getInstance().createIRI(
 			"http://www.openlinksw.com/schemas/virtrdf#", "Geometry");
 
 	private static final String POINT_START = "POINT(";
@@ -48,7 +48,7 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 	}
 
 	@Override
-	public boolean isRecognizedDatatype(URI datatypeUri) {
+	public boolean isRecognizedDatatype(IRI datatypeUri) {
 		if (datatypeUri == null) {
 			throw new NullPointerException("Datatype URI cannot be null");
 		}
@@ -57,7 +57,7 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 	}
 
 	@Override
-	public boolean verifyDatatype(String literalValue, URI datatypeUri)
+	public boolean verifyDatatype(String literalValue, IRI datatypeUri)
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri)) {
@@ -68,7 +68,7 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 	}
 
 	@Override
-	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
+	public Literal normalizeDatatype(String literalValue, IRI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException
 	{
 		if (isRecognizedDatatype(datatypeUri) && verifyDatatypeInternal(literalValue, datatypeUri)) {
@@ -84,7 +84,7 @@ public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 		return DatatypeHandler.VIRTUOSOGEOMETRY;
 	}
 
-	private boolean verifyDatatypeInternal(String literalValue, URI datatypeUri)
+	private boolean verifyDatatypeInternal(String literalValue, IRI datatypeUri)
 		throws LiteralUtilException
 	{
 		if (literalValue == null) {
