@@ -594,7 +594,6 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If there is more than one unique object literal in the model.
 	 */
-	// FIXME how is this different from objectLiteral() ? 
 	public default Optional<Literal> anObjectLiteral()
 		throws ModelException
 	{
@@ -623,7 +622,6 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If there is more than one unique object resource in the model.
 	 */
 
-	// FIXME how is this different from objectResource() ?
 	public default Optional<Resource> anObjectResource()
 		throws ModelException
 	{
@@ -650,7 +648,6 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If there is more than one unique object URI in the model.
 	 */
-	// FIXME how is this different from objectIRI() ?
 	public default Optional<IRI> anObjectURI()
 		throws ModelException
 	{
