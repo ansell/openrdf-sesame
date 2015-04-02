@@ -37,6 +37,8 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.FieldInfo;
@@ -45,8 +47,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -59,6 +59,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,7 +188,7 @@ public class LuceneIndex {
 		// do some initialization for new indices
 		if (!DirectoryReader.indexExists(directory)) {
 			logger.info("creating new Lucene index in directory {}", directory);
-			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 			indexWriterConfig.setOpenMode(OpenMode.CREATE);
 			IndexWriter writer = new IndexWriter(directory, indexWriterConfig);
 			writer.close();
@@ -237,7 +238,7 @@ public class LuceneIndex {
 	{
 
 		if (indexWriter == null) {
-			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 			indexWriter = new IndexWriter(directory, indexWriterConfig);
 		}
 		return indexWriter;
@@ -413,10 +414,10 @@ public class LuceneIndex {
 		throws IOException
 	{
 		IndexReader reader = getIndexReader();
-		List<LeafReaderContext> leaves = reader.leaves();
+		List<AtomicReaderContext> leaves = reader.leaves();
 		int size = leaves.size();
 		for(int i=0; i<size; i++) {
-			LeafReader lreader = leaves.get(i).reader();
+			AtomicReader lreader = leaves.get(i).reader();
 			Document document = getDocument(lreader, idTerm);
 			if(document != null)
 			{
@@ -427,7 +428,7 @@ public class LuceneIndex {
 		return null;
 	}
 
-	private static Document getDocument(LeafReader reader, Term term) throws IOException {
+	private static Document getDocument(AtomicReader reader, Term term) throws IOException {
 		DocsEnum docs = reader.termDocsEnum(term);
 		if(docs != null)
 		{
@@ -470,17 +471,17 @@ public class LuceneIndex {
 		List<Document> result = new ArrayList<Document>();
 
 		IndexReader reader = getIndexReader();
-		List<LeafReaderContext> leaves = reader.leaves();
+		List<AtomicReaderContext> leaves = reader.leaves();
 		int size = leaves.size();
 		for(int i=0; i<size; i++) {
-			LeafReader lreader = leaves.get(i).reader();
+			AtomicReader lreader = leaves.get(i).reader();
 			addDocuments(lreader, uriTerm, result);
 		}
 
 		return result;
 	}
 
-	private static void addDocuments(LeafReader reader, Term term, Collection<Document> documents) throws IOException {
+	private static void addDocuments(AtomicReader reader, Term term, Collection<Document> documents) throws IOException {
 		DocsEnum docs = reader.termDocsEnum(term);
 		if(docs != null)
 		{
@@ -1302,7 +1303,7 @@ public class LuceneIndex {
 			indexWriter.close();
 
 		// crate new writer
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 		indexWriterConfig.setOpenMode(OpenMode.CREATE);
 		indexWriter = new IndexWriter(directory, indexWriterConfig);
 		indexWriter.close();
@@ -1317,7 +1318,7 @@ public class LuceneIndex {
 	private static boolean isDeleted(IndexReader reader, int docId)
 	{
 		if(reader.hasDeletions()) {
-			List<LeafReaderContext> leaves = reader.leaves();
+			List<AtomicReaderContext> leaves = reader.leaves();
 			int size = leaves.size();
 			for(int i=0; i<size; i++) {
 				Bits liveDocs = leaves.get(i).reader().getLiveDocs();
