@@ -114,6 +114,9 @@ public class LiteralImpl implements Literal {
 		else if (datatype == null) {
 			setDatatype(XMLSchema.STRING);
 		}
+		else if (RDF.LANGSTRING.equals(datatype)) {
+			throw new NullPointerException("Language tagged literals cannot have a null language tag");
+		}
 		else {
 			setDatatype(datatype);
 		}
@@ -136,6 +139,9 @@ public class LiteralImpl implements Literal {
 	}
 
 	protected void setLanguage(String language) {
+		if(language == null) {
+			throw new NullPointerException("Language tagged literals cannot have a null language tag");
+		}
 		this.language = language;
 		setDatatype(RDF.LANGSTRING);
 	}
