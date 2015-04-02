@@ -19,16 +19,14 @@ package org.openrdf.model;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.model.util.ModelException;
 
 /**
  * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s
- * with predictable iteration order. Model is a feature-rich extension of the
- * basic {@link Graph} interface.
+ * with predictable iteration order.
  * <p>
  * Additional utility functionality for working with Model objects is available
  * in the {@link org.openrdf.model.util.Models Models} utility class.
@@ -37,6 +35,7 @@ import org.openrdf.model.util.ModelException;
  * @author James Leigh
  * @see org.openrdf.model.util.Models the Models utility class
  */
+@SuppressWarnings("deprecation")
 public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
@@ -82,7 +81,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	public default Optional<Namespace> setNamespace(String prefix, String name) {
 		Optional<Namespace> result = getNamespace(prefix);
 		if (!result.isPresent() || !result.get().getName().equals(name)) {
-			result = Optional.of(new NamespaceImpl(prefix, name));
+			result = Optional.of(new SimpleNamespace(prefix, name));
 			setNamespace(result.get());
 		}
 		return result;

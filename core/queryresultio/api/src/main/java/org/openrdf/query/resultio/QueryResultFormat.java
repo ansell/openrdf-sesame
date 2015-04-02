@@ -22,7 +22,7 @@ import java.util.Collection;
 import info.aduna.lang.FileFormat;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * The base class of all file formats that represent the results of queries.
@@ -37,26 +37,26 @@ public class QueryResultFormat extends FileFormat {
 	 * Local constant reused across boolean and tuple formats for SPARQL Results
 	 * XML.
 	 */
-	protected static final IRI SPARQL_RESULTS_XML_URI = ValueFactoryImpl.getInstance().createIRI(
+	protected static final IRI SPARQL_RESULTS_XML_URI = SimpleValueFactory.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_XML");
 
 	/**
 	 * Local constant reused across boolean and tuple formats for SPARQL Results
 	 * JSON.
 	 */
-	protected static final IRI SPARQL_RESULTS_JSON_URI = ValueFactoryImpl.getInstance().createIRI(
+	protected static final IRI SPARQL_RESULTS_JSON_URI = SimpleValueFactory.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_JSON");
 
 	/**
 	 * Local constant for tuple formats for SPARQL Results CSV.
 	 */
-	protected static final IRI SPARQL_RESULTS_CSV_URI = ValueFactoryImpl.getInstance().createIRI(
+	protected static final IRI SPARQL_RESULTS_CSV_URI = SimpleValueFactory.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_CSV");
 
 	/**
 	 * Local constant for tuple formats for SPARQL Results TSV.
 	 */
-	protected static final IRI SPARQL_RESULTS_TSV_URI = ValueFactoryImpl.getInstance().createIRI(
+	protected static final IRI SPARQL_RESULTS_TSV_URI = SimpleValueFactory.getInstance().createIRI(
 			"http://www.w3.org/ns/formats/SPARQL_Results_TSV");
 
 	/**

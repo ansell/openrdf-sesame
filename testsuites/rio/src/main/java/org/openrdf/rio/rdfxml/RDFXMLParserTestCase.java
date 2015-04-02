@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
@@ -285,7 +285,7 @@ public abstract class RDFXMLParserTestCase {
 
 	} // end inner class NegativeParserTest
 
-	private static class CanonXMLValueFactory extends ValueFactoryImpl {
+	private static class CanonXMLValueFactory extends SimpleValueFactory {
 
 		private Canonicalizer c14n;
 

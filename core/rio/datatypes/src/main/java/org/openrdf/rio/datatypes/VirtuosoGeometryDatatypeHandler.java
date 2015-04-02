@@ -19,7 +19,7 @@ package org.openrdf.rio.datatypes;
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.rio.DatatypeHandler;
 
@@ -32,7 +32,7 @@ import org.openrdf.rio.DatatypeHandler;
  */
 public class VirtuosoGeometryDatatypeHandler implements DatatypeHandler {
 
-	private static final IRI VIRTRDF_GEOMETRY = ValueFactoryImpl.getInstance().createIRI(
+	private static final IRI VIRTRDF_GEOMETRY = SimpleValueFactory.getInstance().createIRI(
 			"http://www.openlinksw.com/schemas/virtrdf#", "Geometry");
 
 	private static final String POINT_START = "POINT(";

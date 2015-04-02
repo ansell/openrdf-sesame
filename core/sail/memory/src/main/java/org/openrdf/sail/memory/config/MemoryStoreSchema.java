@@ -18,7 +18,7 @@ package org.openrdf.sail.memory.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -39,7 +39,7 @@ public class MemoryStoreSchema {
 	public final static IRI SYNC_DELAY;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		PERSIST = factory.createIRI(NAMESPACE, "persist");
 		SYNC_DELAY = factory.createIRI(NAMESPACE, "syncDelay");
 	}

@@ -31,7 +31,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.ContextStatement;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -369,7 +369,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 				protected Statement convert(Statement st) {
 					if (st.getContext() == null)
-						return new ContextStatementImpl(st.getSubject(), st.getPredicate(), st.getObject(),
+						return new ContextStatement(st.getSubject(), st.getPredicate(), st.getObject(),
 								insertContext);
 					return st;
 				}
@@ -784,7 +784,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 				protected Statement convert(Statement st) {
 					if (st.getContext() == null)
-						return new ContextStatementImpl(st.getSubject(), st.getPredicate(), st.getObject(),
+						return new ContextStatement(st.getSubject(), st.getPredicate(), st.getObject(),
 								removeContexts[0]);
 					return st;
 				}

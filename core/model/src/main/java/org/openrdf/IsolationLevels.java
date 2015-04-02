@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.SESAME;
 
 /**
@@ -139,7 +139,7 @@ public enum IsolationLevels implements IsolationLevel {
 	}
 
 	public IRI getURI() {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 		return f.createIRI(SESAME.NAMESPACE, this.name());
 	}
 }

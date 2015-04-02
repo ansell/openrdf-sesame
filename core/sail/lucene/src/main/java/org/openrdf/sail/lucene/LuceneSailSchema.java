@@ -18,7 +18,7 @@ package org.openrdf.sail.lucene;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * LuceneSailSchema defines predicates that can be used for expressing a Lucene
@@ -41,7 +41,7 @@ public class LuceneSailSchema {
 	public static final IRI MATCHES;
 
 	static {
-		ValueFactory factory = new ValueFactoryImpl(); // compatible with beta4:
+		ValueFactory factory = new SimpleValueFactory(); // compatible with beta4:
 																		// creating a new factory
 		LUCENE_QUERY = factory.createIRI(NAMESPACE + "LuceneQuery");
 		SCORE = factory.createIRI(NAMESPACE + "score");

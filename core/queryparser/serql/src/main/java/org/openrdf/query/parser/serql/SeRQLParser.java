@@ -20,7 +20,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedGraphQuery;
@@ -57,7 +57,7 @@ public class SeRQLParser implements QueryParser {
 
 			// TODO: check use of unbound variables?
 
-			TupleExpr tupleExpr = QueryModelBuilder.buildQueryModel(qc, new ValueFactoryImpl());
+			TupleExpr tupleExpr = QueryModelBuilder.buildQueryModel(qc, new SimpleValueFactory());
 
 			ASTQuery queryNode = qc.getQuery();
 			ParsedQuery query;

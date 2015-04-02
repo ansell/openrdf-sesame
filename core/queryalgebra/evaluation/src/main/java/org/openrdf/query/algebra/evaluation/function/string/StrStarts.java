@@ -21,7 +21,7 @@ import javax.management.Query;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.impl.BooleanLiteral;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -59,7 +59,7 @@ public class StrStarts implements Function {
 				String leftLexVal = leftLit.getLabel();
 				String rightLexVal = rightLit.getLabel();
 
-				return BooleanLiteralImpl.valueOf(leftLexVal.startsWith(rightLexVal));
+				return BooleanLiteral.valueOf(leftLexVal.startsWith(rightLexVal));
 			}
 			else {
 				throw new ValueExprEvaluationException("incompatible operands for STRSTARTS function");

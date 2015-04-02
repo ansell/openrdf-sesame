@@ -28,7 +28,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -53,7 +53,7 @@ public abstract class SparqlDatasetTest {
 
 	private DatasetImpl dataset;
 
-	private IRI graph1 = new IRIImpl("http://example.org/graph1");
+	private IRI graph1 = new SimpleIRI("http://example.org/graph1");
 
 	private IRI george;
 

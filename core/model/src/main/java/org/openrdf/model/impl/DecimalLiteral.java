@@ -23,30 +23,30 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * An extension of {@link LiteralImpl} that stores an integer value using a
- * {@link BigInteger} object.
+ * An extension of {@link SimpleLiteral} that stores an integer value using a
+ * {@link BigDecimal} object.
  * 
  * @author Arjohn Kampman
  */
-public class IntegerLiteralImpl extends LiteralImpl {
+public class DecimalLiteral extends SimpleLiteral {
 
-	private static final long serialVersionUID = 4199641304079427245L;
-
-	private final BigInteger value;
+	private static final long serialVersionUID = -3310213093222314380L;
+	
+	private final BigDecimal value;
 
 	/**
-	 * Creates an xsd:integer literal with the specified value.
+	 * Creates an xsd:decimal literal with the specified value.
 	 */
-	public IntegerLiteralImpl(BigInteger value) {
-		this(value, XMLSchema.INTEGER);
+	public DecimalLiteral(BigDecimal value) {
+		this(value, XMLSchema.DECIMAL);
 	}
 
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public IntegerLiteralImpl(BigInteger value, IRI datatype) {
-		// TODO: maybe IntegerLiteralImpl should not extend LiteralImpl?
-		super(value.toString(), datatype);
+	public DecimalLiteral(BigDecimal value, IRI datatype) {
+		// TODO: maybe DecimalLiteral should not extend SimpleLiteral?
+		super(value.toPlainString(), datatype);
 		this.value = value;
 	}
 
@@ -89,12 +89,12 @@ public class IntegerLiteralImpl extends LiteralImpl {
 	@Override
 	public BigInteger integerValue()
 	{
-		return value;
+		return value.toBigInteger();
 	}
 
 	@Override
 	public BigDecimal decimalValue()
 	{
-		return new BigDecimal(value);
+		return value;
 	}
 }

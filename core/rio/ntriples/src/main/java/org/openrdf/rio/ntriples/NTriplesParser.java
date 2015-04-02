@@ -33,7 +33,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -70,7 +70,7 @@ public class NTriplesParser extends RDFParserBase {
 	 *--------------*/
 
 	/**
-	 * Creates a new NTriplesParser that will use a {@link ValueFactoryImpl} to
+	 * Creates a new NTriplesParser that will use a {@link SimpleValueFactory} to
 	 * create object for resources, bNodes and literals.
 	 */
 	public NTriplesParser() {

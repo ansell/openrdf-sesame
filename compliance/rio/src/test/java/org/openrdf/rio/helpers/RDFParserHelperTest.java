@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
@@ -76,7 +76,7 @@ public class RDFParserHelperTest {
 		// Ensure that the set of non-fatal errors is empty by default
 		parserConfig.setNonFatalErrors(new HashSet<RioSetting<?>>());
 		errListener = new ParseErrorCollector();
-		valueFactory = new ValueFactoryImpl();
+		valueFactory = new SimpleValueFactory();
 	}
 
 	/**

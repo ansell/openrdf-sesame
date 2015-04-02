@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -37,7 +37,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class LiteralComparatorTest extends TestCase {
 
-	private ValueFactory vf = new ValueFactoryImpl();
+	private ValueFactory vf = new SimpleValueFactory();
 
 	private Literal one = vf.createLiteral(1);
 

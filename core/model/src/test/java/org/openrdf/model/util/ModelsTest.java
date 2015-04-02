@@ -26,7 +26,7 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -41,7 +41,7 @@ public class ModelsTest extends TestCase {
 
 	private Model model2;
 
-	private static ValueFactory VF = ValueFactoryImpl.getInstance();
+	private static ValueFactory VF = SimpleValueFactory.getInstance();
 
 	private IRI foo;
 
@@ -185,7 +185,7 @@ public class ModelsTest extends TestCase {
 			// fall through, expected
 		}
 
-		Value result = Models.anyObjectURI(model1);
+		Value result = Models.anyObjectIRI(model1);
 		assertNotNull(result);
 		assertEquals(foo, result);
 	}

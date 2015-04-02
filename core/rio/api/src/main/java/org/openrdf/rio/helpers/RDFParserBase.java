@@ -38,7 +38,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.ParserConfig;
@@ -135,11 +135,11 @@ public abstract class RDFParserBase implements RDFParser {
 	 *--------------*/
 
 	/**
-	 * Creates a new RDFParserBase that will use a {@link ValueFactoryImpl} to
+	 * Creates a new RDFParserBase that will use a {@link SimpleValueFactory} to
 	 * create RDF model objects.
 	 */
 	public RDFParserBase() {
-		this(new ValueFactoryImpl());
+		this(new SimpleValueFactory());
 	}
 
 	/**

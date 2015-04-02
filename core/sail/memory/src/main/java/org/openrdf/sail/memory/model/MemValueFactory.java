@@ -29,12 +29,12 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.IRIImpl;
-import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.impl.SimpleBNode;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.AbstractValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -46,7 +46,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
  * @author Arjohn Kampman
  * @author David Huynh
  */
-public class MemValueFactory extends ValueFactoryBase {
+public class MemValueFactory extends AbstractValueFactory {
 
 	/*------------*
 	 * Attributes *
@@ -352,7 +352,7 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	@Override
 	public synchronized IRI createIRI(String uri) {
-		IRI tempURI = new IRIImpl(uri);
+		IRI tempURI = new SimpleIRI(uri);
 		return getOrCreateMemURI(tempURI);
 	}
 
@@ -369,7 +369,7 @@ public class MemValueFactory extends ValueFactoryBase {
 			tempURI = new MemIRI(null, namespace, localName);
 		}
 		else {
-			tempURI = new IRIImpl(namespace + localName);
+			tempURI = new SimpleIRI(namespace + localName);
 		}
 
 		return getOrCreateMemURI(tempURI);
@@ -377,25 +377,25 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	@Override
 	public synchronized BNode createBNode(String nodeID) {
-		BNode tempBNode = new BNodeImpl(nodeID);
+		BNode tempBNode = new SimpleBNode(nodeID);
 		return getOrCreateMemBNode(tempBNode);
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value) {
-		Literal tempLiteral = new LiteralImpl(value, XMLSchema.STRING);
+		Literal tempLiteral = new SimpleLiteral(value, XMLSchema.STRING);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value, String language) {
-		Literal tempLiteral = new LiteralImpl(value, language);
+		Literal tempLiteral = new SimpleLiteral(value, language);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value, IRI datatype) {
-		Literal tempLiteral = new LiteralImpl(value, datatype);
+		Literal tempLiteral = new SimpleLiteral(value, datatype);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
@@ -437,16 +437,16 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	@Override
 	public Statement createStatement(Resource subject, IRI predicate, Value object) {
-		return new StatementImpl(subject, predicate, object);
+		return new SimpleStatement(subject, predicate, object);
 	}
 
 	@Override
 	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
 		if (context == null) {
-			return new StatementImpl(subject, predicate, object);
+			return new SimpleStatement(subject, predicate, object);
 		}
 		else {
-			return new ContextStatementImpl(subject, predicate, object, context);
+			return new ContextStatement(subject, predicate, object, context);
 		}
 	}
 }

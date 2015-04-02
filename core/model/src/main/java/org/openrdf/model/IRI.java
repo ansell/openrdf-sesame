@@ -22,10 +22,10 @@ package org.openrdf.model;
  * character set, IRIs may contain characters from the Universal Character Set
  * (Unicode/ISO 10646), including Chinese or Japanese kanji, Korean, Cyrillic
  * characters, and so forth. It is defined by RFC 3987.
- *  <p>
- *  An IRI can be split into
- * a namespace part and a local name part, which are derived from an IRI string
- * by splitting it in two using the following algorithm:
+ * <p>
+ * An IRI can be split into a namespace part and a local name part, which are
+ * derived from an IRI string by splitting it in two using the following
+ * algorithm:
  * <ul>
  * <li>Split after the first occurrence of the '#' character,
  * <li>If this fails, split after the last occurrence of the '/' character,
@@ -36,8 +36,11 @@ package org.openrdf.model;
  * implementation should check this upon object creation.
  * 
  * @see <a href="http://tools.ietf.org/html/rfc3987">RFC 3987</a>
+ * @since 4.0.0
+ * @author Jeen Broekstra
  */
-public interface IRI extends Resource {
+@SuppressWarnings("deprecation")
+public interface IRI extends URI, Resource {
 
 	/**
 	 * Returns the String-representation of this IRI.
@@ -47,7 +50,7 @@ public interface IRI extends Resource {
 	public String toString();
 
 	/**
-	 * Gets the namespace of this IRI. The namespace is defined as per the
+	 * Gets the namespace part of this IRI. The namespace is defined as per the
 	 * algorithm described in the class documentation.
 	 * 
 	 * @return The IRI's namespace.
@@ -55,7 +58,7 @@ public interface IRI extends Resource {
 	public String getNamespace();
 
 	/**
-	 * Gets the local name of this IRI. The local name is defined as per the
+	 * Gets the local name part of this IRI. The local name is defined as per the
 	 * algorithm described in the class documentation.
 	 * 
 	 * @return The IRI's local name.
@@ -74,7 +77,7 @@ public interface IRI extends Resource {
 	public boolean equals(Object o);
 
 	/**
-	 * The hash code of a IRI is defined as the hash code of its
+	 * The hash code of an IRI is defined as the hash code of its
 	 * String-representation: <tt>toString().hashCode</tt>.
 	 * 
 	 * @return A hash code for the IRI.

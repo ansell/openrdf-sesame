@@ -29,7 +29,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.MutableTupleQueryResult;
@@ -48,7 +48,7 @@ public class QueryResultsTest extends TestCase {
 	/** a stub GraphQueryResult, containing a number of duplicate statements */
 	private GraphQueryResult gqr;
 
-	private static ValueFactory VF = new ValueFactoryImpl();
+	private static ValueFactory VF = new SimpleValueFactory();
 
 	private List<String> twoBindingNames = Arrays.asList("a", "b");
 

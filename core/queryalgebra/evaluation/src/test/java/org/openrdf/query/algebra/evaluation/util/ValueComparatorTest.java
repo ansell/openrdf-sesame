@@ -26,7 +26,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -36,7 +36,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class ValueComparatorTest extends TestCase {
 
-	private ValueFactory vf = ValueFactoryImpl.getInstance();
+	private ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private BNode bnode1 = vf.createBNode();
 

@@ -41,7 +41,7 @@ import info.aduna.iteration.Iterations;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.IntegerLiteralImpl;
+import org.openrdf.model.impl.IntegerLiteral;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -257,7 +257,7 @@ public class QueryServlet extends TransformationServlet {
 				final String queryLn = req.getParameter(EDIT_PARAMS[0]);
 				final String query = getQueryText(req);
 				final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
-				final IntegerLiteralImpl limit = new IntegerLiteralImpl(new BigInteger(
+				final IntegerLiteral limit = new IntegerLiteral(new BigInteger(
 						req.getParameter(EDIT_PARAMS[3])));
 				builder.result(queryLn, query, infer, limit);
 				builder.end();

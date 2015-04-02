@@ -16,7 +16,7 @@
  */
 package org.openrdf.rio.turtle;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.EarlReport;
 
 /**
@@ -30,7 +30,7 @@ public class TurtleEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new TurtleParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/turtle/"));
+				SimpleValueFactory.getInstance().createIRI("http://www.w3.org/TR/turtle/"));
 	}
 
 }

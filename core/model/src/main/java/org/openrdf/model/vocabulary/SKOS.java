@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Vocabulary constants for the <a href="http://www.w3.org/2004/02/skos/">Simple
@@ -46,7 +46,7 @@ public class SKOS {
 	 * An immutable {@link Namespace} constant that represents the SKOS
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/* classes */
 
@@ -340,7 +340,7 @@ public class SKOS {
 	public static final IRI RELATED_MATCH;
 
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
 		CONCEPT = f.createIRI(NAMESPACE, "Concept");
 		CONCEPT_SCHEME = f.createIRI(NAMESPACE, "ConceptScheme");

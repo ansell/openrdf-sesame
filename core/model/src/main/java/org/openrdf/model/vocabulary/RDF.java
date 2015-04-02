@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for RDF primitives and for the RDF namespace.
@@ -41,7 +41,7 @@ public class RDF {
 	/**
 	 * An immutable {@link Namespace} constant that represents the RDF namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#type */
 	public final static IRI TYPE;
@@ -98,7 +98,7 @@ public class RDF {
 	public static final IRI HTML;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		TYPE = factory.createIRI(RDF.NAMESPACE, "type");
 		PROPERTY = factory.createIRI(RDF.NAMESPACE, "Property");
 		XMLLITERAL = factory.createIRI(RDF.NAMESPACE, "XMLLiteral");

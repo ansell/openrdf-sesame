@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
@@ -78,7 +78,7 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 	}
 
 	public ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 	public boolean isWritable()

@@ -35,8 +35,8 @@ import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 
 
 /**
@@ -45,16 +45,16 @@ import org.openrdf.model.impl.IRIImpl;
  */
 public class TransactionReaderTest {
 
-	private static final IRI bob = new IRIImpl("http://example.org/bob");
-	private static final IRI alice = new IRIImpl("http://example.org/alice");
-	private static final IRI knows = new IRIImpl("http://example.org/knows");
+	private static final IRI bob = new SimpleIRI("http://example.org/bob");
+	private static final IRI alice = new SimpleIRI("http://example.org/alice");
+	private static final IRI knows = new SimpleIRI("http://example.org/knows");
 	
 	private static final char ux0005 = 0x0005;
 	
-	private static final Literal controlCharText = new LiteralImpl("foobar." + ux0005 + " foo.");
+	private static final Literal controlCharText = new SimpleLiteral("foobar." + ux0005 + " foo.");
 	
-	private static final IRI context1 = new IRIImpl("http://example.org/context1");
-	private static final IRI context2 = new IRIImpl("http://example.org/context2");
+	private static final IRI context1 = new SimpleIRI("http://example.org/context1");
+	private static final IRI context2 = new SimpleIRI("http://example.org/context2");
 	
 	/**
 	 * @throws java.lang.Exception

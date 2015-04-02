@@ -41,8 +41,8 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -362,11 +362,11 @@ public class LuceneSail extends NotifyingSailWrapper {
 				indexedFieldsMapping = new HashMap<IRI, IRI>();
 				for (Object key : prop.keySet()) {
 					if (key.toString().startsWith("index.")) {
-						indexedFields.add(new IRIImpl(prop.getProperty(key.toString())));
+						indexedFields.add(new SimpleIRI(prop.getProperty(key.toString())));
 					}
 					else {
-						indexedFieldsMapping.put(new IRIImpl(key.toString()),
-								new IRIImpl(prop.getProperty(key.toString())));
+						indexedFieldsMapping.put(new SimpleIRI(key.toString()),
+								new SimpleIRI(prop.getProperty(key.toString())));
 					}
 				}
 			}
@@ -602,7 +602,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 			return null;
 
 		if (predicateChanged)
-			return new ContextStatementImpl(statement.getSubject(), p, statement.getObject(),
+			return new ContextStatement(statement.getSubject(), p, statement.getObject(),
 					statement.getContext());
 		else
 			return statement;

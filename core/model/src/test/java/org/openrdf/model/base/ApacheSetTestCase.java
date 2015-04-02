@@ -8,7 +8,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Extends the Apache Commons Collections test, {@link AbstractTestSet} to
@@ -16,7 +16,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public abstract class ApacheSetTestCase extends AbstractTestSet {
 
-	private ValueFactory vf = ValueFactoryImpl.getInstance();
+	private ValueFactory vf = SimpleValueFactory.getInstance();
 
 	public ApacheSetTestCase(String name) {
 		super(name);

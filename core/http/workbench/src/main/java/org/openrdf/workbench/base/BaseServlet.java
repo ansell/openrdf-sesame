@@ -35,7 +35,7 @@ import info.aduna.app.AppConfiguration;
 import info.aduna.app.AppVersion;
 import info.aduna.io.MavenUtil;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.QueryResultFormat;
@@ -291,7 +291,7 @@ public abstract class BaseServlet implements Servlet {
 			resultWriter.getWriterConfig().set(BasicWriterSettings.RDF_LANGSTRING_TO_LANG_LITERAL, true);
 		}
 
-		return new TupleResultBuilder(resultWriter, ValueFactoryImpl.getInstance());
+		return new TupleResultBuilder(resultWriter, SimpleValueFactory.getInstance());
 	}
 
 	protected QueryResultWriter checkJSONP(HttpServletRequest req, OutputStream outputStream)

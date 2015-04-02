@@ -12,7 +12,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -79,7 +79,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		}
 	}
 
-	IRI context = new IRIImpl("urn:test:context");
+	IRI context = new SimpleIRI("urn:test:context");
 
 	String queryString = "SELECT ?o WHERE { ?s ?p ?o}";
 

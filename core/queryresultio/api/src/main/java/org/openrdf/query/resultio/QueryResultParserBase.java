@@ -24,7 +24,7 @@ import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RioSetting;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Base class for {@link QueryResultParser}s offering common functionality for
@@ -54,10 +54,10 @@ public abstract class QueryResultParserBase implements QueryResultParser {
 
 	/**
 	 * Creates a new parser base that, by default, will use the global instance
-	 * of {@link ValueFactoryImpl} to create Value objects.
+	 * of {@link SimpleValueFactory} to create Value objects.
 	 */
 	public QueryResultParserBase() {
-		this(ValueFactoryImpl.getInstance());
+		this(SimpleValueFactory.getInstance());
 	}
 
 	/**

@@ -23,7 +23,7 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.openrdf.query.resultio.sparqlxml.SPARQLBooleanXMLWriter;
@@ -38,7 +38,7 @@ public class TestTupleResultBuilder {
 		throws Exception
 	{
 		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(
-				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
+				new ByteArrayOutputStream()), SimpleValueFactory.getInstance());
 		builder.start("test");
 		builder.namedResult("test", new URL("http://www.foo.org/bar#"));
 		builder.end();
@@ -49,7 +49,7 @@ public class TestTupleResultBuilder {
 		throws Exception
 	{
 		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLResultsJSONWriter(
-				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
+				new ByteArrayOutputStream()), SimpleValueFactory.getInstance());
 		try {
 			builder.namedResult("test", new URL("http://www.foo.org/bar#"));
 			fail("Did not receive expected exception for calling namedResult before start");
@@ -64,7 +64,7 @@ public class TestTupleResultBuilder {
 		throws Exception
 	{
 		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLBooleanXMLWriter(
-				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
+				new ByteArrayOutputStream()), SimpleValueFactory.getInstance());
 		builder.startBoolean();
 		builder.bool(true);
 		builder.endBoolean();
@@ -75,7 +75,7 @@ public class TestTupleResultBuilder {
 		throws Exception
 	{
 		TupleResultBuilder builder = new TupleResultBuilder(new SPARQLBooleanXMLWriter(
-				new ByteArrayOutputStream()), ValueFactoryImpl.getInstance());
+				new ByteArrayOutputStream()), SimpleValueFactory.getInstance());
 		try {
 			builder.start();
 			builder.bool(true);

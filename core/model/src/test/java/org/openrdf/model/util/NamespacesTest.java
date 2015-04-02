@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -79,7 +79,7 @@ public class NamespacesTest {
 	@Test
 	public final void testAsMapOne() {
 		Set<Namespace> input = new HashSet<Namespace>();
-		input.add(new NamespaceImpl(RDF.PREFIX, RDF.NAMESPACE));
+		input.add(new SimpleNamespace(RDF.PREFIX, RDF.NAMESPACE));
 
 		Map<String, String> map = Namespaces.asMap(input);
 
@@ -97,11 +97,11 @@ public class NamespacesTest {
 	@Test
 	public final void testAsMapMultiple() {
 		Set<Namespace> input = new HashSet<Namespace>();
-		input.add(new NamespaceImpl(RDF.PREFIX, RDF.NAMESPACE));
-		input.add(new NamespaceImpl(RDFS.PREFIX, RDFS.NAMESPACE));
-		input.add(new NamespaceImpl(DC.PREFIX, DC.NAMESPACE));
-		input.add(new NamespaceImpl(SKOS.PREFIX, SKOS.NAMESPACE));
-		input.add(new NamespaceImpl(SESAME.PREFIX, SESAME.NAMESPACE));
+		input.add(new SimpleNamespace(RDF.PREFIX, RDF.NAMESPACE));
+		input.add(new SimpleNamespace(RDFS.PREFIX, RDFS.NAMESPACE));
+		input.add(new SimpleNamespace(DC.PREFIX, DC.NAMESPACE));
+		input.add(new SimpleNamespace(SKOS.PREFIX, SKOS.NAMESPACE));
+		input.add(new SimpleNamespace(SESAME.PREFIX, SESAME.NAMESPACE));
 
 		Map<String, String> map = Namespaces.asMap(input);
 
@@ -133,7 +133,7 @@ public class NamespacesTest {
 		// Check no exceptions when calling clear on empty backing set
 		testMap.clear();
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 
 		assertFalse(testMap.isEmpty());
 		assertEquals(1, testMap.size());
@@ -157,7 +157,7 @@ public class NamespacesTest {
 		// Check no exceptions when calling containsKey on empty backing set
 		assertFalse(testMap.containsKey(testPrefix1));
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 
 		assertTrue(testMap.containsKey(testPrefix1));
 
@@ -179,7 +179,7 @@ public class NamespacesTest {
 		// Check no exceptions when calling containsKey on empty backing set
 		assertFalse(testMap.containsValue(testName1));
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 
 		assertTrue(testMap.containsValue(testName1));
 
@@ -203,7 +203,7 @@ public class NamespacesTest {
 		assertNotNull(entrySet1);
 		assertTrue(entrySet1.isEmpty());
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 
 		Set<Entry<String, String>> entrySet2 = testMap.entrySet();
 		assertNotNull(entrySet2);
@@ -232,7 +232,7 @@ public class NamespacesTest {
 		Map<String, String> testMap = Namespaces.wrap(testSet);
 		assertNull(testMap.get(testPrefix1));
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 		assertEquals(testName1, testMap.get(testPrefix1));
 
 		testSet.clear();
@@ -251,7 +251,7 @@ public class NamespacesTest {
 		Map<String, String> testMap = Namespaces.wrap(testSet);
 		assertTrue(testMap.isEmpty());
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 		assertFalse(testMap.isEmpty());
 
 		testSet.clear();
@@ -273,7 +273,7 @@ public class NamespacesTest {
 		assertNotNull(keySet1);
 		assertTrue(keySet1.isEmpty());
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 
 		Set<String> keySet2 = testMap.keySet();
 		assertNotNull(keySet2);
@@ -303,7 +303,7 @@ public class NamespacesTest {
 		String put1 = testMap.put(testPrefix1, testName1);
 		assertNull("Should have returned null from put on an empty backing set", put1);
 		assertEquals(1, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName1)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertTrue(testMap.containsValue(testName1));
 
@@ -311,7 +311,7 @@ public class NamespacesTest {
 		assertEquals(put2, testName1);
 		// Size should be one at this point as original should have been replaced.
 		assertEquals(1, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName2)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName2)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertFalse(testMap.containsValue(testName1));
 		assertTrue(testMap.containsValue(testName2));
@@ -327,7 +327,7 @@ public class NamespacesTest {
 		String put3 = testMap.put(testPrefix1, testName1);
 		assertNull("Should have returned null from put on an empty backing set", put3);
 		assertEquals(1, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName1)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertTrue(testMap.containsValue(testName1));
 	}
@@ -359,8 +359,8 @@ public class NamespacesTest {
 		assertEquals(2, testMap.size());
 		assertFalse(testSet.isEmpty());
 		assertEquals(2, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix2, testName2)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix2, testName2)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertTrue(testMap.containsValue(testName1));
 		assertTrue(testMap.containsKey(testPrefix2));
@@ -383,8 +383,8 @@ public class NamespacesTest {
 		assertEquals(2, testMap.size());
 		assertFalse(testSet.isEmpty());
 		assertEquals(2, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix2, testName2)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix2, testName2)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertTrue(testMap.containsValue(testName1));
 		assertTrue(testMap.containsKey(testPrefix2));
@@ -410,16 +410,16 @@ public class NamespacesTest {
 		assertFalse(testMap.containsValue(testName1));
 
 		// Directly add to Set, and then try to remove it using the Map
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 		assertFalse(testMap.isEmpty());
 		assertEquals(1, testMap.size());
 		assertFalse(testSet.isEmpty());
 		assertEquals(1, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName1)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertTrue(testMap.containsValue(testName1));
 
-		testSet.remove(new NamespaceImpl(testPrefix1, testName1));
+		testSet.remove(new SimpleNamespace(testPrefix1, testName1));
 
 		assertTrue(testMap.isEmpty());
 		assertEquals(0, testMap.size());
@@ -431,16 +431,16 @@ public class NamespacesTest {
 		testSet.clear();
 
 		// Try again after clear
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 		assertFalse(testMap.isEmpty());
 		assertEquals(1, testMap.size());
 		assertFalse(testSet.isEmpty());
 		assertEquals(1, testSet.size());
-		assertTrue(testSet.contains(new NamespaceImpl(testPrefix1, testName1)));
+		assertTrue(testSet.contains(new SimpleNamespace(testPrefix1, testName1)));
 		assertTrue(testMap.containsKey(testPrefix1));
 		assertTrue(testMap.containsValue(testName1));
 
-		testSet.remove(new NamespaceImpl(testPrefix1, testName1));
+		testSet.remove(new SimpleNamespace(testPrefix1, testName1));
 
 		assertTrue(testMap.isEmpty());
 		assertEquals(0, testMap.size());
@@ -465,7 +465,7 @@ public class NamespacesTest {
 		assertNotNull(values1);
 		assertTrue(values1.isEmpty());
 
-		testSet.add(new NamespaceImpl(testPrefix1, testName1));
+		testSet.add(new SimpleNamespace(testPrefix1, testName1));
 
 		Collection<String> values2 = testMap.values();
 		assertNotNull(values2);

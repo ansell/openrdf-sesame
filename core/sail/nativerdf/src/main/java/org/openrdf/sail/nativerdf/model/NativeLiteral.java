@@ -17,10 +17,10 @@
 package org.openrdf.sail.nativerdf.model;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.SimpleLiteral;
 import org.openrdf.sail.nativerdf.ValueStoreRevision;
 
-public class NativeLiteral extends LiteralImpl implements NativeValue {
+public class NativeLiteral extends SimpleLiteral implements NativeValue {
 
 	/*-----------*
 	 * Constants *

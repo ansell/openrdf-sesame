@@ -18,7 +18,7 @@ package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for DOAP primitives and for the DOAP namespace.
@@ -74,7 +74,7 @@ public class DOAP {
 	public final static IRI CREATED;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		PROJECT = factory.createIRI(DOAP.NAMESPACE, "Project");
 		VERSION = factory.createIRI(DOAP.NAMESPACE, "Version");
 

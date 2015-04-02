@@ -21,7 +21,7 @@ import org.openrdf.model.Namespace;
 /**
  * A default implementation of the {@link Namespace} interface.
  */
-public class NamespaceImpl implements Namespace {
+public class SimpleNamespace implements Namespace {
 
 	private static final long serialVersionUID = -5829768428912588171L;
 
@@ -44,14 +44,14 @@ public class NamespaceImpl implements Namespace {
 	 *--------------*/
 
 	/**
-	 * Creates a new NamespaceImpl object.
+	 * Creates a new Namespace object.
 	 * 
 	 * @param prefix
 	 *        The namespace's prefix.
 	 * @param name
 	 *        The namespace's name.
 	 */
-	public NamespaceImpl(String prefix, String name) {
+	public SimpleNamespace(String prefix, String name) {
 		setPrefix(prefix);
 		setName(name);
 	}

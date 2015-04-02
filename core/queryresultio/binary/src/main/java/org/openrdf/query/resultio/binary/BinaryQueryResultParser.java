@@ -53,7 +53,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
@@ -85,7 +85,7 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 
 	/**
 	 * Creates a new parser for the binary query result format that will use an
-	 * instance of {@link ValueFactoryImpl} to create Value objects.
+	 * instance of {@link SimpleValueFactory} to create Value objects.
 	 */
 	public BinaryQueryResultParser() {
 		super();

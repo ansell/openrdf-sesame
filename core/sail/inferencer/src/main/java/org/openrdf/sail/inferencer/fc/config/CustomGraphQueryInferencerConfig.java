@@ -32,7 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
@@ -168,7 +168,7 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 	public Resource export(Graph graph) {
 		Resource implNode = super.export(graph);
 		if (null != language) {
-			graph.add(implNode, QUERY_LANGUAGE, ValueFactoryImpl.getInstance().createLiteral(language.getName()));
+			graph.add(implNode, QUERY_LANGUAGE, SimpleValueFactory.getInstance().createLiteral(language.getName()));
 		}
 		addQueryNode(graph, implNode, RULE_QUERY, ruleQuery);
 		addQueryNode(graph, implNode, MATCHER_QUERY, matcherQuery);
@@ -199,7 +199,7 @@ public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplCo
 
 	private void addQueryNode(Graph graph, Resource implNode, IRI predicate, String queryText) {
 		if (null != queryText) {
-			ValueFactory factory = ValueFactoryImpl.getInstance();
+			ValueFactory factory = SimpleValueFactory.getInstance();
 			BNode queryNode = factory.createBNode();
 			graph.add(implNode, predicate, queryNode);
 			graph.add(queryNode, RDF.TYPE, SP.CONSTRUCT_CLASS);

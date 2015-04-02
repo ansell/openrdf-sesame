@@ -24,10 +24,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.SimpleLiteral;
 
 /**
- * Wraps a {@link LiteralImpl} providing an internal id and version.
+ * Wraps a {@link SimpleLiteral} providing an internal id and version.
  * 
  * @author James Leigh
  * 

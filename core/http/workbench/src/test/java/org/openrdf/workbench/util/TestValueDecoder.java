@@ -34,7 +34,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.repository.Repository;
@@ -60,7 +60,7 @@ public class TestValueDecoder {
 	public void setUp()
 		throws Exception
 	{
-		factory = new ValueFactoryImpl();
+		factory = new SimpleValueFactory();
 
 		// Build a mock repository instance that provides 'decoder' with all
 		// it would ever ask for a connection with an associated prefix-namespace

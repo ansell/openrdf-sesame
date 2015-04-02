@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -34,7 +34,7 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
  */
 public class QueryEvaluationUtilTest {
 
-	private ValueFactory f = ValueFactoryImpl.getInstance();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	private Literal arg1simple;
 

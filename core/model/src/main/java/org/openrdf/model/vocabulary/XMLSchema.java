@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for the standard <a href="http://www.w3.org/TR/xmlschema-2/">XML
@@ -47,7 +47,7 @@ public class XMLSchema {
 	 * An immutable {@link Namespace} constant that represents the XML Schema
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/*
 	 * Primitive datatypes
@@ -193,7 +193,7 @@ public class XMLSchema {
 	public final static IRI UNSIGNED_BYTE;
 
 	static {
-		ValueFactory factory = new ValueFactoryImpl();
+		ValueFactory factory = new SimpleValueFactory();
 
 		DURATION = factory.createIRI(XMLSchema.NAMESPACE, "duration");
 

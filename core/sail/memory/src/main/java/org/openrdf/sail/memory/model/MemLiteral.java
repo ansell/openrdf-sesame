@@ -17,7 +17,7 @@
 package org.openrdf.sail.memory.model;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.SimpleLiteral;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -25,7 +25,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
  * 
  * @author Arjohn Kampman
  */
-public class MemLiteral extends LiteralImpl implements MemValue {
+public class MemLiteral extends SimpleLiteral implements MemValue {
 
 	private static final long serialVersionUID = 4288477328829845024L;
 

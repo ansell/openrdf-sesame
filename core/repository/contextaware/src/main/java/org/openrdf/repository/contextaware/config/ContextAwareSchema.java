@@ -18,7 +18,7 @@ package org.openrdf.repository.contextaware.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * @author James Leigh
@@ -61,7 +61,7 @@ public class ContextAwareSchema {
 	public final static IRI INSERT_CONTEXT;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		INCLUDE_INFERRED = factory.createIRI(NAMESPACE, "includeInferred");
 		QUERY_LANGUAGE = factory.createIRI(NAMESPACE, "ql");
 		BASE_URI = factory.createIRI(NAMESPACE, "base");

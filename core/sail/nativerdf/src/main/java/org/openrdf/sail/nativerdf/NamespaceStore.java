@@ -31,7 +31,7 @@ import java.util.Map;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 
 /**
  * An in-memory store for namespace prefix information that uses a file for
@@ -46,7 +46,7 @@ import org.openrdf.model.impl.NamespaceImpl;
  * 
  * @author Arjohn Kampman
  */
-class NamespaceStore implements Iterable<NamespaceImpl> {
+class NamespaceStore implements Iterable<SimpleNamespace> {
 
 	/*-----------*
 	 * Constants *
@@ -78,7 +78,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	/**
 	 * Map storing namespace information by their prefix.
 	 */
-	private final Map<String, NamespaceImpl> namespacesMap;
+	private final Map<String, SimpleNamespace> namespacesMap;
 
 	/**
 	 * Flag indicating whether the contents of this NamespaceStore are different
@@ -95,7 +95,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	{
 		file = new File(dataDir, FILE_NAME);
 
-		namespacesMap = new LinkedHashMap<String, NamespaceImpl>(16);
+		namespacesMap = new LinkedHashMap<String, SimpleNamespace>(16);
 
 		if (file.exists()) {
 			readNamespacesFromFile();
@@ -114,7 +114,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 
 	public String getNamespace(String prefix) {
 		String result = null;
-		NamespaceImpl namespace = namespacesMap.get(prefix);
+		SimpleNamespace namespace = namespacesMap.get(prefix);
 		if (namespace != null) {
 			result = namespace.getName();
 		}
@@ -122,7 +122,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 	}
 
 	public void setNamespace(String prefix, String name) {
-		NamespaceImpl ns = namespacesMap.get(prefix);
+		SimpleNamespace ns = namespacesMap.get(prefix);
 
 		if (ns != null) {
 			if (!ns.getName().equals(name)) {
@@ -131,20 +131,20 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 			}
 		}
 		else {
-			namespacesMap.put(prefix, new NamespaceImpl(prefix, name));
+			namespacesMap.put(prefix, new SimpleNamespace(prefix, name));
 			contentsChanged = true;
 		}
 	}
 
 	public void removeNamespace(String prefix) {
-		NamespaceImpl ns = namespacesMap.remove(prefix);
+		SimpleNamespace ns = namespacesMap.remove(prefix);
 
 		if (ns != null) {
 			contentsChanged = true;
 		}
 	}
 
-	public Iterator<NamespaceImpl> iterator() {
+	public Iterator<SimpleNamespace> iterator() {
 		return namespacesMap.values().iterator();
 	}
 
@@ -218,7 +218,7 @@ class NamespaceStore implements Iterable<NamespaceImpl> {
 						String name = in.readUTF();
 						String prefix = in.readUTF();
 
-						NamespaceImpl ns = new NamespaceImpl(prefix, name);
+						SimpleNamespace ns = new SimpleNamespace(prefix, name);
 						namespacesMap.put(prefix, ns);
 					}
 					catch (EOFException e) {

@@ -34,7 +34,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.DOAP;
 import org.openrdf.model.vocabulary.EARL;
@@ -59,12 +59,12 @@ public class EarlReport {
 	/**
 	 * Helper variable for tests run by Peter Ansell
 	 */
-	public static final IRI ANSELL = ValueFactoryImpl.getInstance().createIRI("https://github.com/ansell");
+	public static final IRI ANSELL = SimpleValueFactory.getInstance().createIRI("https://github.com/ansell");
 
 	/**
 	 * Helper variable for tests run by Jeen Broekstra
 	 */
-	public static final IRI BROEKSTRA = ValueFactoryImpl.getInstance().createIRI(
+	public static final IRI BROEKSTRA = SimpleValueFactory.getInstance().createIRI(
 			"https://bitbucket.org/jeenbroekstra");
 
 	protected Repository earlRepository;

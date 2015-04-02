@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Namespace Sparql-service-description. Prefix:
@@ -46,7 +46,7 @@ public class SD {
 	 * An immutable {@link Namespace} constant that represents the SPARQL Service
 	 * Description namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/**
 	 * Aggregate
@@ -576,7 +576,7 @@ public class SD {
 	public static final IRI UNION_DEFAULT_GRAPH;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 
 		AGGREGATE = factory.createIRI(SD.NAMESPACE, "Aggregate");
 		AVAILBLE_GRAPHS = factory.createIRI(SD.NAMESPACE, "availableGraphs");

@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -64,7 +64,7 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 		throws Exception
 	{
 		parser = rdfParserFactory.getParser();
-		vf = ValueFactoryImpl.getInstance();
+		vf = SimpleValueFactory.getInstance();
 	}
 
 	@After

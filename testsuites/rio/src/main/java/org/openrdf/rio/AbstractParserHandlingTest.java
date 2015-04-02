@@ -34,7 +34,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.RDFS;
@@ -66,7 +66,7 @@ public abstract class AbstractParserHandlingTest {
 	/**
 	 * Test URI used for testing unknown datatype support.
 	 */
-	private static final IRI UNKNOWN_DATATYPE_URI = ValueFactoryImpl.getInstance().createIRI(
+	private static final IRI UNKNOWN_DATATYPE_URI = SimpleValueFactory.getInstance().createIRI(
 			"urn:test:unknowndatatype");
 
 	/**
@@ -103,9 +103,9 @@ public abstract class AbstractParserHandlingTest {
 	private static final String KNOWN_LANGUAGE_TAG = "en-AU";
 
 	/**
-	 * Fixed new instance of {@link ValueFactoryImpl} to isolate tests.
+	 * Fixed new instance of {@link SimpleValueFactory} to isolate tests.
 	 */
-	private final ValueFactory vf = new ValueFactoryImpl();
+	private final ValueFactory vf = new SimpleValueFactory();
 
 	private RDFParser testParser;
 

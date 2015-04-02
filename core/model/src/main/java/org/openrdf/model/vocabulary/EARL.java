@@ -18,7 +18,7 @@ package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for EARL primitives and for the EARL namespace.
@@ -82,7 +82,7 @@ public class EARL {
 	public final static IRI HEURISTIC;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		ASSERTOR = factory.createIRI(EARL.NAMESPACE, "Assertor");
 		ASSERTION = factory.createIRI(EARL.NAMESPACE, "Assertion");
 		ASSERTEDBY = factory.createIRI(EARL.NAMESPACE, "assertedBy");

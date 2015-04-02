@@ -31,8 +31,8 @@ import org.junit.Test;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.StatementCollector;
@@ -66,8 +66,8 @@ public class RDFXMLParserTest {
 		Statement stmt1 = iter.next(),
 				stmt2 = iter.next();
 
-		assertEquals(new IRIImpl("http://www.example.com/#"), stmt1.getSubject());
-		assertEquals(new IRIImpl("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
+		assertEquals(new SimpleIRI("http://www.example.com/#"), stmt1.getSubject());
+		assertEquals(new SimpleIRI("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
 
 		Resource res = (Resource) stmt1.getObject();
 
@@ -84,6 +84,6 @@ public class RDFXMLParserTest {
 
 		assertEquals(res, stmt2.getSubject());
 		assertEquals(DC.TITLE, stmt2.getPredicate());
-		assertEquals(new LiteralImpl("Empty File"), stmt2.getObject());
+		assertEquals(new SimpleLiteral("Empty File"), stmt2.getObject());
 	}
 }

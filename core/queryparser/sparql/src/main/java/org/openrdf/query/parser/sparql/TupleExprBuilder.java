@@ -31,7 +31,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.impl.BooleanLiteral;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
@@ -2662,7 +2662,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 0) {
-			result = new ValueConstant(BooleanLiteralImpl.FALSE);
+			result = new ValueConstant(BooleanLiteral.FALSE);
 		}
 		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);
@@ -2691,7 +2691,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		int listItemCount = node.jjtGetNumChildren();
 
 		if (listItemCount == 0) {
-			result = new ValueConstant(BooleanLiteralImpl.TRUE);
+			result = new ValueConstant(BooleanLiteral.TRUE);
 		}
 		else if (listItemCount == 1) {
 			ValueExpr arg = (ValueExpr)node.jjtGetChild(0).jjtAccept(this, null);

@@ -31,7 +31,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParserConfig;
@@ -70,7 +70,7 @@ public class CustomTurtleParserTest {
 	public void setUp()
 		throws Exception
 	{
-		vf = ValueFactoryImpl.getInstance();
+		vf = SimpleValueFactory.getInstance();
 		settingsNoVerifyLangTag = new ParserConfig();
 		settingsNoVerifyLangTag.set(BasicParserSettings.VERIFY_LANGUAGE_TAGS, false);
 		errors = new ParseErrorCollector();

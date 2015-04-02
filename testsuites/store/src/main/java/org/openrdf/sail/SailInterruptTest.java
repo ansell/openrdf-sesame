@@ -26,8 +26,8 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 
 /**
  * Tests thread interrupts on a Sail implementation.
@@ -110,9 +110,9 @@ public abstract class SailInterruptTest {
 	private void insertTestStatement(SailConnection connection, int seed)
 		throws SailException
 	{
-		IRI subj = new IRIImpl("http://test#s" + seed % 293);
-		IRI pred = new IRIImpl("http://test#p" + seed % 29);
-		Literal obj = new LiteralImpl(Integer.toString(seed % 2903));
+		IRI subj = new SimpleIRI("http://test#s" + seed % 293);
+		IRI pred = new SimpleIRI("http://test#p" + seed % 29);
+		Literal obj = new SimpleLiteral(Integer.toString(seed % 2903));
 		connection.addStatement(subj, pred, obj);
 	}
 

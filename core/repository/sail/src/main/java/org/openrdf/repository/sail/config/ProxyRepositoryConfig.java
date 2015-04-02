@@ -19,7 +19,7 @@ package org.openrdf.repository.sail.config;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -62,7 +62,7 @@ public class ProxyRepositoryConfig extends RepositoryImplConfigBase {
 			graph.add(
 					implNode,
 					ProxyRepositorySchema.PROXIED_ID,
-					ValueFactoryImpl.getInstance().createLiteral(
+					SimpleValueFactory.getInstance().createLiteral(
 							this.proxiedID));
 		}
 		return implNode;

@@ -30,7 +30,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.helpers.ContextStatementCollector;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
@@ -286,7 +286,7 @@ public class Rio {
 	public static Model parse(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, UnsupportedRDFormatException
 	{
-		return parse(in, baseURI, dataFormat, new ParserConfig(), ValueFactoryImpl.getInstance(),
+		return parse(in, baseURI, dataFormat, new ParserConfig(), SimpleValueFactory.getInstance(),
 				new ParseErrorLogger(), contexts);
 	}
 
@@ -320,7 +320,7 @@ public class Rio {
 	public static Model parse(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, UnsupportedRDFormatException
 	{
-		return parse(reader, baseURI, dataFormat, new ParserConfig(), ValueFactoryImpl.getInstance(),
+		return parse(reader, baseURI, dataFormat, new ParserConfig(), SimpleValueFactory.getInstance(),
 				new ParseErrorLogger(), contexts);
 	}
 

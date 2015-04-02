@@ -61,8 +61,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleBNode;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 
@@ -847,10 +847,10 @@ public class LuceneIndex {
 	 */
 	private Resource getResource(String idString) {
 		if (idString.startsWith(BNODE_ID_PREFIX)) {
-			return new BNodeImpl(idString.substring(BNODE_ID_PREFIX.length()));
+			return new SimpleBNode(idString.substring(BNODE_ID_PREFIX.length()));
 		}
 		else {
-			return new IRIImpl(idString);
+			return new SimpleIRI(idString);
 		}
 	}
 

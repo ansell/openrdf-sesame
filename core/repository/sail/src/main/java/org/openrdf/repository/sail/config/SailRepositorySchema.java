@@ -18,7 +18,7 @@ package org.openrdf.repository.sail.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.sail.SailRepository;
 
 /**
@@ -36,7 +36,7 @@ public class SailRepositorySchema {
 	public final static IRI SAILIMPL;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		SAILIMPL = factory.createIRI(NAMESPACE, "sailImpl");
 	}
 }

@@ -27,7 +27,7 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
@@ -60,7 +60,7 @@ public class SPARQLTSVCustomTest {
 	{
 		List<String> bindingNames = Arrays.asList("test");
 		TupleQueryResult tqr = new TupleQueryResultImpl(bindingNames, Arrays.asList(new ListBindingSet(
-				bindingNames, ValueFactoryImpl.getInstance().createLiteral("1", XMLSchema.STRING))));
+				bindingNames, SimpleValueFactory.getInstance().createLiteral("1", XMLSchema.STRING))));
 		String result = writeTupleResult(tqr);
 		assertEquals("?test\n\"1\"^^<http://www.w3.org/2001/XMLSchema#string>\n", result);
 	}
@@ -76,7 +76,7 @@ public class SPARQLTSVCustomTest {
 	{
 		List<String> bindingNames = Arrays.asList("test");
 		TupleQueryResult tqr = new TupleQueryResultImpl(bindingNames, Arrays.asList(new ListBindingSet(
-				bindingNames, ValueFactoryImpl.getInstance().createLiteral("1"))));
+				bindingNames, SimpleValueFactory.getInstance().createLiteral("1"))));
 		String result = writeTupleResult(tqr);
 		assertEquals("?test\n\"1\"\n", result);
 	}

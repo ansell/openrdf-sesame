@@ -18,7 +18,7 @@ package org.openrdf.sail.inferencer.fc.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.sail.inferencer.fc.CustomGraphQueryInferencer;
 
 /**
@@ -44,7 +44,7 @@ public class CustomGraphQueryInferencerSchema {
 	public final static IRI MATCHER_QUERY;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		QUERY_LANGUAGE = factory.createIRI(NAMESPACE, "queryLanguage");
 		RULE_QUERY = factory.createIRI(NAMESPACE, "ruleQuery");
 		MATCHER_QUERY = factory.createIRI(NAMESPACE, "matcherQuery");

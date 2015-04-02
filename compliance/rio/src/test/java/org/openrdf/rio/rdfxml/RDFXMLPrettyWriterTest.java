@@ -30,8 +30,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
@@ -71,13 +71,13 @@ public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 		rdfWriter.startRDF();
 
-		Resource res = new IRIImpl("http://example.com/#");
+		Resource res = new SimpleIRI("http://example.com/#");
 
-		rdfWriter.handleStatement(new StatementImpl(res, RDF.TYPE, RDF.BAG));
+		rdfWriter.handleStatement(new SimpleStatement(res, RDF.TYPE, RDF.BAG));
 
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_1"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_1"), new SimpleIRI(
 				"http://example.com/#1")));
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_2"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
 				"http://example.com/#2")));
 		rdfWriter.endRDF();
 
@@ -95,13 +95,13 @@ public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 		rdfWriter.startRDF();
 
-		Resource res = new IRIImpl("http://example.com/#");
+		Resource res = new SimpleIRI("http://example.com/#");
 
-		rdfWriter.handleStatement(new StatementImpl(res, RDF.TYPE, RDF.BAG));
+		rdfWriter.handleStatement(new SimpleStatement(res, RDF.TYPE, RDF.BAG));
 
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_0"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_0"), new SimpleIRI(
 				"http://example.com/#0")));
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_2"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
 				"http://example.com/#2")));
 		rdfWriter.endRDF();
 
@@ -119,17 +119,17 @@ public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 		rdfWriter.startRDF();
 
-		Resource res = new IRIImpl("http://example.com/#");
+		Resource res = new SimpleIRI("http://example.com/#");
 
-		rdfWriter.handleStatement(new StatementImpl(res, RDF.TYPE, RDF.BAG));
+		rdfWriter.handleStatement(new SimpleStatement(res, RDF.TYPE, RDF.BAG));
 
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_2"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
 				"http://example.com/#2")));
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_1"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_1"), new SimpleIRI(
 				"http://example.com/#1")));
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_3"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_3"), new SimpleIRI(
 				"http://example.com/#3")));
-		rdfWriter.handleStatement(new StatementImpl(res, new IRIImpl(RDF.NAMESPACE + "_2"), new IRIImpl(
+		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
 				"http://example.com/#2")));
 		rdfWriter.endRDF();
 

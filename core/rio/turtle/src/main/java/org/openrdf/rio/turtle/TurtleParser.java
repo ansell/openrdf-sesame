@@ -38,7 +38,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.RDFFormat;
@@ -92,7 +92,7 @@ public class TurtleParser extends RDFParserBase {
 	 *--------------*/
 
 	/**
-	 * Creates a new TurtleParser that will use a {@link ValueFactoryImpl} to
+	 * Creates a new TurtleParser that will use a {@link SimpleValueFactory} to
 	 * create RDF model objects.
 	 */
 	public TurtleParser() {

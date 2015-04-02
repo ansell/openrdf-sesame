@@ -40,7 +40,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.exceptions.BadRequestException;
@@ -85,7 +85,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	{
 		super(request);
 		this.defaults = defaults;
-		this.decoder = new ValueDecoder(repository, (repository == null) ? ValueFactoryImpl.getInstance()
+		this.decoder = new ValueDecoder(repository, (repository == null) ? SimpleValueFactory.getInstance()
 				: repository.getValueFactory());
 		String url = request.getRequestURL().toString();
 		if (ServletFileUpload.isMultipartContent(this)) {

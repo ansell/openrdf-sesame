@@ -17,10 +17,10 @@
 package org.openrdf.sail.rdbms.model;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.impl.BNodeImpl;
+import org.openrdf.model.impl.SimpleBNode;
 
 /**
- * Wraps a {@link BNodeImpl} providing an internal id and version.
+ * Wraps a {@link SimpleBNode} providing an internal id and version.
  * 
  * @author James Leigh
  * 

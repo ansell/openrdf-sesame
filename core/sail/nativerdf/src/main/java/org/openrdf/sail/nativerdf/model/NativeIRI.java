@@ -16,10 +16,10 @@
  */
 package org.openrdf.sail.nativerdf.model;
 
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.sail.nativerdf.ValueStoreRevision;
 
-public class NativeIRI extends IRIImpl implements NativeResource {
+public class NativeIRI extends SimpleIRI implements NativeResource {
 
 	private static final long serialVersionUID = -5888138591826143179L;
 

@@ -18,7 +18,7 @@ package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * @since 2.7.3
@@ -651,7 +651,7 @@ public class SP {
 	 */
 	public static IRI INSERT_PATTERN_PROPERTY;
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		PATH_CLASS = factory.createIRI(NAMESPACE, "Path");
 		SYSTEM_CLASS = factory.createIRI(NAMESPACE, "SystemClass");
 		ASC_CLASS = factory.createIRI(NAMESPACE, "Asc");

@@ -16,10 +16,10 @@
  */
 package org.openrdf.sail.nativerdf.model;
 
-import org.openrdf.model.impl.BNodeImpl;
+import org.openrdf.model.impl.SimpleBNode;
 import org.openrdf.sail.nativerdf.ValueStoreRevision;
 
-public class NativeBNode extends BNodeImpl implements NativeResource {
+public class NativeBNode extends SimpleBNode implements NativeResource {
 
 	/*-----------*
 	 * Constants *

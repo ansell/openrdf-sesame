@@ -18,7 +18,7 @@ package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for FOAF primitives and for the FOAF namespace.<br>
@@ -121,7 +121,7 @@ public class FOAF {
 	public final static IRI YAHOO_CHAT_ID;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		
 		// ----- Classes ------
 		AGENT = factory.createIRI(FOAF.NAMESPACE, "Agent");

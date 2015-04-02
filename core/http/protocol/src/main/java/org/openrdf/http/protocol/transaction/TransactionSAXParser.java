@@ -38,7 +38,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.Binding;
 import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.DatasetImpl;
@@ -65,7 +65,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 	private DatasetImpl currentDataset;
 
 	public TransactionSAXParser() {
-		this(new ValueFactoryImpl());
+		this(new SimpleValueFactory());
 	}
 
 	public TransactionSAXParser(ValueFactory valueFactory) {

@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Vocabulary constants for the Dublin Core Metadata Element Set, version 1.1
@@ -45,7 +45,7 @@ public class DC {
 	 * An immutable {@link Namespace} constant that represents the Dublin Core
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/**
 	 * dc:title
@@ -123,7 +123,7 @@ public class DC {
 	public static final IRI TYPE;
 
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
 		CONTRIBUTOR = f.createIRI(NAMESPACE, "contributor");
 		COVERAGE = f.createIRI(NAMESPACE, "coverage");

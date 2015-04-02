@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
@@ -59,7 +59,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testBindings1()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -120,7 +120,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testBindings2()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -215,7 +215,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testNonStandardDistinct()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -237,7 +237,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testNonStandardOrdered()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -259,7 +259,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testNonStandardDistinctOrdered()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 

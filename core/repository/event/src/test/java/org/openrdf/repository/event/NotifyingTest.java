@@ -28,8 +28,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
@@ -139,7 +139,7 @@ public class NotifyingTest extends TestCase {
 	public void testRemove()
 		throws Exception
 	{
-		ValueFactory vf = ValueFactoryImpl.getInstance();
+		ValueFactory vf = SimpleValueFactory.getInstance();
 		final IRI uri = vf.createIRI("http://example.com/");
 		final RepositoryConnection stub = new RepositoryConnectionStub() {
 
@@ -164,6 +164,6 @@ public class NotifyingTest extends TestCase {
 			}
 
 		});
-		con.remove(new StatementImpl(uri, uri, uri));
+		con.remove(new SimpleStatement(uri, uri, uri));
 	}
 }

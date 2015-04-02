@@ -18,7 +18,7 @@ package org.openrdf.repository.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Defines constants for the repository configuration schema that is used by
@@ -50,7 +50,7 @@ public class RepositoryConfigSchema {
 	public final static IRI DELEGATE;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		REPOSITORY_CONTEXT = factory.createIRI(NAMESPACE, "RepositoryContext");
 		REPOSITORY = factory.createIRI(NAMESPACE, "Repository");
 		REPOSITORYID = factory.createIRI(NAMESPACE, "repositoryID");

@@ -38,7 +38,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -116,7 +116,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 			ds.setDefaultInsertGraph(null);
 
 			for (String ng : inputNamedGraphs.keySet()) {
-				IRI namedGraph = new IRIImpl(ng);
+				IRI namedGraph = new SimpleIRI(ng);
 				ds.addNamedGraph(namedGraph);
 			}
 			this.dataset = ds;

@@ -41,7 +41,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -132,7 +132,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		});
 		this.federation = federation;
 
-		valueFactory = ValueFactoryImpl.getInstance();
+		valueFactory = SimpleValueFactory.getInstance();
 
 		this.members = new ArrayList<RepositoryConnection>(members.size());
 		for (RepositoryConnection member : members) {

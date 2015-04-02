@@ -28,7 +28,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.impl.AbstractValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.exceptions.RdbmsRuntimeException;
@@ -57,7 +57,7 @@ import org.openrdf.sail.rdbms.schema.ValueTable;
  * @author James Leigh
  * 
  */
-public class RdbmsValueFactory extends ValueFactoryBase {
+public class RdbmsValueFactory extends AbstractValueFactory {
 
 	@Deprecated
 	public static final String NIL_LABEL = "nil";

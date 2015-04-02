@@ -19,7 +19,7 @@ package org.openrdf.query.dawg;
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * @author Arjohn Kampman
@@ -47,7 +47,7 @@ public class DAWGTestResultSetSchema {
 	public static final Literal FALSE;
 
 	static {
-		ValueFactory vf = ValueFactoryImpl.getInstance();
+		ValueFactory vf = SimpleValueFactory.getInstance();
 		RESULTSET = vf.createIRI(NAMESPACE, "ResultSet");
 		RESULTVARIABLE = vf.createIRI(NAMESPACE, "resultVariable");
 		SOLUTION = vf.createIRI(NAMESPACE, "solution");

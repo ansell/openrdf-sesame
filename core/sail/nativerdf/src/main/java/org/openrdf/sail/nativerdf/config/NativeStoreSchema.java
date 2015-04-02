@@ -18,7 +18,7 @@ package org.openrdf.sail.nativerdf.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.sail.nativerdf.NativeStore;
 
 /**
@@ -51,7 +51,7 @@ public class NativeStoreSchema {
 	public final static IRI NAMESPACE_ID_CACHE_SIZE;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		TRIPLE_INDEXES = factory.createIRI(NAMESPACE, "tripleIndexes");
 		FORCE_SYNC = factory.createIRI(NAMESPACE, "forceSync");
 		VALUE_CACHE_SIZE = factory.createIRI(NAMESPACE, "valueCacheSize");

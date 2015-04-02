@@ -66,7 +66,7 @@ import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -804,7 +804,7 @@ public class SesameSession extends SparqlSession {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
 			if (baseURI != null && baseURI.trim().length() != 0) {
-				String encodedBaseURI = Protocol.encodeValue(new IRIImpl(baseURI));
+				String encodedBaseURI = Protocol.encodeValue(new SimpleIRI(baseURI));
 				url.setParameter(Protocol.BASEURI_PARAM_NAME, encodedBaseURI);
 			}
 			if (preserveNodeIds) {

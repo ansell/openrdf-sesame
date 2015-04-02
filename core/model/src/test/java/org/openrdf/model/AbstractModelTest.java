@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.RDFS;
@@ -64,7 +64,7 @@ public abstract class AbstractModelTest {
 
 	protected BNode bnode3;
 
-	protected final ValueFactory vf = ValueFactoryImpl.getInstance();
+	protected final ValueFactory vf = SimpleValueFactory.getInstance();
 
 	protected abstract Model getNewModel();
 

@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
@@ -38,7 +38,7 @@ public class TzTest {
 
 	private Tz tz;
 
-	private ValueFactory f = new ValueFactoryImpl();
+	private ValueFactory f = new SimpleValueFactory();
 
 	/**
 	 * @throws java.lang.Exception

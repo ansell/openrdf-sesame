@@ -42,7 +42,7 @@ import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.http.server.repository.TupleQueryResultView;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.LiteralImpl;
+import org.openrdf.model.impl.SimpleLiteral;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.TupleQueryResultImpl;
@@ -108,8 +108,8 @@ public class NamespacesController extends AbstractController {
 						while (iter.hasNext()) {
 							Namespace ns = iter.next();
 	
-							Literal prefix = new LiteralImpl(ns.getPrefix());
-							Literal namespace = new LiteralImpl(ns.getName());
+							Literal prefix = new SimpleLiteral(ns.getPrefix());
+							Literal namespace = new SimpleLiteral(ns.getName());
 	
 							BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
 							namespaces.add(bindingSet);

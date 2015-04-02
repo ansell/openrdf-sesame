@@ -17,10 +17,10 @@
 package org.openrdf.sail.rdbms.model;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 
 /**
- * Wraps a {@link IRIImpl} providing an internal id and version.
+ * Wraps a {@link SimpleIRI} providing an internal id and version.
  * 
  * @author James Leigh
  * 

@@ -16,13 +16,16 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.Objects;
+
 import org.openrdf.model.IRI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.URIUtil;
 
 /**
  * The default implementation of the {@link IRI} interface.
  */
-public class IRIImpl implements IRI {
+public class SimpleIRI implements IRI {
 
 	/*-----------*
 	 * Constants *
@@ -35,12 +38,12 @@ public class IRIImpl implements IRI {
 	 *-----------*/
 
 	/**
-	 * The URI string.
+	 * The IRI string.
 	 */
-	private String uriString;
+	private String iriString;
 
 	/**
-	 * An index indicating the first character of the local name in the URI
+	 * An index indicating the first character of the local name in the IRI
 	 * string, -1 if not yet set.
 	 */
 	private int localNameIdx;
@@ -50,66 +53,74 @@ public class IRIImpl implements IRI {
 	 *--------------*/
 
 	/**
-	 * Creates a new, unitialized URI. This URI's string value needs to be
-	 * {@link #setURIString(String) set} before the normal methods can be used.
+	 * Creates a new, un-initialized IRI. This IRI's string value needs to be
+	 * {@link #setIRIString(String) set} before the normal methods can be used.
 	 */
-	protected IRIImpl() {
+	protected SimpleIRI() {
 	}
 
 	/**
-	 * Creates a new URI from the supplied string.
+	 * Creates a new IRI from the supplied string.
+	 * <p>
+	 * Note that creating SimpleIRI objects directly via this constructor is not
+	 * the recommended approach. Instead, use a
+	 * {@link org.openrdf.model.ValueFactory ValueFactory} (obtained from your
+	 * repository or by using {@link SimpleValueFactory#getInstance()}) to create
+	 * new IRI objects.
 	 * 
-	 * @param uriString
-	 *        A String representing a valid, absolute URI.
+	 * @param iriString
+	 *        A String representing a valid, absolute IRI. May not be
+	 *        <code>null</code>.
 	 * @throws IllegalArgumentException
-	 *         If the supplied URI is not a valid (absolute) URI.
+	 *         If the supplied IRI is not a valid (absolute) IRI.
+	 * @see {@link SimpleValueFactory#createIRI(String)}
 	 */
-	public IRIImpl(String uriString) {
-		setURIString(uriString);
+	public SimpleIRI(String iriString) {
+		setIRIString(iriString);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	protected void setURIString(String uriString) {
-		assert uriString != null;
+	protected void setIRIString(String iriString) {
+		Objects.requireNonNull(iriString, "iriString must not be null");
 
-		if (uriString.indexOf(':') < 0) {
-			throw new IllegalArgumentException("Not a valid (absolute) URI: " + uriString);
+		if (iriString.indexOf(':') < 0) {
+			throw new IllegalArgumentException("Not a valid (absolute) IRI: " + iriString);
 		}
 
-		this.uriString = uriString;
+		this.iriString = iriString;
 		this.localNameIdx = -1;
 	}
 
-	// Implements URI.toString()
+	// Implements IRI.toString()
 	@Override
 	public String toString() {
-		return uriString;
+		return iriString;
 	}
 
 	public String stringValue() {
-		return uriString;
+		return iriString;
 	}
 
 	public String getNamespace() {
 		if (localNameIdx < 0) {
-			localNameIdx = URIUtil.getLocalNameIndex(uriString);
+			localNameIdx = URIUtil.getLocalNameIndex(iriString);
 		}
 
-		return uriString.substring(0, localNameIdx);
+		return iriString.substring(0, localNameIdx);
 	}
 
 	public String getLocalName() {
 		if (localNameIdx < 0) {
-			localNameIdx = URIUtil.getLocalNameIndex(uriString);
+			localNameIdx = URIUtil.getLocalNameIndex(iriString);
 		}
 
-		return uriString.substring(localNameIdx);
+		return iriString.substring(localNameIdx);
 	}
 
-	// Implements URI.equals(Object)
+	// Implements IRI.equals(Object)
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -123,9 +134,9 @@ public class IRIImpl implements IRI {
 		return false;
 	}
 
-	// Implements URI.hashCode()
+	// Implements IRI.hashCode()
 	@Override
 	public int hashCode() {
-		return uriString.hashCode();
+		return iriString.hashCode();
 	}
 }

@@ -18,7 +18,7 @@ package org.openrdf.repository.http.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.http.HTTPRepository;
 
 /**
@@ -42,7 +42,7 @@ public class HTTPRepositorySchema {
 	public final static IRI PASSWORD;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		REPOSITORYURL = factory.createIRI(NAMESPACE, "repositoryURL");
 		USERNAME = factory.createIRI(NAMESPACE, "username");
 		PASSWORD = factory.createIRI(NAMESPACE, "password");

@@ -19,7 +19,7 @@ package org.openrdf.query.algebra.evaluation.function.string;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.impl.BooleanLiteral;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -57,7 +57,7 @@ public class StrEnds implements Function {
 				String leftLexVal = leftLit.getLabel();
 				String rightLexVal = rightLit.getLabel();
 
-				return BooleanLiteralImpl.valueOf(leftLexVal.endsWith(rightLexVal));
+				return BooleanLiteral.valueOf(leftLexVal.endsWith(rightLexVal));
 			}
 			else {
 				throw new ValueExprEvaluationException("incompatible operands for STRENDS function");

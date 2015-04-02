@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandler;
 
@@ -35,7 +35,7 @@ public abstract class TupleQueryResultParserBase extends QueryResultParserBase i
 
 	/**
 	 * Creates a new parser base that, by default, will use an instance of
-	 * {@link ValueFactoryImpl} to create Value objects.
+	 * {@link SimpleValueFactory} to create Value objects.
 	 */
 	public TupleQueryResultParserBase() {
 		super();

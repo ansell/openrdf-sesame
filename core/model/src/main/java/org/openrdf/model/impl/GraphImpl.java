@@ -58,7 +58,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	public GraphImpl() {
-		this(new ValueFactoryImpl());
+		this(new SimpleValueFactory());
 	}
 
 	public GraphImpl(ValueFactory valueFactory, Collection<? extends Statement> statements) {
@@ -67,7 +67,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 	}
 
 	public GraphImpl(Collection<? extends Statement> statements) {
-		this(new ValueFactoryImpl(), statements);
+		this(new SimpleValueFactory(), statements);
 	}
 
 	public ValueFactory getValueFactory() {
@@ -125,7 +125,7 @@ public class GraphImpl extends AbstractCollection<Statement> implements Graph {
 		throws IOException, ClassNotFoundException
 	{
 		in.defaultReadObject();
-		setValueFactory(new ValueFactoryImpl());
+		setValueFactory(new SimpleValueFactory());
 	}
 
 	/*-----------------------------*

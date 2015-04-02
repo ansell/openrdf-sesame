@@ -47,7 +47,7 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -134,7 +134,7 @@ public abstract class RDFWriterTest {
 		rdfWriterFactory = writerF;
 		rdfParserFactory = parserF;
 
-		vf = new ValueFactoryImpl();
+		vf = new SimpleValueFactory();
 
 		exNs = "http://example.org/";
 

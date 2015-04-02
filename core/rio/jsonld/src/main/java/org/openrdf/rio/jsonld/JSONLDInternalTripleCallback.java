@@ -25,7 +25,7 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFHandler;
@@ -58,7 +58,7 @@ class JSONLDInternalTripleCallback implements JsonLdTripleCallback {
 	}
 
 	public JSONLDInternalTripleCallback(RDFHandler nextHandler) {
-		this(nextHandler, ValueFactoryImpl.getInstance());
+		this(nextHandler, SimpleValueFactory.getInstance());
 	}
 
 	public JSONLDInternalTripleCallback(RDFHandler nextHandler, ValueFactory vf) {

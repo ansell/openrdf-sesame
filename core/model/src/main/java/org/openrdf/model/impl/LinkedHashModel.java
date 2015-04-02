@@ -132,7 +132,7 @@ public class LinkedHashModel extends AbstractModel {
 	public Optional<Namespace> setNamespace(String prefix, String name) {
 		Optional<Namespace> result = getNamespace(prefix);
 		if (!result.isPresent() || !result.get().getName().equals(name)) {
-			result = Optional.of(new NamespaceImpl(prefix, name));
+			result = Optional.of(new SimpleNamespace(prefix, name));
 			namespaces.add(result.get());
 		}
 		return result;
@@ -371,7 +371,7 @@ public class LinkedHashModel extends AbstractModel {
 		}
 	}
 
-	private static class ModelStatement extends ContextStatementImpl {
+	private static class ModelStatement extends ContextStatement {
 
 		private static final long serialVersionUID = 2200404772364346279L;
 
@@ -442,7 +442,7 @@ public class LinkedHashModel extends AbstractModel {
 			IRI pred = st.getPredicate();
 			Value obj = st.getObject();
 			Resource ctx = st.getContext();
-			s.writeObject(new ContextStatementImpl(subj, pred, obj, ctx));
+			s.writeObject(new ContextStatement(subj, pred, obj, ctx));
 		}
 	}
 

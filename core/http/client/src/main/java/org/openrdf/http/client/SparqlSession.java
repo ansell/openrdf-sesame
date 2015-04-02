@@ -69,7 +69,7 @@ import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQueryResult;
@@ -176,7 +176,7 @@ public class SparqlSession {
 		this.httpClient = client;
 		this.httpContext = new BasicHttpContext();
 		this.executor = executor;
-		valueFactory = ValueFactoryImpl.getInstance();
+		valueFactory = SimpleValueFactory.getInstance();
 		params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
 		CookieStore cookieStore = new BasicCookieStore();
 		httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);

@@ -30,9 +30,9 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.AbstractValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
@@ -48,7 +48,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * 
  * @author Arjohn Kampman
  */
-public class ValueStore extends ValueFactoryBase {
+public class ValueStore extends AbstractValueFactory {
 
 	/*-----------*
 	 * Constants *
@@ -659,12 +659,12 @@ public class ValueStore extends ValueFactoryBase {
 
 	@Override
 	public Statement createStatement(Resource subject, IRI predicate, Value object) {
-		return new StatementImpl(subject, predicate, object);
+		return new SimpleStatement(subject, predicate, object);
 	}
 
 	@Override
 	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
-		return new ContextStatementImpl(subject, predicate, object, context);
+		return new ContextStatement(subject, predicate, object, context);
 	}
 
 	/*----------------------------------------------------------------------*

@@ -16,7 +16,7 @@
  */
 package org.openrdf.rio.trig;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.EarlReport;
 
 /**
@@ -30,7 +30,7 @@ public class TriGEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new TriGParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/trig/"));
+				SimpleValueFactory.getInstance().createIRI("http://www.w3.org/TR/trig/"));
 	}
 
 }

@@ -17,7 +17,7 @@
 package org.openrdf.queryrender.builder;
 
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.LangMatches;
@@ -133,9 +133,9 @@ public class FilterBuilder<T extends ParsedQuery, E extends SupportsGroups> {
 	public GroupBuilder<T, E> regex(ValueExpr theExpr, String thePattern, String theFlags) {
 		Regex aRegex = new Regex();
 		aRegex.setArg(theExpr);
-		aRegex.setPatternArg(new ValueConstant(ValueFactoryImpl.getInstance().createLiteral(thePattern)));
+		aRegex.setPatternArg(new ValueConstant(SimpleValueFactory.getInstance().createLiteral(thePattern)));
 		if (theFlags != null) {
-			aRegex.setFlagsArg(new ValueConstant(ValueFactoryImpl.getInstance().createLiteral(theFlags)));
+			aRegex.setFlagsArg(new ValueConstant(SimpleValueFactory.getInstance().createLiteral(theFlags)));
 		}
 
 		return filter(aRegex);

@@ -33,7 +33,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.MalformedQueryException;
@@ -45,7 +45,7 @@ import org.openrdf.query.TupleQueryResult;
 @RunWith(Parameterized.class)
 public abstract class EquivalentTest {
 
-	private static ValueFactory vf = ValueFactoryImpl.getInstance();
+	private static ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private static Literal xyz_simple = vf.createLiteral("xyz");
 

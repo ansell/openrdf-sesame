@@ -43,9 +43,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.impl.SimpleStatement;
 import org.openrdf.model.util.Literals;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -216,7 +216,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 			}
 			if (subj != null && pred != null && obj != null) {
 				if (hasStatement(subj, pred, obj, includeInferred, contexts)) {
-					Statement st = new StatementImpl(subj, pred, obj);
+					Statement st = new SimpleStatement(subj, pred, obj);
 					CloseableIteration<Statement, RepositoryException> cursor;
 					cursor = new SingletonIteration<Statement, RepositoryException>(st);
 					return new RepositoryResult<Statement>(cursor);
@@ -969,7 +969,7 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 				Value o = obj==null ? b.getValue("o") : obj;
 				Resource ctx = (Resource)b.getValue("ctx");
 				
-				return ValueFactoryImpl.getInstance().createStatement(s, p, o, ctx);
+				return SimpleValueFactory.getInstance().createStatement(s, p, o, ctx);
 			}
 			
 		};

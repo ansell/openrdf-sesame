@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Test;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -52,7 +52,7 @@ public class TestRemoveServlet {
 	{
 		WorkbenchRequest request = mock(WorkbenchRequest.class);
 		when(request.isParameterPresent(CONTEXT)).thenReturn(true);
-		IRI context = ValueFactoryImpl.getInstance().createIRI("<http://foo.org/bar>");
+		IRI context = SimpleValueFactory.getInstance().createIRI("<http://foo.org/bar>");
 		when(request.getResource(CONTEXT)).thenReturn(context);
 		Repository repository = mock(Repository.class);
 		servlet.setRepository(repository);

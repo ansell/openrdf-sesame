@@ -51,7 +51,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -143,7 +143,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	 *--------------*/
 
 	/**
-	 * Creates a new RDFXMLParser that will use a {@link ValueFactoryImpl} to
+	 * Creates a new RDFXMLParser that will use a {@link SimpleValueFactory} to
 	 * create RDF model objects.
 	 */
 	public RDFXMLParser() {

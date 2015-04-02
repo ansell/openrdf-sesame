@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.rdbms.model;
 
-import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.ContextStatement;
 
 /**
  * Rdbms typed statement.
@@ -24,7 +24,7 @@ import org.openrdf.model.impl.ContextStatementImpl;
  * @author James Leigh
  * 
  */
-public class RdbmsStatement extends ContextStatementImpl {
+public class RdbmsStatement extends ContextStatement {
 
 	private static final long serialVersionUID = -5970166748706214658L;
 

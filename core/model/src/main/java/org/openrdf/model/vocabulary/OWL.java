@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for OWL primitives and for the OWL namespace.
@@ -41,7 +41,7 @@ public class OWL {
 	/**
 	 * An immutable {@link Namespace} constant that represents the OWL namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	// OWL Lite
 
@@ -171,7 +171,7 @@ public class OWL {
 	public final static IRI COMPLEMENTOF;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 
 		CLASS = factory.createIRI(OWL.NAMESPACE, "Class");
 		INDIVIDUAL = factory.createIRI(OWL.NAMESPACE, "Individual");

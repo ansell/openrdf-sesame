@@ -31,8 +31,8 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.IRIImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfig;
@@ -50,24 +50,24 @@ public class FederationConfig extends SailImplConfigBase {
 	/** http://www.openrdf.org/config/sail/federation# */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/federation#";
 
-	public static final IRI MEMBER = new IRIImpl(NAMESPACE + "member");
+	public static final IRI MEMBER = new SimpleIRI(NAMESPACE + "member");
 
 	/**
 	 * For all triples with a predicate in this space, the container RDF store
 	 * contains all triples with that subject and any predicate in this space.
 	 */
-	public static final IRI LOCALPROPERTYSPACE = new IRIImpl(NAMESPACE // NOPMD
+	public static final IRI LOCALPROPERTYSPACE = new SimpleIRI(NAMESPACE // NOPMD
 			+ "localPropertySpace");
 
 	/**
 	 * If no two members contain the same statement.
 	 */
-	public static final IRI DISTINCT = new IRIImpl(NAMESPACE + "distinct");
+	public static final IRI DISTINCT = new SimpleIRI(NAMESPACE + "distinct");
 
 	/**
 	 * If the federation should not try and add statements to its members.
 	 */
-	public static final IRI READ_ONLY = new IRIImpl(NAMESPACE + "readOnly");
+	public static final IRI READ_ONLY = new SimpleIRI(NAMESPACE + "readOnly");
 
 	private List<RepositoryImplConfig> members = new ArrayList<RepositoryImplConfig>();
 
@@ -115,7 +115,7 @@ public class FederationConfig extends SailImplConfigBase {
 
 	@Override
 	public Resource export(Graph model) {
-		ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+		ValueFactory valueFactory = SimpleValueFactory.getInstance();
 		Resource self = super.export(model);
 		for (RepositoryImplConfig member : getMembers()) {
 			model.add(self, MEMBER, member.export(model));

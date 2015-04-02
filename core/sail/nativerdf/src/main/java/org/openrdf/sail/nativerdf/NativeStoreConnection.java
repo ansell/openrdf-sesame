@@ -38,7 +38,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -352,7 +352,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
 		throws SailException
 	{
-		return new CloseableIteratorIteration<NamespaceImpl, SailException>(
+		return new CloseableIteratorIteration<SimpleNamespace, SailException>(
 				nativeStore.getNamespaceStore().iterator());
 	}
 

@@ -42,9 +42,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.NumericLiteralImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.NumericLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -206,9 +206,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip1()
 		throws Exception
 	{
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		IRI obj = new IRIImpl(EXAMPLE_NS + GUERNICA);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -218,8 +218,8 @@ public abstract class RDFStoreTest {
 		throws Exception
 	{
 		BNode subj = vf.createBNode();
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		IRI obj = new IRIImpl(EXAMPLE_NS + GUERNICA);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -228,9 +228,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip3()
 		throws Exception
 	{
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica");
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -239,9 +239,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip4()
 		throws Exception
 	{
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica", "es");
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica", "es");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -250,9 +250,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip5()
 		throws Exception
 	{
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new NumericLiteralImpl(3);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new NumericLiteral(3);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -261,9 +261,9 @@ public abstract class RDFStoreTest {
 	public void testDecimalRoundTrip()
 		throws Exception
 	{
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new NumericLiteralImpl(3, XMLSchema.DECIMAL);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new NumericLiteral(3, XMLSchema.DECIMAL);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -272,16 +272,16 @@ public abstract class RDFStoreTest {
 	public void testTimeZoneRoundTrip()
 		throws Exception
 	{
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("2006-08-23+00:00", XMLSchema.DATE);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("2006-08-23+00:00", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 
 		con.begin();
 		con.removeStatements(null, null, null);
 		con.commit();
 
-		obj = new LiteralImpl("2006-08-23", XMLSchema.DATE);
+		obj = new SimpleLiteral("2006-08-23", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 	}
 
@@ -293,9 +293,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		IRI obj = new IRIImpl(EXAMPLE_NS + GUERNICA + sb.toString());
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -308,9 +308,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica" + sb.toString());
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica" + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -323,9 +323,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 1024000; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica" + sb.toString());
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica" + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -338,9 +338,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new IRIImpl(EXAMPLE_NS + PICASSO);
-		IRI pred = new IRIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica" + sb.toString(), "es");
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica" + sb.toString(), "es");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -444,11 +444,11 @@ public abstract class RDFStoreTest {
 		assertEquals("Size of repository should be 5", 5, con.size());
 		assertEquals("Size of named context should be 3", 3, con.size(context1));
 
-		IRI unknownContext = new IRIImpl(EXAMPLE_NS + "unknown");
+		IRI unknownContext = new SimpleIRI(EXAMPLE_NS + "unknown");
 
 		assertEquals("Size of unknown context should be 0", 0, con.size(unknownContext));
 
-		IRIImpl uriImplContext1 = new IRIImpl(context1.toString());
+		SimpleIRI uriImplContext1 = new SimpleIRI(context1.toString());
 
 		assertEquals("Size of named context (defined as URIImpl) should be 3", 3, con.size(uriImplContext1));
 	}

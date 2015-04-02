@@ -42,7 +42,7 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
@@ -124,7 +124,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 
 		// add named graphs
 		for (String graphName : graphNames) {
-			dataCon.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new IRIImpl(graphName));
+			dataCon.add(url(graphName), base(graphName), RDFFormat.forFileName(graphName), new SimpleIRI(graphName));
 		}
 
 		// Evaluate the query on the query data

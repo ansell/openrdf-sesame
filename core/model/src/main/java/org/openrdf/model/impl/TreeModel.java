@@ -68,9 +68,9 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 
 	static final Resource[] NULL_CTX = new Resource[] { null };
 
-	static final IRI BEFORE = new IRIImpl("urn:from");
+	static final IRI BEFORE = new SimpleIRI("urn:from");
 
-	static final IRI AFTER = new IRIImpl("urn:to");
+	static final IRI AFTER = new SimpleIRI("urn:to");
 
 	private final LexicalValueComparator vc = new LexicalValueComparator();
 
@@ -121,7 +121,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	public Optional<Namespace> setNamespace(String prefix, String name) {
 		Optional<Namespace> result = getNamespace(prefix);
 		if (!result.isPresent() || !result.get().getName().equals(name)) {
-			result = Optional.of(new NamespaceImpl(prefix, name));
+			result = Optional.of(new SimpleNamespace(prefix, name));
 			namespaces.add(result.get());
 		}
 		return result;
@@ -560,7 +560,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 	}
 
-	static class TreeStatement extends ContextStatementImpl {
+	static class TreeStatement extends ContextStatement {
 
 		private static final long serialVersionUID = -7720419322256724495L;
 

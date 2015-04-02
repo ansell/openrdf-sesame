@@ -18,7 +18,7 @@ package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * @since 2.7.3
@@ -400,7 +400,7 @@ public class SPIN {
 	 */
 	public static IRI RULE_PROPERTY;
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		FUNCTION_CLASS = factory.createIRI(NAMESPACE, "Function");
 		MODULE_CLASS = factory.createIRI(NAMESPACE, "Module");
 		BODY_PROPERTY = factory.createIRI(NAMESPACE, "body");

@@ -29,7 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -553,7 +553,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 		Resource nextLi() {
 			if (nextLi == null) {
-				nextLi = new IRIImpl(RDF.NAMESPACE + "_" + nextLiIndex);
+				nextLi = new SimpleIRI(RDF.NAMESPACE + "_" + nextLiIndex);
 			}
 
 			return nextLi;

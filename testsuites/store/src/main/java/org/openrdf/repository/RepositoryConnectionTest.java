@@ -77,7 +77,7 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.OWL;
@@ -225,7 +225,7 @@ public abstract class RepositoryConnectionTest {
 
 		Александър = vf.createLiteral("Александър");
 
-		unknownContext = new IRIImpl("urn:unknownContext");
+		unknownContext = new SimpleIRI("urn:unknownContext");
 
 		context1 = vf.createIRI("urn:x-local:graph1");
 		context2 = vf.createIRI("urn:x-local:graph2");

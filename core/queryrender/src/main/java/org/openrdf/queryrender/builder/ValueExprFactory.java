@@ -17,7 +17,7 @@
 package org.openrdf.queryrender.builder;
 
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Bound;
 import org.openrdf.query.algebra.Compare;
@@ -42,7 +42,7 @@ public class ValueExprFactory {
 
 	public static LangMatches langMatches(String theVar, String theLang) {
 		return new LangMatches(new Lang(new Var(theVar)), new ValueConstant(
-				ValueFactoryImpl.getInstance().createLiteral(theLang)));
+				SimpleValueFactory.getInstance().createLiteral(theLang)));
 	}
 
 	public static Bound bound(String theVar) {

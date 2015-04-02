@@ -19,7 +19,7 @@ package org.openrdf.rio.datatypes;
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
@@ -52,7 +52,7 @@ public class XMLSchemaDoubleDatatypeHandlerTest extends AbstractDatatypeHandlerT
 
 	@Override
 	protected Literal getNormalisedLiteralForRecognisedDatatypeAndValue() {
-		return ValueFactoryImpl.getInstance().createLiteral("1.23E2", XMLSchema.DOUBLE);
+		return SimpleValueFactory.getInstance().createLiteral("1.23E2", XMLSchema.DOUBLE);
 	}
 
 	// -------------------------------------
@@ -66,7 +66,7 @@ public class XMLSchemaDoubleDatatypeHandlerTest extends AbstractDatatypeHandlerT
 
 	@Override
 	protected ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 	@Override

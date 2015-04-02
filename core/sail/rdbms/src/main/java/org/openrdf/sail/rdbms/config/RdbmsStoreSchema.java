@@ -18,7 +18,7 @@ package org.openrdf.sail.rdbms.config;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Vocabulary for the RDBMS configuration.
@@ -41,7 +41,7 @@ public class RdbmsStoreSchema {
 	public final static IRI MAX_TRIPLE_TABLES;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		JDBC_DRIVER = factory.createIRI(NAMESPACE, "jdbcDriver");
 		URL = factory.createIRI(NAMESPACE, "url");
 		USER = factory.createIRI(NAMESPACE, "user");

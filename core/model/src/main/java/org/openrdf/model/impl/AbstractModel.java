@@ -745,7 +745,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 	@Deprecated
 	@Override
 	public ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 }

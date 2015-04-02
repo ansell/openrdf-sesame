@@ -36,8 +36,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -636,9 +636,9 @@ public abstract class SailIsolationLevelTest {
 	protected void insertTestStatement(SailConnection connection, int i)
 		throws SailException
 	{
-		LiteralImpl lit = new LiteralImpl(Integer.toString(i), XMLSchema.INTEGER);
-		connection.addStatement(new IRIImpl("http://test#s" + i), new IRIImpl("http://test#p"), lit,
-				new IRIImpl("http://test#context_" + i));
+		SimpleLiteral lit = new SimpleLiteral(Integer.toString(i), XMLSchema.INTEGER);
+		connection.addStatement(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p"), lit,
+				new SimpleIRI("http://test#context_" + i));
 	}
 
 	protected synchronized void fail(String message, Throwable t) {

@@ -20,7 +20,7 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -33,10 +33,10 @@ import org.openrdf.repository.config.RepositoryImplConfigBase;
  */
 public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
 
-	public static final IRI QUERY_ENDPOINT = new IRIImpl(
+	public static final IRI QUERY_ENDPOINT = new SimpleIRI(
 			"http://www.openrdf.org/config/repository/sparql#query-endpoint");
 
-	public static final IRI UPDATE_ENDPOINT = new IRIImpl(
+	public static final IRI UPDATE_ENDPOINT = new SimpleIRI(
 			"http://www.openrdf.org/config/repository/sparql#update-endpoint");
 
 	private String queryEndpointUrl;

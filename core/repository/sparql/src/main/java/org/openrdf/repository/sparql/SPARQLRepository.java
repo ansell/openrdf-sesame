@@ -26,7 +26,7 @@ import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -117,7 +117,7 @@ public class SPARQLRepository extends RepositoryBase {
 	protected SparqlSession createHTTPClient() {
 		// initialize HTTP client
 		SparqlSession httpClient = getSesameClient().createSparqlSession(queryEndpointUrl, updateEndpointUrl);
-		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
+		httpClient.setValueFactory(SimpleValueFactory.getInstance());
 		httpClient.setPreferredTupleQueryResultFormat(TupleQueryResultFormat.SPARQL);
 		httpClient.setAdditionalHttpHeaders(additionalHttpHeaders);
 		if (username != null) {
@@ -140,7 +140,7 @@ public class SPARQLRepository extends RepositoryBase {
 	}
 
 	public ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 	@Override

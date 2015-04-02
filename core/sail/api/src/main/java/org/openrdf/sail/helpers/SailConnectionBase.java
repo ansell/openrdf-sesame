@@ -38,9 +38,9 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -116,7 +116,7 @@ public abstract class SailConnectionBase implements SailConnection {
 	/**
 	 * Used to indicate a removed statement from all contexts.
 	 */
-	private final BNode wildContext = ValueFactoryImpl.getInstance().createBNode();
+	private final BNode wildContext = SimpleValueFactory.getInstance().createBNode();
 
 	private IsolationLevel transactionIsolationLevel;
 
@@ -517,11 +517,11 @@ public abstract class SailConnectionBase implements SailConnection {
 			assert added.containsKey(op);
 			Collection<Statement> pending = added.get(op);
 			if (contexts == null || contexts.length == 0) {
-				pending.add(new StatementImpl(subj, pred, obj));
+				pending.add(new SimpleStatement(subj, pred, obj));
 			}
 			else {
 				for (Resource ctx : contexts) {
-					pending.add(new ContextStatementImpl(subj, pred, obj, ctx));
+					pending.add(new ContextStatement(subj, pred, obj, ctx));
 				}
 			}
 			if (pending.size() % BLOCK_SIZE == 0 && !isActiveOperation()) {

@@ -29,12 +29,13 @@ import org.openrdf.model.util.GraphUtil;
  * @see GraphUtil
  * @author Arjohn Kampman
  */
+@Deprecated
 public interface Graph extends Collection<Statement>, Serializable {
 
 	/**
 	 * Gets the value factory for this graph.
 	 * 
-	 * @deprecated {@link org.openrdf.model.impl.ValueFactoryImpl#getInstance}
+	 * @deprecated {@link org.openrdf.model.impl.SimpleValueFactory#getInstance}
 	 *             will obtain a default value factory implementation. If you are
 	 *             working with the Repository API, then <tt>Repository</tt>
 	 *             instances also supply a <tt>getValueFactory()</tt> method.

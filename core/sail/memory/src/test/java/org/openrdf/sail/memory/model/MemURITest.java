@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 
 import junit.framework.TestCase;
@@ -45,7 +45,7 @@ public class MemURITest extends TestCase {
 	private void compareURIs(String uri)
 		throws Exception
 	{
-		IRIImpl uriImpl = new IRIImpl(uri);
+		SimpleIRI uriImpl = new SimpleIRI(uri);
 		MemIRI memURI = new MemIRI(this, uriImpl.getNamespace(), uriImpl.getLocalName());
 
 		assertEquals("MemURI not equal to URIImpl for: " + uri, uriImpl, memURI);

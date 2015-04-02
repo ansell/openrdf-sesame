@@ -21,7 +21,8 @@ import java.util.Date;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * A factory for creating {@link IRI IRIs}, {@link BNode blank nodes}, {@link Literal literals} and {@link Statement statements}.
+ * A factory for creating {@link IRI IRIs}, {@link BNode blank nodes},
+ * {@link Literal literals} and {@link Statement statements}.
  * 
  * @author Arjohn Kampman
  */
@@ -30,13 +31,13 @@ public interface ValueFactory {
 	/**
 	 * Creates a new IRI from the supplied string-representation.
 	 * 
-	 * @param uri
+	 * @param iri
 	 *        A string-representation of a IRI.
 	 * @return An object representing the IRI.
 	 * @throws IlllegalArgumentException
 	 *         If the supplied string does not resolve to a legal (absolute) IRI.
 	 */
-	public IRI createIRI(String uri);
+	public IRI createIRI(String iri);
 
 	/**
 	 * Creates a new IRI from the supplied namespace and local name. Calling this

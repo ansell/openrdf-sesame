@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Defines constants for the Sesame QName schema namespace.
@@ -45,13 +45,13 @@ public class SESAMEQNAME {
 	 * An immutable {@link Namespace} constant that represents the Sesame QName
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/** <tt>http://www.openrdf.org/schema/qname#qname</tt> */
 	public final static IRI QNAME;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		QNAME = factory.createIRI(SESAMEQNAME.NAMESPACE, "qname");
 	}
 }

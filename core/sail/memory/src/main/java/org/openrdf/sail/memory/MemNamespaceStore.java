@@ -20,14 +20,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 
 /**
  * An in-memory store for namespace prefix information.
  * 
  * @author Arjohn Kampman
  */
-class MemNamespaceStore implements Iterable<NamespaceImpl> {
+class MemNamespaceStore implements Iterable<SimpleNamespace> {
 
 	/*-----------*
 	 * Variables *
@@ -36,7 +36,7 @@ class MemNamespaceStore implements Iterable<NamespaceImpl> {
 	/**
 	 * Map storing namespace information by their prefix.
 	 */
-	private final Map<String, NamespaceImpl> namespacesMap = new LinkedHashMap<String, NamespaceImpl>(16);
+	private final Map<String, SimpleNamespace> namespacesMap = new LinkedHashMap<String, SimpleNamespace>(16);
 
 	/*---------*
 	 * Methods *
@@ -44,7 +44,7 @@ class MemNamespaceStore implements Iterable<NamespaceImpl> {
 
 	public String getNamespace(String prefix) {
 		String result = null;
-		NamespaceImpl namespace = namespacesMap.get(prefix);
+		SimpleNamespace namespace = namespacesMap.get(prefix);
 		if (namespace != null) {
 			result = namespace.getName();
 		}
@@ -52,13 +52,13 @@ class MemNamespaceStore implements Iterable<NamespaceImpl> {
 	}
 
 	public void setNamespace(String prefix, String name) {
-		NamespaceImpl ns = namespacesMap.get(prefix);
+		SimpleNamespace ns = namespacesMap.get(prefix);
 
 		if (ns != null) {
 			ns.setName(name);
 		}
 		else {
-			namespacesMap.put(prefix, new NamespaceImpl(prefix, name));
+			namespacesMap.put(prefix, new SimpleNamespace(prefix, name));
 		}
 	}
 
@@ -66,7 +66,7 @@ class MemNamespaceStore implements Iterable<NamespaceImpl> {
 		namespacesMap.remove(prefix);
 	}
 
-	public Iterator<NamespaceImpl> iterator() {
+	public Iterator<SimpleNamespace> iterator() {
 		return namespacesMap.values().iterator();
 	}
 

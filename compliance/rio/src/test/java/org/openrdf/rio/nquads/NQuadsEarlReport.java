@@ -16,7 +16,7 @@
  */
 package org.openrdf.rio.nquads;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.EarlReport;
 
 /**
@@ -30,7 +30,7 @@ public class NQuadsEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new NQuadsParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createIRI("http://www.w3.org/TR/n-quads/"));
+				SimpleValueFactory.getInstance().createIRI("http://www.w3.org/TR/n-quads/"));
 	}
 
 }

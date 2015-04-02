@@ -25,7 +25,7 @@ import java.io.Serializable;
 public interface Namespace extends Serializable, Comparable<Namespace> {
 
 	/**
-	 * Gets the name of the current namespace (i.e. it's URI).
+	 * Gets the name of the current namespace (i.e. its IRI).
 	 * 
 	 * @return name of namespace
 	 */

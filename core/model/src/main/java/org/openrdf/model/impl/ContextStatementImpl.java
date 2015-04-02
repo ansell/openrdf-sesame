@@ -16,67 +16,20 @@
  */
 package org.openrdf.model.impl;
 
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 
 /**
- * An extension of {@link StatementImpl} that adds a context field.
+ * @author Jeen Broekstra
+ * @deprecated since 4.0. Use {@link ContextStatement} instead.
  */
-public class ContextStatementImpl extends StatementImpl {
+@Deprecated
+public class ContextStatementImpl extends ContextStatement {
 
-	/*-----------*
-	 * Constants *
-	 *-----------*/
-
-	private static final long serialVersionUID = -4747275587477906748L;
-
-	/**
-	 * The statement's context, if applicable.
-	 */
-	private final Resource context;
-
-	/*--------------*
-	 * Constructors *
-	 *--------------*/
-
-	/**
-	 * Creates a new Statement with the supplied subject, predicate and object
-	 * for the specified associated context.
-	 * 
-	 * @param subject
-	 *        The statement's subject, must not be <tt>null</tt>.
-	 * @param predicate
-	 *        The statement's predicate, must not be <tt>null</tt>.
-	 * @param object
-	 *        The statement's object, must not be <tt>null</tt>.
-	 * @param context
-	 *        The statement's context, <tt>null</tt> to indicate no context is
-	 *        associated.
-	 */
+	@Deprecated
 	public ContextStatementImpl(Resource subject, IRI predicate, Value object, Resource context) {
-		super(subject, predicate, object);
-		this.context = context;
+		super(subject, predicate, object, context);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	@Override
-	public Resource getContext()
-	{
-		return context;
-	}
-
-	@Override
-	public String toString()
-	{
-		StringBuilder sb = new StringBuilder(256);
-
-		sb.append(super.toString());
-		sb.append(" [").append(getContext()).append("]");
-
-		return sb.toString();
-	}
 }

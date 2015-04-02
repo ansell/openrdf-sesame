@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.rio.DatatypeHandler;
 
@@ -56,7 +56,7 @@ public class DBPediaCelsiusDatatypeHandlerTest extends AbstractDatatypeHandlerTe
 
 	@Override
 	protected IRI getRecognisedDatatypeUri() {
-		return ValueFactoryImpl.getInstance().createIRI("http://dbpedia.org/datatype/", "degreeCelsius");
+		return SimpleValueFactory.getInstance().createIRI("http://dbpedia.org/datatype/", "degreeCelsius");
 	}
 
 	@Override
@@ -71,8 +71,8 @@ public class DBPediaCelsiusDatatypeHandlerTest extends AbstractDatatypeHandlerTe
 
 	@Override
 	protected Literal getNormalisedLiteralForRecognisedDatatypeAndValue() {
-		return ValueFactoryImpl.getInstance().createLiteral("1.0",
-				ValueFactoryImpl.getInstance().createIRI("http://dbpedia.org/datatype/", "degreeCelsius"));
+		return SimpleValueFactory.getInstance().createLiteral("1.0",
+				SimpleValueFactory.getInstance().createIRI("http://dbpedia.org/datatype/", "degreeCelsius"));
 	}
 
 	// -------------------------------------
@@ -86,7 +86,7 @@ public class DBPediaCelsiusDatatypeHandlerTest extends AbstractDatatypeHandlerTe
 
 	@Override
 	protected ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 	@Override

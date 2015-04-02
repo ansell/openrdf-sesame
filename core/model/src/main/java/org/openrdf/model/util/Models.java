@@ -26,6 +26,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.util.iterators.Iterators;
 
@@ -117,16 +118,16 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves any object URI value from the given model. If more than one
+	 * Retrieves any object IRI value from the given model. If more than one
 	 * possible value exists, any one value is picked and returned.
 	 * 
 	 * @param m
-	 *        the model from which to retrieve an object URI value.
-	 * @return an object URI value from the given model, or <code>null</code> if
+	 *        the model from which to retrieve an object IRI value.
+	 * @return an object IRI value from the given model, or <code>null</code> if
 	 *         no such value exists.
 	 * @see Model#objectIRI()
 	 */
-	public static IRI anyObjectURI(Model m) {
+	public static IRI anyObjectIRI(Model m) {
 		IRI result = null;
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
@@ -139,6 +140,22 @@ public class Models {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Retrieves any object URI value from the given model. If more than one
+	 * possible value exists, any one value is picked and returned.
+	 * 
+	 * @param m
+	 *        the model from which to retrieve an object URI value.
+	 * @return an object URI value from the given model, or <code>null</code> if
+	 *         no such value exists.
+	 * @see Model#objectURI()
+	 * @deprecated use {@link #anyObjectIRI(Model)} instead.
+	 */
+	@Deprecated
+	public static URI anyObjectURI(Model m) {
+		return anyObjectIRI(m);
 	}
 
 	/**
@@ -162,16 +179,16 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves any subject URI from the given model. If more than one possible
+	 * Retrieves any subject IRI from the given model. If more than one possible
 	 * value exists, any one value is picked and returned.
 	 * 
 	 * @param m
-	 *        the model from which to retrieve a subject URI value.
-	 * @return an subject URI value from the given model, or <code>null</code> if
+	 *        the model from which to retrieve a subject IRI value.
+	 * @return an subject IRI value from the given model, or <code>null</code> if
 	 *         no such value exists.
 	 * @see Model#subjectIRI()
 	 */
-	public static IRI anySubjectURI(Model m) {
+	public static IRI anySubjectIRI(Model m) {
 		IRI result = null;
 		final Set<Resource> objects = m.subjects();
 		if (objects != null && !objects.isEmpty()) {
@@ -184,6 +201,22 @@ public class Models {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Retrieves any subject URI value from the given model. If more than one
+	 * possible value exists, any one value is picked and returned.
+	 * 
+	 * @param m
+	 *        the model from which to retrieve a subject URI value.
+	 * @return a subject URI value from the given model, or <code>null</code> if
+	 *         no such value exists.
+	 * @see Model#objectURI()
+	 * @deprecated use {@link #anySubjectIRI(Model)} instead.
+	 */
+	@Deprecated
+	public static URI anySubjectURI(Model m) {
+		return anySubjectIRI(m);
 	}
 
 	/**

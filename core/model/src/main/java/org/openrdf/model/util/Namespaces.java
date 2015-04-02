@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 
 /**
  * A utility class to perform operations on {@link Namespace}s.
@@ -155,7 +155,7 @@ public class Namespaces {
 						namespaces.remove(nextNamespace);
 					}
 				}
-				namespaces.add(new NamespaceImpl(nextKey, nextValue));
+				namespaces.add(new SimpleNamespace(nextKey, nextValue));
 				return result;
 			}
 

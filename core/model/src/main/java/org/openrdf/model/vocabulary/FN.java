@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Defines constants for the standard <a
@@ -46,7 +46,7 @@ public class FN {
 	 * An immutable {@link Namespace} constant that represents the XPath
 	 * Functions namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/** fn:concat */
 	public static final IRI CONCAT;
@@ -118,7 +118,7 @@ public class FN {
 	public static final IRI YEAR_FROM_DATETIME;
 
 	static {
-		ValueFactory f = new ValueFactoryImpl();
+		ValueFactory f = new SimpleValueFactory();
 
 		CONCAT = f.createIRI(NAMESPACE, "concat");
 

@@ -19,8 +19,8 @@ package org.openrdf.model.vocabulary;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Defines constants for the Sesame schema namespace.
@@ -42,7 +42,7 @@ public class SESAME {
 	 * An immutable {@link Namespace} constant that represents the Sesame Schema
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/** <tt>http://www.openrdf.org/schema/sesame#directSubClassOf</tt> */
 	public final static IRI DIRECTSUBCLASSOF;
@@ -65,7 +65,7 @@ public class SESAME {
 	public final static IRI WILDCARD;
 	
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 		DIRECTSUBCLASSOF = factory.createIRI(SESAME.NAMESPACE, "directSubClassOf");
 		DIRECTSUBPROPERTYOF = factory.createIRI(SESAME.NAMESPACE, "directSubPropertyOf");
 		DIRECTTYPE = factory.createIRI(SESAME.NAMESPACE, "directType");

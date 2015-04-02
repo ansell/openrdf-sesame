@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.ContextStatement;
 
 /**
  * A MemStatement is a Statement which contains context information and a flag
  * indicating whether the statement is explicit or inferred.
  */
-public class MemStatement extends ContextStatementImpl {
+public class MemStatement extends ContextStatement {
 
 	/*-----------*
 	 * Constants *

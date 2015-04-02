@@ -29,8 +29,8 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.IRIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
@@ -52,29 +52,29 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 
 	protected RepositoryConnection connection;
 
-	public static final IRI SUBJECT_1 = new IRIImpl("urn:subject1");
+	public static final IRI SUBJECT_1 = new SimpleIRI("urn:subject1");
 
-	public static final IRI SUBJECT_2 = new IRIImpl("urn:subject2");
+	public static final IRI SUBJECT_2 = new SimpleIRI("urn:subject2");
 
-	public static final IRI SUBJECT_3 = new IRIImpl("urn:subject3");
+	public static final IRI SUBJECT_3 = new SimpleIRI("urn:subject3");
 
-	public static final IRI SUBJECT_4 = new IRIImpl("urn:subject4");
+	public static final IRI SUBJECT_4 = new SimpleIRI("urn:subject4");
 
-	public static final IRI SUBJECT_5 = new IRIImpl("urn:subject5");
+	public static final IRI SUBJECT_5 = new SimpleIRI("urn:subject5");
 
-	public static final IRI CONTEXT_1 = new IRIImpl("urn:context1");
+	public static final IRI CONTEXT_1 = new SimpleIRI("urn:context1");
 
-	public static final IRI CONTEXT_2 = new IRIImpl("urn:context2");
+	public static final IRI CONTEXT_2 = new SimpleIRI("urn:context2");
 
-	public static final IRI CONTEXT_3 = new IRIImpl("urn:context3");
+	public static final IRI CONTEXT_3 = new SimpleIRI("urn:context3");
 
 	public static final IRI RDFSLABEL = RDFS.LABEL;
 
 	public static final IRI RDFSCOMMENT = RDFS.COMMENT;
 
-	public static final IRI FOAFNAME = new IRIImpl("http://xmlns.com/foaf/0.1/name");
+	public static final IRI FOAFNAME = new SimpleIRI("http://xmlns.com/foaf/0.1/name");
 
-	public static final IRI FOAFPLAN = new IRIImpl("http://xmlns.com/foaf/0.1/plan");
+	public static final IRI FOAFPLAN = new SimpleIRI("http://xmlns.com/foaf/0.1/plan");
 
 	@Override
 	public void setUp()
@@ -102,19 +102,19 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		// add some statements to it
 		connection = repository.getConnection();
 		connection.setAutoCommit(false);
-		connection.add(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"));
-		connection.add(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
+		connection.add(SUBJECT_1, RDFSLABEL, new SimpleLiteral("the first resource"));
+		connection.add(SUBJECT_1, RDFSCOMMENT, new SimpleLiteral(
 				"Groucho Marx is going to cut away the first part of the first party of the contract."));
-		connection.add(SUBJECT_1, FOAFNAME, new LiteralImpl("groucho and harpo"));
+		connection.add(SUBJECT_1, FOAFNAME, new SimpleLiteral("groucho and harpo"));
 
-		connection.add(SUBJECT_2, FOAFNAME, new LiteralImpl("the second resource"));
-		connection.add(SUBJECT_2, RDFSCOMMENT, new LiteralImpl(
+		connection.add(SUBJECT_2, FOAFNAME, new SimpleLiteral("the second resource"));
+		connection.add(SUBJECT_2, RDFSCOMMENT, new SimpleLiteral(
 				"in the night at the opera, groucho is in a cabin on a ship."));
 
-		connection.add(SUBJECT_3, RDFSLABEL, new LiteralImpl("the third resource"));
-		connection.add(SUBJECT_3, RDFSCOMMENT, new LiteralImpl(
+		connection.add(SUBJECT_3, RDFSLABEL, new SimpleLiteral("the third resource"));
+		connection.add(SUBJECT_3, RDFSCOMMENT, new SimpleLiteral(
 				"a not well known fact, groucho marx was not a smoker"));
-		connection.add(SUBJECT_3, FOAFPLAN, new LiteralImpl("groucho did not smoke cigars nor cigarillos")); // this
+		connection.add(SUBJECT_3, FOAFPLAN, new SimpleLiteral("groucho did not smoke cigars nor cigarillos")); // this
 																																				// should
 																																				// not
 																																				// be
@@ -135,19 +135,19 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 	{
 		// are the triples stored in the underlying sail?
 
-		assertTrue(connection.hasStatement(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
+		assertTrue(connection.hasStatement(SUBJECT_1, RDFSLABEL, new SimpleLiteral("the first resource"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, RDFSCOMMENT, new SimpleLiteral(
 				"Groucho Marx is going to cut away the first part of the first party of the contract."), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, FOAFNAME, new LiteralImpl("groucho and harpo"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, FOAFNAME, new SimpleLiteral("groucho and harpo"), false));
 
-		assertTrue(connection.hasStatement(SUBJECT_2, FOAFNAME, new LiteralImpl("the second resource"), false));
-		assertTrue(connection.hasStatement(SUBJECT_2, RDFSCOMMENT, new LiteralImpl(
+		assertTrue(connection.hasStatement(SUBJECT_2, FOAFNAME, new SimpleLiteral("the second resource"), false));
+		assertTrue(connection.hasStatement(SUBJECT_2, RDFSCOMMENT, new SimpleLiteral(
 				"in the night at the opera, groucho is in a cabin on a ship."), false));
 
-		assertTrue(connection.hasStatement(SUBJECT_3, RDFSLABEL, new LiteralImpl("the third resource"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, RDFSCOMMENT, new LiteralImpl(
+		assertTrue(connection.hasStatement(SUBJECT_3, RDFSLABEL, new SimpleLiteral("the third resource"), false));
+		assertTrue(connection.hasStatement(SUBJECT_3, RDFSCOMMENT, new SimpleLiteral(
 				"a not well known fact, groucho marx was not a smoker"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, FOAFPLAN, new LiteralImpl(
+		assertTrue(connection.hasStatement(SUBJECT_3, FOAFPLAN, new SimpleLiteral(
 				"groucho did not smoke cigars nor cigarillos"), false)); // this
 																							// should
 																							// not be
@@ -162,7 +162,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 				+ "> {Query}; " + " <" + PROPERTY + "> {Property}; " + " <" + SCORE + "> {Score} ";
 		{
 			TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
-			query.setBinding("Query", new LiteralImpl("resource"));
+			query.setBinding("Query", new SimpleLiteral("resource"));
 			query.setBinding("Property", RDFSLABEL);
 			TupleQueryResult result = query.evaluate();
 			// check the results
@@ -182,7 +182,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		}
 		{
 			TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
-			query.setBinding("Query", new LiteralImpl("groucho"));
+			query.setBinding("Query", new SimpleLiteral("groucho"));
 			query.setBinding("Property", RDFSLABEL);
 			TupleQueryResult result = query.evaluate();
 			// check the results
@@ -200,7 +200,7 @@ public class LuceneSailIndexedPropertiesTest extends TestCase {
 		}
 		{
 			TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
-			query.setBinding("Query", new LiteralImpl("cigarillos"));
+			query.setBinding("Query", new SimpleLiteral("cigarillos"));
 			query.setBinding("Property", FOAFPLAN);
 			TupleQueryResult result = query.evaluate();
 			// check the results

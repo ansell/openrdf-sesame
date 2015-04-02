@@ -35,7 +35,7 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -62,7 +62,7 @@ public class NativeStoreConsistencyTest {
 
 	@Test
 	public void testSES1867IndexCorruption() throws Exception {
-		ValueFactory vf = ValueFactoryImpl.getInstance();
+		ValueFactory vf = SimpleValueFactory.getInstance();
 		IRI oldContext = vf.createIRI("http://example.org/oldContext");
 		IRI newContext = vf.createIRI("http://example.org/newContext");
 

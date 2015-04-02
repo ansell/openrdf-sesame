@@ -54,7 +54,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -829,7 +829,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 					if (prefix instanceof Literal && namespace instanceof Literal) {
 						String prefixStr = ((Literal)prefix).getLabel();
 						String namespaceStr = ((Literal)namespace).getLabel();
-						namespaceList.add(new NamespaceImpl(prefixStr, namespaceStr));
+						namespaceList.add(new SimpleNamespace(prefixStr, namespaceStr));
 					}
 				}
 			}
