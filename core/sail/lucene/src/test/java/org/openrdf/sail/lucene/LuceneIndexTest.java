@@ -29,19 +29,18 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,16 +144,15 @@ public class LuceneIndexTest {
 		assertEquals(1, reader.numDocs());
 
 		Term term = new Term(LuceneIndex.URI_FIELD_NAME, subject.toString());
-		TermDocs docs = reader.termDocs(term);
-		assertTrue(docs.next());
+		DocsEnum docs = termDocs(reader, term);
+		assertTrue(next(docs));
 
-		int documentNr = docs.doc();
+		int documentNr = docs.docID();
 		Document document = reader.document(documentNr);
 		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), document.get(predicate1.toString()));
 
-		assertFalse(docs.next());
-		docs.close();
+		assertFalse(next(docs));
 		reader.close();
 
 		// add another statement
@@ -165,17 +163,16 @@ public class LuceneIndexTest {
 		reader = DirectoryReader.open(directory);
 		assertEquals(1, reader.numDocs()); // #docs should *not* have increased
 
-		docs = reader.termDocs(term);
-		assertTrue(docs.next());
+		docs = termDocs(reader, term);
+		assertTrue(next(docs));
 
-		documentNr = docs.doc();
+		documentNr = docs.docID();
 		document = reader.document(documentNr);
 		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), document.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), document.get(predicate2.toString()));
 
-		assertFalse(docs.next());
-		docs.close();
+		assertFalse(next(docs));
 
 		// see if we can query for these literals
 		IndexSearcher searcher = new IndexSearcher(reader);
@@ -202,17 +199,16 @@ public class LuceneIndexTest {
 		reader = DirectoryReader.open(directory);
 		assertEquals(1, reader.numDocs());
 
-		docs = reader.termDocs(term);
-		assertTrue(docs.next());
+		docs = termDocs(reader, term);
+		assertTrue(next(docs));
 
-		documentNr = docs.doc();
+		documentNr = docs.docID();
 		document = reader.document(documentNr);
 		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
 		assertNull(document.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), document.get(predicate2.toString()));
 
-		assertFalse(docs.next());
-		docs.close();
+		assertFalse(next(docs));
 
 		reader.close();
 
@@ -224,6 +220,21 @@ public class LuceneIndexTest {
 		reader = DirectoryReader.open(directory);
 		assertEquals(0, reader.numDocs());
 		reader.close();
+	}
+
+	/**
+	 * NB: this is a convenient but very slow way of getting termDocs.
+	 * It is sufficient for testing purposes.
+	 * @throws IOException 
+	 */
+	private static DocsEnum termDocs(IndexReader reader, Term term) throws IOException
+	{
+		return MultiFields.getTermDocsEnum(reader, MultiFields.getLiveDocs(reader), term.field(), term.bytes());
+	}
+
+	private static boolean next(DocsEnum docs) throws IOException
+	{
+		return (docs.nextDoc() != DocsEnum.NO_MORE_DOCS);
 	}
 
 	@Test
@@ -312,7 +323,7 @@ public class LuceneIndexTest {
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
 			connection.add(statementContext211, statementContext211.getContext());
@@ -369,7 +380,7 @@ public class LuceneIndexTest {
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
 			connection.add(statementContext211, statementContext211.getContext());
