@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +34,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,7 +252,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	/**
 	 * Set the parameter "reindexQuery=" to configure the statements to index over.
-	 * Default value is "SELECT ?s ?p ?o ?c WHERE {GRAPH ?c {?s ?p ?o.}} ORDER BY ?s".
+	 * Default value is "SELECT ?s ?p ?o ?c WHERE {{?s ?p ?o} UNION {GRAPH ?c {?s ?p ?o.}}} ORDER BY ?s".
 	 * NB: the query must contain the bindings ?s, ?p, ?o and ?c and must be ordered by ?s.
 	 */
 	public static final String REINDEX_QUERY_KEY = "reindexQuery";
@@ -299,7 +299,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	protected final Properties parameters = new Properties();
 
-	private String reindexQuery = "SELECT ?s ?p ?o ?c WHERE {GRAPH ?c {?s ?p ?o.}} ORDER BY ?s";
+	private String reindexQuery = "SELECT ?s ?p ?o ?c WHERE {{?s ?p ?o} UNION {GRAPH ?c {?s ?p ?o.}}} ORDER BY ?s";
 
 	private boolean incompleteQueryFails = true;
 
@@ -394,7 +394,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 					analyzer = (Analyzer)Class.forName((String)parameters.getProperty(ANALYZER_CLASS_KEY)).newInstance();
 				}
 				else {
-					analyzer = new StandardAnalyzer(Version.LUCENE_35);
+					analyzer = new StandardAnalyzer();
 				}
 
 				initializeLuceneIndex(analyzer);
@@ -409,7 +409,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 		throws SailException, IOException
 	{
 		if (parameters.containsKey(LUCENE_DIR_KEY)) {
-			FSDirectory dir = FSDirectory.open(new File(parameters.getProperty(LUCENE_DIR_KEY)));
+			FSDirectory dir = FSDirectory.open(Paths.get(parameters.getProperty(LUCENE_DIR_KEY)));
 			setLuceneIndex(new LuceneIndex(dir, analyzer));
 		}
 		else if (parameters.containsKey(LUCENE_RAMDIR_KEY)

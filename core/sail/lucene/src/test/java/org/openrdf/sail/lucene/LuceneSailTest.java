@@ -117,7 +117,7 @@ public class LuceneSailTest {
 		// to confogure using just the Logger
 
 		// setup a LuceneSail
-		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer(Version.LUCENE_35));
+		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer());
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);

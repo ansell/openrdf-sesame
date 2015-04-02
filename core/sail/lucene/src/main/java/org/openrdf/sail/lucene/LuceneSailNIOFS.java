@@ -16,8 +16,8 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.store.FSDirectory;
@@ -41,7 +41,7 @@ public class LuceneSailNIOFS extends LuceneSail {
 		throws SailException, IOException
 	{
 		if (parameters.containsKey(LUCENE_DIR_KEY)) {
-			FSDirectory dir = new NIOFSDirectory(new File(parameters.getProperty(LUCENE_DIR_KEY)), null);
+			FSDirectory dir = new NIOFSDirectory(Paths.get(parameters.getProperty(LUCENE_DIR_KEY)));
 			setLuceneIndex(new LuceneIndex(dir, analyzer));
 		}
 		else

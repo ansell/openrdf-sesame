@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -489,23 +489,28 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			if (query.getSnippetVariableName() != null) {
 				if (highlighter != null) {
 					// limit to the queried field, if there was one
-					Fieldable[] fields;
+					IndexableField[] fields;
 					if (query.getPropertyURI() != null) {
 						String fieldname = query.getPropertyURI().toString();
-						fields = doc.getFieldables(fieldname);
+						fields = doc.getFields(fieldname);
 					}
 					else {
 						fields = this.luceneIndex.getPropertyFields(doc.getFields());
 					}
 
 					// extract snippets from Lucene's query results
-					for (Fieldable field : fields) {
+					for (IndexableField field : fields) {
 						// create an individual binding set for each snippet
 						QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
 
 						String text = field.stringValue();
-						TokenStream tokenStream = this.luceneIndex.getAnalyzer().tokenStream(field.name(),
+						TokenStream tokenStream;
+						try {
+							tokenStream = this.luceneIndex.getAnalyzer().tokenStream(field.name(),
 								new StringReader(text));
+						} catch (IOException ioe) {
+							throw new SailException(ioe);
+						}
 
 						String fragments = null;
 						try {
