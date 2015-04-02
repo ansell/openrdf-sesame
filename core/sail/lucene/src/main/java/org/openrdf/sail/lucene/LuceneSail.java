@@ -252,7 +252,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	/**
 	 * Set the parameter "reindexQuery=" to configure the statements to index over.
-	 * Default value is "SELECT ?s ?p ?o ?c WHERE {GRAPH ?c {?s ?p ?o.}} ORDER BY ?s".
+	 * Default value is "SELECT ?s ?p ?o ?c WHERE {{?s ?p ?o} UNION {GRAPH ?c {?s ?p ?o.}}} ORDER BY ?s".
 	 * NB: the query must contain the bindings ?s, ?p, ?o and ?c and must be ordered by ?s.
 	 */
 	public static final String REINDEX_QUERY_KEY = "reindexQuery";
@@ -299,7 +299,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	protected final Properties parameters = new Properties();
 
-	private String reindexQuery = "SELECT ?s ?p ?o ?c WHERE {GRAPH ?c {?s ?p ?o.}} ORDER BY ?s";
+	private String reindexQuery = "SELECT ?s ?p ?o ?c WHERE {{?s ?p ?o} UNION {GRAPH ?c {?s ?p ?o.}}} ORDER BY ?s";
 
 	private boolean incompleteQueryFails = true;
 
