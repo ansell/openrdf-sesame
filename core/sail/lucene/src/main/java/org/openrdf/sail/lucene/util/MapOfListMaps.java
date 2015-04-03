@@ -14,9 +14,10 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.lucene.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Map;
  */
 public class MapOfListMaps<Index1Type, Index2Type, DataType> {
 
-	private final HashMap<Index1Type, Map<Index2Type, List<DataType>>> data;
+	private final Map<Index1Type, Map<Index2Type, List<DataType>>> data;
 
 	/**
 	 * 
@@ -42,7 +43,7 @@ public class MapOfListMaps<Index1Type, Index2Type, DataType> {
 			if (tmp != null)
 				return tmp;
 		}
-		return new ArrayList<DataType>(0);
+		return Collections.emptyList();
 	}
 
 	public Map<Index2Type, List<DataType>> get(Index1Type key1) {
@@ -51,7 +52,7 @@ public class MapOfListMaps<Index1Type, Index2Type, DataType> {
 			return intermediateMap;
 		}
 		else {
-			return new HashMap<Index2Type, List<DataType>>();
+			return Collections.emptyMap();
 		}
 	}
 

@@ -14,30 +14,28 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.lucene.util;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * A Map like structure where each key maps to a map of values.
+ * A Map like structure where each key maps to a set of values.
  */
 public class SetMap<K, V> {
 
-	private final HashMap<K, Set<V>> data;
+	private final Map<K, Set<V>> data;
 
 	public SetMap() {
 		data = new HashMap<K, Set<V>>();
 	}
 
 	public V put(K key, V value) {
-		Set<V> set;
-		if (data.containsKey(key)) {
-			set = data.get(key);
-		}
-		else {
+		Set<V> set = data.get(key);
+		if (set == null) {
 			set = new HashSet<V>();
 			data.put(key, set);
 		}
@@ -54,11 +52,9 @@ public class SetMap<K, V> {
 	}
 
 	public boolean containsKeyValuePair(K key, V val) {
-		Set<V> set;
-		if (data.containsKey(key)) {
-			set = data.get(key);
-			if (set.contains(val))
-				return true;
+		Set<V> set = data.get(key);
+		if (set != null && set.contains(val)) {
+			return true;
 		}
 		return false;
 	}
