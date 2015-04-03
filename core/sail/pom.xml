@@ -21,7 +21,9 @@
 		<module>memory</module>
 		<module>nativerdf</module>
 		<module>rdbms</module>
+		<module>lucene-api</module>
 		<module>lucene</module>
+		<module>elasticsearch</module>
 	</modules>
 
 </project>
