@@ -65,6 +65,9 @@ import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.util.ListMap;
+import org.openrdf.sail.lucene.util.MapOfListMaps;
+import org.openrdf.sail.lucene.util.SetMap;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
