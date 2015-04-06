@@ -28,8 +28,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	GraphQueryTest.class,
 	LuceneIndexTest.class,
 	LuceneSailTest.class,
-	LuceneSailIndexedPropertiesTest.class,
-	QuerySpecBuilderTest.class
+	LuceneSailIndexedPropertiesTest.class
 })
 public class TestAll {
 }
