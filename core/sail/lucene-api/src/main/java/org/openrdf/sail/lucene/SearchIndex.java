@@ -36,9 +36,11 @@ import org.openrdf.sail.SailException;
  * @see LuceneSail
  */
 public interface SearchIndex {
-	void initialize(Properties parameters);
+	void initialize(Properties parameters)
+		throws Exception;
 
-	Collection<BindingSet> evaluate(QuerySpec query);
+	Collection<BindingSet> evaluate(QuerySpec query)
+		throws SailException;
 
 	void beginReading()
 		throws IOException;
