@@ -27,9 +27,9 @@ import java.io.IOException;
  */
 public abstract class AbstractReaderMonitor {
 
-	int readingCount = 0;
+	private int readingCount = 0;
 
-	boolean doClose = false;
+	private boolean doClose = false;
 
 	// Remember index to be able to remove itself from the index list
 	final private AbstractLuceneIndex index;
@@ -38,6 +38,10 @@ public abstract class AbstractReaderMonitor {
 
 	protected AbstractReaderMonitor(AbstractLuceneIndex index) {
 		this.index = index;
+	}
+
+	public int getReadingCount() {
+		return readingCount;
 	}
 
 	/**

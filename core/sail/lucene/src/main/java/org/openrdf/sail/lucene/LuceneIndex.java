@@ -159,10 +159,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * @throws IOException
 	 *         When the Directory could not be unlocked.
 	 */
-	public LuceneIndex(Directory dir, Analyzer analyzer)
+	public LuceneIndex(Directory directory, Analyzer analyzer)
 		throws IOException
 	{
-		this.directory = dir;
+		this.directory = directory;
 		this.analyzer = analyzer;
 
 		postInit();
@@ -1340,7 +1340,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		catch(Exception e) {
 			rollback();
 		}
-		
+
 	}
 
 	/**

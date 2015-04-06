@@ -39,7 +39,6 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -229,13 +228,13 @@ public class LuceneSailTest {
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + bindings.getValue("Resource") + ">, " + "<" + bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + bindings.getValue("Resource") + ">, " + "<" + bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
@@ -267,8 +266,8 @@ public class LuceneSailTest {
 		// check the results
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_3, (URI)bindings.getValue("Resource"));
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Matching"));
+		assertEquals(SUBJECT_3, bindings.getValue("Resource"));
+		assertEquals(SUBJECT_1, bindings.getValue("Matching"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertFalse(result.hasNext());
@@ -595,7 +594,7 @@ public class LuceneSailTest {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove(bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
@@ -820,7 +819,7 @@ public class LuceneSailTest {
 		// check that this subject and only this subject is returned
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Subject"));
+		assertEquals(SUBJECT_1, bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 		assertFalse(result.hasNext());
 
@@ -955,8 +954,8 @@ public class LuceneSailTest {
 		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponectwo"), CONTEXT_1);
 
 		connection.commit();
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(null, index.currentMonitor);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(null, index.getCurrentMonitor());
 		// prepare the query
 
 		// First search on the LuceneIndex
@@ -965,8 +964,8 @@ public class LuceneSailTest {
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 		TupleQueryResult result1 = query.evaluate();
 
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(1, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(1, index.getCurrentMonitor().getReadingCount());
 		// check the results is not needed, just assert iterator is not closed
 		// assertTrue(result1.hasNext());
 		// result1.next();
@@ -977,8 +976,8 @@ public class LuceneSailTest {
 		query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 		TupleQueryResult result2 = query.evaluate();
 
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(2, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(2, index.getCurrentMonitor().getReadingCount());
 		// CHECK value of the CurrentReader readersCount
 
 		// check the results is not needed, just assert iterator is not closed
@@ -986,22 +985,22 @@ public class LuceneSailTest {
 		// result2.next();
 
 		// CHECK value of the CurrentReader readersCount
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(2, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(2, index.getCurrentMonitor().getReadingCount());
 
 		// empty commit without changes do not invalidate readers
 		connection.commit();
 
 		// CHECK value of the CurrentReader readersCount
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(2, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(2, index.getCurrentMonitor().getReadingCount());
 
 		// This should invalidate readers
 		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponecthree"), CONTEXT_1);
 		connection.commit();
 		// But readers can not be closed, they are being iterated
-		assertEquals(1, index.oldmonitors.size());
-		assertEquals(null, index.currentMonitor);
+		assertEquals(1, index.getOldMonitors().size());
+		assertEquals(null, index.getCurrentMonitor());
 
 		// Third search on the index should create new urrent ReaderMonitor
 		queryString = "SELECT Resource FROM {Resource} <" + MATCHES + "> {}  <" + QUERY
@@ -1009,19 +1008,19 @@ public class LuceneSailTest {
 		query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 		TupleQueryResult result3 = query.evaluate();
 
-		assertEquals(1, index.oldmonitors.size());
-		assertEquals(1, index.currentMonitor.readingCount);
+		assertEquals(1, index.getOldMonitors().size());
+		assertEquals(1, index.getCurrentMonitor().getReadingCount());
 
 		// When iteration is finish remove old monitor
 		result1.close();
-		assertEquals(1, index.oldmonitors.size());
+		assertEquals(1, index.getOldMonitors().size());
 		result2.close();
-		assertEquals(1, index.oldmonitors.size());
+		assertEquals(1, index.getOldMonitors().size());
 		// current monitor is not removed, there is no need
 		result3.close();
 
 		connection.close();
-		assertEquals(0, index.currentMonitor.readingCount);
+		assertEquals(0, index.getCurrentMonitor().getReadingCount());
 
 	}
 
@@ -1096,7 +1095,7 @@ public class LuceneSailTest {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove(bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));

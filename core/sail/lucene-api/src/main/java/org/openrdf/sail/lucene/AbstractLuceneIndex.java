@@ -100,6 +100,10 @@ public abstract class AbstractLuceneIndex implements SearchIndex {
 		getCurrentMonitor().endReading();
 	}
 
+	public Collection<AbstractReaderMonitor> getOldMonitors()
+	{
+		return oldmonitors;
+	}
 
 	/**
 	 * Returns whether the provided literal is accepted by the LuceneIndex to be

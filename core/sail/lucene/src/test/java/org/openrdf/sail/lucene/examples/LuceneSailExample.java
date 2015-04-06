@@ -80,7 +80,7 @@ public class LuceneSailExample {
 		// add some test data, the FOAF ont
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(LuceneSailExample.class.getResourceAsStream("foaf.rdfs"), "", RDFFormat.RDFXML);
 			connection.commit();
 
