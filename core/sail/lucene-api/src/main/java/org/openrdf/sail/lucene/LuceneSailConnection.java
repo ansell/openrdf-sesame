@@ -16,38 +16,20 @@
  */
 package org.openrdf.sail.lucene;
 
+import info.aduna.iteration.CloseableIteration;
+
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Formatter;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -71,6 +53,8 @@ import org.openrdf.sail.helpers.NotifyingSailConnectionWrapper;
 import org.openrdf.sail.lucene.LuceneSailBuffer.AddRemoveOperation;
 import org.openrdf.sail.lucene.LuceneSailBuffer.ClearContextOperation;
 import org.openrdf.sail.lucene.LuceneSailBuffer.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <h2><a name="whySailConnectionListener">Sail Connection Listener instead of
@@ -106,7 +90,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 
 	final private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	final private LuceneIndex luceneIndex;
+	final private SearchIndex luceneIndex;
 
 	final private LuceneSail sail;
 
@@ -121,6 +105,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 */
 	protected final SailConnectionListener connectionListener = new SailConnectionListener() {
 
+		@Override
 		public void statementAdded(Statement statement) {
 			// we only consider statements that contain literals
 			if (statement.getObject() instanceof Literal) {
@@ -135,6 +120,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			}
 		}
 
+		@Override
 		public void statementRemoved(Statement statement) {
 			// we only consider statements that contain literals
 			if (statement.getObject() instanceof Literal) {
@@ -151,32 +137,12 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	};
 
 	/**
-	 * this monitor traces the number of current readers
-	 */
-	private ReaderMonitor monitor;
-
-	/**
 	 * To remember if the iterator was already closed and only free resources
 	 * once
 	 */
 	private boolean mustclose = false;
 
-	/**
-	 * This class represents the result of a Lucene query evaluation.
-	 */
-	private static class QueryResult {
-
-		public final TopDocs hits;
-
-		public final Highlighter highlighter;
-
-		public QueryResult(TopDocs hits, Highlighter highlighter) {
-			this.hits = hits;
-			this.highlighter = highlighter;
-		}
-	}
-
-	public LuceneSailConnection(NotifyingSailConnection wrappedConnection, LuceneIndex luceneIndex,
+	public LuceneSailConnection(NotifyingSailConnection wrappedConnection, SearchIndex luceneIndex,
 			LuceneSail sail)
 	{
 		super(wrappedConnection);
@@ -207,7 +173,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		if (mustclose) {
 			mustclose = false;
 			try {
-				monitor.endReading();
+				luceneIndex.endReading();
 			}
 			catch (IOException e) {
 				logger.warn("could not close IndexReader or IndexSearcher " + e, e);
@@ -233,6 +199,20 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		}
 		finally {
 			getWrappedConnection().addConnectionListener(connectionListener);
+		}
+	}
+
+	@Override
+	public void begin()
+		throws SailException
+	{
+		super.begin();
+		buffer.reset();
+		try {
+			luceneIndex.begin();
+		}
+		catch (IOException e) {
+			throw new SailException(e);
 		}
 	}
 
@@ -330,17 +310,18 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		// query string (escape colons here)
 
 		// mark that reading is in progress
-		this.monitor = this.luceneIndex.getCurrentMonitor();
-		this.monitor.beginReading();
+		try {
+			this.luceneIndex.beginReading();
+		}
+		catch(IOException e) {
+			throw new SailException(e);
+		}
 		this.mustclose = true;
 
 		// evaluate queries, generate binding sets, and remove queries
 		for (QuerySpec query : queries) {
-			// evaluate the Lucene query
-			QueryResult result = evaluate(query);
-
-			// generate bindings
-			LinkedHashSet<BindingSet> bindingSets = generateBindingSets(query, result.hits, result.highlighter);
+			// evaluate the Lucene query and generate bindings
+			Collection<BindingSet> bindingSets = luceneIndex.evaluate(query);
 
 			Class<? extends QueryModelNode> replacement;
 
@@ -365,215 +346,6 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 				continue;
 			}
 		}
-	}
-
-	/**
-	 * Evaluates one Lucene Query. It distinguishes between two cases, the one
-	 * where no subject is given and the one were it is given.
-	 * 
-	 * @param query
-	 *        the Lucene query to evaluate
-	 * @return QueryResult consisting of hits and highlighter
-	 */
-	private QueryResult evaluate(QuerySpec query) {
-		TopDocs hits = null;
-		Highlighter highlighter = null;
-
-		// get the subject of the query
-		Resource subject = query.getSubject();
-
-		try {
-			// parse the query string to a lucene query
-
-			String sQuery = query.getQueryString();
-
-			if (!sQuery.isEmpty()) {
-				Query lucenequery = this.luceneIndex.parseQuery(query.getQueryString(), query.getPropertyURI());
-
-				// if the query requests for the snippet, create a highlighter using
-				// this query
-				if (query.getSnippetVariableName() != null) {
-					Formatter formatter = new SimpleHTMLFormatter();
-					highlighter = new Highlighter(formatter, new QueryScorer(lucenequery));
-				}
-
-				// distinguish the two cases of subject == null
-				if (subject == null) {
-					hits = this.luceneIndex.search(lucenequery);
-				}
-				else {
-					hits = this.luceneIndex.search(subject, lucenequery);
-				}
-			}
-			else {
-				hits = new TopDocs(0, new ScoreDoc[0], 0.0f);
-			}
-		}
-		catch (Exception e) {
-			logger.error("There was a problem evaluating query '" + query.getQueryString() + "' for property '"
-					+ query.getPropertyURI() + "!", e);
-		}
-
-		return new QueryResult(hits, highlighter);
-	}
-
-	/**
-	 * This method generates bindings from the given result of a Lucene query.
-	 * 
-	 * @param query
-	 *        the Lucene query
-	 * @param hits
-	 *        the query result
-	 * @param highlighter
-	 *        a Highlighter for the query
-	 * @return a LinkedHashSet containing generated bindings
-	 * @throws SailException
-	 */
-	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, TopDocs hits,
-			Highlighter highlighter)
-		throws SailException
-	{
-		// Since one resource can be returned many times, it can lead now to
-		// multiple occurrences
-		// of the same binding tuple in the BINDINGS clause. This in turn leads to
-		// duplicate answers in the original SPARQL query.
-		// We want to avoid this, so BindingSets added to the result must be
-		// unique.
-		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
-
-		// for each hit ...
-		ScoreDoc[] docs = hits.scoreDocs;
-		for (int i = 0; i < docs.length; i++) {
-			// this takes the new bindings
-			QueryBindingSet derivedBindings = new QueryBindingSet();
-
-			// get the current hit
-			int docId = docs[i].doc;
-			Document doc = getDoc(docId);
-			if (doc == null)
-				continue;
-
-			// get the score of the hit
-			float score = docs[i].score;
-
-			// bind the respective variables
-			String matchVar = query.getMatchesVariableName();
-			if (matchVar != null) {
-				try {
-					Resource resource = this.luceneIndex.getResource(doc);
-					Value existing = derivedBindings.getValue(matchVar);
-					// if the existing binding contradicts the current binding, than
-					// we can safely skip this permutation
-					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-						// invalidate the binding
-						derivedBindings = null;
-
-						// and exit the loop
-						break;
-					}
-					derivedBindings.addBinding(matchVar, resource);
-				}
-				catch (NullPointerException e) {
-					SailException e1 = new SailException(
-							"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-							e);
-					logger.error(e1.getMessage());
-					logger.debug("Details: ", e);
-					throw e1;
-				}
-			}
-
-			if ((query.getScoreVariableName() != null) && (score > 0.0f))
-				derivedBindings.addBinding(query.getScoreVariableName(), scoreToLiteral(score));
-
-			if (query.getSnippetVariableName() != null) {
-				if (highlighter != null) {
-					// limit to the queried field, if there was one
-					Fieldable[] fields;
-					if (query.getPropertyURI() != null) {
-						String fieldname = query.getPropertyURI().toString();
-						fields = doc.getFieldables(fieldname);
-					}
-					else {
-						fields = this.luceneIndex.getPropertyFields(doc.getFields());
-					}
-
-					// extract snippets from Lucene's query results
-					for (Fieldable field : fields) {
-						// create an individual binding set for each snippet
-						QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-
-						String text = field.stringValue();
-						TokenStream tokenStream = this.luceneIndex.getAnalyzer().tokenStream(field.name(),
-								new StringReader(text));
-
-						String fragments = null;
-						try {
-							fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
-						}
-						catch (Exception e) {
-							logger.error("Exception while getting snippet for filed " + field.name()
-									+ " for query\n" + query, e);
-							continue;
-						}
-
-						if (fragments != null && !fragments.isEmpty()) {
-							snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
-
-							if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-								snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
-							}
-
-							bindingSets.add(snippetBindings);
-						}
-					}
-				}
-				else {
-					logger.warn(
-							"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
-							query);
-					bindingSets.add(derivedBindings);
-				}
-			}
-			else {
-				bindingSets.add(derivedBindings);
-			}
-		}
-
-		// we succeeded
-		return bindingSets;
-	}
-
-	/**
-	 * Returns the lucene hit with the given id of the respective lucene query
-	 * 
-	 * @param id
-	 *        the id of the document to return
-	 * @return the requested hit, or null if it fails
-	 */
-	private Document getDoc(int docId) {
-		try {
-			return this.luceneIndex.getIndexSearcher().doc(docId);
-		}
-		catch (CorruptIndexException e) {
-			logger.error("The index seems to be corrupted:", e);
-			return null;
-		}
-		catch (IOException e) {
-			logger.error("Could not read from index:", e);
-			return null;
-		}
-	}
-
-	/**
-	 * Returns a score value encoded as a Literal.
-	 * 
-	 * @param score
-	 *        the float score to convert
-	 * @return the score as a literal
-	 */
-	private Literal scoreToLiteral(float score) {
-		return new LiteralImpl(String.valueOf(score), XMLSchema.FLOAT);
 	}
 
 	/**

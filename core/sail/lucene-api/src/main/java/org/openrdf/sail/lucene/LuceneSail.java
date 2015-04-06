@@ -29,14 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -52,6 +44,8 @@ import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A LuceneSail wraps an arbitrary existing Sail and extends it with support for
@@ -279,6 +273,11 @@ public class LuceneSail extends NotifyingSailWrapper {
 	public static final String LUCENE_RAMDIR_KEY = "useramdir";
 
 	/**
+	 * Set this key to configure the LuceneIndex class implementation.
+	 */
+	public static final String INDEX_CLASS_KEY = "index";
+
+	/**
 	 * Set this key as sail parameter to configure the Lucene analyzer class
 	 * implementation to use for text analysis.
 	 */
@@ -295,7 +294,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 	/**
 	 * The LuceneIndex holding the indexed literals.
 	 */
-	private LuceneIndex luceneIndex;
+	private SearchIndex luceneIndex;
 
 	protected final Properties parameters = new Properties();
 
@@ -309,11 +308,11 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	private IndexableStatementFilter filter = null;
 
-	public void setLuceneIndex(LuceneIndex luceneIndex) {
+	public void setLuceneIndex(SearchIndex luceneIndex) {
 		this.luceneIndex = luceneIndex;
 	}
 
-	public LuceneIndex getLuceneIndex() {
+	public SearchIndex getLuceneIndex() {
 		return luceneIndex;
 	}
 
@@ -389,38 +388,16 @@ public class LuceneSail extends NotifyingSailWrapper {
 			if (parameters.containsKey(INCOMPLETE_QUERY_FAIL_KEY))
 				setIncompleteQueryFails(Boolean.parseBoolean(parameters.getProperty(INCOMPLETE_QUERY_FAIL_KEY)));
 			if (luceneIndex == null) {
-				Analyzer analyzer;
-				if (parameters.containsKey(ANALYZER_CLASS_KEY)) {
-					analyzer = (Analyzer)Class.forName((String)parameters.getProperty(ANALYZER_CLASS_KEY)).newInstance();
+				if(parameters.containsKey(INDEX_CLASS_KEY)) {
+					throw new SailException("No luceneIndex set, and no '" + INDEX_CLASS_KEY + "' parameter given. ");
 				}
-				else {
-					analyzer = new StandardAnalyzer(Version.LUCENE_35);
-				}
-
-				initializeLuceneIndex(analyzer);
+				SearchIndex index = (SearchIndex)Class.forName(parameters.getProperty(INDEX_CLASS_KEY)).newInstance();
+				index.initialize(parameters);
+				setLuceneIndex(index);
 			}
 		}
 		catch (Exception e) {
 			throw new SailException("Could not initialize LuceneSail: " + e.getMessage(), e);
-		}
-	}
-
-	protected void initializeLuceneIndex(Analyzer analyzer)
-		throws SailException, IOException
-	{
-		if (parameters.containsKey(LUCENE_DIR_KEY)) {
-			FSDirectory dir = FSDirectory.open(new File(parameters.getProperty(LUCENE_DIR_KEY)));
-			setLuceneIndex(new LuceneIndex(dir, analyzer));
-		}
-		else if (parameters.containsKey(LUCENE_RAMDIR_KEY)
-				&& "true".equals(parameters.getProperty(LUCENE_RAMDIR_KEY)))
-		{
-			RAMDirectory dir = new RAMDirectory();
-			setLuceneIndex(new LuceneIndex(dir, analyzer));
-		}
-		else {
-			throw new SailException("No luceneIndex set, and no '" + LUCENE_DIR_KEY + "' or '"
-					+ LUCENE_RAMDIR_KEY + "' parameter given. ");
 		}
 	}
 
@@ -477,38 +454,18 @@ public class LuceneSail extends NotifyingSailWrapper {
 	public void reindex()
 		throws Exception
 	{
-		// clear
-		logger.info("Reindexing sail: clearing...");
-		luceneIndex.clear();
-		logger.info("Reindexing sail: adding...");
-		// TODO: this is BAD BAD BAD and a hack because result ordering is not
-		// implemented in sesame
-		// START HACK
-		/*
+		luceneIndex.begin();
+		try
 		{
-			SailConnection con = getBaseSail().getConnection();
-			try {
-				LinkedList<Statement> buffer = new LinkedList<Statement>();
-				LinkedList<Statement> removed = new LinkedList<Statement>();
-				// we do not reindex inferred triples (or?)
-				CloseableIteration<? extends Statement, SailException> it = con.getStatements(null, null, null, false);
-				while (it.hasNext()) {
-					Statement s = it.next();
-					buffer.add(s);
-				}
-				// now the bad news
-				logger.info("Reindexing sail: adding "+buffer.size()+" statements into the index in one operation. This is a bad hack and should be changed once SPARQL result ordering works.");
-				luceneIndex.addRemoveStatements(buffer, removed);
-			} finally {
-				con.close();
-			}
-		}
-		*/
-		// END OF HACK
-		{
+			// clear
+			logger.info("Reindexing sail: clearing...");
+			luceneIndex.clear();
+			logger.info("Reindexing sail: adding...");
+
 			// iterate
 			SailRepository repo = new SailRepository(new NotifyingSailWrapper(getBaseSail())
 			{
+				@Override
 				public void shutDown() {
 					// don't shutdown the underlying sail
 					// when we shutdown the repo.
@@ -549,9 +506,14 @@ public class LuceneSail extends NotifyingSailWrapper {
 				repo.shutDown();
 			}
 			// commit the changes
-			luceneIndex.getIndexWriter().commit();
+			luceneIndex.commit();
+
+			logger.info("Reindexing sail: done.");
 		}
-		logger.info("Reindexing sail: done.");
+		catch(Exception e) {
+			luceneIndex.rollback();
+			throw e;
+		}
 	}
 
 	/**
