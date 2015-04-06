@@ -18,6 +18,7 @@ package org.openrdf.sail.lucene;
 
 import java.io.IOException;
 
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
@@ -39,16 +40,11 @@ public class ReaderMonitor {
 	final private LuceneIndex index;
 
 	/**
-	 * IndexSearcher that can be used to read the current index' contents.
-	 */
-	private IndexReader indexReader;
-
-	/**
 	 * The IndexSearcher that can be used to query the current index' contents.
 	 */
 	private IndexSearcher indexSearcher;
 
-	private IOException indexReaderSearcherCreateException;
+	private IOException indexSearcherCreateException;
 
 	private boolean closed = false;
 
@@ -63,18 +59,11 @@ public class ReaderMonitor {
 	public ReaderMonitor(final LuceneIndex index, Directory directory) {
 		this.index = index;
 		try {
-			indexReader = IndexReader.open(directory);
+			IndexReader indexReader = DirectoryReader.open(directory);
+			indexSearcher = new IndexSearcher(indexReader);
 		}
 		catch (IOException e) {
-			indexReaderSearcherCreateException = e;
-		}
-
-		try {
-			IndexReader reader = getIndexReader();
-			indexSearcher = new IndexSearcher(reader);
-		}
-		catch (IOException e) {
-			// do nothing exception was remembered
+			indexSearcherCreateException = e;
 		}
 	}
 
@@ -129,39 +118,23 @@ public class ReaderMonitor {
 		throws IOException
 	{
 		try {
-			try {
-				if (indexSearcher != null) {
-					indexSearcher.close();
-				}
-			}
-			finally {
-				if (indexReader != null) {
-					indexReader.close();
-				}
+			if (indexSearcher != null) {
+				indexSearcher.getIndexReader().close();
 			}
 		}
 		finally {
 			indexSearcher = null;
-			indexReader = null;
 		}
 		closed = true;
 	}
 
 	// //////////////////////////////Methods for controlled index access
 
-	protected IndexReader getIndexReader()
-		throws IOException
-	{
-		if (indexReaderSearcherCreateException != null)
-			throw indexReaderSearcherCreateException;
-		return indexReader;
-	}
-
 	protected IndexSearcher getIndexSearcher()
 		throws IOException
 	{
-		if (indexReaderSearcherCreateException != null)
-			throw indexReaderSearcherCreateException;
+		if (indexSearcherCreateException != null)
+			throw indexSearcherCreateException;
 		return indexSearcher;
 	}
 

@@ -117,7 +117,7 @@ public class LuceneSailTest {
 		// to confogure using just the Logger
 
 		// setup a LuceneSail
-		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer(Version.LUCENE_35));
+		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer());
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
@@ -131,7 +131,7 @@ public class LuceneSailTest {
 
 		// add some statements to it
 		connection = repository.getConnection();
-		connection.setAutoCommit(false);
+		connection.begin();
 		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("one"));
 		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("five"));
 		connection.add(SUBJECT_1, PREDICATE_2, new LiteralImpl("two"));
@@ -617,7 +617,7 @@ public class LuceneSailTest {
 	{
 		// more test-data
 		RepositoryConnection myconnection = repository.getConnection();
-		myconnection.setAutoCommit(false);
+		myconnection.begin();
 		// we use the string 'charly' as test-case. the snippets should contain
 		// "come" and "unicorn"
 		// and 'poor' should not be returned if we limit on predicate1

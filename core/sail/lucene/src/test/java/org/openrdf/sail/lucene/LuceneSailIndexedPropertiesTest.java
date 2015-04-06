@@ -107,7 +107,7 @@ public class LuceneSailIndexedPropertiesTest {
 
 		// add some statements to it
 		connection = repository.getConnection();
-		connection.setAutoCommit(false);
+		connection.begin();
 		connection.add(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"));
 		connection.add(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
 				"Groucho Marx is going to cut away the first part of the first party of the contract."));

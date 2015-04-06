@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,17 +34,23 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -51,6 +58,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,21 +85,6 @@ import org.openrdf.sail.lucene.util.SetMap;
  * @see LuceneSail
  */
 public class LuceneIndex {
-
-	/**
-	 * A utility FieldSelector that only selects the URI field to be loaded.
-	 * Useful when locating matching Resources in a LuceneIndex and the other
-	 * Document fields are not required.
-	 */
-	private static FieldSelector URI_FIELD_SELECTOR = new FieldSelector() {
-
-		private static final long serialVersionUID = 4302925811117170860L;
-
-		public FieldSelectorResult accept(String fieldName) {
-			return fieldName.equals(URI_FIELD_NAME) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
-		}
-	};
-
 	/**
 	 * The name of the Document field holding the document identifier. This
 	 * consists of the Resource identifier (URI or BNodeID) and the Context ID
@@ -112,7 +105,7 @@ public class LuceneIndex {
 	 * resource, the object literal is stored in a field using the
 	 * predicate-literal and additionally in a TEXT_FIELD_NAME-literal field. The
 	 * reasons are given in the documentation of
-	 * {@link #addProperty(String, String, Document)}
+	 * {@link #addPropertyFields(String, String, Document)}
 	 */
 	public static final String TEXT_FIELD_NAME = "text";
 
@@ -137,7 +130,7 @@ public class LuceneIndex {
 
 	static {
 		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
-	};
+	}
 
 	static {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
@@ -193,19 +186,12 @@ public class LuceneIndex {
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
-		this.queryAnalyzer = new StandardAnalyzer(Version.LUCENE_35);
-
-		// get rid of any locks that may have been left by previous (crashed)
-		// sessions
-		if (IndexWriter.isLocked(directory)) {
-			logger.info("unlocking directory {}", directory);
-			IndexWriter.unlock(directory);
-		}
+		this.queryAnalyzer = new StandardAnalyzer();
 
 		// do some initialization for new indices
-		if (!IndexReader.indexExists(directory)) {
+		if (!DirectoryReader.indexExists(directory)) {
 			logger.info("creating new Lucene index in directory {}", directory);
-			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 			indexWriterConfig.setOpenMode(OpenMode.CREATE);
 			IndexWriter writer = new IndexWriter(directory, indexWriterConfig);
 			writer.close();
@@ -231,7 +217,7 @@ public class LuceneIndex {
 	public IndexReader getIndexReader()
 		throws IOException
 	{
-		return getCurrentMonitor().getIndexReader();
+		return getIndexSearcher().getIndexReader();
 	}
 
 	public IndexSearcher getIndexSearcher()
@@ -255,7 +241,7 @@ public class LuceneIndex {
 	{
 
 		if (indexWriter == null) {
-			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 			indexWriter = new IndexWriter(directory, indexWriterConfig);
 		}
 		return indexWriter;
@@ -325,12 +311,12 @@ public class LuceneIndex {
 		if (document == null) {
 			// there is no such Document: create one now
 			document = new Document();
-			addID(id, document);
-			addResourceID(resourceId, document);
+			addIDField(id, document);
+			addURIField(resourceId, document);
 			// add context
-			addContext(context, document);
+			addContextField(context, document);
 
-			addProperty(field, text, document);
+			addPropertyFields(field, text, document);
 
 			// add it to the index
 			writer = getIndexWriter();
@@ -352,7 +338,7 @@ public class LuceneIndex {
 				}
 
 				// add the new triple to the cloned document
-				addProperty(field, text, newDocument);
+				addPropertyFields(field, text, newDocument);
 
 				// update the index with the cloned document
 				writer = getIndexWriter();
@@ -390,23 +376,6 @@ public class LuceneIndex {
 			return false;
 
 		return true;
-	}
-
-	/**
-	 * Add the "context" value to the doc
-	 * 
-	 * @param context
-	 *        the context or null, if null-context
-	 * @param document
-	 *        the document
-	 * @param ifNotExists
-	 *        check if this context exists
-	 */
-	private void addContext(String context, Document document) {
-		if (context != null) {
-			document.add(new Field(CONTEXT_FIELD_NAME, context, Field.Store.YES,
-					Field.Index.NOT_ANALYZED_NO_NORMS));
-		}
 	}
 
 	/**
@@ -448,25 +417,37 @@ public class LuceneIndex {
 		throws IOException
 	{
 		IndexReader reader = getIndexReader();
-		TermDocs termDocs = reader.termDocs(idTerm);
+		List<AtomicReaderContext> leaves = reader.leaves();
+		int size = leaves.size();
+		for(int i=0; i<size; i++) {
+			AtomicReader lreader = leaves.get(i).reader();
+			Document document = getDocument(lreader, idTerm);
+			if(document != null)
+			{
+				return document;
+			}
+		}
+		// no such Document
+		return null;
+	}
 
-		try {
-			if (termDocs.next()) {
-				// return the Document and make sure there are no others
-				int docNr = termDocs.doc();
-				if (termDocs.next()) {
-					throw new RuntimeException("Multiple Documents for resource " + idTerm.text());
+	private static Document getDocument(AtomicReader reader, Term term) throws IOException {
+		DocsEnum docs = reader.termDocsEnum(term);
+		if(docs != null)
+		{
+			int docId = docs.nextDoc();
+			if(docId != DocsEnum.NO_MORE_DOCS) {
+				if(docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+					throw new IllegalStateException("Multiple Documents for term " + term.text());
 				}
-
-				return reader.document(docNr);
+				return readDocument(reader, docId);
 			}
 			else {
-				// no such Document
 				return null;
 			}
 		}
-		finally {
-			termDocs.close();
+		else {
+			return null;
 		}
 	}
 
@@ -490,23 +471,29 @@ public class LuceneIndex {
 	private List<Document> getDocuments(Term uriTerm)
 		throws IOException
 	{
-
-		List<Document> result = new LinkedList<Document>();
+		List<Document> result = new ArrayList<Document>();
 
 		IndexReader reader = getIndexReader();
-		TermDocs termDocs = reader.termDocs(uriTerm);
-
-		try {
-			while (termDocs.next()) {
-				int docNr = termDocs.doc();
-				result.add(reader.document(docNr));
-			}
-		}
-		finally {
-			termDocs.close();
+		List<AtomicReaderContext> leaves = reader.leaves();
+		int size = leaves.size();
+		for(int i=0; i<size; i++) {
+			AtomicReader lreader = leaves.get(i).reader();
+			addDocuments(lreader, uriTerm, result);
 		}
 
 		return result;
+	}
+
+	private static void addDocuments(AtomicReader reader, Term term, Collection<Document> documents) throws IOException {
+		DocsEnum docs = reader.termDocsEnum(term);
+		if(docs != null)
+		{
+			int docId;
+			while((docId = docs.nextDoc()) != DocsEnum.NO_MORE_DOCS) {
+				Document document = readDocument(reader, docId);
+				documents.add(document);
+			}
+		}
 	}
 
 	/**
@@ -541,9 +528,9 @@ public class LuceneIndex {
 	 * Checks whether a field occurs with a specified value in a Document.
 	 */
 	private boolean hasProperty(String fieldName, String value, Document document) {
-		Field[] fields = document.getFields(fieldName);
+		IndexableField[] fields = document.getFields(fieldName);
 		if (fields != null) {
-			for (Field field : fields) {
+			for (IndexableField field : fields) {
 				if (value.equals(field.stringValue())) {
 					return true;
 				}
@@ -578,27 +565,43 @@ public class LuceneIndex {
 	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
-	public Fieldable[] getPropertyFields(List<Fieldable> fields) {
-		List<Fieldable> result = new ArrayList<Fieldable>();
-		for (Fieldable field : fields) {
+	public IndexableField[] getPropertyFields(List<IndexableField> fields) {
+		List<IndexableField> result = new ArrayList<IndexableField>();
+		for (IndexableField field : fields) {
 			if (isPropertyField(field.name()))
 				result.add(field);
 		}
-		return result.toArray(new Fieldable[result.size()]);
+		return result.toArray(new IndexableField[result.size()]);
 	}
 
 	/**
 	 * Stores and indexes an ID in a Document.
 	 */
-	private void addID(String id, Document document) {
-		document.add(new Field(ID_FIELD_NAME, id, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+	private static void addIDField(String id, Document document) {
+		document.add(new StringField(ID_FIELD_NAME, id, Store.YES));
+	}
+
+	/**
+	 * Add the "context" value to the doc
+	 * 
+	 * @param context
+	 *        the context or null, if null-context
+	 * @param document
+	 *        the document
+	 * @param ifNotExists
+	 *        check if this context exists
+	 */
+	private static void addContextField(String context, Document document) {
+		if (context != null) {
+			document.add(new StringField(CONTEXT_FIELD_NAME, context, Store.YES));
+		}
 	}
 
 	/**
 	 * Stores and indexes the resource ID in a Document.
 	 */
-	private void addResourceID(String resourceId, Document document) {
-		document.add(new Field(URI_FIELD_NAME, resourceId, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+	private static void addURIField(String resourceId, Document document) {
+		document.add(new StringField(URI_FIELD_NAME, resourceId, Store.YES));
 	}
 
 	private String getLiteralPropertyValueAsString(Statement statement) {
@@ -624,7 +627,7 @@ public class LuceneIndex {
 		if (text == null)
 			return;
 		String field = statement.getPredicate().toString();
-		addProperty(field, text, document);
+		addPropertyFields(field, text, document);
 	}
 
 	/**
@@ -637,12 +640,22 @@ public class LuceneIndex {
 	 * 
 	 * @see LuceneSail
 	 */
-	private void addProperty(String predicate, String text, Document document) {
+	private static void addPropertyFields(String predicate, String text, Document document) {
 		// store this predicate
-		document.add(new Field(predicate, text, Field.Store.YES, Field.Index.ANALYZED));
+		addPredicateField(predicate, text, document);
 
 		// and in TEXT_FIELD_NAME
-		document.add(new Field(TEXT_FIELD_NAME, text, Field.Store.YES, Field.Index.ANALYZED));
+		addTextField(text, document);
+	}
+
+	private static void addPredicateField(String predicate, String text, Document document) {
+		// store this predicate
+		document.add(new TextField(predicate, text, Store.YES));
+	}
+
+	private static void addTextField(String text, Document document) {
+		// and in TEXT_FIELD_NAME
+		document.add(new TextField(TEXT_FIELD_NAME, text, Store.YES));
 	}
 
 	/**
@@ -697,9 +710,9 @@ public class LuceneIndex {
 				String[] idArray;
 				int count = 0;
 				for (int i = 0; i < reader.maxDoc(); i++) {
-					if (reader.isDeleted(i))
+					if (isDeleted(reader, i))
 						continue;
-					doc = reader.document(i);
+					doc = readDocument(reader, i);
 					totalFields += doc.getFields().size();
 					count++;
 					idArray = doc.getValues("id");
@@ -770,9 +783,9 @@ public class LuceneIndex {
 					// there are more triples encoded in this Document: remove the
 					// document and add a new Document without this triple
 					Document newDocument = new Document();
-					addID(id, newDocument);
-					addResourceID(resourceId, newDocument);
-					addContext(contextId, newDocument);
+					addIDField(id, newDocument);
+					addURIField(resourceId, newDocument);
+					addContextField(contextId, newDocument);
 
 					for (Object oldFieldObject : document.getFields()) {
 						Field oldField = (Field)oldFieldObject;
@@ -782,7 +795,7 @@ public class LuceneIndex {
 						if (isPropertyField(oldFieldName)
 								&& !(fieldName.equals(oldFieldName) && text.equals(oldValue)))
 						{
-							addProperty(oldFieldName, oldValue, newDocument);
+							addPropertyFields(oldFieldName, oldValue, newDocument);
 						}
 					}
 
@@ -830,7 +843,7 @@ public class LuceneIndex {
 	public Resource getResource(int documentNumber)
 		throws IOException
 	{
-		Document document = getIndexSearcher().doc(documentNumber, URI_FIELD_SELECTOR);
+		Document document = getIndexSearcher().doc(documentNumber, Collections.singleton(URI_FIELD_NAME));
 		return document == null ? null : getResource(document);
 	}
 
@@ -972,11 +985,11 @@ public class LuceneIndex {
 		if (propertyURI == null)
 			// if we have no property given, we create a default query parser which
 			// has the TEXT_FIELD_NAME as the default field
-			return new QueryParser(Version.LUCENE_35, TEXT_FIELD_NAME, this.queryAnalyzer);
+			return new QueryParser(TEXT_FIELD_NAME, this.queryAnalyzer);
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			return new QueryParser(Version.LUCENE_35, propertyURI.toString(), this.queryAnalyzer);
+			return new QueryParser(propertyURI.toString(), this.queryAnalyzer);
 	}
 
 	/**
@@ -1037,9 +1050,9 @@ public class LuceneIndex {
 				if (document == null) {
 					// there are no such Documents: create one now
 					document = new Document();
-					addID(id, document);
-					addResourceID(resourceId, document);
-					addContext(contextId, document);
+					addIDField(id, document);
+					addURIField(resourceId, document);
+					addContextField(contextId, document);
 					// add all statements, remember the contexts
 					// HashSet<Resource> contextsToAdd = new HashSet<Resource>();
 					List<Statement> list = stmtsToAdd.get(contextId);
@@ -1173,7 +1186,7 @@ public class LuceneIndex {
 			// TermDocs termDocs = reader.termDocs(contextTerm);
 			// try {
 			// while (termDocs.next()) {
-			// Document document = reader.document(termDocs.doc());
+			// Document document = readDocument(reader, termDocs.doc());
 			// // does this document have any other contexts?
 			// Field[] fields = document.getFields(CONTEXT_FIELD_NAME);
 			// for (Field f : fields)
@@ -1266,9 +1279,9 @@ public class LuceneIndex {
 			Document document = new Document();
 
 			String id = formIdString(resourceId, entry.getKey());
-			addID(id, document);
-			addResourceID(resourceId, document);
-			addContext(entry.getKey(), document);
+			addIDField(id, document);
+			addURIField(resourceId, document);
+			addContextField(entry.getKey(), document);
 
 			for (Statement stmt : entry.getValue()) {
 				// determine stuff to store
@@ -1293,7 +1306,7 @@ public class LuceneIndex {
 			indexWriter.close();
 
 		// crate new writer
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 		indexWriterConfig.setOpenMode(OpenMode.CREATE);
 		indexWriter = new IndexWriter(directory, indexWriterConfig);
 		indexWriter.close();
@@ -1301,4 +1314,70 @@ public class LuceneIndex {
 
 	}
 
+	//
+	// Lucene helper methods
+	//
+
+	private static boolean isDeleted(IndexReader reader, int docId)
+	{
+		if(reader.hasDeletions()) {
+			List<AtomicReaderContext> leaves = reader.leaves();
+			int size = leaves.size();
+			for(int i=0; i<size; i++) {
+				Bits liveDocs = leaves.get(i).reader().getLiveDocs();
+				if(docId < liveDocs.length()) {
+					boolean isDeleted = !liveDocs.get(docId);
+					if(isDeleted) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		else {
+			return false;
+		}
+	}
+
+	private static Document readDocument(IndexReader reader, int docId) throws IOException
+	{
+		AllStoredFieldVisitor visitor = new AllStoredFieldVisitor();
+		reader.document(docId, visitor);
+		return visitor.getDocument();
+	}
+
+
+
+	static class AllStoredFieldVisitor extends StoredFieldVisitor
+	{
+		private Document document = new Document();
+
+		@Override
+		public Status needsField(FieldInfo fieldInfo)
+			throws IOException
+		{
+			return Status.YES;
+		}
+
+		public void stringField(FieldInfo fieldInfo, String value)
+		{
+			String name = fieldInfo.name;
+			if(ID_FIELD_NAME.equals(name)) {
+				addIDField(value, document);
+			} else if(CONTEXT_FIELD_NAME.equals(name)) {
+				addContextField(value, document);
+			} else if(URI_FIELD_NAME.equals(name)) {
+				addURIField(value, document);
+			} else if(TEXT_FIELD_NAME.equals(name)) {
+				addTextField(value, document);
+			} else {
+				addPredicateField(name, value, document);
+			}
+		}
+
+		Document getDocument()
+		{
+			return document;
+		}
+	}
 }

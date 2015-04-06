@@ -41,7 +41,7 @@ public class LuceneSailNIOFS extends LuceneSail {
 		throws SailException, IOException
 	{
 		if (parameters.containsKey(LUCENE_DIR_KEY)) {
-			FSDirectory dir = new NIOFSDirectory(new File(parameters.getProperty(LUCENE_DIR_KEY)), null);
+			FSDirectory dir = new NIOFSDirectory(new File(parameters.getProperty(LUCENE_DIR_KEY)));
 			setLuceneIndex(new LuceneIndex(dir, analyzer));
 		}
 		else

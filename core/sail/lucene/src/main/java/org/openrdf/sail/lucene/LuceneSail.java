@@ -33,7 +33,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -394,7 +393,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 					analyzer = (Analyzer)Class.forName((String)parameters.getProperty(ANALYZER_CLASS_KEY)).newInstance();
 				}
 				else {
-					analyzer = new StandardAnalyzer(Version.LUCENE_35);
+					analyzer = new StandardAnalyzer();
 				}
 
 				initializeLuceneIndex(analyzer);
