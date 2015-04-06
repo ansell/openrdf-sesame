@@ -92,6 +92,7 @@ public class LuceneSailIndexedPropertiesTest {
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
 		sail = new LuceneSail();
+		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, LuceneIndex.class.getName());
 		Properties indexedFields = new Properties();
 		indexedFields.setProperty("index.1", RDFSLABEL.toString());
 		indexedFields.setProperty("index.2", RDFSCOMMENT.toString());

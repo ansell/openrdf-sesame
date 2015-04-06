@@ -31,6 +31,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.sail.lucene.LuceneIndex;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.LuceneSailSchema;
 import org.openrdf.sail.memory.MemoryStore;
@@ -64,6 +65,7 @@ public class LuceneSailExample {
 
 		// create a lucenesail to wrap the memorystore
 		LuceneSail lucenesail = new LuceneSail();
+		lucenesail.setParameter(LuceneSail.INDEX_CLASS_KEY, LuceneIndex.class.getName());
 		// set this parameter to let the lucene index store its data in ram
 		lucenesail.setParameter(LuceneSail.LUCENE_RAMDIR_KEY, "true");
 		// set this parameter to store the lucene index on disk

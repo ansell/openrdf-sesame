@@ -33,6 +33,7 @@ import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.LuceneSailSchema;
+import org.openrdf.sail.lucene4.LuceneIndex;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -64,6 +65,7 @@ public class LuceneSailExample {
 
 		// create a lucenesail to wrap the memorystore
 		LuceneSail lucenesail = new LuceneSail();
+		lucenesail.setParameter(LuceneSail.INDEX_CLASS_KEY, LuceneIndex.class.getName());
 		// set this parameter to let the lucene index store its data in ram
 		lucenesail.setParameter(LuceneSail.LUCENE_RAMDIR_KEY, "true");
 		// set this parameter to store the lucene index on disk
@@ -80,7 +82,7 @@ public class LuceneSailExample {
 		// add some test data, the FOAF ont
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(LuceneSailExample.class.getResourceAsStream("foaf.rdfs"), "", RDFFormat.RDFXML);
 			connection.commit();
 

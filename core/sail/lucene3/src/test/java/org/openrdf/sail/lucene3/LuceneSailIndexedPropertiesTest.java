@@ -92,6 +92,7 @@ public class LuceneSailIndexedPropertiesTest {
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
 		sail = new LuceneSail();
+		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, LuceneIndex.class.getName());
 		Properties indexedFields = new Properties();
 		indexedFields.setProperty("index.1", RDFSLABEL.toString());
 		indexedFields.setProperty("index.2", RDFSCOMMENT.toString());
@@ -108,7 +109,7 @@ public class LuceneSailIndexedPropertiesTest {
 
 		// add some statements to it
 		connection = repository.getConnection();
-		connection.setAutoCommit(false);
+		connection.begin();
 		connection.add(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"));
 		connection.add(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
 				"Groucho Marx is going to cut away the first part of the first party of the contract."));

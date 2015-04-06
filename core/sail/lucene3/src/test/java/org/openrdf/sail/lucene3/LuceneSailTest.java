@@ -957,7 +957,7 @@ public class LuceneSailTest {
 
 		connection.commit();
 		assertEquals(0, index.getOldMonitors().size());
-		assertEquals(null, index.getCurrentMonitor());
+		assertEquals(null, index.currentMonitor);
 		// prepare the query
 
 		// First search on the LuceneIndex
@@ -967,7 +967,7 @@ public class LuceneSailTest {
 		TupleQueryResult result1 = query.evaluate();
 
 		assertEquals(0, index.getOldMonitors().size());
-		assertEquals(1, index.getCurrentMonitor().getReadingCount());
+		assertEquals(1, index.currentMonitor.getReadingCount());
 		// check the results is not needed, just assert iterator is not closed
 		// assertTrue(result1.hasNext());
 		// result1.next();
@@ -979,7 +979,7 @@ public class LuceneSailTest {
 		TupleQueryResult result2 = query.evaluate();
 
 		assertEquals(0, index.getOldMonitors().size());
-		assertEquals(2, index.getCurrentMonitor().getReadingCount());
+		assertEquals(2, index.currentMonitor.getReadingCount());
 		// CHECK value of the CurrentReader readersCount
 
 		// check the results is not needed, just assert iterator is not closed
@@ -988,21 +988,21 @@ public class LuceneSailTest {
 
 		// CHECK value of the CurrentReader readersCount
 		assertEquals(0, index.getOldMonitors().size());
-		assertEquals(2, index.getCurrentMonitor().getReadingCount());
+		assertEquals(2, index.currentMonitor.getReadingCount());
 
 		// empty commit without changes do not invalidate readers
 		connection.commit();
 
 		// CHECK value of the CurrentReader readersCount
 		assertEquals(0, index.getOldMonitors().size());
-		assertEquals(2, index.getCurrentMonitor().getReadingCount());
+		assertEquals(2, index.currentMonitor.getReadingCount());
 
 		// This should invalidate readers
 		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponecthree"), CONTEXT_1);
 		connection.commit();
 		// But readers can not be closed, they are being iterated
 		assertEquals(1, index.getOldMonitors().size());
-		assertEquals(null, index.getCurrentMonitor());
+		assertEquals(null, index.currentMonitor);
 
 		// Third search on the index should create new urrent ReaderMonitor
 		queryString = "SELECT Resource FROM {Resource} <" + MATCHES + "> {}  <" + QUERY
@@ -1011,7 +1011,7 @@ public class LuceneSailTest {
 		TupleQueryResult result3 = query.evaluate();
 
 		assertEquals(1, index.getOldMonitors().size());
-		assertEquals(1, index.getCurrentMonitor().getReadingCount());
+		assertEquals(1, index.currentMonitor.getReadingCount());
 
 		// When iteration is finish remove old monitor
 		result1.close();
@@ -1022,7 +1022,7 @@ public class LuceneSailTest {
 		result3.close();
 
 		connection.close();
-		assertEquals(0, index.getCurrentMonitor().getReadingCount());
+		assertEquals(0, index.currentMonitor.getReadingCount());
 
 	}
 
