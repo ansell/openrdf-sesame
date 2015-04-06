@@ -388,17 +388,23 @@ public class LuceneSail extends NotifyingSailWrapper {
 			if (parameters.containsKey(INCOMPLETE_QUERY_FAIL_KEY))
 				setIncompleteQueryFails(Boolean.parseBoolean(parameters.getProperty(INCOMPLETE_QUERY_FAIL_KEY)));
 			if (luceneIndex == null) {
-				if(parameters.containsKey(INDEX_CLASS_KEY)) {
-					throw new SailException("No luceneIndex set, and no '" + INDEX_CLASS_KEY + "' parameter given. ");
-				}
-				SearchIndex index = (SearchIndex)Class.forName(parameters.getProperty(INDEX_CLASS_KEY)).newInstance();
-				index.initialize(parameters);
-				setLuceneIndex(index);
+				initializeLuceneIndex();
 			}
 		}
 		catch (Exception e) {
 			throw new SailException("Could not initialize LuceneSail: " + e.getMessage(), e);
 		}
+	}
+
+	protected void initializeLuceneIndex()
+		throws Exception
+	{
+		if(parameters.containsKey(INDEX_CLASS_KEY)) {
+			throw new SailException("No luceneIndex set, and no '" + INDEX_CLASS_KEY + "' parameter given. ");
+		}
+		SearchIndex index = (SearchIndex)Class.forName(parameters.getProperty(INDEX_CLASS_KEY)).newInstance();
+		index.initialize(parameters);
+		setLuceneIndex(index);
 	}
 
 	public void setParameter(String key, String value) {

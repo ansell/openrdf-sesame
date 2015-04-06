@@ -36,47 +36,6 @@ import org.openrdf.sail.SailException;
  * @see LuceneSail
  */
 public interface SearchIndex {
-	/**
-	 * The name of the Document field holding the document identifier. This
-	 * consists of the Resource identifier (URI or BNodeID) and the Context ID
-	 * (the format is "resourceId|contextId")
-	 */
-	public static final String ID_FIELD_NAME = "id";
-
-	/**
-	 * The name of the Document field holding the Resource identifier. The value
-	 * stored in this field is either a URI or a BNode ID.
-	 */
-	public static final String URI_FIELD_NAME = "uri";
-
-	/**
-	 * The name of the Document field that holds multiple text values of a
-	 * Resource. The field is called "text", as it contains all text, but was
-	 * called "ALL" during the discussion. For each statement-literal of the
-	 * resource, the object literal is stored in a field using the
-	 * predicate-literal and additionally in a TEXT_FIELD_NAME-literal field. The
-	 * reasons are given in the documentation of
-	 * {@link #addProperty(String, String, Document)}
-	 */
-	public static final String TEXT_FIELD_NAME = "text";
-
-	/**
-	 * The name of the Document field holding the context identifer(s).
-	 */
-	public static final String CONTEXT_FIELD_NAME = "context";
-
-	/**
-	 * the null context
-	 */
-	public static final String CONTEXT_NULL = "null";
-
-	/**
-	 * String used to prefix BNode IDs with so that we can distinguish BNode
-	 * fields from URI fields in Documents. The prefix is chosen so that it is
-	 * invalid as a (part of a) URI scheme.
-	 */
-	public static final String BNODE_ID_PREFIX = "!";
-
 	void initialize(Properties parameters);
 
 	Collection<BindingSet> evaluate(QuerySpec query);
