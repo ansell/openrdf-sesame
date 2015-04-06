@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.lucene4;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +37,8 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.FieldInfo;
@@ -45,8 +47,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -59,6 +59,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,7 @@ import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.util.ListMap;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
 import org.openrdf.sail.lucene.util.SetMap;
@@ -83,7 +85,7 @@ import org.openrdf.sail.lucene.util.SetMap;
  * 
  * @see LuceneSail
  */
-public class LuceneIndex implements SearchIndex {
+public class LuceneIndex {
 	/**
 	 * The name of the Document field holding the document identifier. This
 	 * consists of the Resource identifier (URI or BNodeID) and the Context ID
@@ -190,7 +192,7 @@ public class LuceneIndex implements SearchIndex {
 		// do some initialization for new indices
 		if (!DirectoryReader.indexExists(directory)) {
 			logger.info("creating new Lucene index in directory {}", directory);
-			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 			indexWriterConfig.setOpenMode(OpenMode.CREATE);
 			IndexWriter writer = new IndexWriter(directory, indexWriterConfig);
 			writer.close();
@@ -240,13 +242,12 @@ public class LuceneIndex implements SearchIndex {
 	{
 
 		if (indexWriter == null) {
-			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+			IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 			indexWriter = new IndexWriter(directory, indexWriterConfig);
 		}
 		return indexWriter;
 	}
 
-	@Override
 	public void shutDown()
 		throws IOException
 	{
@@ -365,7 +366,6 @@ public class LuceneIndex implements SearchIndex {
 	 *        the literal to be accepted
 	 * @return true if the given literal will be indexed by this LuceneIndex
 	 */
-	@Override
 	public boolean accept(Literal literal) {
 		// we reject null literals
 		if (literal == null)
@@ -418,10 +418,10 @@ public class LuceneIndex implements SearchIndex {
 		throws IOException
 	{
 		IndexReader reader = getIndexReader();
-		List<LeafReaderContext> leaves = reader.leaves();
+		List<AtomicReaderContext> leaves = reader.leaves();
 		int size = leaves.size();
 		for(int i=0; i<size; i++) {
-			LeafReader lreader = leaves.get(i).reader();
+			AtomicReader lreader = leaves.get(i).reader();
 			Document document = getDocument(lreader, idTerm);
 			if(document != null)
 			{
@@ -432,7 +432,7 @@ public class LuceneIndex implements SearchIndex {
 		return null;
 	}
 
-	private static Document getDocument(LeafReader reader, Term term) throws IOException {
+	private static Document getDocument(AtomicReader reader, Term term) throws IOException {
 		DocsEnum docs = reader.termDocsEnum(term);
 		if(docs != null)
 		{
@@ -475,17 +475,17 @@ public class LuceneIndex implements SearchIndex {
 		List<Document> result = new ArrayList<Document>();
 
 		IndexReader reader = getIndexReader();
-		List<LeafReaderContext> leaves = reader.leaves();
+		List<AtomicReaderContext> leaves = reader.leaves();
 		int size = leaves.size();
 		for(int i=0; i<size; i++) {
-			LeafReader lreader = leaves.get(i).reader();
+			AtomicReader lreader = leaves.get(i).reader();
 			addDocuments(lreader, uriTerm, result);
 		}
 
 		return result;
 	}
 
-	private static void addDocuments(LeafReader reader, Term term, Collection<Document> documents) throws IOException {
+	private static void addDocuments(AtomicReader reader, Term term, Collection<Document> documents) throws IOException {
 		DocsEnum docs = reader.termDocsEnum(term);
 		if(docs != null)
 		{
@@ -823,14 +823,12 @@ public class LuceneIndex implements SearchIndex {
 	 * should be committed/rollbacked whenever the LuceneSailConnection is
 	 * committed/rollbacked.
 	 */
-	@Override
 	public void commit()
 		throws IOException
 	{
 		// FIXME: implement
 	}
 
-	@Override
 	public void rollback()
 		throws IOException
 	{
@@ -1005,7 +1003,6 @@ public class LuceneIndex implements SearchIndex {
 	 * @param removed
 	 *        all removed statements, can have multiple subjects
 	 */
-	@Override
 	public synchronized void addRemoveStatements(Collection<Statement> added, Collection<Statement> removed)
 		throws Exception
 	{
@@ -1166,7 +1163,6 @@ public class LuceneIndex implements SearchIndex {
 	 *        after deletion
 	 * @throws SailException
 	 */
-	@Override
 	public synchronized void clearContexts(Resource[] contexts, Sail sail)
 		throws IOException, SailException
 	{
@@ -1263,7 +1259,6 @@ public class LuceneIndex implements SearchIndex {
 	 *        the statements that make up the resource
 	 * @throws IOException
 	 */
-	@Override
 	public synchronized void addDocuments(Resource subject, List<Statement> statements)
 		throws IOException
 	{
@@ -1302,7 +1297,6 @@ public class LuceneIndex implements SearchIndex {
 	/**
 	 * 
 	 */
-	@Override
 	public synchronized void clear()
 		throws IOException
 	{
@@ -1313,7 +1307,7 @@ public class LuceneIndex implements SearchIndex {
 			indexWriter.close();
 
 		// crate new writer
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
 		indexWriterConfig.setOpenMode(OpenMode.CREATE);
 		indexWriter = new IndexWriter(directory, indexWriterConfig);
 		indexWriter.close();
@@ -1328,7 +1322,7 @@ public class LuceneIndex implements SearchIndex {
 	private static boolean isDeleted(IndexReader reader, int docId)
 	{
 		if(reader.hasDeletions()) {
-			List<LeafReaderContext> leaves = reader.leaves();
+			List<AtomicReaderContext> leaves = reader.leaves();
 			int size = leaves.size();
 			for(int i=0; i<size; i++) {
 				Bits liveDocs = leaves.get(i).reader().getLiveDocs();
@@ -1366,7 +1360,6 @@ public class LuceneIndex implements SearchIndex {
 			return Status.YES;
 		}
 
-		@Override
 		public void stringField(FieldInfo fieldInfo, String value)
 		{
 			String name = fieldInfo.name;
