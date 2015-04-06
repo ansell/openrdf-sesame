@@ -23,6 +23,8 @@
 		<module>rdbms</module>
 		<module>lucene-api</module>
 		<module>lucene</module>
+		<module>lucene4</module>
+		<module>lucene3</module>
 		<module>elasticsearch</module>
 	</modules>
 

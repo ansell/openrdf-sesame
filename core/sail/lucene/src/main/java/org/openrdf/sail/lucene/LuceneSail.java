@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -408,7 +409,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 		throws SailException, IOException
 	{
 		if (parameters.containsKey(LUCENE_DIR_KEY)) {
-			FSDirectory dir = FSDirectory.open(new File(parameters.getProperty(LUCENE_DIR_KEY)));
+			FSDirectory dir = FSDirectory.open(Paths.get(parameters.getProperty(LUCENE_DIR_KEY)));
 			setLuceneIndex(new LuceneIndex(dir, analyzer));
 		}
 		else if (parameters.containsKey(LUCENE_RAMDIR_KEY)

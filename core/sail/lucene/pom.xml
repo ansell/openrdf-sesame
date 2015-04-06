@@ -14,20 +14,16 @@
 	<description>StackableSail implementation offering full-text search on literals, based on Apache Lucene.</description>
 
 	<properties>
-		<lucene.version>4.10.4</lucene.version>
+		<lucene.version>5.0.0</lucene.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-api</artifactId>
+			<artifactId>sesame-sail-lucene-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryalgebra-evaluation</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
@@ -53,10 +49,6 @@
 			<artifactId>lucene-queryparser</artifactId>
 			<version>${lucene.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -74,11 +66,6 @@
 			<artifactId>sesame-queryparser-sparql</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sail</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
