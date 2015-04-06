@@ -14,13 +14,14 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene4.config;
+package org.openrdf.sail.lucene.config;
 
-import static org.openrdf.sail.lucene4.config.LuceneSailConfigSchema.INDEX_DIR;
+import static org.openrdf.sail.lucene.config.LuceneSailConfigSchema.INDEX_DIR;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.DelegatingSailImplConfigBase;
@@ -28,6 +29,11 @@ import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfig;
 
 public class LuceneSailConfig extends DelegatingSailImplConfigBase {
+
+	/**
+	 * The sail factory type.
+	 */
+	public static final String SAIL_TYPE = "openrdf:LuceneSail";
 
 	/*-----------*
 	 * Variables *
@@ -40,20 +46,20 @@ public class LuceneSailConfig extends DelegatingSailImplConfigBase {
 	 *--------------*/
 
 	public LuceneSailConfig() {
-		super(LuceneSailFactory.SAIL_TYPE);
+		super(SAIL_TYPE);
 	}
 
 	public LuceneSailConfig(SailImplConfig delegate) {
-		super(LuceneSailFactory.SAIL_TYPE, delegate);
+		super(SAIL_TYPE, delegate);
 	}
 
 	public LuceneSailConfig(String luceneDir) {
-		super(LuceneSailFactory.SAIL_TYPE);
+		super(SAIL_TYPE);
 		setIndexDir(luceneDir);
 	}
 
 	public LuceneSailConfig(String luceneDir, SailImplConfig delegate) {
-		super(LuceneSailFactory.SAIL_TYPE, delegate);
+		super(SAIL_TYPE, delegate);
 		setIndexDir(luceneDir);
 	}
 
@@ -74,7 +80,7 @@ public class LuceneSailConfig extends DelegatingSailImplConfigBase {
 		Resource implNode = super.export(graph);
 
 		if (indexDir != null) {
-			graph.add(implNode, INDEX_DIR, graph.getValueFactory().createLiteral(indexDir));
+			graph.add(implNode, INDEX_DIR, ValueFactoryImpl.getInstance().createLiteral(indexDir));
 		}
 
 		return implNode;

@@ -147,10 +147,25 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public LuceneIndex()
 	{}
 
+	/**
+	 * Creates a new LuceneIndex.
+	 * 
+	 * @param directory
+	 *        The Directory in which an index can be found and/or in which index
+	 *        files are written.
+	 * @param analyzer
+	 *        The Analyzer that will be used for tokenizing strings to index and
+	 *        queries.
+	 * @throws IOException
+	 *         When the Directory could not be unlocked.
+	 */
 	public LuceneIndex(Directory dir, Analyzer analyzer)
+		throws IOException
 	{
 		this.directory = dir;
 		this.analyzer = analyzer;
+
+		postInit();
 	}
 
 	@Override
