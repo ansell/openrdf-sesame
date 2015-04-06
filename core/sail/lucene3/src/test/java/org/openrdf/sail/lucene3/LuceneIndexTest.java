@@ -312,7 +312,7 @@ public class LuceneIndexTest {
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
 			connection.add(statementContext211, statementContext211.getContext());
@@ -369,7 +369,7 @@ public class LuceneIndexTest {
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
 			connection.add(statementContext211, statementContext211.getContext());
