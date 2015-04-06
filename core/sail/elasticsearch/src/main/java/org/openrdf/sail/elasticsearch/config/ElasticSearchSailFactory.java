@@ -14,19 +14,19 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene.config;
+package org.openrdf.sail.elasticsearch.config;
 
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
-import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.elasticsearch.LuceneSail;
 
 /**
  * A {@link SailFactory} that creates {@link LuceneSail}s based on RDF
  * configuration data.
  */
-public class LuceneSailFactory implements SailFactory {
+public class ElasticSearchSailFactory implements SailFactory {
 
 	/**
 	 * The type of repositories that are created by this factory.

@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
 
@@ -36,7 +36,7 @@ public class ReaderMonitor {
 	boolean doClose = false;
 
 	// Remember index to be able to remove itself from the index list
-	final private LuceneIndex index;
+	final private ElasticSearchIndex index;
 
 	/**
 	 * IndexSearcher that can be used to read the current index' contents.
@@ -60,7 +60,7 @@ public class ReaderMonitor {
 	 * @param directory
 	 *        Initializes IndexReader
 	 */
-	public ReaderMonitor(final LuceneIndex index, Directory directory) {
+	public ReaderMonitor(final ElasticSearchIndex index, Directory directory) {
 		this.index = index;
 		try {
 			indexReader = IndexReader.open(directory);

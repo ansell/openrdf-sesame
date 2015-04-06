@@ -14,16 +14,16 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
-import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
-import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.MATCHES;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.QUERY;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.SCORE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,7 +33,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
@@ -48,9 +47,10 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.elasticsearch.LuceneSail;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class LuceneSailIndexedPropertiesTest {
+public class ElasticSearchSailIndexedPropertiesTest {
 
 	protected LuceneSail sail;
 

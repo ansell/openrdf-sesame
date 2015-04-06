@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene.examples;
+package org.openrdf.sail.elasticsearch.examples;
 
 import org.openrdf.model.Statement;
 import org.openrdf.query.Binding;
@@ -31,8 +31,8 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.sail.lucene.LuceneSail;
-import org.openrdf.sail.lucene.LuceneSailSchema;
+import org.openrdf.sail.elasticsearch.LuceneSail;
+import org.openrdf.sail.elasticsearch.LuceneSailSchema;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -40,7 +40,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * 
  * @author sauermann
  */
-public class LuceneSailExample {
+public class ElasticSearchSailExample {
 
 	/**
 	 * Create a lucene sail and use it
@@ -81,7 +81,7 @@ public class LuceneSailExample {
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
 			connection.setAutoCommit(false);
-			connection.add(LuceneSailExample.class.getResourceAsStream("foaf.rdfs"), "", RDFFormat.RDFXML);
+			connection.add(ElasticSearchSailExample.class.getResourceAsStream("foaf.rdfs"), "", RDFFormat.RDFXML);
 			connection.commit();
 
 			// search for resources that mention "person"

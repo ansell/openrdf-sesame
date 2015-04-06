@@ -14,18 +14,18 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
-import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
-import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
-import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.MATCHES;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.QUERY;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.SCORE;
+import static org.openrdf.sail.elasticsearch.LuceneSailSchema.SNIPPET;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +44,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -61,9 +60,11 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.elasticsearch.ElasticSearchIndex;
+import org.openrdf.sail.elasticsearch.LuceneSail;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class LuceneSailTest {
+public class ElasticSearchSailTest {
 
 	public static final String QUERY_STRING;
 
@@ -95,7 +96,7 @@ public class LuceneSailTest {
 
 	protected RepositoryConnection connection;
 
-	private LuceneIndex index;
+	private ElasticSearchIndex index;
 
 	static {
 		StringBuilder buffer = new StringBuilder();
@@ -117,7 +118,7 @@ public class LuceneSailTest {
 		// to confogure using just the Logger
 
 		// setup a LuceneSail
-		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer(Version.LUCENE_35));
+		index = new ElasticSearchIndex(new RAMDirectory(), new StandardAnalyzer(Version.LUCENE_35));
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);

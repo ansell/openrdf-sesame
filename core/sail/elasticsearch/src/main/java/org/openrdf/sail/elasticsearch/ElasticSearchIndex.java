@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,17 +33,11 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -52,9 +46,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -65,6 +56,12 @@ import org.openrdf.model.impl.BNodeImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.util.ListMap;
+import org.openrdf.sail.lucene.util.MapOfListMaps;
+import org.openrdf.sail.lucene.util.SetMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -73,7 +70,7 @@ import org.openrdf.sail.SailException;
  * 
  * @see LuceneSail
  */
-public class LuceneIndex {
+public class ElasticSearchIndex {
 
 	/**
 	 * A utility FieldSelector that only selects the URI field to be loaded.
@@ -185,7 +182,7 @@ public class LuceneIndex {
 	 * @throws IOException
 	 *         When the Directory could not be unlocked.
 	 */
-	public LuceneIndex(Directory directory, Analyzer analyzer)
+	public ElasticSearchIndex(Directory directory, Analyzer analyzer)
 		throws IOException
 	{
 		this.directory = directory;
