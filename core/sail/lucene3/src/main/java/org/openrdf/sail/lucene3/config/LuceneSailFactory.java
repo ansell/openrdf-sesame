@@ -20,7 +20,7 @@ import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
-import org.openrdf.sail.lucene3.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSail;
 
 /**
  * A {@link SailFactory} that creates {@link LuceneSail}s based on RDF
@@ -33,19 +33,22 @@ public class LuceneSailFactory implements SailFactory {
 	 * 
 	 * @see SailFactory#getSailType()
 	 */
-	public static final String SAIL_TYPE = "openrdf:LuceneSail";
+	public static final String SAIL_TYPE = "openrdf:LuceneSail3";
 
 	/**
 	 * Returns the Sail's type: <tt>openrdf:LuceneSail</tt>.
 	 */
+	@Override
 	public String getSailType() {
 		return SAIL_TYPE;
 	}
 
+	@Override
 	public SailImplConfig getConfig() {
 		return new LuceneSailConfig();
 	}
 
+	@Override
 	public Sail getSail(SailImplConfig config)
 		throws SailConfigException
 	{
@@ -54,6 +57,7 @@ public class LuceneSailFactory implements SailFactory {
 		}
 
 		LuceneSail luceneSail = new LuceneSail();
+		luceneSail.setParameter(LuceneSail.INDEX_CLASS_KEY, org.openrdf.sail.lucene3.LuceneIndex.class.getName());
 
 		if (config instanceof LuceneSailConfig) {
 			LuceneSailConfig luceneConfig = (LuceneSailConfig)config;
