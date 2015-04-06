@@ -20,11 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.openrdf.model.vocabulary.RDF.TYPE;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.LUCENE_QUERY;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.QUERY;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.SCORE;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.SNIPPET;
+import static org.openrdf.sail.lucene.LuceneSailSchema.LUCENE_QUERY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
+import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
+import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -37,8 +37,8 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.serql.SeRQLParser;
-import org.openrdf.sail.lucene4.QuerySpec;
-import org.openrdf.sail.lucene4.QuerySpecBuilder;
+import org.openrdf.sail.lucene.QuerySpec;
+import org.openrdf.sail.lucene.QuerySpecBuilder;
 
 public class QuerySpecBuilderTest {
 

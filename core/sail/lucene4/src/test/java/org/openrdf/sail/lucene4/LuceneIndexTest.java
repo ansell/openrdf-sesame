@@ -55,8 +55,7 @@ import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
-import org.openrdf.sail.lucene4.LuceneIndex;
-import org.openrdf.sail.lucene4.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest {

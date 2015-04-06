@@ -31,8 +31,8 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.sail.lucene4.LuceneSail;
-import org.openrdf.sail.lucene4.LuceneSailSchema;
+import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSailSchema;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**

@@ -23,6 +23,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 
+import org.openrdf.sail.lucene.AbstractReaderMonitor;
+
 /**
  * ReaderMonitor holds IndexReader and IndexSearcher. When ReaderMonitor is
  * closed it do not close IndexReader and IndexSearcher as long as someone reads
@@ -30,14 +32,7 @@ import org.apache.lucene.store.Directory;
  * 
  * @author Tomasz Trela, DFKI Gmbh
  */
-public class ReaderMonitor {
-
-	int readingCount = 0;
-
-	boolean doClose = false;
-
-	// Remember index to be able to remove itself from the index list
-	final private LuceneIndex index;
+public class ReaderMonitor extends AbstractReaderMonitor {
 
 	/**
 	 * The IndexSearcher that can be used to query the current index' contents.
@@ -45,8 +40,6 @@ public class ReaderMonitor {
 	private IndexSearcher indexSearcher;
 
 	private IOException indexSearcherCreateException;
-
-	private boolean closed = false;
 
 	/**
 	 * If exception occur when create indexReader it will be thrown on
@@ -57,7 +50,7 @@ public class ReaderMonitor {
 	 *        Initializes IndexReader
 	 */
 	public ReaderMonitor(final LuceneIndex index, Directory directory) {
-		this.index = index;
+		super(index);
 		try {
 			IndexReader indexReader = DirectoryReader.open(directory);
 			indexSearcher = new IndexSearcher(indexReader);
@@ -68,53 +61,10 @@ public class ReaderMonitor {
 	}
 
 	/**
-	 * 
-	 */
-	public void beginReading() {
-		readingCount++;
-	}
-
-	/**
-	 * called by the iterator
-	 * 
 	 * @throws IOException
 	 */
-	public void endReading()
-		throws IOException
-	{
-		readingCount--;
-		if (readingCount == 0 && doClose) {
-			// when endReading is called on CurrentMonitor and it should be closed,
-			// close it
-			doClose();// close Lucene index remove them self from Lucene index
-			synchronized (index.oldmonitors) {
-				index.oldmonitors.remove(this); // if its not in the list, then this
-															// is a no-operation
-			}
-		}
-	}
-
-	/**
-	 * This method is called in LecenIndex invalidateReaders or on commit
-	 * 
-	 * @return <code>true</code> if the close succeeded, <code>false</code>
-	 *         otherwise.
-	 * @throws IOException
-	 */
-	public boolean closeWhenPossible()
-		throws IOException
-	{
-		doClose = true;
-		if (readingCount == 0) {
-			doClose();
-		}
-		return closed;
-	}
-
-	/**
-	 * @throws IOException
-	 */
-	public void doClose()
+	@Override
+	protected void handleClose()
 		throws IOException
 	{
 		try {
@@ -125,7 +75,6 @@ public class ReaderMonitor {
 		finally {
 			indexSearcher = null;
 		}
-		closed = true;
 	}
 
 	// //////////////////////////////Methods for controlled index access

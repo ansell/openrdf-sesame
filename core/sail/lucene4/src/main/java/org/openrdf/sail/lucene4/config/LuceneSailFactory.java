@@ -21,6 +21,7 @@ import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.config.LuceneSailConfig;
 import org.openrdf.sail.lucene4.LuceneIndex;
 
 /**
@@ -34,7 +35,7 @@ public class LuceneSailFactory implements SailFactory {
 	 * 
 	 * @see SailFactory#getSailType()
 	 */
-	public static final String SAIL_TYPE = "openrdf:LuceneSail4";
+	public static final String SAIL_TYPE = LuceneSailConfig.SAIL_TYPE;
 
 	/**
 	 * Returns the Sail's type: <tt>openrdf:LuceneSail</tt>.

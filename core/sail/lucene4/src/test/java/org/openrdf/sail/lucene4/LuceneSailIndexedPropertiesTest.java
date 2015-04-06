@@ -20,10 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.PROPERTY;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.QUERY;
-import static org.openrdf.sail.lucene4.LuceneSailSchema.SCORE;
+import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
+import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.lucene4.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneSailIndexedPropertiesTest {
