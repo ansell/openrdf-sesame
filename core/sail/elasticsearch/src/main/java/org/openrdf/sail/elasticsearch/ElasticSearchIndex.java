@@ -50,12 +50,11 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.xml.QueryTemplateManager;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -71,9 +70,15 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Bits;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openrdf.model.Literal;
@@ -95,13 +100,27 @@ import org.openrdf.sail.lucene.util.ListMap;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
 import org.openrdf.sail.lucene.util.SetMap;
 
-import static org.openrdf.sail.lucene.AbstractLuceneIndex.*;
-
 /**
  * @see LuceneSail
  */
 public class ElasticSearchIndex implements SearchIndex {
 
+	public static final String INDEX_NAME_KEY = "indexName";
+	public static final String DOCUMENT_TYPE_KEY = "documentType";
+	public static final String DEFAULT_INDEX_NAME = "ElasticSearchSail";
+	public static final String DEFAULT_DOCUMENT_TYPE = "Subject";
+
+	static class Document {
+		String id;
+		String type;
+		Map<String,Object> fields;
+
+		Document(String id, String type, Map<String,Object> fields) {
+			this.id = id;
+			this.type = type;
+			this.fields = fields;
+		}
+	}
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -109,13 +128,49 @@ public class ElasticSearchIndex implements SearchIndex {
 
 	private Client client;
 
+	private String indexName;
+	private String documentType;
+
 	public ElasticSearchIndex()
 	{
 	}
 
-	public void initialize(Properties parameters) {
+	public void initialize(Properties parameters) throws IOException {
+		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
+		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		node = NodeBuilder.nodeBuilder().node();
 		client = node.client();
+
+		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
+		if(!exists) {
+			XContentBuilder typeMapping = XContentFactory.jsonBuilder();
+			typeMapping.startObject()
+				.startObject(documentType)
+					.startObject("properties");
+			typeMapping.startObject(SearchFields.ID_FIELD_NAME)
+				.field("type", "string")
+				.field("index", "not_analyzed")
+			.endObject();
+			typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME)
+				.field("type", "string")
+				.field("index", "not_analyzed")
+			.endObject();
+			typeMapping.startObject(SearchFields.URI_FIELD_NAME)
+				.field("type", "string")
+				.field("index", "not_analyzed")
+			.endObject();
+			typeMapping.startObject(SearchFields.TEXT_FIELD_NAME)
+				.field("type", "string")
+				.field("index", "analyzed")
+			.endObject();
+			typeMapping
+					.endObject()
+				.endObject()
+			.endObject();
+			client.admin().indices().prepareCreate(indexName).addMapping(documentType, typeMapping).execute().actionGet();
+			Map<?,?> mappings = client.admin().indices().prepareGetFieldMappings(indexName).execute().actionGet().mappings();
+			logger.info("Field mappings:\n{}", mappings);
+		}
 	}
 
 	public void shutDown()
@@ -148,59 +203,49 @@ public class ElasticSearchIndex implements SearchIndex {
 
 		String field = statement.getPredicate().toString();
 		String text = ((Literal)object).getLabel();
-		String context = getContextID(statement.getContext());
+		String context = SearchFields.getContextID(statement.getContext());
 		boolean updated = false;
 		IndexWriter writer = null;
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
-		String contextId = getContextID(statement.getContext());
+		String contextId = SearchFields.getContextID(statement.getContext());
 
 		String id = SearchFields.formIdString(resourceId, contextId);
-		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
-		Document document = getDocument(idTerm);
+		QueryBuilder query = QueryBuilders.termQuery(SearchFields.ID_FIELD_NAME, id);
+		Document document = getDocument(query);
 
 		try {
 			if (document == null) {
 				// there is no such Document: create one now
-				document = new Document();
-				addIDField(id, document);
-				addURIField(resourceId, document);
+				Map<String,Object> newDocument = new HashMap<String,Object>();
+				addIDField(id, newDocument);
+				addURIField(resourceId, newDocument);
 				// add context
-				addContextField(context, document);
+				addContextField(context, newDocument);
 	
-				addPropertyFields(field, text, document);
+				addPropertyFields(field, text, newDocument);
 	
 				// add it to the index
-				writer = getIndexWriter();
 				if(!updated) {
 					begin();
 				}
-				writer.addDocument(document);
+				client.prepareIndex(indexName, documentType).setSource(newDocument).execute().actionGet();
 				updated = true;
 			}
 			else {
 				// update this Document when this triple has not been stored already
-				if (!hasProperty(field, text, document)) {
-					// create a copy of the old document; updating the retrieved
-					// Document instance works ok for stored properties but indexed data
-					// gets lots when doing an IndexWriter.updateDocument with it
-					Document newDocument = new Document();
-	
-					// add all existing fields (including id, uri, context, and text)
-					for (Object oldFieldObject : document.getFields()) {
-						Field oldField = (Field)oldFieldObject;
-						newDocument.add(oldField);
-					}
+				if (!hasProperty(field, text, document.fields)) {
+					Map<String,Object> newDocument = new HashMap<String,Object>(document.fields);
 	
 					// add the new triple to the cloned document
 					addPropertyFields(field, text, newDocument);
 	
 					// update the index with the cloned document
-					writer = getIndexWriter();
 					if(!updated) {
 						begin();
 					}
+					client.prepareUpdate();
 					writer.updateDocument(idTerm, newDocument);
 					updated = true;
 				}
@@ -223,45 +268,22 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * Returns a Document representing the specified document ID (combination of
 	 * resource and context), or null when no such Document exists yet.
 	 */
-	private Document getDocument(Term idTerm)
+	private Document getDocument(QueryBuilder query)
 		throws IOException
 	{
-		IndexReader reader = getIndexReader();
-		List<LeafReaderContext> leaves = reader.leaves();
-		int size = leaves.size();
-		for(int i=0; i<size; i++) {
-			LeafReader lreader = leaves.get(i).reader();
-			Document document = getDocument(lreader, idTerm);
-			if(document != null)
-			{
-				return document;
-			}
+		SearchResponse response = client.prepareSearch().setQuery(query).setSize(1).execute().actionGet();
+		SearchHit[] hits = response.getHits().getHits();
+		if(hits.length > 1) {
+			throw new IllegalStateException("Multiple Documents for query " + query);
+		}
+		if(hits.length == 1) {
+			return new Document(hits[0].getId(), hits[0].getType(), hits[0].getSource());
 		}
 		// no such Document
 		return null;
 	}
 
-	private static Document getDocument(LeafReader reader, Term term) throws IOException {
-		DocsEnum docs = reader.termDocsEnum(term);
-		if(docs != null)
-		{
-			int docId = docs.nextDoc();
-			if(docId != DocsEnum.NO_MORE_DOCS) {
-				if(docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
-					throw new IllegalStateException("Multiple Documents for term " + term.text());
-				}
-				return readDocument(reader, docId);
-			}
-			else {
-				return null;
-			}
-		}
-		else {
-			return null;
-		}
-	}
-
-	private Term formIdTerm(String resourceId, String contextId) {
+	private QueryBuilder formIdQuery(String resourceId, String contextId) {
 		return new Term(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
 	}
 
@@ -271,32 +293,19 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * statements with the specified Resource as a subject, which are stored in a
 	 * specific context
 	 */
-	private List<Document> getDocuments(Term uriTerm)
+	private List<Map<String,Object>> getDocuments(QueryBuilder query)
 		throws IOException
 	{
-		List<Document> result = new ArrayList<Document>();
+		List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
 
-		IndexReader reader = getIndexReader();
-		List<LeafReaderContext> leaves = reader.leaves();
-		int size = leaves.size();
+		SearchResponse response = client.prepareSearch().setQuery(query).setSize(1).execute().actionGet();
+		SearchHit[] hits = response.getHits().getHits();
+		int size = hits.length;
 		for(int i=0; i<size; i++) {
-			LeafReader lreader = leaves.get(i).reader();
-			addDocuments(lreader, uriTerm, result);
+			result.add(hits[i].getSource());
 		}
 
 		return result;
-	}
-
-	private static void addDocuments(LeafReader reader, Term term, Collection<Document> documents) throws IOException {
-		DocsEnum docs = reader.termDocsEnum(term);
-		if(docs != null)
-		{
-			int docId;
-			while((docId = docs.nextDoc()) != DocsEnum.NO_MORE_DOCS) {
-				Document document = readDocument(reader, docId);
-				documents.add(document);
-			}
-		}
 	}
 
 	/**
@@ -308,8 +317,8 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(subject);
-		String contextId = getContextID(context);
-		Term idTerm = formIdTerm(resourceId, contextId);
+		String contextId = SearchFields.getContextID(context);
+		Term idTerm = formIdQuery(resourceId, contextId);
 		return getDocument(idTerm);
 	}
 
@@ -330,17 +339,31 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Checks whether a field occurs with a specified value in a Document.
 	 */
-	private boolean hasProperty(String fieldName, String value, Document document) {
-		IndexableField[] fields = document.getFields(fieldName);
+	private boolean hasProperty(String fieldName, String value, Map<String,Object> document) {
+		Object[] fields = asArray(document.get(fieldName));
 		if (fields != null) {
-			for (IndexableField field : fields) {
-				if (value.equals(field.stringValue())) {
+			for (Object field : fields) {
+				if (value.equals(field)) {
 					return true;
 				}
 			}
 		}
 
 		return false;
+	}
+
+	private static Object[] asArray(Object value) {
+		Object[] arr;
+		if(value == null) {
+			arr = null;
+		}
+		else if(value instanceof Object[]) {
+			arr = (Object[]) value;
+		}
+		else {
+			arr = new Object[] {value};
+		}
+		return arr;
 	}
 
 	/**
@@ -372,8 +395,8 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Stores and indexes an ID in a Document.
 	 */
-	private static void addIDField(String id, Document document) {
-		document.add(new StringField(SearchFields.ID_FIELD_NAME, id, Store.YES));
+	private static void addIDField(String id, Map<String,Object> document) {
+		document.put(SearchFields.ID_FIELD_NAME, id);
 	}
 
 	/**
@@ -386,17 +409,17 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * @param ifNotExists
 	 *        check if this context exists
 	 */
-	private static void addContextField(String context, Document document) {
+	private static void addContextField(String context, Map<String,Object> document) {
 		if (context != null) {
-			document.add(new StringField(SearchFields.CONTEXT_FIELD_NAME, context, Store.YES));
+			document.put(SearchFields.CONTEXT_FIELD_NAME, context);
 		}
 	}
 
 	/**
 	 * Stores and indexes the resource ID in a Document.
 	 */
-	private static void addURIField(String resourceId, Document document) {
-		document.add(new StringField(SearchFields.URI_FIELD_NAME, resourceId, Store.YES));
+	private static void addURIField(String resourceId, Map<String,Object> document) {
+		document.put(SearchFields.URI_FIELD_NAME, resourceId);
 	}
 
 	/**
@@ -409,7 +432,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * @param document
 	 *        the document to add to
 	 */
-	private void addProperty(Statement statement, Document document) {
+	private void addProperty(Statement statement, Map<String,Object> document) {
 		String text = SearchFields.getLiteralPropertyValueAsString(statement);
 		if (text == null)
 			return;
@@ -427,7 +450,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * 
 	 * @see LuceneSail
 	 */
-	private static void addPropertyFields(String predicate, String text, Document document) {
+	private static void addPropertyFields(String predicate, String text, Map<String,Object> document) {
 		// store this predicate
 		addPredicateField(predicate, text, document);
 
@@ -435,97 +458,38 @@ public class ElasticSearchIndex implements SearchIndex {
 		addTextField(text, document);
 	}
 
-	private static void addPredicateField(String predicate, String text, Document document) {
+	private static void addPredicateField(String predicate, String text, Map<String,Object> document) {
 		// store this predicate
-		document.add(new TextField(predicate, text, Store.YES));
+		Object oldText = document.get(predicate);
+		Object newValue;
+		if(oldText != null) {
+			Object[] oldArr = asArray(oldText);
+			Object[] arr = new Object[oldArr.length+1];
+			System.arraycopy(oldArr, 0, arr, 0, oldArr.length);
+			arr[oldArr.length] = text;
+			newValue = arr;
+		}
+		else {
+			newValue = text;
+		}
+		document.put(predicate, newValue);
 	}
 
-	private static void addTextField(String text, Document document) {
+	private static void addTextField(String text, Map<String,Object> document) {
 		// and in TEXT_FIELD_NAME
-		document.add(new TextField(SearchFields.TEXT_FIELD_NAME, text, Store.YES));
-	}
-
-	/**
-	 * invalidate readers, free them if possible (readers that are still open by
-	 * a {@link LuceneQueryConnection} will not be closed. Synchronized on
-	 * oldmonitors because it manipulates them
-	 * 
-	 * @throws IOException
-	 */
-	private void invalidateReaders()
-		throws IOException
-	{
-		synchronized (oldmonitors) {
-			// Move current monitor to old monitors and set null
-			if (currentMonitor != null)
-				// we do NOT close it directly as it may be used by an open result
-				// iterator, hence moving it to the
-				// list of oldmonitors where it is handled as other older monitors
-				oldmonitors.add(currentMonitor);
-			currentMonitor = null;
-
-			// close all monitors if possible
-			for (Iterator<AbstractReaderMonitor> i = oldmonitors.iterator(); i.hasNext();) {
-				AbstractReaderMonitor monitor = i.next();
-				if (monitor.closeWhenPossible()) {
-					i.remove();
-				}
-			}
-
-			// check if all readers were closed
-			if (oldmonitors.isEmpty()) {
-				logger.debug("Deleting unused files from Lucene index");
-
-				// clean up unused files (marked as 'deletable' in Luke Filewalker)
-				getIndexWriter().deleteUnusedFiles();
-
-				// logIndexStats();
-			}
+		Object oldText = document.get(SearchFields.TEXT_FIELD_NAME);
+		Object newValue;
+		if(oldText != null) {
+			Object[] oldArr = asArray(oldText);
+			Object[] arr = new Object[oldArr.length+1];
+			System.arraycopy(oldArr, 0, arr, 0, oldArr.length);
+			arr[oldArr.length] = text;
+			newValue = arr;
 		}
-	}
-
-	private void logIndexStats() {
-		try {
-			IndexReader reader = null;
-			try {
-				reader = getIndexReader();
-
-				Document doc;
-				int totalFields = 0;
-
-				Set<String> ids = new HashSet<String>();
-				String[] idArray;
-				int count = 0;
-				for (int i = 0; i < reader.maxDoc(); i++) {
-					if (isDeleted(reader, i))
-						continue;
-					doc = readDocument(reader, i);
-					totalFields += doc.getFields().size();
-					count++;
-					idArray = doc.getValues("id");
-					for (String id : idArray)
-						ids.add(id);
-
-				}
-
-				logger.info("Total documents in the index: " + reader.numDocs()
-						+ ", number of deletable documents in the index: " + reader.numDeletedDocs()
-						+ ", valid documents: " + count + ", total fields in all documents: " + totalFields
-						+ ", average number of fields per document: " + ((double)totalFields) / reader.numDocs());
-				logger.info("Distinct ids in the index: " + ids.size());
-
-			}
-			finally {
-				if (currentMonitor != null) {
-					currentMonitor.closeWhenPossible();
-					currentMonitor = null;
-				}
-			}
+		else {
+			newValue = text;
 		}
-		catch (IOException e) {
-			logger.warn(e.getMessage(), e);
-		}
-
+		document.put(SearchFields.TEXT_FIELD_NAME, newValue);
 	}
 
 	public synchronized void removeStatement(Statement statement)

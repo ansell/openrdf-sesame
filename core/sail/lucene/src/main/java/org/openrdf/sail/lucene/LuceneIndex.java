@@ -435,10 +435,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
-	private Term formIdTerm(String resourceId, String contextId) {
-		return new Term(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
-	}
-
 	/**
 	 * Returns a list of Documents representing the specified Resource (empty
 	 * when no such Document exists yet). Each document represent a set of
@@ -483,7 +479,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(subject);
 		String contextId = SearchFields.getContextID(context);
-		Term idTerm = formIdTerm(resourceId, contextId);
+		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
 		return getDocument(idTerm);
 	}
 
