@@ -14,11 +14,12 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.lucene.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Map like structure where each key maps to a list of values. I couldn't get
@@ -29,18 +30,15 @@ import java.util.List;
  */
 public class ListMap<K, V> {
 
-	private final HashMap<K, List<V>> data;
+	private final Map<K, List<V>> data;
 
 	public ListMap() {
 		data = new HashMap<K, List<V>>();
 	}
 
 	public V put(K key, V value) {
-		List<V> list;
-		if (data.containsKey(key)) {
-			list = data.get(key);
-		}
-		else {
+		List<V> list = data.get(key);
+		if (list == null) {
 			list = new ArrayList<V>();
 			data.put(key, list);
 		}
