@@ -18,14 +18,12 @@ package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,54 +31,32 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.DocsEnum;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.xml.QueryTemplateManager;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Bits;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.elasticsearch.search.SearchHits;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -88,17 +64,20 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryResult;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.lucene.AbstractLuceneIndex;
+import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.QuerySpec;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SearchIndex;
 import org.openrdf.sail.lucene.util.ListMap;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
 import org.openrdf.sail.lucene.util.SetMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see LuceneSail
@@ -110,12 +89,16 @@ public class ElasticSearchIndex implements SearchIndex {
 	public static final String DEFAULT_INDEX_NAME = "ElasticSearchSail";
 	public static final String DEFAULT_DOCUMENT_TYPE = "Subject";
 
-	static class Document {
-		String id;
-		String type;
-		Map<String,Object> fields;
+	private static class Document {
+		public final String id;
+		public final String type;
+		public final Map<String,Object> fields;
 
-		Document(String id, String type, Map<String,Object> fields) {
+		public Document(SearchHit hit) {
+			this(hit.getId(), hit.getType(), hit.getSource());
+		}
+
+		public Document(String id, String type, Map<String,Object> fields) {
 			this.id = id;
 			this.type = type;
 			this.fields = fields;
@@ -131,10 +114,14 @@ public class ElasticSearchIndex implements SearchIndex {
 	private String indexName;
 	private String documentType;
 
+	private String analyzer = "standard";
+	private String queryAnalyzer = "standard";
+
 	public ElasticSearchIndex()
 	{
 	}
 
+	@Override
 	public void initialize(Properties parameters) throws IOException {
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
@@ -143,6 +130,18 @@ public class ElasticSearchIndex implements SearchIndex {
 
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
+			String settings = XContentFactory.jsonBuilder()
+				.startObject()
+					.startObject("analysis")
+						.startObject("analyzer")
+							.startObject("default")
+								.field("type", analyzer)
+							.endObject()
+						.endObject()
+					.endObject()
+				.endObject()
+			.string();
+			// use _source instead of explicit stored = true
 			XContentBuilder typeMapping = XContentFactory.jsonBuilder();
 			typeMapping.startObject()
 				.startObject(documentType)
@@ -167,12 +166,15 @@ public class ElasticSearchIndex implements SearchIndex {
 					.endObject()
 				.endObject()
 			.endObject();
-			client.admin().indices().prepareCreate(indexName).addMapping(documentType, typeMapping).execute().actionGet();
+			client.admin().indices().prepareCreate(indexName)
+				.setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings))
+				.addMapping(documentType, typeMapping).execute().actionGet();
 			Map<?,?> mappings = client.admin().indices().prepareGetFieldMappings(indexName).execute().actionGet().mappings();
 			logger.info("Field mappings:\n{}", mappings);
 		}
 	}
 
+	@Override
 	public void shutDown()
 		throws IOException
 	{
@@ -205,7 +207,6 @@ public class ElasticSearchIndex implements SearchIndex {
 		String text = ((Literal)object).getLabel();
 		String context = SearchFields.getContextID(statement.getContext());
 		boolean updated = false;
-		IndexWriter writer = null;
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
@@ -245,15 +246,12 @@ public class ElasticSearchIndex implements SearchIndex {
 					if(!updated) {
 						begin();
 					}
-					client.prepareUpdate();
-					writer.updateDocument(idTerm, newDocument);
+					client.prepareUpdate(indexName, document.type, document.id).setDoc(newDocument).execute().actionGet();
 					updated = true;
 				}
 			}
 	
 			if (updated) {
-				// make sure that these updates are visible for new
-				// IndexReaders/Searchers
 				commit();
 			}
 		}
@@ -277,14 +275,10 @@ public class ElasticSearchIndex implements SearchIndex {
 			throw new IllegalStateException("Multiple Documents for query " + query);
 		}
 		if(hits.length == 1) {
-			return new Document(hits[0].getId(), hits[0].getType(), hits[0].getSource());
+			return new Document(hits[0]);
 		}
 		// no such Document
 		return null;
-	}
-
-	private QueryBuilder formIdQuery(String resourceId, String contextId) {
-		return new Term(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
 	}
 
 	/**
@@ -293,16 +287,16 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * statements with the specified Resource as a subject, which are stored in a
 	 * specific context
 	 */
-	private List<Map<String,Object>> getDocuments(QueryBuilder query)
+	private List<Document> getDocuments(QueryBuilder query)
 		throws IOException
 	{
-		List<Map<String,Object>> result = new ArrayList<Map<String,Object>>();
+		List<Document> result = new ArrayList<Document>();
 
 		SearchResponse response = client.prepareSearch().setQuery(query).setSize(1).execute().actionGet();
 		SearchHit[] hits = response.getHits().getHits();
 		int size = hits.length;
 		for(int i=0; i<size; i++) {
-			result.add(hits[i].getSource());
+			result.add(new Document(hits[i]));
 		}
 
 		return result;
@@ -318,8 +312,8 @@ public class ElasticSearchIndex implements SearchIndex {
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(subject);
 		String contextId = SearchFields.getContextID(context);
-		Term idTerm = formIdQuery(resourceId, contextId);
-		return getDocument(idTerm);
+		QueryBuilder query = QueryBuilders.termQuery(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
+		return getDocument(query);
 	}
 
 	/**
@@ -332,8 +326,8 @@ public class ElasticSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		String resourceId = SearchFields.getResourceID(subject);
-		Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
-		return getDocuments(uriTerm);
+		QueryBuilder query = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId);
+		return getDocuments(query);
 	}
 
 	/**
@@ -372,9 +366,8 @@ public class ElasticSearchIndex implements SearchIndex {
 	private int numberOfPropertyFields(Document document) {
 		// count the properties that are NOT id nor context nor text
 		int propsize = 0;
-		for (Object o : document.getFields()) {
-			Field f = (Field)o;
-			if (SearchFields.isPropertyField(f.name()))
+		for (String field : document.fields.keySet()) {
+			if (SearchFields.isPropertyField(field))
 				propsize++;
 		}
 		return propsize;
@@ -500,16 +493,14 @@ public class ElasticSearchIndex implements SearchIndex {
 			return;
 		}
 
-		IndexWriter writer = null;
 		boolean updated = false;
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
-		String contextId = getContextID(statement.getContext());
+		String contextId = SearchFields.getContextID(statement.getContext());
 		String id = SearchFields.formIdString(resourceId, contextId);
-		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
-
-		Document document = getDocument(idTerm);
+		QueryBuilder query = QueryBuilders.termQuery(SearchFields.ID_FIELD_NAME, id);
+		Document document = getDocument(query);
 
 		try {
 			if (document != null) {
@@ -518,7 +509,7 @@ public class ElasticSearchIndex implements SearchIndex {
 				String text = ((Literal)object).getLabel();
 	
 				// see if this triple occurs in this Document
-				if (hasProperty(fieldName, text, document)) {
+				if (hasProperty(fieldName, text, document.fields)) {
 					// if the Document only has one predicate field, we can remove the
 					// document
 					int nrProperties = numberOfPropertyFields(document);
@@ -527,46 +518,47 @@ public class ElasticSearchIndex implements SearchIndex {
 								resourceId);
 					}
 					else if (nrProperties == 1) {
-						writer = getIndexWriter();
 						if(!updated) {
 							begin();
 						}
-						writer.deleteDocuments(idTerm);
+						client.prepareDelete(indexName, document.type, document.id).execute().actionGet();
 						updated = true;
 					}
 					else {
 						// there are more triples encoded in this Document: remove the
 						// document and add a new Document without this triple
-						Document newDocument = new Document();
+						Map<String,Object> newDocument = new HashMap<String,Object>();
 						addIDField(id, newDocument);
 						addURIField(resourceId, newDocument);
 						addContextField(contextId, newDocument);
 	
-						for (Object oldFieldObject : document.getFields()) {
-							Field oldField = (Field)oldFieldObject;
-							String oldFieldName = oldField.name();
-							String oldValue = oldField.stringValue();
+						for (Map.Entry<String,Object> oldField : document.fields.entrySet()) {
+							String oldFieldName = oldField.getKey();
+							Object[] oldValues = asArray(oldField.getValue());
 	
-							if (SearchFields.isPropertyField(oldFieldName)
-									&& !(fieldName.equals(oldFieldName) && text.equals(oldValue)))
+							if (SearchFields.isPropertyField(oldFieldName))
 							{
-								addPropertyFields(oldFieldName, oldValue, newDocument);
+								boolean isField = fieldName.equals(oldFieldName);
+								for(Object oldValue : oldValues)
+								{
+									if (!(isField && text.equals(oldValue)))
+									{
+										addPropertyFields(oldFieldName, (String) oldValue, newDocument);
+									}
+								}
 							}
 						}
 	
-						writer = getIndexWriter();
 						if(!updated) {
 							begin();
 						}
-						writer.updateDocument(idTerm, newDocument);
+						client.prepareUpdate(indexName, document.type, document.id).setDoc(newDocument).execute().actionGet();
 						updated = true;
 					}
 				}
 			}
 	
 			if (updated) {
-				// make sure that these updates are visible for new
-				// IndexReaders/Searchers
 				commit();
 			}
 		}
@@ -578,32 +570,18 @@ public class ElasticSearchIndex implements SearchIndex {
 	}
 
 	@Override
-	public void begin()
-		throws IOException
+	public void begin() throws IOException
 	{
-		// nothing to do
-	}
-
-	/**
-	 * Commits any changes done to the LuceneIndex since the last commit. The
-	 * semantics is synchronous to SailConnection.commit(), i.e. the LuceneIndex
-	 * should be committed/rollbacked whenever the LuceneSailConnection is
-	 * committed/rollbacked.
-	 */
-	@Override
-	public void commit()
-		throws IOException
-	{
-		getIndexWriter().commit();
-		// the old IndexReaders/Searchers are not outdated
-		invalidateReaders();
 	}
 
 	@Override
-	public void rollback()
-		throws IOException
+	public void commit() throws IOException
 	{
-		getIndexWriter().rollback();
+	}
+
+	@Override
+	public void rollback() throws IOException
+	{
 	}
 
 	// //////////////////////////////// Methods for querying the index
@@ -625,8 +603,8 @@ public class ElasticSearchIndex implements SearchIndex {
 	 *        the Lucene query to evaluate
 	 * @return QueryResult consisting of hits and highlighter
 	 */
-	private QueryResult evaluateQuery(QuerySpec query) {
-		TopDocs hits = null;
+	private SearchHits evaluateQuery(QuerySpec query) {
+		SearchHits hits = null;
 		Highlighter highlighter = null;
 
 		// get the subject of the query
@@ -638,7 +616,8 @@ public class ElasticSearchIndex implements SearchIndex {
 			String sQuery = query.getQueryString();
 
 			if (!sQuery.isEmpty()) {
-				Query lucenequery = parseQuery(query.getQueryString(), query.getPropertyURI());
+				QueryBuilder lucenequery = parseQuery(query.getQueryString(), query.getPropertyURI());
+				SearchRequestBuilder request = client.prepareSearch(indexName).setQuery(lucenequery);
 
 				// if the query requests for the snippet, create a highlighter using
 				// this query
@@ -656,7 +635,7 @@ public class ElasticSearchIndex implements SearchIndex {
 				}
 			}
 			else {
-				hits = new TopDocs(0, new ScoreDoc[0], 0.0f);
+				hits = null;
 			}
 		}
 		catch (Exception e) {
@@ -664,7 +643,7 @@ public class ElasticSearchIndex implements SearchIndex {
 					+ query.getPropertyURI() + "!", e);
 		}
 
-		return new QueryResult(hits, highlighter);
+		return hits;
 	}
 
 	/**
@@ -679,7 +658,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * @return a LinkedHashSet containing generated bindings
 	 * @throws SailException
 	 */
-	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, TopDocs hits,
+	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, SearchHits hits,
 			Highlighter highlighter)
 		throws SailException
 	{
@@ -691,102 +670,104 @@ public class ElasticSearchIndex implements SearchIndex {
 		// unique.
 		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
 
-		// for each hit ...
-		ScoreDoc[] docs = hits.scoreDocs;
-		for (int i = 0; i < docs.length; i++) {
-			// this takes the new bindings
-			QueryBindingSet derivedBindings = new QueryBindingSet();
-
-			// get the current hit
-			int docId = docs[i].doc;
-			Document doc = getDoc(docId);
-			if (doc == null)
-				continue;
-
-			// get the score of the hit
-			float score = docs[i].score;
-
-			// bind the respective variables
-			String matchVar = query.getMatchesVariableName();
-			if (matchVar != null) {
-				try {
-					Resource resource = getResource(doc);
-					Value existing = derivedBindings.getValue(matchVar);
-					// if the existing binding contradicts the current binding, than
-					// we can safely skip this permutation
-					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-						// invalidate the binding
-						derivedBindings = null;
-
-						// and exit the loop
-						break;
+		if(hits != null) {
+			// for each hit ...
+			SearchHit[] docs = hits.getHits();
+			for (int i = 0; i < docs.length; i++) {
+				// this takes the new bindings
+				QueryBindingSet derivedBindings = new QueryBindingSet();
+	
+				// get the current hit
+				int docId = docs[i].doc;
+				Document doc = getDoc(docId);
+				if (doc == null)
+					continue;
+	
+				// get the score of the hit
+				float score = docs[i].score;
+	
+				// bind the respective variables
+				String matchVar = query.getMatchesVariableName();
+				if (matchVar != null) {
+					try {
+						Resource resource = getResource(doc);
+						Value existing = derivedBindings.getValue(matchVar);
+						// if the existing binding contradicts the current binding, than
+						// we can safely skip this permutation
+						if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
+							// invalidate the binding
+							derivedBindings = null;
+	
+							// and exit the loop
+							break;
+						}
+						derivedBindings.addBinding(matchVar, resource);
 					}
-					derivedBindings.addBinding(matchVar, resource);
+					catch (NullPointerException e) {
+						SailException e1 = new SailException(
+								"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
+								e);
+						logger.error(e1.getMessage());
+						logger.debug("Details: ", e);
+						throw e1;
+					}
 				}
-				catch (NullPointerException e) {
-					SailException e1 = new SailException(
-							"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-							e);
-					logger.error(e1.getMessage());
-					logger.debug("Details: ", e);
-					throw e1;
-				}
-			}
-
-			if ((query.getScoreVariableName() != null) && (score > 0.0f))
-				derivedBindings.addBinding(query.getScoreVariableName(), scoreToLiteral(score));
-
-			if (query.getSnippetVariableName() != null) {
-				if (highlighter != null) {
-					// limit to the queried field, if there was one
-					IndexableField[] fields;
-					if (query.getPropertyURI() != null) {
-						String fieldname = query.getPropertyURI().toString();
-						fields = doc.getFields(fieldname);
+	
+				if ((query.getScoreVariableName() != null) && (score > 0.0f))
+					derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
+	
+				if (query.getSnippetVariableName() != null) {
+					if (highlighter != null) {
+						// limit to the queried field, if there was one
+						IndexableField[] fields;
+						if (query.getPropertyURI() != null) {
+							String fieldname = query.getPropertyURI().toString();
+							fields = doc.getFields(fieldname);
+						}
+						else {
+							fields = getPropertyFields(doc.getFields());
+						}
+	
+						// extract snippets from Lucene's query results
+						for (IndexableField field : fields) {
+							// create an individual binding set for each snippet
+							QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
+	
+							String text = field.stringValue();
+	
+							String fragments = null;
+							try {
+								TokenStream tokenStream = getAnalyzer().tokenStream(field.name(),
+										new StringReader(text));
+								fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
+							}
+							catch (Exception e) {
+								logger.error("Exception while getting snippet for filed " + field.name()
+										+ " for query\n" + query, e);
+								continue;
+							}
+	
+							if (fragments != null && !fragments.isEmpty()) {
+								snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
+	
+								if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
+									snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
+								}
+	
+								bindingSets.add(snippetBindings);
+							}
+						}
 					}
 					else {
-						fields = getPropertyFields(doc.getFields());
-					}
-
-					// extract snippets from Lucene's query results
-					for (IndexableField field : fields) {
-						// create an individual binding set for each snippet
-						QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-
-						String text = field.stringValue();
-
-						String fragments = null;
-						try {
-							TokenStream tokenStream = getAnalyzer().tokenStream(field.name(),
-									new StringReader(text));
-							fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
-						}
-						catch (Exception e) {
-							logger.error("Exception while getting snippet for filed " + field.name()
-									+ " for query\n" + query, e);
-							continue;
-						}
-
-						if (fragments != null && !fragments.isEmpty()) {
-							snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
-
-							if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-								snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
-							}
-
-							bindingSets.add(snippetBindings);
-						}
+						logger.warn(
+								"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
+								query);
+						bindingSets.add(derivedBindings);
 					}
 				}
 				else {
-					logger.warn(
-							"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
-							query);
 					bindingSets.add(derivedBindings);
 				}
-			}
-			else {
-				bindingSets.add(derivedBindings);
 			}
 		}
 
@@ -816,17 +797,6 @@ public class ElasticSearchIndex implements SearchIndex {
 	}
 
 	/**
-	 * Returns a score value encoded as a Literal.
-	 * 
-	 * @param score
-	 *        the float score to convert
-	 * @return the score as a literal
-	 */
-	private Literal scoreToLiteral(float score) {
-		return new LiteralImpl(String.valueOf(score), XMLSchema.FLOAT);
-	}
-
-	/**
 	 * Returns the Resource corresponding with the specified Document number.
 	 * Note that all of Lucene's restrictions of using document numbers apply.
 	 */
@@ -840,13 +810,13 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Returns the Resource corresponding with the specified Document.
 	 */
-	public Resource getResource(Document document) {
-		String idString = document.get(SearchFields.URI_FIELD_NAME);
+	public Resource getResource(Map<String,Object> document) {
+		String idString = (String) document.get(SearchFields.URI_FIELD_NAME);
 		return SearchFields.createResource(idString);
 	}
 
-	private String getContextID(Document document) {
-		return document.get(SearchFields.CONTEXT_FIELD_NAME);
+	private String getContextID(Map<String,Object> document) {
+		return (String) document.get(SearchFields.CONTEXT_FIELD_NAME);
 	}
 
 	// /**
@@ -868,10 +838,15 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
-	public TopDocs search(String query)
-		throws ParseException, IOException
+	public SearchHits search(String query)
 	{
-		return search(getQueryParser(null).parse(query));
+		SearchResponse response = prepareSearch(query).execute().actionGet();
+		return response.getHits();
+	}
+
+	private SearchRequestBuilder prepareSearch(String query)
+	{
+		return client.prepareSearch(indexName).setQuery(parseQuery(query, null));
 	}
 
 	/**
@@ -905,10 +880,9 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * @throws ParseException
 	 *         when the parsing brakes
 	 */
-	public Query parseQuery(String query, URI propertyURI)
-		throws ParseException
+	public QueryBuilder parseQuery(String query, URI propertyURI)
 	{
-		return getQueryParser(propertyURI).parse(query);
+		return prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
 	}
 
 	/**
@@ -924,18 +898,18 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Gets the score for a particular Resource and query. Returns a value < 0
 	 * when the Resource does not match the query.
+	 * @throws IOException 
 	 */
-	public float getScore(Resource resource, String query, URI propertyURI)
-		throws ParseException, IOException
+	public float getScore(Resource resource, String query, URI propertyURI) throws IOException
 	{
-		return getScore(resource, getQueryParser(propertyURI).parse(query));
+		return getScore(resource, parseQuery(query, propertyURI));
 	}
 
 	/**
 	 * Gets the score for a particular Resource and query. Returns a value < 0
 	 * when the Resource does not match the query.
 	 */
-	public float getScore(Resource resource, Query query)
+	public float getScore(Resource resource, QueryBuilder query)
 		throws IOException
 	{
 		// rewrite the query
@@ -955,16 +929,17 @@ public class ElasticSearchIndex implements SearchIndex {
 		}
 	}
 
-	private QueryParser getQueryParser(URI propertyURI) {
+	private QueryStringQueryBuilder prepareQuery(URI propertyURI, QueryStringQueryBuilder query) {
 		// check out which query parser to use, based on the given property URI
 		if (propertyURI == null)
 			// if we have no property given, we create a default query parser which
 			// has the TEXT_FIELD_NAME as the default field
-			return new QueryParser(SearchFields.TEXT_FIELD_NAME, this.queryAnalyzer);
+			query.defaultField(SearchFields.TEXT_FIELD_NAME).analyzer(queryAnalyzer);
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			return new QueryParser(propertyURI.toString(), this.queryAnalyzer);
+			query.defaultField(propertyURI.toString()).analyzer(queryAnalyzer);
+		return query;
 	}
 
 	/**
@@ -1298,73 +1273,5 @@ public class ElasticSearchIndex implements SearchIndex {
 		indexWriter.close();
 		indexWriter = null;
 
-	}
-
-	//
-	// Lucene helper methods
-	//
-
-	private static boolean isDeleted(IndexReader reader, int docId)
-	{
-		if(reader.hasDeletions()) {
-			List<LeafReaderContext> leaves = reader.leaves();
-			int size = leaves.size();
-			for(int i=0; i<size; i++) {
-				Bits liveDocs = leaves.get(i).reader().getLiveDocs();
-				if(docId < liveDocs.length()) {
-					boolean isDeleted = !liveDocs.get(docId);
-					if(isDeleted) {
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-		else {
-			return false;
-		}
-	}
-
-	private static Document readDocument(IndexReader reader, int docId) throws IOException
-	{
-		AllStoredFieldVisitor visitor = new AllStoredFieldVisitor();
-		reader.document(docId, visitor);
-		return visitor.getDocument();
-	}
-
-
-
-	static class AllStoredFieldVisitor extends StoredFieldVisitor
-	{
-		private Document document = new Document();
-
-		@Override
-		public Status needsField(FieldInfo fieldInfo)
-			throws IOException
-		{
-			return Status.YES;
-		}
-
-		@Override
-		public void stringField(FieldInfo fieldInfo, String value)
-		{
-			String name = fieldInfo.name;
-			if(SearchFields.ID_FIELD_NAME.equals(name)) {
-				addIDField(value, document);
-			} else if(SearchFields.CONTEXT_FIELD_NAME.equals(name)) {
-				addContextField(value, document);
-			} else if(SearchFields.URI_FIELD_NAME.equals(name)) {
-				addURIField(value, document);
-			} else if(SearchFields.TEXT_FIELD_NAME.equals(name)) {
-				addTextField(value, document);
-			} else {
-				addPredicateField(name, value, document);
-			}
-		}
-
-		Document getDocument()
-		{
-			return document;
-		}
 	}
 }

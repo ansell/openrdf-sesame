@@ -81,7 +81,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.Sail;
@@ -940,7 +939,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			}
 
 			if ((query.getScoreVariableName() != null) && (score > 0.0f))
-				derivedBindings.addBinding(query.getScoreVariableName(), scoreToLiteral(score));
+				derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
 
 			if (query.getSnippetVariableName() != null) {
 				if (highlighter != null) {
@@ -1022,17 +1021,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	/**
-	 * Returns a score value encoded as a Literal.
-	 * 
-	 * @param score
-	 *        the float score to convert
-	 * @return the score as a literal
-	 */
-	private Literal scoreToLiteral(float score) {
-		return new LiteralImpl(String.valueOf(score), XMLSchema.FLOAT);
-	}
-
-	/**
 	 * Returns the Resource corresponding with the specified Document number.
 	 * Note that all of Lucene's restrictions of using document numbers apply.
 	 */
@@ -1077,7 +1065,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public TopDocs search(String query)
 		throws ParseException, IOException
 	{
-		return search(getQueryParser(null).parse(query));
+		return search(parseQuery(query, null));
 	}
 
 	/**
@@ -1134,7 +1122,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public float getScore(Resource resource, String query, URI propertyURI)
 		throws ParseException, IOException
 	{
-		return getScore(resource, getQueryParser(propertyURI).parse(query));
+		return getScore(resource, parseQuery(query, propertyURI));
 	}
 
 	/**

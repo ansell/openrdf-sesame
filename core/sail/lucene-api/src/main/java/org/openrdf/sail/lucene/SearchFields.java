@@ -119,4 +119,15 @@ public final class SearchFields {
 		idBuilder.append(contextId);
 		return idBuilder.toString();
 	}
+
+	/**
+	 * Returns a score value encoded as a Literal.
+	 * 
+	 * @param score
+	 *        the float score to convert
+	 * @return the score as a literal
+	 */
+	public static Literal scoreToLiteral(float score) {
+		return valueFactory.createLiteral(score);
+	}
 }
