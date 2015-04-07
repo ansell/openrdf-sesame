@@ -43,7 +43,6 @@ import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -55,6 +54,7 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest {
@@ -143,13 +143,13 @@ public class LuceneIndexTest {
 		IndexReader reader = IndexReader.open(directory);
 		assertEquals(1, reader.numDocs());
 
-		Term term = new Term(LuceneIndex.URI_FIELD_NAME, subject.toString());
+		Term term = new Term(SearchFields.URI_FIELD_NAME, subject.toString());
 		TermDocs docs = reader.termDocs(term);
 		assertTrue(docs.next());
 
 		int documentNr = docs.doc();
 		Document document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), document.get(predicate1.toString()));
 
 		assertFalse(docs.next());
@@ -169,7 +169,7 @@ public class LuceneIndexTest {
 
 		documentNr = docs.doc();
 		document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), document.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), document.get(predicate2.toString()));
 
@@ -178,7 +178,7 @@ public class LuceneIndexTest {
 
 		// see if we can query for these literals
 		IndexSearcher searcher = new IndexSearcher(reader);
-		QueryParser parser = new QueryParser(Version.LUCENE_35, LuceneIndex.TEXT_FIELD_NAME, analyzer);
+		QueryParser parser = new QueryParser(Version.LUCENE_35, SearchFields.TEXT_FIELD_NAME, analyzer);
 
 		Query query = parser.parse(object1.getLabel());
 		System.out.println("query=" + query);
@@ -207,7 +207,7 @@ public class LuceneIndexTest {
 
 		documentNr = docs.doc();
 		document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertNull(document.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), document.get(predicate2.toString()));
 
@@ -246,12 +246,12 @@ public class LuceneIndexTest {
 
 		// check the documents
 		Document document = index.getDocuments(subject).iterator().next();
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertStatement(statement11, document);
 		assertStatement(statement12, document);
 
 		document = index.getDocuments(subject2).iterator().next();
-		assertEquals(subject2.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject2.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertStatement(statement21, document);
 		assertStatement(statement22, document);
 
@@ -271,7 +271,7 @@ public class LuceneIndexTest {
 
 		// check doc 2
 		document = index.getDocuments(subject2).iterator().next();
-		assertEquals(subject2.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject2.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertStatement(statement21, document);
 		assertStatement(statement23, document);
 		assertNoStatement(statement22, document);

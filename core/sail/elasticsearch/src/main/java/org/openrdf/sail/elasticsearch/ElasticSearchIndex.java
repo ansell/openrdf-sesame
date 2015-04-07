@@ -88,10 +88,14 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.AbstractLuceneIndex;
+import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SearchIndex;
 import org.openrdf.sail.lucene.util.ListMap;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
 import org.openrdf.sail.lucene.util.SetMap;
+
+import static org.openrdf.sail.lucene.AbstractLuceneIndex.*;
 
 /**
  * @see LuceneSail
@@ -149,11 +153,11 @@ public class ElasticSearchIndex implements SearchIndex {
 		IndexWriter writer = null;
 
 		// fetch the Document representing this Resource
-		String resourceId = getResourceID(statement.getSubject());
+		String resourceId = SearchFields.getResourceID(statement.getSubject());
 		String contextId = getContextID(statement.getContext());
 
-		String id = formIdString(resourceId, contextId);
-		Term idTerm = new Term(ID_FIELD_NAME, id);
+		String id = SearchFields.formIdString(resourceId, contextId);
+		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
 		Document document = getDocument(idTerm);
 
 		try {
@@ -258,7 +262,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	}
 
 	private Term formIdTerm(String resourceId, String contextId) {
-		return new Term(ID_FIELD_NAME, formIdString(resourceId, contextId));
+		return new Term(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
 	}
 
 	/**
@@ -303,7 +307,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		// fetch the Document representing this Resource
-		String resourceId = getResourceID(subject);
+		String resourceId = SearchFields.getResourceID(subject);
 		String contextId = getContextID(context);
 		Term idTerm = formIdTerm(resourceId, contextId);
 		return getDocument(idTerm);
@@ -318,8 +322,8 @@ public class ElasticSearchIndex implements SearchIndex {
 	public List<Document> getDocuments(Resource subject)
 		throws IOException
 	{
-		String resourceId = getResourceID(subject);
-		Term uriTerm = new Term(URI_FIELD_NAME, resourceId);
+		String resourceId = SearchFields.getResourceID(subject);
+		Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
 		return getDocuments(uriTerm);
 	}
 
@@ -347,7 +351,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		int propsize = 0;
 		for (Object o : document.getFields()) {
 			Field f = (Field)o;
-			if (isPropertyField(f.name()))
+			if (SearchFields.isPropertyField(f.name()))
 				propsize++;
 		}
 		return propsize;
@@ -359,7 +363,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	public IndexableField[] getPropertyFields(List<IndexableField> fields) {
 		List<IndexableField> result = new ArrayList<IndexableField>();
 		for (IndexableField field : fields) {
-			if (isPropertyField(field.name()))
+			if (SearchFields.isPropertyField(field.name()))
 				result.add(field);
 		}
 		return result.toArray(new IndexableField[result.size()]);
@@ -369,7 +373,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * Stores and indexes an ID in a Document.
 	 */
 	private static void addIDField(String id, Document document) {
-		document.add(new StringField(ID_FIELD_NAME, id, Store.YES));
+		document.add(new StringField(SearchFields.ID_FIELD_NAME, id, Store.YES));
 	}
 
 	/**
@@ -384,7 +388,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 */
 	private static void addContextField(String context, Document document) {
 		if (context != null) {
-			document.add(new StringField(CONTEXT_FIELD_NAME, context, Store.YES));
+			document.add(new StringField(SearchFields.CONTEXT_FIELD_NAME, context, Store.YES));
 		}
 	}
 
@@ -392,7 +396,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * Stores and indexes the resource ID in a Document.
 	 */
 	private static void addURIField(String resourceId, Document document) {
-		document.add(new StringField(URI_FIELD_NAME, resourceId, Store.YES));
+		document.add(new StringField(SearchFields.URI_FIELD_NAME, resourceId, Store.YES));
 	}
 
 	/**
@@ -406,7 +410,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 *        the document to add to
 	 */
 	private void addProperty(Statement statement, Document document) {
-		String text = getLiteralPropertyValueAsString(statement);
+		String text = SearchFields.getLiteralPropertyValueAsString(statement);
 		if (text == null)
 			return;
 		String field = statement.getPredicate().toString();
@@ -438,7 +442,7 @@ public class ElasticSearchIndex implements SearchIndex {
 
 	private static void addTextField(String text, Document document) {
 		// and in TEXT_FIELD_NAME
-		document.add(new TextField(TEXT_FIELD_NAME, text, Store.YES));
+		document.add(new TextField(SearchFields.TEXT_FIELD_NAME, text, Store.YES));
 	}
 
 	/**
@@ -536,10 +540,10 @@ public class ElasticSearchIndex implements SearchIndex {
 		boolean updated = false;
 
 		// fetch the Document representing this Resource
-		String resourceId = getResourceID(statement.getSubject());
+		String resourceId = SearchFields.getResourceID(statement.getSubject());
 		String contextId = getContextID(statement.getContext());
-		String id = formIdString(resourceId, contextId);
-		Term idTerm = new Term(ID_FIELD_NAME, id);
+		String id = SearchFields.formIdString(resourceId, contextId);
+		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
 
 		Document document = getDocument(idTerm);
 
@@ -579,7 +583,7 @@ public class ElasticSearchIndex implements SearchIndex {
 							String oldFieldName = oldField.name();
 							String oldValue = oldField.stringValue();
 	
-							if (isPropertyField(oldFieldName)
+							if (SearchFields.isPropertyField(oldFieldName)
 									&& !(fieldName.equals(oldFieldName) && text.equals(oldValue)))
 							{
 								addPropertyFields(oldFieldName, oldValue, newDocument);
@@ -865,7 +869,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	public Resource getResource(int documentNumber)
 		throws IOException
 	{
-		Document document = getIndexSearcher().doc(documentNumber, Collections.singleton(URI_FIELD_NAME));
+		Document document = getIndexSearcher().doc(documentNumber, Collections.singleton(SearchFields.URI_FIELD_NAME));
 		return document == null ? null : getResource(document);
 	}
 
@@ -873,12 +877,12 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * Returns the Resource corresponding with the specified Document.
 	 */
 	public Resource getResource(Document document) {
-		String idString = document.get(URI_FIELD_NAME);
-		return getResource(idString);
+		String idString = document.get(SearchFields.URI_FIELD_NAME);
+		return SearchFields.createResource(idString);
 	}
 
 	private String getContextID(Document document) {
-		return document.get(CONTEXT_FIELD_NAME);
+		return document.get(SearchFields.CONTEXT_FIELD_NAME);
 	}
 
 	// /**
@@ -913,7 +917,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		throws ParseException, IOException
 	{
 		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(URI_FIELD_NAME, getResourceID(resource)));
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
 		BooleanQuery combinedQuery = new BooleanQuery();
 		combinedQuery.add(idQuery, Occur.MUST);
 		combinedQuery.add(query, Occur.MUST);
@@ -971,7 +975,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(URI_FIELD_NAME, getResourceID(resource)));
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
 		BooleanQuery combinedQuery = new BooleanQuery();
 		combinedQuery.add(idQuery, Occur.MUST);
 		combinedQuery.add(query, Occur.MUST);
@@ -992,7 +996,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		if (propertyURI == null)
 			// if we have no property given, we create a default query parser which
 			// has the TEXT_FIELD_NAME as the default field
-			return new QueryParser(TEXT_FIELD_NAME, this.queryAnalyzer);
+			return new QueryParser(SearchFields.TEXT_FIELD_NAME, this.queryAnalyzer);
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
@@ -1043,8 +1047,8 @@ public class ElasticSearchIndex implements SearchIndex {
 				Map<String, Document> docsByContext = new HashMap<String, Document>();
 				// is the resource in the store?
 				// fetch the Document representing this Resource
-				String resourceId = getResourceID(resource);
-				Term uriTerm = new Term(URI_FIELD_NAME, resourceId);
+				String resourceId = SearchFields.getResourceID(resource);
+				Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
 				List<Document> documents = getDocuments(uriTerm);
 	
 				for (Document doc : documents) {
@@ -1052,9 +1056,9 @@ public class ElasticSearchIndex implements SearchIndex {
 				}
 	
 				for (String contextId : contextsToUpdate) {
-					String id = formIdString(resourceId, contextId);
+					String id = SearchFields.formIdString(resourceId, contextId);
 	
-					Term idTerm = new Term(ID_FIELD_NAME, id);
+					Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
 					Document document = docsByContext.get(contextId);
 					if (document == null) {
 						// there are no such Documents: create one now
@@ -1101,7 +1105,7 @@ public class ElasticSearchIndex implements SearchIndex {
 										// corresponding text field
 										String label = ((Literal)r.getObject()).getLabel();
 										removedOfResource.put(r.getPredicate().toString(), label);
-										removedOfResource.put(TEXT_FIELD_NAME, label);
+										removedOfResource.put(SearchFields.TEXT_FIELD_NAME, label);
 									}
 								}
 							}
@@ -1133,7 +1137,7 @@ public class ElasticSearchIndex implements SearchIndex {
 							String val;
 							if (addedToResource != null && !addedToResource.isEmpty()) {
 								for (Statement s : addedToResource) {
-									val = getLiteralPropertyValueAsString(s);
+									val = SearchFields.getLiteralPropertyValueAsString(s);
 									if (val != null) {
 										if (!copiedProperties.containsKeyValuePair(s.getPredicate().stringValue(), val)) {
 											addProperty(s, newDocument);
@@ -1191,7 +1195,7 @@ public class ElasticSearchIndex implements SearchIndex {
 			for (Resource context : contexts) {
 				// attention: context can be NULL!
 				String contextString = getContextID(context);
-				Term contextTerm = new Term(CONTEXT_FIELD_NAME, contextString);
+				Term contextTerm = new Term(SearchFields.CONTEXT_FIELD_NAME, contextString);
 				// IndexReader reader = getIndexReader();
 	
 				// now check all documents, and remember the URI of the resources
@@ -1279,7 +1283,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		throws IOException
 	{
 
-		String resourceId = getResourceID(subject);
+		String resourceId = SearchFields.getResourceID(subject);
 
 		SetMap<String, Statement> stmtsByContextId = new SetMap<String, Statement>();
 
@@ -1295,7 +1299,7 @@ public class ElasticSearchIndex implements SearchIndex {
 			// create a new document
 			Document document = new Document();
 
-			String id = formIdString(resourceId, entry.getKey());
+			String id = SearchFields.formIdString(resourceId, entry.getKey());
 			addIDField(id, document);
 			addURIField(resourceId, document);
 			addContextField(entry.getKey(), document);
@@ -1381,13 +1385,13 @@ public class ElasticSearchIndex implements SearchIndex {
 		public void stringField(FieldInfo fieldInfo, String value)
 		{
 			String name = fieldInfo.name;
-			if(ID_FIELD_NAME.equals(name)) {
+			if(SearchFields.ID_FIELD_NAME.equals(name)) {
 				addIDField(value, document);
-			} else if(CONTEXT_FIELD_NAME.equals(name)) {
+			} else if(SearchFields.CONTEXT_FIELD_NAME.equals(name)) {
 				addContextField(value, document);
-			} else if(URI_FIELD_NAME.equals(name)) {
+			} else if(SearchFields.URI_FIELD_NAME.equals(name)) {
 				addURIField(value, document);
-			} else if(TEXT_FIELD_NAME.equals(name)) {
+			} else if(SearchFields.TEXT_FIELD_NAME.equals(name)) {
 				addTextField(value, document);
 			} else {
 				addPredicateField(name, value, document);
