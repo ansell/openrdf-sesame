@@ -20,10 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.PROPERTY;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.QUERY;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.SCORE;
+import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
+import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,7 +47,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.elasticsearch.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class ElasticSearchSailIndexedPropertiesTest {
@@ -91,6 +91,7 @@ public class ElasticSearchSailIndexedPropertiesTest {
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
 		sail = new LuceneSail();
+		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticSearchIndex.class.getName());
 		Properties indexedFields = new Properties();
 		indexedFields.setProperty("index.1", RDFSLABEL.toString());
 		indexedFields.setProperty("index.2", RDFSCOMMENT.toString());
@@ -107,7 +108,7 @@ public class ElasticSearchSailIndexedPropertiesTest {
 
 		// add some statements to it
 		connection = repository.getConnection();
-		connection.setAutoCommit(false);
+		connection.begin();
 		connection.add(SUBJECT_1, RDFSLABEL, new LiteralImpl("the first resource"));
 		connection.add(SUBJECT_1, RDFSCOMMENT, new LiteralImpl(
 				"Groucho Marx is going to cut away the first part of the first party of the contract."));

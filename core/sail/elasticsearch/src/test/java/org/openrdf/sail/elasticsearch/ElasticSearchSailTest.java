@@ -21,11 +21,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.PROPERTY;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.QUERY;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.SCORE;
-import static org.openrdf.sail.elasticsearch.LuceneSailSchema.SNIPPET;
+import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
+import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
+import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +39,6 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,8 +59,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.elasticsearch.ElasticSearchIndex;
-import org.openrdf.sail.elasticsearch.LuceneSail;
+import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class ElasticSearchSailTest {
@@ -118,7 +116,7 @@ public class ElasticSearchSailTest {
 		// to confogure using just the Logger
 
 		// setup a LuceneSail
-		index = new ElasticSearchIndex(new RAMDirectory(), new StandardAnalyzer(Version.LUCENE_35));
+		index = new ElasticSearchIndex(new RAMDirectory(), new StandardAnalyzer());
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
@@ -132,7 +130,7 @@ public class ElasticSearchSailTest {
 
 		// add some statements to it
 		connection = repository.getConnection();
-		connection.setAutoCommit(false);
+		connection.begin();
 		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("one"));
 		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("five"));
 		connection.add(SUBJECT_1, PREDICATE_2, new LiteralImpl("two"));
@@ -230,13 +228,13 @@ public class ElasticSearchSailTest {
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + bindings.getValue("Resource") + ">, " + "<" + bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + bindings.getValue("Resource") + ">, " + "<" + bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
@@ -268,8 +266,8 @@ public class ElasticSearchSailTest {
 		// check the results
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_3, (URI)bindings.getValue("Resource"));
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Matching"));
+		assertEquals(SUBJECT_3, bindings.getValue("Resource"));
+		assertEquals(SUBJECT_1, bindings.getValue("Matching"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertFalse(result.hasNext());
@@ -596,7 +594,7 @@ public class ElasticSearchSailTest {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove(bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
@@ -618,7 +616,7 @@ public class ElasticSearchSailTest {
 	{
 		// more test-data
 		RepositoryConnection myconnection = repository.getConnection();
-		myconnection.setAutoCommit(false);
+		myconnection.begin();
 		// we use the string 'charly' as test-case. the snippets should contain
 		// "come" and "unicorn"
 		// and 'poor' should not be returned if we limit on predicate1
@@ -821,7 +819,7 @@ public class ElasticSearchSailTest {
 		// check that this subject and only this subject is returned
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Subject"));
+		assertEquals(SUBJECT_1, bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 		assertFalse(result.hasNext());
 
@@ -956,7 +954,7 @@ public class ElasticSearchSailTest {
 		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponectwo"), CONTEXT_1);
 
 		connection.commit();
-		assertEquals(0, index.oldmonitors.size());
+		assertEquals(0, index.getOldMonitors().size());
 		assertEquals(null, index.currentMonitor);
 		// prepare the query
 
@@ -966,8 +964,8 @@ public class ElasticSearchSailTest {
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 		TupleQueryResult result1 = query.evaluate();
 
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(1, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(1, index.currentMonitor.getReadingCount());
 		// check the results is not needed, just assert iterator is not closed
 		// assertTrue(result1.hasNext());
 		// result1.next();
@@ -978,8 +976,8 @@ public class ElasticSearchSailTest {
 		query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 		TupleQueryResult result2 = query.evaluate();
 
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(2, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(2, index.currentMonitor.getReadingCount());
 		// CHECK value of the CurrentReader readersCount
 
 		// check the results is not needed, just assert iterator is not closed
@@ -987,21 +985,21 @@ public class ElasticSearchSailTest {
 		// result2.next();
 
 		// CHECK value of the CurrentReader readersCount
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(2, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(2, index.currentMonitor.getReadingCount());
 
 		// empty commit without changes do not invalidate readers
 		connection.commit();
 
 		// CHECK value of the CurrentReader readersCount
-		assertEquals(0, index.oldmonitors.size());
-		assertEquals(2, index.currentMonitor.readingCount);
+		assertEquals(0, index.getOldMonitors().size());
+		assertEquals(2, index.currentMonitor.getReadingCount());
 
 		// This should invalidate readers
 		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponecthree"), CONTEXT_1);
 		connection.commit();
 		// But readers can not be closed, they are being iterated
-		assertEquals(1, index.oldmonitors.size());
+		assertEquals(1, index.getOldMonitors().size());
 		assertEquals(null, index.currentMonitor);
 
 		// Third search on the index should create new urrent ReaderMonitor
@@ -1010,19 +1008,19 @@ public class ElasticSearchSailTest {
 		query = connection.prepareTupleQuery(QueryLanguage.SERQL, queryString);
 		TupleQueryResult result3 = query.evaluate();
 
-		assertEquals(1, index.oldmonitors.size());
-		assertEquals(1, index.currentMonitor.readingCount);
+		assertEquals(1, index.getOldMonitors().size());
+		assertEquals(1, index.currentMonitor.getReadingCount());
 
 		// When iteration is finish remove old monitor
 		result1.close();
-		assertEquals(1, index.oldmonitors.size());
+		assertEquals(1, index.getOldMonitors().size());
 		result2.close();
-		assertEquals(1, index.oldmonitors.size());
+		assertEquals(1, index.getOldMonitors().size());
 		// current monitor is not removed, there is no need
 		result3.close();
 
 		connection.close();
-		assertEquals(0, index.currentMonitor.readingCount);
+		assertEquals(0, index.currentMonitor.getReadingCount());
 
 	}
 
@@ -1097,7 +1095,7 @@ public class ElasticSearchSailTest {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove(bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
