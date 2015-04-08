@@ -44,6 +44,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -92,15 +93,17 @@ public class ElasticSearchIndex implements SearchIndex {
 	private static class Document {
 		public final String id;
 		public final String type;
+		public final long version;
 		public final Map<String,Object> fields;
 
 		public Document(SearchHit hit) {
-			this(hit.getId(), hit.getType(), hit.getSource());
+			this(hit.getId(), hit.getType(), hit.getVersion(), hit.getSource());
 		}
 
-		public Document(String id, String type, Map<String,Object> fields) {
+		public Document(String id, String type, long version, Map<String,Object> fields) {
 			this.id = id;
 			this.type = type;
+			this.version = version;
 			this.fields = fields;
 		}
 	}
@@ -145,11 +148,9 @@ public class ElasticSearchIndex implements SearchIndex {
 			XContentBuilder typeMapping = XContentFactory.jsonBuilder();
 			typeMapping.startObject()
 				.startObject(documentType)
+					.startObject("_all")
+						.field("enabled", true)
 					.startObject("properties");
-			typeMapping.startObject(SearchFields.ID_FIELD_NAME)
-				.field("type", "string")
-				.field("index", "not_analyzed")
-			.endObject();
 			typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME)
 				.field("type", "string")
 				.field("index", "not_analyzed")
@@ -213,14 +214,12 @@ public class ElasticSearchIndex implements SearchIndex {
 		String contextId = SearchFields.getContextID(statement.getContext());
 
 		String id = SearchFields.formIdString(resourceId, contextId);
-		QueryBuilder query = QueryBuilders.termQuery(SearchFields.ID_FIELD_NAME, id);
-		Document document = getDocument(query);
+		Document document = getDocument(id);
 
 		try {
 			if (document == null) {
 				// there is no such Document: create one now
 				Map<String,Object> newDocument = new HashMap<String,Object>();
-				addIDField(id, newDocument);
 				addURIField(resourceId, newDocument);
 				// add context
 				addContextField(context, newDocument);
@@ -231,7 +230,7 @@ public class ElasticSearchIndex implements SearchIndex {
 				if(!updated) {
 					begin();
 				}
-				client.prepareIndex(indexName, documentType).setSource(newDocument).execute().actionGet();
+				client.prepareIndex(indexName, documentType, id).setSource(newDocument).execute().actionGet();
 				updated = true;
 			}
 			else {
@@ -246,7 +245,7 @@ public class ElasticSearchIndex implements SearchIndex {
 					if(!updated) {
 						begin();
 					}
-					client.prepareUpdate(indexName, document.type, document.id).setDoc(newDocument).execute().actionGet();
+					client.prepareUpdate(indexName, document.type, document.id).setVersion(document.version).setDoc(newDocument).execute().actionGet();
 					updated = true;
 				}
 			}
@@ -266,16 +265,12 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * Returns a Document representing the specified document ID (combination of
 	 * resource and context), or null when no such Document exists yet.
 	 */
-	private Document getDocument(QueryBuilder query)
+	private Document getDocument(String id)
 		throws IOException
 	{
-		SearchResponse response = client.prepareSearch().setQuery(query).setSize(1).execute().actionGet();
-		SearchHit[] hits = response.getHits().getHits();
-		if(hits.length > 1) {
-			throw new IllegalStateException("Multiple Documents for query " + query);
-		}
-		if(hits.length == 1) {
-			return new Document(hits[0]);
+		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
+		if(response.isExists()) {
+			return new Document(response.getId(), response.getType(), response.getVersion(), response.getSource());
 		}
 		// no such Document
 		return null;
@@ -292,7 +287,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		List<Document> result = new ArrayList<Document>();
 
-		SearchResponse response = client.prepareSearch().setQuery(query).setSize(1).execute().actionGet();
+		SearchResponse response = client.prepareSearch(indexName).setQuery(query).execute().actionGet();
 		SearchHit[] hits = response.getHits().getHits();
 		int size = hits.length;
 		for(int i=0; i<size; i++) {
@@ -312,8 +307,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(subject);
 		String contextId = SearchFields.getContextID(context);
-		QueryBuilder query = QueryBuilders.termQuery(SearchFields.ID_FIELD_NAME, SearchFields.formIdString(resourceId, contextId));
-		return getDocument(query);
+		return getDocument(SearchFields.formIdString(resourceId, contextId));
 	}
 
 	/**
@@ -383,13 +377,6 @@ public class ElasticSearchIndex implements SearchIndex {
 				result.add(field);
 		}
 		return result.toArray(new IndexableField[result.size()]);
-	}
-
-	/**
-	 * Stores and indexes an ID in a Document.
-	 */
-	private static void addIDField(String id, Map<String,Object> document) {
-		document.put(SearchFields.ID_FIELD_NAME, id);
 	}
 
 	/**
@@ -499,8 +486,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
 		String contextId = SearchFields.getContextID(statement.getContext());
 		String id = SearchFields.formIdString(resourceId, contextId);
-		QueryBuilder query = QueryBuilders.termQuery(SearchFields.ID_FIELD_NAME, id);
-		Document document = getDocument(query);
+		Document document = getDocument(id);
 
 		try {
 			if (document != null) {
@@ -521,14 +507,13 @@ public class ElasticSearchIndex implements SearchIndex {
 						if(!updated) {
 							begin();
 						}
-						client.prepareDelete(indexName, document.type, document.id).execute().actionGet();
+						client.prepareDelete(indexName, document.type, document.id).setVersion(document.version).execute().actionGet();
 						updated = true;
 					}
 					else {
 						// there are more triples encoded in this Document: remove the
 						// document and add a new Document without this triple
 						Map<String,Object> newDocument = new HashMap<String,Object>();
-						addIDField(id, newDocument);
 						addURIField(resourceId, newDocument);
 						addContextField(contextId, newDocument);
 	
@@ -552,7 +537,7 @@ public class ElasticSearchIndex implements SearchIndex {
 						if(!updated) {
 							begin();
 						}
-						client.prepareUpdate(indexName, document.type, document.id).setDoc(newDocument).execute().actionGet();
+						client.prepareUpdate(indexName, document.type, document.id).setVersion(document.version).setDoc(newDocument).execute().actionGet();
 						updated = true;
 					}
 				}
@@ -584,15 +569,25 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 	}
 
+	@Override
+	public void beginReading() throws IOException
+	{
+	}
+
+	@Override
+	public void endReading() throws IOException
+	{
+	}
+
 	// //////////////////////////////// Methods for querying the index
 
 	@Override
 	public Collection<BindingSet> evaluate(QuerySpec query) throws SailException
 	{
-		QueryResult result = evaluateQuery(query);
+		SearchHits result = evaluateQuery(query);
 
 		// generate bindings
-		return generateBindingSets(query, result.hits, result.highlighter);
+		return generateBindingSets(query, result);
 	}
 
 	/**
@@ -617,21 +612,23 @@ public class ElasticSearchIndex implements SearchIndex {
 
 			if (!sQuery.isEmpty()) {
 				QueryBuilder lucenequery = parseQuery(query.getQueryString(), query.getPropertyURI());
-				SearchRequestBuilder request = client.prepareSearch(indexName).setQuery(lucenequery);
+				SearchRequestBuilder request = client.prepareSearch(indexName);
 
 				// if the query requests for the snippet, create a highlighter using
 				// this query
 				if (query.getSnippetVariableName() != null) {
-					Formatter formatter = new SimpleHTMLFormatter();
-					highlighter = new Highlighter(formatter, new QueryScorer(lucenequery));
+					request.setHighlighterPreTags("<B>");
+					request.setHighlighterPostTags("</B>");
+					request.setHighlighterOrder("score");
+					request.setHighlighterNumOfFragments(2);
 				}
 
 				// distinguish the two cases of subject == null
 				if (subject == null) {
-					hits = search(lucenequery);
+					hits = search(request, lucenequery);
 				}
 				else {
-					hits = search(subject, lucenequery);
+					hits = search(subject, request, lucenequery);
 				}
 			}
 			else {
@@ -838,37 +835,24 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
-	public SearchHits search(String query)
+	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
 	{
-		SearchResponse response = prepareSearch(query).execute().actionGet();
+		SearchResponse response = request.setQuery(query).execute().actionGet();
 		return response.getHits();
-	}
-
-	private SearchRequestBuilder prepareSearch(String query)
-	{
-		return client.prepareSearch(indexName).setQuery(parseQuery(query, null));
 	}
 
 	/**
 	 * Evaluates the given query only for the given resource.
 	 */
-	public TopDocs search(Resource resource, Query query)
-		throws ParseException, IOException
+	public SearchHits search(Resource resource, SearchRequestBuilder request, QueryBuilder query)
 	{
 		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
-		BooleanQuery combinedQuery = new BooleanQuery();
-		combinedQuery.add(idQuery, Occur.MUST);
-		combinedQuery.add(query, Occur.MUST);
-		int nDocs = Math.max(getIndexReader().numDocs(), 1);
-		TopDocs hits = getIndexSearcher().search(combinedQuery, nDocs);
-
-		// Now this is ok
-		// if(hits.totalHits > 1)
-		// logger.info("More than one Lucene doc was found with {} == {}",
-		// ID_FIELD_NAME, getID(resource));
-
-		return hits;
+		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
+		QueryBuilder combinedQuery = QueryBuilders.boolQuery().must(idQuery).must(query);
+		long docCount = client.prepareCount(indexName).setQuery(combinedQuery).execute().actionGet().getCount();
+		int nDocs = Math.max((int) Math.min(docCount, (long) Integer.MAX_VALUE), 1);
+		SearchResponse response = request.setQuery(combinedQuery).setSize(nDocs).execute().actionGet();
+		return response.getHits();
 	}
 
 	/**
