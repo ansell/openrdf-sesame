@@ -21,9 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -36,11 +37,10 @@ import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
@@ -50,7 +50,6 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.NotifyingSailConnection;
-import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.NotifyingSailWrapper;
 
@@ -252,6 +251,13 @@ public class LuceneSail extends NotifyingSailWrapper {
 	final private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
+	 * Set the parameter "reindexQuery=" to configure the statements to index over.
+	 * Default value is "SELECT ?s ?p ?o ?c WHERE {{?s ?p ?o} UNION {GRAPH ?c {?s ?p ?o.}}} ORDER BY ?s".
+	 * NB: the query must contain the bindings ?s, ?p, ?o and ?c and must be ordered by ?s.
+	 */
+	public static final String REINDEX_QUERY_KEY = "reindexQuery";
+
+	/**
 	 * Set the parameter "indexedfields=..." to configure a selection of fields
 	 * to index, and projections of properties. Only the configured fields will
 	 * be indexed. A property P projected to Q will cause the index to contain Q
@@ -292,6 +298,8 @@ public class LuceneSail extends NotifyingSailWrapper {
 	private LuceneIndex luceneIndex;
 
 	protected final Properties parameters = new Properties();
+
+	private String reindexQuery = "SELECT ?s ?p ?o ?c WHERE {{?s ?p ?o} UNION {GRAPH ?c {?s ?p ?o.}}} ORDER BY ?s";
 
 	private boolean incompleteQueryFails = true;
 
@@ -376,6 +384,8 @@ public class LuceneSail extends NotifyingSailWrapper {
 			throw new SailException("Could load propertyfile: " + e.getMessage(), e);
 		}
 		try {
+			if (parameters.containsKey(REINDEX_QUERY_KEY))
+				setReindexQuery(parameters.getProperty(REINDEX_QUERY_KEY));
 			if (parameters.containsKey(INCOMPLETE_QUERY_FAIL_KEY))
 				setIncompleteQueryFails(Boolean.parseBoolean(parameters.getProperty(INCOMPLETE_QUERY_FAIL_KEY)));
 			if (luceneIndex == null) {
@@ -416,6 +426,22 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	public void setParameter(String key, String value) {
 		parameters.put(key, value);
+	}
+
+	/**
+	 * See REINDEX_QUERY_KEY parameter.
+	 */
+	public String getReindexQuery()
+	{
+		return reindexQuery;
+	}
+
+	/**
+	 * See REINDEX_QUERY_KEY parameter.
+	 */
+	public void setReindexQuery(String query)
+	{
+		this.reindexQuery = query;
 	}
 
 	/**
@@ -480,68 +506,22 @@ public class LuceneSail extends NotifyingSailWrapper {
 		*/
 		// END OF HACK
 		{
-			// TODO: comment this in once result ordering IS IMPLEMENTED
 			// iterate
-			SailRepository repo = new SailRepository(getBaseSail());
+			SailRepository repo = new SailRepository(new NotifyingSailWrapper(getBaseSail())
+			{
+				public void shutDown() {
+					// don't shutdown the underlying sail
+					// when we shutdown the repo.
+				}
+			});
 			// repo.initialize(); we don't need to initialize, that should be done
 			// already by others
 			SailRepositoryConnection connection = repo.getConnection();
 			try {
-				// now, as "order by" is missing in sesame, we need to implement, oh
-				// joy...
-				LinkedList<Resource> subjects = new LinkedList<Resource>();
-				{
-					TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL,
-							"SELECT DISTINCT ?s WHERE {?s ?p ?o.}");
-					TupleQueryResult res = query.evaluate();
-					try {
-						while (res.hasNext()) {
-							BindingSet set = res.next();
-							Resource r = (Resource)set.getValue("s");
-							subjects.add(r);
-						}
-					}
-					finally {
-						res.close();
-					}
-				}
-				SailConnection con = getBaseSail().getConnection();
-				try {
-					for (Resource subject : subjects) {
-						if (logger.isDebugEnabled())
-							logger.debug("reindexing resource " + subject);
-						// ALAS, this is also broken in Sesame: you can't query
-						// triples in the default context with it:
-						// TupleQuery query =
-						// connection.prepareTupleQuery(QueryLanguage.SPARQL,
-						// "SELECT ?p ?o ?c WHERE {GRAPH ?c {?s ?p ?o.}}");
-						// TupleQuery query =
-						// connection.prepareTupleQuery(QueryLanguage.SERQL,
-						// "SELECT p, o, c FROM CONTEXT c {s} p {o}");
-						LinkedList<Statement> statements = new LinkedList<Statement>();
-						CloseableIteration<? extends Statement, SailException> it = con.getStatements(subject,
-								null, null, false);
-						while (it.hasNext()) {
-							Statement s = it.next();
-
-							if (acceptStatementToIndex(s))
-								statements.add(s);
-						}
-						// commit
-						luceneIndex.addDocuments(subject, statements);
-					}
-				}
-				finally {
-					con.close();
-				}
-
-				// This would be the right way to do it:
-				/*
-				TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, 
-				"SELECT ?s ?p ?o ?c WHERE {GRAPH ?c {?s ?p ?o.}} ORDER BY ?s");
+				TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, reindexQuery);
 				TupleQueryResult res = query.evaluate();
 				Resource current = null;
-				LinkedList<Statement> statements = new LinkedList<Statement>();
+				List<Statement> statements = new ArrayList<Statement>();
 				while (res.hasNext()) {
 					BindingSet set = res.next();
 					Resource r = (Resource)set.getValue("s");
@@ -555,7 +535,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 						if (logger.isDebugEnabled())
 							logger.debug("reindexing resource "+current);
 						// commit
-						luceneIndex.addDocument(current, statements);
+						luceneIndex.addDocuments(current, statements);
 						
 						// re-init
 						current = r;
@@ -563,12 +543,10 @@ public class LuceneSail extends NotifyingSailWrapper {
 					}
 					statements.add(new ContextStatementImpl(r, p, o, c));
 				}
-				*/
 			}
 			finally {
 				connection.close();
-				// TODO: what to do with REPO? we can't shutdown it, this would
-				// close the underlying sail, or?
+				repo.shutDown();
 			}
 			// commit the changes
 			luceneIndex.getIndexWriter().commit();
