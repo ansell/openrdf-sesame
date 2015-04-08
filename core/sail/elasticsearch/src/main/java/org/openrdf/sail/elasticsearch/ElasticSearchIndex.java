@@ -17,7 +17,6 @@
 package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,24 +30,13 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -58,6 +46,7 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.highlight.HighlightField;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -66,7 +55,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryResult;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
@@ -89,6 +77,12 @@ public class ElasticSearchIndex implements SearchIndex {
 	public static final String DOCUMENT_TYPE_KEY = "documentType";
 	public static final String DEFAULT_INDEX_NAME = "ElasticSearchSail";
 	public static final String DEFAULT_DOCUMENT_TYPE = "Subject";
+
+	private static final List<String> REJECTED_DATATYPES = new ArrayList<String>();
+
+	static {
+		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
+	}
 
 	private static class Document {
 		public final String id;
@@ -133,46 +127,53 @@ public class ElasticSearchIndex implements SearchIndex {
 
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
-			String settings = XContentFactory.jsonBuilder()
-				.startObject()
-					.startObject("analysis")
-						.startObject("analyzer")
-							.startObject("default")
-								.field("type", analyzer)
-							.endObject()
+			createIndex();
+		}
+	}
+
+	private void createIndex() throws IOException
+	{
+		String settings = XContentFactory.jsonBuilder()
+			.startObject()
+				.startObject("analysis")
+					.startObject("analyzer")
+						.startObject("default")
+							.field("type", analyzer)
 						.endObject()
 					.endObject()
 				.endObject()
-			.string();
-			// use _source instead of explicit stored = true
-			XContentBuilder typeMapping = XContentFactory.jsonBuilder();
-			typeMapping.startObject()
-				.startObject(documentType)
-					.startObject("_all")
-						.field("enabled", true)
-					.startObject("properties");
-			typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME)
-				.field("type", "string")
-				.field("index", "not_analyzed")
-			.endObject();
-			typeMapping.startObject(SearchFields.URI_FIELD_NAME)
-				.field("type", "string")
-				.field("index", "not_analyzed")
-			.endObject();
-			typeMapping.startObject(SearchFields.TEXT_FIELD_NAME)
-				.field("type", "string")
-				.field("index", "analyzed")
-			.endObject();
-			typeMapping
-					.endObject()
+			.endObject()
+		.string();
+
+		// use _source instead of explicit stored = true
+		XContentBuilder typeMapping = XContentFactory.jsonBuilder();
+		typeMapping.startObject()
+			.startObject(documentType)
+				.startObject("_all")
+					.field("enabled", false)
+				.startObject("properties");
+		typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME)
+			.field("type", "string")
+			.field("index", "not_analyzed")
+		.endObject();
+		typeMapping.startObject(SearchFields.URI_FIELD_NAME)
+			.field("type", "string")
+			.field("index", "not_analyzed")
+		.endObject();
+		typeMapping.startObject(SearchFields.TEXT_FIELD_NAME)
+			.field("type", "string")
+			.field("index", "analyzed")
+		.endObject();
+		typeMapping
 				.endObject()
-			.endObject();
-			client.admin().indices().prepareCreate(indexName)
-				.setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings))
-				.addMapping(documentType, typeMapping).execute().actionGet();
-			Map<?,?> mappings = client.admin().indices().prepareGetFieldMappings(indexName).execute().actionGet().mappings();
-			logger.info("Field mappings:\n{}", mappings);
-		}
+			.endObject()
+		.endObject();
+
+		client.admin().indices().prepareCreate(indexName)
+			.setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings))
+			.addMapping(documentType, typeMapping).execute().actionGet();
+		Map<?,?> mappings = client.admin().indices().prepareGetFieldMappings(indexName).execute().actionGet().mappings();
+		logger.info("Field mappings:\n{}", mappings);
 	}
 
 	@Override
@@ -188,6 +189,28 @@ public class ElasticSearchIndex implements SearchIndex {
 			node.close();
 			node = null;
 		}
+	}
+
+	/**
+	 * Returns whether the provided literal is accepted by the LuceneIndex to be
+	 * indexed. It for instance does not make much since to index xsd:float.
+	 * 
+	 * @param literal
+	 *        the literal to be accepted
+	 * @return true if the given literal will be indexed by this LuceneIndex
+	 */
+	@Override
+	public boolean accept(Literal literal) {
+		// we reject null literals
+		if (literal == null)
+			return false;
+
+		// we reject literals that are in the list of rejected data types
+		if ((literal.getDatatype() != null)
+				&& (REJECTED_DATATYPES.contains(literal.getDatatype().stringValue())))
+			return false;
+
+		return true;
 	}
 
 	// //////////////////////////////// Methods for updating the index
@@ -287,8 +310,8 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		List<Document> result = new ArrayList<Document>();
 
-		SearchResponse response = client.prepareSearch(indexName).setQuery(query).execute().actionGet();
-		SearchHit[] hits = response.getHits().getHits();
+		SearchHits searchHits = search(client.prepareSearch(indexName), query);
+		SearchHit[] hits = searchHits.getHits();
 		int size = hits.length;
 		for(int i=0; i<size; i++) {
 			result.add(new Document(hits[i]));
@@ -357,10 +380,10 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Determines the number of properties stored in a Document.
 	 */
-	private int numberOfPropertyFields(Document document) {
+	private int numberOfPropertyFields(Collection<String> fields) {
 		// count the properties that are NOT id nor context nor text
 		int propsize = 0;
-		for (String field : document.fields.keySet()) {
+		for (String field : fields) {
 			if (SearchFields.isPropertyField(field))
 				propsize++;
 		}
@@ -370,13 +393,13 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
-	public IndexableField[] getPropertyFields(List<IndexableField> fields) {
-		List<IndexableField> result = new ArrayList<IndexableField>();
-		for (IndexableField field : fields) {
-			if (SearchFields.isPropertyField(field.name()))
+	public List<String> getPropertyFields(Collection<String> fields) {
+		List<String> result = new ArrayList<String>();
+		for (String field : fields) {
+			if (SearchFields.isPropertyField(field))
 				result.add(field);
 		}
-		return result.toArray(new IndexableField[result.size()]);
+		return result;
 	}
 
 	/**
@@ -498,7 +521,7 @@ public class ElasticSearchIndex implements SearchIndex {
 				if (hasProperty(fieldName, text, document.fields)) {
 					// if the Document only has one predicate field, we can remove the
 					// document
-					int nrProperties = numberOfPropertyFields(document);
+					int nrProperties = numberOfPropertyFields(document.fields.keySet());
 					if (nrProperties == 0) {
 						logger.info("encountered document with zero properties, should have been deleted: {}",
 								resourceId);
@@ -600,7 +623,6 @@ public class ElasticSearchIndex implements SearchIndex {
 	 */
 	private SearchHits evaluateQuery(QuerySpec query) {
 		SearchHits hits = null;
-		Highlighter highlighter = null;
 
 		// get the subject of the query
 		Resource subject = query.getSubject();
@@ -655,8 +677,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * @return a LinkedHashSet containing generated bindings
 	 * @throws SailException
 	 */
-	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, SearchHits hits,
-			Highlighter highlighter)
+	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, SearchHits hits)
 		throws SailException
 	{
 		// Since one resource can be returned many times, it can lead now to
@@ -675,19 +696,17 @@ public class ElasticSearchIndex implements SearchIndex {
 				QueryBindingSet derivedBindings = new QueryBindingSet();
 	
 				// get the current hit
-				int docId = docs[i].doc;
-				Document doc = getDoc(docId);
-				if (doc == null)
-					continue;
-	
+				SearchHit hit = docs[i];
+				String docId = hit.getId();
+
 				// get the score of the hit
-				float score = docs[i].score;
-	
+				float score = hit.getScore();
+
 				// bind the respective variables
 				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
 					try {
-						Resource resource = getResource(doc);
+						Resource resource = getResource(hit.getSource());
 						Value existing = derivedBindings.getValue(matchVar);
 						// if the existing binding contradicts the current binding, than
 						// we can safely skip this permutation
@@ -714,41 +733,43 @@ public class ElasticSearchIndex implements SearchIndex {
 					derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
 	
 				if (query.getSnippetVariableName() != null) {
-					if (highlighter != null) {
+					Map<String,HighlightField> highlights = hit.getHighlightFields();
+					if (highlights != null) {
 						// limit to the queried field, if there was one
-						IndexableField[] fields;
+						List<String> fields;
 						if (query.getPropertyURI() != null) {
 							String fieldname = query.getPropertyURI().toString();
-							fields = doc.getFields(fieldname);
+							fields = Collections.singletonList(fieldname);
 						}
 						else {
-							fields = getPropertyFields(doc.getFields());
+							fields = getPropertyFields(hit.getSource().keySet());
 						}
 	
 						// extract snippets from Lucene's query results
-						for (IndexableField field : fields) {
+						for (String field : fields) {
 							// create an individual binding set for each snippet
 							QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-	
-							String text = field.stringValue();
-	
-							String fragments = null;
-							try {
-								TokenStream tokenStream = getAnalyzer().tokenStream(field.name(),
-										new StringReader(text));
-								fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
+
+							StringBuilder fragmentBuilder = null;
+							HighlightField highlightField = highlights.get(field);
+							if(highlightField != null) {
+								Text[] fragments = highlightField.getFragments();
+								if(fragments != null) {
+									fragmentBuilder = new StringBuilder();
+									String separator = "";
+									for(Text fragment : fragments) {
+										fragmentBuilder.append(separator);
+										fragmentBuilder.append(fragment.toString());
+										separator = "...";
+									}
+								}
 							}
-							catch (Exception e) {
-								logger.error("Exception while getting snippet for filed " + field.name()
-										+ " for query\n" + query, e);
-								continue;
-							}
-	
-							if (fragments != null && !fragments.isEmpty()) {
-								snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
+
+							if (fragmentBuilder != null && fragmentBuilder.length() > 0) {
+								snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragmentBuilder.toString()));
 	
 								if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-									snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
+									snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field));
 								}
 	
 								bindingSets.add(snippetBindings);
@@ -773,35 +794,14 @@ public class ElasticSearchIndex implements SearchIndex {
 	}
 
 	/**
-	 * Returns the lucene hit with the given id of the respective lucene query
-	 * 
-	 * @param id
-	 *        the id of the document to return
-	 * @return the requested hit, or null if it fails
-	 */
-	private Document getDoc(int docId) {
-		try {
-			return getIndexSearcher().doc(docId);
-		}
-		catch (CorruptIndexException e) {
-			logger.error("The index seems to be corrupted:", e);
-			return null;
-		}
-		catch (IOException e) {
-			logger.error("Could not read from index:", e);
-			return null;
-		}
-	}
-
-	/**
 	 * Returns the Resource corresponding with the specified Document number.
 	 * Note that all of Lucene's restrictions of using document numbers apply.
 	 */
-	public Resource getResource(int documentNumber)
+	public Resource getResource(String documentNumber)
 		throws IOException
 	{
-		Document document = getIndexSearcher().doc(documentNumber, Collections.singleton(SearchFields.URI_FIELD_NAME));
-		return document == null ? null : getResource(document);
+		GetResponse response = client.prepareGet(indexName, documentType, documentNumber).execute().actionGet();
+		return response.isExists() ? getResource(response.getSource()) : null;
 	}
 
 	/**
@@ -835,10 +835,10 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
-	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
+	public SearchHits search(String query)
+		throws IOException
 	{
-		SearchResponse response = request.setQuery(query).execute().actionGet();
-		return response.getHits();
+		return search(client.prepareSearch(indexName), parseQuery(query, null));
 	}
 
 	/**
@@ -849,10 +849,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		// rewrite the query
 		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
 		QueryBuilder combinedQuery = QueryBuilders.boolQuery().must(idQuery).must(query);
-		long docCount = client.prepareCount(indexName).setQuery(combinedQuery).execute().actionGet().getCount();
-		int nDocs = Math.max((int) Math.min(docCount, (long) Integer.MAX_VALUE), 1);
-		SearchResponse response = request.setQuery(combinedQuery).setSize(nDocs).execute().actionGet();
-		return response.getHits();
+		return search(request, combinedQuery);
 	}
 
 	/**
@@ -872,11 +869,12 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
-	public TopDocs search(Query query)
-		throws IOException
+	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
 	{
-		int nDocs = Math.max(getIndexReader().numDocs(), 1);
-		return getIndexSearcher().search(query, nDocs);
+		long docCount = client.prepareCount(indexName).setQuery(query).execute().actionGet().getCount();
+		int nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
+		SearchResponse response = request.setQuery(query).setSize(nDocs).execute().actionGet();
+		return response.getHits();
 	}
 
 	/**
@@ -897,19 +895,16 @@ public class ElasticSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
-		BooleanQuery combinedQuery = new BooleanQuery();
-		combinedQuery.add(idQuery, Occur.MUST);
-		combinedQuery.add(query, Occur.MUST);
-		IndexSearcher searcher = getIndexSearcher();
+		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
+		QueryBuilder combinedQuery = QueryBuilders.boolQuery().must(idQuery).must(query);
 
 		// fetch the score when the URI matches the original query
-		TopDocs docs = searcher.search(combinedQuery, null, 1);
-		if (docs.totalHits == 0) {
+		SearchHits docs = client.prepareSearch(indexName).setQuery(combinedQuery).setSize(1).execute().actionGet().getHits();
+		if (docs.getTotalHits() == 0) {
 			return -1f;
 		}
 		else {
-			return docs.scoreDocs[0].score;
+			return docs.getAt(0).getScore();
 		}
 	}
 
@@ -946,19 +941,19 @@ public class ElasticSearchIndex implements SearchIndex {
 
 		HashSet<Resource> resources = new HashSet<Resource>();
 		for (Statement s : added) {
-			rsAdded.add(s.getSubject(), getContextID(s.getContext()), s);
+			rsAdded.add(s.getSubject(), SearchFields.getContextID(s.getContext()), s);
 			resources.add(s.getSubject());
 		}
 		for (Statement s : removed) {
-			rsRemoved.add(s.getSubject(), getContextID(s.getContext()), s);
+			rsRemoved.add(s.getSubject(), SearchFields.getContextID(s.getContext()), s);
 			resources.add(s.getSubject());
 		}
 
 		logger.debug("Removing " + removed.size() + " statements, adding " + added.size() + " statements");
 
-		IndexWriter writer = getIndexWriter();
 		begin();
 		try {
+			BulkRequestBuilder bulkRequest = client.prepareBulk();
 			// for each resource, add/remove
 			for (Resource resource : resources) {
 				Map<String, List<Statement>> stmtsToRemove = rsRemoved.get(resource);
@@ -971,35 +966,32 @@ public class ElasticSearchIndex implements SearchIndex {
 				// is the resource in the store?
 				// fetch the Document representing this Resource
 				String resourceId = SearchFields.getResourceID(resource);
-				Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
-				List<Document> documents = getDocuments(uriTerm);
+				List<Document> documents = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
 	
 				for (Document doc : documents) {
-					docsByContext.put(this.getContextID(doc), doc);
+					docsByContext.put(this.getContextID(doc.fields), doc);
 				}
 	
 				for (String contextId : contextsToUpdate) {
 					String id = SearchFields.formIdString(resourceId, contextId);
-	
-					Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
+
 					Document document = docsByContext.get(contextId);
 					if (document == null) {
 						// there are no such Documents: create one now
-						document = new Document();
-						addIDField(id, document);
-						addURIField(resourceId, document);
-						addContextField(contextId, document);
+						Map<String,Object> newDocument = new HashMap<String,Object>();
+						addURIField(resourceId, newDocument);
+						addContextField(contextId, newDocument);
 						// add all statements, remember the contexts
 						// HashSet<Resource> contextsToAdd = new HashSet<Resource>();
 						List<Statement> list = stmtsToAdd.get(contextId);
 						if (list != null) {
 							for (Statement s : list) {
-								addProperty(s, document);
+								addProperty(s, newDocument);
 							}
 						}
 	
 						// add it to the index
-						writer.addDocument(document);
+						bulkRequest.add(client.prepareIndex(indexName, documentType, id).setSource(newDocument));
 	
 						// THERE SHOULD BE NO DELETED TRIPLES ON A NEWLY ADDED RESOURCE
 						if (stmtsToRemove.containsKey(contextId))
@@ -1014,7 +1006,7 @@ public class ElasticSearchIndex implements SearchIndex {
 						// Document instance works ok for stored properties but indexed
 						// data
 						// gets lots when doing an IndexWriter.updateDocument with it
-						Document newDocument = new Document();
+						Map<String,Object> newDocument = new HashMap<String,Object>();
 	
 						// buffer the removed literal statements
 						ListMap<String, String> removedOfResource = null;
@@ -1072,15 +1064,18 @@ public class ElasticSearchIndex implements SearchIndex {
 	
 						// update the index with the cloned document, if it contains any
 						// meaningful non-system properties
-						int nrProperties = numberOfPropertyFields(newDocument);
+						int nrProperties = numberOfPropertyFields(newDocument.keySet());
 						if (nrProperties > 0) {
-							writer.updateDocument(idTerm, newDocument);
+							bulkRequest.add(client.prepareUpdate(indexName, documentType, id).setVersion(document.version).setDoc(newDocument));
 						}
 						else {
-							writer.deleteDocuments(idTerm);
+							bulkRequest.add(client.prepareDelete(indexName, documentType, id).setVersion(document.version));
 						}
 					}
 				}
+			}
+			if(bulkRequest.numberOfActions() > 0) {
+				bulkRequest.execute().actionGet();
 			}
 			// make sure that these updates are visible for new
 			// IndexReaders/Searchers
@@ -1117,8 +1112,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		try {
 			for (Resource context : contexts) {
 				// attention: context can be NULL!
-				String contextString = getContextID(context);
-				Term contextTerm = new Term(SearchFields.CONTEXT_FIELD_NAME, contextString);
+				String contextString = SearchFields.getContextID(context);
 				// IndexReader reader = getIndexReader();
 	
 				// now check all documents, and remember the URI of the resources
@@ -1163,7 +1157,7 @@ public class ElasticSearchIndex implements SearchIndex {
 				// }
 	
 				// now delete all documents from the deleted context
-				getIndexWriter().deleteDocuments(contextTerm);
+				client.prepareDeleteByQuery(indexName).setQuery(QueryBuilders.termQuery(SearchFields.CONTEXT_FIELD_NAME, contextString)).execute().actionGet();
 			}
 	
 			// now add those again, that had other contexts also.
@@ -1212,27 +1206,32 @@ public class ElasticSearchIndex implements SearchIndex {
 
 		String contextId;
 		for (Statement statement : statements) {
-			contextId = getContextID(statement.getContext());
+			contextId = SearchFields.getContextID(statement.getContext());
 
 			stmtsByContextId.put(contextId, statement);
 		}
 
-		IndexWriter writer = getIndexWriter();
-		for (Entry<String, Set<Statement>> entry : stmtsByContextId.entrySet()) {
-			// create a new document
-			Document document = new Document();
-
-			String id = SearchFields.formIdString(resourceId, entry.getKey());
-			addIDField(id, document);
-			addURIField(resourceId, document);
-			addContextField(entry.getKey(), document);
-
-			for (Statement stmt : entry.getValue()) {
-				// determine stuff to store
-				addProperty(stmt, document);
+		begin();
+		try {
+			for (Entry<String, Set<Statement>> entry : stmtsByContextId.entrySet()) {
+				// create a new document
+				Map<String,Object> newDocument = new HashMap<String,Object>();
+	
+				String id = SearchFields.formIdString(resourceId, entry.getKey());
+				addURIField(resourceId, newDocument);
+				addContextField(entry.getKey(), newDocument);
+	
+				for (Statement stmt : entry.getValue()) {
+					// determine stuff to store
+					addProperty(stmt, newDocument);
+				}
+				// add it to the index
+				client.prepareIndex(indexName, documentType, id).setSource(newDocument).execute().actionGet();
 			}
-			// add it to the index
-			writer.addDocument(document);
+			commit();
+		}
+		catch(Exception e) {
+			rollback();
 		}
 
 	}
@@ -1244,18 +1243,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	public synchronized void clear()
 		throws IOException
 	{
-		// clear
-		// the old IndexReaders/Searchers are not outdated
-		invalidateReaders();
-		if (indexWriter != null)
-			indexWriter.close();
-
-		// crate new writer
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
-		indexWriterConfig.setOpenMode(OpenMode.CREATE);
-		indexWriter = new IndexWriter(directory, indexWriterConfig);
-		indexWriter.close();
-		indexWriter = null;
-
+		client.admin().indices().prepareDelete(indexName).execute().actionGet();
+		createIndex();
 	}
 }

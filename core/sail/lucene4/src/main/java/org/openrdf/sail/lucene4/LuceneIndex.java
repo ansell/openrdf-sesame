@@ -1085,15 +1085,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		BooleanQuery combinedQuery = new BooleanQuery();
 		combinedQuery.add(idQuery, Occur.MUST);
 		combinedQuery.add(query, Occur.MUST);
-		int nDocs = Math.max(getIndexReader().numDocs(), 1);
-		TopDocs hits = getIndexSearcher().search(combinedQuery, nDocs);
-
-		// Now this is ok
-		// if(hits.totalHits > 1)
-		// logger.info("More than one Lucene doc was found with {} == {}",
-		// ID_FIELD_NAME, getID(resource));
-
-		return hits;
+		return search(combinedQuery);
 	}
 
 	/**
