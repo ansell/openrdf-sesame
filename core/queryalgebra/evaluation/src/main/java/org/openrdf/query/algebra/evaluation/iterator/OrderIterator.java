@@ -44,6 +44,7 @@ import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 
 /**
  * Sorts the input and optionally applies limit and distinct.
@@ -52,7 +53,6 @@ import org.openrdf.query.QueryEvaluationException;
  * @author Arjohn Kampman
  */
 public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationException> {
-
 
 	/*-----------*
 	 * Variables *
@@ -71,9 +71,11 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	private final DB db;
 
 	/**
-	 * Number of items cached before internal collection is synced to disk
+	 * Number of items cached before internal collection is synced to disk. If
+	 * set to 0, no disk-syncing is done and all internal caching is kept in
+	 * memory.
 	 */
-	private final long itemCacheSize;
+	private final long iterationSyncThreshold;
 
 	/*--------------*
 	 * Constructors *
@@ -88,39 +90,51 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
 			Comparator<BindingSet> comparator, long limit, boolean distinct)
 	{
-		this(iter, comparator, limit, distinct, DEFAULT_ITEM_CACHE_SIZE);
+		this(iter, comparator, limit, distinct, 0);
 	}
 
 	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
-			Comparator<BindingSet> comparator, long limit, boolean distinct, long itemCacheSize)
+			Comparator<BindingSet> comparator, long limit, boolean distinct, long iterationSyncThreshold)
 	{
 		this.iter = iter;
 		this.comparator = comparator;
 		this.limit = limit;
 		this.distinct = distinct;
-		this.itemCacheSize = itemCacheSize;
+		this.iterationSyncThreshold = iterationSyncThreshold;
 
-		try {
-			this.tempFile = File.createTempFile("order-eval", null);
+		if (iterationSyncThreshold > 0) {
+			try {
+				this.tempFile = File.createTempFile("order-eval", null);
+			}
+			catch (IOException e) {
+				throw new IOError(e);
+			}
+			this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
 		}
-		catch (IOException e) {
-			throw new IOError(e);
+		else {
+			this.tempFile = null;
+			this.db = null;
 		}
-		this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	protected NavigableMap<BindingSet, Integer> makeOrderedMap() {
+		if (db == null) {
+			// no disk-syncing - we use a simple in-memory TreeMap instead.
+			return new TreeMap<BindingSet, Integer>(comparator);
+		}
+		else {
+			return db.createTreeMap("iteration").comparator(comparator).makeOrGet();
+		}
+	}
+
 	protected Iteration<BindingSet, QueryEvaluationException> createIteration()
 		throws QueryEvaluationException
 	{
-		// NavigableMap<BindingSet, Collection<BindingSet>> map =
-		// makeOrderedMap(comparator);
-
-		final NavigableMap<BindingSet, Integer> map = db.createTreeMap("iteration").comparator(comparator).makeOrGet();
-
+		final NavigableMap<BindingSet, Integer> map = makeOrderedMap();
 		long size = 0;
 
 		try {
@@ -142,7 +156,7 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 						size++;
 					}
 
-					if (size % itemCacheSize == 0L) {
+					if (db != null && size % iterationSyncThreshold == 0L) {
 						// sync collection to disk every X new entries (where X is a
 						// multiple of the cache size)
 						db.commit();
@@ -240,7 +254,9 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		throws QueryEvaluationException
 	{
 		iter.close();
-		this.db.close();
+		if (db != null) {
+			this.db.close();
+		}
 		super.handleClose();
 	}
 }

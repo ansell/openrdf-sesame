@@ -48,6 +48,11 @@ public abstract class SailBase implements Sail {
 	 */
 	protected final static long DEFAULT_CONNECTION_TIMEOUT = 20000L;
 
+	/**
+	 * default value for the Iteration item sync threshold
+	 */
+	protected static final long DEFAULT_ITERATION_SYNC_THRESHOLD = 0L;
+
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and
 	// they can be closed silently (just like in JDBC).
@@ -97,6 +102,8 @@ public abstract class SailBase implements Sail {
 	 * {@link #DEFAULT_CONNECTION_TIMEOUT}.
 	 */
 	protected volatile long connectionTimeOut = DEFAULT_CONNECTION_TIMEOUT;
+
+	private long iterationSyncThreshold = DEFAULT_ITERATION_SYNC_THRESHOLD;
 
 	/**
 	 * Map used to track active connections and where these were acquired. The
@@ -294,5 +301,20 @@ public abstract class SailBase implements Sail {
 				logger.warn("tried to remove unknown connection object from store.");
 			}
 		}
+	}
+
+	/**
+	 * @return Returns the iterationCacheSize.
+	 */
+	public long getIterationSyncThreshold() {
+		return iterationSyncThreshold;
+	}
+
+	/**
+	 * @param iterationSyncThreshold
+	 *        The iterationCacheSize to set.
+	 */
+	public void setIterationSyncThreshold(long iterationSyncThreshold) {
+		this.iterationSyncThreshold = iterationSyncThreshold;
 	}
 }

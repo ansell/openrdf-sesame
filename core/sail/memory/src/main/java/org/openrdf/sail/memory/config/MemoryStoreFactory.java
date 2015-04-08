@@ -62,6 +62,10 @@ public class MemoryStoreFactory implements SailFactory {
 
 			memoryStore.setPersist(memConfig.getPersist());
 			memoryStore.setSyncDelay(memConfig.getSyncDelay());
+			
+			if (memConfig.getIterationCacheSize() > 0) {
+				memoryStore.setIterationSyncThreshold(memConfig.getIterationCacheSize());
+			}
 		}
 
 		return memoryStore;
