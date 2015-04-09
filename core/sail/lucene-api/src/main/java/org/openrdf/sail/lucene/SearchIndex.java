@@ -88,7 +88,7 @@ public interface SearchIndex {
 	 *        all removed statements, can have multiple subjects
 	 */
 	void addRemoveStatements(Collection<Statement> added, Collection<Statement> removed)
-		throws Exception;
+		throws IOException;
 
 	/**
 	 * @param contexts

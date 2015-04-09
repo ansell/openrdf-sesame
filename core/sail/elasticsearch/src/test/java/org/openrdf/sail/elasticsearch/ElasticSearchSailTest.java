@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.After;
@@ -92,8 +93,6 @@ public class ElasticSearchSailTest {
 
 	protected RepositoryConnection connection;
 
-	private ElasticSearchIndex index;
-
 	static {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("SELECT Subject, Score ");
@@ -114,13 +113,12 @@ public class ElasticSearchSailTest {
 		// to confogure using just the Logger
 
 		// setup a LuceneSail
-		index = new ElasticSearchIndex();
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
 		info.aduna.concurrent.locks.Properties.setLockTrackingEnabled(true);
 		sail = new LuceneSail();
+		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticSearchIndex.class.getName());
 		sail.setBaseSail(memoryStore);
-		sail.setLuceneIndex(index);
 
 		// create a Repository wrapping the LuceneSail
 		repository = new SailRepository(sail);

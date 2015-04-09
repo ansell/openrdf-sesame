@@ -74,7 +74,6 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -395,6 +394,12 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			if(updated) {
 				rollback();
 			}
+			if(e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			else if(e instanceof IOException)
+				throw (IOException) e;
+			else
+				throw new AssertionError(e);
 		}
 	}
 
@@ -785,6 +790,12 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			if(updated) {
 				rollback();
 			}
+			if(e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			else if(e instanceof IOException)
+				throw (IOException) e;
+			else
+				throw new AssertionError(e);
 		}
 	}
 
@@ -1171,7 +1182,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	@Override
 	public synchronized void addRemoveStatements(Collection<Statement> added, Collection<Statement> removed)
-		throws Exception
+		throws IOException
 	{
 		// Buffer per resource
 		MapOfListMaps<Resource, String, Statement> rsAdded = new MapOfListMaps<Resource, String, Statement>();
@@ -1321,6 +1332,12 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 		catch(Exception e) {
 			rollback();
+			if(e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			else if(e instanceof IOException)
+				throw (IOException) e;
+			else
+				throw new AssertionError(e);
 		}
 
 	}
@@ -1421,6 +1438,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 		catch(Exception e) {
 			rollback();
+			if(e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			else if(e instanceof IOException)
+				throw (IOException) e;
+			else if(e instanceof SailException)
+				throw (SailException) e;
+			else
+				throw new AssertionError(e);
 		}
 
 	}
