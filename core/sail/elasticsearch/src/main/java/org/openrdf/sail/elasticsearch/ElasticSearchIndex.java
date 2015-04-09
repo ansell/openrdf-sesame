@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -378,9 +379,9 @@ public class ElasticSearchIndex implements SearchIndex {
 	 * Checks whether a field occurs with a specified value in a Document.
 	 */
 	private boolean hasProperty(String fieldName, String value, Map<String,Object> document) {
-		Object[] fields = asArray(document.get(fieldName));
+		List<String> fields = asStringList(document.get(fieldName));
 		if (fields != null) {
-			for (Object field : fields) {
+			for (String field : fields) {
 				if (value.equals(field)) {
 					return true;
 				}
@@ -390,20 +391,32 @@ public class ElasticSearchIndex implements SearchIndex {
 		return false;
 	}
 
-	private static Object[] asArray(Object value) {
-		Object[] arr;
+	private static List<String> asStringList(Object value) {
+		List<String> l;
 		if(value == null) {
-			arr = null;
+			l = null;
 		}
-		else if(value instanceof Object[]) {
-			arr = (Object[]) value;
+		else if(value instanceof List<?>) {
+			l = (List<String>) value;
 		}
 		else {
-			arr = new Object[] {value};
+			l = Collections.singletonList((String) value);
 		}
-		return arr;
+		return l;
 	}
 
+	private static List<String> makeModifiable(List<String> l)
+	{
+		List<String> modList;
+		if(!(l instanceof ArrayList<?>)) {
+			modList = new ArrayList<String>(l.size()+1);
+			modList.addAll(l);
+		}
+		else {
+			modList = l;
+		}
+		return modList;
+	}
 	/**
 	 * Determines the number of properties stored in a Document.
 	 */
@@ -492,11 +505,9 @@ public class ElasticSearchIndex implements SearchIndex {
 		Object oldValue = document.get(name);
 		Object newValue;
 		if(oldValue != null) {
-			Object[] oldArr = asArray(oldValue);
-			Object[] arr = new Object[oldArr.length+1];
-			System.arraycopy(oldArr, 0, arr, 0, oldArr.length);
-			arr[oldArr.length] = value;
-			newValue = arr;
+			List<String> newList = makeModifiable(asStringList(oldValue));
+			newList.add(value);
+			newValue = newList;
 		}
 		else {
 			newValue = value;
@@ -551,16 +562,16 @@ public class ElasticSearchIndex implements SearchIndex {
 	
 						for (Map.Entry<String,Object> oldField : document.fields.entrySet()) {
 							String oldFieldName = oldField.getKey();
-							Object[] oldValues = asArray(oldField.getValue());
+							List<String> oldValues = asStringList(oldField.getValue());
 	
 							if (SearchFields.isPropertyField(oldFieldName))
 							{
 								boolean isField = fieldName.equals(oldFieldName);
-								for(Object oldValue : oldValues)
+								for(String oldValue : oldValues)
 								{
 									if (!(isField && text.equals(oldValue)))
 									{
-										addPropertyFields(oldFieldName, (String) oldValue, newDocument);
+										addPropertyFields(oldFieldName, oldValue, newDocument);
 									}
 								}
 							}
@@ -774,7 +785,7 @@ public class ElasticSearchIndex implements SearchIndex {
 									for(Text fragment : fragments) {
 										fragmentBuilder.append(separator);
 										fragmentBuilder.append(fragment.toString());
-										separator = "...";
+										separator = "---";
 									}
 								}
 							}
@@ -887,7 +898,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		long docCount = client.prepareCount(indexName).setQuery(query).execute().actionGet().getCount();
 		int nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
-		SearchResponse response = request.setIndices(indexName).setTypes(documentType).setQuery(query).setSize(nDocs).execute().actionGet();
+		SearchResponse response = request.setIndices(indexName).setTypes(documentType).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
 		return response.getHits();
 	}
 
@@ -1050,14 +1061,14 @@ public class ElasticSearchIndex implements SearchIndex {
 							// which fields were removed?
 							List<String> objectsRemoved = removedOfResource != null ? removedOfResource.get(oldFieldName) : null;
 
-							Object[] oldValues = asArray(oldField.getValue());
-							for(Object oldValue : oldValues) {
+							List<String> oldValues = asStringList(oldField.getValue());
+							for(String oldValue : oldValues) {
 								// do not copy removed statements to the new version of the
 								// document
 								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue)))
 									continue;
-								addField(oldFieldName, (String) oldValue, newDocument);
-								copiedProperties.put(oldFieldName, (String) oldValue);
+								addField(oldFieldName, oldValue, newDocument);
+								copiedProperties.put(oldFieldName, oldValue);
 							}
 						}
 	
@@ -1091,7 +1102,11 @@ public class ElasticSearchIndex implements SearchIndex {
 				}
 			}
 			if(bulkRequest.numberOfActions() > 0) {
-				bulkRequest.execute().actionGet();
+				BulkResponse response = bulkRequest.execute().actionGet();
+				if(response.hasFailures())
+				{
+					throw new IOException(response.buildFailureMessage());
+				}
 			}
 			// make sure that these updates are visible for new
 			// IndexReaders/Searchers
