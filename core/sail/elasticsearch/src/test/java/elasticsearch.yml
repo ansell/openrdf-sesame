@@ -1,0 +1,2 @@
+cluster.name: sail_test
+node.local: true

@@ -273,10 +273,11 @@ public class LuceneSail extends NotifyingSailWrapper {
 	public static final String LUCENE_RAMDIR_KEY = "useramdir";
 
 	/**
-	 * Set this key to configure the LuceneIndex class implementation,
-	 * e.g. org.openrdf.sail.lucene.LuceneIndex.
+	 * Set this key to configure the LuceneIndex class implementation.
+	 * Default is org.openrdf.sail.lucene.LuceneIndex.
 	 */
 	public static final String INDEX_CLASS_KEY = "index";
+	public static final String DEFAULT_INDEX_CLASS = "org.openrdf.sail.lucene.LuceneIndex";
 
 	/**
 	 * Set this key as sail parameter to configure the Lucene analyzer class
@@ -400,10 +401,8 @@ public class LuceneSail extends NotifyingSailWrapper {
 	protected void initializeLuceneIndex()
 		throws Exception
 	{
-		if(!parameters.containsKey(INDEX_CLASS_KEY)) {
-			throw new SailException("No luceneIndex set, and no '" + INDEX_CLASS_KEY + "' parameter given. ");
-		}
-		SearchIndex index = (SearchIndex)Class.forName(parameters.getProperty(INDEX_CLASS_KEY)).newInstance();
+		String indexClassName = parameters.getProperty(INDEX_CLASS_KEY, DEFAULT_INDEX_CLASS);
+		SearchIndex index = (SearchIndex)Class.forName(indexClassName).newInstance();
 		index.initialize(parameters);
 		setLuceneIndex(index);
 	}

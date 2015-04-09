@@ -30,11 +30,15 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -75,8 +79,9 @@ public class ElasticSearchIndex implements SearchIndex {
 
 	public static final String INDEX_NAME_KEY = "indexName";
 	public static final String DOCUMENT_TYPE_KEY = "documentType";
-	public static final String DEFAULT_INDEX_NAME = "ElasticSearchSail";
-	public static final String DEFAULT_DOCUMENT_TYPE = "Subject";
+	public static final String DEFAULT_INDEX_NAME = "elastic-search-sail";
+	public static final String DEFAULT_DOCUMENT_TYPE = "resource";
+	public static final String DEFAULT_ANALYZER = "standard";
 
 	private static final List<String> REJECTED_DATATYPES = new ArrayList<String>();
 
@@ -84,7 +89,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
 	}
 
-	private static class Document {
+	static class Document {
 		public final String id;
 		public final String type;
 		public final long version;
@@ -111,7 +116,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	private String indexName;
 	private String documentType;
 
-	private String analyzer = "standard";
+	private String analyzer;
 	private String queryAnalyzer = "standard";
 
 	public ElasticSearchIndex()
@@ -122,15 +127,32 @@ public class ElasticSearchIndex implements SearchIndex {
 	public void initialize(Properties parameters) throws IOException {
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
+		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
 		node = NodeBuilder.nodeBuilder().node();
 		client = node.client();
+
+		client.admin().cluster().prepareHealth(indexName).setWaitForYellowStatus().execute().actionGet();
 
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
 			createIndex();
 		}
+
+		logger.info("Field mappings:\n{}", getMappings());
 	}
 
+	public Map<String,Object> getMappings() throws IOException
+	{
+		ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> indexMappings = client.admin().indices().prepareGetMappings(indexName).setTypes(documentType).execute().actionGet().getMappings();
+		ImmutableOpenMap<String, MappingMetaData> typeMappings = indexMappings.get(indexName);
+		MappingMetaData mappings = typeMappings.get(documentType);
+		return mappings.sourceAsMap();
+	}
+
+	public Map<String,Object> getFieldMappings() throws IOException
+	{
+		return (Map<String,Object>) getMappings().get("properties");
+	}
 	private void createIndex() throws IOException
 	{
 		String settings = XContentFactory.jsonBuilder()
@@ -145,12 +167,15 @@ public class ElasticSearchIndex implements SearchIndex {
 			.endObject()
 		.string();
 
+		doRequest(client.admin().indices().prepareCreate(indexName).setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings)));
+
 		// use _source instead of explicit stored = true
 		XContentBuilder typeMapping = XContentFactory.jsonBuilder();
 		typeMapping.startObject()
 			.startObject(documentType)
 				.startObject("_all")
 					.field("enabled", false)
+				.endObject()
 				.startObject("properties");
 		typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME)
 			.field("type", "string")
@@ -169,11 +194,7 @@ public class ElasticSearchIndex implements SearchIndex {
 			.endObject()
 		.endObject();
 
-		client.admin().indices().prepareCreate(indexName)
-			.setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings))
-			.addMapping(documentType, typeMapping).execute().actionGet();
-		Map<?,?> mappings = client.admin().indices().prepareGetFieldMappings(indexName).execute().actionGet().mappings();
-		logger.info("Field mappings:\n{}", mappings);
+		doRequest(client.admin().indices().preparePutMapping(indexName).setType(documentType).setSource(typeMapping));
 	}
 
 	@Override
@@ -310,7 +331,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		List<Document> result = new ArrayList<Document>();
 
-		SearchHits searchHits = search(client.prepareSearch(indexName), query);
+		SearchHits searchHits = search(client.prepareSearch(), query);
 		SearchHit[] hits = searchHits.getHits();
 		int size = hits.length;
 		for(int i=0; i<size; i++) {
@@ -455,44 +476,26 @@ public class ElasticSearchIndex implements SearchIndex {
 	 */
 	private static void addPropertyFields(String predicate, String text, Map<String,Object> document) {
 		// store this predicate
-		addPredicateField(predicate, text, document);
+		addField(predicate, text, document);
 
 		// and in TEXT_FIELD_NAME
-		addTextField(text, document);
+		addField(SearchFields.TEXT_FIELD_NAME, text, document);
 	}
 
-	private static void addPredicateField(String predicate, String text, Map<String,Object> document) {
-		// store this predicate
-		Object oldText = document.get(predicate);
+	private static void addField(String name, String value, Map<String,Object> document) {
+		Object oldValue = document.get(name);
 		Object newValue;
-		if(oldText != null) {
-			Object[] oldArr = asArray(oldText);
+		if(oldValue != null) {
+			Object[] oldArr = asArray(oldValue);
 			Object[] arr = new Object[oldArr.length+1];
 			System.arraycopy(oldArr, 0, arr, 0, oldArr.length);
-			arr[oldArr.length] = text;
+			arr[oldArr.length] = value;
 			newValue = arr;
 		}
 		else {
-			newValue = text;
+			newValue = value;
 		}
-		document.put(predicate, newValue);
-	}
-
-	private static void addTextField(String text, Map<String,Object> document) {
-		// and in TEXT_FIELD_NAME
-		Object oldText = document.get(SearchFields.TEXT_FIELD_NAME);
-		Object newValue;
-		if(oldText != null) {
-			Object[] oldArr = asArray(oldText);
-			Object[] arr = new Object[oldArr.length+1];
-			System.arraycopy(oldArr, 0, arr, 0, oldArr.length);
-			arr[oldArr.length] = text;
-			newValue = arr;
-		}
-		else {
-			newValue = text;
-		}
-		document.put(SearchFields.TEXT_FIELD_NAME, newValue);
+		document.put(name, newValue);
 	}
 
 	public synchronized void removeStatement(Statement statement)
@@ -634,11 +637,21 @@ public class ElasticSearchIndex implements SearchIndex {
 
 			if (!sQuery.isEmpty()) {
 				QueryBuilder lucenequery = parseQuery(query.getQueryString(), query.getPropertyURI());
-				SearchRequestBuilder request = client.prepareSearch(indexName);
+				SearchRequestBuilder request = client.prepareSearch();
 
 				// if the query requests for the snippet, create a highlighter using
 				// this query
 				if (query.getSnippetVariableName() != null) {
+					List<String> fields;
+					if(query.getPropertyURI() != null) {
+						fields = Collections.singletonList(query.getPropertyURI().toString());
+					}
+					else {
+						fields = getPropertyFields(getFieldMappings().keySet());
+					}
+					for(String field : fields) {
+						request.addHighlightedField(field);
+					}
 					request.setHighlighterPreTags("<B>");
 					request.setHighlighterPostTags("</B>");
 					request.setHighlighterOrder("score");
@@ -697,7 +710,6 @@ public class ElasticSearchIndex implements SearchIndex {
 	
 				// get the current hit
 				SearchHit hit = docs[i];
-				String docId = hit.getId();
 
 				// get the score of the hit
 				float score = hit.getScore();
@@ -705,28 +717,18 @@ public class ElasticSearchIndex implements SearchIndex {
 				// bind the respective variables
 				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
-					try {
-						Resource resource = getResource(hit.getSource());
-						Value existing = derivedBindings.getValue(matchVar);
-						// if the existing binding contradicts the current binding, than
-						// we can safely skip this permutation
-						if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-							// invalidate the binding
-							derivedBindings = null;
-	
-							// and exit the loop
-							break;
-						}
-						derivedBindings.addBinding(matchVar, resource);
+					Resource resource = getResource(hit.getSource());
+					Value existing = derivedBindings.getValue(matchVar);
+					// if the existing binding contradicts the current binding, than
+					// we can safely skip this permutation
+					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
+						// invalidate the binding
+						derivedBindings = null;
+
+						// and exit the loop
+						break;
 					}
-					catch (NullPointerException e) {
-						SailException e1 = new SailException(
-								"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-								e);
-						logger.error(e1.getMessage());
-						logger.debug("Details: ", e);
-						throw e1;
-					}
+					derivedBindings.addBinding(matchVar, resource);
 				}
 	
 				if ((query.getScoreVariableName() != null) && (score > 0.0f))
@@ -838,7 +840,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	public SearchHits search(String query)
 		throws IOException
 	{
-		return search(client.prepareSearch(indexName), parseQuery(query, null));
+		return search(client.prepareSearch(), parseQuery(query, null));
 	}
 
 	/**
@@ -873,7 +875,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		long docCount = client.prepareCount(indexName).setQuery(query).execute().actionGet().getCount();
 		int nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
-		SearchResponse response = request.setQuery(query).setSize(nDocs).execute().actionGet();
+		SearchResponse response = request.setIndices(indexName).setTypes(documentType).setQuery(query).setSize(nDocs).execute().actionGet();
 		return response.getHits();
 	}
 
@@ -899,7 +901,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		QueryBuilder combinedQuery = QueryBuilders.boolQuery().must(idQuery).must(query);
 
 		// fetch the score when the URI matches the original query
-		SearchHits docs = client.prepareSearch(indexName).setQuery(combinedQuery).setSize(1).execute().actionGet().getHits();
+		SearchHits docs = client.prepareSearch(indexName).setTypes(documentType).setQuery(combinedQuery).setSize(1).execute().actionGet().getHits();
 		if (docs.getTotalHits() == 0) {
 			return -1f;
 		}
@@ -1026,23 +1028,25 @@ public class ElasticSearchIndex implements SearchIndex {
 							}
 						}
 	
-						// add all existing fields (including id, uri, context, and text)
+						// add all existing fields (including uri, context, and text)
 						// but without adding the removed ones
 						// keep the predicate/value pairs to ensure that the statement
 						// cannot be added twice
 						SetMap<String, String> copiedProperties = new SetMap<String, String>();
-						for (Object oldFieldObject : document.getFields()) {
-							Field oldField = (Field)oldFieldObject;
-							// do not copy removed statements to the new version of the
-							// document
-							if (removedOfResource != null) {
-								// which fields were removed?
-								List<String> objectsRemoved = removedOfResource.get(oldField.name());
-								if ((objectsRemoved != null) && (objectsRemoved.contains(oldField.stringValue())))
+						for (Map.Entry<String,Object> oldField : document.fields.entrySet()) {
+							String oldFieldName = oldField.getKey();
+							// which fields were removed?
+							List<String> objectsRemoved = removedOfResource != null ? removedOfResource.get(oldFieldName) : null;
+
+							Object[] oldValues = asArray(oldField.getValue());
+							for(Object oldValue : oldValues) {
+								// do not copy removed statements to the new version of the
+								// document
+								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue)))
 									continue;
+								addField(oldFieldName, (String) oldValue, newDocument);
+								copiedProperties.put(oldFieldName, (String) oldValue);
 							}
-							newDocument.add(oldField);
-							copiedProperties.put(oldField.name(), oldField.stringValue());
 						}
 	
 						// add all statements to this document, except for those which
@@ -1245,5 +1249,15 @@ public class ElasticSearchIndex implements SearchIndex {
 	{
 		client.admin().indices().prepareDelete(indexName).execute().actionGet();
 		createIndex();
+	}
+
+
+
+	private static void doRequest(ActionRequestBuilder<?, ? extends AcknowledgedResponse, ?, ?> request) throws IOException
+	{
+		boolean ok = request.execute().actionGet().isAcknowledged();
+		if(!ok) {
+			throw new IOException("Request not acknowledged: "+request.get().getClass().getName());
+		}
 	}
 }

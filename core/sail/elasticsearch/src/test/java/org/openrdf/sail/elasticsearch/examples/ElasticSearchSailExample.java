@@ -66,11 +66,6 @@ public class ElasticSearchSailExample {
 		// create a lucenesail to wrap the memorystore
 		LuceneSail lucenesail = new LuceneSail();
 		lucenesail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticSearchIndex.class.getName());
-		// set this parameter to let the lucene index store its data in ram
-		lucenesail.setParameter(LuceneSail.LUCENE_RAMDIR_KEY, "true");
-		// set this parameter to store the lucene index on disk
-		// lucenesail.setParameter(LuceneSail.LUCENE_DIR_KEY,
-		// "./data/mydirectory");
 
 		// wrap memorystore in a lucenesail
 		lucenesail.setBaseSail(memoryStore);
