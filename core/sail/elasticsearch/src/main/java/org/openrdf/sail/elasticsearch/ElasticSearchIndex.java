@@ -677,8 +677,10 @@ public class ElasticSearchIndex implements SearchIndex {
 					}
 					request.setHighlighterPreTags("<B>");
 					request.setHighlighterPostTags("</B>");
-					request.setHighlighterOrder("score");
-					request.setHighlighterNumOfFragments(2);
+					// LuceneIndex uses a maximum of 2 fragments per field value
+					// but Elastic Search considers the entire array of field values as a whole.
+					// So, we will just have to wing it...
+					request.setHighlighterNumOfFragments(100);
 				}
 
 				// distinguish the two cases of subject == null
@@ -779,6 +781,8 @@ public class ElasticSearchIndex implements SearchIndex {
 							HighlightField highlightField = highlights.get(field);
 							if(highlightField != null) {
 								Text[] fragments = highlightField.getFragments();
+								// need to re-sort by score
+								// need to log when run out of fragments to assign to array elements
 								if(fragments != null) {
 									fragmentBuilder = new StringBuilder();
 									String separator = "";
