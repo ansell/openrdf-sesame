@@ -677,10 +677,10 @@ public class ElasticSearchIndex implements SearchIndex {
 					}
 					request.setHighlighterPreTags("<B>");
 					request.setHighlighterPostTags("</B>");
-					// LuceneIndex uses a maximum of 2 fragments per field value
-					// but Elastic Search considers the entire array of field values as a whole.
-					// So, we will just have to wing it...
-					request.setHighlighterNumOfFragments(100);
+					// Elastic Search doesn't really have the same support for fragments as Lucene.
+					// So, we have to get back the whole highlighted value (comma-separated if it is a list)
+					// and then post-process it into fragments ourselves.
+					request.setHighlighterNumOfFragments(0);
 				}
 
 				// distinguish the two cases of subject == null
@@ -736,13 +736,14 @@ public class ElasticSearchIndex implements SearchIndex {
 				// get the current hit
 				SearchHit hit = docs[i];
 
+				Map<String,Object> doc = hit.getSource();
 				// get the score of the hit
 				float score = hit.getScore();
 
 				// bind the respective variables
 				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
-					Resource resource = getResource(hit.getSource());
+					Resource resource = getResource(doc);
 					Value existing = derivedBindings.getValue(matchVar);
 					// if the existing binding contradicts the current binding, than
 					// we can safely skip this permutation
@@ -769,39 +770,33 @@ public class ElasticSearchIndex implements SearchIndex {
 							fields = Collections.singletonList(fieldname);
 						}
 						else {
-							fields = getPropertyFields(hit.getSource().keySet());
+							fields = getPropertyFields(doc.keySet());
 						}
 	
 						// extract snippets from Lucene's query results
 						for (String field : fields) {
-							// create an individual binding set for each snippet
-							QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-
-							StringBuilder fragmentBuilder = null;
 							HighlightField highlightField = highlights.get(field);
 							if(highlightField != null) {
 								Text[] fragments = highlightField.getFragments();
-								// need to re-sort by score
-								// need to log when run out of fragments to assign to array elements
-								if(fragments != null) {
-									fragmentBuilder = new StringBuilder();
-									String separator = "";
-									for(Text fragment : fragments) {
-										fragmentBuilder.append(separator);
-										fragmentBuilder.append(fragment.toString());
-										separator = "---";
-									}
-								}
-							}
+								assert fragments.length == 1;
 
-							if (fragmentBuilder != null && fragmentBuilder.length() > 0) {
-								snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragmentBuilder.toString()));
-	
-								if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-									snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field));
+								// split into individual fragments per value
+								List<String> values = asStringList(doc.get(field));
+								String[] valueFragments = splitIntoFragments(fragments[0].string(), values);
+								for(String fragment : valueFragments) {
+									// create an individual binding set for each snippet
+									QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
+
+									String snippet = createSnippet(fragment);
+
+									snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(snippet));
+		
+									if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
+										snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field));
+									}
+		
+									bindingSets.add(snippetBindings);
 								}
-	
-								bindingSets.add(snippetBindings);
 							}
 						}
 					}
@@ -820,6 +815,16 @@ public class ElasticSearchIndex implements SearchIndex {
 
 		// we succeeded
 		return bindingSets;
+	}
+
+	private static String[] splitIntoFragments(String csvValue, List<String> values)
+	{
+		return null;
+	}
+
+	private static String createSnippet(String highlightedValue)
+	{
+		return highlightedValue;
 	}
 
 	/**
