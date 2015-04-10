@@ -19,24 +19,26 @@ package org.openrdf.model;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 
 /**
- * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s
- * with predictable iteration order. Model is a feature-rich extension of the
- * basic {@link Graph} interface.
+ * An RDF Model, represented as a {@link java.util.Set} of {@link Statement}s
+ * with predictable iteration order. A Model can contain statements in several
+ * contexts, representing one or more (named) graphs.
  * <p>
  * Additional utility functionality for working with Model objects is available
  * in the {@link org.openrdf.model.util.Models Models} utility class.
  * 
  * @since 2.7.0
  * @author James Leigh
+ * @author Jeen Broekstra
  * @see org.openrdf.model.util.Models the Models utility class
  */
+@SuppressWarnings("deprecation")
 public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
@@ -44,7 +46,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * "read-only" access to this model. Query operations on the returned model
 	 * "read through" to this model, and attempts to modify the returned model,
 	 * whether direct or via its iterator, result in an
-	 * <tt>UnsupportedOperationException</tt>.
+	 * {@link UnsupportedOperationException}.
 	 * <p>
 	 * 
 	 * @return an unmodifiable view of the specified set.
@@ -299,7 +301,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
 	 * @since 2.8.0
+	 * @deprecated since 4.0. Instead, use {@link Models#subject(Model)} to
+	 *             retrieve a subject Resource, and/or use the size of the set
+	 *             returned by {@link #subjects()} to verify if the subject is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<Resource> subjectResource()
 		throws ModelException
 	{
@@ -326,7 +333,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If such an exception is thrown by {@link #subjectResource()} or if
 	 *         its return value is not a URI.
 	 * @since 2.8.0
+	 * @deprecated since 4.0. Instead, use {@link Models#subjectURI(Model)} to
+	 *             retrieve a subject URI, and/or use the size of the set
+	 *             returned by {@link #subjects()} to verify if the subject is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<URI> subjectURI()
 		throws ModelException
 	{
@@ -354,7 +366,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If such an exception is thrown by {@link #subjectResource()} or if
 	 *         its return value is not a BNode.
 	 * @since 2.8.0
+	 * @deprecated since 4.0. Instead, use {@link Models#subjectBNode(Model)} to
+	 *             retrieve a subject BNode, and/or use the size of the set
+	 *             returned by {@link #subjects()} to verify if the subject is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<BNode> subjectBNode()
 		throws ModelException
 	{
@@ -439,7 +456,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
+	 * @deprecated since 4.0. Instead, use {@link Models#object(Model)} to
+	 *             retrieve an object value, and/or use the size of the set
+	 *             returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<Value> objectValue()
 		throws ModelException
 	{
@@ -464,7 +486,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a Literal.
+	 * @deprecated since 4.0. Instead, use {@link Models#objectLiteral(Model)} to
+	 *             retrieve an object Literal value, and/or use the size of the
+	 *             set returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<Literal> objectLiteral()
 		throws ModelException
 	{
@@ -491,7 +518,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a Resource.
+	 * @deprecated since 4.0. Instead, use {@link Models#objectResource(Model)}
+	 *             to retrieve an object Resource value, and/or use the size of
+	 *             the set returned by {@link #objects()} to verify if the object
+	 *             is unique.
 	 */
+	@Deprecated
 	public default Optional<Resource> objectResource()
 		throws ModelException
 	{
@@ -518,7 +550,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a URI.
+	 * @deprecated since 4.0. Instead, use {@link Models#objectURI(Model)} to
+	 *             retrieve an object URI value, and/or use the size of the set
+	 *             returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<URI> objectURI()
 		throws ModelException
 	{
@@ -544,7 +581,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
+	 * @deprecated since 4.0. Instead, use {@link Models#object(Model)} to
+	 *             retrieve an object value, and/or use the size of the set
+	 *             returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<String> objectString()
 		throws ModelException
 	{

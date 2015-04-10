@@ -16,7 +16,10 @@
  */
 package org.openrdf.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Optional;
 
@@ -30,7 +33,6 @@ import org.junit.rules.Timeout;
 
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.ModelException;
-import org.openrdf.model.util.ModelUtil;
 import org.openrdf.model.vocabulary.RDFS;
 
 /**
@@ -1429,7 +1431,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralEmpty() {
 		Model model = getNewEmptyModel();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1439,7 +1441,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleLiteral() {
 		Model model = getNewModelObjectSingleLiteral();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertTrue(value.isPresent());
 		assertEquals(literal1, value.get());
 	}
@@ -1450,7 +1452,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleURI() {
 		Model model = getNewModelObjectSingleURI();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1460,7 +1462,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleBNode() {
 		Model model = getNewModelObjectSingleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1472,7 +1474,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectDoubleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectLiteral();
+		model.objectLiteral();
 	}
 
 	/**
@@ -1481,7 +1483,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleLiteralSingleURI() {
 		Model model = getNewModelObjectSingleLiteralSingleURI();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertTrue(value.isPresent());
 		assertEquals(literal1, value.get());
 	}
@@ -1492,7 +1494,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleLiteralSingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertTrue(value.isPresent());
 		assertEquals(literal1, value.get());
 	}
@@ -1503,7 +1505,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleURISingleBNode() {
 		Model model = getNewModelObjectSingleURISingleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1513,7 +1515,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralDoubleURI() {
 		Model model = getNewModelObjectDoubleURI();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1523,7 +1525,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralDoubleBNode() {
 		Model model = getNewModelObjectDoubleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1535,7 +1537,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectTripleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectLiteral();
+		model.objectLiteral();
 	}
 
 	/**
@@ -1544,7 +1546,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralTripleURI() {
 		Model model = getNewModelObjectTripleURI();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1554,7 +1556,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralTripleBNode() {
 		Model model = getNewModelObjectTripleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1564,7 +1566,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleLiteralSingleURISingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleURISingleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertTrue(value.isPresent());
 		assertEquals(literal1, value.get());
 	}
@@ -1575,7 +1577,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleLiteralDoubleBNode() {
 		Model model = getNewModelObjectSingleLiteralDoubleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertTrue(value.isPresent());
 		assertEquals(literal1, value.get());
 	}
@@ -1586,7 +1588,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleLiteralDoubleURI() {
 		Model model = getNewModelObjectSingleLiteralDoubleURI();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertTrue(value.isPresent());
 		assertEquals(literal1, value.get());
 	}
@@ -1597,7 +1599,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleURIDoubleBNode() {
 		Model model = getNewModelObjectSingleURIDoubleBNode();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1609,7 +1611,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleURIDoubleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectLiteral();
+		model.objectLiteral();
 	}
 
 	/**
@@ -1618,7 +1620,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectLiteralSingleBNodeDoubleURI() {
 		Model model = getNewModelObjectSingleBNodeDoubleURI();
-		Optional<Literal> value = model.anObjectLiteral();
+		Optional<Literal> value = model.objectLiteral();
 		assertFalse(value.isPresent());
 	}
 
@@ -1630,7 +1632,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleBNodeDoubleLiteral();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectLiteral();
+		model.objectLiteral();
 	}
 
 	/**
@@ -1639,7 +1641,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceEmpty() {
 		Model model = getNewEmptyModel();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertFalse(value.isPresent());
 	}
 
@@ -1649,7 +1651,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleLiteral() {
 		Model model = getNewModelObjectSingleLiteral();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertFalse(value.isPresent());
 	}
 
@@ -1659,7 +1661,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleURI() {
 		Model model = getNewModelObjectSingleURI();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
@@ -1670,7 +1672,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleBNode() {
 		Model model = getNewModelObjectSingleBNode();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertTrue(value.isPresent());
 		assertEquals(bnode1, value.get());
 	}
@@ -1681,7 +1683,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceDoubleLiteral() {
 		Model model = getNewModelObjectDoubleLiteral();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertFalse(value.isPresent());
 	}
 
@@ -1691,7 +1693,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleLiteralSingleURI() {
 		Model model = getNewModelObjectSingleLiteralSingleURI();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
@@ -1702,7 +1704,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleLiteralSingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleBNode();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertTrue(value.isPresent());
 		assertEquals(bnode1, value.get());
 	}
@@ -1715,7 +1717,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleURISingleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1726,7 +1728,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1737,7 +1739,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectDoubleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1746,7 +1748,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceTripleLiteral() {
 		Model model = getNewModelObjectTripleLiteral();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertFalse(value.isPresent());
 	}
 
@@ -1758,7 +1760,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectTripleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1769,7 +1771,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectTripleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1780,7 +1782,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleLiteralSingleURISingleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1791,7 +1793,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleLiteralDoubleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1802,7 +1804,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleLiteralDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1813,7 +1815,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleURIDoubleBNode();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1822,7 +1824,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleURIDoubleLiteral() {
 		Model model = getNewModelObjectSingleURIDoubleLiteral();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
@@ -1835,7 +1837,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleBNodeDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectResource();
+		model.objectResource();
 	}
 
 	/**
@@ -1844,7 +1846,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectResourceSingleBNodeDoubleLiteral() {
 		Model model = getNewModelObjectSingleBNodeDoubleLiteral();
-		Optional<Resource> value = model.anObjectResource();
+		Optional<Resource> value = model.objectResource();
 		assertTrue(value.isPresent());
 		assertEquals(bnode1, value.get());
 	}
@@ -1855,7 +1857,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURIEmpty() {
 		Model model = getNewEmptyModel();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1865,7 +1867,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleLiteral() {
 		Model model = getNewModelObjectSingleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1875,7 +1877,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleURI() {
 		Model model = getNewModelObjectSingleURI();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
@@ -1886,7 +1888,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleBNode() {
 		Model model = getNewModelObjectSingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1896,7 +1898,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURIDoubleLiteral() {
 		Model model = getNewModelObjectDoubleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1906,7 +1908,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleLiteralSingleURI() {
 		Model model = getNewModelObjectSingleLiteralSingleURI();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
@@ -1917,7 +1919,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleLiteralSingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1927,7 +1929,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleURISingleBNode() {
 		Model model = getNewModelObjectSingleURISingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
@@ -1940,7 +1942,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectURI();
+		model.objectURI();
 	}
 
 	/**
@@ -1949,7 +1951,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURIDoubleBNode() {
 		Model model = getNewModelObjectDoubleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1959,7 +1961,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURITripleLiteral() {
 		Model model = getNewModelObjectTripleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1971,7 +1973,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectTripleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectURI();
+		model.objectURI();
 	}
 
 	/**
@@ -1980,7 +1982,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURITripleBNode() {
 		Model model = getNewModelObjectTripleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -1990,7 +1992,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleLiteralSingleURISingleBNode() {
 		Model model = getNewModelObjectSingleLiteralSingleURISingleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri2, value.get());
 	}
@@ -2001,7 +2003,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleLiteralDoubleBNode() {
 		Model model = getNewModelObjectSingleLiteralDoubleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
@@ -2013,7 +2015,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleLiteralDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectURI();
+		model.objectURI();
 	}
 
 	/**
@@ -2022,7 +2024,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleURIDoubleBNode() {
 		Model model = getNewModelObjectSingleURIDoubleBNode();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
@@ -2033,7 +2035,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleURIDoubleLiteral() {
 		Model model = getNewModelObjectSingleURIDoubleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertTrue(value.isPresent());
 		assertEquals(uri1, value.get());
 	}
@@ -2046,7 +2048,7 @@ public abstract class AbstractModelTest {
 		Model model = getNewModelObjectSingleBNodeDoubleURI();
 		// We expect an exception during the next method call
 		thrown.expect(ModelException.class);
-		model.anObjectURI();
+		model.objectURI();
 	}
 
 	/**
@@ -2055,7 +2057,7 @@ public abstract class AbstractModelTest {
 	@Test
 	public final void testAnObjectURISingleBNodeDoubleLiteral() {
 		Model model = getNewModelObjectSingleBNodeDoubleLiteral();
-		Optional<URI> value = model.anObjectURI();
+		Optional<URI> value = model.objectURI();
 		assertFalse(value.isPresent());
 	}
 
