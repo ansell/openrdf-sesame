@@ -16,6 +16,9 @@
  */
 package org.openrdf.query.algebra.evaluation.util;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.slf4j.Logger;
@@ -33,18 +36,26 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 /**
  * @author james
  */
-public class OrderComparator implements Comparator<BindingSet> {
+public class OrderComparator implements Comparator<BindingSet>, Serializable {
 
-	private final Logger logger = LoggerFactory.getLogger(OrderComparator.class);
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7002730491398949902L;
 
-	private final EvaluationStrategy strategy;
+	private final transient Logger logger = LoggerFactory.getLogger(OrderComparator.class);
 
+	private transient EvaluationStrategy strategy;
+
+	private final Integer strategyKey;
+	
 	private final Order order;
 
-	private final ValueComparator cmp;
+	private transient ValueComparator cmp;
 
 	public OrderComparator(EvaluationStrategy strategy, Order order, ValueComparator vcmp) {
 		this.strategy = strategy;
+		this.strategyKey = strategy.hashCode();
 		this.order = order;
 		this.cmp = vcmp;
 	}
@@ -84,4 +95,10 @@ public class OrderComparator implements Comparator<BindingSet> {
 			return null;
 		}
 	}
+	
+	 private void readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
+		 in.defaultReadObject();
+		 this.strategy = EvaluationStrategies.get(this.strategyKey);
+		 this.cmp = new ValueComparator();
+	 }
 }

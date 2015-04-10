@@ -16,6 +16,9 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,6 +28,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentNavigableMap;
+
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
@@ -81,6 +89,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 	private final Object lock = new Object();
 
+	private final File tempFile;
+
+	private final DB db;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -91,6 +103,14 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		this.strategy = strategy;
 		this.group = group;
 		this.parentBindings = parentBindings;
+
+		try {
+			this.tempFile = File.createTempFile("group-eval", null);
+		}
+		catch (IOException e) {
+			throw new QueryEvaluationException("could not initialize temp db", e);
+		}
+		this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
 	}
 
 	/*---------*
@@ -127,11 +147,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		return super.next();
 	}
 
+	@Override
+	protected void handleClose()
+		throws QueryEvaluationException
+	{
+		super.handleClose();
+		this.db.close();
+	}
+
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{
 		Collection<Entry> entries = buildEntries();
-		Collection<BindingSet> bindingSets = new LinkedList<BindingSet>();
+		Map<Integer, BindingSet> bindingSets = db.getTreeMap("bindingsets");
 
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
@@ -149,10 +177,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			entry.bindSolution(sol);
 
-			bindingSets.add(sol);
+			bindingSets.put(sol.hashCode(), sol);
 		}
 
-		return bindingSets.iterator();
+		return bindingSets.values().iterator();
 	}
 
 	private Collection<Entry> buildEntries()
@@ -162,6 +190,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		iter = strategy.evaluate(group.getArg(), parentBindings);
 
 		try {
+			// Map<Key, Entry> entries = db.getTreeMap("entries");
 			Map<Key, Entry> entries = new LinkedHashMap<Key, Entry>();
 
 			if (!iter.hasNext()) {
@@ -169,6 +198,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				// zero-result.
 				entries.put(new Key(new EmptyBindingSet()), new Entry(new EmptyBindingSet()));
 			}
+
+			// long count = 0;
 
 			while (iter.hasNext()) {
 				BindingSet sol;
@@ -184,6 +215,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				if (entry == null) {
 					entry = new Entry(sol);
 					entries.put(key, entry);
+					// count++;
+					// if (count % 10000L == 0) {
+					// db.commit();
+					// }
 				}
 
 				entry.addSolution(sol);
@@ -202,7 +237,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 * 
 	 * @author David Huynh
 	 */
-	protected class Key {
+	protected class Key implements Serializable {
+
+		private static final long serialVersionUID = 4461951265373324084L;
 
 		private BindingSet bindingSet;
 
@@ -255,13 +292,22 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws ValueExprEvaluationException, QueryEvaluationException
 		{
 			this.prototype = prototype;
-			this.aggregates = new LinkedHashMap<String, Aggregate>();
-			for (GroupElem ge : group.getGroupElements()) {
-				Aggregate create = create(ge.getOperator());
-				if (create != null) {
-					aggregates.put(ge.getName(), create);
+
+		}
+
+		private Map<String, Aggregate> getAggregates()
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
+			if (this.aggregates == null) {
+				this.aggregates = new LinkedHashMap<String, Aggregate>();
+				for (GroupElem ge : group.getGroupElements()) {
+					Aggregate create = create(ge.getOperator());
+					if (create != null) {
+						aggregates.put(ge.getName(), create);
+					}
 				}
 			}
+			return this.aggregates;
 		}
 
 		public BindingSet getPrototype() {
@@ -271,7 +317,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void addSolution(BindingSet bindingSet)
 			throws QueryEvaluationException
 		{
-			for (Aggregate aggregate : aggregates.values()) {
+			for (Aggregate aggregate : getAggregates().values()) {
 				aggregate.processAggregate(bindingSet);
 			}
 		}
@@ -279,9 +325,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void bindSolution(QueryBindingSet sol)
 			throws QueryEvaluationException
 		{
-			for (String name : aggregates.keySet()) {
+			for (String name : getAggregates().keySet()) {
 				try {
-					Value value = aggregates.get(name).getValue();
+					Value value = getAggregates().get(name).getValue();
 					if (value != null) {
 						// Potentially overwrites bindings from super
 						sol.setBinding(name, value);
@@ -332,8 +378,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		public Aggregate(AggregateOperatorBase operator) {
 			this.arg = operator.getArg();
+
 			if (operator.isDistinct()) {
-				distinctValues = new HashSet<Value>();
+				distinctValues = db.getHashSet("distinct-values-" + this.hashCode());
 			}
 			else {
 				distinctValues = null;
@@ -347,7 +394,17 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException;
 
 		protected boolean distinctValue(Value value) {
-			return distinctValues == null || distinctValues.add(value);
+			if (distinctValues == null) {
+				return true;
+			}
+
+			final boolean result = distinctValues.add(value);
+			if (distinctValues.size() % 10000 == 0) { // write to disk every 10000
+																	// items
+				db.commit();
+			}
+
+			return result;
 		}
 
 		protected ValueExpr getArg() {
@@ -378,7 +435,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			// for a wildcarded count with a DISTINCT clause we need to filter on
 			// distinct bindingsets rather than individual values.
 			if (operator.isDistinct() && getArg() == null) {
-				distinctBindingSets = new HashSet<BindingSet>();
+				distinctBindingSets = db.getHashSet("distinct-bs-" + this.hashCode());
 			}
 			else {
 				distinctBindingSets = null;
@@ -404,9 +461,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 
 		protected boolean distinctBindingSet(BindingSet s) {
-			return this.distinctBindingSets == null || distinctBindingSets.add(s);
+			if (distinctBindingSets == null) {
+				return true;
+			}
+
+			final boolean result = distinctBindingSets.add(s);
+			if (distinctBindingSets.size() % 10000 == 0) { // write to disk every
+																			// 10000 items
+				db.commit();
+			}
+
+			return result;
 		}
-		
+
 		@Override
 		public Value getValue() {
 			return vf.createLiteral(Long.toString(count), XMLSchema.INTEGER);

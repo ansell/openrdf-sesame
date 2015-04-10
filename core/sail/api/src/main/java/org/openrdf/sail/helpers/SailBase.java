@@ -62,10 +62,15 @@ public abstract class SailBase implements Sail {
 	/**
 	 * list of supported isolation levels. By default set to include
 	 * {@link IsolationLevels#READ_UNCOMMITTED} and
-	 * {@link IsolationLevels#SERIALIZABLE}. Specific store implementations
-	 * are expected to alter this list according to their specific capabilities.
+	 * {@link IsolationLevels#SERIALIZABLE}. Specific store implementations are
+	 * expected to alter this list according to their specific capabilities.
 	 */
 	private List<IsolationLevel> supportedIsolationLevels = new ArrayList<IsolationLevel>();
+
+	/**
+	 * default value for the Iteration item sync threshold
+	 */
+	protected static final long DEFAULT_ITERATION_SYNC_THRESHOLD = 0L;
 
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and
@@ -117,6 +122,8 @@ public abstract class SailBase implements Sail {
 	 */
 	protected volatile long connectionTimeOut = DEFAULT_CONNECTION_TIMEOUT;
 
+	private long iterationSyncThreshold = DEFAULT_ITERATION_SYNC_THRESHOLD;
+
 	/**
 	 * Map used to track active connections and where these were acquired. The
 	 * Throwable value may be null in case debugging was disable at the time the
@@ -127,13 +134,13 @@ public abstract class SailBase implements Sail {
 	/*
 	 * constructors
 	 */
-	
+
 	public SailBase() {
 		super();
 		this.addSupportedIsolationLevel(IsolationLevels.READ_UNCOMMITTED);
 		this.addSupportedIsolationLevel(IsolationLevels.SERIALIZABLE);
 	}
-	
+
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -390,5 +397,20 @@ public abstract class SailBase implements Sail {
 			throw new IllegalArgumentException("default isolation level may not be null");
 		}
 		this.defaultIsolationLevel = defaultIsolationLevel;
+	}
+
+	/**
+	 * @return Returns the iterationCacheSize.
+	 */
+	public long getIterationSyncThreshold() {
+		return iterationSyncThreshold;
+	}
+
+	/**
+	 * @param iterationSyncThreshold
+	 *        The iterationCacheSize to set.
+	 */
+	public void setIterationSyncThreshold(long iterationSyncThreshold) {
+		this.iterationSyncThreshold = iterationSyncThreshold;
 	}
 }
