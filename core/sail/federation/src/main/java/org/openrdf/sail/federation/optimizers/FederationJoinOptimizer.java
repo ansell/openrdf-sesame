@@ -18,8 +18,14 @@ package org.openrdf.sail.federation.optimizers;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -39,6 +45,8 @@ import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.util.RepositoryConnectionUtil;
 import org.openrdf.sail.federation.PrefixHashSet;
 import org.openrdf.sail.federation.algebra.NaryJoin;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
@@ -55,9 +63,13 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 
 	private final Collection<? extends RepositoryConnection> members;
 
+	private Map<Resource, List<RepositoryConnection>> contextToMemberMap;
+
 	private final PrefixHashSet localSpace;
 
 	private final boolean distinct;
+
+	private Dataset dataset;
 
 	public FederationJoinOptimizer(Collection<? extends RepositoryConnection> members, boolean distinct,
 			PrefixHashSet localSpace)
@@ -68,12 +80,43 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 		this.distinct = distinct;
 	}
 
+	private static Map<Resource, List<RepositoryConnection>> createContextToMemberMap(
+			Collection<? extends RepositoryConnection> members)
+		throws RepositoryException
+	{
+		Map<Resource, List<RepositoryConnection>> contextToMemberMap = new HashMap<Resource, List<RepositoryConnection>>(
+				members.size() + 1);
+		for (RepositoryConnection member : members) {
+			RepositoryResult<Resource> res = member.getContextIDs();
+			try {
+				while (res.hasNext()) {
+					Resource ctx = res.next();
+					List<RepositoryConnection> contextMembers = contextToMemberMap.get(ctx);
+					if (contextMembers == null) {
+						contextMembers = new ArrayList<RepositoryConnection>();
+						contextToMemberMap.put(ctx, contextMembers);
+					}
+					contextMembers.add(member);
+				}
+			}
+			finally {
+				res.close();
+			}
+		}
+		return contextToMemberMap;
+	}
+
+	@Override
 	public void optimize(TupleExpr query, Dataset dataset, BindingSet bindings) {
+		this.dataset = dataset;
 		try {
 			query.visit(this);
 		}
 		catch (RepositoryException e) {
 			throw new UndeclaredThrowableException(e);
+		}
+		finally {
+			this.dataset = null;
 		}
 	}
 
@@ -291,14 +334,50 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 			throws RepositoryException
 		{
 			RepositoryConnection result = null;
-			for (RepositoryConnection member : members) {
-				if (member.hasStatement(subj, pred, obj, true, ctx)) {
-					if (result == null) {
-						result = member;
-					}
-					else if (result != member) {
-						result = null; // NOPMD
+
+			// Avoid querying repositories if given a set of explicit contexts only belonging to one federation member
+			if(contextToMemberMap == null) {
+				contextToMemberMap = createContextToMemberMap(members);
+			}
+			Set<RepositoryConnection> results = new HashSet<RepositoryConnection>();
+			Collection<? extends Resource> explicitContexts;
+			if(ctx.length > 0) {
+				explicitContexts = Arrays.asList(ctx);
+			}
+			else if(dataset != null) {
+				// default contexts
+				explicitContexts = dataset.getDefaultGraphs();
+			}
+			else {
+				explicitContexts = Collections.<Resource>emptyList();
+			}
+			for(Resource context : explicitContexts) {
+				List<RepositoryConnection> contextRepos = contextToMemberMap.get(context);
+				if(contextRepos != null) {
+					results.addAll(contextRepos);
+				}
+			}
+			if(results.size() == 1) {
+				result = results.iterator().next();
+			}
+			else {
+				// fallback to using hasStatement()
+				// but hopefully we narrowed it down to results
+				for (RepositoryConnection member : results) {
+					if(!RepositoryConnectionUtil.isHasStatementOptimized(member)) {
+						// if we can't use hasStatement() on all the connections
+						// then we can't use it to conclusively determine a single owner
+						result = null;
 						break;
+					}
+					if (member.hasStatement(subj, pred, obj, true, ctx)) {
+						if (result == null) {
+							result = member;
+						}
+						else if (result != member) {
+							result = null; // NOPMD
+							break;
+						}
 					}
 				}
 			}
