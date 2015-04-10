@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import info.aduna.iteration.CloseableIteration;
@@ -206,7 +207,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		this.serviceResolver = serviceResolver;
 		this.iterationSyncThreshold = iterationSyncTreshold;
 
-		EvaluationStrategies.register(this.hashCode(), this);
+		EvaluationStrategies.register(this);
 	}
 
 	/*---------*

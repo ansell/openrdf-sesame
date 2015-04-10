@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 
 	private transient EvaluationStrategy strategy;
 
-	private final Integer strategyKey;
+	private final UUID strategyKey;
 	
 	private final Order order;
 
@@ -55,7 +56,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 
 	public OrderComparator(EvaluationStrategy strategy, Order order, ValueComparator vcmp) {
 		this.strategy = strategy;
-		this.strategyKey = strategy.hashCode();
+		this.strategyKey = EvaluationStrategies.register(strategy);
 		this.order = order;
 		this.cmp = vcmp;
 	}

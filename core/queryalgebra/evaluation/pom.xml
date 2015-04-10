@@ -65,6 +65,10 @@
 			<artifactId>mapdb</artifactId>
 			<version>1.0.7</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

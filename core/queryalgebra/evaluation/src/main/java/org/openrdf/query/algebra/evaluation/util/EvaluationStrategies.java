@@ -16,21 +16,26 @@
  */
 package org.openrdf.query.algebra.evaluation.util;
 
-import java.lang.ref.SoftReference;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 
 /**
  * Registry for currently active {@link EvaluationStrategy} objects. The
  * internal registry uses soft references to allow entries to be
- * garbage-collected when no longer used.
+ * garbage-collected when no longer used. Currently, the primary purpose of this
+ * is to support (de)serialization of objects (over the lifetime of the VM) that
+ * depend on an EvaluationStrategy
  * 
  * @author Jeen Broekstra
  */
 public class EvaluationStrategies {
 
-	private static final HashMap<Integer, SoftReference<EvaluationStrategy>> registry = new HashMap<Integer, SoftReference<EvaluationStrategy>>();
+	private static final Cache<UUID, EvaluationStrategy> registry = CacheBuilder.newBuilder().softValues().build();
 
 	/**
 	 * Retrieve the EvaluationStrategy registered with the supplied key.
@@ -40,21 +45,52 @@ public class EvaluationStrategies {
 	 * @return the registered EvaluationStrategy, or <code>null</code> if no
 	 *         matching EvaluationStrategy can be found.
 	 */
-	public static final EvaluationStrategy get(Integer key) {
-		return registry.get(key).get();
+	public static final EvaluationStrategy get(UUID key) {
+		return registry.getIfPresent(key);
 	}
 
 	/**
-	 * Add a strategy with the supplied key to the registry. Any existing
-	 * registry entry with the same key will be silently overwritten.
+	 * Retrieve the registry key for the given EvaluationStrategy
 	 * 
-	 * @param key
-	 *        the key
+	 * @param strategy
+	 *        the EvaluationStrategy for which to retrieve the registry key
+	 * @return the registry key with which the supplied strategy can be
+	 *         retrieved, or <code>null</code> if the supplied strategy is not in
+	 *         the registry.
+	 */
+	public static final UUID getKey(EvaluationStrategy strategy) {
+		final Map<UUID, EvaluationStrategy> map = registry.asMap();
+
+		// we could make this lookup more efficient with a WeakHashMap-based
+		// reverse index, but we currently prefer this slower but more robust
+		// approach (less chance of accidental lingering references that prevent
+		// GC)
+		for (UUID key : map.keySet()) {
+			// we use identity comparison in line with how guava caches behave
+			// when softValues are used.
+			if (strategy == map.get(key)) {
+				return key;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Add a strategy to the registry and returns the registry key. If the
+	 * strategy is already present, the operation simply returns the key with
+	 * which it is currently registered.
+	 * 
 	 * @param strategy
 	 *        the EvaluationStrategy to register
+	 * @return the key with which the strategy is registered.
 	 */
-	public static final void register(Integer key, EvaluationStrategy strategy) {
-		registry.put(key, new SoftReference<EvaluationStrategy>(strategy));
+	public static final UUID register(EvaluationStrategy strategy) {
+		UUID key = getKey(strategy);
+		if (key == null) {
+			key = UUID.randomUUID();
+			registry.put(key, strategy);
+		}
+		return key;
 	}
 
 	/**
