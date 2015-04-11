@@ -340,13 +340,15 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 				contextToMemberMap = createContextToMemberMap(members);
 			}
 			Set<RepositoryConnection> results = new HashSet<RepositoryConnection>();
-			Collection<? extends Resource> explicitContexts;
+			Collection<Resource> explicitContexts;
 			if(ctx.length > 0) {
 				explicitContexts = Arrays.asList(ctx);
 			}
 			else if(dataset != null) {
 				// default contexts
-				explicitContexts = dataset.getDefaultGraphs();
+				explicitContexts = new ArrayList<Resource>();
+				explicitContexts.addAll(dataset.getDefaultGraphs());
+				explicitContexts.addAll(dataset.getNamedGraphs());
 			}
 			else {
 				explicitContexts = Collections.<Resource>emptyList();
