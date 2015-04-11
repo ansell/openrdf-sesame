@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -83,6 +85,10 @@ public class ElasticSearchIndex implements SearchIndex {
 	public static final String DEFAULT_INDEX_NAME = "elastic-search-sail";
 	public static final String DEFAULT_DOCUMENT_TYPE = "resource";
 	public static final String DEFAULT_ANALYZER = "standard";
+
+	private static final String HIGHLIGHTER_PRE_TAG = "<B>";
+	private static final String HIGHLIGHTER_POST_TAG = "</B>";
+	private static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
 	private static final List<String> REJECTED_DATATYPES = new ArrayList<String>();
 
@@ -675,8 +681,8 @@ public class ElasticSearchIndex implements SearchIndex {
 					for(String field : fields) {
 						request.addHighlightedField(field);
 					}
-					request.setHighlighterPreTags("<B>");
-					request.setHighlighterPostTags("</B>");
+					request.setHighlighterPreTags(HIGHLIGHTER_PRE_TAG);
+					request.setHighlighterPostTags(HIGHLIGHTER_POST_TAG);
 					// Elastic Search doesn't really have the same support for fragments as Lucene.
 					// So, we have to get back the whole highlighted value (comma-separated if it is a list)
 					// and then post-process it into fragments ourselves.
@@ -778,16 +784,11 @@ public class ElasticSearchIndex implements SearchIndex {
 							HighlightField highlightField = highlights.get(field);
 							if(highlightField != null) {
 								Text[] fragments = highlightField.getFragments();
-								assert fragments.length == 1;
-
-								// split into individual fragments per value
-								List<String> values = asStringList(doc.get(field));
-								String[] valueFragments = splitIntoFragments(fragments[0].string(), values);
-								for(String fragment : valueFragments) {
+								for(Text fragment : fragments) {
 									// create an individual binding set for each snippet
 									QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
 
-									String snippet = createSnippet(fragment);
+									String snippet = createSnippet(fragment.string());
 
 									snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(snippet));
 		
@@ -817,13 +818,19 @@ public class ElasticSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	private static String[] splitIntoFragments(String csvValue, List<String> values)
-	{
-		return null;
-	}
-
 	private static String createSnippet(String highlightedValue)
 	{
+		if(highlightedValue.length() > 100) {
+			StringBuilder buf = new StringBuilder();
+			String separator = "";
+			Matcher matcher = HIGHLIGHTER_PATTERN.matcher(highlightedValue);
+			for(int i=0; i<2 && matcher.find(); i++) {
+				buf.append(separator);
+				buf.append(matcher.group());
+				separator = "...";
+			}
+			highlightedValue = buf.toString();
+		}
 		return highlightedValue;
 	}
 

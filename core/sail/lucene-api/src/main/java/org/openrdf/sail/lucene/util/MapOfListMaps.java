@@ -75,4 +75,8 @@ public class MapOfListMaps<Index1Type, Index2Type, DataType> {
 		tmpList.add(value);
 	}
 
+	@Override
+	public String toString() {
+		return data.toString();
+	}
 }
