@@ -345,7 +345,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 				explicitContexts = Arrays.asList(ctx);
 			}
 			else if(dataset != null) {
-				// default contexts
+				// all graphs
 				explicitContexts = new ArrayList<Resource>();
 				explicitContexts.addAll(dataset.getDefaultGraphs());
 				explicitContexts.addAll(dataset.getNamedGraphs());
