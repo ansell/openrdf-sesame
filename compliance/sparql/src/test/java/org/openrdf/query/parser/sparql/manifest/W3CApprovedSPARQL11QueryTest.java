@@ -42,22 +42,23 @@ public class W3CApprovedSPARQL11QueryTest extends SPARQLQueryTest {
 			public W3CApprovedSPARQL11QueryTest createSPARQLQueryTest(String testURI, String name,
 					String queryFileURL, String resultFileURL, Dataset dataSet, boolean laxCardinality, boolean checkOrder)
 			{
+				String[] ignoredTests = { "sq03 - Subquery within graph pattern, graph variable is not bound" };
 				return new W3CApprovedSPARQL11QueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
-						laxCardinality, checkOrder);
+						laxCardinality, checkOrder, ignoredTests);
 			}
 		}, true, true, false, "service");
 	}
 
 	protected W3CApprovedSPARQL11QueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality)
+			Dataset dataSet, boolean laxCardinality, String... ignoredTests)
 	{
-		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
+		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false, ignoredTests);
 	}
 
 	protected W3CApprovedSPARQL11QueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder, String... ignoredTests)
 	{
-		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder);
+		super(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, checkOrder, ignoredTests);
 	}
 	
 	protected Repository newRepository() {
