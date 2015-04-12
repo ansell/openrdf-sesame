@@ -36,9 +36,11 @@ import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
@@ -174,7 +176,7 @@ public class ElasticSearchIndex implements SearchIndex {
 			.endObject()
 		.string();
 
-		doRequest(client.admin().indices().prepareCreate(indexName).setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings)));
+		doAcknowledgedRequest(client.admin().indices().prepareCreate(indexName).setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings)));
 
 		// use _source instead of explicit stored = true
 		XContentBuilder typeMapping = XContentFactory.jsonBuilder();
@@ -201,7 +203,7 @@ public class ElasticSearchIndex implements SearchIndex {
 			.endObject()
 		.endObject();
 
-		doRequest(client.admin().indices().preparePutMapping(indexName).setType(documentType).setSource(typeMapping));
+		doAcknowledgedRequest(client.admin().indices().preparePutMapping(indexName).setType(documentType).setSource(typeMapping));
 	}
 
 	@Override
@@ -246,6 +248,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	/**
 	 * Indexes the specified Statement.
 	 */
+	@Override
 	public synchronized void addStatement(Statement statement)
 		throws IOException
 	{
@@ -281,7 +284,7 @@ public class ElasticSearchIndex implements SearchIndex {
 				if(!updated) {
 					begin();
 				}
-				client.prepareIndex(indexName, documentType, id).setSource(newDocument).execute().actionGet();
+				doIndexRequest(client.prepareIndex(indexName, documentType, id).setSource(newDocument));
 				updated = true;
 			}
 			else {
@@ -296,7 +299,7 @@ public class ElasticSearchIndex implements SearchIndex {
 					if(!updated) {
 						begin();
 					}
-					client.prepareUpdate(indexName, document.type, document.id).setVersion(document.version).setDoc(newDocument).execute().actionGet();
+					doUpdateRequest(client.prepareUpdate(indexName, document.type, document.id).setVersion(document.version).setDoc(newDocument));
 					updated = true;
 				}
 			}
@@ -521,6 +524,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		document.put(name, newValue);
 	}
 
+	@Override
 	public synchronized void removeStatement(Statement statement)
 		throws IOException
 	{
@@ -617,6 +621,7 @@ public class ElasticSearchIndex implements SearchIndex {
 	@Override
 	public void commit() throws IOException
 	{
+		client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 	}
 
 	@Override
@@ -1048,7 +1053,9 @@ public class ElasticSearchIndex implements SearchIndex {
 						// data
 						// gets lots when doing an IndexWriter.updateDocument with it
 						Map<String,Object> newDocument = new HashMap<String,Object>();
-	
+						// track if newDocument is actually different from document
+						boolean mutated = false;
+
 						// buffer the removed literal statements
 						ListMap<String, String> removedOfResource = null;
 						{
@@ -1081,8 +1088,10 @@ public class ElasticSearchIndex implements SearchIndex {
 							for(String oldValue : oldValues) {
 								// do not copy removed statements to the new version of the
 								// document
-								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue)))
+								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
+									mutated = true;
 									continue;
+								}
 								addField(oldFieldName, oldValue, newDocument);
 								copiedProperties.put(oldFieldName, oldValue);
 							}
@@ -1099,6 +1108,7 @@ public class ElasticSearchIndex implements SearchIndex {
 									if (val != null) {
 										if (!copiedProperties.containsKeyValuePair(s.getPredicate().stringValue(), val)) {
 											addProperty(s, newDocument);
+											mutated = true;
 										}
 									}
 								}
@@ -1109,7 +1119,9 @@ public class ElasticSearchIndex implements SearchIndex {
 						// meaningful non-system properties
 						int nrProperties = numberOfPropertyFields(newDocument.keySet());
 						if (nrProperties > 0) {
-							bulkRequest.add(client.prepareUpdate(indexName, documentType, id).setVersion(document.version).setDoc(newDocument));
+							if(mutated) {
+								bulkRequest.add(client.prepareUpdate(indexName, documentType, id).setVersion(document.version).setDoc(newDocument));
+							}
 						}
 						else {
 							bulkRequest.add(client.prepareDelete(indexName, documentType, id).setVersion(document.version));
@@ -1287,7 +1299,7 @@ public class ElasticSearchIndex implements SearchIndex {
 					addProperty(stmt, newDocument);
 				}
 				// add it to the index
-				client.prepareIndex(indexName, documentType, id).setSource(newDocument).execute().actionGet();
+				doIndexRequest(client.prepareIndex(indexName, documentType, id).setSource(newDocument));
 			}
 			commit();
 		}
@@ -1304,17 +1316,33 @@ public class ElasticSearchIndex implements SearchIndex {
 	public synchronized void clear()
 		throws IOException
 	{
-		client.admin().indices().prepareDelete(indexName).execute().actionGet();
+		doAcknowledgedRequest(client.admin().indices().prepareDelete(indexName));
 		createIndex();
 	}
 
 
 
-	private static void doRequest(ActionRequestBuilder<?, ? extends AcknowledgedResponse, ?, ?> request) throws IOException
+	private static void doAcknowledgedRequest(ActionRequestBuilder<?, ? extends AcknowledgedResponse, ?, ?> request) throws IOException
 	{
 		boolean ok = request.execute().actionGet().isAcknowledged();
 		if(!ok) {
 			throw new IOException("Request not acknowledged: "+request.get().getClass().getName());
+		}
+	}
+
+	private static void doIndexRequest(ActionRequestBuilder<?, ? extends IndexResponse, ?, ?> request) throws IOException
+	{
+		boolean ok = request.execute().actionGet().isCreated();
+		if(!ok) {
+			throw new IOException("Document not created: "+request.get().getClass().getName());
+		}
+	}
+
+	private static void doUpdateRequest(ActionRequestBuilder<?, ? extends UpdateResponse, ?, ?> request) throws IOException
+	{
+		boolean ok = request.execute().actionGet().isCreated();
+		if(!ok) {
+			throw new IOException("Document not updated: "+request.get().getClass().getName());
 		}
 	}
 }

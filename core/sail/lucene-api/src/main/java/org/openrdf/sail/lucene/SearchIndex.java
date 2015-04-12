@@ -62,6 +62,9 @@ public interface SearchIndex {
 	 */
 	boolean accept(Literal literal);
 
+	/**
+	 * Begins a transaction.
+	 */
 	void begin()
 		throws IOException;
 
@@ -78,9 +81,22 @@ public interface SearchIndex {
 		throws IOException;
 
 	/**
+	 * Indexes the specified Statement.
+	 * This should be called from within a begin-commit-rollback block.
+	 */
+	void addStatement(Statement statement) throws IOException;
+
+	/**
+	 * Removes the specified Statement from the indexes.
+	 * This should be called from within a begin-commit-rollback block.
+	 */
+	void removeStatement(Statement statement) throws IOException;
+
+	/**
 	 * Add many statements at the same time, remove many statements at the same
 	 * time. Ordering by resource has to be done inside this method. The passed
-	 * added/removed sets are disjunct, no statement can be in both
+	 * added/removed sets are disjunct, no statement can be in both.
+	 * This should be called from within a begin-commit-rollback block.
 	 * 
 	 * @param added
 	 *        all added statements, can have multiple subjects
@@ -91,6 +107,7 @@ public interface SearchIndex {
 		throws IOException;
 
 	/**
+	 * This should be called from within a begin-commit-rollback block.
 	 * @param contexts
 	 * @param sail
 	 *        - the underlying native sail where to read the missing triples from
@@ -103,7 +120,8 @@ public interface SearchIndex {
 	/**
 	 * Add a complete Lucene Document based on these statements. Do not search
 	 * for an existing document with the same subject id. (assume the existing
-	 * document was deleted)
+	 * document was deleted).
+	 * This should be called from within a begin-commit-rollback block.
 	 * 
 	 * @param statements
 	 *        the statements that make up the resource
@@ -113,7 +131,7 @@ public interface SearchIndex {
 		throws IOException;
 
 	/**
-	 * 
+	 * Clears the indexes.
 	 */
 	void clear()
 		throws IOException;
