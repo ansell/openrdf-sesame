@@ -176,15 +176,8 @@ public class LiteralImpl implements Literal {
 			}
 
 			// Compare language tags
-			if (language == null) {
-				if (other.getLanguage() != null) {
-					return false;
-				}
-			}
-			else {
-				if (!language.equals(other.getLanguage())) {
-					return false;
-				}
+			if (!getLanguage().equals(other.getLanguage())) {
+				return false;
 			}
 
 			return true;
