@@ -55,7 +55,7 @@ public class LiteralImpl implements Literal {
 	/**
 	 * The literal's language tag (Optional.empty() if not applicable).
 	 */
-	private Optional<String> language;
+	private Optional<String> language = Optional.empty();
 
 	/**
 	 * The literal's datatype.

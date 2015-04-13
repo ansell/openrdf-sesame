@@ -592,7 +592,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	{
 		Optional<Value> objectValue = objectValue();
 		if (objectValue.isPresent()) {
-			return Optional.of(objectValue.get().toString());
+			return Optional.of(objectValue.get().stringValue());
 		}
 		else {
 			return Optional.empty();
