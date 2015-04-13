@@ -154,7 +154,7 @@ public class ModelsTest extends TestCase {
 		assertFalse(Models.isSubset(model2, model1));
 	}
 
-	public void testAnyObject() {
+	public void testObject() {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
@@ -167,12 +167,12 @@ public class ModelsTest extends TestCase {
 			// fall through, expected
 		}
 
-		Value result = Models.anyObject(model1);
+		Value result = Models.object(model1).orElse(null);
 		assertNotNull(result);
 		assertTrue(result.equals(lit) || result.equals(foo));
 	}
 
-	public void testAnyObjectURI() {
+	public void testObjectURI() {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
@@ -185,12 +185,12 @@ public class ModelsTest extends TestCase {
 			// fall through, expected
 		}
 
-		Value result = Models.anyObjectURI(model1);
+		Value result = Models.objectURI(model1).orElse(null);
 		assertNotNull(result);
 		assertEquals(foo, result);
 	}
 
-	public void testAnyObjectLiteral() {
+	public void testObjectLiteral() {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
@@ -203,26 +203,26 @@ public class ModelsTest extends TestCase {
 			// fall through, expected
 		}
 
-		Value result = Models.anyObjectLiteral(model1);
+		Value result = Models.objectLiteral(model1).orElse(null);
 		assertNotNull(result);
 		assertEquals(lit, result);
 	}
 	
-	public void testAnyPredicate() {
+	public void testPredicate() {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
 
-		URI result = Models.anyPredicate(model1);
+		URI result = Models.predicate(model1).orElse(null);
 		assertNotNull(result);
 		assertTrue(result.equals(bar) || result.equals(foo));
 	}
 
-	public void testAnySubject() {
+	public void testSubject() {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
 		model1.add(bar, foo, foo);
 
-		Resource result = Models.anySubject(model1);
+		Resource result = Models.subject(model1).orElse(null);
 		assertNotNull(result);
 		assertTrue(result.equals(bar) || result.equals(foo));
 	}
