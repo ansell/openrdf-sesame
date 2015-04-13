@@ -142,10 +142,10 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 			// optimizers to modify the actual root node
 			tupleExpr = new QueryRoot(tupleExpr);
 		}
-		
+
 		boolean readTransaction = false;
 		Lock tempWriteLock = null;
-		
+
 		// check if we should read modified triples in the current transaction.
 		if (txnLockAcquired) {
 			readTransaction = true;
@@ -162,7 +162,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 				}
 			}
 		}
-		
+
 		try {
 			replaceValues(tupleExpr);
 
@@ -199,7 +199,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, NativeTripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset, nativeStore.getFederatedServiceResolver());
+		return new EvaluationStrategyImpl(tripleSource, dataset, nativeStore.getFederatedServiceResolver(),
+				nativeStore.getIterationCacheSyncThreshold());
 	}
 
 	protected void replaceValues(TupleExpr tupleExpr)
@@ -602,7 +603,8 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 					List<Statement> removedStatements = Collections.emptyList();
 
 					if (hasConnectionListeners()) {
-						// We need to iterate over all matching triples so that they can
+						// We need to iterate over all matching triples so that they
+						// can
 						// be reported
 						RecordIterator btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, true,
 								true);
@@ -925,7 +927,9 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public void flushUpdates() throws SailException {
+	public void flushUpdates()
+		throws SailException
+	{
 		if (!isActiveOperation()) {
 			flush();
 		}

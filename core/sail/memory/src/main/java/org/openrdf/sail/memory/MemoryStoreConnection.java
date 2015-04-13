@@ -204,7 +204,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset, store.getFederatedServiceResolver());
+		return new EvaluationStrategyImpl(tripleSource, dataset, store.getFederatedServiceResolver(), store.getIterationCacheSyncThreshold());
 	}
 
 	@Override

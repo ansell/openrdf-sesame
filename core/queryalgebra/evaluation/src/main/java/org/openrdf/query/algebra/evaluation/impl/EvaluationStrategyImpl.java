@@ -183,7 +183,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	// SES-869.
 	private Value sharedValueOfNow;
 
-	private final long iterationSyncThreshold;
+	private final long iterationCacheSyncThreshold;
 
 	/*--------------*
 	 * Constructors *
@@ -200,12 +200,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	}
 
 	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset,
-			FederatedServiceResolver serviceResolver, long iterationSyncTreshold)
+			FederatedServiceResolver serviceResolver, long iterationCacheSyncTreshold)
 	{
 		this.tripleSource = tripleSource;
 		this.dataset = dataset;
 		this.serviceResolver = serviceResolver;
-		this.iterationSyncThreshold = iterationSyncTreshold;
+		this.iterationCacheSyncThreshold = iterationCacheSyncTreshold;
 
 		EvaluationStrategies.register(this);
 	}
@@ -807,7 +807,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		boolean reduced = isReducedOrDistinct(node);
 		long limit = getLimit(node);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced, iterationSyncThreshold);
+		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced, iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,

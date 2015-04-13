@@ -122,7 +122,7 @@ public abstract class SailBase implements Sail {
 	 */
 	protected volatile long connectionTimeOut = DEFAULT_CONNECTION_TIMEOUT;
 
-	private long iterationSyncThreshold = DEFAULT_ITERATION_SYNC_THRESHOLD;
+	private long iterationCacheSyncThreshold = DEFAULT_ITERATION_SYNC_THRESHOLD;
 
 	/**
 	 * Map used to track active connections and where these were acquired. The
@@ -400,17 +400,22 @@ public abstract class SailBase implements Sail {
 	}
 
 	/**
-	 * @return Returns the iterationCacheSize.
+	 * Retrieves the currently configured threshold for syncing query evaluation
+	 * iteration caches to disk.
+	 * 
+	 * @return Returns the iterationCacheSyncThreshold.
 	 */
-	public long getIterationSyncThreshold() {
-		return iterationSyncThreshold;
+	public long getIterationCacheSyncThreshold() {
+		return iterationCacheSyncThreshold;
 	}
 
 	/**
-	 * @param iterationSyncThreshold
-	 *        The iterationCacheSize to set.
+	 * Set the threshold for syncing query evaluation iteration caches to disk.
+	 * 
+	 * @param iterationCacheSyncThreshold
+	 *        The iterationCacheSyncThreshold to set. 
 	 */
-	public void setIterationSyncThreshold(long iterationSyncThreshold) {
-		this.iterationSyncThreshold = iterationSyncThreshold;
+	public void setIterationCacheSyncThreshold(long iterationCacheSyncThreshold) {
+		this.iterationCacheSyncThreshold = iterationCacheSyncThreshold;
 	}
 }

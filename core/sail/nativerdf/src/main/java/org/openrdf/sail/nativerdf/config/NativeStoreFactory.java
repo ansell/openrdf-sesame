@@ -92,8 +92,8 @@ public class NativeStoreFactory implements SailFactory, FederatedServiceResolver
 			if (nativeConfig.getNamespaceIDCacheSize() >= 0) {
 				nativeStore.setNamespaceIDCacheSize(nativeConfig.getNamespaceIDCacheSize());
 			}
-			if (nativeConfig.getIterationCacheSize() > 0) {
-				nativeStore.setIterationSyncThreshold(nativeConfig.getIterationCacheSize());
+			if (nativeConfig.getIterationCacheSyncThreshold() > 0) {
+				nativeStore.setIterationCacheSyncThreshold(nativeConfig.getIterationCacheSyncThreshold());
 			}
 		}
 

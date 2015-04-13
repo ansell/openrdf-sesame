@@ -77,8 +77,8 @@ public class MemoryStoreFactory implements SailFactory, FederatedServiceResolver
 			memoryStore.setSyncDelay(memConfig.getSyncDelay());
 			memoryStore.setFederatedServiceResolver(getFederatedServiceResolver());
 			
-			if (memConfig.getIterationCacheSize() > 0) {
-				memoryStore.setIterationSyncThreshold(memConfig.getIterationCacheSize());
+			if (memConfig.getIterationCacheSyncThreshold() > 0) {
+				memoryStore.setIterationCacheSyncThreshold(memConfig.getIterationCacheSyncThreshold());
 			}
 		}
 

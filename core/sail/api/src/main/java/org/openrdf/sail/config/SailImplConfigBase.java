@@ -32,7 +32,7 @@ public class SailImplConfigBase implements SailImplConfig {
 
 	private String type;
 
-	private long iterationCacheSize;
+	private long iterationCacheSyncThreshold;
 	
 	/**
 	 * Create a new RepositoryConfigImpl.
@@ -71,9 +71,9 @@ public class SailImplConfigBase implements SailImplConfig {
 			graph.add(implNode, SAILTYPE, graph.getValueFactory().createLiteral(type));
 		}
 
-		if (iterationCacheSize > 0)
+		if (iterationCacheSyncThreshold > 0)
 		{
-			graph.add(implNode, SailConfigSchema.ITERATION_SYNC_THRESHOLD, graph.getValueFactory().createLiteral(iterationCacheSize));
+			graph.add(implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD, graph.getValueFactory().createLiteral(iterationCacheSyncThreshold));
 		}
 		
 		return implNode;
@@ -88,9 +88,9 @@ public class SailImplConfigBase implements SailImplConfig {
 				setType(typeLit.getLabel());
 			}
 			
-			Literal sizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.ITERATION_SYNC_THRESHOLD);
+			Literal sizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD);
 			if (sizeLit != null) {
-				setIterationCacheSize(sizeLit.longValue());
+				setIterationCacheSyncThreshold(sizeLit.longValue());
 			}
 		}
 		catch (GraphUtilException e) {
@@ -101,14 +101,15 @@ public class SailImplConfigBase implements SailImplConfig {
 	/**
 	 * @return Returns the iterationCacheSize.
 	 */
-	public long getIterationCacheSize() {
-		return iterationCacheSize;
+	public long getIterationCacheSyncThreshold() {
+		return iterationCacheSyncThreshold;
 	}
 
 	/**
-	 * @param iterationCacheSize The iterationCacheSize to set.
+	 *
+	 * @param iterationCacheSyncThreshold The iterationCacheSyncThreshold to set.
 	 */
-	public void setIterationCacheSize(long iterationCacheSize) {
-		this.iterationCacheSize = iterationCacheSize;
+	public void setIterationCacheSyncThreshold(long iterationCacheSyncThreshold) {
+		this.iterationCacheSyncThreshold = iterationCacheSyncThreshold;
 	}
 }

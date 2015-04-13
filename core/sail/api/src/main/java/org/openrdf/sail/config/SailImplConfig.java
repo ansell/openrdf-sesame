@@ -26,7 +26,7 @@ public interface SailImplConfig {
 
 	public String getType();
 	
-	public long getIterationCacheSize();
+	public long getIterationCacheSyncThreshold();
 
 	/**
 	 * Validates this configuration. A {@link SailConfigException} is thrown when
