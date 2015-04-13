@@ -103,7 +103,7 @@ public class StrBeforeTest {
 			Literal result = strBeforeFunc.evaluate(f, leftArg, rightArg);
 			
 			assertEquals("foo", result.getLabel());
-			assertEquals("en", result.getLanguage());
+			assertEquals("en", result.getLanguage().orElse(null));
 			assertEquals(RDF.LANGSTRING, result.getDatatype());
 		}
 		catch (ValueExprEvaluationException e) {
@@ -238,7 +238,7 @@ public class StrBeforeTest {
 			
 			assertEquals("foo", result.getLabel());
 			assertEquals(RDF.LANGSTRING, result.getDatatype());
-			assertEquals("en", result.getLanguage());
+			assertEquals("en", result.getLanguage().orElse(null));
 
 		}
 		catch (ValueExprEvaluationException e) {
@@ -256,7 +256,7 @@ public class StrBeforeTest {
 			
 			assertEquals("foo", result.getLabel());
 			assertEquals(RDF.LANGSTRING, result.getDatatype());
-			assertEquals("nl", result.getLanguage());
+			assertEquals("nl", result.getLanguage().orElse(null));
 
 		}
 		catch (ValueExprEvaluationException e) {

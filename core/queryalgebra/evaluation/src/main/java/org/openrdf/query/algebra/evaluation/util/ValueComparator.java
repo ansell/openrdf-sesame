@@ -147,7 +147,7 @@ public class ValueComparator implements Comparator<Value> {
 					result = 1;
 				}
 			}
-			else if (rightLanguage != null) {
+			else if (rightLanguage.isPresent()) {
 				result = -1;
 			}
 		}
