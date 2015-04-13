@@ -234,14 +234,11 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 					if (op instanceof LuceneSailBuffer.AddRemoveOperation) {
 						AddRemoveOperation addremove = (AddRemoveOperation)op;
 						// add/remove in one call
-						logger.debug("indexing {}/removing {} statements...", addremove.getAdded().size(),
-								addremove.getRemoved().size());
-						luceneIndex.addRemoveStatements(addremove.getAdded(), addremove.getRemoved());
+						addRemoveStatements(addremove.getAdded(), addremove.getRemoved());
 					}
 					else if (op instanceof LuceneSailBuffer.ClearContextOperation) {
 						// clear context
-						logger.debug("clearing contexts...");
-						luceneIndex.clearContexts(((ClearContextOperation)op).getContexts(), sail.getBaseSail());
+						clearContexts(((ClearContextOperation)op).getContexts());
 					}
 					else if (op instanceof LuceneSailBuffer.ClearOperation) {
 						logger.debug("clearing index...");
@@ -262,6 +259,35 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		}
 		finally {
 			buffer.reset();
+		}
+	}
+
+	private void addRemoveStatements(Set<Statement> toAdd, Set<Statement> toRemove) throws IOException
+	{
+		logger.debug("indexing {}/removing {} statements...", toAdd.size(),
+				toRemove.size());
+		luceneIndex.begin();
+		try {
+			luceneIndex.addRemoveStatements(toAdd, toRemove);
+			luceneIndex.commit();
+		}
+		catch(IOException e) {
+			luceneIndex.rollback();
+			throw e;
+		}
+	}
+
+	private void clearContexts(Resource... contexts) throws IOException
+	{
+		logger.debug("clearing contexts...");
+		luceneIndex.begin();
+		try {
+			luceneIndex.clearContexts(contexts);
+			luceneIndex.commit();
+		}
+		catch(IOException e) {
+			luceneIndex.rollback();
+			throw e;
 		}
 	}
 

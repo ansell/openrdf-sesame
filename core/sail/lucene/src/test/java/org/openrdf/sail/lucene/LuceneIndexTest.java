@@ -137,7 +137,9 @@ public class LuceneIndexTest {
 		throws IOException, ParseException
 	{
 		// add a statement to an index
+		index.begin();
 		index.addStatement(statement11);
+		index.commit();
 
 		// check that it arrived properly
 		DirectoryReader reader = DirectoryReader.open(directory);
@@ -156,7 +158,9 @@ public class LuceneIndexTest {
 		reader.close();
 
 		// add another statement
+		index.begin();
 		index.addStatement(statement12);
+		index.commit();
 
 		// See if everything remains consistent. We must create a new IndexReader
 		// in order to be able to see the updates
@@ -192,7 +196,9 @@ public class LuceneIndexTest {
 		reader.close();
 
 		// remove the first statement
+		index.begin();
 		index.removeStatement(statement11);
+		index.commit();
 
 		// check that that statement is actually removed and that the other still
 		// exists
@@ -213,7 +219,9 @@ public class LuceneIndexTest {
 		reader.close();
 
 		// remove the other statement
+		index.begin();
 		index.removeStatement(statement12);
+		index.commit();
 
 		// check that there are no documents left (i.e. the last Document was
 		// removed completely, rather than its remaining triple removed)
@@ -248,7 +256,9 @@ public class LuceneIndexTest {
 		added.add(statement12);
 		added.add(statement21);
 		added.add(statement22);
+		index.begin();
 		index.addRemoveStatements(added, removed);
+		index.commit();
 
 		// check that it arrived properly
 		DirectoryReader reader = DirectoryReader.open(directory);
@@ -278,7 +288,9 @@ public class LuceneIndexTest {
 		removed.clear();
 		added.add(statement23);
 		removed.add(statement22);
+		index.begin();
 		index.addRemoveStatements(added, removed);
+		index.commit();
 
 		// check doc 2
 		document = index.getDocuments(subject2).iterator().next();

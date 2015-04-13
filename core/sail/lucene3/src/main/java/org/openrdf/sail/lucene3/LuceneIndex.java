@@ -341,7 +341,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		String field = statement.getPredicate().toString();
 		String text = ((Literal)object).getLabel();
 		String context = SearchFields.getContextID(statement.getContext());
-		boolean updated = false;
 		IndexWriter writer = null;
 
 		// fetch the Document representing this Resource
@@ -352,68 +351,41 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
 		Document document = getDocument(idTerm);
 
-		try {
-			if (document == null) {
-				// there is no such Document: create one now
-				document = new Document();
-				addIDField(id, document);
-				addURIField(resourceId, document);
-				// add context
-				addContextField(context, document);
-	
-				addPropertyFields(field, text, document);
-	
-				// add it to the index
-				writer = getIndexWriter();
-				if(!updated) {
-					begin();
-				}
-				writer.addDocument(document);
-				updated = true;
-			}
-			else {
-				// update this Document when this triple has not been stored already
-				if (!hasProperty(field, text, document)) {
-					// create a copy of the old document; updating the retrieved
-					// Document instance works ok for stored properties but indexed data
-					// gets lots when doing an IndexWriter.updateDocument with it
-					Document newDocument = new Document();
-	
-					// add all existing fields (including id, uri, context, and text)
-					for (Object oldFieldObject : document.getFields()) {
-						Field oldField = (Field)oldFieldObject;
-						newDocument.add(oldField);
-					}
-	
-					// add the new triple to the cloned document
-					addPropertyFields(field, text, newDocument);
-	
-					// update the index with the cloned document
-					writer = getIndexWriter();
-					if(!updated) {
-						begin();
-					}
-					writer.updateDocument(idTerm, newDocument);
-					updated = true;
-				}
-			}
-	
-			if (updated) {
-				// make sure that these updates are visible for new
-				// IndexReaders/Searchers
-				commit();
-			}
+		if (document == null) {
+			// there is no such Document: create one now
+			document = new Document();
+			addIDField(id, document);
+			addURIField(resourceId, document);
+			// add context
+			addContextField(context, document);
+
+			addPropertyFields(field, text, document);
+
+			// add it to the index
+			writer = getIndexWriter();
+			writer.addDocument(document);
 		}
-		catch(Exception e) {
-			if(updated) {
-				rollback();
+		else {
+			// update this Document when this triple has not been stored already
+			if (!hasProperty(field, text, document)) {
+				// create a copy of the old document; updating the retrieved
+				// Document instance works ok for stored properties but indexed data
+				// gets lots when doing an IndexWriter.updateDocument with it
+				Document newDocument = new Document();
+
+				// add all existing fields (including id, uri, context, and text)
+				for (Object oldFieldObject : document.getFields()) {
+					Field oldField = (Field)oldFieldObject;
+					newDocument.add(oldField);
+				}
+
+				// add the new triple to the cloned document
+				addPropertyFields(field, text, newDocument);
+
+				// update the index with the cloned document
+				writer = getIndexWriter();
+				writer.updateDocument(idTerm, newDocument);
 			}
-			if(e instanceof RuntimeException)
-				throw (RuntimeException) e;
-			else if(e instanceof IOException)
-				throw (IOException) e;
-			else
-				throw new AssertionError(e);
 		}
 	}
 
@@ -712,7 +684,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 
 		IndexWriter writer = null;
-		boolean updated = false;
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
@@ -722,75 +693,48 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 		Document document = getDocument(idTerm);
 
-		try {
-			if (document != null) {
-				// determine the values used in the index for this triple
-				String fieldName = statement.getPredicate().toString();
-				String text = ((Literal)object).getLabel();
-	
-				// see if this triple occurs in this Document
-				if (hasProperty(fieldName, text, document)) {
-					// if the Document only has one predicate field, we can remove the
-					// document
-					int nrProperties = numberOfPropertyFields(document);
-					if (nrProperties == 0) {
-						logger.info("encountered document with zero properties, should have been deleted: {}",
-								resourceId);
-					}
-					else if (nrProperties == 1) {
-						writer = getIndexWriter();
-						if(!updated) {
-							begin();
+		if (document != null) {
+			// determine the values used in the index for this triple
+			String fieldName = statement.getPredicate().toString();
+			String text = ((Literal)object).getLabel();
+
+			// see if this triple occurs in this Document
+			if (hasProperty(fieldName, text, document)) {
+				// if the Document only has one predicate field, we can remove the
+				// document
+				int nrProperties = numberOfPropertyFields(document);
+				if (nrProperties == 0) {
+					logger.info("encountered document with zero properties, should have been deleted: {}",
+							resourceId);
+				}
+				else if (nrProperties == 1) {
+					writer = getIndexWriter();
+					writer.deleteDocuments(idTerm);
+				}
+				else {
+					// there are more triples encoded in this Document: remove the
+					// document and add a new Document without this triple
+					Document newDocument = new Document();
+					addIDField(id, newDocument);
+					addURIField(resourceId, newDocument);
+					addContextField(contextId, newDocument);
+
+					for (Object oldFieldObject : document.getFields()) {
+						Field oldField = (Field)oldFieldObject;
+						String oldFieldName = oldField.name();
+						String oldValue = oldField.stringValue();
+
+						if (SearchFields.isPropertyField(oldFieldName)
+								&& !(fieldName.equals(oldFieldName) && text.equals(oldValue)))
+						{
+							addPropertyFields(oldFieldName, oldValue, newDocument);
 						}
-						writer.deleteDocuments(idTerm);
-						updated = true;
 					}
-					else {
-						// there are more triples encoded in this Document: remove the
-						// document and add a new Document without this triple
-						Document newDocument = new Document();
-						addIDField(id, newDocument);
-						addURIField(resourceId, newDocument);
-						addContextField(contextId, newDocument);
-	
-						for (Object oldFieldObject : document.getFields()) {
-							Field oldField = (Field)oldFieldObject;
-							String oldFieldName = oldField.name();
-							String oldValue = oldField.stringValue();
-	
-							if (SearchFields.isPropertyField(oldFieldName)
-									&& !(fieldName.equals(oldFieldName) && text.equals(oldValue)))
-							{
-								addPropertyFields(oldFieldName, oldValue, newDocument);
-							}
-						}
-	
-						writer = getIndexWriter();
-						if(!updated) {
-							begin();
-						}
-						writer.updateDocument(idTerm, newDocument);
-						updated = true;
-					}
+
+					writer = getIndexWriter();
+					writer.updateDocument(idTerm, newDocument);
 				}
 			}
-	
-			if (updated) {
-				// make sure that these updates are visible for new
-				// IndexReaders/Searchers
-				commit();
-			}
-		}
-		catch(Exception e) {
-			if(updated) {
-				rollback();
-			}
-			if(e instanceof RuntimeException)
-				throw (RuntimeException) e;
-			else if(e instanceof IOException)
-				throw (IOException) e;
-			else
-				throw new AssertionError(e);
 		}
 	}
 
@@ -1196,143 +1140,128 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		logger.debug("Removing " + removed.size() + " statements, adding " + added.size() + " statements");
 
 		IndexWriter writer = getIndexWriter();
-		begin();
-		try {
-			// for each resource, add/remove
-			for (Resource resource : resources) {
-				Map<String, List<Statement>> stmtsToRemove = rsRemoved.get(resource);
-				Map<String, List<Statement>> stmtsToAdd = rsAdded.get(resource);
-	
-				Set<String> contextsToUpdate = new HashSet<String>(stmtsToAdd.keySet());
-				contextsToUpdate.addAll(stmtsToRemove.keySet());
-	
-				Map<String, Document> docsByContext = new HashMap<String, Document>();
-				// is the resource in the store?
-				// fetch the Document representing this Resource
-				String resourceId = SearchFields.getResourceID(resource);
-				Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
-				List<Document> documents = getDocuments(uriTerm);
-	
-				for (Document doc : documents) {
-					docsByContext.put(this.getContextID(doc), doc);
+		// for each resource, add/remove
+		for (Resource resource : resources) {
+			Map<String, List<Statement>> stmtsToRemove = rsRemoved.get(resource);
+			Map<String, List<Statement>> stmtsToAdd = rsAdded.get(resource);
+
+			Set<String> contextsToUpdate = new HashSet<String>(stmtsToAdd.keySet());
+			contextsToUpdate.addAll(stmtsToRemove.keySet());
+
+			Map<String, Document> docsByContext = new HashMap<String, Document>();
+			// is the resource in the store?
+			// fetch the Document representing this Resource
+			String resourceId = SearchFields.getResourceID(resource);
+			Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
+			List<Document> documents = getDocuments(uriTerm);
+
+			for (Document doc : documents) {
+				docsByContext.put(this.getContextID(doc), doc);
+			}
+
+			for (String contextId : contextsToUpdate) {
+				String id = SearchFields.formIdString(resourceId, contextId);
+
+				Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
+				Document document = docsByContext.get(contextId);
+				if (document == null) {
+					// there are no such Documents: create one now
+					document = new Document();
+					addIDField(id, document);
+					addURIField(resourceId, document);
+					addContextField(contextId, document);
+					// add all statements, remember the contexts
+					// HashSet<Resource> contextsToAdd = new HashSet<Resource>();
+					List<Statement> list = stmtsToAdd.get(contextId);
+					if (list != null) {
+						for (Statement s : list) {
+							addProperty(s, document);
+						}
+					}
+
+					// add it to the index
+					writer.addDocument(document);
+
+					// THERE SHOULD BE NO DELETED TRIPLES ON A NEWLY ADDED RESOURCE
+					if (stmtsToRemove.containsKey(contextId))
+						logger.info(
+								"Statements are marked to be removed that should not be in the store, for resource {} and context {}. Nothing done.",
+								resource, contextId);
 				}
-	
-				for (String contextId : contextsToUpdate) {
-					String id = SearchFields.formIdString(resourceId, contextId);
-	
-					Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
-					Document document = docsByContext.get(contextId);
-					if (document == null) {
-						// there are no such Documents: create one now
-						document = new Document();
-						addIDField(id, document);
-						addURIField(resourceId, document);
-						addContextField(contextId, document);
-						// add all statements, remember the contexts
-						// HashSet<Resource> contextsToAdd = new HashSet<Resource>();
-						List<Statement> list = stmtsToAdd.get(contextId);
-						if (list != null) {
-							for (Statement s : list) {
-								addProperty(s, document);
+				else {
+					// update the Document
+
+					// create a copy of the old document; updating the retrieved
+					// Document instance works ok for stored properties but indexed
+					// data
+					// gets lots when doing an IndexWriter.updateDocument with it
+					Document newDocument = new Document();
+
+					// buffer the removed literal statements
+					ListMap<String, String> removedOfResource = null;
+					{
+						List<Statement> removedStatements = stmtsToRemove.get(contextId);
+						if (removedStatements != null && !removedStatements.isEmpty()) {
+							removedOfResource = new ListMap<String, String>();
+							for (Statement r : removedStatements) {
+								if (r.getObject() instanceof Literal) {
+									// remove value from both property field and the
+									// corresponding text field
+									String label = ((Literal)r.getObject()).getLabel();
+									removedOfResource.put(r.getPredicate().toString(), label);
+									removedOfResource.put(SearchFields.TEXT_FIELD_NAME, label);
+								}
 							}
 						}
-	
-						// add it to the index
-						writer.addDocument(document);
-	
-						// THERE SHOULD BE NO DELETED TRIPLES ON A NEWLY ADDED RESOURCE
-						if (stmtsToRemove.containsKey(contextId))
-							logger.info(
-									"Statements are marked to be removed that should not be in the store, for resource {} and context {}. Nothing done.",
-									resource, contextId);
+					}
+
+					// add all existing fields (including id, uri, context, and text)
+					// but without adding the removed ones
+					// keep the predicate/value pairs to ensure that the statement
+					// cannot be added twice
+					SetMap<String, String> copiedProperties = new SetMap<String, String>();
+					for (Object oldFieldObject : document.getFields()) {
+						Field oldField = (Field)oldFieldObject;
+						// do not copy removed statements to the new version of the
+						// document
+						if (removedOfResource != null) {
+							// which fields were removed?
+							List<String> objectsRemoved = removedOfResource.get(oldField.name());
+							if ((objectsRemoved != null) && (objectsRemoved.contains(oldField.stringValue())))
+								continue;
+						}
+						newDocument.add(oldField);
+						copiedProperties.put(oldField.name(), oldField.stringValue());
+					}
+
+					// add all statements to this document, except for those which
+					// are already there
+					{
+						List<Statement> addedToResource = stmtsToAdd.get(contextId);
+						String val;
+						if (addedToResource != null && !addedToResource.isEmpty()) {
+							for (Statement s : addedToResource) {
+								val = SearchFields.getLiteralPropertyValueAsString(s);
+								if (val != null) {
+									if (!copiedProperties.containsKeyValuePair(s.getPredicate().stringValue(), val)) {
+										addProperty(s, newDocument);
+									}
+								}
+							}
+						}
+					}
+
+					// update the index with the cloned document, if it contains any
+					// meaningful non-system properties
+					int nrProperties = numberOfPropertyFields(newDocument);
+					if (nrProperties > 0) {
+						writer.updateDocument(idTerm, newDocument);
 					}
 					else {
-						// update the Document
-	
-						// create a copy of the old document; updating the retrieved
-						// Document instance works ok for stored properties but indexed
-						// data
-						// gets lots when doing an IndexWriter.updateDocument with it
-						Document newDocument = new Document();
-	
-						// buffer the removed literal statements
-						ListMap<String, String> removedOfResource = null;
-						{
-							List<Statement> removedStatements = stmtsToRemove.get(contextId);
-							if (removedStatements != null && !removedStatements.isEmpty()) {
-								removedOfResource = new ListMap<String, String>();
-								for (Statement r : removedStatements) {
-									if (r.getObject() instanceof Literal) {
-										// remove value from both property field and the
-										// corresponding text field
-										String label = ((Literal)r.getObject()).getLabel();
-										removedOfResource.put(r.getPredicate().toString(), label);
-										removedOfResource.put(SearchFields.TEXT_FIELD_NAME, label);
-									}
-								}
-							}
-						}
-	
-						// add all existing fields (including id, uri, context, and text)
-						// but without adding the removed ones
-						// keep the predicate/value pairs to ensure that the statement
-						// cannot be added twice
-						SetMap<String, String> copiedProperties = new SetMap<String, String>();
-						for (Object oldFieldObject : document.getFields()) {
-							Field oldField = (Field)oldFieldObject;
-							// do not copy removed statements to the new version of the
-							// document
-							if (removedOfResource != null) {
-								// which fields were removed?
-								List<String> objectsRemoved = removedOfResource.get(oldField.name());
-								if ((objectsRemoved != null) && (objectsRemoved.contains(oldField.stringValue())))
-									continue;
-							}
-							newDocument.add(oldField);
-							copiedProperties.put(oldField.name(), oldField.stringValue());
-						}
-	
-						// add all statements to this document, except for those which
-						// are already there
-						{
-							List<Statement> addedToResource = stmtsToAdd.get(contextId);
-							String val;
-							if (addedToResource != null && !addedToResource.isEmpty()) {
-								for (Statement s : addedToResource) {
-									val = SearchFields.getLiteralPropertyValueAsString(s);
-									if (val != null) {
-										if (!copiedProperties.containsKeyValuePair(s.getPredicate().stringValue(), val)) {
-											addProperty(s, newDocument);
-										}
-									}
-								}
-							}
-						}
-	
-						// update the index with the cloned document, if it contains any
-						// meaningful non-system properties
-						int nrProperties = numberOfPropertyFields(newDocument);
-						if (nrProperties > 0) {
-							writer.updateDocument(idTerm, newDocument);
-						}
-						else {
-							writer.deleteDocuments(idTerm);
-						}
+						writer.deleteDocuments(idTerm);
 					}
 				}
 			}
-			// make sure that these updates are visible for new
-			// IndexReaders/Searchers
-			commit();
-		}
-		catch(Exception e) {
-			rollback();
-			if(e instanceof RuntimeException)
-				throw (RuntimeException) e;
-			else if(e instanceof IOException)
-				throw (IOException) e;
-			else
-				throw new AssertionError(e);
 		}
 
 	}
@@ -1345,8 +1274,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * @throws SailException
 	 */
 	@Override
-	public synchronized void clearContexts(Resource[] contexts, Sail sail)
-		throws IOException, SailException
+	public synchronized void clearContexts(Resource... contexts)
+		throws IOException
 	{
 
 		// logger.warn("Clearing contexts operation did not change the index: contexts are not indexed at the moment");
@@ -1358,90 +1287,75 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// HashSet<Resource> resourcesToUpdate = new HashSet<Resource>();
 
 		// remove all contexts passed
-		begin();
-		try {
-			for (Resource context : contexts) {
-				// attention: context can be NULL!
-				String contextString = SearchFields.getContextID(context);
-				Term contextTerm = new Term(SearchFields.CONTEXT_FIELD_NAME, contextString);
-				// IndexReader reader = getIndexReader();
-	
-				// now check all documents, and remember the URI of the resources
-				// that were in multiple contexts
-				// TermDocs termDocs = reader.termDocs(contextTerm);
-				// try {
-				// while (termDocs.next()) {
-				// Document document = readDocument(reader, termDocs.doc());
-				// // does this document have any other contexts?
-				// Field[] fields = document.getFields(CONTEXT_FIELD_NAME);
-				// for (Field f : fields)
-				// {
-				// if
-				// (!contextString.equals(f.stringValue())&&!f.stringValue().equals("null"))
-				// // there is another context
-				// {
-				// logger.debug("test new contexts: {}", f.stringValue());
-				// // is it in the also contexts (lucky us if it is)
-				// Resource otherContextOfDocument =
-				// getContextResource(f.stringValue()); // can return null
-				// boolean isAlsoDeleted = false;
-				// for (Resource c: contexts){
-				// if (c==null) {
-				// if (otherContextOfDocument == null)
-				// isAlsoDeleted = true;
-				// } else
-				// if (c.equals(otherContextOfDocument))
-				// isAlsoDeleted = true;
-				// }
-				// // the otherContextOfDocument is now eihter marked for deletion or
-				// not
-				// if (!isAlsoDeleted) {
-				// // get ID of document
-				// Resource r = getResource(document);
-				// resourcesToUpdate.add(r);
-				// }
-				// }
-				// }
-				// }
-				// } finally {
-				// termDocs.close();
-				// }
-	
-				// now delete all documents from the deleted context
-				getIndexWriter().deleteDocuments(contextTerm);
-			}
-	
-			// now add those again, that had other contexts also.
-			// SailConnection con = sail.getConnection();
+		for (Resource context : contexts) {
+			// attention: context can be NULL!
+			String contextString = SearchFields.getContextID(context);
+			Term contextTerm = new Term(SearchFields.CONTEXT_FIELD_NAME, contextString);
+			// IndexReader reader = getIndexReader();
+
+			// now check all documents, and remember the URI of the resources
+			// that were in multiple contexts
+			// TermDocs termDocs = reader.termDocs(contextTerm);
 			// try {
-			// // for each resource, add all
-			// for (Resource resource : resourcesToUpdate) {
-			// logger.debug("re-adding resource {}", resource);
-			// ArrayList<Statement> toAdd = new ArrayList<Statement>();
-			// CloseableIteration<? extends Statement, SailException> it =
-			// con.getStatements(resource, null, null, false);
-			// while (it.hasNext()) {
-			// Statement s = it.next();
-			// toAdd.add(s);
+			// while (termDocs.next()) {
+			// Document document = readDocument(reader, termDocs.doc());
+			// // does this document have any other contexts?
+			// Field[] fields = document.getFields(CONTEXT_FIELD_NAME);
+			// for (Field f : fields)
+			// {
+			// if
+			// (!contextString.equals(f.stringValue())&&!f.stringValue().equals("null"))
+			// // there is another context
+			// {
+			// logger.debug("test new contexts: {}", f.stringValue());
+			// // is it in the also contexts (lucky us if it is)
+			// Resource otherContextOfDocument =
+			// getContextResource(f.stringValue()); // can return null
+			// boolean isAlsoDeleted = false;
+			// for (Resource c: contexts){
+			// if (c==null) {
+			// if (otherContextOfDocument == null)
+			// isAlsoDeleted = true;
+			// } else
+			// if (c.equals(otherContextOfDocument))
+			// isAlsoDeleted = true;
 			// }
-			// addDocument(resource, toAdd);
+			// // the otherContextOfDocument is now eihter marked for deletion or
+			// not
+			// if (!isAlsoDeleted) {
+			// // get ID of document
+			// Resource r = getResource(document);
+			// resourcesToUpdate.add(r);
+			// }
+			// }
+			// }
 			// }
 			// } finally {
-			// con.close();
+			// termDocs.close();
 			// }
-			commit();
+
+			// now delete all documents from the deleted context
+			getIndexWriter().deleteDocuments(contextTerm);
 		}
-		catch(Exception e) {
-			rollback();
-			if(e instanceof RuntimeException)
-				throw (RuntimeException) e;
-			else if(e instanceof IOException)
-				throw (IOException) e;
-			else if(e instanceof SailException)
-				throw (SailException) e;
-			else
-				throw new AssertionError(e);
-		}
+
+		// now add those again, that had other contexts also.
+		// SailConnection con = sail.getConnection();
+		// try {
+		// // for each resource, add all
+		// for (Resource resource : resourcesToUpdate) {
+		// logger.debug("re-adding resource {}", resource);
+		// ArrayList<Statement> toAdd = new ArrayList<Statement>();
+		// CloseableIteration<? extends Statement, SailException> it =
+		// con.getStatements(resource, null, null, false);
+		// while (it.hasNext()) {
+		// Statement s = it.next();
+		// toAdd.add(s);
+		// }
+		// addDocument(resource, toAdd);
+		// }
+		// } finally {
+		// con.close();
+		// }
 
 	}
 

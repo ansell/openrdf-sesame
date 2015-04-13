@@ -114,8 +114,8 @@ public interface SearchIndex {
 	 *        after deletion
 	 * @throws SailException
 	 */
-	void clearContexts(Resource[] contexts, Sail sail)
-		throws IOException, SailException;
+	void clearContexts(Resource... contexts)
+		throws IOException;
 
 	/**
 	 * Add a complete Lucene Document based on these statements. Do not search
