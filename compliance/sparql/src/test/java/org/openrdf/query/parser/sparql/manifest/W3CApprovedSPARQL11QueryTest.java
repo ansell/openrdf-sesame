@@ -51,7 +51,7 @@ public class W3CApprovedSPARQL11QueryTest extends SPARQLQueryTest {
 						// test case incompatible with RDF 1.1 - see
 						// http://lists.w3.org/Archives/Public/public-sparql-dev/2013AprJun/0006.html
 						"STRLANG   TypeErrors",
-						// known issue: SES-973
+						// known issue: SES-937
 						"sq03 - Subquery within graph pattern, graph variable is not bound" };
 
 				return new W3CApprovedSPARQL11QueryTest(testURI, name, queryFileURL, resultFileURL, dataSet,
