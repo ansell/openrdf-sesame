@@ -28,5 +28,10 @@
 			<artifactId>sesame-queryparser-serql</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>
