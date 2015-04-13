@@ -20,22 +20,16 @@ import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.NavigableSet;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.mapdb.DB;
-import org.mapdb.DB.BTreeMapMaker;
 import org.mapdb.DBMaker;
-import org.mapdb.Fun;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DelayedIteration;
@@ -44,7 +38,6 @@ import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 
 /**
  * Sorts the input and optionally applies limit and distinct.
