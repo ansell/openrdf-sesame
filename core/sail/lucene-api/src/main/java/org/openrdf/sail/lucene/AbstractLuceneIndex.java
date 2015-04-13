@@ -17,19 +17,10 @@
 package org.openrdf.sail.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 
-import org.openrdf.model.Literal;
-
-public abstract class AbstractLuceneIndex implements SearchIndex {
-	private static final List<String> REJECTED_DATATYPES = new ArrayList<String>();
-
-	static {
-		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
-	}
+public abstract class AbstractLuceneIndex extends AbstractSearchIndex {
 
 	/**
 	 * keep a lit of old monitors that are still iterating but not closed (open
@@ -55,27 +46,5 @@ public abstract class AbstractLuceneIndex implements SearchIndex {
 	public Collection<AbstractReaderMonitor> getOldMonitors()
 	{
 		return oldmonitors;
-	}
-
-	/**
-	 * Returns whether the provided literal is accepted by the LuceneIndex to be
-	 * indexed. It for instance does not make much since to index xsd:float.
-	 * 
-	 * @param literal
-	 *        the literal to be accepted
-	 * @return true if the given literal will be indexed by this LuceneIndex
-	 */
-	@Override
-	public boolean accept(Literal literal) {
-		// we reject null literals
-		if (literal == null)
-			return false;
-
-		// we reject literals that are in the list of rejected data types
-		if ((literal.getDatatype() != null)
-				&& (REJECTED_DATATYPES.contains(literal.getDatatype().stringValue())))
-			return false;
-
-		return true;
 	}
 }

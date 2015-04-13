@@ -10,7 +10,7 @@
 
 	<artifactId>sesame-sail-elasticsearch</artifactId>
 
-	<name>OpenRDF Elastic Search Sail</name>
+	<name>OpenRDF Elastic Search Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Elastic Search.</description>
 
 	<properties>

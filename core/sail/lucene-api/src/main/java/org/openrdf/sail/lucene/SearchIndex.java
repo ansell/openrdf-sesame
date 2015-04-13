@@ -25,7 +25,6 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.query.BindingSet;
-import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 
 /**

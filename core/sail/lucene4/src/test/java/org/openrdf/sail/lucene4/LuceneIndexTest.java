@@ -352,6 +352,7 @@ public class LuceneIndexTest {
 			assertStatement(statementContext232);
 
 			// delete context 1
+			connection.begin();
 			connection.clear(new Resource[] { CONTEXT_1 });
 			connection.commit();
 			assertNoStatement(statementContext111);
@@ -409,6 +410,7 @@ public class LuceneIndexTest {
 			assertStatement(statementContext232);
 
 			// delete context 2
+			connection.begin();
 			connection.clear(new Resource[] { CONTEXT_2 });
 			connection.commit();
 			assertStatement(statementContext111);

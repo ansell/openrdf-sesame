@@ -67,6 +67,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.QuerySpec;
 import org.openrdf.sail.lucene.SearchFields;
@@ -80,7 +81,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @see LuceneSail
  */
-public class ElasticSearchIndex implements SearchIndex {
+public class ElasticSearchIndex extends AbstractSearchIndex {
 
 	public static final String INDEX_NAME_KEY = "indexName";
 	public static final String DOCUMENT_TYPE_KEY = "documentType";
@@ -91,12 +92,6 @@ public class ElasticSearchIndex implements SearchIndex {
 	private static final String HIGHLIGHTER_PRE_TAG = "<B>";
 	private static final String HIGHLIGHTER_POST_TAG = "</B>";
 	private static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
-
-	private static final List<String> REJECTED_DATATYPES = new ArrayList<String>();
-
-	static {
-		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
-	}
 
 	static class Document {
 		public final String id;
@@ -130,6 +125,16 @@ public class ElasticSearchIndex implements SearchIndex {
 
 	public ElasticSearchIndex()
 	{
+	}
+
+	public String getIndexName()
+	{
+		return indexName;
+	}
+
+	public String getDocumentType()
+	{
+		return documentType;
 	}
 
 	@Override
@@ -219,28 +224,6 @@ public class ElasticSearchIndex implements SearchIndex {
 			node.close();
 			node = null;
 		}
-	}
-
-	/**
-	 * Returns whether the provided literal is accepted by the LuceneIndex to be
-	 * indexed. It for instance does not make much since to index xsd:float.
-	 * 
-	 * @param literal
-	 *        the literal to be accepted
-	 * @return true if the given literal will be indexed by this LuceneIndex
-	 */
-	@Override
-	public boolean accept(Literal literal) {
-		// we reject null literals
-		if (literal == null)
-			return false;
-
-		// we reject literals that are in the list of rejected data types
-		if ((literal.getDatatype() != null)
-				&& (REJECTED_DATATYPES.contains(literal.getDatatype().stringValue())))
-			return false;
-
-		return true;
 	}
 
 	// //////////////////////////////// Methods for updating the index
@@ -374,7 +357,7 @@ public class ElasticSearchIndex implements SearchIndex {
 		return false;
 	}
 
-	private static List<String> asStringList(Object value) {
+	static List<String> asStringList(Object value) {
 		List<String> l;
 		if(value == null) {
 			l = null;

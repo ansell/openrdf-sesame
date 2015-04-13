@@ -25,8 +25,18 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,15 +107,18 @@ public class ElasticSearchIndexTest {
 	ContextStatementImpl statementContext232 = new ContextStatementImpl(subject2, predicate2, object5,
 			CONTEXT_2);
 
-	// add a statement to an index
-
+	Node node;
+	Client client;
 	ElasticSearchIndex index;
 
 	@Before
 	public void setUp()
 		throws Exception
 	{
+		node = NodeBuilder.nodeBuilder().node();
+		client = node.client();
 		index = new ElasticSearchIndex();
+		index.initialize(new Properties());
 	}
 
 	@After
@@ -113,6 +126,8 @@ public class ElasticSearchIndexTest {
 		throws Exception
 	{
 		index.shutDown();
+		client.close();
+		node.close();
 	}
 
 	@Test
@@ -125,20 +140,20 @@ public class ElasticSearchIndexTest {
 		index.commit();
 
 		// check that it arrived properly
-		DirectoryReader reader = DirectoryReader.open(directory);
-		assertEquals(1, reader.numDocs());
+		long count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		assertEquals(1, count);
 
-		Term term = new Term(SearchFields.URI_FIELD_NAME, subject.toString());
-		DocsEnum docs = termDocs(reader, term);
-		assertTrue(next(docs));
+		SearchHits hits = client.prepareSearch(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		Iterator<SearchHit> docs = hits.iterator();
+		assertTrue(docs.hasNext());
 
-		int documentNr = docs.docID();
-		Document document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.fields.get(SearchFields.URI_FIELD_NAME));
-		assertEquals(object1.getLabel(), document.fields.get(predicate1.toString()));
+		SearchHit doc = docs.next();
+		String documentNr = doc.getId();
+		Map<String,Object> fields = client.prepareGet(index.getIndexName(), index.getDocumentType(), documentNr).execute().actionGet().getSource();
+		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
 
-		assertFalse(next(docs));
-		reader.close();
+		assertFalse(docs.hasNext());
 
 		// add another statement
 		index.begin();
@@ -147,36 +162,28 @@ public class ElasticSearchIndexTest {
 
 		// See if everything remains consistent. We must create a new IndexReader
 		// in order to be able to see the updates
-		reader = DirectoryReader.open(directory);
-		assertEquals(1, reader.numDocs()); // #docs should *not* have increased
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		assertEquals(1, count); // #docs should *not* have increased
 
-		docs = termDocs(reader, term);
-		assertTrue(next(docs));
+		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		docs = hits.iterator();
+		assertTrue(docs.hasNext());
 
-		documentNr = docs.docID();
-		document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.fields.get(SearchFields.URI_FIELD_NAME));
-		assertEquals(object1.getLabel(), document.fields.get(predicate1.toString()));
-		assertEquals(object2.getLabel(), document.fields.get(predicate2.toString()));
+		doc = docs.next();
+		documentNr = doc.getId();
+		fields = client.prepareGet(index.getIndexName(), index.getDocumentType(), documentNr).execute().actionGet().getSource();
+		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
+		assertEquals(object2.getLabel(), fields.get(predicate2.toString()));
 
-		assertFalse(next(docs));
+		assertFalse(docs.hasNext());
 
 		// see if we can query for these literals
-		IndexSearcher searcher = new IndexSearcher(reader);
-		QueryParser parser = new QueryParser(SearchFields.TEXT_FIELD_NAME, analyzer);
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.queryStringQuery(object1.getLabel())).execute().actionGet().getCount();
+		assertEquals(1, count);
 
-		Query query = parser.parse(object1.getLabel());
-		System.out.println("query=" + query);
-		TotalHitCountCollector results = new TotalHitCountCollector();
-		searcher.search(query, results);
-		assertEquals(1, results.getTotalHits());
-
-		query = parser.parse(object2.getLabel());
-		results = new TotalHitCountCollector();
-		searcher.search(query, results);
-		assertEquals(1, results.getTotalHits());
-
-		reader.close();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.queryStringQuery(object2.getLabel())).execute().actionGet().getCount();
+		assertEquals(1, count);
 
 		// remove the first statement
 		index.begin();
@@ -185,21 +192,21 @@ public class ElasticSearchIndexTest {
 
 		// check that that statement is actually removed and that the other still
 		// exists
-		reader = DirectoryReader.open(directory);
-		assertEquals(1, reader.numDocs());
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		assertEquals(1, count);
 
-		docs = termDocs(reader, term);
-		assertTrue(next(docs));
+		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		docs = hits.iterator();
+		assertTrue(docs.hasNext());
 
-		documentNr = docs.docID();
-		document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.fields.get(SearchFields.URI_FIELD_NAME));
-		assertNull(document.fields.get(predicate1.toString()));
-		assertEquals(object2.getLabel(), document.fields.get(predicate2.toString()));
+		doc = docs.next();
+		documentNr = doc.getId();
+		fields = client.prepareGet(index.getIndexName(), index.getDocumentType(), documentNr).execute().actionGet().getSource();
+		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
+		assertNull(fields.get(predicate1.toString()));
+		assertEquals(object2.getLabel(), fields.get(predicate2.toString()));
 
-		assertFalse(next(docs));
-
-		reader.close();
+		assertFalse(docs.hasNext());
 
 		// remove the other statement
 		index.begin();
@@ -208,24 +215,8 @@ public class ElasticSearchIndexTest {
 
 		// check that there are no documents left (i.e. the last Document was
 		// removed completely, rather than its remaining triple removed)
-		reader = DirectoryReader.open(directory);
-		assertEquals(0, reader.numDocs());
-		reader.close();
-	}
-
-	/**
-	 * NB: this is a convenient but very slow way of getting termDocs.
-	 * It is sufficient for testing purposes.
-	 * @throws IOException 
-	 */
-	private static DocsEnum termDocs(IndexReader reader, Term term) throws IOException
-	{
-		return MultiFields.getTermDocsEnum(reader, MultiFields.getLiveDocs(reader), term.field(), term.bytes());
-	}
-
-	private static boolean next(DocsEnum docs) throws IOException
-	{
-		return (docs.nextDoc() != DocsEnum.NO_MORE_DOCS);
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		assertEquals(0, count);
 	}
 
 	@Test
@@ -244,9 +235,8 @@ public class ElasticSearchIndexTest {
 		index.commit();
 
 		// check that it arrived properly
-		DirectoryReader reader = DirectoryReader.open(directory);
-		assertEquals(2, reader.numDocs());
-		reader.close();
+		long count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		assertEquals(2, count);
 
 		// check the documents
 		Document document = index.getDocuments(subject).iterator().next();
@@ -334,6 +324,7 @@ public class ElasticSearchIndexTest {
 			assertStatement(statementContext232);
 
 			// delete context 1
+			connection.begin();
 			connection.clear(new Resource[] { CONTEXT_1 });
 			connection.commit();
 			assertNoStatement(statementContext111);
@@ -391,6 +382,7 @@ public class ElasticSearchIndexTest {
 			assertStatement(statementContext232);
 
 			// delete context 2
+			connection.begin();
 			connection.clear(new Resource[] { CONTEXT_2 });
 			connection.commit();
 			assertStatement(statementContext111);
@@ -443,10 +435,10 @@ public class ElasticSearchIndexTest {
 	 * @param document
 	 */
 	private void assertStatement(Statement statement, Document document) {
-		IndexableField[] fields = document.getFields(statement.getPredicate().toString());
+		List<String> fields = ElasticSearchIndex.asStringList(document.fields.get(statement.getPredicate().toString()));
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
-		for (IndexableField f : fields) {
-			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
+		for (String f : fields) {
+			if (((Literal)statement.getObject()).getLabel().equals(f))
 				return;
 		}
 		fail("Statement not found in document " + statement);
@@ -457,11 +449,11 @@ public class ElasticSearchIndexTest {
 	 * @param document
 	 */
 	private void assertNoStatement(Statement statement, Document document) {
-		IndexableField[] fields = document.getFields(statement.getPredicate().toString());
+		List<String> fields = ElasticSearchIndex.asStringList(document.fields.get(statement.getPredicate().toString()));
 		if (fields == null)
 			return;
-		for (IndexableField f : fields) {
-			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
+		for (String f : fields) {
+			if (((Literal)statement.getObject()).getLabel().equals(f))
 				fail("Statement should not be found in document " + statement);
 		}
 

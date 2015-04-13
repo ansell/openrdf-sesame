@@ -10,7 +10,7 @@
 
 	<artifactId>sesame-sail-lucenesail</artifactId>
 
-	<name>OpenRDF Lucene Sail</name>
+	<name>OpenRDF Lucene Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Apache Lucene.</description>
 
 	<properties>
