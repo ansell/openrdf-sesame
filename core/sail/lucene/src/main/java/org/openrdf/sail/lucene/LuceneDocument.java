@@ -21,9 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexableField;
 
 
@@ -76,10 +76,12 @@ public class LuceneDocument implements SearchDocument
 		return doc.get(SearchFields.ID_FIELD_NAME);
 	}
 
+	@Override
 	public String getResource() {
 		return doc.get(SearchFields.URI_FIELD_NAME);
 	}
 
+	@Override
 	public String getContext() {
 		return doc.get(SearchFields.CONTEXT_FIELD_NAME);
 	}
@@ -96,12 +98,26 @@ public class LuceneDocument implements SearchDocument
 		return names;
 	}
 
+
+	/**
+	 * Stores and indexes a property in a Document. We don't have to recalculate
+	 * the concatenated text: just add another TEXT field and Lucene will take
+	 * care of this. Additional advantage: Lucene may be able to handle the
+	 * invididual strings in a way that may affect e.g. phrase and proximity
+	 * searches (concatenation basically means loss of information). NOTE: The
+	 * TEXT_FIELD_NAME has to be stored, see in LuceneSail
+	 * 
+	 * @see LuceneSail
+	 */
 	@Override
 	public void addProperty(String name, String text) {
 		doc.add(new TextField(name, text, Store.YES));
 		doc.add(new TextField(SearchFields.TEXT_FIELD_NAME, text, Store.YES));
 	}
 
+	/**
+	 * Checks whether a field occurs with a specified value in a Document.
+	 */
 	@Override
 	public boolean hasProperty(String fieldName, String value) {
 		String[] fields = doc.getValues(fieldName);
