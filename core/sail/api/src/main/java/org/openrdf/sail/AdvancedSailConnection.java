@@ -20,11 +20,17 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
-
 /**
  * Offers extra customisations beyond SailConnection.
+ * 
  * @author MJAHale
+ * @deprecated temporary interface introduced to avoid backward compatibility
+ *             issues. Will be removed again in the next major release.
+ * @since 2.8.2
  */
+@Deprecated
 public interface AdvancedSailConnection extends SailConnection {
-	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts) throws SailException;
+
+	boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+		throws SailException;
 }
