@@ -348,7 +348,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 			EvaluationStrategyImpl strategy)
 		throws SailException
 	{
-		LOGGER.trace("Incoming query model:\n{}", parsed.toString());
+		LOGGER.trace("Incoming query model:\n{}", parsed);
 
 		// Clone the tuple expression to allow for more aggressive optimisations
 		TupleExpr query = new QueryRoot(parsed.clone());
@@ -374,7 +374,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 
 		new PrepareOwnedTupleExpr().optimize(query, dataset, bindings);
 
-		LOGGER.trace("Optimized query model:\n{}", query.toString());
+		LOGGER.trace("Optimized query model:\n{}", query);
 		return query;
 	}
 
