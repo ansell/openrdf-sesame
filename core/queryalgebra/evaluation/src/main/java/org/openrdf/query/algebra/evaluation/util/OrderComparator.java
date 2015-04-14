@@ -69,6 +69,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 	}
 
 	public int compare(BindingSet o1, BindingSet o2) {
+		
 		try {
 
 			for (OrderElem element : order.getElements()) {
@@ -88,6 +89,16 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			// contract of java.util.Comparator). We order by
 			// size first, then by binding names, then finally by values.
 
+			// null check 
+			if (o1 == null || o2 == null) {
+				if (o1 == null) {
+					return o2 == null ? 0 : 1;
+				}
+				if (o2 == null) {
+					return o1 == null ? 0 : -1;
+				}
+			}
+			
 			if (o2.size() != o1.size()) {
 				return o1.size() < o2.size() ? 1 : -1;
 			}
