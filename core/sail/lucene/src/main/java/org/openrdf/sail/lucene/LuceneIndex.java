@@ -365,7 +365,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 				if(docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
 					throw new IllegalStateException("Multiple Documents for term " + term.text());
 				}
-				return readDocument(reader, docId);
+				return readDocument(reader, docId, null);
 			}
 			else {
 				return null;
@@ -404,7 +404,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			int docId;
 			while((docId = docs.nextDoc()) != DocsEnum.NO_MORE_DOCS) {
-				Document document = readDocument(reader, docId);
+				Document document = readDocument(reader, docId, null);
 				documents.add(document);
 			}
 		}
@@ -464,7 +464,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	/**
 	 * Stores and indexes the resource ID in a Document.
 	 */
-	public static void addURIField(String resourceId, Document document) {
+	public static void addResourceField(String resourceId, Document document) {
 		document.add(new StringField(SearchFields.URI_FIELD_NAME, resourceId, Store.YES));
 	}
 
@@ -532,7 +532,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 				for (int i = 0; i < reader.maxDoc(); i++) {
 					if (isDeleted(reader, i))
 						continue;
-					doc = readDocument(reader, i);
+					doc = readDocument(reader, i, null);
 					totalFields += doc.getFields().size();
 					count++;
 					idArray = doc.getValues("id");
@@ -620,9 +620,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *        the id of the document to return
 	 * @return the requested hit, or null if it fails
 	 */
-	public Document getDocument(int docId) {
+	public Document getDocument(int docId, Set<String> fieldsToLoad) {
 		try {
-			return readDocument(getIndexReader(), docId);
+			return readDocument(getIndexReader(), docId, fieldsToLoad);
 		}
 		catch (CorruptIndexException e) {
 			logger.error("The index seems to be corrupted:", e);
@@ -840,23 +840,28 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
-	private static Document readDocument(IndexReader reader, int docId) throws IOException
+	private static Document readDocument(IndexReader reader, int docId, Set<String> fieldsToLoad) throws IOException
 	{
-		AllStoredFieldVisitor visitor = new AllStoredFieldVisitor();
+		DocumentStoredFieldVisitor visitor = new DocumentStoredFieldVisitor(fieldsToLoad);
 		reader.document(docId, visitor);
 		return visitor.getDocument();
 	}
 
 
-	static class AllStoredFieldVisitor extends StoredFieldVisitor
+	static class DocumentStoredFieldVisitor extends StoredFieldVisitor
 	{
-		private Document document = new Document();
+		private final Set<String> fieldsToLoad;
+		private final Document document = new Document();
+
+		DocumentStoredFieldVisitor(Set<String> fieldsToLoad) {
+			this.fieldsToLoad = fieldsToLoad;
+		}
 
 		@Override
 		public Status needsField(FieldInfo fieldInfo)
 			throws IOException
 		{
-			return Status.YES;
+			return (fieldsToLoad == null || fieldsToLoad.contains(fieldInfo.name)) ? Status.YES : Status.NO;
 		}
 
 		@Override
@@ -868,7 +873,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			} else if(SearchFields.CONTEXT_FIELD_NAME.equals(name)) {
 				addContextField(value, document);
 			} else if(SearchFields.URI_FIELD_NAME.equals(name)) {
-				addURIField(value, document);
+				addResourceField(value, document);
 			} else if(SearchFields.TEXT_FIELD_NAME.equals(name)) {
 				addTextField(value, document);
 			} else {

@@ -16,15 +16,18 @@
  */
 package org.openrdf.sail.lucene3;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
+import org.openrdf.sail.lucene.SearchFields;
 
 public class LuceneDocumentScore implements DocumentScore
 {
@@ -43,7 +46,15 @@ public class LuceneDocumentScore implements DocumentScore
 	public SearchDocument getDocument() {
 		if(fullDoc == null)
 		{
-			fullDoc = new LuceneDocument(index.getDocument(scoreDoc.doc));
+			Document doc;
+			if(highlighter != null) {
+				doc = index.getDocument(scoreDoc.doc, null);
+			}
+			else {
+				// don't require all fields
+				doc = index.getDocument(scoreDoc.doc, Collections.singleton(SearchFields.URI_FIELD_NAME));
+			}
+			fullDoc = new LuceneDocument(doc);
 		}
 		return fullDoc;
 	}

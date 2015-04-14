@@ -46,20 +46,20 @@ public class LuceneDocument implements SearchDocument
 	{
 		this();
 		setId(id);
-		setURIField(resourceId);
-		setContextField(context);
+		setResource(resourceId);
+		setContext(context);
 	}
 
 	private void setId(String id) {
 		LuceneIndex.addIDField(id, doc);
 	}
 
-	private void setContextField(String context) {
+	private void setContext(String context) {
 		LuceneIndex.addContextField(context, doc);
 	}
 
-	private void setURIField(String resourceId) {
-		LuceneIndex.addURIField(resourceId, doc);
+	private void setResource(String resourceId) {
+		LuceneIndex.addResourceField(resourceId, doc);
 	}
 
 	public Document getDocument() {

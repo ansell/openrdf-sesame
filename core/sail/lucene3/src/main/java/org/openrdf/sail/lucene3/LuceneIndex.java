@@ -81,21 +81,6 @@ import com.google.common.collect.Iterables;
  */
 public class LuceneIndex extends AbstractLuceneIndex {
 
-	/**
-	 * A utility FieldSelector that only selects the URI field to be loaded.
-	 * Useful when locating matching Resources in a LuceneIndex and the other
-	 * Document fields are not required.
-	 */
-	private static FieldSelector URI_FIELD_SELECTOR = new FieldSelector() {
-
-		private static final long serialVersionUID = 4302925811117170860L;
-
-		@Override
-		public FieldSelectorResult accept(String fieldName) {
-			return fieldName.equals(SearchFields.URI_FIELD_NAME) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
-		}
-	};
-
 	static {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
@@ -297,7 +282,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	// //////////////////////////////// Methods for updating the index
 
-
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
@@ -468,7 +452,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	/**
 	 * Stores and indexes the resource ID in a Document.
 	 */
-	public static void addURIField(String resourceId, Document document) {
+	public static void addResourceField(String resourceId, Document document) {
 		document.add(new Field(SearchFields.URI_FIELD_NAME, resourceId, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 	}
 
@@ -536,7 +520,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 				for (int i = 0; i < reader.maxDoc(); i++) {
 					if (isDeleted(reader, i))
 						continue;
-					doc = readDocument(reader, i);
+					doc = readDocument(reader, i, null);
 					totalFields += doc.getFields().size();
 					count++;
 					idArray = doc.getValues("id");
@@ -624,9 +608,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *        the id of the document to return
 	 * @return the requested hit, or null if it fails
 	 */
-	public Document getDocument(int docId) {
+	public Document getDocument(int docId, Set<String> fieldsToLoad) {
 		try {
-			return readDocument(getIndexReader(), docId);
+			return readDocument(getIndexReader(), docId, fieldsToLoad);
 		}
 		catch (CorruptIndexException e) {
 			logger.error("The index seems to be corrupted:", e);
@@ -672,7 +656,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * Evaluates the given query only for the given resource.
 	 */
 	public TopDocs search(Resource resource, Query query)
-		throws ParseException, IOException
+		throws IOException
 	{
 		// rewrite the query
 		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
@@ -828,8 +812,24 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return reader.isDeleted(docId);
 	}
 
-	private static Document readDocument(IndexReader reader, int docId) throws IOException
+	private static Document readDocument(IndexReader reader, int docId, Set<String> fieldsToLoad) throws IOException
 	{
-		return reader.document(docId);
+		return (fieldsToLoad == null) ? reader.document(docId) : reader.document(docId, new DocumentFieldSelector(fieldsToLoad));
+	}
+
+
+	static class DocumentFieldSelector implements FieldSelector {
+		private static final long serialVersionUID = -6104764003694180068L;
+
+		private final Set<String> fieldsToLoad;
+
+		DocumentFieldSelector(Set<String> fieldsToLoad) {
+			this.fieldsToLoad = fieldsToLoad;
+		}
+
+		@Override
+		public FieldSelectorResult accept(String fieldName) {
+			return (fieldsToLoad == null || fieldsToLoad.contains(fieldName)) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
+		}
 	}
 }
