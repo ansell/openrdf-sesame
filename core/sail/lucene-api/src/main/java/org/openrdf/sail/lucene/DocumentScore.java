@@ -24,5 +24,5 @@ public interface DocumentScore
 	SearchDocument getDocument();
 	float getScore();
 	boolean isHighlighted();
-	Iterable<String> getFragments(String field);
+	Iterable<String> getSnippets(String field);
 }

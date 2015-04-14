@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.lucene;
 
+import java.io.IOException;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 
@@ -24,7 +26,7 @@ public interface SearchQuery
 	/**
 	 * Queries for the given subject or all subjects if null.
 	 */
-	Iterable<DocumentScore> query(Resource subject);
+	Iterable<DocumentScore> query(Resource subject) throws IOException;
 	/**
 	 * Highlights the given field or all fields if null.
 	 */

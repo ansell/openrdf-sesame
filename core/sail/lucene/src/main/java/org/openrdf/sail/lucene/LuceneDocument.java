@@ -136,5 +136,4 @@ public class LuceneDocument implements SearchDocument
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
 	}
-
 }

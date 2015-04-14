@@ -23,13 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -60,13 +56,9 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
@@ -74,19 +66,10 @@ import org.apache.lucene.util.Bits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.lucene.util.ListMap;
-import org.openrdf.sail.lucene.util.MapOfListMaps;
-import org.openrdf.sail.lucene.util.SetMap;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -100,21 +83,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	static {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
-	}
-
-	/**
-	 * This class represents the result of a Lucene query evaluation.
-	 */
-	private static class QueryResult {
-
-		public final TopDocs hits;
-
-		public final Highlighter highlighter;
-
-		public QueryResult(TopDocs hits, Highlighter highlighter) {
-			this.hits = hits;
-			this.highlighter = highlighter;
-		}
 	}
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -312,6 +280,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return (document != null) ? new LuceneDocument(document) : null;
 	}
 
+	protected Iterable<SearchDocument> getDocuments(String resourceId) {
+
+	}
+
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
 		return new LuceneDocument(id, resourceId, context);
@@ -459,36 +431,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	/**
-	 * Checks whether a field occurs with a specified value in a Document.
-	 */
-	private boolean hasProperty(String fieldName, String value, Document document) {
-		IndexableField[] fields = document.getFields(fieldName);
-		if (fields != null) {
-			for (IndexableField field : fields) {
-				if (value.equals(field.stringValue())) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Determines the number of properties stored in a Document.
-	 */
-	private int numberOfPropertyFields(Document document) {
-		// count the properties that are NOT id nor context nor text
-		int propsize = 0;
-		for (Object o : document.getFields()) {
-			Field f = (Field)o;
-			if (SearchFields.isPropertyField(f.name()))
-				propsize++;
-		}
-		return propsize;
-	}
-
-	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
 	public IndexableField[] getPropertyFields(List<IndexableField> fields) {
@@ -528,42 +470,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	private static void addURIField(String resourceId, Document document) {
 		document.add(new StringField(SearchFields.URI_FIELD_NAME, resourceId, Store.YES));
-	}
-
-	/**
-	 * check if the passed statement should be added (is it indexed? is it
-	 * stored?) and add it as predicate to the passed document. No checks whether
-	 * the predicate was already there.
-	 * 
-	 * @param statement
-	 *        the statement to add
-	 * @param document
-	 *        the document to add to
-	 */
-	private void addProperty(Statement statement, Document document) {
-		String text = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (text == null)
-			return;
-		String field = statement.getPredicate().toString();
-		addPropertyFields(field, text, document);
-	}
-
-	/**
-	 * Stores and indexes a property in a Document. We don't have to recalculate
-	 * the concatenated text: just add another TEXT field and Lucene will take
-	 * care of this. Additional advantage: Lucene may be able to handle the
-	 * invididual strings in a way that may affect e.g. phrase and proximity
-	 * searches (concatenation basically means loss of information). NOTE: The
-	 * TEXT_FIELD_NAME has to be stored, see in LuceneSail
-	 * 
-	 * @see LuceneSail
-	 */
-	private static void addPropertyFields(String predicate, String text, Document document) {
-		// store this predicate
-		addPredicateField(predicate, text, document);
-
-		// and in TEXT_FIELD_NAME
-		addTextField(text, document);
 	}
 
 	private static void addPredicateField(String predicate, String text, Document document) {
@@ -690,190 +596,25 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	// //////////////////////////////// Methods for querying the index
 
-	@Override
-	public Collection<BindingSet> evaluate(QuerySpec query) throws SailException
-	{
-		QueryResult result = evaluateQuery(query);
-
-		// generate bindings
-		return generateBindingSets(query, result.hits, result.highlighter);
-	}
-
 	/**
-	 * Evaluates one Lucene Query. It distinguishes between two cases, the one
-	 * where no subject is given and the one were it is given.
+	 * Parse the passed query.
 	 * 
 	 * @param query
-	 *        the Lucene query to evaluate
-	 * @return QueryResult consisting of hits and highlighter
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
 	 */
-	private QueryResult evaluateQuery(QuerySpec query) {
-		TopDocs hits = null;
-		Highlighter highlighter = null;
-
-		// get the subject of the query
-		Resource subject = query.getSubject();
-
+	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	{
+		Query q;
 		try {
-			// parse the query string to a lucene query
-
-			String sQuery = query.getQueryString();
-
-			if (!sQuery.isEmpty()) {
-				Query lucenequery = parseQuery(query.getQueryString(), query.getPropertyURI());
-
-				// if the query requests for the snippet, create a highlighter using
-				// this query
-				if (query.getSnippetVariableName() != null) {
-					Formatter formatter = new SimpleHTMLFormatter();
-					highlighter = new Highlighter(formatter, new QueryScorer(lucenequery));
-				}
-
-				// distinguish the two cases of subject == null
-				if (subject == null) {
-					hits = search(lucenequery);
-				}
-				else {
-					hits = search(subject, lucenequery);
-				}
-			}
-			else {
-				hits = new TopDocs(0, new ScoreDoc[0], 0.0f);
-			}
+			q = getQueryParser(propertyURI).parse(query);
 		}
-		catch (Exception e) {
-			logger.error("There was a problem evaluating query '" + query.getQueryString() + "' for property '"
-					+ query.getPropertyURI() + "!", e);
+		catch (ParseException e) {
+			throw new MalformedQueryException(e);
 		}
-
-		return new QueryResult(hits, highlighter);
-	}
-
-	/**
-	 * This method generates bindings from the given result of a Lucene query.
-	 * 
-	 * @param query
-	 *        the Lucene query
-	 * @param hits
-	 *        the query result
-	 * @param highlighter
-	 *        a Highlighter for the query
-	 * @return a LinkedHashSet containing generated bindings
-	 * @throws SailException
-	 */
-	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, TopDocs hits,
-			Highlighter highlighter)
-		throws SailException
-	{
-		// Since one resource can be returned many times, it can lead now to
-		// multiple occurrences
-		// of the same binding tuple in the BINDINGS clause. This in turn leads to
-		// duplicate answers in the original SPARQL query.
-		// We want to avoid this, so BindingSets added to the result must be
-		// unique.
-		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
-
-		// for each hit ...
-		ScoreDoc[] docs = hits.scoreDocs;
-		for (int i = 0; i < docs.length; i++) {
-			// this takes the new bindings
-			QueryBindingSet derivedBindings = new QueryBindingSet();
-
-			// get the current hit
-			int docId = docs[i].doc;
-			Document doc = getDoc(docId);
-			if (doc == null)
-				continue;
-
-			// get the score of the hit
-			float score = docs[i].score;
-
-			// bind the respective variables
-			String matchVar = query.getMatchesVariableName();
-			if (matchVar != null) {
-				try {
-					Resource resource = getResource(doc);
-					Value existing = derivedBindings.getValue(matchVar);
-					// if the existing binding contradicts the current binding, than
-					// we can safely skip this permutation
-					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-						// invalidate the binding
-						derivedBindings = null;
-
-						// and exit the loop
-						break;
-					}
-					derivedBindings.addBinding(matchVar, resource);
-				}
-				catch (NullPointerException e) {
-					SailException e1 = new SailException(
-							"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-							e);
-					logger.error(e1.getMessage());
-					logger.debug("Details: ", e);
-					throw e1;
-				}
-			}
-
-			if ((query.getScoreVariableName() != null) && (score > 0.0f))
-				derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
-
-			if (query.getSnippetVariableName() != null) {
-				if (highlighter != null) {
-					// limit to the queried field, if there was one
-					IndexableField[] fields;
-					if (query.getPropertyURI() != null) {
-						String fieldname = query.getPropertyURI().toString();
-						fields = doc.getFields(fieldname);
-					}
-					else {
-						fields = getPropertyFields(doc.getFields());
-					}
-
-					// extract snippets from Lucene's query results
-					for (IndexableField field : fields) {
-						// create an individual binding set for each snippet
-						QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-
-						String text = field.stringValue();
-
-						String fragments = null;
-						try {
-							TokenStream tokenStream = getAnalyzer().tokenStream(field.name(),
-									new StringReader(text));
-							fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
-						}
-						catch (Exception e) {
-							logger.error("Exception while getting snippet for filed " + field.name()
-									+ " for query\n" + query, e);
-							continue;
-						}
-
-						if (fragments != null && !fragments.isEmpty()) {
-							snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
-
-							if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-								snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
-							}
-
-							bindingSets.add(snippetBindings);
-						}
-					}
-				}
-				else {
-					logger.warn(
-							"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
-							query);
-					bindingSets.add(derivedBindings);
-				}
-			}
-			else {
-				bindingSets.add(derivedBindings);
-			}
-		}
-
-		// we succeeded
-		return bindingSets;
+		return new LuceneQuery(q, this);
 	}
 
 	/**
@@ -883,9 +624,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *        the id of the document to return
 	 * @return the requested hit, or null if it fails
 	 */
-	private Document getDoc(int docId) {
+	public Document getDocument(int docId) {
 		try {
-			return getIndexSearcher().doc(docId);
+			return readDocument(getIndexReader(), docId);
 		}
 		catch (CorruptIndexException e) {
 			logger.error("The index seems to be corrupted:", e);
@@ -895,6 +636,20 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			logger.error("Could not read from index:", e);
 			return null;
 		}
+	}
+
+	public String getSnippet(String fieldName, String text, Highlighter highlighter) {
+		String snippet;
+		try {
+			TokenStream tokenStream = getAnalyzer().tokenStream(fieldName,
+					new StringReader(text));
+			snippet = highlighter.getBestFragments(tokenStream, text, 2, "...");
+		}
+		catch (Exception e) {
+			logger.error("Exception while getting snippet for field " + fieldName, e);
+			snippet = null;
+		}
+		return snippet;
 	}
 
 	/**
@@ -916,10 +671,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return SearchFields.createResource(idString);
 	}
 
-	private String getContextID(Document document) {
-		return document.get(SearchFields.CONTEXT_FIELD_NAME);
-	}
-
 	// /**
 	// * Parses an id-string used for a context filed (a serialized resource)
 	// back to a resource.
@@ -937,19 +688,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	// }
 
 	/**
-	 * Evaluates the given query and returns the results as a TopDocs instance.
-	 */
-	public TopDocs search(String query)
-		throws ParseException, IOException
-	{
-		return search(parseQuery(query, null));
-	}
-
-	/**
 	 * Evaluates the given query only for the given resource.
 	 */
 	public TopDocs search(Resource resource, Query query)
-		throws ParseException, IOException
+		throws IOException
 	{
 		// rewrite the query
 		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
@@ -960,21 +702,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	/**
-	 * Parse the passed query.
-	 * 
-	 * @param query
-	 *        string
-	 * @return the parsed query
-	 * @throws ParseException
-	 *         when the parsing brakes
-	 */
-	public Query parseQuery(String query, URI propertyURI)
-		throws ParseException
-	{
-		return getQueryParser(propertyURI).parse(query);
-	}
-
-	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
 	public TopDocs search(Query query)
@@ -982,16 +709,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		int nDocs = Math.max(getIndexReader().numDocs(), 1);
 		return getIndexSearcher().search(query, nDocs);
-	}
-
-	/**
-	 * Gets the score for a particular Resource and query. Returns a value < 0
-	 * when the Resource does not match the query.
-	 */
-	public float getScore(Resource resource, String query, URI propertyURI)
-		throws ParseException, IOException
-	{
-		return getScore(resource, parseQuery(query, propertyURI));
 	}
 
 	/**

@@ -17,7 +17,6 @@
 package org.openrdf.sail.lucene;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +35,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
@@ -468,102 +468,93 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		// unique.
 		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
 
-		// for each hit ...
-		for (DocumentScore hit : hits) {
-			// this takes the new bindings
-			QueryBindingSet derivedBindings = new QueryBindingSet();
-
-			// get the current hit
-			SearchDocument doc = hit.getDocument();
-			if (doc == null)
-				continue;
-
-			// get the score of the hit
-			float score = hit.getScore();
-
-			// bind the respective variables
-			String matchVar = query.getMatchesVariableName();
-			if (matchVar != null) {
-				try {
-					Resource resource = getResource(doc);
-					Value existing = derivedBindings.getValue(matchVar);
-					// if the existing binding contradicts the current binding, than
-					// we can safely skip this permutation
-					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-						// invalidate the binding
-						derivedBindings = null;
-
-						// and exit the loop
-						break;
+		if(hits != null) {
+			// for each hit ...
+			for (DocumentScore hit : hits) {
+				// this takes the new bindings
+				QueryBindingSet derivedBindings = new QueryBindingSet();
+	
+				// get the current hit
+				SearchDocument doc = hit.getDocument();
+				if (doc == null)
+					continue;
+	
+				// get the score of the hit
+				float score = hit.getScore();
+	
+				// bind the respective variables
+				String matchVar = query.getMatchesVariableName();
+				if (matchVar != null) {
+					try {
+						Resource resource = getResource(doc);
+						Value existing = derivedBindings.getValue(matchVar);
+						// if the existing binding contradicts the current binding, than
+						// we can safely skip this permutation
+						if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
+							// invalidate the binding
+							derivedBindings = null;
+	
+							// and exit the loop
+							break;
+						}
+						derivedBindings.addBinding(matchVar, resource);
 					}
-					derivedBindings.addBinding(matchVar, resource);
+					catch (NullPointerException e) {
+						SailException e1 = new SailException(
+								"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
+								e);
+						logger.error(e1.getMessage());
+						logger.debug("Details: ", e);
+						throw e1;
+					}
 				}
-				catch (NullPointerException e) {
-					SailException e1 = new SailException(
-							"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-							e);
-					logger.error(e1.getMessage());
-					logger.debug("Details: ", e);
-					throw e1;
-				}
-			}
-
-			if ((query.getScoreVariableName() != null) && (score > 0.0f))
-				derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
-
-			if (query.getSnippetVariableName() != null) {
-				if (hit.isHighlighted()) {
-					// limit to the queried field, if there was one
-					List<String> fields;
-					if (query.getPropertyURI() != null) {
-						String fieldname = query.getPropertyURI().toString();
-						fields = Collections.singletonList(fieldname);
+	
+				if ((query.getScoreVariableName() != null) && (score > 0.0f))
+					derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
+	
+				if (query.getSnippetVariableName() != null) {
+					if (hit.isHighlighted()) {
+						// limit to the queried field, if there was one
+						List<String> fields;
+						if (query.getPropertyURI() != null) {
+							String fieldname = query.getPropertyURI().toString();
+							fields = Collections.singletonList(fieldname);
+						}
+						else {
+							fields = doc.getPropertyNames();
+						}
+	
+						// extract snippets from Lucene's query results
+						for (String field : fields) {
+							Iterable<String> snippets = hit.getSnippets(field);
+							if(snippets != null) {
+								for(String snippet : snippets) {
+									if(snippet != null) {
+										// create an individual binding set for each snippet
+										QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
+			
+										snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(snippet));
+			
+										if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
+											snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field));
+										}
+			
+										bindingSets.add(snippetBindings);
+									}
+								}
+							}
+						}
 					}
 					else {
-						fields = doc.getPropertyNames();
-					}
-
-					// extract snippets from Lucene's query results
-					for (String field : fields) {
-						Iterable<String> fragments = hit.getFragments(field);
-
-						// create an individual binding set for each snippet
-						QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-
-						String text = field.stringValue();
-
-						String fragments = null;
-						try {
-							TokenStream tokenStream = getAnalyzer().tokenStream(field.name(),
-									new StringReader(text));
-							fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
-						}
-						catch (Exception e) {
-							logger.error("Exception while getting snippet for filed " + field.name()
-									+ " for query\n" + query, e);
-							continue;
-						}
-
-						if (fragments != null && !fragments.isEmpty()) {
-							snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
-
-							if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-								snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
-							}
-
-							bindingSets.add(snippetBindings);
-						}
+						logger.warn(
+								"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
+								query);
+						bindingSets.add(derivedBindings);
 					}
 				}
 				else {
-					logger.warn(
-							"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
-							query);
 					bindingSets.add(derivedBindings);
 				}
-			}
-			else {
-				bindingSets.add(derivedBindings);
 			}
 		}
 
@@ -588,7 +579,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract void updateDocument(SearchDocument doc) throws IOException;
 	protected abstract void deleteDocument(String id) throws IOException;
 
-	protected abstract SearchQuery parseQuery(String q, URI property);
+	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }
