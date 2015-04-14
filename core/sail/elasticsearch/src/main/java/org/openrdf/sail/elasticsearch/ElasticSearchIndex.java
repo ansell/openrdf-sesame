@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.Term;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -68,15 +71,20 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
+import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.LuceneDocument;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.QuerySpec;
+import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SearchIndex;
-import org.openrdf.sail.lucene.util.ListMap;
+import org.openrdf.sail.lucene.SimpleBulkUpdater;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
-import org.openrdf.sail.lucene.util.SetMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * @see LuceneSail
@@ -92,24 +100,6 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	private static final String HIGHLIGHTER_PRE_TAG = "<B>";
 	private static final String HIGHLIGHTER_POST_TAG = "</B>";
 	private static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
-
-	static class Document {
-		public final String id;
-		public final String type;
-		public final long version;
-		public final Map<String,Object> fields;
-
-		public Document(SearchHit hit) {
-			this(hit.getId(), hit.getType(), hit.getVersion(), hit.getSource());
-		}
-
-		public Document(String id, String type, long version, Map<String,Object> fields) {
-			this.id = id;
-			this.type = type;
-			this.version = version;
-			this.fields = fields;
-		}
-	}
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -229,6 +219,69 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	// //////////////////////////////// Methods for updating the index
 
 	/**
+	 * Returns a Document representing the specified document ID (combination of
+	 * resource and context), or null when no such Document exists yet.
+	 */
+	protected SearchDocument getDocument(String id) throws IOException
+	{
+		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
+		if(response.isExists()) {
+			return new ElasticSearchDocument(response.getId(), response.getType(), response.getVersion(), response.getSource());
+		}
+		// no such Document
+		return null;
+	}
+
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
+		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
+		return Iterables.transform(docs, new Function<Document,SearchDocument>()
+		{
+			@Override
+			public SearchDocument apply(Document doc) {
+				return new LuceneDocument(doc);
+			}
+		});
+	}
+
+	protected SearchDocument newDocument(String id, String resourceId, String context)
+	{
+		return new LuceneDocument(id, resourceId, context);
+	}
+
+	protected SearchDocument copyDocument(SearchDocument doc)
+	{
+		Document document = ((LuceneDocument)doc).getDocument();
+		Document newDocument = new Document();
+
+		// add all existing fields (including id, uri, context, and text)
+		for (Object oldFieldObject : document.getFields()) {
+			Field oldField = (Field)oldFieldObject;
+			newDocument.add(oldField);
+		}
+		return new LuceneDocument(newDocument);
+	}
+
+	protected void addDocument(SearchDocument doc) throws IOException
+	{
+		getIndexWriter().addDocument(((LuceneDocument)doc).getDocument());
+	}
+
+	protected void updateDocument(SearchDocument doc) throws IOException
+	{
+		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
+	}
+
+	protected void deleteDocument(String id) throws IOException
+	{
+		getIndexWriter().deleteDocuments(idTerm(id));
+	}
+
+	protected BulkUpdater newBulkUpdate()
+	{
+		return new ElasticSearchBulkUpdater(this);
+	}
+
+	/**
 	 * Indexes the specified Statement.
 	 */
 	@Override
@@ -250,7 +303,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 		String contextId = SearchFields.getContextID(statement.getContext());
 
 		String id = SearchFields.formIdString(resourceId, contextId);
-		Document document = getDocument(id);
+		ElasticSearchDocument document = getDocument(id);
 
 		if (document == null) {
 			// there is no such Document: create one now
@@ -279,36 +332,21 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	}
 
 	/**
-	 * Returns a Document representing the specified document ID (combination of
-	 * resource and context), or null when no such Document exists yet.
-	 */
-	private Document getDocument(String id)
-		throws IOException
-	{
-		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
-		if(response.isExists()) {
-			return new Document(response.getId(), response.getType(), response.getVersion(), response.getSource());
-		}
-		// no such Document
-		return null;
-	}
-
-	/**
 	 * Returns a list of Documents representing the specified Resource (empty
 	 * when no such Document exists yet). Each document represent a set of
 	 * statements with the specified Resource as a subject, which are stored in a
 	 * specific context
 	 */
-	private List<Document> getDocuments(QueryBuilder query)
+	private List<ElasticSearchDocument> getDocuments(QueryBuilder query)
 		throws IOException
 	{
-		List<Document> result = new ArrayList<Document>();
+		List<ElasticSearchDocument> result = new ArrayList<ElasticSearchDocument>();
 
 		SearchHits searchHits = search(client.prepareSearch(), query);
 		SearchHit[] hits = searchHits.getHits();
 		int size = hits.length;
 		for(int i=0; i<size; i++) {
-			result.add(new Document(hits[i]));
+			result.add(new ElasticSearchDocument(hits[i]));
 		}
 
 		return result;
@@ -318,7 +356,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	 * Returns a Document representing the specified Resource & Context
 	 * combination, or null when no such Document exists yet.
 	 */
-	public Document getDocument(Resource subject, Resource context)
+	public ElasticSearchDocument getDocument(Resource subject, Resource context)
 		throws IOException
 	{
 		// fetch the Document representing this Resource
@@ -333,7 +371,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	 * statements with the specified Resource as a subject, which are stored in a
 	 * specific context
 	 */
-	public List<Document> getDocuments(Resource subject)
+	public List<ElasticSearchDocument> getDocuments(Resource subject)
 		throws IOException
 	{
 		String resourceId = SearchFields.getResourceID(subject);
@@ -341,48 +379,6 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 		return getDocuments(query);
 	}
 
-	/**
-	 * Checks whether a field occurs with a specified value in a Document.
-	 */
-	private boolean hasProperty(String fieldName, String value, Map<String,Object> document) {
-		List<String> fields = asStringList(document.get(fieldName));
-		if (fields != null) {
-			for (String field : fields) {
-				if (value.equals(field)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	static List<String> asStringList(Object value) {
-		List<String> l;
-		if(value == null) {
-			l = null;
-		}
-		else if(value instanceof List<?>) {
-			l = (List<String>) value;
-		}
-		else {
-			l = Collections.singletonList((String) value);
-		}
-		return l;
-	}
-
-	private static List<String> makeModifiable(List<String> l)
-	{
-		List<String> modList;
-		if(!(l instanceof ArrayList<?>)) {
-			modList = new ArrayList<String>(l.size()+1);
-			modList.addAll(l);
-		}
-		else {
-			modList = l;
-		}
-		return modList;
-	}
 	/**
 	 * Determines the number of properties stored in a Document.
 	 */
@@ -399,7 +395,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
-	public List<String> getPropertyFields(Collection<String> fields) {
+	public static List<String> getPropertyFields(Collection<String> fields) {
 		List<String> result = new ArrayList<String>();
 		for (String field : fields) {
 			if (SearchFields.isPropertyField(field))
@@ -431,56 +427,6 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 		document.put(SearchFields.URI_FIELD_NAME, resourceId);
 	}
 
-	/**
-	 * check if the passed statement should be added (is it indexed? is it
-	 * stored?) and add it as predicate to the passed document. No checks whether
-	 * the predicate was already there.
-	 * 
-	 * @param statement
-	 *        the statement to add
-	 * @param document
-	 *        the document to add to
-	 */
-	private void addProperty(Statement statement, Map<String,Object> document) {
-		String text = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (text == null)
-			return;
-		String field = statement.getPredicate().toString();
-		addPropertyFields(field, text, document);
-	}
-
-	/**
-	 * Stores and indexes a property in a Document. We don't have to recalculate
-	 * the concatenated text: just add another TEXT field and Lucene will take
-	 * care of this. Additional advantage: Lucene may be able to handle the
-	 * invididual strings in a way that may affect e.g. phrase and proximity
-	 * searches (concatenation basically means loss of information). NOTE: The
-	 * TEXT_FIELD_NAME has to be stored, see in LuceneSail
-	 * 
-	 * @see LuceneSail
-	 */
-	private static void addPropertyFields(String predicate, String text, Map<String,Object> document) {
-		// store this predicate
-		addField(predicate, text, document);
-
-		// and in TEXT_FIELD_NAME
-		addField(SearchFields.TEXT_FIELD_NAME, text, document);
-	}
-
-	private static void addField(String name, String value, Map<String,Object> document) {
-		Object oldValue = document.get(name);
-		Object newValue;
-		if(oldValue != null) {
-			List<String> newList = makeModifiable(asStringList(oldValue));
-			newList.add(value);
-			newValue = newList;
-		}
-		else {
-			newValue = value;
-		}
-		document.put(name, newValue);
-	}
-
 	@Override
 	public synchronized void removeStatement(Statement statement)
 		throws IOException
@@ -494,7 +440,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
 		String contextId = SearchFields.getContextID(statement.getContext());
 		String id = SearchFields.formIdString(resourceId, contextId);
-		Document document = getDocument(id);
+		ElasticSearchDocument document = getDocument(id);
 
 		if (document != null) {
 			// determine the values used in the index for this triple
@@ -936,20 +882,20 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 			Set<String> contextsToUpdate = new HashSet<String>(stmtsToAdd.keySet());
 			contextsToUpdate.addAll(stmtsToRemove.keySet());
 
-			Map<String, Document> docsByContext = new HashMap<String, Document>();
+			Map<String, ElasticSearchDocument> docsByContext = new HashMap<String, ElasticSearchDocument>();
 			// is the resource in the store?
 			// fetch the Document representing this Resource
 			String resourceId = SearchFields.getResourceID(resource);
-			List<Document> documents = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
+			List<ElasticSearchDocument> documents = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
 
-			for (Document doc : documents) {
+			for (ElasticSearchDocument doc : documents) {
 				docsByContext.put(this.getContextID(doc.fields), doc);
 			}
 
 			for (String contextId : contextsToUpdate) {
 				String id = SearchFields.formIdString(resourceId, contextId);
 
-				Document document = docsByContext.get(contextId);
+				ElasticSearchDocument document = docsByContext.get(contextId);
 				if (document == null) {
 					// there are no such Documents: create one now
 					Map<String,Object> newDocument = new HashMap<String,Object>();

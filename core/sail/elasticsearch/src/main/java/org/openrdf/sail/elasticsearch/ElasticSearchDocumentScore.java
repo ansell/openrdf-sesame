@@ -14,21 +14,35 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.elasticsearch;
 
-import java.util.Collection;
-import java.util.List;
+import org.openrdf.sail.lucene.DocumentScore;
+import org.openrdf.sail.lucene.SearchDocument;
 
-public interface SearchDocument
-{
-	String getId();
-	String getResource();
-	String getContext();
-	Collection<String> getPropertyNames();
-	void addProperty(String name, String value);
-	/**
-	 * Checks whether a field occurs with a specified value in a Document.
-	 */
-	boolean hasProperty(String name, String value);
-	List<String> getProperty(String name);
+public class ElasticSearchDocumentScore implements DocumentScore {
+
+	@Override
+	public SearchDocument getDocument() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public float getScore() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isHighlighted() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Iterable<String> getSnippets(String field) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

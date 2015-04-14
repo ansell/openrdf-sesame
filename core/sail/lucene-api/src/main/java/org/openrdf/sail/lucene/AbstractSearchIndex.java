@@ -151,7 +151,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if (document.hasProperty(fieldName, text)) {
 				// if the Document only has one predicate field, we can remove the
 				// document
-				List<String> propertyNames = document.getPropertyNames(); // one or more
+				Collection<String> propertyNames = document.getPropertyNames(); // one or more
 				List<String> propertyValues = document.getProperty(fieldName); // zero or more
 				if (propertyNames.size() == 1 && propertyValues.size() == 1) {
 					deleteDocument(id);
@@ -161,7 +161,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// document and add a new Document without this triple
 					SearchDocument newDocument = newDocument(id, resourceId, contextId);
 
-					for (String oldFieldName : document.getPropertyNames()) {
+					for (String oldFieldName : propertyNames) {
 						List<String> oldValues = document.getProperty(oldFieldName);
 						boolean isField = fieldName.equals(oldFieldName);
 						for(String oldValue : oldValues) {
@@ -515,7 +515,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				if (query.getSnippetVariableName() != null) {
 					if (hit.isHighlighted()) {
 						// limit to the queried field, if there was one
-						List<String> fields;
+						Collection<String> fields;
 						if (query.getPropertyURI() != null) {
 							String fieldname = query.getPropertyURI().toString();
 							fields = Collections.singletonList(fieldname);

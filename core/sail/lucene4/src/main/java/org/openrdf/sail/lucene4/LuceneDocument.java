@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene3;
+package org.openrdf.sail.lucene4;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.IndexableField;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
@@ -86,9 +86,9 @@ public class LuceneDocument implements SearchDocument
 
 	@Override
 	public Collection<String> getPropertyNames() {
-		List<Fieldable> fields = doc.getFields();
+		List<IndexableField> fields = doc.getFields();
 		List<String> names = new ArrayList<String>(fields.size());
-		for(Fieldable field : fields) {
+		for(IndexableField field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))
 				names.add(name);

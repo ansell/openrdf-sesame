@@ -20,12 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 
-import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.LuceneSail;
 
 /**

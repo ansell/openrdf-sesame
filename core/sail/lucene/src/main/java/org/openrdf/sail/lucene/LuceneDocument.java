@@ -18,16 +18,13 @@ package org.openrdf.sail.lucene;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
 
-/**
- *
- * @author MJAHale
- */
 public class LuceneDocument implements SearchDocument
 {
 	private final Document doc;
@@ -82,7 +79,7 @@ public class LuceneDocument implements SearchDocument
 	}
 
 	@Override
-	public List<String> getPropertyNames() {
+	public Collection<String> getPropertyNames() {
 		List<IndexableField> fields = doc.getFields();
 		List<String> names = new ArrayList<String>(fields.size());
 		for(IndexableField field : fields) {

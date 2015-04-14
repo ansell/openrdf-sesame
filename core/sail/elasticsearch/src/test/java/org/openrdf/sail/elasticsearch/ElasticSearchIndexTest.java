@@ -50,8 +50,8 @@ import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
-import org.openrdf.sail.elasticsearch.ElasticSearchIndex.Document;
 import org.openrdf.sail.lucene.LuceneSail;
+import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -239,13 +239,13 @@ public class ElasticSearchIndexTest {
 		assertEquals(2, count);
 
 		// check the documents
-		Document document = index.getDocuments(subject).iterator().next();
-		assertEquals(subject.toString(), document.fields.get(SearchFields.URI_FIELD_NAME));
+		SearchDocument document = index.getDocuments(subject).iterator().next();
+		assertEquals(subject.toString(), document.getResource());
 		assertStatement(statement11, document);
 		assertStatement(statement12, document);
 
 		document = index.getDocuments(subject2).iterator().next();
-		assertEquals(subject2.toString(), document.fields.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(subject2.toString(), document.getResource());
 		assertStatement(statement21, document);
 		assertStatement(statement22, document);
 
@@ -267,7 +267,7 @@ public class ElasticSearchIndexTest {
 
 		// check doc 2
 		document = index.getDocuments(subject2).iterator().next();
-		assertEquals(subject2.toString(), document.fields.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(subject2.toString(), document.getResource());
 		assertStatement(statement21, document);
 		assertStatement(statement23, document);
 		assertNoStatement(statement22, document);
@@ -415,7 +415,7 @@ public class ElasticSearchIndexTest {
 	private void assertStatement(Statement statement)
 		throws Exception
 	{
-		Document document = index.getDocument(statement.getSubject(), statement.getContext());
+		SearchDocument document = index.getDocument(statement.getSubject(), statement.getContext());
 		if (document == null)
 			fail("Missing document " + statement.getSubject());
 		assertStatement(statement, document);
@@ -424,7 +424,7 @@ public class ElasticSearchIndexTest {
 	private void assertNoStatement(Statement statement)
 		throws Exception
 	{
-		Document document = index.getDocument(statement.getSubject(), statement.getContext());
+		SearchDocument document = index.getDocument(statement.getSubject(), statement.getContext());
 		if (document == null)
 			return;
 		assertNoStatement(statement, document);
@@ -434,8 +434,8 @@ public class ElasticSearchIndexTest {
 	 * @param statement112
 	 * @param document
 	 */
-	private void assertStatement(Statement statement, Document document) {
-		List<String> fields = ElasticSearchIndex.asStringList(document.fields.get(statement.getPredicate().toString()));
+	private void assertStatement(Statement statement, SearchDocument document) {
+		List<String> fields = document.getProperty(statement.getPredicate().toString());
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
 		for (String f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f))
@@ -448,8 +448,8 @@ public class ElasticSearchIndexTest {
 	 * @param statement112
 	 * @param document
 	 */
-	private void assertNoStatement(Statement statement, Document document) {
-		List<String> fields = ElasticSearchIndex.asStringList(document.fields.get(statement.getPredicate().toString()));
+	private void assertNoStatement(Statement statement, SearchDocument document) {
+		List<String> fields = document.getProperty(statement.getPredicate().toString());
 		if (fields == null)
 			return;
 		for (String f : fields) {
