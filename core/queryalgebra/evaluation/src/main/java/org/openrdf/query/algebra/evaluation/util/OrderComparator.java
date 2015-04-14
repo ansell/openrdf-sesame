@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Value;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
@@ -35,7 +36,13 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
 /**
- * @author james
+ * A {@link Comparator} on {@link BindingSet}s that imposes a total ordering by
+ * examining supplied {@link Order} elements (i.e. the elements of an ORDER BY
+ * clause), falling back on a custom predictable ordering for BindingSet
+ * elements if no ordering is established on the basis of the Order elements.
+ * 
+ * @author James Leigh
+ * @author Jeen Broekstra
  */
 public class OrderComparator implements Comparator<BindingSet>, Serializable {
 
@@ -49,7 +56,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 	private transient EvaluationStrategy strategy;
 
 	private final UUID strategyKey;
-	
+
 	private final Order order;
 
 	private transient ValueComparator cmp;
@@ -63,6 +70,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 
 	public int compare(BindingSet o1, BindingSet o2) {
 		try {
+
 			for (OrderElem element : order.getElements()) {
 				Value v1 = evaluate(element.getExpr(), o1);
 				Value v2 = evaluate(element.getExpr(), o2);
@@ -71,6 +79,37 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 
 				if (compare != 0) {
 					return element.isAscending() ? compare : -compare;
+				}
+			}
+
+			// On the basis of the order clause elements the two binding sets are
+			// unordered.
+			// We now need to impose a total ordering (as per the
+			// contract of java.util.Comparator). We order by
+			// size first, then by binding names, then finally by values.
+
+			if (o2.size() != o1.size()) {
+				return o1.size() < o2.size() ? 1 : -1;
+			}
+
+			// sizes are equal. compare on binding names
+			if (!o2.getBindingNames().equals(o1.getBindingNames())) {
+				if (!o2.getBindingNames().containsAll(o1.getBindingNames())) {
+					return -1;
+				}
+				if (!o1.getBindingNames().containsAll(o2.getBindingNames())) {
+					return 1;
+				}
+			}
+
+			// binding names equal. compare on all values
+			for (Binding o1binding : o1) {
+				final Value v1 = o1binding.getValue();
+				final Value v2 = o2.getValue(o1binding.getName());
+
+				final int compare = cmp.compare(v1, v2);
+				if (compare != 0) {
+					return compare;
 				}
 			}
 
@@ -96,10 +135,12 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			return null;
 		}
 	}
-	
-	 private void readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
-		 in.defaultReadObject();
-		 this.strategy = EvaluationStrategies.get(this.strategyKey);
-		 this.cmp = new ValueComparator();
-	 }
+
+	private void readObject(ObjectInputStream in)
+		throws IOException, ClassNotFoundException
+	{
+		in.defaultReadObject();
+		this.strategy = EvaluationStrategies.get(this.strategyKey);
+		this.cmp = new ValueComparator();
+	}
 }
