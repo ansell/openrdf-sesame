@@ -28,7 +28,7 @@
          ];
          sail:delegate [
             sail:sailType "openrdf:NativeStore" ;
-	    sail:iterationCacheSize "{%Query Iteration Cache size|10000%}";
+	    sail:iterationCacheSyncThreshold "{%Query Iteration Cache sync threshold|10000%}";
             ns:tripleIndexes "{%Triple indexes|spoc,posc%}"
          ]
       ]

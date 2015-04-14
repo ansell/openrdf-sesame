@@ -14,7 +14,7 @@
       rep:repositoryType "openrdf:SailRepository" ;
       sr:sailImpl [
          sail:sailType "openrdf:NativeStore" ;
-	 sail:iterationCacheSize "{%Query Iteration Cache size|10000%}";
+	 sail:iterationCacheSyncThreshold "{%Query Iteration Cache size|10000%}";
          ns:tripleIndexes "{%Triple indexes|spoc,posc%}"
       ]
    ].
