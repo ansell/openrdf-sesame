@@ -529,7 +529,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 							Iterable<String> snippets = hit.getSnippets(field);
 							if(snippets != null) {
 								for(String snippet : snippets) {
-									if(snippet != null) {
+									if(snippet != null && !snippet.isEmpty()) {
 										// create an individual binding set for each snippet
 										QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
 			

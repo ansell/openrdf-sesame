@@ -22,12 +22,14 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -45,7 +47,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
@@ -280,8 +281,15 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return (document != null) ? new LuceneDocument(document) : null;
 	}
 
-	protected Iterable<SearchDocument> getDocuments(String resourceId) {
-
+	protected Iterable<SearchDocument> getDocuments(String resourceId) throws IOException {
+		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
+		return Iterables.transform(docs, new Function<Document,SearchDocument>()
+		{
+			@Override
+			public SearchDocument apply(Document doc) {
+				return new LuceneDocument(doc);
+			}
+		});
 	}
 
 	protected SearchDocument newDocument(String id, String resourceId, String context)
@@ -428,18 +436,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		String resourceId = SearchFields.getResourceID(subject);
 		Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
 		return getDocuments(uriTerm);
-	}
-
-	/**
-	 * Filters the given list of fields, retaining all property fields.
-	 */
-	public IndexableField[] getPropertyFields(List<IndexableField> fields) {
-		List<IndexableField> result = new ArrayList<IndexableField>();
-		for (IndexableField field : fields) {
-			if (SearchFields.isPropertyField(field.name()))
-				result.add(field);
-		}
-		return result.toArray(new IndexableField[result.size()]);
 	}
 
 	/**
@@ -652,25 +648,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return snippet;
 	}
 
-	/**
-	 * Returns the Resource corresponding with the specified Document number.
-	 * Note that all of Lucene's restrictions of using document numbers apply.
-	 */
-	public Resource getResource(int documentNumber)
-		throws IOException
-	{
-		Document document = getIndexSearcher().doc(documentNumber, Collections.singleton(SearchFields.URI_FIELD_NAME));
-		return document == null ? null : getResource(document);
-	}
-
-	/**
-	 * Returns the Resource corresponding with the specified Document.
-	 */
-	public Resource getResource(Document document) {
-		String idString = document.get(SearchFields.URI_FIELD_NAME);
-		return SearchFields.createResource(idString);
-	}
-
 	// /**
 	// * Parses an id-string used for a context filed (a serialized resource)
 	// back to a resource.
@@ -709,30 +686,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		int nDocs = Math.max(getIndexReader().numDocs(), 1);
 		return getIndexSearcher().search(query, nDocs);
-	}
-
-	/**
-	 * Gets the score for a particular Resource and query. Returns a value < 0
-	 * when the Resource does not match the query.
-	 */
-	public float getScore(Resource resource, Query query)
-		throws IOException
-	{
-		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
-		BooleanQuery combinedQuery = new BooleanQuery();
-		combinedQuery.add(idQuery, Occur.MUST);
-		combinedQuery.add(query, Occur.MUST);
-		IndexSearcher searcher = getIndexSearcher();
-
-		// fetch the score when the URI matches the original query
-		TopDocs docs = searcher.search(combinedQuery, null, 1);
-		if (docs.totalHits == 0) {
-			return -1f;
-		}
-		else {
-			return docs.scoreDocs[0].score;
-		}
 	}
 
 	private QueryParser getQueryParser(URI propertyURI) {

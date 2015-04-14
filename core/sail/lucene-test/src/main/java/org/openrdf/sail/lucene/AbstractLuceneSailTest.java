@@ -43,11 +43,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
@@ -747,59 +750,57 @@ public abstract class AbstractLuceneSailTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void testGraphQuery()
 		throws QueryEvaluationException, MalformedQueryException, RepositoryException
 	{
-		// URI score = new URIImpl(LuceneSailSchema.NAMESPACE + "score");
-		// StringBuilder query = new StringBuilder();
-		//
-		//
-		// // here we would expect two links from SUBJECT3 to SUBJECT1 and
-		// SUBJECT2
-		// // and one link from SUBJECT3 to its score
-		// query.append("CONSTRUCT DISTINCT \n");
-		// query.append("    {r} <" + PREDICATE_3 + "> {r2} , \n");
-		// query.append("    {r} <" + score + "> {s} \n");
-		// query.append("FROM \n");
-		// query.append("    {r} lucenesail:matches {match} lucenesail:query {\"four\"}; \n");
-		// query.append("                                   lucenesail:score {s}, \n");
-		// query.append("    {r} <" + PREDICATE_3.toString() + "> {r2} \n");
-		// query.append("USING NAMESPACE\n");
-		// query.append("    lucenesail = <" + LuceneSailSchema.NAMESPACE +
-		// "> \n");
-		//
-		// int r = 0;
-		// int n = 0;
-		// GraphQuery gq = connection.prepareGraphQuery(QueryLanguage.SERQL,
-		// query.toString());
-		// GraphQueryResult result = gq.evaluate();
-		// while(result.hasNext()) {
-		// Statement statement = result.next();
-		// n++;
-		//
-		// if(statement.getSubject().equals(SUBJECT_3) &&
-		// statement.getPredicate().equals(PREDICATE_3) &&
-		// statement.getObject().equals(SUBJECT_1)) {
-		// r |= 1;
-		// continue;
-		// }
-		// if(statement.getSubject().equals(SUBJECT_3) &&
-		// statement.getPredicate().equals(PREDICATE_3) &&
-		// statement.getObject().equals(SUBJECT_2)) {
-		// r |= 2;
-		// continue;
-		// }
-		// if(statement.getSubject().equals(SUBJECT_3) &&
-		// statement.getPredicate().equals(score)) {
-		// r |= 4;
-		// continue;
-		// }
-		// }
-		//
-		// assertEquals(3, n);
-		// assertEquals(7, r);
+		 URI score = new URIImpl(LuceneSailSchema.NAMESPACE + "score");
+		 StringBuilder query = new StringBuilder();
+		
+		
+		 // here we would expect two links from SUBJECT3 to SUBJECT1 and SUBJECT2
+		 // and one link from SUBJECT3 to its score
+		 query.append("CONSTRUCT DISTINCT \n");
+		 query.append("    {r} <" + PREDICATE_3 + "> {r2} , \n");
+		 query.append("    {r} <" + score + "> {s} \n");
+		 query.append("FROM \n");
+		 query.append("    {r} lucenesail:matches {match} lucenesail:query {\"four\"}; \n");
+		 query.append("                                   lucenesail:score {s}, \n");
+		 query.append("    {r} <" + PREDICATE_3.toString() + "> {r2} \n");
+		 query.append("USING NAMESPACE\n");
+		 query.append("    lucenesail = <" + LuceneSailSchema.NAMESPACE +
+		 "> \n");
+		
+		 int r = 0;
+		 int n = 0;
+		 GraphQuery gq = connection.prepareGraphQuery(QueryLanguage.SERQL,
+		 query.toString());
+		 GraphQueryResult result = gq.evaluate();
+		 while(result.hasNext()) {
+			 Statement statement = result.next();
+			 n++;
+			
+			 if(statement.getSubject().equals(SUBJECT_3) &&
+			 statement.getPredicate().equals(PREDICATE_3) &&
+			 statement.getObject().equals(SUBJECT_1)) {
+				 r |= 1;
+				 continue;
+			 }
+			 if(statement.getSubject().equals(SUBJECT_3) &&
+			 statement.getPredicate().equals(PREDICATE_3) &&
+			 statement.getObject().equals(SUBJECT_2)) {
+				 r |= 2;
+				 continue;
+			 }
+			 if(statement.getSubject().equals(SUBJECT_3) &&
+			 statement.getPredicate().equals(score)) {
+				 r |= 4;
+				 continue;
+			 }
+		 }
+		
+		 assertEquals(3, n);
+		 assertEquals(7, r);
 	}
 
 	@Test
@@ -822,8 +823,7 @@ public abstract class AbstractLuceneSailTest {
 		result.close();
 	}
 
-	/*
-	// Triggers a NPE in LuceneQueryIterator
+	@Test
 	public void testUnionQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
@@ -850,7 +850,6 @@ public abstract class AbstractLuceneSailTest {
 		// check that this subject and only this subject is returned
 		result.close();
 	}
-	*/
 
 	@Test
 	public void testContextHandling()
