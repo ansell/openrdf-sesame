@@ -21,14 +21,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -39,7 +34,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -53,38 +47,30 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.sail.Sail;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
 import org.openrdf.sail.lucene.AbstractReaderMonitor;
+import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.LuceneSail;
-import org.openrdf.sail.lucene.QuerySpec;
+import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
-import org.openrdf.sail.lucene.util.ListMap;
-import org.openrdf.sail.lucene.util.MapOfListMaps;
-import org.openrdf.sail.lucene.util.SetMap;
+import org.openrdf.sail.lucene.SearchQuery;
+import org.openrdf.sail.lucene.SimpleBulkUpdater;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -113,21 +99,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	static {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
-	}
-
-	/**
-	 * This class represents the result of a Lucene query evaluation.
-	 */
-	private static class QueryResult {
-
-		public final TopDocs hits;
-
-		public final Highlighter highlighter;
-
-		public QueryResult(TopDocs hits, Highlighter highlighter) {
-			this.hits = hits;
-			this.highlighter = highlighter;
-		}
 	}
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -326,67 +297,64 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	// //////////////////////////////// Methods for updating the index
 
-	/**
-	 * Indexes the specified Statement.
-	 */
-	public synchronized void addStatement(Statement statement)
-		throws IOException
+
+	protected SearchDocument getDocument(String id) throws IOException
 	{
-		// determine stuff to store
-		Value object = statement.getObject();
-		if (!(object instanceof Literal)) {
-			return;
-		}
+		Document document = getDocument(idTerm(id));
+		return (document != null) ? new LuceneDocument(document) : null;
+	}
 
-		String field = statement.getPredicate().toString();
-		String text = ((Literal)object).getLabel();
-		String context = SearchFields.getContextID(statement.getContext());
-		IndexWriter writer = null;
-
-		// fetch the Document representing this Resource
-		String resourceId = SearchFields.getResourceID(statement.getSubject());
-		String contextId = SearchFields.getContextID(statement.getContext());
-
-		String id = SearchFields.formIdString(resourceId, contextId);
-		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
-		Document document = getDocument(idTerm);
-
-		if (document == null) {
-			// there is no such Document: create one now
-			document = new Document();
-			addIDField(id, document);
-			addURIField(resourceId, document);
-			// add context
-			addContextField(context, document);
-
-			addPropertyFields(field, text, document);
-
-			// add it to the index
-			writer = getIndexWriter();
-			writer.addDocument(document);
-		}
-		else {
-			// update this Document when this triple has not been stored already
-			if (!hasProperty(field, text, document)) {
-				// create a copy of the old document; updating the retrieved
-				// Document instance works ok for stored properties but indexed data
-				// gets lots when doing an IndexWriter.updateDocument with it
-				Document newDocument = new Document();
-
-				// add all existing fields (including id, uri, context, and text)
-				for (Object oldFieldObject : document.getFields()) {
-					Field oldField = (Field)oldFieldObject;
-					newDocument.add(oldField);
-				}
-
-				// add the new triple to the cloned document
-				addPropertyFields(field, text, newDocument);
-
-				// update the index with the cloned document
-				writer = getIndexWriter();
-				writer.updateDocument(idTerm, newDocument);
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
+		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
+		return Iterables.transform(docs, new Function<Document,SearchDocument>()
+		{
+			@Override
+			public SearchDocument apply(Document doc) {
+				return new LuceneDocument(doc);
 			}
+		});
+	}
+
+	protected SearchDocument newDocument(String id, String resourceId, String context)
+	{
+		return new LuceneDocument(id, resourceId, context);
+	}
+
+	protected SearchDocument copyDocument(SearchDocument doc)
+	{
+		Document document = ((LuceneDocument)doc).getDocument();
+		Document newDocument = new Document();
+
+		// add all existing fields (including id, uri, context, and text)
+		for (Object oldFieldObject : document.getFields()) {
+			Field oldField = (Field)oldFieldObject;
+			newDocument.add(oldField);
 		}
+		return new LuceneDocument(newDocument);
+	}
+
+	protected void addDocument(SearchDocument doc) throws IOException
+	{
+		getIndexWriter().addDocument(((LuceneDocument)doc).getDocument());
+	}
+
+	protected void updateDocument(SearchDocument doc) throws IOException
+	{
+		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
+	}
+
+	protected void deleteDocument(String id) throws IOException
+	{
+		getIndexWriter().deleteDocuments(idTerm(id));
+	}
+
+	protected BulkUpdater newBulkUpdate()
+	{
+		return new SimpleBulkUpdater(this);
+	}
+
+	private Term idTerm(String id) {
+		return new Term(SearchFields.ID_FIELD_NAME, id);
 	}
 
 	/**
@@ -475,51 +443,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	/**
-	 * Checks whether a field occurs with a specified value in a Document.
-	 */
-	private boolean hasProperty(String fieldName, String value, Document document) {
-		Field[] fields = document.getFields(fieldName);
-		if (fields != null) {
-			for (Field field : fields) {
-				if (value.equals(field.stringValue())) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Determines the number of properties stored in a Document.
-	 */
-	private int numberOfPropertyFields(Document document) {
-		// count the properties that are NOT id nor context nor text
-		int propsize = 0;
-		for (Object o : document.getFields()) {
-			Field f = (Field)o;
-			if (SearchFields.isPropertyField(f.name()))
-				propsize++;
-		}
-		return propsize;
-	}
-
-	/**
-	 * Filters the given list of fields, retaining all property fields.
-	 */
-	public Fieldable[] getPropertyFields(List<Fieldable> fields) {
-		List<Fieldable> result = new ArrayList<Fieldable>();
-		for (Fieldable field : fields) {
-			if (SearchFields.isPropertyField(field.name()))
-				result.add(field);
-		}
-		return result.toArray(new Fieldable[result.size()]);
-	}
-
-	/**
 	 * Stores and indexes an ID in a Document.
 	 */
-	private static void addIDField(String id, Document document) {
+	public static void addIDField(String id, Document document) {
 		document.add(new Field(SearchFields.ID_FIELD_NAME, id, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 	}
 
@@ -533,7 +459,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * @param ifNotExists
 	 *        check if this context exists
 	 */
-	private static void addContextField(String context, Document document) {
+	public static void addContextField(String context, Document document) {
 		if (context != null) {
 			document.add(new Field(SearchFields.CONTEXT_FIELD_NAME, context, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 		}
@@ -542,52 +468,16 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	/**
 	 * Stores and indexes the resource ID in a Document.
 	 */
-	private static void addURIField(String resourceId, Document document) {
+	public static void addURIField(String resourceId, Document document) {
 		document.add(new Field(SearchFields.URI_FIELD_NAME, resourceId, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 	}
 
-	/**
-	 * check if the passed statement should be added (is it indexed? is it
-	 * stored?) and add it as predicate to the passed document. No checks whether
-	 * the predicate was already there.
-	 * 
-	 * @param statement
-	 *        the statement to add
-	 * @param document
-	 *        the document to add to
-	 */
-	private void addProperty(Statement statement, Document document) {
-		String text = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (text == null)
-			return;
-		String field = statement.getPredicate().toString();
-		addPropertyFields(field, text, document);
-	}
-
-	/**
-	 * Stores and indexes a property in a Document. We don't have to recalculate
-	 * the concatenated text: just add another TEXT field and Lucene will take
-	 * care of this. Additional advantage: Lucene may be able to handle the
-	 * invididual strings in a way that may affect e.g. phrase and proximity
-	 * searches (concatenation basically means loss of information). NOTE: The
-	 * TEXT_FIELD_NAME has to be stored, see in LuceneSail
-	 * 
-	 * @see LuceneSail
-	 */
-	private static void addPropertyFields(String predicate, String text, Document document) {
-		// store this predicate
-		addPredicateField(predicate, text, document);
-
-		// and in TEXT_FIELD_NAME
-		addTextField(text, document);
-	}
-
-	private static void addPredicateField(String predicate, String text, Document document) {
+	public static void addPredicateField(String predicate, String text, Document document) {
 		// store this predicate
 		document.add(new Field(predicate, text, Field.Store.YES, Field.Index.ANALYZED));
 	}
 
-	private static void addTextField(String text, Document document) {
+	public static void addTextField(String text, Document document) {
 		// and in TEXT_FIELD_NAME
 		document.add(new Field(SearchFields.TEXT_FIELD_NAME, text, Field.Store.YES, Field.Index.ANALYZED));
 	}
@@ -675,69 +565,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	}
 
-	public synchronized void removeStatement(Statement statement)
-		throws IOException
-	{
-		Value object = statement.getObject();
-		if (!(object instanceof Literal)) {
-			return;
-		}
-
-		IndexWriter writer = null;
-
-		// fetch the Document representing this Resource
-		String resourceId = SearchFields.getResourceID(statement.getSubject());
-		String contextId = SearchFields.getContextID(statement.getContext());
-		String id = SearchFields.formIdString(resourceId, contextId);
-		Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
-
-		Document document = getDocument(idTerm);
-
-		if (document != null) {
-			// determine the values used in the index for this triple
-			String fieldName = statement.getPredicate().toString();
-			String text = ((Literal)object).getLabel();
-
-			// see if this triple occurs in this Document
-			if (hasProperty(fieldName, text, document)) {
-				// if the Document only has one predicate field, we can remove the
-				// document
-				int nrProperties = numberOfPropertyFields(document);
-				if (nrProperties == 0) {
-					logger.info("encountered document with zero properties, should have been deleted: {}",
-							resourceId);
-				}
-				else if (nrProperties == 1) {
-					writer = getIndexWriter();
-					writer.deleteDocuments(idTerm);
-				}
-				else {
-					// there are more triples encoded in this Document: remove the
-					// document and add a new Document without this triple
-					Document newDocument = new Document();
-					addIDField(id, newDocument);
-					addURIField(resourceId, newDocument);
-					addContextField(contextId, newDocument);
-
-					for (Object oldFieldObject : document.getFields()) {
-						Field oldField = (Field)oldFieldObject;
-						String oldFieldName = oldField.name();
-						String oldValue = oldField.stringValue();
-
-						if (SearchFields.isPropertyField(oldFieldName)
-								&& !(fieldName.equals(oldFieldName) && text.equals(oldValue)))
-						{
-							addPropertyFields(oldFieldName, oldValue, newDocument);
-						}
-					}
-
-					writer = getIndexWriter();
-					writer.updateDocument(idTerm, newDocument);
-				}
-			}
-		}
-	}
-
 	@Override
 	public void begin()
 		throws IOException
@@ -769,190 +596,25 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	// //////////////////////////////// Methods for querying the index
 
-	@Override
-	public Collection<BindingSet> evaluate(QuerySpec query) throws SailException
-	{
-		QueryResult result = evaluateQuery(query);
-
-		// generate bindings
-		return generateBindingSets(query, result.hits, result.highlighter);
-	}
-
 	/**
-	 * Evaluates one Lucene Query. It distinguishes between two cases, the one
-	 * where no subject is given and the one were it is given.
+	 * Parse the passed query.
 	 * 
 	 * @param query
-	 *        the Lucene query to evaluate
-	 * @return QueryResult consisting of hits and highlighter
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
 	 */
-	private QueryResult evaluateQuery(QuerySpec query) {
-		TopDocs hits = null;
-		Highlighter highlighter = null;
-
-		// get the subject of the query
-		Resource subject = query.getSubject();
-
+	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	{
+		Query q;
 		try {
-			// parse the query string to a lucene query
-
-			String sQuery = query.getQueryString();
-
-			if (!sQuery.isEmpty()) {
-				Query lucenequery = parseQuery(query.getQueryString(), query.getPropertyURI());
-
-				// if the query requests for the snippet, create a highlighter using
-				// this query
-				if (query.getSnippetVariableName() != null) {
-					Formatter formatter = new SimpleHTMLFormatter();
-					highlighter = new Highlighter(formatter, new QueryScorer(lucenequery));
-				}
-
-				// distinguish the two cases of subject == null
-				if (subject == null) {
-					hits = search(lucenequery);
-				}
-				else {
-					hits = search(subject, lucenequery);
-				}
-			}
-			else {
-				hits = new TopDocs(0, new ScoreDoc[0], 0.0f);
-			}
+			q = getQueryParser(propertyURI).parse(query);
 		}
-		catch (Exception e) {
-			logger.error("There was a problem evaluating query '" + query.getQueryString() + "' for property '"
-					+ query.getPropertyURI() + "!", e);
+		catch (ParseException e) {
+			throw new MalformedQueryException(e);
 		}
-
-		return new QueryResult(hits, highlighter);
-	}
-
-	/**
-	 * This method generates bindings from the given result of a Lucene query.
-	 * 
-	 * @param query
-	 *        the Lucene query
-	 * @param hits
-	 *        the query result
-	 * @param highlighter
-	 *        a Highlighter for the query
-	 * @return a LinkedHashSet containing generated bindings
-	 * @throws SailException
-	 */
-	private LinkedHashSet<BindingSet> generateBindingSets(QuerySpec query, TopDocs hits,
-			Highlighter highlighter)
-		throws SailException
-	{
-		// Since one resource can be returned many times, it can lead now to
-		// multiple occurrences
-		// of the same binding tuple in the BINDINGS clause. This in turn leads to
-		// duplicate answers in the original SPARQL query.
-		// We want to avoid this, so BindingSets added to the result must be
-		// unique.
-		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
-
-		// for each hit ...
-		ScoreDoc[] docs = hits.scoreDocs;
-		for (int i = 0; i < docs.length; i++) {
-			// this takes the new bindings
-			QueryBindingSet derivedBindings = new QueryBindingSet();
-
-			// get the current hit
-			int docId = docs[i].doc;
-			Document doc = getDoc(docId);
-			if (doc == null)
-				continue;
-
-			// get the score of the hit
-			float score = docs[i].score;
-
-			// bind the respective variables
-			String matchVar = query.getMatchesVariableName();
-			if (matchVar != null) {
-				try {
-					Resource resource = getResource(doc);
-					Value existing = derivedBindings.getValue(matchVar);
-					// if the existing binding contradicts the current binding, than
-					// we can safely skip this permutation
-					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-						// invalidate the binding
-						derivedBindings = null;
-
-						// and exit the loop
-						break;
-					}
-					derivedBindings.addBinding(matchVar, resource);
-				}
-				catch (NullPointerException e) {
-					SailException e1 = new SailException(
-							"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-							e);
-					logger.error(e1.getMessage());
-					logger.debug("Details: ", e);
-					throw e1;
-				}
-			}
-
-			if ((query.getScoreVariableName() != null) && (score > 0.0f))
-				derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
-
-			if (query.getSnippetVariableName() != null) {
-				if (highlighter != null) {
-					// limit to the queried field, if there was one
-					Fieldable[] fields;
-					if (query.getPropertyURI() != null) {
-						String fieldname = query.getPropertyURI().toString();
-						fields = doc.getFields(fieldname);
-					}
-					else {
-						fields = getPropertyFields(doc.getFields());
-					}
-
-					// extract snippets from Lucene's query results
-					for (Fieldable field : fields) {
-						// create an individual binding set for each snippet
-						QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-
-						String text = field.stringValue();
-
-						String fragments = null;
-						try {
-							TokenStream tokenStream = getAnalyzer().tokenStream(field.name(),
-									new StringReader(text));
-							fragments = highlighter.getBestFragments(tokenStream, text, 2, "...");
-						}
-						catch (Exception e) {
-							logger.error("Exception while getting snippet for filed " + field.name()
-									+ " for query\n" + query, e);
-							continue;
-						}
-
-						if (fragments != null && !fragments.isEmpty()) {
-							snippetBindings.addBinding(query.getSnippetVariableName(), new LiteralImpl(fragments));
-
-							if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-								snippetBindings.addBinding(query.getPropertyVariableName(), new URIImpl(field.name()));
-							}
-
-							bindingSets.add(snippetBindings);
-						}
-					}
-				}
-				else {
-					logger.warn(
-							"Lucene Query requests snippet, but no highlighter was generated for it, no snippets will be generated!\n{}",
-							query);
-					bindingSets.add(derivedBindings);
-				}
-			}
-			else {
-				bindingSets.add(derivedBindings);
-			}
-		}
-
-		// we succeeded
-		return bindingSets;
+		return new LuceneQuery(q, this);
 	}
 
 	/**
@@ -962,9 +624,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *        the id of the document to return
 	 * @return the requested hit, or null if it fails
 	 */
-	private Document getDoc(int docId) {
+	public Document getDocument(int docId) {
 		try {
-			return getIndexSearcher().doc(docId);
+			return readDocument(getIndexReader(), docId);
 		}
 		catch (CorruptIndexException e) {
 			logger.error("The index seems to be corrupted:", e);
@@ -976,27 +638,18 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
-	/**
-	 * Returns the Resource corresponding with the specified Document number.
-	 * Note that all of Lucene's restrictions of using document numbers apply.
-	 */
-	public Resource getResource(int documentNumber)
-		throws IOException
-	{
-		Document document = getIndexSearcher().doc(documentNumber, URI_FIELD_SELECTOR);
-		return document == null ? null : getResource(document);
-	}
-
-	/**
-	 * Returns the Resource corresponding with the specified Document.
-	 */
-	public Resource getResource(Document document) {
-		String idString = document.get(SearchFields.URI_FIELD_NAME);
-		return SearchFields.createResource(idString);
-	}
-
-	private String getContextID(Document document) {
-		return document.get(SearchFields.CONTEXT_FIELD_NAME);
+	public String getSnippet(String fieldName, String text, Highlighter highlighter) {
+		String snippet;
+		try {
+			TokenStream tokenStream = getAnalyzer().tokenStream(fieldName,
+					new StringReader(text));
+			snippet = highlighter.getBestFragments(tokenStream, text, 2, "...");
+		}
+		catch (Exception e) {
+			logger.error("Exception while getting snippet for field " + fieldName, e);
+			snippet = null;
+		}
+		return snippet;
 	}
 
 	// /**
@@ -1016,15 +669,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	// }
 
 	/**
-	 * Evaluates the given query and returns the results as a TopDocs instance.
-	 */
-	public TopDocs search(String query)
-		throws ParseException, IOException
-	{
-		return search(parseQuery(query, null));
-	}
-
-	/**
 	 * Evaluates the given query only for the given resource.
 	 */
 	public TopDocs search(Resource resource, Query query)
@@ -1039,21 +683,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	/**
-	 * Parse the passed query.
-	 * 
-	 * @param query
-	 *        string
-	 * @return the parsed query
-	 * @throws ParseException
-	 *         when the parsing brakes
-	 */
-	public Query parseQuery(String query, URI propertyURI)
-		throws ParseException
-	{
-		return getQueryParser(propertyURI).parse(query);
-	}
-
-	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
 	public TopDocs search(Query query)
@@ -1061,40 +690,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		int nDocs = Math.max(getIndexReader().numDocs(), 1);
 		return getIndexSearcher().search(query, nDocs);
-	}
-
-	/**
-	 * Gets the score for a particular Resource and query. Returns a value < 0
-	 * when the Resource does not match the query.
-	 */
-	public float getScore(Resource resource, String query, URI propertyURI)
-		throws ParseException, IOException
-	{
-		return getScore(resource, parseQuery(query, propertyURI));
-	}
-
-	/**
-	 * Gets the score for a particular Resource and query. Returns a value < 0
-	 * when the Resource does not match the query.
-	 */
-	public float getScore(Resource resource, Query query)
-		throws IOException
-	{
-		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
-		BooleanQuery combinedQuery = new BooleanQuery();
-		combinedQuery.add(idQuery, Occur.MUST);
-		combinedQuery.add(query, Occur.MUST);
-		IndexSearcher searcher = getIndexSearcher();
-
-		// fetch the score when the URI matches the original query
-		TopDocs docs = searcher.search(combinedQuery, null, 1);
-		if (docs.totalHits == 0) {
-			return -1f;
-		}
-		else {
-			return docs.scoreDocs[0].score;
-		}
 	}
 
 	private QueryParser getQueryParser(URI propertyURI) {
@@ -1107,163 +702,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			// otherwise we create a query parser that has the given property as
 			// the default field
 			return new QueryParser(Version.LUCENE_35, propertyURI.toString(), this.queryAnalyzer);
-	}
-
-	/**
-	 * Add many statements at the same time, remove many statements at the same
-	 * time. Ordering by resource has to be done inside this method. The passed
-	 * added/removed sets are disjunct, no statement can be in both
-	 * 
-	 * @param added
-	 *        all added statements, can have multiple subjects
-	 * @param removed
-	 *        all removed statements, can have multiple subjects
-	 */
-	@Override
-	public synchronized void addRemoveStatements(Collection<Statement> added, Collection<Statement> removed)
-		throws IOException
-	{
-		// Buffer per resource
-		MapOfListMaps<Resource, String, Statement> rsAdded = new MapOfListMaps<Resource, String, Statement>();
-		MapOfListMaps<Resource, String, Statement> rsRemoved = new MapOfListMaps<Resource, String, Statement>();
-
-		HashSet<Resource> resources = new HashSet<Resource>();
-		for (Statement s : added) {
-			rsAdded.add(s.getSubject(), SearchFields.getContextID(s.getContext()), s);
-			resources.add(s.getSubject());
-		}
-		for (Statement s : removed) {
-			rsRemoved.add(s.getSubject(), SearchFields.getContextID(s.getContext()), s);
-			resources.add(s.getSubject());
-		}
-
-		logger.debug("Removing " + removed.size() + " statements, adding " + added.size() + " statements");
-
-		IndexWriter writer = getIndexWriter();
-		// for each resource, add/remove
-		for (Resource resource : resources) {
-			Map<String, List<Statement>> stmtsToRemove = rsRemoved.get(resource);
-			Map<String, List<Statement>> stmtsToAdd = rsAdded.get(resource);
-
-			Set<String> contextsToUpdate = new HashSet<String>(stmtsToAdd.keySet());
-			contextsToUpdate.addAll(stmtsToRemove.keySet());
-
-			Map<String, Document> docsByContext = new HashMap<String, Document>();
-			// is the resource in the store?
-			// fetch the Document representing this Resource
-			String resourceId = SearchFields.getResourceID(resource);
-			Term uriTerm = new Term(SearchFields.URI_FIELD_NAME, resourceId);
-			List<Document> documents = getDocuments(uriTerm);
-
-			for (Document doc : documents) {
-				docsByContext.put(this.getContextID(doc), doc);
-			}
-
-			for (String contextId : contextsToUpdate) {
-				String id = SearchFields.formIdString(resourceId, contextId);
-
-				Term idTerm = new Term(SearchFields.ID_FIELD_NAME, id);
-				Document document = docsByContext.get(contextId);
-				if (document == null) {
-					// there are no such Documents: create one now
-					document = new Document();
-					addIDField(id, document);
-					addURIField(resourceId, document);
-					addContextField(contextId, document);
-					// add all statements, remember the contexts
-					// HashSet<Resource> contextsToAdd = new HashSet<Resource>();
-					List<Statement> list = stmtsToAdd.get(contextId);
-					if (list != null) {
-						for (Statement s : list) {
-							addProperty(s, document);
-						}
-					}
-
-					// add it to the index
-					writer.addDocument(document);
-
-					// THERE SHOULD BE NO DELETED TRIPLES ON A NEWLY ADDED RESOURCE
-					if (stmtsToRemove.containsKey(contextId))
-						logger.info(
-								"Statements are marked to be removed that should not be in the store, for resource {} and context {}. Nothing done.",
-								resource, contextId);
-				}
-				else {
-					// update the Document
-
-					// create a copy of the old document; updating the retrieved
-					// Document instance works ok for stored properties but indexed
-					// data
-					// gets lots when doing an IndexWriter.updateDocument with it
-					Document newDocument = new Document();
-
-					// buffer the removed literal statements
-					ListMap<String, String> removedOfResource = null;
-					{
-						List<Statement> removedStatements = stmtsToRemove.get(contextId);
-						if (removedStatements != null && !removedStatements.isEmpty()) {
-							removedOfResource = new ListMap<String, String>();
-							for (Statement r : removedStatements) {
-								if (r.getObject() instanceof Literal) {
-									// remove value from both property field and the
-									// corresponding text field
-									String label = ((Literal)r.getObject()).getLabel();
-									removedOfResource.put(r.getPredicate().toString(), label);
-									removedOfResource.put(SearchFields.TEXT_FIELD_NAME, label);
-								}
-							}
-						}
-					}
-
-					// add all existing fields (including id, uri, context, and text)
-					// but without adding the removed ones
-					// keep the predicate/value pairs to ensure that the statement
-					// cannot be added twice
-					SetMap<String, String> copiedProperties = new SetMap<String, String>();
-					for (Object oldFieldObject : document.getFields()) {
-						Field oldField = (Field)oldFieldObject;
-						// do not copy removed statements to the new version of the
-						// document
-						if (removedOfResource != null) {
-							// which fields were removed?
-							List<String> objectsRemoved = removedOfResource.get(oldField.name());
-							if ((objectsRemoved != null) && (objectsRemoved.contains(oldField.stringValue())))
-								continue;
-						}
-						newDocument.add(oldField);
-						copiedProperties.put(oldField.name(), oldField.stringValue());
-					}
-
-					// add all statements to this document, except for those which
-					// are already there
-					{
-						List<Statement> addedToResource = stmtsToAdd.get(contextId);
-						String val;
-						if (addedToResource != null && !addedToResource.isEmpty()) {
-							for (Statement s : addedToResource) {
-								val = SearchFields.getLiteralPropertyValueAsString(s);
-								if (val != null) {
-									if (!copiedProperties.containsKeyValuePair(s.getPredicate().stringValue(), val)) {
-										addProperty(s, newDocument);
-									}
-								}
-							}
-						}
-					}
-
-					// update the index with the cloned document, if it contains any
-					// meaningful non-system properties
-					int nrProperties = numberOfPropertyFields(newDocument);
-					if (nrProperties > 0) {
-						writer.updateDocument(idTerm, newDocument);
-					}
-					else {
-						writer.deleteDocuments(idTerm);
-					}
-				}
-			}
-		}
-
 	}
 
 	/**
@@ -1356,51 +794,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// } finally {
 		// con.close();
 		// }
-
-	}
-
-	/**
-	 * Add a complete Lucene Document based on these statements. Do not search
-	 * for an existing document with the same subject id. (assume the existing
-	 * document was deleted)
-	 * 
-	 * @param statements
-	 *        the statements that make up the resource
-	 * @throws IOException
-	 */
-	@Override
-	public synchronized void addDocuments(Resource subject, List<Statement> statements)
-		throws IOException
-	{
-
-		String resourceId = SearchFields.getResourceID(subject);
-
-		SetMap<String, Statement> stmtsByContextId = new SetMap<String, Statement>();
-
-		String contextId;
-		for (Statement statement : statements) {
-			contextId = SearchFields.getContextID(statement.getContext());
-
-			stmtsByContextId.put(contextId, statement);
-		}
-
-		IndexWriter writer = getIndexWriter();
-		for (Entry<String, Set<Statement>> entry : stmtsByContextId.entrySet()) {
-			// create a new document
-			Document document = new Document();
-
-			String id = SearchFields.formIdString(resourceId, entry.getKey());
-			addIDField(id, document);
-			addURIField(resourceId, document);
-			addContextField(entry.getKey(), document);
-
-			for (Statement stmt : entry.getValue()) {
-				// determine stuff to store
-				addProperty(stmt, document);
-			}
-			// add it to the index
-			writer.addDocument(document);
-		}
 
 	}
 

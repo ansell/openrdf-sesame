@@ -25,7 +25,6 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-	GraphQueryTest.class,
 	LuceneIndexTest.class,
 	LuceneSailTest.class,
 	LuceneSailIndexedPropertiesTest.class

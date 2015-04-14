@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.lucene3;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,9 +29,10 @@ import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.sail.lucene.DocumentScore;
+import org.openrdf.sail.lucene.SearchQuery;
 
 
 public class LuceneQuery implements SearchQuery

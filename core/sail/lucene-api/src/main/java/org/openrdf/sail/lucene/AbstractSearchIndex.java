@@ -220,7 +220,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			// is the resource in the store?
 			// fetch the Document representing this Resource
 			String resourceId = SearchFields.getResourceID(resource);
-			Iterable<SearchDocument> documents = getDocuments(resourceId);
+			Iterable<? extends SearchDocument> documents = getDocuments(resourceId);
 
 			for (SearchDocument doc : documents) {
 				docsByContext.put(doc.getContext(), doc);
@@ -400,7 +400,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	@Override
 	public final Collection<BindingSet> evaluate(QuerySpec query) throws SailException
 	{
-		Iterable<DocumentScore> result = evaluateQuery(query);
+		Iterable<? extends DocumentScore> result = evaluateQuery(query);
 
 		// generate bindings
 		return generateBindingSets(query, result);
@@ -414,8 +414,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	 *        the Lucene query to evaluate
 	 * @return QueryResult consisting of hits and highlighter
 	 */
-	private Iterable<DocumentScore> evaluateQuery(QuerySpec query) {
-		Iterable<DocumentScore> hits = null;
+	private Iterable<? extends DocumentScore> evaluateQuery(QuerySpec query) {
+		Iterable<? extends DocumentScore> hits = null;
 
 		// get the subject of the query
 		Resource subject = query.getSubject();
@@ -457,7 +457,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	 * @return a LinkedHashSet containing generated bindings
 	 * @throws SailException
 	 */
-	private Collection<BindingSet> generateBindingSets(QuerySpec query, Iterable<DocumentScore> hits)
+	private Collection<BindingSet> generateBindingSets(QuerySpec query, Iterable<? extends DocumentScore> hits)
 		throws SailException
 	{
 		// Since one resource can be returned many times, it can lead now to
@@ -572,7 +572,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 
 	protected abstract SearchDocument getDocument(String id) throws IOException;
-	protected abstract Iterable<SearchDocument> getDocuments(String resourceId) throws IOException;
+	protected abstract Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException;
 	protected abstract SearchDocument newDocument(String id, String resourceId, String context);
 	protected abstract SearchDocument copyDocument(SearchDocument doc);
 	protected abstract void addDocument(SearchDocument doc) throws IOException;

@@ -281,7 +281,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return (document != null) ? new LuceneDocument(document) : null;
 	}
 
-	protected Iterable<SearchDocument> getDocuments(String resourceId) throws IOException {
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
 		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
 		return Iterables.transform(docs, new Function<Document,SearchDocument>()
 		{
@@ -441,7 +441,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	/**
 	 * Stores and indexes an ID in a Document.
 	 */
-	private static void addIDField(String id, Document document) {
+	public static void addIDField(String id, Document document) {
 		document.add(new StringField(SearchFields.ID_FIELD_NAME, id, Store.YES));
 	}
 
@@ -455,7 +455,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * @param ifNotExists
 	 *        check if this context exists
 	 */
-	private static void addContextField(String context, Document document) {
+	public static void addContextField(String context, Document document) {
 		if (context != null) {
 			document.add(new StringField(SearchFields.CONTEXT_FIELD_NAME, context, Store.YES));
 		}
@@ -464,16 +464,16 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	/**
 	 * Stores and indexes the resource ID in a Document.
 	 */
-	private static void addURIField(String resourceId, Document document) {
+	public static void addURIField(String resourceId, Document document) {
 		document.add(new StringField(SearchFields.URI_FIELD_NAME, resourceId, Store.YES));
 	}
 
-	private static void addPredicateField(String predicate, String text, Document document) {
+	public static void addPredicateField(String predicate, String text, Document document) {
 		// store this predicate
 		document.add(new TextField(predicate, text, Store.YES));
 	}
 
-	private static void addTextField(String text, Document document) {
+	public static void addTextField(String text, Document document) {
 		// and in TEXT_FIELD_NAME
 		document.add(new TextField(SearchFields.TEXT_FIELD_NAME, text, Store.YES));
 	}
