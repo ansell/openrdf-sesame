@@ -117,19 +117,19 @@ public class ElasticsearchIndexTest {
 	public void setUp()
 		throws Exception
 	{
-		node = NodeBuilder.nodeBuilder().node();
-		client = node.client();
 		index = new ElasticsearchIndex();
 		index.initialize(new Properties());
+		node = NodeBuilder.nodeBuilder().client(true).node();
+		client = node.client();
 	}
 
 	@After
 	public void tearDown()
 		throws Exception
 	{
-		index.shutDown();
 		client.close();
 		node.close();
+		index.shutDown();
 		FileUtils.deleteDirectory(new File("target/test-data"));
 	}
 

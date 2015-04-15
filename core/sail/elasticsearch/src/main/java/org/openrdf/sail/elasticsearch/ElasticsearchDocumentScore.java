@@ -57,6 +57,9 @@ public class ElasticsearchDocumentScore implements DocumentScore {
 	@Override
 	public Iterable<String> getSnippets(String field) {
 		HighlightField highlightField = hit.getHighlightFields().get(field);
+		if(highlightField == null) {
+			return null;
+		}
 		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text,String>()
 		{
 			@Override
