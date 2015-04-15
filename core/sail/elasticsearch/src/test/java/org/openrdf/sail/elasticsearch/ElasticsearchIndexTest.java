@@ -58,6 +58,7 @@ import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class ElasticsearchIndexTest {
+	private static final String DATA_DIR = "target/test-data";
 
 	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
 
@@ -118,8 +119,10 @@ public class ElasticsearchIndexTest {
 		throws Exception
 	{
 		index = new ElasticsearchIndex();
-		index.initialize(new Properties());
-		node = NodeBuilder.nodeBuilder().client(true).node();
+		Properties sailProperties = new Properties();
+		sailProperties.put(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
+		index.initialize(sailProperties);
+		node = NodeBuilder.nodeBuilder().loadConfigSettings(false).client(true).local(true).clusterName(index.getClusterName()).node();
 		client = node.client();
 	}
 
@@ -130,7 +133,7 @@ public class ElasticsearchIndexTest {
 		client.close();
 		node.close();
 		index.shutDown();
-		FileUtils.deleteDirectory(new File("target/test-data"));
+		FileUtils.deleteDirectory(new File(DATA_DIR));
 	}
 
 	@Test

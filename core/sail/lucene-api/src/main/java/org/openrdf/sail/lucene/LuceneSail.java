@@ -517,6 +517,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 			logger.info("Reindexing sail: done.");
 		}
 		catch(Exception e) {
+			logger.error("Rolling back", e);
 			luceneIndex.rollback();
 			throw e;
 		}

@@ -272,6 +272,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			luceneIndex.commit();
 		}
 		catch(IOException e) {
+			logger.error("Rolling back", e);
 			luceneIndex.rollback();
 			throw e;
 		}
@@ -286,6 +287,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			luceneIndex.commit();
 		}
 		catch(IOException e) {
+			logger.error("Rolling back", e);
 			luceneIndex.rollback();
 			throw e;
 		}

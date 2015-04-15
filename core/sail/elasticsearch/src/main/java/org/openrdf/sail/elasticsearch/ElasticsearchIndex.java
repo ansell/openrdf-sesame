@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -76,6 +76,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public static final String DEFAULT_DOCUMENT_TYPE = "resource";
 	public static final String DEFAULT_ANALYZER = "standard";
 
+	public static final String ELASTICSEARCH_KEY_PREFIX = "elasticsearch.";
+
 	public static final String HIGHLIGHTER_PRE_TAG = "<B>";
 	public static final String HIGHLIGHTER_POST_TAG = "</B>";
 	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
@@ -86,6 +88,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	private Client client;
 
+	private String clusterName;
 	private String indexName;
 	private String documentType;
 
@@ -94,6 +97,11 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	public ElasticsearchIndex()
 	{
+	}
+
+	public String getClusterName()
+	{
+		return clusterName;
 	}
 
 	public String getIndexName()
@@ -114,11 +122,20 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		String dataDir = parameters.getProperty(LuceneSail.LUCENE_DIR_KEY);
 
 		NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
-		if(dataDir != null) {
-			Settings settings = nodeBuilder.settings().put("path.data", dataDir).build();
-			nodeBuilder.settings(settings);
+		ImmutableSettings.Builder settingsBuilder = nodeBuilder.settings();
+		for(Enumeration<?> iter = parameters.propertyNames(); iter.hasMoreElements(); ) {
+			String propName = (String) iter.nextElement();
+			if(propName.startsWith(ELASTICSEARCH_KEY_PREFIX)) {
+				String esName = propName.substring(ELASTICSEARCH_KEY_PREFIX.length());
+				settingsBuilder.put(esName, parameters.getProperty(propName));
+			}
 		}
+		if(dataDir != null) {
+			settingsBuilder.put("path.data", dataDir);
+		}
+		nodeBuilder.settings(settingsBuilder);
 		node = nodeBuilder.node();
+		clusterName = node.settings().get("cluster.name");
 		client = node.client();
 
 		ClusterHealthStatus status = ClusterHealthStatus.YELLOW;
@@ -150,6 +167,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	{
 		String settings = XContentFactory.jsonBuilder()
 			.startObject()
+				.field("index.query.default_field", SearchFields.TEXT_FIELD_NAME)
 				.startObject("analysis")
 					.startObject("analyzer")
 						.startObject("default")
@@ -211,6 +229,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 * Returns a Document representing the specified document ID (combination of
 	 * resource and context), or null when no such Document exists yet.
 	 */
+	@Override
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
@@ -221,6 +240,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return null;
 	}
 
+	@Override
 	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
 		SearchHits hits = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
 		return Iterables.transform(hits, new Function<SearchHit,SearchDocument>()
@@ -232,11 +252,13 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		});
 	}
 
+	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
 		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context);
 	}
 
+	@Override
 	protected SearchDocument copyDocument(SearchDocument doc)
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
@@ -245,24 +267,28 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getIndex(), esDoc.getVersion(), newDocument);
 	}
 
+	@Override
 	protected void addDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()));
 	}
 
+	@Override
 	protected void updateDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		doUpdateRequest(client.prepareUpdate(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setDoc(esDoc.getSource()));
 	}
 
+	@Override
 	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).execute().actionGet();
 	}
 
+	@Override
 	protected BulkUpdater newBulkUpdate()
 	{
 		return new ElasticsearchBulkUpdater(client);
@@ -355,6 +381,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 * @throws ParseException
 	 *         when the parsing brakes
 	 */
+	@Override
 	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
 	{
 		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
@@ -541,19 +568,23 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		}
 	}
 
-	private static void doIndexRequest(ActionRequestBuilder<?, ? extends IndexResponse, ?, ?> request) throws IOException
+	private static long doIndexRequest(ActionRequestBuilder<?, ? extends IndexResponse, ?, ?> request) throws IOException
 	{
-		boolean ok = request.execute().actionGet().isCreated();
+		IndexResponse response = request.execute().actionGet();
+		boolean ok = response.isCreated();
 		if(!ok) {
 			throw new IOException("Document not created: "+request.get().getClass().getName());
 		}
+		return response.getVersion();
 	}
 
-	private static void doUpdateRequest(ActionRequestBuilder<?, ? extends UpdateResponse, ?, ?> request) throws IOException
+	private static long doUpdateRequest(ActionRequestBuilder<?, ? extends UpdateResponse, ?, ?> request) throws IOException
 	{
-		boolean ok = request.execute().actionGet().isCreated();
-		if(!ok) {
-			throw new IOException("Document not updated: "+request.get().getClass().getName());
+		UpdateResponse response = request.execute().actionGet();
+		boolean isUpsert = response.isCreated();
+		if(isUpsert) {
+			throw new IOException("Unexpected upsert: "+request.get().getClass().getName());
 		}
+		return response.getVersion();
 	}
 }
