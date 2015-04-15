@@ -130,7 +130,7 @@ public class ElasticsearchIndexTest {
 		index.shutDown();
 		client.close();
 		node.close();
-		FileUtils.deleteDirectory(new File("target/test-index"));
+		FileUtils.deleteDirectory(new File("target/test-data"));
 	}
 
 	@Test
