@@ -27,17 +27,17 @@ import org.elasticsearch.search.SearchHit;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-public class ElasticSearchDocument implements SearchDocument {
+public class ElasticsearchDocument implements SearchDocument {
 	private final String id;
 	private final String type;
 	private final long version;
 	private final Map<String,Object> fields;
 
-	public ElasticSearchDocument(SearchHit hit) {
+	public ElasticsearchDocument(SearchHit hit) {
 		this(hit.getId(), hit.getType(), hit.getVersion(), hit.getSource());
 	}
 
-	public ElasticSearchDocument(String id, String type, String resourceId, String context)
+	public ElasticsearchDocument(String id, String type, String resourceId, String context)
 	{
 		this(id, type, 0L, new HashMap<String,Object>());
 		fields.put(SearchFields.URI_FIELD_NAME, resourceId);
@@ -46,7 +46,7 @@ public class ElasticSearchDocument implements SearchDocument {
 		}
 	}
 
-	public ElasticSearchDocument(String id, String type, long version, Map<String,Object> fields) {
+	public ElasticsearchDocument(String id, String type, long version, Map<String,Object> fields) {
 		this.id = id;
 		this.type = type;
 		this.version = version;
@@ -83,7 +83,7 @@ public class ElasticSearchDocument implements SearchDocument {
 
 	@Override
 	public Collection<String> getPropertyNames() {
-		return ElasticSearchIndex.getPropertyFields(fields.keySet());
+		return ElasticsearchIndex.getPropertyFields(fields.keySet());
 	}
 
 	@Override

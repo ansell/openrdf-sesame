@@ -55,7 +55,7 @@ import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class ElasticSearchIndexTest {
+public class ElasticsearchIndexTest {
 
 	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
 
@@ -109,7 +109,7 @@ public class ElasticSearchIndexTest {
 
 	Node node;
 	Client client;
-	ElasticSearchIndex index;
+	ElasticsearchIndex index;
 
 	@Before
 	public void setUp()
@@ -117,7 +117,7 @@ public class ElasticSearchIndexTest {
 	{
 		node = NodeBuilder.nodeBuilder().node();
 		client = node.client();
-		index = new ElasticSearchIndex();
+		index = new ElasticsearchIndex();
 		index.initialize(new Properties());
 	}
 

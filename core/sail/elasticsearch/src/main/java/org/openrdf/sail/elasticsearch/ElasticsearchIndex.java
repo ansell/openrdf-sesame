@@ -88,7 +88,7 @@ import com.google.common.collect.Iterables;
 /**
  * @see LuceneSail
  */
-public class ElasticSearchIndex extends AbstractSearchIndex {
+public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	public static final String INDEX_NAME_KEY = "indexName";
 	public static final String DOCUMENT_TYPE_KEY = "documentType";
@@ -112,7 +112,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	private String analyzer;
 	private String queryAnalyzer = "standard";
 
-	public ElasticSearchIndex()
+	public ElasticsearchIndex()
 	{
 	}
 
@@ -226,7 +226,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	{
 		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
 		if(response.isExists()) {
-			return new ElasticSearchDocument(response.getId(), response.getType(), response.getVersion(), response.getSource());
+			return new ElasticsearchDocument(response.getId(), response.getType(), response.getVersion(), response.getSource());
 		}
 		// no such Document
 		return null;
@@ -238,45 +238,45 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 		{
 			@Override
 			public SearchDocument apply(SearchHit hit) {
-				return new ElasticSearchDocument(hit);
+				return new ElasticsearchDocument(hit);
 			}
 		});
 	}
 
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new ElasticSearchDocument(id, documentType, resourceId, context);
+		return new ElasticsearchDocument(id, documentType, resourceId, context);
 	}
 
 	protected SearchDocument copyDocument(SearchDocument doc)
 	{
-		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		Map<String,Object> source = esDoc.getSource();
 		Map<String,Object> newDocument = new HashMap<String,Object>(source);
-		return new ElasticSearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getVersion(), newDocument);
+		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getVersion(), newDocument);
 	}
 
 	protected void addDocument(SearchDocument doc) throws IOException
 	{
-		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		doIndexRequest(client.prepareIndex(indexName, esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()));
 	}
 
 	protected void updateDocument(SearchDocument doc) throws IOException
 	{
-		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		doUpdateRequest(client.prepareUpdate(indexName, esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setDoc(esDoc.getSource()));
 	}
 
 	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
-		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		client.prepareDelete(indexName, esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).execute().actionGet();
 	}
 
 	protected BulkUpdater newBulkUpdate()
 	{
-		return new ElasticSearchBulkUpdater(this);
+		return new ElasticsearchBulkUpdater(this);
 	}
 
 	/**
@@ -714,20 +714,20 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 			Set<String> contextsToUpdate = new HashSet<String>(stmtsToAdd.keySet());
 			contextsToUpdate.addAll(stmtsToRemove.keySet());
 
-			Map<String, ElasticSearchDocument> docsByContext = new HashMap<String, ElasticSearchDocument>();
+			Map<String, ElasticsearchDocument> docsByContext = new HashMap<String, ElasticsearchDocument>();
 			// is the resource in the store?
 			// fetch the Document representing this Resource
 			String resourceId = SearchFields.getResourceID(resource);
-			List<ElasticSearchDocument> documents = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
+			List<ElasticsearchDocument> documents = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
 
-			for (ElasticSearchDocument doc : documents) {
+			for (ElasticsearchDocument doc : documents) {
 				docsByContext.put(this.getContextID(doc.fields), doc);
 			}
 
 			for (String contextId : contextsToUpdate) {
 				String id = SearchFields.formIdString(resourceId, contextId);
 
-				ElasticSearchDocument document = docsByContext.get(contextId);
+				ElasticsearchDocument document = docsByContext.get(contextId);
 				if (document == null) {
 					// there are no such Documents: create one now
 					Map<String,Object> newDocument = new HashMap<String,Object>();

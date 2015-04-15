@@ -27,11 +27,11 @@ import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchQuery;
 
-public class ElasticSearchQuery implements SearchQuery {
+public class ElasticsearchQuery implements SearchQuery {
 	private final SearchRequestBuilder request;
-	private ElasticSearchIndex index;
+	private ElasticsearchIndex index;
 
-	public ElasticSearchQuery(SearchRequestBuilder request, ElasticSearchIndex index) {
+	public ElasticsearchQuery(SearchRequestBuilder request, ElasticsearchIndex index) {
 		this.request = request;
 		this.index = index;
 	}
@@ -54,7 +54,7 @@ public class ElasticSearchQuery implements SearchQuery {
 		}
 		else {
 			try {
-				fields = ElasticSearchIndex.getPropertyFields(index.getFieldMappings().keySet());
+				fields = ElasticsearchIndex.getPropertyFields(index.getFieldMappings().keySet());
 			}
 			catch(IOException ioe) {
 				throw new ElasticsearchException("Failed to retrieve field mappings", ioe);
@@ -63,8 +63,8 @@ public class ElasticSearchQuery implements SearchQuery {
 		for(String field : fields) {
 			request.addHighlightedField(field);
 		}
-		request.setHighlighterPreTags(ElasticSearchIndex.HIGHLIGHTER_PRE_TAG);
-		request.setHighlighterPostTags(ElasticSearchIndex.HIGHLIGHTER_POST_TAG);
+		request.setHighlighterPreTags(ElasticsearchIndex.HIGHLIGHTER_PRE_TAG);
+		request.setHighlighterPostTags(ElasticsearchIndex.HIGHLIGHTER_POST_TAG);
 		// Elastic Search doesn't really have the same support for fragments as Lucene.
 		// So, we have to get back the whole highlighted value (comma-separated if it is a list)
 		// and then post-process it into fragments ourselves.

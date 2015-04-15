@@ -16,14 +16,14 @@
  */
 package org.openrdf.sail.elasticsearch;
 
-import org.openrdf.sail.lucene.AbstractLuceneSailTest;
+import org.openrdf.sail.lucene.AbstractLuceneSailIndexedPropertiesTest;
 import org.openrdf.sail.lucene.LuceneSail;
 
-public class ElasticSearchSailTest extends AbstractLuceneSailTest {
+public class ElasticsearchSailIndexedPropertiesTest extends AbstractLuceneSailIndexedPropertiesTest {
+
 	@Override
 	protected void configure(LuceneSail sail)
 	{
-		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticSearchIndex.class.getName());
+		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
 	}
-
 }

@@ -31,7 +31,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.sail.elasticsearch.ElasticSearchIndex;
+import org.openrdf.sail.elasticsearch.ElasticsearchIndex;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.LuceneSailSchema;
 import org.openrdf.sail.memory.MemoryStore;
@@ -41,7 +41,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * 
  * @author sauermann
  */
-public class ElasticSearchSailExample {
+public class ElasticsearchSailExample {
 
 	/**
 	 * Create a lucene sail and use it
@@ -65,7 +65,7 @@ public class ElasticSearchSailExample {
 
 		// create a lucenesail to wrap the memorystore
 		LuceneSail lucenesail = new LuceneSail();
-		lucenesail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticSearchIndex.class.getName());
+		lucenesail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
 
 		// wrap memorystore in a lucenesail
 		lucenesail.setBaseSail(memoryStore);
@@ -78,7 +78,7 @@ public class ElasticSearchSailExample {
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
 			connection.begin();
-			connection.add(ElasticSearchSailExample.class.getResourceAsStream("foaf.rdfs"), "", RDFFormat.RDFXML);
+			connection.add(ElasticsearchSailExample.class.getResourceAsStream("foaf.rdfs"), "", RDFFormat.RDFXML);
 			connection.commit();
 
 			// search for resources that mention "person"

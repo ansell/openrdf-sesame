@@ -20,7 +20,7 @@ import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
-import org.openrdf.sail.elasticsearch.ElasticSearchIndex;
+import org.openrdf.sail.elasticsearch.ElasticsearchIndex;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.config.LuceneSailConfig;
 
@@ -28,7 +28,7 @@ import org.openrdf.sail.lucene.config.LuceneSailConfig;
  * A {@link SailFactory} that creates {@link LuceneSail}s based on RDF
  * configuration data.
  */
-public class ElasticSearchSailFactory implements SailFactory {
+public class ElasticsearchSailFactory implements SailFactory {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -59,7 +59,7 @@ public class ElasticSearchSailFactory implements SailFactory {
 		}
 
 		LuceneSail luceneSail = new LuceneSail();
-		luceneSail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticSearchIndex.class.getName());
+		luceneSail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
 
 		if (config instanceof LuceneSailConfig) {
 			LuceneSailConfig luceneConfig = (LuceneSailConfig)config;

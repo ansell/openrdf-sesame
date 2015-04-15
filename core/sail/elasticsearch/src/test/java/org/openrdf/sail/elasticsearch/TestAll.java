@@ -25,9 +25,9 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-	ElasticSearchIndexTest.class,
-	ElasticSearchSailTest.class,
-	ElasticSearchSailIndexedPropertiesTest.class
+	ElasticsearchIndexTest.class,
+	ElasticsearchSailTest.class,
+	ElasticsearchSailIndexedPropertiesTest.class
 })
 public class TestAll {
 }

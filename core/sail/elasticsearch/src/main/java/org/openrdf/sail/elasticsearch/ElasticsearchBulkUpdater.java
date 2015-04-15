@@ -16,33 +16,34 @@
  */
 package org.openrdf.sail.elasticsearch;
 
-import org.openrdf.sail.lucene.DocumentScore;
+import java.io.IOException;
+
+import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.SearchDocument;
 
-public class ElasticSearchDocumentScore implements DocumentScore {
+public class ElasticsearchBulkUpdater implements BulkUpdater {
 
 	@Override
-	public SearchDocument getDocument() {
+	public void add(SearchDocument doc) throws IOException {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
 
 	@Override
-	public float getScore() {
+	public void update(SearchDocument doc) throws IOException {
 		// TODO Auto-generated method stub
-		return 0;
+		
 	}
 
 	@Override
-	public boolean isHighlighted() {
+	public void delete(String id) throws IOException {
 		// TODO Auto-generated method stub
-		return false;
+		
 	}
 
 	@Override
-	public Iterable<String> getSnippets(String field) {
+	public void end() throws IOException {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
-
 }
