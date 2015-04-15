@@ -39,7 +39,6 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
