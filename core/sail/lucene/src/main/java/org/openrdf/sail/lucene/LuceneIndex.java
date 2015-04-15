@@ -35,7 +35,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -47,6 +46,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
@@ -303,8 +303,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		Document newDocument = new Document();
 
 		// add all existing fields (including id, uri, context, and text)
-		for (Object oldFieldObject : document.getFields()) {
-			Field oldField = (Field)oldFieldObject;
+		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
 		return new LuceneDocument(newDocument);
@@ -320,9 +319,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
 	}
 
-	protected void deleteDocument(String id) throws IOException
+	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
-		getIndexWriter().deleteDocuments(idTerm(id));
+		getIndexWriter().deleteDocuments(idTerm(doc.getId()));
 	}
 
 	protected BulkUpdater newBulkUpdate()

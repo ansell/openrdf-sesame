@@ -72,7 +72,6 @@ import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
-import org.openrdf.sail.lucene.LuceneDocument;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.QuerySpec;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -97,9 +96,9 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	public static final String DEFAULT_DOCUMENT_TYPE = "resource";
 	public static final String DEFAULT_ANALYZER = "standard";
 
-	private static final String HIGHLIGHTER_PRE_TAG = "<B>";
-	private static final String HIGHLIGHTER_POST_TAG = "</B>";
-	private static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
+	public static final String HIGHLIGHTER_PRE_TAG = "<B>";
+	public static final String HIGHLIGHTER_POST_TAG = "</B>";
+	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -153,6 +152,7 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 		return mappings.sourceAsMap();
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String,Object> getFieldMappings() throws IOException
 	{
 		return (Map<String,Object>) getMappings().get("properties");
@@ -233,47 +233,45 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	}
 
 	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
-		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
-		return Iterables.transform(docs, new Function<Document,SearchDocument>()
+		SearchHit[] docs = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
+		return Iterables.transform(Arrays.asList(docs), new Function<SearchHit,SearchDocument>()
 		{
 			@Override
-			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc);
+			public SearchDocument apply(SearchHit hit) {
+				return new ElasticSearchDocument(hit);
 			}
 		});
 	}
 
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context);
+		return new ElasticSearchDocument(id, documentType, resourceId, context);
 	}
 
 	protected SearchDocument copyDocument(SearchDocument doc)
 	{
-		Document document = ((LuceneDocument)doc).getDocument();
-		Document newDocument = new Document();
-
-		// add all existing fields (including id, uri, context, and text)
-		for (Object oldFieldObject : document.getFields()) {
-			Field oldField = (Field)oldFieldObject;
-			newDocument.add(oldField);
-		}
-		return new LuceneDocument(newDocument);
+		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		Map<String,Object> source = esDoc.getSource();
+		Map<String,Object> newDocument = new HashMap<String,Object>(source);
+		return new ElasticSearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getVersion(), newDocument);
 	}
 
 	protected void addDocument(SearchDocument doc) throws IOException
 	{
-		getIndexWriter().addDocument(((LuceneDocument)doc).getDocument());
+		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		doIndexRequest(client.prepareIndex(indexName, esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()));
 	}
 
 	protected void updateDocument(SearchDocument doc) throws IOException
 	{
-		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
+		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		doUpdateRequest(client.prepareUpdate(indexName, esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setDoc(esDoc.getSource()));
 	}
 
-	protected void deleteDocument(String id) throws IOException
+	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
-		getIndexWriter().deleteDocuments(idTerm(id));
+		ElasticSearchDocument esDoc = (ElasticSearchDocument) doc;
+		client.prepareDelete(indexName, esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).execute().actionGet();
 	}
 
 	protected BulkUpdater newBulkUpdate()
@@ -282,81 +280,23 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	}
 
 	/**
-	 * Indexes the specified Statement.
-	 */
-	@Override
-	public synchronized void addStatement(Statement statement)
-		throws IOException
-	{
-		// determine stuff to store
-		Value object = statement.getObject();
-		if (!(object instanceof Literal)) {
-			return;
-		}
-
-		String field = statement.getPredicate().toString();
-		String text = ((Literal)object).getLabel();
-		String context = SearchFields.getContextID(statement.getContext());
-
-		// fetch the Document representing this Resource
-		String resourceId = SearchFields.getResourceID(statement.getSubject());
-		String contextId = SearchFields.getContextID(statement.getContext());
-
-		String id = SearchFields.formIdString(resourceId, contextId);
-		ElasticSearchDocument document = getDocument(id);
-
-		if (document == null) {
-			// there is no such Document: create one now
-			Map<String,Object> newDocument = new HashMap<String,Object>();
-			addURIField(resourceId, newDocument);
-			// add context
-			addContextField(context, newDocument);
-
-			addPropertyFields(field, text, newDocument);
-
-			// add it to the index
-			doIndexRequest(client.prepareIndex(indexName, documentType, id).setSource(newDocument));
-		}
-		else {
-			// update this Document when this triple has not been stored already
-			if (!hasProperty(field, text, document.fields)) {
-				Map<String,Object> newDocument = new HashMap<String,Object>(document.fields);
-
-				// add the new triple to the cloned document
-				addPropertyFields(field, text, newDocument);
-
-				// update the index with the cloned document
-				doUpdateRequest(client.prepareUpdate(indexName, document.type, document.id).setVersion(document.version).setDoc(newDocument));
-			}
-		}
-	}
-
-	/**
 	 * Returns a list of Documents representing the specified Resource (empty
 	 * when no such Document exists yet). Each document represent a set of
 	 * statements with the specified Resource as a subject, which are stored in a
 	 * specific context
 	 */
-	private List<ElasticSearchDocument> getDocuments(QueryBuilder query)
+	private SearchHit[] getDocuments(QueryBuilder query)
 		throws IOException
 	{
-		List<ElasticSearchDocument> result = new ArrayList<ElasticSearchDocument>();
-
 		SearchHits searchHits = search(client.prepareSearch(), query);
-		SearchHit[] hits = searchHits.getHits();
-		int size = hits.length;
-		for(int i=0; i<size; i++) {
-			result.add(new ElasticSearchDocument(hits[i]));
-		}
-
-		return result;
+		return searchHits.getHits();
 	}
 
 	/**
 	 * Returns a Document representing the specified Resource & Context
 	 * combination, or null when no such Document exists yet.
 	 */
-	public ElasticSearchDocument getDocument(Resource subject, Resource context)
+	public SearchDocument getDocument(Resource subject, Resource context)
 		throws IOException
 	{
 		// fetch the Document representing this Resource
@@ -371,25 +311,11 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	 * statements with the specified Resource as a subject, which are stored in a
 	 * specific context
 	 */
-	public List<ElasticSearchDocument> getDocuments(Resource subject)
+	public Iterable<? extends SearchDocument> getDocuments(Resource subject)
 		throws IOException
 	{
 		String resourceId = SearchFields.getResourceID(subject);
-		QueryBuilder query = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId);
-		return getDocuments(query);
-	}
-
-	/**
-	 * Determines the number of properties stored in a Document.
-	 */
-	private int numberOfPropertyFields(Collection<String> fields) {
-		// count the properties that are NOT id nor context nor text
-		int propsize = 0;
-		for (String field : fields) {
-			if (SearchFields.isPropertyField(field))
-				propsize++;
-		}
-		return propsize;
+		return getDocuments(resourceId);
 	}
 
 	/**
@@ -402,91 +328,6 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 				result.add(field);
 		}
 		return result;
-	}
-
-	/**
-	 * Add the "context" value to the doc
-	 * 
-	 * @param context
-	 *        the context or null, if null-context
-	 * @param document
-	 *        the document
-	 * @param ifNotExists
-	 *        check if this context exists
-	 */
-	private static void addContextField(String context, Map<String,Object> document) {
-		if (context != null) {
-			document.put(SearchFields.CONTEXT_FIELD_NAME, context);
-		}
-	}
-
-	/**
-	 * Stores and indexes the resource ID in a Document.
-	 */
-	private static void addURIField(String resourceId, Map<String,Object> document) {
-		document.put(SearchFields.URI_FIELD_NAME, resourceId);
-	}
-
-	@Override
-	public synchronized void removeStatement(Statement statement)
-		throws IOException
-	{
-		Value object = statement.getObject();
-		if (!(object instanceof Literal)) {
-			return;
-		}
-
-		// fetch the Document representing this Resource
-		String resourceId = SearchFields.getResourceID(statement.getSubject());
-		String contextId = SearchFields.getContextID(statement.getContext());
-		String id = SearchFields.formIdString(resourceId, contextId);
-		ElasticSearchDocument document = getDocument(id);
-
-		if (document != null) {
-			// determine the values used in the index for this triple
-			String fieldName = statement.getPredicate().toString();
-			String text = ((Literal)object).getLabel();
-
-			// see if this triple occurs in this Document
-			if (hasProperty(fieldName, text, document.fields)) {
-				// if the Document only has one predicate field, we can remove the
-				// document
-				int nrProperties = numberOfPropertyFields(document.fields.keySet());
-				if (nrProperties == 0) {
-					logger.info("encountered document with zero properties, should have been deleted: {}",
-							resourceId);
-				}
-				else if (nrProperties == 1) {
-					client.prepareDelete(indexName, document.type, document.id).setVersion(document.version).execute().actionGet();
-				}
-				else {
-					// there are more triples encoded in this Document: remove the
-					// document and add a new Document without this triple
-					Map<String,Object> newDocument = new HashMap<String,Object>();
-					addURIField(resourceId, newDocument);
-					addContextField(contextId, newDocument);
-
-					for (Map.Entry<String,Object> oldField : document.fields.entrySet()) {
-						String oldFieldName = oldField.getKey();
-						List<String> oldValues = asStringList(oldField.getValue());
-
-						if (SearchFields.isPropertyField(oldFieldName))
-						{
-							boolean isField = fieldName.equals(oldFieldName);
-							for(String oldValue : oldValues)
-							{
-								if (!(isField && text.equals(oldValue)))
-								{
-									addPropertyFields(oldFieldName, oldValue, newDocument);
-								}
-							}
-						}
-					}
-
-					client.prepareUpdate(indexName, document.type, document.id).setVersion(document.version).setDoc(newDocument).execute().actionGet();
-				}
-			}
-		}
 	}
 
 	@Override
@@ -516,15 +357,6 @@ public class ElasticSearchIndex extends AbstractSearchIndex {
 	}
 
 	// //////////////////////////////// Methods for querying the index
-
-	@Override
-	public Collection<BindingSet> evaluate(QuerySpec query) throws SailException
-	{
-		SearchHits result = evaluateQuery(query);
-
-		// generate bindings
-		return generateBindingSets(query, result);
-	}
 
 	/**
 	 * Evaluates one Lucene Query. It distinguishes between two cases, the one

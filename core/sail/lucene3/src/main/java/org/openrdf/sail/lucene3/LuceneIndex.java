@@ -34,6 +34,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -310,8 +311,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		Document newDocument = new Document();
 
 		// add all existing fields (including id, uri, context, and text)
-		for (Object oldFieldObject : document.getFields()) {
-			Field oldField = (Field)oldFieldObject;
+		for (Fieldable oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
 		return new LuceneDocument(newDocument);
@@ -327,9 +327,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
 	}
 
-	protected void deleteDocument(String id) throws IOException
+	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
-		getIndexWriter().deleteDocuments(idTerm(id));
+		getIndexWriter().deleteDocuments(idTerm(doc.getId()));
 	}
 
 	protected BulkUpdater newBulkUpdate()

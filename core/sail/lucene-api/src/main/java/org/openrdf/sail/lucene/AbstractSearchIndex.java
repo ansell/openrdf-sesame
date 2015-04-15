@@ -154,7 +154,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				Collection<String> propertyNames = document.getPropertyNames(); // one or more
 				List<String> propertyValues = document.getProperty(fieldName); // zero or more
 				if (propertyNames.size() == 1 && propertyValues.size() == 1) {
-					deleteDocument(id);
+					deleteDocument(document);
 				}
 				else {
 					// there are more triples encoded in this Document: remove the
@@ -577,7 +577,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract SearchDocument copyDocument(SearchDocument doc);
 	protected abstract void addDocument(SearchDocument doc) throws IOException;
 	protected abstract void updateDocument(SearchDocument doc) throws IOException;
-	protected abstract void deleteDocument(String id) throws IOException;
+	protected abstract void deleteDocument(SearchDocument doc) throws IOException;
 
 	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
 

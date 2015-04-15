@@ -19,6 +19,7 @@ package org.openrdf.sail.elasticsearch;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,15 @@ public class ElasticSearchDocument implements SearchDocument {
 
 	public ElasticSearchDocument(SearchHit hit) {
 		this(hit.getId(), hit.getType(), hit.getVersion(), hit.getSource());
+	}
+
+	public ElasticSearchDocument(String id, String type, String resourceId, String context)
+	{
+		this(id, type, 0L, new HashMap<String,Object>());
+		fields.put(SearchFields.URI_FIELD_NAME, resourceId);
+		if (context != null) {
+			fields.put(SearchFields.CONTEXT_FIELD_NAME, context);
+		}
 	}
 
 	public ElasticSearchDocument(String id, String type, long version, Map<String,Object> fields) {
@@ -54,6 +64,11 @@ public class ElasticSearchDocument implements SearchDocument {
 
 	public long getVersion() {
 		return version;
+	}
+
+	public Map<String,Object> getSource()
+	{
+		return fields;
 	}
 
 	@Override
@@ -123,6 +138,7 @@ public class ElasticSearchDocument implements SearchDocument {
 		return modList;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static List<String> asStringList(Object value) {
 		List<String> l;
 		if(value == null) {
