@@ -328,7 +328,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						}
 					}
 					else {
-						updater.delete(id);
+						updater.delete(document);
 					}
 				}
 			}
@@ -485,28 +485,18 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				// bind the respective variables
 				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
-					try {
-						Resource resource = getResource(doc);
-						Value existing = derivedBindings.getValue(matchVar);
-						// if the existing binding contradicts the current binding, than
-						// we can safely skip this permutation
-						if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-							// invalidate the binding
-							derivedBindings = null;
+					Resource resource = getResource(doc);
+					Value existing = derivedBindings.getValue(matchVar);
+					// if the existing binding contradicts the current binding, than
+					// we can safely skip this permutation
+					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
+						// invalidate the binding
+						derivedBindings = null;
 	
-							// and exit the loop
-							break;
-						}
-						derivedBindings.addBinding(matchVar, resource);
+						// and exit the loop
+						break;
 					}
-					catch (NullPointerException e) {
-						SailException e1 = new SailException(
-								"NullPointerException when retrieving a resource from LuceneSail. Possible cause is the obsolete index structure. Re-creating the index can help",
-								e);
-						logger.error(e1.getMessage());
-						logger.debug("Details: ", e);
-						throw e1;
-					}
+					derivedBindings.addBinding(matchVar, resource);
 				}
 	
 				if ((query.getScoreVariableName() != null) && (score > 0.0f))

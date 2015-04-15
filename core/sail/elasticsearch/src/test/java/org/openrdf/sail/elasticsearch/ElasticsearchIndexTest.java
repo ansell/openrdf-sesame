@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
@@ -128,6 +130,8 @@ public class ElasticsearchIndexTest {
 		index.shutDown();
 		client.close();
 		node.close();
+		String dataDir = node.settings().get("path.data");
+		FileUtils.deleteDirectory(new File(dataDir));
 	}
 
 	@Test

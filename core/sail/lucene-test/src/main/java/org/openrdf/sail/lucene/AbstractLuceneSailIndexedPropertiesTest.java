@@ -124,15 +124,12 @@ public abstract class AbstractLuceneSailIndexedPropertiesTest {
 				"a not well known fact, groucho marx was not a smoker"));
 		connection.add(SUBJECT_3, FOAFPLAN, new LiteralImpl("groucho did not smoke cigars nor cigarillos")); // this
 																																				// should
-																																				// not
-																																				// be
-																																				// indexed
 		connection.commit();
 	}
 
 	@After
 	public void tearDown()
-		throws RepositoryException
+		throws IOException, RepositoryException
 	{
 		connection.close();
 		repository.shutDown();

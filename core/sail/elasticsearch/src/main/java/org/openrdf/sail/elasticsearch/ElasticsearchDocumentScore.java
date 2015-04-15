@@ -16,33 +16,53 @@
  */
 package org.openrdf.sail.elasticsearch;
 
+import java.util.Arrays;
+
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.highlight.HighlightField;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+
 public class ElasticsearchDocumentScore implements DocumentScore {
+	private final SearchHit hit;
+	private ElasticsearchDocument fullDoc;
+
+	public ElasticsearchDocumentScore(SearchHit hit) {
+		this.hit = hit;
+	}
 
 	@Override
 	public SearchDocument getDocument() {
-		// TODO Auto-generated method stub
-		return null;
+		if(fullDoc == null)
+		{
+			fullDoc = new ElasticsearchDocument(hit);
+		}
+		return fullDoc;
 	}
 
 	@Override
 	public float getScore() {
-		// TODO Auto-generated method stub
-		return 0;
+		return hit.getScore();
 	}
 
 	@Override
 	public boolean isHighlighted() {
-		// TODO Auto-generated method stub
-		return false;
+		return (hit.getHighlightFields() != null);
 	}
 
 	@Override
 	public Iterable<String> getSnippets(String field) {
-		// TODO Auto-generated method stub
-		return null;
+		HighlightField highlightField = hit.getHighlightFields().get(field);
+		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text,String>()
+		{
+			@Override
+			public String apply(Text fragment) {
+				return ElasticsearchIndex.getSnippet(fragment.string());
+			}
+		});
 	}
-
 }

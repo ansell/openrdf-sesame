@@ -31,25 +31,27 @@ public class ElasticsearchDocument implements SearchDocument {
 	private final String id;
 	private final String type;
 	private final long version;
+	private final String index;
 	private final Map<String,Object> fields;
 
 	public ElasticsearchDocument(SearchHit hit) {
-		this(hit.getId(), hit.getType(), hit.getVersion(), hit.getSource());
+		this(hit.getId(), hit.getType(), hit.getIndex(), hit.getVersion(), hit.getSource());
 	}
 
-	public ElasticsearchDocument(String id, String type, String resourceId, String context)
+	public ElasticsearchDocument(String id, String type, String index, String resourceId, String context)
 	{
-		this(id, type, 0L, new HashMap<String,Object>());
+		this(id, type, index, 0L, new HashMap<String,Object>());
 		fields.put(SearchFields.URI_FIELD_NAME, resourceId);
 		if (context != null) {
 			fields.put(SearchFields.CONTEXT_FIELD_NAME, context);
 		}
 	}
 
-	public ElasticsearchDocument(String id, String type, long version, Map<String,Object> fields) {
+	public ElasticsearchDocument(String id, String type, String index, long version, Map<String,Object> fields) {
 		this.id = id;
 		this.type = type;
 		this.version = version;
+		this.index = index;
 		this.fields = fields;
 	}
 
@@ -64,6 +66,10 @@ public class ElasticsearchDocument implements SearchDocument {
 
 	public long getVersion() {
 		return version;
+	}
+
+	public String getIndex() {
+		return index;
 	}
 
 	public Map<String,Object> getSource()

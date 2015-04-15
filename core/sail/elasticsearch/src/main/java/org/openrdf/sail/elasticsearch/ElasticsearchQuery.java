@@ -22,25 +22,45 @@ import java.util.List;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchQuery;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+
 public class ElasticsearchQuery implements SearchQuery {
 	private final SearchRequestBuilder request;
+	private final QueryBuilder qb;
 	private ElasticsearchIndex index;
 
-	public ElasticsearchQuery(SearchRequestBuilder request, ElasticsearchIndex index) {
+	public ElasticsearchQuery(SearchRequestBuilder request, QueryBuilder qb, ElasticsearchIndex index) {
 		this.request = request;
+		this.qb = qb;
 		this.index = index;
 	}
 
 	@Override
-	public Iterable<? extends DocumentScore> query(Resource subject)
+	public Iterable<? extends DocumentScore> query(Resource resource)
 			throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		SearchHits hits;
+		if(resource != null) {
+			hits = index.search(resource, request, qb);
+		}
+		else {
+			hits = index.search(request, qb);
+		}
+		return Iterables.transform(hits, new Function<SearchHit,DocumentScore>()
+		{
+			@Override
+			public DocumentScore apply(SearchHit hit) {
+				return new ElasticsearchDocumentScore(hit);
+			}
+		});
 	}
 
 	/**

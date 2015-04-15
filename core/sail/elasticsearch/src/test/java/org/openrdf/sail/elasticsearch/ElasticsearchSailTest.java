@@ -16,14 +16,27 @@
  */
 package org.openrdf.sail.elasticsearch;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.lucene.AbstractLuceneSailTest;
 import org.openrdf.sail.lucene.LuceneSail;
 
 public class ElasticsearchSailTest extends AbstractLuceneSailTest {
+	private static final String DATA_DIR = "target/test-data";
+
 	@Override
 	protected void configure(LuceneSail sail)
 	{
 		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
+		sail.setParameter(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
 	}
 
+	public void tearDown() throws IOException, RepositoryException
+	{
+		super.tearDown();
+		FileUtils.deleteDirectory(new File(DATA_DIR));
+	}
 }

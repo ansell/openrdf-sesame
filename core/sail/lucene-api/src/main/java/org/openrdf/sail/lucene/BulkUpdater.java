@@ -21,6 +21,6 @@ import java.io.IOException;
 public interface BulkUpdater {
 	void add(SearchDocument doc) throws IOException;
 	void update(SearchDocument doc) throws IOException;
-	void delete(String id) throws IOException;
+	void delete(SearchDocument doc) throws IOException;
 	void end() throws IOException;
 }

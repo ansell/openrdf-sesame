@@ -39,8 +39,8 @@ public class SimpleBulkUpdater implements BulkUpdater {
 	}
 
 	@Override
-	public void delete(String id) throws IOException {
-		index.deleteDocument(id);
+	public void delete(SearchDocument doc) throws IOException {
+		index.deleteDocument(doc);
 	}
 
 	@Override

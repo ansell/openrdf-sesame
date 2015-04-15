@@ -1,2 +1,3 @@
 cluster.name: sail_test
 node.local: true
+path.data: target/test-data

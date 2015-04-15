@@ -144,7 +144,7 @@ public abstract class AbstractLuceneSailTest {
 
 	@After
 	public void tearDown()
-		throws RepositoryException
+		throws IOException, RepositoryException
 	{
 		connection.close();
 		repository.shutDown();

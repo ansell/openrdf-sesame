@@ -18,32 +18,47 @@ package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.client.Client;
 import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.SearchDocument;
 
 public class ElasticsearchBulkUpdater implements BulkUpdater {
+	private final Client client;
+	private final BulkRequestBuilder bulkRequest;
+
+	public ElasticsearchBulkUpdater(Client client) {
+		this.client = client;
+		this.bulkRequest = client.prepareBulk();
+	}
 
 	@Override
 	public void add(SearchDocument doc) throws IOException {
-		// TODO Auto-generated method stub
-		
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
+		bulkRequest.add(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()));
 	}
 
 	@Override
 	public void update(SearchDocument doc) throws IOException {
-		// TODO Auto-generated method stub
-		
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
+		bulkRequest.add(client.prepareUpdate(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setDoc(esDoc.getSource()));
 	}
 
 	@Override
-	public void delete(String id) throws IOException {
-		// TODO Auto-generated method stub
-		
+	public void delete(SearchDocument doc) throws IOException {
+		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
+		bulkRequest.add(client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()));
 	}
 
 	@Override
 	public void end() throws IOException {
-		// TODO Auto-generated method stub
-		
+		if(bulkRequest.numberOfActions() > 0) {
+			BulkResponse response = bulkRequest.execute().actionGet();
+			if(response.hasFailures())
+			{
+				throw new IOException(response.buildFailureMessage());
+			}
+		}
 	}
 }
