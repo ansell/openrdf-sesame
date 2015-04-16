@@ -1,2 +1,4 @@
 cluster.name: sail_test
 node.local: true
+index.number_of_shards: 1
+index.number_of_replicas: 0
