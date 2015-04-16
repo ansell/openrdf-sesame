@@ -35,7 +35,7 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
  */
 public class EvaluationStrategies {
 
-	private static final Cache<UUID, EvaluationStrategy> registry = CacheBuilder.newBuilder().softValues().build();
+	private static final Cache<UUID, EvaluationStrategy> registry = CacheBuilder.newBuilder().weakValues().build();
 
 	/**
 	 * Retrieve the EvaluationStrategy registered with the supplied key.

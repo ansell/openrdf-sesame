@@ -159,7 +159,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		throws QueryEvaluationException
 	{
 		Collection<Entry> entries = buildEntries();
-		Map<Integer, BindingSet> bindingSets = db.getTreeMap("bindingsets");
+		Set<BindingSet> bindingSets = db.getTreeSet("bindingsets");
 
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
@@ -177,10 +177,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			entry.bindSolution(sol);
 
-			bindingSets.put(sol.hashCode(), sol);
+			bindingSets.add(sol);
 		}
 
-		return bindingSets.values().iterator();
+		return bindingSets.iterator();
 	}
 
 	private Collection<Entry> buildEntries()
@@ -196,7 +196,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (!iter.hasNext()) {
 				// no solutions, still need to process aggregates to produce a
 				// zero-result.
-				entries.put(new Key(new EmptyBindingSet()), new Entry(new EmptyBindingSet()));
+				entries.put(new Key(EmptyBindingSet.getInstance()), new Entry(EmptyBindingSet.getInstance()));
 			}
 
 			// long count = 0;
