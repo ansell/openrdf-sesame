@@ -111,9 +111,9 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return indexName;
 	}
 
-	public String getDocumentType()
+	public String[] getTypes()
 	{
-		return documentType;
+		return new String[] {documentType};
 	}
 
 	@Override
@@ -434,9 +434,10 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 */
 	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
 	{
-		long docCount = client.prepareCount(indexName).setQuery(query).execute().actionGet().getCount();
+		String[] types = getTypes();
+		long docCount = client.prepareCount(indexName).setTypes(types).setQuery(query).execute().actionGet().getCount();
 		int nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
-		SearchResponse response = request.setIndices(indexName).setTypes(documentType).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
+		SearchResponse response = request.setIndices(indexName).setTypes(types).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
 		return response.getHits();
 	}
 

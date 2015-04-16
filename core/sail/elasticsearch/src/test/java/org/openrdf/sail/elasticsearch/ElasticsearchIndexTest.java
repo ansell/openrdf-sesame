@@ -146,16 +146,15 @@ public class ElasticsearchIndexTest {
 		index.commit();
 
 		// check that it arrived properly
-		long count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		long count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(1, count);
 
-		SearchHits hits = client.prepareSearch(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		SearchHits hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
 		Iterator<SearchHit> docs = hits.iterator();
 		assertTrue(docs.hasNext());
 
 		SearchHit doc = docs.next();
-		String documentNr = doc.getId();
-		Map<String,Object> fields = client.prepareGet(index.getIndexName(), index.getDocumentType(), documentNr).execute().actionGet().getSource();
+		Map<String,Object> fields = client.prepareGet(doc.getIndex(), doc.getType(), doc.getId()).execute().actionGet().getSource();
 		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
 
@@ -168,16 +167,15 @@ public class ElasticsearchIndexTest {
 
 		// See if everything remains consistent. We must create a new IndexReader
 		// in order to be able to see the updates
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(1, count); // #docs should *not* have increased
 
-		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
 		docs = hits.iterator();
 		assertTrue(docs.hasNext());
 
 		doc = docs.next();
-		documentNr = doc.getId();
-		fields = client.prepareGet(index.getIndexName(), index.getDocumentType(), documentNr).execute().actionGet().getSource();
+		fields = client.prepareGet(doc.getIndex(), doc.getType(), doc.getId()).execute().actionGet().getSource();
 		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), fields.get(predicate2.toString()));
@@ -185,10 +183,10 @@ public class ElasticsearchIndexTest {
 		assertFalse(docs.hasNext());
 
 		// see if we can query for these literals
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.queryStringQuery(object1.getLabel())).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.queryStringQuery(object1.getLabel())).execute().actionGet().getCount();
 		assertEquals(1, count);
 
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.queryStringQuery(object2.getLabel())).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.queryStringQuery(object2.getLabel())).execute().actionGet().getCount();
 		assertEquals(1, count);
 
 		// remove the first statement
@@ -198,16 +196,15 @@ public class ElasticsearchIndexTest {
 
 		// check that that statement is actually removed and that the other still
 		// exists
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(1, count);
 
-		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getDocumentType()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
 		docs = hits.iterator();
 		assertTrue(docs.hasNext());
 
 		doc = docs.next();
-		documentNr = doc.getId();
-		fields = client.prepareGet(index.getIndexName(), index.getDocumentType(), documentNr).execute().actionGet().getSource();
+		fields = client.prepareGet(doc.getIndex(), doc.getType(), doc.getId()).execute().actionGet().getSource();
 		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
 		assertNull(fields.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), fields.get(predicate2.toString()));
@@ -221,7 +218,7 @@ public class ElasticsearchIndexTest {
 
 		// check that there are no documents left (i.e. the last Document was
 		// removed completely, rather than its remaining triple removed)
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(0, count);
 	}
 
@@ -241,7 +238,7 @@ public class ElasticsearchIndexTest {
 		index.commit();
 
 		// check that it arrived properly
-		long count = client.prepareCount(index.getIndexName()).setTypes(index.getDocumentType()).execute().actionGet().getCount();
+		long count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(2, count);
 
 		// check the documents
