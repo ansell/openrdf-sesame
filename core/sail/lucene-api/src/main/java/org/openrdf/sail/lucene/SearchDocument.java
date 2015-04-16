@@ -25,6 +25,7 @@ public interface SearchDocument
 	String getResource();
 	String getContext();
 	Collection<String> getPropertyNames();
+	void addProperty(String name);
 	void addProperty(String name, String value);
 	/**
 	 * Checks whether a field occurs with a specified value in a Document.

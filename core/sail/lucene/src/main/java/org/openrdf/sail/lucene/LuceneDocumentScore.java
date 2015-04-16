@@ -69,8 +69,12 @@ public class LuceneDocumentScore implements DocumentScore
 	@Override
 	public Iterable<String> getSnippets(final String field) {
 		List<String> values = getDocument().getProperty(field);
+		if(values == null) {
+			return null;
+		}
 		return Iterables.transform(values, new Function<String,String>()
 		{
+			@Override
 			public String apply(String text) {
 				return index.getSnippet(field, text, highlighter);
 			}

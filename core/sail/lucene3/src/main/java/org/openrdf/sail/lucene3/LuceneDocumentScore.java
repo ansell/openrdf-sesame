@@ -25,6 +25,7 @@ import com.google.common.collect.Iterables;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
+
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
@@ -72,8 +73,12 @@ public class LuceneDocumentScore implements DocumentScore
 	@Override
 	public Iterable<String> getSnippets(final String field) {
 		List<String> values = getDocument().getProperty(field);
+		if(values == null) {
+			return null;
+		}
 		return Iterables.transform(values, new Function<String,String>()
 		{
+			@Override
 			public String apply(String text) {
 				return index.getSnippet(field, text, highlighter);
 			}

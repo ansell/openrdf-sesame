@@ -90,6 +90,10 @@ public class LuceneDocument implements SearchDocument
 		return names;
 	}
 
+	@Override
+	public void addProperty(String name) {
+		// don't need to do anything
+	}
 
 	/**
 	 * Stores and indexes a property in a Document. We don't have to recalculate

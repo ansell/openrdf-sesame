@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
+
+import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
@@ -82,6 +84,11 @@ public class LuceneDocument implements SearchDocument
 	@Override
 	public String getContext() {
 		return doc.get(SearchFields.CONTEXT_FIELD_NAME);
+	}
+
+	@Override
+	public void addProperty(String name) {
+		// don't need to do anything
 	}
 
 	@Override

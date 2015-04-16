@@ -93,6 +93,18 @@ public class ElasticsearchDocument implements SearchDocument {
 	}
 
 	@Override
+	public void addProperty(String name) {
+		// in elastic search, fields must have an explicit value
+		if(fields.containsKey(name)) {
+			throw new IllegalStateException("Property already added: "+name);
+		}
+		fields.put(name, null);
+		if(!fields.containsKey(SearchFields.TEXT_FIELD_NAME)) {
+			fields.put(SearchFields.TEXT_FIELD_NAME, null);
+		}
+	}
+
+	@Override
 	public void addProperty(String name, String text) {
 		addField(name, text, fields);
 		addField(SearchFields.TEXT_FIELD_NAME, text, fields);

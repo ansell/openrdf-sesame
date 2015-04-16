@@ -151,9 +151,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if (document.hasProperty(fieldName, text)) {
 				// if the Document only has one predicate field, we can remove the
 				// document
-				Collection<String> propertyNames = document.getPropertyNames(); // one or more
-				List<String> propertyValues = document.getProperty(fieldName); // zero or more
-				if (propertyNames.size() == 1 && propertyValues.size() == 1) {
+				int nrProperties = countPropertyValues(document);
+				if (nrProperties == 1) {
 					deleteDocument(document);
 				}
 				else {
@@ -161,12 +160,15 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// document and add a new Document without this triple
 					SearchDocument newDocument = newDocument(id, resourceId, contextId);
 
-					for (String oldFieldName : propertyNames) {
+					for (String oldFieldName : document.getPropertyNames()) {
+						newDocument.addProperty(oldFieldName);
 						List<String> oldValues = document.getProperty(oldFieldName);
-						boolean isField = fieldName.equals(oldFieldName);
-						for(String oldValue : oldValues) {
-							if (!(isField && text.equals(oldValue))) {
-								newDocument.addProperty(oldFieldName, oldValue);
+						if(oldValues != null) {
+							boolean isField = fieldName.equals(oldFieldName);
+							for(String oldValue : oldValues) {
+								if (!(isField && text.equals(oldValue))) {
+									newDocument.addProperty(oldFieldName, oldValue);
+								}
 							}
 						}
 					}
@@ -285,19 +287,22 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// cannot be added twice
 					SetMultimap<String, String> copiedProperties = HashMultimap.create();
 					for (String oldFieldName : document.getPropertyNames()) {
+						newDocument.addProperty(oldFieldName);
 						// which fields were removed?
 						Set<String> objectsRemoved = (removedOfResource != null) ? removedOfResource.get(oldFieldName) : null;
 
 						List<String> oldValues = document.getProperty(oldFieldName);
-						for(String oldValue : oldValues) {
-							// do not copy removed statements to the new version of the
-							// document
-							if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
-								mutated = true;
-								continue;
+						if(oldValues != null) {
+							for(String oldValue : oldValues) {
+								// do not copy removed statements to the new version of the
+								// document
+								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
+									mutated = true;
+									continue;
+								}
+								newDocument.addProperty(oldFieldName, oldValue);
+								copiedProperties.put(oldFieldName, oldValue);
 							}
-							newDocument.addProperty(oldFieldName, oldValue);
-							copiedProperties.put(oldFieldName, oldValue);
 						}
 					}
 
@@ -321,7 +326,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 					// update the index with the cloned document, if it contains any
 					// meaningful non-system properties
-					int nrProperties = newDocument.getPropertyNames().size();
+					int nrProperties = countPropertyValues(newDocument);
 					if (nrProperties > 0) {
 						if(mutated) {
 							updater.update(newDocument);
@@ -334,6 +339,19 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			}
 		}
 		updater.end();
+	}
+
+	private static int countPropertyValues(SearchDocument document)
+	{
+		int numValues = 0;
+		Collection<String> propertyNames = document.getPropertyNames();
+		for(String propertyName : propertyNames) {
+			List<String> propertyValues = document.getProperty(propertyName);
+			if(propertyValues != null) {
+				numValues += propertyValues.size();
+			}
+		}
+		return numValues;
 	}
 
 	/**
