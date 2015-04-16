@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.io.FileSystemUtils;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -133,7 +133,7 @@ public class ElasticsearchIndexTest {
 		client.close();
 		node.close();
 		index.shutDown();
-		FileUtils.deleteDirectory(new File(DATA_DIR));
+		FileSystemUtils.deleteRecursively(new File(DATA_DIR));
 	}
 
 	@Test

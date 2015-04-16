@@ -141,10 +141,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		clusterName = node.settings().get("cluster.name");
 		client = node.client();
 
-		ClusterHealthStatus status = ClusterHealthStatus.YELLOW;
-		logger.info("Waiting for {} status...", status);
-		client.admin().cluster().prepareHealth(indexName).setWaitForStatus(status).setWaitForNodes(">=1").setWaitForActiveShards(1).execute().actionGet();
-
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
 			createIndex();
