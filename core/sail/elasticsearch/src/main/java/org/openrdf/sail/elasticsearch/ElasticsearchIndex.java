@@ -82,6 +82,9 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public static final String HIGHLIGHTER_POST_TAG = "</B>";
 	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
+	// we do everything synchronously so no point using another thread
+	private static final boolean OPERATION_THREADED = false;
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Node node;
@@ -232,7 +235,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	@Override
 	protected SearchDocument getDocument(String id) throws IOException
 	{
-		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
+		GetResponse response = client.prepareGet(indexName, documentType, id).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
 		if(response.isExists()) {
 			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(), response.getVersion(), response.getSource());
 		}
@@ -271,7 +274,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	protected void addDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()));
+		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()).setOperationThreaded(OPERATION_THREADED));
 	}
 
 	@Override
@@ -285,7 +288,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).execute().actionGet();
+		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
 	}
 
 	@Override
