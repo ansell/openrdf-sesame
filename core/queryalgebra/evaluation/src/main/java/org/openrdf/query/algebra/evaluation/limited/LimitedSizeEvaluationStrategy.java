@@ -42,8 +42,8 @@ import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
-import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeBottomUpJoinIterator;
 import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeDistinctIteration;
+import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeHashJoinIteration;
 import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeIntersectIteration;
 import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeOrderIteration;
 import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizePathIterator;
@@ -51,6 +51,7 @@ import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeSPARQLMi
 import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeZeroLengthPathIteration;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.ValueComparator;
+import org.openrdf.query.algebra.helpers.TupleExprs;
 
 /**
  * @author Jerven Bolleman, SIB Swiss Institute of Bioinformatics
@@ -161,8 +162,8 @@ public class LimitedSizeEvaluationStrategy extends EvaluationStrategyImpl {
 			return new ServiceJoinIterator(leftIter, (Service)join.getRightArg(), bindings, this);
 		}
 
-		if (join.hasSubSelectInRightArg()) {
-			return new LimitedSizeBottomUpJoinIterator(this, join, bindings, used, maxSize);
+		if (TupleExprs.containsProjection(join.getRightArg())) {
+			return new LimitedSizeHashJoinIteration(this, join, bindings, used, maxSize);
 		}
 		else {
 			return new JoinIterator(this, join, bindings);
