@@ -336,7 +336,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 * Filters the given list of fields, retaining all property fields.
 	 */
 	public static List<String> getPropertyFields(Collection<String> fields) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<String>(fields.size());
 		for (String field : fields) {
 			if (SearchFields.isPropertyField(field))
 				result.add(field);
