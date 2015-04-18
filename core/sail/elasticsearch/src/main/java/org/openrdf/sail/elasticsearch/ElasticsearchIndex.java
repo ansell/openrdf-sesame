@@ -117,7 +117,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	public void initialize(Properties parameters) throws IOException {
+	public void initialize(Properties parameters) throws Exception {
+		super.initialize(parameters);
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
@@ -435,8 +436,14 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
 	{
 		String[] types = getTypes();
-		long docCount = client.prepareCount(indexName).setTypes(types).setQuery(query).execute().actionGet().getCount();
-		int nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
+		int nDocs;
+		if(maxDocs > 0) {
+			nDocs = maxDocs;
+		}
+		else {
+			long docCount = client.prepareCount(indexName).setTypes(types).setQuery(query).execute().actionGet().getCount();
+			nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
+		}
 		SearchResponse response = request.setIndices(indexName).setTypes(types).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
 		return response.getHits();
 	}

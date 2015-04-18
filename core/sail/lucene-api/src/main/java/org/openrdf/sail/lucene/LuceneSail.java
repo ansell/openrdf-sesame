@@ -273,7 +273,16 @@ public class LuceneSail extends NotifyingSailWrapper {
 	public static final String LUCENE_RAMDIR_KEY = "useramdir";
 
 	/**
-	 * Set this key to configure the LuceneIndex class implementation.
+	 * Set the key "maxDocuments=&lt;n&gt;" as sail parameter to limit
+	 * the maximum number of documents to return from a search query.
+	 * The default is to return all documents.
+	 * NB: this may involve extra cost for some SearchIndex implementations
+	 * as they may have to determine this number.
+	 */
+	public static final String MAX_DOCUMENTS_KEY = "maxDocuments";
+
+	/**
+	 * Set this key to configure the SearchIndex class implementation.
 	 * Default is org.openrdf.sail.lucene.LuceneIndex.
 	 */
 	public static final String INDEX_CLASS_KEY = "index";

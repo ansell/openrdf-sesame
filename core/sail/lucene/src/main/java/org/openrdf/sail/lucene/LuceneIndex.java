@@ -139,6 +139,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public void initialize(Properties parameters)
 		throws Exception
 	{
+		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
 
@@ -275,12 +276,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	// //////////////////////////////// Methods for updating the index
 
+	@Override
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
 		return (document != null) ? new LuceneDocument(document) : null;
 	}
 
+	@Override
 	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
 		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
 		return Iterables.transform(docs, new Function<Document,SearchDocument>()
@@ -292,11 +295,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		});
 	}
 
+	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
 		return new LuceneDocument(id, resourceId, context);
 	}
 
+	@Override
 	protected SearchDocument copyDocument(SearchDocument doc)
 	{
 		Document document = ((LuceneDocument)doc).getDocument();
@@ -309,21 +314,25 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return new LuceneDocument(newDocument);
 	}
 
+	@Override
 	protected void addDocument(SearchDocument doc) throws IOException
 	{
 		getIndexWriter().addDocument(((LuceneDocument)doc).getDocument());
 	}
 
+	@Override
 	protected void updateDocument(SearchDocument doc) throws IOException
 	{
 		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
 	}
 
+	@Override
 	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
 		getIndexWriter().deleteDocuments(idTerm(doc.getId()));
 	}
 
+	@Override
 	protected BulkUpdater newBulkUpdate()
 	{
 		return new SimpleBulkUpdater(this);
@@ -600,6 +609,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * @throws ParseException
 	 *         when the parsing brakes
 	 */
+	@Override
 	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
 	{
 		Query q;
@@ -683,7 +693,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public TopDocs search(Query query)
 		throws IOException
 	{
-		int nDocs = Math.max(getIndexReader().numDocs(), 1);
+		int nDocs;
+		if(maxDocs > 0) {
+			nDocs = maxDocs;
+		}
+		else {
+			nDocs = Math.max(getIndexReader().numDocs(), 1);
+		}
 		return getIndexSearcher().search(query, nDocs);
 	}
 

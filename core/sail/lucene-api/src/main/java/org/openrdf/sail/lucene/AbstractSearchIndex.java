@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.openrdf.model.Literal;
@@ -52,6 +53,16 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 	static {
 		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
+	}
+
+	protected int maxDocs;
+
+	@Override
+	public void initialize(Properties parameters)
+		throws Exception
+	{
+		String maxDocParam = parameters.getProperty(LuceneSail.MAX_DOCUMENTS_KEY);
+		maxDocs = (maxDocParam != null) ? Integer.parseInt(maxDocParam) : -1;
 	}
 
 	/**

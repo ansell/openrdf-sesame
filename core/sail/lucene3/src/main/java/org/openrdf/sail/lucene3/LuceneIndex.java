@@ -141,6 +141,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public void initialize(Properties parameters)
 		throws Exception
 	{
+		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
 
@@ -682,7 +683,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public TopDocs search(Query query)
 		throws IOException
 	{
-		int nDocs = Math.max(getIndexReader().numDocs(), 1);
+		int nDocs;
+		if(maxDocs > 0) {
+			nDocs = maxDocs;
+		}
+		else {
+			nDocs = Math.max(getIndexReader().numDocs(), 1);
+		}
 		return getIndexSearcher().search(query, nDocs);
 	}
 
