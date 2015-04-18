@@ -29,7 +29,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.action.ActionRequestBuilder;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -82,6 +81,9 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public static final String HIGHLIGHTER_POST_TAG = "</B>";
 	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
+	// we do everything synchronously so no point using another thread
+	private static final boolean OPERATION_THREADED = false;
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Node node;
@@ -109,9 +111,9 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return indexName;
 	}
 
-	public String getDocumentType()
+	public String[] getTypes()
 	{
-		return documentType;
+		return new String[] {documentType};
 	}
 
 	@Override
@@ -137,10 +139,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		node = nodeBuilder.node();
 		clusterName = node.settings().get("cluster.name");
 		client = node.client();
-
-		ClusterHealthStatus status = ClusterHealthStatus.YELLOW;
-		logger.info("Waiting for {} status...", status);
-		client.admin().cluster().prepareHealth(indexName).setWaitForStatus(status).setWaitForNodes(">=1").setWaitForActiveShards(1).execute().actionGet();
 
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
@@ -232,7 +230,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	@Override
 	protected SearchDocument getDocument(String id) throws IOException
 	{
-		GetResponse response = client.prepareGet(indexName, documentType, id).execute().actionGet();
+		GetResponse response = client.prepareGet(indexName, documentType, id).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
 		if(response.isExists()) {
 			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(), response.getVersion(), response.getSource());
 		}
@@ -271,7 +269,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	protected void addDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()));
+		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()).setOperationThreaded(OPERATION_THREADED));
 	}
 
 	@Override
@@ -285,7 +283,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	protected void deleteDocument(SearchDocument doc) throws IOException
 	{
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).execute().actionGet();
+		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
 	}
 
 	@Override
@@ -436,9 +434,10 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 */
 	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
 	{
-		long docCount = client.prepareCount(indexName).setQuery(query).execute().actionGet().getCount();
+		String[] types = getTypes();
+		long docCount = client.prepareCount(indexName).setTypes(types).setQuery(query).execute().actionGet().getCount();
 		int nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
-		SearchResponse response = request.setIndices(indexName).setTypes(documentType).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
+		SearchResponse response = request.setIndices(indexName).setTypes(types).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
 		return response.getHits();
 	}
 

@@ -19,7 +19,7 @@ package org.openrdf.sail.elasticsearch;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
+import org.elasticsearch.common.io.FileSystemUtils;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.lucene.AbstractLuceneSailTest;
 import org.openrdf.sail.lucene.LuceneSail;
@@ -37,6 +37,6 @@ public class ElasticsearchSailTest extends AbstractLuceneSailTest {
 	public void tearDown() throws IOException, RepositoryException
 	{
 		super.tearDown();
-		FileUtils.deleteDirectory(new File(DATA_DIR));
+		FileSystemUtils.deleteRecursively(new File(DATA_DIR));
 	}
 }
