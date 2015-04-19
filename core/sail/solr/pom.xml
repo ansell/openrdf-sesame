@@ -10,7 +10,7 @@
 
 	<artifactId>sesame-sail-solr</artifactId>
 
-	<name>OpenRDF Solr Search Sail Index</name>
+	<name>OpenRDF Solr Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Solr.</description>
 
 	<properties>
@@ -23,16 +23,17 @@
 			<artifactId>sesame-sail-lucene-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-core</artifactId>
-			<version>${solr.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
 			<version>${solr.version}</version>
+		</dependency>
+		<!-- needed for embedded solr server -->
+		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-core</artifactId>
+			<version>${solr.version}</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -56,6 +57,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
