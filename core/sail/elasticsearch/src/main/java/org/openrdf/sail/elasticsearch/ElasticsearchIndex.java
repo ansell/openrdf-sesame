@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
@@ -76,10 +74,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public static final String DEFAULT_ANALYZER = "standard";
 
 	public static final String ELASTICSEARCH_KEY_PREFIX = "elasticsearch.";
-
-	public static final String HIGHLIGHTER_PRE_TAG = "<B>";
-	public static final String HIGHLIGHTER_POST_TAG = "</B>";
-	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
 	// we do everything synchronously so no point using another thread
 	private static final boolean OPERATION_THREADED = false;
@@ -157,11 +151,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return mappings.sourceAsMap();
 	}
 
-	@SuppressWarnings("unchecked")
-	public Map<String,Object> getFieldMappings() throws IOException
-	{
-		return (Map<String,Object>) getMappings().get("properties");
-	}
 	private void createIndex() throws IOException
 	{
 		String settings = XContentFactory.jsonBuilder()
@@ -385,22 +374,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	{
 		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
 		return new ElasticsearchQuery(client.prepareSearch(), qb, this);
-	}
-
-	public static String getSnippet(String highlightedValue)
-	{
-		if(highlightedValue.length() > 100) {
-			StringBuilder buf = new StringBuilder();
-			String separator = "";
-			Matcher matcher = HIGHLIGHTER_PATTERN.matcher(highlightedValue);
-			for(int i=0; i<2 && matcher.find(); i++) {
-				buf.append(separator);
-				buf.append(matcher.group());
-				separator = "...";
-			}
-			highlightedValue = buf.toString();
-		}
-		return highlightedValue;
 	}
 
 	// /**

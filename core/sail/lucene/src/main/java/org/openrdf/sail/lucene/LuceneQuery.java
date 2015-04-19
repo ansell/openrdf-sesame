@@ -65,7 +65,7 @@ public class LuceneQuery implements SearchQuery
 
 	@Override
 	public void highlight(URI property) {
-		Formatter formatter = new SimpleHTMLFormatter();
+		Formatter formatter = new SimpleHTMLFormatter(SearchFields.HIGHLIGHTER_PRE_TAG, SearchFields.HIGHLIGHTER_POST_TAG);
 		highlighter = new Highlighter(formatter, new QueryScorer(query));
 	}
 }

@@ -14,59 +14,41 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.elasticsearch;
+package org.openrdf.sail.solr;
 
-import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.highlight.HighlightField;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
-import org.openrdf.sail.lucene.SearchFields;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
+public class SolrDocumentScore implements DocumentScore {
+	private final SolrSearchDocument doc;
+	private final Map<String,List<String>> highlighting;
 
-public class ElasticsearchDocumentScore implements DocumentScore {
-	private final SearchHit hit;
-	private ElasticsearchDocument fullDoc;
-
-	public ElasticsearchDocumentScore(SearchHit hit) {
-		this.hit = hit;
+	public SolrDocumentScore(SolrSearchDocument doc, Map<String,List<String>> highlighting) {
+		this.doc = doc;
+		this.highlighting = highlighting;
 	}
 
 	@Override
 	public SearchDocument getDocument() {
-		if(fullDoc == null)
-		{
-			fullDoc = new ElasticsearchDocument(hit);
-		}
-		return fullDoc;
+		return doc;
 	}
 
 	@Override
 	public float getScore() {
-		return hit.getScore();
+		Number s = ((Number) doc.getDocument().get("score"));
+		return (s != null) ? s.floatValue() : 0.0f;
 	}
 
 	@Override
 	public boolean isHighlighted() {
-		return (hit.getHighlightFields() != null);
+		return (highlighting != null);
 	}
 
 	@Override
 	public Iterable<String> getSnippets(String field) {
-		HighlightField highlightField = hit.getHighlightFields().get(field);
-		if(highlightField == null) {
-			return null;
-		}
-		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text,String>()
-		{
-			@Override
-			public String apply(Text fragment) {
-				return SearchFields.getSnippet(fragment.string());
-			}
-		});
+		return highlighting.get(field);
 	}
 }

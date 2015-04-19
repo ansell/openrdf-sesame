@@ -1,5 +1,8 @@
 package org.openrdf.sail.lucene;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -46,6 +49,10 @@ public final class SearchFields {
 	 * invalid as a (part of a) URI scheme.
 	 */
 	public static final String BNODE_ID_PREFIX = "!";
+
+	public static final String HIGHLIGHTER_PRE_TAG = "<B>";
+	public static final String HIGHLIGHTER_POST_TAG = "</B>";
+	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
 	protected static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
 
@@ -129,5 +136,21 @@ public final class SearchFields {
 	 */
 	public static Literal scoreToLiteral(float score) {
 		return valueFactory.createLiteral(score);
+	}
+
+	public static String getSnippet(String highlightedValue)
+	{
+		if(highlightedValue.length() > 100) {
+			StringBuilder buf = new StringBuilder();
+			String separator = "";
+			Matcher matcher = HIGHLIGHTER_PATTERN.matcher(highlightedValue);
+			for(int i=0; i<2 && matcher.find(); i++) {
+				buf.append(separator);
+				buf.append(matcher.group());
+				separator = "...";
+			}
+			highlightedValue = buf.toString();
+		}
+		return highlightedValue;
 	}
 }

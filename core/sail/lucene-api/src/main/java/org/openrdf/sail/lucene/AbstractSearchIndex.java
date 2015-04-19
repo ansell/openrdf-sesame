@@ -104,7 +104,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		String field = statement.getPredicate().toString();
 		String text = ((Literal)object).getLabel();
-		String context = SearchFields.getContextID(statement.getContext());
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
@@ -115,7 +114,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		if (document == null) {
 			// there is no such Document: create one now
-			document = newDocument(id, resourceId, context);
+			document = newDocument(id, resourceId, contextId);
 			document.addProperty(field, text);
 
 			// add it to the index

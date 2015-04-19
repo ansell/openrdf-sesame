@@ -27,6 +27,7 @@
 		<module>lucene4</module>
 		<module>lucene3</module>
 		<module>elasticsearch</module>
+		<module>solr</module>
 	</modules>
 
 </project>

@@ -469,14 +469,14 @@ public class LuceneSail extends NotifyingSailWrapper {
 	public void reindex()
 		throws Exception
 	{
+		// clear
+		logger.info("Reindexing sail: clearing...");
+		luceneIndex.clear();
+		logger.info("Reindexing sail: adding...");
+
 		luceneIndex.begin();
 		try
 		{
-			// clear
-			logger.info("Reindexing sail: clearing...");
-			luceneIndex.clear();
-			logger.info("Reindexing sail: adding...");
-
 			// iterate
 			SailRepository repo = new SailRepository(new NotifyingSailWrapper(getBaseSail())
 			{
