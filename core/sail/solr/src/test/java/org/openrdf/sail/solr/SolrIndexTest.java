@@ -23,21 +23,20 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.core.ConfigSolr;
-import org.apache.solr.core.CoreContainer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +54,6 @@ import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
-import org.openrdf.sail.solr.examples.SolrSailExample;
 
 public class SolrIndexTest {
 	private static final String DATA_DIR = "target/test-data";
@@ -110,20 +108,18 @@ public class SolrIndexTest {
 	ContextStatementImpl statementContext232 = new ContextStatementImpl(subject2, predicate2, object5,
 			CONTEXT_2);
 
-	EmbeddedSolrServer server;
 	SolrIndex index;
+	SolrClient client;
 
 	@Before
 	public void setUp()
 		throws Exception
 	{
-		
-		ConfigSolr config = ConfigSolr.fromInputStream(null, SolrSailExample.class.getResourceAsStream("/conf/solr.xml"));
-		server = new EmbeddedSolrServer(new CoreContainer(config), "test");
 		index = new SolrIndex();
 		Properties sailProperties = new Properties();
-		sailProperties.put(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
+		sailProperties.put(SolrIndex.SERVER_KEY, "embedded:");
 		index.initialize(sailProperties);
+		client = index.getClient();
 	}
 
 	@After
@@ -131,7 +127,7 @@ public class SolrIndexTest {
 		throws Exception
 	{
 		index.shutDown();
-		server.shutdown();
+		FileUtils.deleteDirectory(new File(DATA_DIR));
 	}
 
 	@Test
@@ -144,17 +140,16 @@ public class SolrIndexTest {
 		index.commit();
 
 		// check that it arrived properly
-		long count = server.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
+		long count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		QueryResponse response = server.query(new SolrQuery(SearchFields.URI_FIELD_NAME+":"+subject.toString()));
+		QueryResponse response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())));
 		Iterator<SolrDocument> docs = response.getResults().iterator();
 		assertTrue(docs.hasNext());
 
 		SolrDocument doc = docs.next();
-		Map<String,Object> fields = doc;
-		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
-		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
+		assertEquals(subject.toString(), doc.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(object1.getLabel(), doc.getFirstValue(predicate1.toString()));
 
 		assertFalse(docs.hasNext());
 
@@ -165,26 +160,25 @@ public class SolrIndexTest {
 
 		// See if everything remains consistent. We must create a new IndexReader
 		// in order to be able to see the updates
-		count = server.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(1, count); // #docs should *not* have increased
 
-		response = server.query(new SolrQuery(SearchFields.URI_FIELD_NAME+":"+subject.toString()));
+		response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())));
 		docs = response.getResults().iterator();
 		assertTrue(docs.hasNext());
 
 		doc = docs.next();
-		fields = doc;
-		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
-		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
-		assertEquals(object2.getLabel(), fields.get(predicate2.toString()));
+		assertEquals(subject.toString(), doc.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(object1.getLabel(), doc.get(predicate1.toString()));
+		assertEquals(object2.getLabel(), doc.get(predicate2.toString()));
 
 		assertFalse(docs.hasNext());
 
 		// see if we can query for these literals
-		count = server.query(new SolrQuery(object1.getLabel()).setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery(object1.getLabel()).setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		count = server.query(new SolrQuery(object2.getLabel()).setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery(object2.getLabel()).setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
 		// remove the first statement
@@ -194,18 +188,17 @@ public class SolrIndexTest {
 
 		// check that that statement is actually removed and that the other still
 		// exists
-		count = server.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		response = server.query(new SolrQuery(SearchFields.URI_FIELD_NAME+":"+subject.toString()));
+		response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())));
 		docs = response.getResults().iterator();
 		assertTrue(docs.hasNext());
 
 		doc = docs.next();
-		fields = doc;
-		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
-		assertNull(fields.get(predicate1.toString()));
-		assertEquals(object2.getLabel(), fields.get(predicate2.toString()));
+		assertEquals(subject.toString(), doc.get(SearchFields.URI_FIELD_NAME));
+		assertNull(doc.get(predicate1.toString()));
+		assertEquals(object2.getLabel(), doc.get(predicate2.toString()));
 
 		assertFalse(docs.hasNext());
 
@@ -216,7 +209,7 @@ public class SolrIndexTest {
 
 		// check that there are no documents left (i.e. the last Document was
 		// removed completely, rather than its remaining triple removed)
-		count = server.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(0, count);
 	}
 
@@ -236,7 +229,7 @@ public class SolrIndexTest {
 		index.commit();
 
 		// check that it arrived properly
-		long count = server.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
+		long count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(2, count);
 
 		// check the documents

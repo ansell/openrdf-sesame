@@ -79,6 +79,11 @@ public class SolrIndex extends AbstractSearchIndex {
 		client = clientFactory.create(server);
 	}
 
+	public SolrClient getClient()
+	{
+		return client;
+	}
+
 	@Override
 	public void shutDown()
 		throws IOException
@@ -105,6 +110,11 @@ public class SolrIndex extends AbstractSearchIndex {
 		} catch (SolrServerException e) {
 			throw new IOException(e);
 		}
+
+		if(list == null) {
+			return null;
+		}
+
 		if(list.size() > 1) {
 			throw new IOException("Multiple Documents for resource " + id);
 		}
@@ -177,7 +187,7 @@ public class SolrIndex extends AbstractSearchIndex {
 		return new SolrBulkUpdater(client);
 	}
 
-	private String termQuery(String field, String value)
+	static String termQuery(String field, String value)
 	{
 		return field+":\""+value+"\"";
 	}
