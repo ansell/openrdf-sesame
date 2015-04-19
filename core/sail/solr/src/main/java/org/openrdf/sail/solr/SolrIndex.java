@@ -340,7 +340,6 @@ public class SolrIndex extends AbstractSearchIndex {
 			// otherwise we create a query parser that has the given property as
 			// the default field
 			query.set(CommonParams.DF, propertyURI.toString());
-		query.addField("score");
 		return query;
 	}
 

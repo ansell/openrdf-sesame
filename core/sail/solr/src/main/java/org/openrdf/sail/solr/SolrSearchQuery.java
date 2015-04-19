@@ -47,6 +47,13 @@ public class SolrSearchQuery implements SearchQuery {
 	public Iterable<? extends DocumentScore> query(Resource resource)
 			throws IOException {
 		QueryResponse response;
+		if(query.getHighlight()) {
+			query.addField("*");
+		}
+		else {
+			query.addField(SearchFields.URI_FIELD_NAME);
+		}
+		query.addField("score");
 		try {
 			if(resource != null) {
 				response = index.search(resource, query);
@@ -64,7 +71,7 @@ public class SolrSearchQuery implements SearchQuery {
 			@Override
 			public DocumentScore apply(SolrDocument document) {
 				SolrSearchDocument doc = new SolrSearchDocument(document);
-				Map<String,List<String>> docHighlighting = highlighting.get(doc.getId());
+				Map<String,List<String>> docHighlighting = (highlighting != null) ? highlighting.get(doc.getId()) : null;
 				return new SolrDocumentScore(doc, docHighlighting);
 			}
 		});
@@ -77,7 +84,7 @@ public class SolrSearchQuery implements SearchQuery {
 	public void highlight(URI property) {
 		query.setHighlight(true);
 		String field = (property != null) ? property.toString() : "*";
-		query.addGetFieldStatistics(field);
+		query.addHighlightField(field);
 		query.setHighlightSimplePre(SearchFields.HIGHLIGHTER_PRE_TAG);
 		query.setHighlightSimplePost(SearchFields.HIGHLIGHTER_POST_TAG);
 		query.setHighlightSnippets(2);
