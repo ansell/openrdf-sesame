@@ -16,11 +16,10 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -362,37 +361,30 @@ public class LuceneSail extends NotifyingSailWrapper {
 		throws SailException
 	{
 		super.initialize();
-		try {
-			if (parameters.containsKey(INDEXEDFIELDS)) {
-				String indexedfieldsString = parameters.getProperty(INDEXEDFIELDS);
-				InputStream inputstream;
-				try {
-					inputstream = new ByteArrayInputStream(indexedfieldsString.getBytes("UTF-8"));
+		if (parameters.containsKey(INDEXEDFIELDS)) {
+			String indexedfieldsString = parameters.getProperty(INDEXEDFIELDS);
+			Properties prop = new Properties();
+			try {
+				Reader reader = new StringReader(indexedfieldsString);
+				prop.load(reader);
+				reader.close();
+			}
+			catch(IOException e) {
+				throw new SailException("Could read "+INDEXEDFIELDS+": " + indexedfieldsString, e);
+			}
+			indexedFields = new HashSet<URI>();
+			indexedFieldsMapping = new HashMap<URI, URI>();
+			for (Object key : prop.keySet()) {
+				if (key.toString().startsWith("index.")) {
+					indexedFields.add(new URIImpl(prop.getProperty(key.toString())));
 				}
-				catch (UnsupportedEncodingException e) {
-					throw new RuntimeException("Cannot read indexedfields property: " + e.getLocalizedMessage(), e);
-				}
-
-				Properties prop = new Properties();
-				prop.load(inputstream);
-				inputstream.close();
-				indexedFields = new HashSet<URI>();
-				indexedFieldsMapping = new HashMap<URI, URI>();
-				for (Object key : prop.keySet()) {
-					if (key.toString().startsWith("index.")) {
-						indexedFields.add(new URIImpl(prop.getProperty(key.toString())));
-					}
-					else {
-						indexedFieldsMapping.put(new URIImpl(key.toString()),
-								new URIImpl(prop.getProperty(key.toString())));
-					}
+				else {
+					indexedFieldsMapping.put(new URIImpl(key.toString()),
+							new URIImpl(prop.getProperty(key.toString())));
 				}
 			}
+		}
 
-		}
-		catch (Exception e) {
-			throw new SailException("Could load propertyfile: " + e.getMessage(), e);
-		}
 		try {
 			if (parameters.containsKey(REINDEX_QUERY_KEY))
 				setReindexQuery(parameters.getProperty(REINDEX_QUERY_KEY));

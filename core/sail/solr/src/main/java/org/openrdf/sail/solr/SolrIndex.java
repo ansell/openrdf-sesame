@@ -26,8 +26,6 @@ import java.util.Properties;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
@@ -54,7 +52,7 @@ import com.google.common.collect.Iterables;
  */
 public class SolrIndex extends AbstractSearchIndex {
 
-	public static final String SERVER_URL_KEY = "server";
+	public static final String SERVER_KEY = "server";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -67,15 +65,18 @@ public class SolrIndex extends AbstractSearchIndex {
 	@Override
 	public void initialize(Properties parameters) throws Exception {
 		super.initialize(parameters);
-		String server = parameters.getProperty(SERVER_URL_KEY);
-		if(server.startsWith("http://"))
-		{
-			client = new HttpSolrClient(server);
+		String server = parameters.getProperty(SERVER_KEY);
+		if(server == null) {
+			throw new SailException("Missing "+SERVER_KEY+" parameter");
 		}
-		else
-		{
-			client = new CloudSolrClient(server);
+		int pos = server.indexOf(':');
+		if(pos == -1) {
+			throw new SailException("Missing scheme in "+SERVER_KEY+" parameter: "+server);
 		}
+		String scheme = server.substring(0, pos);
+		Class<?> clientFactoryCls = Class.forName("org.openrdf.sail.solr.client."+scheme+".Factory");
+		SolrClientFactory clientFactory = (SolrClientFactory) clientFactoryCls.newInstance();
+		client = clientFactory.create(server);
 	}
 
 	@Override
