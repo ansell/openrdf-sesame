@@ -104,21 +104,13 @@ public class SolrIndex extends AbstractSearchIndex {
 	@Override
 	protected SearchDocument getDocument(String id) throws IOException
 	{
-		SolrDocumentList list;
+		SolrDocument doc;
 		try {
-			list = client.query(new SolrQuery().setRequestHandler("/get").set(SearchFields.ID_FIELD_NAME, id)).getResults();
+			doc = (SolrDocument) client.query(new SolrQuery().setRequestHandler("/get").set(SearchFields.ID_FIELD_NAME, id)).getResponse().get("doc");
 		} catch (SolrServerException e) {
 			throw new IOException(e);
 		}
-
-		if(list == null) {
-			return null;
-		}
-
-		if(list.size() > 1) {
-			throw new IOException("Multiple Documents for resource " + id);
-		}
-		return !list.isEmpty() ? new SolrSearchDocument(list.get(0)) : null;
+		return (doc != null) ? new SolrSearchDocument(doc) : null;
 	}
 
 	@Override

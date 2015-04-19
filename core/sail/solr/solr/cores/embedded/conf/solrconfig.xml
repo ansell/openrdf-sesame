@@ -6,4 +6,7 @@
 
 	<requestHandler name="/select" class="solr.SearchHandler">
 	</requestHandler>
+
+	<requestHandler name="/get" class="solr.RealTimeGetHandler">
+	</requestHandler>
 </config>

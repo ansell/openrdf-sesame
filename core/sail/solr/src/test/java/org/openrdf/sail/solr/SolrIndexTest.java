@@ -149,6 +149,7 @@ public class SolrIndexTest {
 
 		SolrDocument doc = docs.next();
 		assertEquals(subject.toString(), doc.get(SearchFields.URI_FIELD_NAME));
+		assertEquals(1, doc.getFieldValues(predicate1.toString()).size());
 		assertEquals(object1.getLabel(), doc.getFirstValue(predicate1.toString()));
 
 		assertFalse(docs.hasNext());
@@ -169,16 +170,18 @@ public class SolrIndexTest {
 
 		doc = docs.next();
 		assertEquals(subject.toString(), doc.get(SearchFields.URI_FIELD_NAME));
-		assertEquals(object1.getLabel(), doc.get(predicate1.toString()));
-		assertEquals(object2.getLabel(), doc.get(predicate2.toString()));
+		assertEquals(1, doc.getFieldValues(predicate1.toString()).size());
+		assertEquals(object1.getLabel(), doc.getFirstValue(predicate1.toString()));
+		assertEquals(1, doc.getFieldValues(predicate2.toString()).size());
+		assertEquals(object2.getLabel(), doc.getFirstValue(predicate2.toString()));
 
 		assertFalse(docs.hasNext());
 
 		// see if we can query for these literals
-		count = client.query(new SolrQuery(object1.getLabel()).setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.TEXT_FIELD_NAME, object1.getLabel())).setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		count = client.query(new SolrQuery(object2.getLabel()).setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.TEXT_FIELD_NAME, object2.getLabel())).setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
 		// remove the first statement
@@ -198,7 +201,8 @@ public class SolrIndexTest {
 		doc = docs.next();
 		assertEquals(subject.toString(), doc.get(SearchFields.URI_FIELD_NAME));
 		assertNull(doc.get(predicate1.toString()));
-		assertEquals(object2.getLabel(), doc.get(predicate2.toString()));
+		assertEquals(1, doc.getFieldValues(predicate2.toString()).size());
+		assertEquals(object2.getLabel(), doc.getFirstValue(predicate2.toString()));
 
 		assertFalse(docs.hasNext());
 
