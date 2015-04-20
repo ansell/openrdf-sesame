@@ -46,6 +46,7 @@ import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -106,6 +107,11 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 	private volatile boolean txnLockAcquired;
 
+	/**
+	 * Connection specific resolver.
+	 */
+	private FederatedServiceResolver federatedServiceResolver;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -125,6 +131,16 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	@Override
 	protected void closeInternal() {
 		// FIXME we should check for open iteration objects.
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		if (federatedServiceResolver == null)
+			return nativeStore.getFederatedServiceResolver();
+		return federatedServiceResolver;
+	}
+
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.federatedServiceResolver = resolver;
 	}
 
 	@Override
@@ -199,7 +215,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, NativeTripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset, nativeStore.getFederatedServiceResolver());
+		return new EvaluationStrategyImpl(tripleSource, dataset, getFederatedServiceResolver());
 	}
 
 	protected void replaceValues(TupleExpr tupleExpr)

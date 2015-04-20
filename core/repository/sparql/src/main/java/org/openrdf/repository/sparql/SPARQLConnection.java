@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.EmptyIteration;
@@ -114,6 +116,14 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	@Override
 	public String toString() {
 		return client.getQueryURL();
+	}
+
+	public final HttpClient getHttpClient() {
+		return client.getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		client.setHttpClient(httpClient);
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,

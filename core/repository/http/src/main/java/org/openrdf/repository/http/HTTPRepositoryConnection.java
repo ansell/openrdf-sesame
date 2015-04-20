@@ -31,10 +31,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.iteration.CloseableIteratorIteration;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.Protocol.Action;
@@ -136,6 +139,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public final HttpClient getHttpClient() {
+		return client.getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		client.setHttpClient(httpClient);
+	}
 
 	@Override
 	public void setParserConfig(ParserConfig parserConfig) {

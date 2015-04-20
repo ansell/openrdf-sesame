@@ -150,7 +150,7 @@ public class SparqlSession {
 
 	private String updateURL;
 
-	private final HttpClient httpClient;
+	private HttpClient httpClient;
 
 	private final ExecutorService executor;
 
@@ -191,8 +191,12 @@ public class SparqlSession {
 	 * Get/set methods *
 	 *-----------------*/
 
-	protected final HttpClient getHttpClient() {
+	public final HttpClient getHttpClient() {
 		return httpClient;
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		this.httpClient = httpClient;
 	}
 
 	public void setValueFactory(ValueFactory valueFactory) {

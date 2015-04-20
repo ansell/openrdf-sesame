@@ -48,6 +48,8 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -78,7 +80,7 @@ import org.openrdf.sail.helpers.SailConnectionBase;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-abstract class AbstractFederationConnection extends SailConnectionBase {
+abstract class AbstractFederationConnection extends SailConnectionBase implements FederatedServiceResolverClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFederationConnection.class);
 
@@ -87,6 +89,11 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 	private final ValueFactory valueFactory;
 
 	protected final List<RepositoryConnection> members;
+
+	/**
+	 * Connection specific resolver.
+	 */
+	private FederatedServiceResolver federatedServiceResolver;
 
 	public AbstractFederationConnection(Federation federation, List<RepositoryConnection> members) {
 		super(new SailBase() {
@@ -174,6 +181,16 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		cursor = new DistinctIteration<Resource, SailException>(cursor);
 
 		return cursor;
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		if (federatedServiceResolver == null)
+			return federation.getFederatedServiceResolver();
+		return federatedServiceResolver;
+	}
+
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.federatedServiceResolver = resolver;
 	}
 
 	@Override
@@ -301,7 +318,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 	{
 		TripleSource tripleSource = new FederationTripleSource(inf);
 		EvaluationStrategyImpl strategy = new FederationStrategy(federation, tripleSource, dataset,
-				federation.getFederatedServiceResolver());
+				getFederatedServiceResolver());
 		TupleExpr qry = optimize(query, dataset, bindings, strategy);
 		try {
 			return strategy.evaluate(qry, EmptyBindingSet.getInstance());
