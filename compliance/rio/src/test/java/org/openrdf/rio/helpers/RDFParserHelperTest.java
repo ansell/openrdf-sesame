@@ -115,7 +115,7 @@ public class RDFParserHelperTest {
 				valueFactory);
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertNull(literal.getLanguage());
+		assertFalse(literal.getLanguage().isPresent());
 		assertEquals(XMLSchema.STRING, literal.getDatatype());
 	}
 
@@ -132,7 +132,7 @@ public class RDFParserHelperTest {
 				valueFactory);
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertEquals(LANG_EN, literal.getLanguage());
+		assertEquals(LANG_EN, literal.getLanguage().orElse(null));
 		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 
@@ -149,7 +149,7 @@ public class RDFParserHelperTest {
 				errListener, valueFactory);
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertNull(literal.getLanguage());
+		assertFalse(literal.getLanguage().isPresent());
 		assertEquals(XMLSchema.STRING, literal.getDatatype());
 	}
 
@@ -170,7 +170,7 @@ public class RDFParserHelperTest {
 				errListener, valueFactory);
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertEquals(LANG_EN, literal.getLanguage());
+		assertEquals(LANG_EN, literal.getLanguage().orElse(null));
 		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 
@@ -191,7 +191,7 @@ public class RDFParserHelperTest {
 				errListener, valueFactory);
 
 		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertNull(literal.getLanguage());
+		assertFalse(literal.getLanguage().isPresent());
 		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 

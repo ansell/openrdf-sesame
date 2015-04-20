@@ -46,6 +46,8 @@ public class ModelsTest extends TestCase {
 	private URI foo;
 
 	private URI bar;
+	
+	private BNode baz;
 
 	@Override
 	protected void setUp() {
@@ -54,6 +56,7 @@ public class ModelsTest extends TestCase {
 
 		foo = VF.createURI("http://example.org/foo");
 		bar = VF.createURI("http://example.org/bar");
+		baz = VF.createBNode();
 	}
 
 	public void testModelsIsomorphic() {
@@ -159,14 +162,6 @@ public class ModelsTest extends TestCase {
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
 
-		try {
-			model1.objectValue();
-			fail("Expected ModelException");
-		}
-		catch (ModelException e) {
-			// fall through, expected
-		}
-
 		Value result = Models.object(model1).orElse(null);
 		assertNotNull(result);
 		assertTrue(result.equals(lit) || result.equals(foo));
@@ -177,14 +172,6 @@ public class ModelsTest extends TestCase {
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
 
-		try {
-			model1.objectURI();
-			fail("Expected ModelException");
-		}
-		catch (ModelException e) {
-			// fall through, expected
-		}
-
 		Value result = Models.objectURI(model1).orElse(null);
 		assertNotNull(result);
 		assertEquals(foo, result);
@@ -194,15 +181,7 @@ public class ModelsTest extends TestCase {
 		Literal lit = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
-
-		try {
-			model1.objectLiteral();
-			fail("Expected ModelException");
-		}
-		catch (ModelException e) {
-			// fall through, expected
-		}
-
+		
 		Value result = Models.objectLiteral(model1).orElse(null);
 		assertNotNull(result);
 		assertEquals(lit, result);
@@ -221,10 +200,33 @@ public class ModelsTest extends TestCase {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
 		model1.add(bar, foo, foo);
+		model1.add(baz, foo, foo);
 
 		Resource result = Models.subject(model1).orElse(null);
 		assertNotNull(result);
+		assertTrue(result.equals(bar) || result.equals(foo) || result.equals(baz));
+	}
+	
+	public void testSubjectURI() {
+		model1.add(foo, bar, foo);
+		model1.add(foo, foo, foo);
+		model1.add(baz, foo, foo);
+		model1.add(bar, foo, foo);
+
+		Resource result = Models.subjectURI(model1).orElse(null);
+		assertNotNull(result);
 		assertTrue(result.equals(bar) || result.equals(foo));
+	}
+	
+	public void testSubjectBNode() {
+		model1.add(foo, bar, foo);
+		model1.add(foo, foo, foo);
+		model1.add(baz, foo, foo);
+		model1.add(bar, foo, foo);
+
+		Resource result = Models.subjectBNode(model1).orElse(null);
+		assertNotNull(result);
+		assertTrue(result.equals(baz));
 	}
 
 	public void testSetProperty() {

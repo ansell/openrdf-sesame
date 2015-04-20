@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.function;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -92,7 +93,7 @@ public class TestStringCast {
 			Literal result = stringCast.evaluate(f, intLit);
 			assertNotNull(result);
 			assertEquals(XMLSchema.STRING, result.getDatatype());
-			assertNull(result.getLanguage());
+			assertFalse(result.getLanguage().isPresent());
 			assertEquals("10", result.getLabel());
 		}
 		catch (ValueExprEvaluationException e) {
@@ -108,7 +109,7 @@ public class TestStringCast {
 			Literal result = stringCast.evaluate(f, dtLit);
 			assertNotNull(result);
 			assertEquals(XMLSchema.STRING, result.getDatatype());
-			assertNull(result.getLanguage());
+			assertFalse(result.getLanguage().isPresent());
 			assertEquals(lexVal, result.getLabel());
 		}
 		catch (ValueExprEvaluationException e) {
@@ -124,7 +125,7 @@ public class TestStringCast {
 			Literal result = stringCast.evaluate(f, dtLit);
 			assertNotNull(result);
 			assertEquals(XMLSchema.STRING, result.getDatatype());
-			assertNull(result.getLanguage());
+			assertFalse(result.getLanguage().isPresent());
 			assertEquals(lexVal, result.getLabel());
 		}
 		catch (ValueExprEvaluationException e) {
