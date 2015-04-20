@@ -797,7 +797,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Group node, BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		return new GroupIterator(this, node, bindings);
+		return new GroupIterator(this, node, bindings, iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Order node, BindingSet bindings)

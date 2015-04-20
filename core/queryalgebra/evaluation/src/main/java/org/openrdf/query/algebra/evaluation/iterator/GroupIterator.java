@@ -20,16 +20,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.TreeSet;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -93,6 +91,13 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 	private final DB db;
 
+	/**
+	 * Number of items cached before internal collections are synced to disk. If
+	 * set to 0, no disk-syncing is done and all internal caching is kept in
+	 * memory.
+	 */
+	private final long iterationCacheSyncThreshold;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -100,17 +105,31 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	public GroupIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
 		throws QueryEvaluationException
 	{
+		this(strategy, group, parentBindings, 0);
+	}
+
+	public GroupIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings,
+			long iterationCacheSyncThreshold)
+		throws QueryEvaluationException
+	{
 		this.strategy = strategy;
 		this.group = group;
 		this.parentBindings = parentBindings;
+		this.iterationCacheSyncThreshold = iterationCacheSyncThreshold;
 
-		try {
-			this.tempFile = File.createTempFile("group-eval", null);
+		if (this.iterationCacheSyncThreshold > 0) {
+			try {
+				this.tempFile = File.createTempFile("group-eval", null);
+			}
+			catch (IOException e) {
+				throw new QueryEvaluationException("could not initialize temp db", e);
+			}
+			this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
 		}
-		catch (IOException e) {
-			throw new QueryEvaluationException("could not initialize temp db", e);
+		else {
+			this.tempFile = null;
+			this.db = null;
 		}
-		this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
 	}
 
 	/*---------*
@@ -155,11 +174,20 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		this.db.close();
 	}
 
+	private <T> NavigableSet<T> createSet(String setName) {
+		if (db != null) {
+			return db.getTreeSet(setName);
+		}
+		else {
+			return new TreeSet<T>();
+		}
+	}
+
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{
 		Collection<Entry> entries = buildEntries();
-		Set<BindingSet> bindingSets = db.getTreeSet("bindingsets");
+		Set<BindingSet> bindingSets = createSet("bindingsets");
 
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
@@ -380,7 +408,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			this.arg = operator.getArg();
 
 			if (operator.isDistinct()) {
-				distinctValues = db.getHashSet("distinct-values-" + this.hashCode());
+				distinctValues = createSet("distinct-values-" + this.hashCode());
 			}
 			else {
 				distinctValues = null;
@@ -399,8 +427,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 
 			final boolean result = distinctValues.add(value);
-			if (distinctValues.size() % 10000 == 0) { // write to disk every 10000
-																	// items
+			if (db != null && distinctValues.size() % iterationCacheSyncThreshold == 0) {
+				// write to disk every 10000 items
 				db.commit();
 			}
 
@@ -435,7 +463,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			// for a wildcarded count with a DISTINCT clause we need to filter on
 			// distinct bindingsets rather than individual values.
 			if (operator.isDistinct() && getArg() == null) {
-				distinctBindingSets = db.getHashSet("distinct-bs-" + this.hashCode());
+				distinctBindingSets = createSet("distinct-bs-" + this.hashCode());
 			}
 			else {
 				distinctBindingSets = null;
@@ -466,8 +494,8 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			}
 
 			final boolean result = distinctBindingSets.add(s);
-			if (distinctBindingSets.size() % 10000 == 0) { // write to disk every
-																			// 10000 items
+			if (db != null && distinctBindingSets.size() % iterationCacheSyncThreshold == 0) {
+				// write to disk every
 				db.commit();
 			}
 
