@@ -30,10 +30,10 @@ import java.util.Map;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
@@ -74,7 +74,7 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 	 *--------------*/
 
 	public DAWGTestResultSetWriter(RDFHandler rdfHandler) {
-		this(rdfHandler, new ValueFactoryImpl());
+		this(rdfHandler, new SimpleValueFactory());
 	}
 
 	public DAWGTestResultSetWriter(RDFHandler rdfHandler, ValueFactory vf) {
@@ -160,7 +160,7 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 		}
 	}
 
-	private void reportStatement(Resource subject, URI predicate, Value object)
+	private void reportStatement(Resource subject, IRI predicate, Value object)
 		throws RDFHandlerException
 	{
 		rdfHandler.handleStatement(vf.createStatement(subject, predicate, object));

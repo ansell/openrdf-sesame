@@ -19,7 +19,7 @@ package org.openrdf.http.protocol.transaction.operations;
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 
 /**
@@ -32,7 +32,7 @@ public abstract class StatementOperation extends ContextOperation {
 
 	private Resource subject;
 
-	private URI predicate;
+	private IRI predicate;
 
 	private Value object;
 
@@ -48,11 +48,11 @@ public abstract class StatementOperation extends ContextOperation {
 		this.subject = subject;
 	}
 
-	public URI getPredicate() {
+	public IRI getPredicate() {
 		return predicate;
 	}
 
-	public void setPredicate(URI predicate) {
+	public void setPredicate(IRI predicate) {
 		this.predicate = predicate;
 	}
 

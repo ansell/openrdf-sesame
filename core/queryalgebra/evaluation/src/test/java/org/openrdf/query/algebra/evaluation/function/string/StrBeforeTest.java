@@ -25,9 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -39,7 +39,7 @@ public class StrBeforeTest {
 
 	private StrBefore strBeforeFunc;
 
-	private ValueFactory f = new ValueFactoryImpl();
+	private ValueFactory f = new SimpleValueFactory();
 
 	
 	/**
@@ -184,7 +184,7 @@ public class StrBeforeTest {
 	@Test
 	public void testEvaluate7() {
 		
-		URI leftArg = f.createURI("http://example.org/foobar");
+		IRI leftArg = f.createIRI("http://example.org/foobar");
 		Literal rightArg = f.createLiteral("b");
 		
 		try {

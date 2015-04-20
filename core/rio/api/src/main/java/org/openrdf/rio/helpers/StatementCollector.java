@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * A RDFHandler that can be used to collect reported statements in collections.
@@ -39,7 +39,7 @@ public class StatementCollector extends ContextStatementCollector {
 	 * namespaces.
 	 */
 	public StatementCollector() {
-		super(ValueFactoryImpl.getInstance());
+		super(SimpleValueFactory.getInstance());
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class StatementCollector extends ContextStatementCollector {
 	 * reported namespaces.
 	 */
 	public StatementCollector(Collection<Statement> statements) {
-		super(statements, ValueFactoryImpl.getInstance());
+		super(statements, SimpleValueFactory.getInstance());
 	}
 
 	/**
@@ -56,6 +56,6 @@ public class StatementCollector extends ContextStatementCollector {
 	 * namespaces in the supplied containers.
 	 */
 	public StatementCollector(Collection<Statement> statements, Map<String, String> namespaces) {
-		super(statements, namespaces, ValueFactoryImpl.getInstance());
+		super(statements, namespaces, SimpleValueFactory.getInstance());
 	}
 }

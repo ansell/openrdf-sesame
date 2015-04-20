@@ -17,7 +17,7 @@
 package org.openrdf.query.algebra.evaluation.function.rdfterm;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -50,8 +50,8 @@ public class StrDt implements Function {
 		
 		if (QueryEvaluationUtil.isSimpleLiteral(lexicalValue)) {
 			Literal lit = (Literal)lexicalValue;
-			if (datatypeValue instanceof URI) {
-				return valueFactory.createLiteral(lit.getLabel(), (URI)datatypeValue);
+			if (datatypeValue instanceof IRI) {
+				return valueFactory.createLiteral(lit.getLabel(), (IRI)datatypeValue);
 			}
 			else {
 				throw new ValueExprEvaluationException("illegal value for operand: " + datatypeValue);

@@ -17,10 +17,10 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Vocabulary constants for the <a href="http://www.w3.org/2004/02/skos/">Simple
@@ -46,7 +46,7 @@ public class SKOS {
 	 * An immutable {@link Namespace} constant that represents the SKOS
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/* classes */
 
@@ -56,7 +56,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#concepts">The
 	 *      skos:Concept Class</a>
 	 */
-	public static final URI CONCEPT;
+	public static final IRI CONCEPT;
 
 	/**
 	 * The skos:ConceptScheme class
@@ -64,7 +64,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#schemes">Concept
 	 *      Schemes</a>
 	 */
-	public static final URI CONCEPT_SCHEME;
+	public static final IRI CONCEPT_SCHEME;
 
 	/**
 	 * The skos:Collection class
@@ -72,7 +72,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#collections">Concept
 	 *      Collections</a>
 	 */
-	public static final URI COLLECTION;
+	public static final IRI COLLECTION;
 
 	/**
 	 * The skos:OrderedCollection class
@@ -80,7 +80,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#collections">Concept
 	 *      Collections</a>
 	 */
-	public static final URI ORDERED_COLLECTION;
+	public static final IRI ORDERED_COLLECTION;
 
 	/* lexical labels */
 
@@ -90,7 +90,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#labels">Lexical
 	 *      Labels</a>
 	 */
-	public static final URI PREF_LABEL;
+	public static final IRI PREF_LABEL;
 
 	/**
 	 * The skos:altLabel lexical label property.
@@ -98,7 +98,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#labels">Lexical
 	 *      Labels</a>
 	 */
-	public static final URI ALT_LABEL;
+	public static final IRI ALT_LABEL;
 
 	/**
 	 * The skos:hiddenLabel lexical label property.
@@ -106,7 +106,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#labels">Lexical
 	 *      Labels</a>
 	 */
-	public static final URI HIDDEN_LABEL;
+	public static final IRI HIDDEN_LABEL;
 
 	/* Concept Scheme properties */
 
@@ -116,7 +116,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#schemes">Concept
 	 *      Schemes</a>
 	 */
-	public static final URI IN_SCHEME;
+	public static final IRI IN_SCHEME;
 
 	/**
 	 * The skos:hasTopConcept relation.
@@ -124,7 +124,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#schemes">Concept
 	 *      Schemes</a>
 	 */
-	public static final URI HAS_TOP_CONCEPT;
+	public static final IRI HAS_TOP_CONCEPT;
 
 	/**
 	 * The skos:topConceptOf relation.
@@ -132,7 +132,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#schemes">Concept
 	 *      Schemes</a>
 	 */
-	public static final URI TOP_CONCEPT_OF;
+	public static final IRI TOP_CONCEPT_OF;
 
 	/* collection properties */
 
@@ -142,7 +142,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#collections">Concept
 	 *      Collections</a>
 	 */
-	public static final URI MEMBER;
+	public static final IRI MEMBER;
 
 	/**
 	 * The skos:memberList relation.
@@ -150,7 +150,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#collections">Concept
 	 *      Collections</a>
 	 */
-	public static final URI MEMBER_LIST;
+	public static final IRI MEMBER_LIST;
 
 	/* notation properties */
 
@@ -160,7 +160,7 @@ public class SKOS {
 	 * @see <a
 	 *      href="http://www.w3.org/TR/skos-reference/#notations">Notations</a>
 	 */
-	public static final URI NOTATION;
+	public static final IRI NOTATION;
 
 	/* documentation properties */
 
@@ -170,7 +170,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#notes">Documentation
 	 *      Properties (Note Properties)</a>
 	 */
-	public static final URI CHANGE_NOTE;
+	public static final IRI CHANGE_NOTE;
 
 	/**
 	 * The skos:definition property.
@@ -178,7 +178,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#notes">Documentation
 	 *      Properties (Note Properties)</a>
 	 */
-	public static final URI DEFINITION;
+	public static final IRI DEFINITION;
 
 	/**
 	 * The skos:editorialNote property.
@@ -186,7 +186,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#notes">Documentation
 	 *      Properties (Note Properties)</a>
 	 */
-	public static final URI EDITORIAL_NOTE;
+	public static final IRI EDITORIAL_NOTE;
 
 	/**
 	 * The skos:example property.
@@ -195,7 +195,7 @@ public class SKOS {
 	 *      Properties (Note Properties)</a>
 	 */
 
-	public static final URI EXAMPLE;
+	public static final IRI EXAMPLE;
 
 	/**
 	 * The skos:historyNote property.
@@ -203,7 +203,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#notes">Documentation
 	 *      Properties (Note Properties)</a>
 	 */
-	public static final URI HISTORY_NOTE;
+	public static final IRI HISTORY_NOTE;
 
 	/**
 	 * The skos:note property.
@@ -211,7 +211,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#notes">Documentation
 	 *      Properties (Note Properties)</a>
 	 */
-	public static final URI NOTE;
+	public static final IRI NOTE;
 
 	/**
 	 * The skos:scopeNote property.
@@ -219,7 +219,7 @@ public class SKOS {
 	 * @see <a href="http://www.w3.org/TR/skos-reference/#notes">Documentation
 	 *      Properties (Note Properties)</a>
 	 */
-	public static final URI SCOPE_NOTE;
+	public static final IRI SCOPE_NOTE;
 
 	/* semantic relations */
 
@@ -231,7 +231,7 @@ public class SKOS {
 	 *      Simple Knowledge Organization System Reference - Semantic Relations
 	 *      Section</a>
 	 */
-	public static final URI BROADER;
+	public static final IRI BROADER;
 
 	/**
 	 * The skos:broaderTransitive relation.
@@ -241,7 +241,7 @@ public class SKOS {
 	 *      Simple Knowledge Organization System Reference - Semantic Relations
 	 *      Section</a>
 	 */
-	public static final URI BROADER_TRANSITIVE;
+	public static final IRI BROADER_TRANSITIVE;
 
 	/**
 	 * The skos:narrower relation.
@@ -251,7 +251,7 @@ public class SKOS {
 	 *      Simple Knowledge Organization System Reference - Semantic Relations
 	 *      Section</a>
 	 */
-	public static final URI NARROWER;
+	public static final IRI NARROWER;
 
 	/**
 	 * The skos:narrowerTransitive relation.
@@ -261,7 +261,7 @@ public class SKOS {
 	 *      Simple Knowledge Organization System Reference - Semantic Relations
 	 *      Section</a>
 	 */
-	public static final URI NARROWER_TRANSITIVE;
+	public static final IRI NARROWER_TRANSITIVE;
 
 	/**
 	 * The skos:related relation.
@@ -271,7 +271,7 @@ public class SKOS {
 	 *      Simple Knowledge Organization System Reference - Semantic Relations
 	 *      Section</a>
 	 */
-	public static final URI RELATED;
+	public static final IRI RELATED;
 
 	/**
 	 * The skos:semanticRelation relation.
@@ -281,7 +281,7 @@ public class SKOS {
 	 *      Simple Knowledge Organization System Reference - Semantic Relations
 	 *      Section</a>
 	 */
-	public static final URI SEMANTIC_RELATION;
+	public static final IRI SEMANTIC_RELATION;
 
 	/* mapping properties */
 
@@ -292,7 +292,7 @@ public class SKOS {
 	 *      Knowledge Organization System Reference - Mapping Properties
 	 *      Section</a>
 	 */
-	public static final URI BROAD_MATCH;
+	public static final IRI BROAD_MATCH;
 
 	/**
 	 * The skos:closeMatch relation.
@@ -301,7 +301,7 @@ public class SKOS {
 	 *      Knowledge Organization System Reference - Mapping Properties
 	 *      Section</a>
 	 */
-	public static final URI CLOSE_MATCH;
+	public static final IRI CLOSE_MATCH;
 
 	/**
 	 * The skos:exactMatch relation.
@@ -310,7 +310,7 @@ public class SKOS {
 	 *      Knowledge Organization System Reference - Mapping Properties
 	 *      Section</a>
 	 */
-	public static final URI EXACT_MATCH;
+	public static final IRI EXACT_MATCH;
 
 	/**
 	 * The skos:mappingRelation relation.
@@ -319,7 +319,7 @@ public class SKOS {
 	 *      Knowledge Organization System Reference - Mapping Properties
 	 *      Section</a>
 	 */
-	public static final URI MAPPING_RELATION;
+	public static final IRI MAPPING_RELATION;
 
 	/**
 	 * The skos:narrowMatch relation.
@@ -328,7 +328,7 @@ public class SKOS {
 	 *      Knowledge Organization System Reference - Mapping Properties
 	 *      Section</a>
 	 */
-	public static final URI NARROW_MATCH;
+	public static final IRI NARROW_MATCH;
 
 	/**
 	 * The skos:relatedMatch relation.
@@ -337,50 +337,50 @@ public class SKOS {
 	 *      Knowledge Organization System Reference - Mapping Properties
 	 *      Section</a>
 	 */
-	public static final URI RELATED_MATCH;
+	public static final IRI RELATED_MATCH;
 
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		CONCEPT = f.createURI(NAMESPACE, "Concept");
-		CONCEPT_SCHEME = f.createURI(NAMESPACE, "ConceptScheme");
-		COLLECTION = f.createURI(NAMESPACE, "Collection");
-		ORDERED_COLLECTION = f.createURI(NAMESPACE, "OrderedCollection");
+		CONCEPT = f.createIRI(NAMESPACE, "Concept");
+		CONCEPT_SCHEME = f.createIRI(NAMESPACE, "ConceptScheme");
+		COLLECTION = f.createIRI(NAMESPACE, "Collection");
+		ORDERED_COLLECTION = f.createIRI(NAMESPACE, "OrderedCollection");
 
-		PREF_LABEL = f.createURI(NAMESPACE, "prefLabel");
-		ALT_LABEL = f.createURI(NAMESPACE, "altLabel");
+		PREF_LABEL = f.createIRI(NAMESPACE, "prefLabel");
+		ALT_LABEL = f.createIRI(NAMESPACE, "altLabel");
 
-		BROADER = f.createURI(NAMESPACE, "broader");
-		NARROWER = f.createURI(NAMESPACE, "narrower");
+		BROADER = f.createIRI(NAMESPACE, "broader");
+		NARROWER = f.createIRI(NAMESPACE, "narrower");
 
-		HAS_TOP_CONCEPT = f.createURI(NAMESPACE, "hasTopConcept");
-		MEMBER = f.createURI(NAMESPACE, "member");
+		HAS_TOP_CONCEPT = f.createIRI(NAMESPACE, "hasTopConcept");
+		MEMBER = f.createIRI(NAMESPACE, "member");
 
-		HIDDEN_LABEL = f.createURI(NAMESPACE, "hiddenLabel");
+		HIDDEN_LABEL = f.createIRI(NAMESPACE, "hiddenLabel");
 
-		IN_SCHEME = f.createURI(NAMESPACE, "inScheme");
+		IN_SCHEME = f.createIRI(NAMESPACE, "inScheme");
 
-		TOP_CONCEPT_OF = f.createURI(NAMESPACE, "topConceptOf");
+		TOP_CONCEPT_OF = f.createIRI(NAMESPACE, "topConceptOf");
 
-		MEMBER_LIST = f.createURI(NAMESPACE, "memberList");
-		NOTATION = f.createURI(NAMESPACE, "notation");
-		CHANGE_NOTE = f.createURI(NAMESPACE, "changeNote");
-		DEFINITION = f.createURI(NAMESPACE, "definition");
-		EDITORIAL_NOTE = f.createURI(NAMESPACE, "editorialNote");
-		EXAMPLE = f.createURI(NAMESPACE, "example");
-		HISTORY_NOTE = f.createURI(NAMESPACE, "historyNote");
-		NOTE = f.createURI(NAMESPACE, "note");
-		SCOPE_NOTE = f.createURI(NAMESPACE, "scopeNote");
-		BROADER_TRANSITIVE = f.createURI(NAMESPACE, "broaderTransitive");
-		NARROWER_TRANSITIVE = f.createURI(NAMESPACE, "narrowerTransitive");
-		RELATED = f.createURI(NAMESPACE, "related");
-		SEMANTIC_RELATION = f.createURI(NAMESPACE, "semanticRelation");
-		BROAD_MATCH = f.createURI(NAMESPACE, "broadMatch");
-		CLOSE_MATCH = f.createURI(NAMESPACE, "closeMatch");
-		EXACT_MATCH = f.createURI(NAMESPACE, "exactMatch");
-		MAPPING_RELATION = f.createURI(NAMESPACE, "mappingRelation");
-		NARROW_MATCH = f.createURI(NAMESPACE, "narrowMatch");
-		RELATED_MATCH = f.createURI(NAMESPACE, "relatedMatch");
+		MEMBER_LIST = f.createIRI(NAMESPACE, "memberList");
+		NOTATION = f.createIRI(NAMESPACE, "notation");
+		CHANGE_NOTE = f.createIRI(NAMESPACE, "changeNote");
+		DEFINITION = f.createIRI(NAMESPACE, "definition");
+		EDITORIAL_NOTE = f.createIRI(NAMESPACE, "editorialNote");
+		EXAMPLE = f.createIRI(NAMESPACE, "example");
+		HISTORY_NOTE = f.createIRI(NAMESPACE, "historyNote");
+		NOTE = f.createIRI(NAMESPACE, "note");
+		SCOPE_NOTE = f.createIRI(NAMESPACE, "scopeNote");
+		BROADER_TRANSITIVE = f.createIRI(NAMESPACE, "broaderTransitive");
+		NARROWER_TRANSITIVE = f.createIRI(NAMESPACE, "narrowerTransitive");
+		RELATED = f.createIRI(NAMESPACE, "related");
+		SEMANTIC_RELATION = f.createIRI(NAMESPACE, "semanticRelation");
+		BROAD_MATCH = f.createIRI(NAMESPACE, "broadMatch");
+		CLOSE_MATCH = f.createIRI(NAMESPACE, "closeMatch");
+		EXACT_MATCH = f.createIRI(NAMESPACE, "exactMatch");
+		MAPPING_RELATION = f.createIRI(NAMESPACE, "mappingRelation");
+		NARROW_MATCH = f.createIRI(NAMESPACE, "narrowMatch");
+		RELATED_MATCH = f.createIRI(NAMESPACE, "relatedMatch");
 
 	}
 }

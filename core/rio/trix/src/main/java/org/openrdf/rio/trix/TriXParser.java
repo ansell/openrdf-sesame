@@ -41,10 +41,10 @@ import info.aduna.xml.SimpleSAXParser;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -64,7 +64,7 @@ public class TriXParser extends RDFParserBase {
 	 *--------------*/
 
 	/**
-	 * Creates a new TriXParser that will use a {@link ValueFactoryImpl} to
+	 * Creates a new TriXParser that will use a {@link SimpleValueFactory} to
 	 * create objects for resources, bNodes, literals and statements.
 	 */
 	public TriXParser() {
@@ -197,7 +197,7 @@ public class TriXParser extends RDFParserBase {
 						valueList.add(createLiteral(text, null, null));
 					}
 					else {
-						URI dtURI = createURI(datatype);
+						IRI dtURI = createURI(datatype);
 						valueList.add(createLiteral(text, null, dtURI));
 					}
 				}
@@ -266,7 +266,7 @@ public class TriXParser extends RDFParserBase {
 				}
 
 				Resource subj;
-				URI pred;
+				IRI pred;
 				Value obj;
 
 				try {
@@ -279,7 +279,7 @@ public class TriXParser extends RDFParserBase {
 				}
 
 				try {
-					pred = (URI)valueList.get(1);
+					pred = (IRI)valueList.get(1);
 				}
 				catch (ClassCastException e) {
 					reportError("Second value for a triple should be a URI",

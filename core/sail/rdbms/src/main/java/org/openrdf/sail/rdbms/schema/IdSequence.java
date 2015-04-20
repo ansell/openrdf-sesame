@@ -28,7 +28,7 @@ import java.util.Optional;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
@@ -172,7 +172,7 @@ public abstract class IdSequence {
 
 	protected ValueType valueOf(Literal lit) {
 		Optional<String> lang = lit.getLanguage();
-		URI dt = lit.getDatatype();
+		IRI dt = lit.getDatatype();
 		int length = lit.stringValue().length();
 		if (lang.isPresent()) {
 			// language
@@ -201,15 +201,15 @@ public abstract class IdSequence {
 		return ValueType.TYPED;
 	}
 
-	private ValueType valueOf(URI value) {
+	private ValueType valueOf(IRI value) {
 		if (value.stringValue().length() > LONG)
 			return ValueType.URI_LONG;
 		return ValueType.URI;
 	}
 
 	protected ValueType valueOf(Value value) {
-		if (value instanceof URI)
-			return valueOf((URI)value);
+		if (value instanceof IRI)
+			return valueOf((IRI)value);
 		if (value instanceof Literal)
 			return valueOf((Literal)value);
 		assert value instanceof BNode : value;

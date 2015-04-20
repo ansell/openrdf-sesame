@@ -26,7 +26,7 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -97,7 +97,7 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		try {
@@ -173,7 +173,7 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	@Override
 	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+			IRI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);
@@ -184,7 +184,7 @@ public class RdbmsConnection extends SailConnectionBase {
 	}
 
 	@Override
-	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		RdbmsResource s = vf.asRdbmsResource(subj);

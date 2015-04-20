@@ -16,7 +16,7 @@
  */
 package org.openrdf.queryrender.builder;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.parser.ParsedQuery;
 
@@ -105,7 +105,7 @@ public interface QueryBuilder<T extends ParsedQuery> extends SupportsGroups {
 	 *        the from URI
 	 * @return this query builder
 	 */
-	public QueryBuilder<T> from(URI theURI);
+	public QueryBuilder<T> from(IRI theURI);
 
 	/**
 	 * Add a 'from named' clause to this query
@@ -114,7 +114,7 @@ public interface QueryBuilder<T extends ParsedQuery> extends SupportsGroups {
 	 *        the graph URI
 	 * @return this query builder
 	 */
-	public QueryBuilder<T> fromNamed(URI theURI);
+	public QueryBuilder<T> fromNamed(IRI theURI);
 
 	/**
 	 * Specify ORDER BY clause with ASC modifier by default
@@ -141,11 +141,11 @@ public interface QueryBuilder<T extends ParsedQuery> extends SupportsGroups {
 
 	public QueryBuilder<T> addProjectionStatement(String theSubj, String thePred, Value theObj);
 
-	public QueryBuilder<T> addProjectionStatement(String theSubj, URI thePred, Value theObj);
+	public QueryBuilder<T> addProjectionStatement(String theSubj, IRI thePred, Value theObj);
 
-	public QueryBuilder<T> addProjectionStatement(URI theSubj, String thePred, String theObj);
+	public QueryBuilder<T> addProjectionStatement(IRI theSubj, String thePred, String theObj);
 
-	public QueryBuilder<T> addProjectionStatement(URI theSubj, URI thePred, String theObj);
+	public QueryBuilder<T> addProjectionStatement(IRI theSubj, IRI thePred, String theObj);
 
-	public QueryBuilder<T> addProjectionStatement(String theSubj, URI thePred, String theObj);
+	public QueryBuilder<T> addProjectionStatement(String theSubj, IRI thePred, String theObj);
 }

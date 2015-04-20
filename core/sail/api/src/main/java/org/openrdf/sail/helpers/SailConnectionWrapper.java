@@ -22,7 +22,7 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -107,7 +107,7 @@ public class SailConnectionWrapper implements SailConnection {
 	}
 
 	@Override
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, IRI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
@@ -147,14 +147,14 @@ public class SailConnectionWrapper implements SailConnection {
 	}
 
 	@Override
-	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		wrappedCon.addStatement(subj, pred, obj, contexts);
 	}
 
 	@Override
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatements(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		wrappedCon.removeStatements(subj, pred, obj, contexts);
@@ -168,14 +168,14 @@ public class SailConnectionWrapper implements SailConnection {
 	}
 
 	@Override
-	public void addStatement(UpdateContext modify, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(UpdateContext modify, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		wrappedCon.addStatement(modify, subj, pred, obj, contexts);
 	}
 
 	@Override
-	public void removeStatement(UpdateContext modify, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatement(UpdateContext modify, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		wrappedCon.removeStatement(modify, subj, pred, obj, contexts);

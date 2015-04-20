@@ -38,10 +38,10 @@ import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -132,7 +132,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		});
 		this.federation = federation;
 
-		valueFactory = ValueFactoryImpl.getInstance();
+		valueFactory = SimpleValueFactory.getInstance();
 
 		this.members = new ArrayList<RepositoryConnection>(members.size());
 		for (RepositoryConnection member : members) {
@@ -274,7 +274,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 
 	@Override
 	public CloseableIteration<? extends Statement, SailException> getStatementsInternal(final Resource subj,
-			final URI pred, final Value obj, final boolean includeInferred, final Resource... contexts)
+			final IRI pred, final Value obj, final boolean includeInferred, final Resource... contexts)
 		throws SailException
 	{
 		CloseableIteration<? extends Statement, SailException> cursor = union(new Function<Statement>() {
@@ -320,7 +320,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		}
 
 		public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
-				URI pred, Value obj, Resource... contexts)
+				IRI pred, Value obj, Resource... contexts)
 			throws QueryEvaluationException
 		{
 			try {
@@ -452,7 +452,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase {
 		}
 	}
 
-	private boolean isLocal(URI pred) {
+	private boolean isLocal(IRI pred) {
 		if (pred == null) {
 			return false; // NOPMD
 		}

@@ -14,9 +14,9 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.openrdf.model.base.ApacheSetTestCase;
-import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.ContextStatement;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.StatementImpl;
+import org.openrdf.model.impl.SimpleStatement;
 import org.openrdf.model.vocabulary.RDF;
 
 public abstract class TestModel extends TestCase {
@@ -82,7 +82,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return new StatementImpl(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
+					return new SimpleStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
 				}
 
 				@Override
@@ -90,14 +90,14 @@ public abstract class TestModel extends TestCase {
 					Random rand = new Random(0);
 					List<Statement> list = new ArrayList<Statement>();
 					for (Object seed : seeds) {
-						URI s = createURI(seed);
-						URI p = createURI(seeds[rand.nextInt(seeds.length)]);
-						URI o = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI s = createURI(seed);
+						IRI p = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI o = createURI(seeds[rand.nextInt(seeds.length)]);
 						if (rand.nextInt() % 2 == 0) {
-							list.add(new StatementImpl(s, p, o));
+							list.add(new SimpleStatement(s, p, o));
 						} else {
-							URI c = createURI(seeds[rand.nextInt(seeds.length)]);
-							list.add(new ContextStatementImpl(s, p, o, c));
+							IRI c = createURI(seeds[rand.nextInt(seeds.length)]);
+							list.add(new ContextStatement(s, p, o, c));
 						}
 					}
 					return list.toArray();
@@ -118,7 +118,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return new StatementImpl(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
+					return new SimpleStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
 				}
 
 				@Override
@@ -126,14 +126,14 @@ public abstract class TestModel extends TestCase {
 					Random rand = new Random(0);
 					List<Statement> list = new ArrayList<Statement>();
 					for (Object seed : seeds) {
-						URI s = createURI(seed);
-						URI p = createURI(seeds[rand.nextInt(seeds.length)]);
-						URI o = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI s = createURI(seed);
+						IRI p = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI o = createURI(seeds[rand.nextInt(seeds.length)]);
 						if (rand.nextInt() % 2 == 0) {
-							list.add(new StatementImpl(s, p, o));
+							list.add(new SimpleStatement(s, p, o));
 						} else {
-							URI c = createURI(seeds[rand.nextInt(seeds.length)]);
-							list.add(new ContextStatementImpl(s, p, o, c));
+							IRI c = createURI(seeds[rand.nextInt(seeds.length)]);
+							list.add(new ContextStatement(s, p, o, c));
 						}
 					}
 					return list.toArray();
@@ -141,13 +141,13 @@ public abstract class TestModel extends TestCase {
 			}).runBare();
 		} else if ("cfiltered".equals(name[0])) {
 			(new ApacheSetTestCase(name[1]) {
-				private URI ctx0 = createURI("test0");
-				private URI ctx1 = createURI("test1");
+				private IRI ctx0 = createURI("test0");
+				private IRI ctx1 = createURI("test1");
 
 				@Override
 				public Set makeEmptySet() {
 					Model model = makeEmptyModel();
-					model.add(new ContextStatementImpl(RDF.TYPE, RDF.TYPE, RDF.PROPERTY, createURI("hidden")));
+					model.add(new ContextStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY, createURI("hidden")));
 					return model.filter(null, null, null, ctx0, ctx1);
 				}
 
@@ -158,7 +158,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object getOneElement() {
-					return new ContextStatementImpl(RDF.VALUE, RDF.TYPE, RDF.PROPERTY, ctx0);
+					return new ContextStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY, ctx0);
 				}
 
 				@Override
@@ -166,10 +166,10 @@ public abstract class TestModel extends TestCase {
 					Random rand = new Random(0);
 					List<Statement> list = new ArrayList<Statement>();
 					for (Object seed : seeds) {
-						URI s = createURI(seed);
-						URI p = createURI(seeds[rand.nextInt(seeds.length)]);
-						URI o = createURI(seeds[rand.nextInt(seeds.length)]);
-						list.add(new ContextStatementImpl(s, p, o, ctx1));
+						IRI s = createURI(seed);
+						IRI p = createURI(seeds[rand.nextInt(seeds.length)]);
+						IRI o = createURI(seeds[rand.nextInt(seeds.length)]);
+						list.add(new ContextStatement(s, p, o, ctx1));
 					}
 					return list.toArray();
 				}
@@ -194,7 +194,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<URI> list = new ArrayList<URI>();
+					List<IRI> list = new ArrayList<IRI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
@@ -221,7 +221,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<URI> list = new ArrayList<URI>();
+					List<IRI> list = new ArrayList<IRI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}
@@ -275,7 +275,7 @@ public abstract class TestModel extends TestCase {
 
 				@Override
 				public Object[] convert(Object[] seeds) {
-					List<URI> list = new ArrayList<URI>();
+					List<IRI> list = new ArrayList<IRI>();
 					for (Object seed : seeds) {
 						list.add(createURI(seed));
 					}

@@ -16,12 +16,12 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.impl.BNodeImpl;
+import org.openrdf.model.impl.SimpleBNode;
 
 /**
  * A MemoryStore-specific extension of BNodeImpl giving it node properties.
  */
-public class MemBNode extends BNodeImpl implements MemResource {
+public class MemBNode extends SimpleBNode implements MemResource {
 
 	private static final long serialVersionUID = -887382892580321647L;
 

@@ -27,9 +27,9 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -133,7 +133,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	/**
 	 * Stack for remembering the predicate of statements at each level.
 	 */
-	private final Stack<URI> predicateStack = new Stack<URI>();
+	private final Stack<IRI> predicateStack = new Stack<IRI>();
 
 	/*--------------*
 	 * Constructors *
@@ -250,7 +250,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				if (i > 0) {
 					writeIndents(i * 2 - 1);
 
-					URI predicate = predicateStack.get(i - 1);
+					IRI predicate = predicateStack.get(i - 1);
 
 					writeStartTag(predicate.getNamespace(), predicate.getLocalName());
 					writeNewLine();
@@ -272,7 +272,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			writeNewLine();
 		}
 		else {
-			URI topPredicate = predicateStack.pop();
+			IRI topPredicate = predicateStack.pop();
 
 			if (!topNode.hasType()) {
 				// we can use an abbreviated predicate
@@ -315,7 +315,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 				writeNodeEndTag(nextElement);
 
 				if (predicateStack.size() > 0) {
-					URI nextPredicate = predicateStack.pop();
+					IRI nextPredicate = predicateStack.pop();
 
 					writeIndents(predicateStack.size() + nodeStack.size());
 
@@ -336,7 +336,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		}
 
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 
 		try {
@@ -364,10 +364,10 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			// element is possible
 			// FIXME: verify that an XML namespace-qualified name can be created
 			// for the type URI
-			if (pred.equals(RDF.TYPE) && obj instanceof URI && !topSubject.hasType() && !topSubject.isWritten())
+			if (pred.equals(RDF.TYPE) && obj instanceof IRI && !topSubject.hasType() && !topSubject.isWritten())
 			{
 				// Use typed node element
-				topSubject.setType((URI)obj);
+				topSubject.setType((IRI)obj);
 			}
 			else {
 				if (!nodeStack.isEmpty() && pred.equals(nodeStack.peek().nextLi())) {
@@ -404,8 +404,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			writeStartOfStartTag(RDF.NAMESPACE, "Description");
 		}
 
-		if (value instanceof URI) {
-			URI uri = (URI)value;
+		if (value instanceof IRI) {
+			IRI uri = (IRI)value;
 			writeAttribute(RDF.NAMESPACE, "about", uri.toString());
 		}
 		else {
@@ -453,7 +453,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 	/**
 	 * Write out an empty property element.
 	 */
-	private void writeAbbreviatedPredicate(URI pred, Value obj)
+	private void writeAbbreviatedPredicate(IRI pred, Value obj)
 		throws IOException, RDFHandlerException
 	{
 		writeStartOfStartTag(pred.getNamespace(), pred.getLocalName());
@@ -461,8 +461,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		if (obj instanceof Resource) {
 			Resource objRes = (Resource)obj;
 
-			if (objRes instanceof URI) {
-				URI uri = (URI)objRes;
+			if (objRes instanceof IRI) {
+				IRI uri = (IRI)objRes;
 				writeAttribute(RDF.NAMESPACE, "resource", uri.toString());
 			}
 			else {
@@ -475,7 +475,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		else if (obj instanceof Literal) {
 			Literal objLit = (Literal)obj;
 			// datatype attribute
-			URI datatype = objLit.getDatatype();
+			IRI datatype = objLit.getDatatype();
 			// Check if datatype is rdf:XMLLiteral
 			boolean isXmlLiteral = datatype.equals(RDF.XMLLITERAL);
 
@@ -540,7 +540,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 		private Value value;
 
 		// type == null means that we use <rdf:Description>
-		private URI type = null;
+		private IRI type = null;
 
 		private boolean isWritten = false;
 
@@ -553,7 +553,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 		Resource nextLi() {
 			if (nextLi == null) {
-				nextLi = new URIImpl(RDF.NAMESPACE + "_" + nextLiIndex);
+				nextLi = new SimpleIRI(RDF.NAMESPACE + "_" + nextLiIndex);
 			}
 
 			return nextLi;
@@ -568,11 +568,11 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			return value;
 		}
 
-		public void setType(URI type) {
+		public void setType(IRI type) {
 			this.type = type;
 		}
 
-		public URI getType() {
+		public IRI getType() {
 			return type;
 		}
 

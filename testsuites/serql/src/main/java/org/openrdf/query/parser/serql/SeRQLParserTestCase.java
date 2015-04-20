@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -67,9 +67,9 @@ public abstract class SeRQLParserTestCase extends TestCase {
 
 	private static String MFX = "http://www.openrdf.org/test-manifest-extensions#";
 
-	private static URI MFX_CORRECT = new URIImpl(MFX + "Correct");
+	private static IRI MFX_CORRECT = new SimpleIRI(MFX + "Correct");
 
-	private static URI MFX_PARSE_ERROR = new URIImpl(MFX + "ParseError");
+	private static IRI MFX_PARSE_ERROR = new SimpleIRI(MFX + "ParseError");
 
 	/* Constructors */
 

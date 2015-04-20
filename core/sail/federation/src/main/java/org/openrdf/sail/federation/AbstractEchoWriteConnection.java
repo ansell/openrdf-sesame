@@ -19,7 +19,7 @@ package org.openrdf.sail.federation;
 import java.util.List;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -120,7 +120,7 @@ abstract class AbstractEchoWriteConnection extends AbstractFederationConnection 
 	}
 
 	@Override
-	public void removeStatementsInternal(final Resource subj, final URI pred, final Value obj,
+	public void removeStatementsInternal(final Resource subj, final IRI pred, final Value obj,
 			final Resource... contexts)
 		throws SailException
 	{

@@ -26,7 +26,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.str;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Lang;
@@ -124,7 +124,7 @@ public class DatatypeExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsO
 
 	private SqlExpr valueOf(Value value) {
 		if (value instanceof Literal) {
-			URI datatype = ((Literal)value).getDatatype();
+			IRI datatype = ((Literal)value).getDatatype();
 			if (datatype != null)
 				return str(datatype.stringValue());
 		}

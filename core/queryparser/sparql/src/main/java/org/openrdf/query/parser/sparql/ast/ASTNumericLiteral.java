@@ -2,13 +2,13 @@
 
 package org.openrdf.query.parser.sparql.ast;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 
 public class ASTNumericLiteral extends ASTRDFValue {
 
 	private String value;
 
-	private URI datatype;
+	private IRI datatype;
 
 	public ASTNumericLiteral(int id) {
 		super(id);
@@ -33,11 +33,11 @@ public class ASTNumericLiteral extends ASTRDFValue {
 		this.value = value;
 	}
 
-	public URI getDatatype() {
+	public IRI getDatatype() {
 		return datatype;
 	}
 
-	public void setDatatype(URI datatype) {
+	public void setDatatype(IRI datatype) {
 		this.datatype = datatype;
 	}
 

@@ -24,9 +24,9 @@ import junit.framework.TestCase;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -36,17 +36,17 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class ValueComparatorTest extends TestCase {
 
-	private ValueFactory vf = ValueFactoryImpl.getInstance();
+	private ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private BNode bnode1 = vf.createBNode();
 
 	private BNode bnode2 = vf.createBNode();
 
-	private URI uri1 = vf.createURI("http://script.example/Latin");
+	private IRI uri1 = vf.createIRI("http://script.example/Latin");
 
-	private URI uri2 = vf.createURI("http://script.example/Кириллица");
+	private IRI uri2 = vf.createIRI("http://script.example/Кириллица");
 
-	private URI uri3 = vf.createURI("http://script.example/日本語");
+	private IRI uri3 = vf.createIRI("http://script.example/日本語");
 
 	private Literal typed1 = vf.createLiteral("http://script.example/Latin", XMLSchema.STRING);
 

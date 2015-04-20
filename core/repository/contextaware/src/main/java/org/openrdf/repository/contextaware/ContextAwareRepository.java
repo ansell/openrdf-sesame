@@ -16,7 +16,7 @@
  */
 package org.openrdf.repository.contextaware;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
@@ -29,7 +29,7 @@ import org.openrdf.repository.base.RepositoryWrapper;
  */
 public class ContextAwareRepository extends RepositoryWrapper {
 
-	private static final URI[] ALL_CONTEXTS = new URI[0];
+	private static final IRI[] ALL_CONTEXTS = new IRI[0];
 
 	private boolean includeInferred = true;
 
@@ -39,15 +39,15 @@ public class ContextAwareRepository extends RepositoryWrapper {
 
 	private String baseURI;
 
-	private URI[] readContexts = ALL_CONTEXTS;
+	private IRI[] readContexts = ALL_CONTEXTS;
 
-	private URI[] addContexts = ALL_CONTEXTS;
+	private IRI[] addContexts = ALL_CONTEXTS;
 
-	private URI[] removeContexts = ALL_CONTEXTS;
+	private IRI[] removeContexts = ALL_CONTEXTS;
 
-	private URI[] archiveContexts = ALL_CONTEXTS;
+	private IRI[] archiveContexts = ALL_CONTEXTS;
 
-	private URI insertContext = null;
+	private IRI insertContext = null;
 
 	public ContextAwareRepository() {
 		super();
@@ -69,7 +69,7 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	 * @see ContextAwareConnection#getAddContexts()
 	 */
 	@Deprecated
-	public URI[] getAddContexts() {
+	public IRI[] getAddContexts() {
 		return addContexts;
 	}
 
@@ -77,14 +77,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	 * @see ContextAwareConnection#getArchiveContexts()
 	 */
 	@Deprecated
-	public URI[] getArchiveContexts() {
+	public IRI[] getArchiveContexts() {
 		return archiveContexts;
 	}
 
 	/**
 	 * @see ContextAwareConnection#getInsertContext()
 	 */
-	public URI getInsertContext() {
+	public IRI getInsertContext() {
 		return insertContext;
 	}
 
@@ -106,14 +106,14 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	/**
 	 * @see ContextAwareConnection#getReadContexts()
 	 */
-	public URI[] getReadContexts() {
+	public IRI[] getReadContexts() {
 		return readContexts;
 	}
 
 	/**
 	 * @see ContextAwareConnection#getRemoveContexts()
 	 */
-	public URI[] getRemoveContexts() {
+	public IRI[] getRemoveContexts() {
 		return removeContexts;
 	}
 
@@ -125,25 +125,25 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setAddContexts(URI[])
+	 * @see ContextAwareConnection#setAddContexts(IRI[])
 	 */
 	@Deprecated
-	public void setAddContexts(URI... addContexts) {
+	public void setAddContexts(IRI... addContexts) {
 		this.addContexts = addContexts;
 	}
 
 	/**
-	 * @see ContextAwareConnection#setArchiveContexts(URI[])
+	 * @see ContextAwareConnection#setArchiveContexts(IRI[])
 	 */
 	@Deprecated
-	public void setArchiveContexts(URI... archiveContexts) {
+	public void setArchiveContexts(IRI... archiveContexts) {
 		this.archiveContexts = archiveContexts;
 	}
 
 	/**
-	 * @see ContextAwareConnection#setInsertContext(URI)
+	 * @see ContextAwareConnection#setInsertContext(IRI)
 	 */
-	public void setInsertContext(URI insertContext) {
+	public void setInsertContext(IRI insertContext) {
 		this.insertContext = insertContext;
 	}
 
@@ -170,16 +170,16 @@ public class ContextAwareRepository extends RepositoryWrapper {
 	}
 
 	/**
-	 * @see ContextAwareConnection#setReadContexts(URI[])
+	 * @see ContextAwareConnection#setReadContexts(IRI[])
 	 */
-	public void setReadContexts(URI... readContexts) {
+	public void setReadContexts(IRI... readContexts) {
 		this.readContexts = readContexts;
 	}
 
 	/**
-	 * @see ContextAwareConnection#setRemoveContexts(URI[])
+	 * @see ContextAwareConnection#setRemoveContexts(IRI[])
 	 */
-	public void setRemoveContexts(URI... removeContexts) {
+	public void setRemoveContexts(IRI... removeContexts) {
 		this.removeContexts = removeContexts;
 	}
 

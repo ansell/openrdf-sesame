@@ -6,9 +6,9 @@ import java.util.Set;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Extends the Apache Commons Collections test, {@link AbstractTestSet} to
@@ -16,7 +16,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public abstract class ApacheSetTestCase extends AbstractTestSet {
 
-	private ValueFactory vf = ValueFactoryImpl.getInstance();
+	private ValueFactory vf = SimpleValueFactory.getInstance();
 
 	public ApacheSetTestCase(String name) {
 		super(name);
@@ -119,16 +119,16 @@ public abstract class ApacheSetTestCase extends AbstractTestSet {
 	 * the URI.
 	 * 
 	 * @param seed
-	 *        The object to use as a value to create a {@link URI}.
+	 *        The object to use as a value to create a {@link IRI}.
 	 * @return A URI based on the value of the seed parameter.
 	 */
-	public URI createURI(Object seed) {
+	public IRI createURI(Object seed) {
 		String prefix = "urn:test:" + seed.getClass().getSimpleName() + ":";
 		if (seed instanceof Number)
-			return vf.createURI(prefix + ((Number)seed).intValue());
+			return vf.createIRI(prefix + ((Number)seed).intValue());
 		if (seed instanceof Character)
-			return vf.createURI(prefix + ((Character)seed).hashCode());
-		return vf.createURI(prefix + seed.toString());
+			return vf.createIRI(prefix + ((Character)seed).hashCode());
+		return vf.createIRI(prefix + seed.toString());
 	}
 
 	/**

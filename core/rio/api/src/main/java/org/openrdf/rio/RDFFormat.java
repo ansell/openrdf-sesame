@@ -26,8 +26,8 @@ import java.util.List;
 import info.aduna.lang.FileFormat;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Represents the concept of an RDF data serialization format. RDF formats are
@@ -94,7 +94,7 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat RDFXML = new RDFFormat("RDF/XML", Arrays.asList("application/rdf+xml",
 			"application/xml"), Charset.forName("UTF-8"), Arrays.asList("rdf", "rdfs", "owl", "xml"),
-			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/RDF_XML"),
+			SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/formats/RDF_XML"),
 			SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/**
@@ -109,7 +109,7 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat NTRIPLES = new RDFFormat("N-Triples", Arrays.asList("application/n-triples",
 			"text/plain"), Charset.forName("UTF-8"), Arrays.asList("nt"),
-			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/N-Triples"), NO_NAMESPACES,
+			SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/formats/N-Triples"), NO_NAMESPACES,
 			NO_CONTEXTS);
 
 	/**
@@ -126,7 +126,7 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat TURTLE = new RDFFormat("Turtle", Arrays.asList("text/turtle",
 			"application/x-turtle"), Charset.forName("UTF-8"), Arrays.asList("ttl"),
-			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/Turtle"),
+			SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/formats/Turtle"),
 			SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/**
@@ -142,7 +142,7 @@ public class RDFFormat extends FileFormat {
 	 *      readable RDF syntax</a>
 	 */
 	public static final RDFFormat N3 = new RDFFormat("N3", Arrays.asList("text/n3", "text/rdf+n3"),
-			Charset.forName("UTF-8"), Arrays.asList("n3"), ValueFactoryImpl.getInstance().createURI(
+			Charset.forName("UTF-8"), Arrays.asList("n3"), SimpleValueFactory.getInstance().createIRI(
 					"http://www.w3.org/ns/formats/N3"), SUPPORTS_NAMESPACES, NO_CONTEXTS);
 
 	/**
@@ -173,7 +173,7 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat TRIG = new RDFFormat("TriG", Arrays.asList("application/trig",
 			"application/x-trig"), Charset.forName("UTF-8"), Arrays.asList("trig"),
-			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/TriG"), SUPPORTS_NAMESPACES,
+			SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/formats/TriG"), SUPPORTS_NAMESPACES,
 			SUPPORTS_CONTEXTS);
 
 	/**
@@ -206,7 +206,7 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat NQUADS = new RDFFormat("N-Quads", Arrays.asList("application/n-quads",
 			"text/x-nquads", "text/nquads"), Charset.forName("UTF-8"), Arrays.asList("nq"),
-			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/N-Quads"), NO_NAMESPACES,
+			SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/formats/N-Quads"), NO_NAMESPACES,
 			SUPPORTS_CONTEXTS);
 
 	/**
@@ -222,7 +222,7 @@ public class RDFFormat extends FileFormat {
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat JSONLD = new RDFFormat("JSON-LD", Arrays.asList("application/ld+json"),
-			Charset.forName("UTF-8"), Arrays.asList("jsonld"), ValueFactoryImpl.getInstance().createURI(
+			Charset.forName("UTF-8"), Arrays.asList("jsonld"), SimpleValueFactory.getInstance().createIRI(
 					"http://www.w3.org/ns/formats/JSON-LD"), SUPPORTS_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
@@ -239,7 +239,7 @@ public class RDFFormat extends FileFormat {
 	 * @since 2.7.0
 	 */
 	public static final RDFFormat RDFJSON = new RDFFormat("RDF/JSON", Arrays.asList("application/rdf+json"),
-			Charset.forName("UTF-8"), Arrays.asList("rj"), ValueFactoryImpl.getInstance().createURI(
+			Charset.forName("UTF-8"), Arrays.asList("rj"), SimpleValueFactory.getInstance().createIRI(
 					"http://www.w3.org/ns/formats/RDF_JSON"), NO_NAMESPACES, SUPPORTS_CONTEXTS);
 
 	/**
@@ -256,7 +256,7 @@ public class RDFFormat extends FileFormat {
 	 */
 	public static final RDFFormat RDFA = new RDFFormat("RDFa", Arrays.asList("application/xhtml+xml",
 			"application/html", "text/html"), Charset.forName("UTF-8"), Arrays.asList("xhtml", "html"),
-			ValueFactoryImpl.getInstance().createURI("http://www.w3.org/ns/formats/RDFa"), SUPPORTS_NAMESPACES,
+			SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/formats/RDFa"), SUPPORTS_NAMESPACES,
 			NO_CONTEXTS);
 
 	/*------------------*
@@ -523,7 +523,7 @@ public class RDFFormat extends FileFormat {
 	 * @see <a href="http://www.w3.org/ns/formats/">Unique URIs for File
 	 *      Formats</a>
 	 */
-	private URI standardURI;
+	private IRI standardURI;
 
 	/*--------------*
 	 * Constructors *
@@ -645,7 +645,7 @@ public class RDFFormat extends FileFormat {
 	 * @since 2.8.0
 	 */
 	public RDFFormat(String name, Collection<String> mimeTypes, Charset charset,
-			Collection<String> fileExtensions, URI standardURI, boolean supportsNamespaces,
+			Collection<String> fileExtensions, IRI standardURI, boolean supportsNamespaces,
 			boolean supportsContexts)
 	{
 		super(name, mimeTypes, charset, fileExtensions);
@@ -690,7 +690,7 @@ public class RDFFormat extends FileFormat {
 	 *         standard URI.
 	 * @since 2.8.0
 	 */
-	public URI getStandardURI() {
+	public IRI getStandardURI() {
 		return standardURI;
 	}
 }

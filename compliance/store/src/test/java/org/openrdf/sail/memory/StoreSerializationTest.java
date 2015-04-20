@@ -25,7 +25,7 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
@@ -73,8 +73,8 @@ public class StoreSerializationTest extends TestCase {
 		store.initialize();
 
 		ValueFactory factory = store.getValueFactory();
-		URI foo = factory.createURI("http://www.foo.example/foo");
-		URI bar = factory.createURI("http://www.foo.example/bar");
+		IRI foo = factory.createIRI("http://www.foo.example/foo");
+		IRI bar = factory.createIRI("http://www.foo.example/bar");
 
 		SailConnection con = store.getConnection();
 		con.begin();
@@ -102,8 +102,8 @@ public class StoreSerializationTest extends TestCase {
 		store.initialize();
 
 		factory = store.getValueFactory();
-		foo = factory.createURI("http://www.foo.example/foo");
-		bar = factory.createURI("http://www.foo.example/bar");
+		foo = factory.createIRI("http://www.foo.example/foo");
+		bar = factory.createIRI("http://www.foo.example/bar");
 
 		con = store.getConnection();
 
@@ -131,7 +131,7 @@ public class StoreSerializationTest extends TestCase {
 		store.initialize();
 
 		ValueFactory factory = store.getValueFactory();
-		URI foo = factory.createURI("http://www.foo.example/foo");
+		IRI foo = factory.createIRI("http://www.foo.example/foo");
 
 		StringBuilder sb = new StringBuilder(66000);
 		for (int i = 0; i < 66000; i++) {

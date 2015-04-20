@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -58,13 +58,13 @@ class WritableConnection extends AbstractEchoWriteConnection {
 	}
 
 	@Override
-	public void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		add(members.get(addIndex), subj, pred, obj, contexts);
 	}
 
-	private void add(RepositoryConnection member, Resource subj, URI pred, Value obj, Resource... contexts)
+	private void add(RepositoryConnection member, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		try {

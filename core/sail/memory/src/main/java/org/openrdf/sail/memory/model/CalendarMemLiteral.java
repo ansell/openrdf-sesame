@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 
 /**
@@ -51,7 +51,7 @@ public class CalendarMemLiteral extends MemLiteral {
 		this(creator, label, XMLDatatypeUtil.qnameToURI(calendar.getXMLSchemaType()), calendar);
 	}
 
-	public CalendarMemLiteral(Object creator, String label, URI datatype, XMLGregorianCalendar calendar) {
+	public CalendarMemLiteral(Object creator, String label, IRI datatype, XMLGregorianCalendar calendar) {
 		super(creator, label, datatype);
 		this.calendar = calendar;
 	}

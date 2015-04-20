@@ -31,7 +31,7 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.TreeModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;

@@ -17,7 +17,7 @@
 package org.openrdf.http.protocol.transaction.operations;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -34,7 +34,7 @@ public class RemoveStatementsOperation extends StatementOperation {
 	/**
 	 * Creates a RemoveStatementsOperation.
 	 */
-	public RemoveStatementsOperation(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public RemoveStatementsOperation(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		super(contexts);
 
 		setSubject(subj);

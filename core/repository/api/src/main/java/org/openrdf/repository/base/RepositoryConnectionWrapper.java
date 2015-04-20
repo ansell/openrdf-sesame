@@ -29,7 +29,7 @@ import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -88,7 +88,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If false then the following add methods will call
-	 * {@link #addWithoutCommit(Resource, URI, Value, Resource[])}.
+	 * {@link #addWithoutCommit(Resource, IRI, Value, Resource[])}.
 	 * 
 	 * @see #add(Iterable, Resource...)
 	 * @see #add(Iteration, Resource...)
@@ -96,10 +96,10 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	 * @see #add(File, String, RDFFormat, Resource...)
 	 * @see #add(InputStream, String, RDFFormat, Resource...)
 	 * @see #add(Reader, String, RDFFormat, Resource...)
-	 * @see #add(Resource, URI, Value, Resource...)
+	 * @see #add(Resource, IRI, Value, Resource...)
 	 * @see #add(URL, String, RDFFormat, Resource...)
 	 * @return <code>true</code> to delegate add methods, <code>false</code> to
-	 *         call {@link #addWithoutCommit(Resource, URI, Value, Resource[])}
+	 *         call {@link #addWithoutCommit(Resource, IRI, Value, Resource[])}
 	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingAdd()
@@ -110,16 +110,16 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If false then the following has/export/isEmpty methods will call
-	 * {@link #getStatements(Resource, URI, Value, boolean, Resource[])}.
+	 * {@link #getStatements(Resource, IRI, Value, boolean, Resource[])}.
 	 * 
-	 * @see #exportStatements(Resource, URI, Value, boolean, RDFHandler,
+	 * @see #exportStatements(Resource, IRI, Value, boolean, RDFHandler,
 	 *      Resource...)
 	 * @see #hasStatement(Statement, boolean, Resource...)
-	 * @see #hasStatement(Resource, URI, Value, boolean, Resource...)
+	 * @see #hasStatement(Resource, IRI, Value, boolean, Resource...)
 	 * @see #isEmpty()
 	 * @return <code>true</code> to delegate read methods, <code>false</code> to
 	 *         call
-	 *         {@link #getStatements(Resource, URI, Value, boolean, Resource[])}
+	 *         {@link #getStatements(Resource, IRI, Value, boolean, Resource[])}
 	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingRead()
@@ -130,16 +130,16 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 
 	/**
 	 * If false then the following remove methods will call
-	 * {@link #removeWithoutCommit(Resource, URI, Value, Resource[])}.
+	 * {@link #removeWithoutCommit(Resource, IRI, Value, Resource[])}.
 	 * 
 	 * @see #clear(Resource...)
 	 * @see #remove(Iterable, Resource...)
 	 * @see #remove(Iteration, Resource...)
 	 * @see #remove(Statement, Resource...)
-	 * @see #remove(Resource, URI, Value, Resource...)
+	 * @see #remove(Resource, IRI, Value, Resource...)
 	 * @return <code>true</code> to delegate remove methods, <code>false</code>
 	 *         to call
-	 *         {@link #removeWithoutCommit(Resource, URI, Value, Resource...)}
+	 *         {@link #removeWithoutCommit(Resource, IRI, Value, Resource...)}
 	 * @throws RepositoryException
 	 */
 	protected boolean isDelegatingRemove()
@@ -218,7 +218,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void add(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void add(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (isDelegatingAdd()) {
@@ -281,7 +281,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
 		throws RepositoryException, RDFHandlerException
 	{
@@ -315,7 +315,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
 		throws RepositoryException
 	{
@@ -323,7 +323,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws RepositoryException
 	{
@@ -439,7 +439,7 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	public void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void remove(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		if (isDelegatingRemove()) {
@@ -510,14 +510,14 @@ public class RepositoryConnectionWrapper extends RepositoryConnectionBase implem
 	}
 
 	@Override
-	protected void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void addWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		getDelegate().add(subject, predicate, object, contexts);
 	}
 
 	@Override
-	protected void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	protected void removeWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		getDelegate().remove(subject, predicate, object, contexts);

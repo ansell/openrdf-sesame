@@ -24,7 +24,7 @@ import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.sqlNull;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.str;
 import static org.openrdf.sail.rdbms.algebra.base.SqlExprSupport.unsupported;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -144,8 +144,8 @@ public class URIExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperat
 	}
 
 	private SqlExpr valueOf(Value value) {
-		if (value instanceof URI) {
-			return str(((URI)value).stringValue());
+		if (value instanceof IRI) {
+			return str(((IRI)value).stringValue());
 		}
 		return sqlNull();
 	}

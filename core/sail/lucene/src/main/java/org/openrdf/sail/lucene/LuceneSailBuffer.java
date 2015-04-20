@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 
 /**
@@ -54,7 +54,7 @@ public class LuceneSailBuffer {
 		}
 
 		@Override
-		public URI getPredicate() {
+		public IRI getPredicate() {
 			return delegate.getPredicate();
 		}
 

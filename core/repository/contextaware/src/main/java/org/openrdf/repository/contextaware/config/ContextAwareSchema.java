@@ -16,9 +16,9 @@
  */
 package org.openrdf.repository.contextaware.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * @author James Leigh
@@ -32,44 +32,44 @@ public class ContextAwareSchema {
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/contextaware#";
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#includeInferred</tt> */
-	public final static URI INCLUDE_INFERRED;
+	public final static IRI INCLUDE_INFERRED;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#maxQueryTime</tt> */
-	public final static URI MAX_QUERY_TIME;
+	public final static IRI MAX_QUERY_TIME;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#queryLanguage</tt> */
-	public final static URI QUERY_LANGUAGE;
+	public final static IRI QUERY_LANGUAGE;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#base</tt> */
-	public final static URI BASE_URI;
+	public final static IRI BASE_URI;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#readContext</tt> */
-	public final static URI READ_CONTEXT;
+	public final static IRI READ_CONTEXT;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#addContext</tt> */
 	@Deprecated
-	public final static URI ADD_CONTEXT;
+	public final static IRI ADD_CONTEXT;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#removeContext</tt> */
-	public final static URI REMOVE_CONTEXT;
+	public final static IRI REMOVE_CONTEXT;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#archiveContext</tt> */
 	@Deprecated
-	public final static URI ARCHIVE_CONTEXT;
+	public final static IRI ARCHIVE_CONTEXT;
 
 	/** <tt>http://www.openrdf.org/config/repository/contextaware#insertContext</tt> */
-	public final static URI INSERT_CONTEXT;
+	public final static IRI INSERT_CONTEXT;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		INCLUDE_INFERRED = factory.createURI(NAMESPACE, "includeInferred");
-		QUERY_LANGUAGE = factory.createURI(NAMESPACE, "ql");
-		BASE_URI = factory.createURI(NAMESPACE, "base");
-		READ_CONTEXT = factory.createURI(NAMESPACE, "readContext");
-		ADD_CONTEXT = factory.createURI(NAMESPACE, "addContext");
-		REMOVE_CONTEXT = factory.createURI(NAMESPACE, "removeContext");
-		ARCHIVE_CONTEXT = factory.createURI(NAMESPACE, "archiveContext");
-		INSERT_CONTEXT = factory.createURI(NAMESPACE, "insertContext");
-		MAX_QUERY_TIME = factory.createURI(NAMESPACE, "maxQueryTime");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		INCLUDE_INFERRED = factory.createIRI(NAMESPACE, "includeInferred");
+		QUERY_LANGUAGE = factory.createIRI(NAMESPACE, "ql");
+		BASE_URI = factory.createIRI(NAMESPACE, "base");
+		READ_CONTEXT = factory.createIRI(NAMESPACE, "readContext");
+		ADD_CONTEXT = factory.createIRI(NAMESPACE, "addContext");
+		REMOVE_CONTEXT = factory.createIRI(NAMESPACE, "removeContext");
+		ARCHIVE_CONTEXT = factory.createIRI(NAMESPACE, "archiveContext");
+		INSERT_CONTEXT = factory.createIRI(NAMESPACE, "insertContext");
+		MAX_QUERY_TIME = factory.createIRI(NAMESPACE, "maxQueryTime");
 	}
 }

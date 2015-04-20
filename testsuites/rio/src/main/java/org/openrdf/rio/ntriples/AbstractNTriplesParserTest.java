@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -115,9 +115,9 @@ public abstract class AbstractNTriplesParserTest {
 		// Add all positive parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
-			URI nextTestUri = (URI)bindingSet.getValue("test");
+			IRI nextTestUri = (IRI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(),
+			String nextTestFile = removeBase(((IRI)bindingSet.getValue("inputURL")).toString(),
 					testLocationBaseUri);
 			String nextInputURL = fileBasePath + nextTestFile;
 
@@ -151,9 +151,9 @@ public abstract class AbstractNTriplesParserTest {
 		// Add all negative parser tests to the test suite
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
-			URI nextTestUri = (URI)bindingSet.getValue("test");
+			IRI nextTestUri = (IRI)bindingSet.getValue("test");
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString(),
+			String nextTestFile = removeBase(((IRI)bindingSet.getValue("inputURL")).toString(),
 					testLocationBaseUri);
 			String nextInputURL = fileBasePath + nextTestFile;
 

@@ -16,14 +16,14 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 
 /**
  * A MemoryStore-specific implementation of URI that stores separated namespace
  * and local name information to enable reuse of namespace String objects
  * (reducing memory usage) and that gives it node properties.
  */
-public class MemURI implements URI, MemResource {
+public class MemIRI implements IRI, MemResource {
 
 	private static final long serialVersionUID = 9118488004995852467L;
 
@@ -85,7 +85,7 @@ public class MemURI implements URI, MemResource {
 	 * @param localName
 	 *        localname part of URI.
 	 */
-	public MemURI(Object creator, String namespace, String localName) {
+	public MemIRI(Object creator, String namespace, String localName) {
 		this.creator = creator;
 		this.namespace = namespace;
 		this.localName = localName;
@@ -118,11 +118,11 @@ public class MemURI implements URI, MemResource {
 			return true;
 		}
 
-		if (other instanceof MemURI) {
-			MemURI o = (MemURI)other;
+		if (other instanceof MemIRI) {
+			MemIRI o = (MemIRI)other;
 			return namespace.equals(o.getNamespace()) && localName.equals(o.getLocalName());
 		}
-		else if (other instanceof URI) {
+		else if (other instanceof IRI) {
 			String otherStr = other.toString();
 
 			return namespace.length() + localName.length() == otherStr.length() && otherStr.endsWith(localName)

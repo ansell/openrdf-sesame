@@ -118,7 +118,7 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 		}
 		else if (URI_TAG.equals(tagName)) {
 			try {
-				currentValue = valueFactory.createURI(text);
+				currentValue = valueFactory.createIRI(text);
 			}
 			catch (IllegalArgumentException e) {
 				// Malformed URI
@@ -137,7 +137,7 @@ class SPARQLResultsSAXParser extends SimpleSAXAdapter {
 			}
 			else if (datatype != null) {
 				try {
-					currentValue = valueFactory.createLiteral(text, valueFactory.createURI(datatype));
+					currentValue = valueFactory.createLiteral(text, valueFactory.createIRI(datatype));
 				}
 				catch (IllegalArgumentException e) {
 					// Illegal datatype URI

@@ -20,7 +20,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
@@ -117,7 +117,7 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 		}
 	}
 
-	public void add(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+	public void add(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 			Resource... contexts)
 	{
 		if (printing) {
@@ -129,7 +129,7 @@ public class DebugRepositoryConnectionListener implements RepositoryConnectionLi
 		}
 	}
 
-	public void remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+	public void remove(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 			Resource... contexts)
 	{
 		if (printing) {

@@ -37,7 +37,7 @@ import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
@@ -76,7 +76,7 @@ public class ProtocolUtil {
 		}
 	}
 
-	public static URI parseURIParam(HttpServletRequest request, String paramName, ValueFactory vf)
+	public static IRI parseURIParam(HttpServletRequest request, String paramName, ValueFactory vf)
 		throws ClientHTTPException
 	{
 		String paramValue = request.getParameter(paramName);
@@ -89,7 +89,7 @@ public class ProtocolUtil {
 		}
 	}
 
-	public static URI parseGraphParam(HttpServletRequest request, ValueFactory vf)
+	public static IRI parseGraphParam(HttpServletRequest request, ValueFactory vf)
 		throws ClientHTTPException
 	{
 		String paramValue = request.getParameter(Protocol.GRAPH_PARAM_NAME);

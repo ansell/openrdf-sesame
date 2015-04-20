@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -92,12 +92,12 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * the from clauses in the query
 	 */
-	private Set<URI> mFrom = new HashSet<URI>();
+	private Set<IRI> mFrom = new HashSet<IRI>();
 
 	/**
 	 * The from named clauses of the query
 	 */
-	private Set<URI> mFromNamed = new HashSet<URI>();
+	private Set<IRI> mFromNamed = new HashSet<IRI>();
 
 	/**
 	 * The query to be built
@@ -220,11 +220,11 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 		if (!mFrom.isEmpty() || !mFromNamed.isEmpty()) {
 			DatasetImpl aDataset = new DatasetImpl();
 
-			for (URI aFrom : mFrom) {
+			for (IRI aFrom : mFrom) {
 				aDataset.addDefaultGraph(aFrom);
 			}
 
-			for (URI aFrom : mFromNamed) {
+			for (IRI aFrom : mFromNamed) {
 				aDataset.addNamedGraph(aFrom);
 			}
 
@@ -237,7 +237,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * @inheritDoc
 	 */
-	public QueryBuilder<T> fromNamed(final URI theURI) {
+	public QueryBuilder<T> fromNamed(final IRI theURI) {
 		mFromNamed.add(theURI);
 		return this;
 	}
@@ -245,7 +245,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * @inheritDoc
 	 */
-	public QueryBuilder<T> from(final URI theURI) {
+	public QueryBuilder<T> from(final IRI theURI) {
 		mFrom.add(theURI);
 		return this;
 	}
@@ -334,7 +334,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * @inheritDoc
 	 */
-	public QueryBuilder<T> addProjectionStatement(String theSubj, URI thePred, Value theObj) {
+	public QueryBuilder<T> addProjectionStatement(String theSubj, IRI thePred, Value theObj) {
 		if (isConstruct()) {
 			mProjectionPatterns.add(new StatementPattern(new Var(theSubj), GroupBuilder.valueToVar(thePred),
 					GroupBuilder.valueToVar(theObj)));
@@ -346,7 +346,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * @inheritDoc
 	 */
-	public QueryBuilder<T> addProjectionStatement(URI theSubj, String thePred, String theObj) {
+	public QueryBuilder<T> addProjectionStatement(IRI theSubj, String thePred, String theObj) {
 		if (isConstruct()) {
 			mProjectionPatterns.add(new StatementPattern(GroupBuilder.valueToVar(theSubj), new Var(thePred),
 					new Var(theObj)));
@@ -358,7 +358,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * @inheritDoc
 	 */
-	public QueryBuilder<T> addProjectionStatement(URI theSubj, URI thePred, String theObj) {
+	public QueryBuilder<T> addProjectionStatement(IRI theSubj, IRI thePred, String theObj) {
 		if (isConstruct()) {
 			mProjectionPatterns.add(new StatementPattern(GroupBuilder.valueToVar(theSubj),
 					GroupBuilder.valueToVar(thePred), new Var(theObj)));
@@ -370,7 +370,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 	/**
 	 * @inheritDoc
 	 */
-	public QueryBuilder<T> addProjectionStatement(String theSubj, URI thePred, String theObj) {
+	public QueryBuilder<T> addProjectionStatement(String theSubj, IRI thePred, String theObj) {
 		if (isConstruct()) {
 			mProjectionPatterns.add(new StatementPattern(new Var(theSubj), GroupBuilder.valueToVar(thePred),
 					new Var(theObj)));

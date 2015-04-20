@@ -28,18 +28,18 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.AbstractValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
 import org.openrdf.sail.nativerdf.model.NativeBNode;
 import org.openrdf.sail.nativerdf.model.NativeLiteral;
 import org.openrdf.sail.nativerdf.model.NativeResource;
-import org.openrdf.sail.nativerdf.model.NativeURI;
+import org.openrdf.sail.nativerdf.model.NativeIRI;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
 /**
@@ -48,7 +48,7 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
  * 
  * @author Arjohn Kampman
  */
-public class ValueStore extends ValueFactoryBase {
+public class ValueStore extends AbstractValueFactory {
 
 	/*-----------*
 	 * Constants *
@@ -428,8 +428,8 @@ public class ValueStore extends ValueFactoryBase {
 	private byte[] value2data(Value value, boolean create)
 		throws IOException
 	{
-		if (value instanceof URI) {
-			return uri2data((URI)value, create);
+		if (value instanceof IRI) {
+			return uri2data((IRI)value, create);
 		}
 		else if (value instanceof BNode) {
 			return bnode2data((BNode)value, create);
@@ -442,7 +442,7 @@ public class ValueStore extends ValueFactoryBase {
 		}
 	}
 
-	private byte[] uri2data(URI uri, boolean create)
+	private byte[] uri2data(IRI uri, boolean create)
 		throws IOException
 	{
 		int nsID = getNamespaceID(uri.getNamespace(), create);
@@ -533,7 +533,7 @@ public class ValueStore extends ValueFactoryBase {
 		}
 	}
 
-	private NativeURI data2uri(int id, byte[] data)
+	private NativeIRI data2uri(int id, byte[] data)
 		throws IOException
 	{
 		int nsID = ByteArrayUtil.getInt(data, 1);
@@ -541,7 +541,7 @@ public class ValueStore extends ValueFactoryBase {
 
 		String localName = new String(data, 5, data.length - 5, "UTF-8");
 
-		return new NativeURI(revision, namespace, localName, id);
+		return new NativeIRI(revision, namespace, localName, id);
 	}
 
 	private NativeBNode data2bnode(int id, byte[] data)
@@ -556,9 +556,9 @@ public class ValueStore extends ValueFactoryBase {
 	{
 		// Get datatype
 		int datatypeID = ByteArrayUtil.getInt(data, 1);
-		URI datatype = null;
+		IRI datatype = null;
 		if (datatypeID != NativeValue.UNKNOWN_ID) {
-			datatype = (URI)getValue(datatypeID);
+			datatype = (IRI)getValue(datatypeID);
 		}
 
 		// Get language tag
@@ -628,13 +628,13 @@ public class ValueStore extends ValueFactoryBase {
 	 *-------------------------------------*/
 
 	@Override
-	public NativeURI createURI(String uri) {
-		return new NativeURI(revision, uri);
+	public NativeIRI createIRI(String uri) {
+		return new NativeIRI(revision, uri);
 	}
 
 	@Override
-	public NativeURI createURI(String namespace, String localName) {
-		return new NativeURI(revision, namespace, localName);
+	public NativeIRI createIRI(String namespace, String localName) {
+		return new NativeIRI(revision, namespace, localName);
 	}
 
 	@Override
@@ -653,18 +653,18 @@ public class ValueStore extends ValueFactoryBase {
 	}
 
 	@Override
-	public NativeLiteral createLiteral(String value, URI datatype) {
+	public NativeLiteral createLiteral(String value, IRI datatype) {
 		return new NativeLiteral(revision, value, datatype);
 	}
 
 	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object) {
-		return new StatementImpl(subject, predicate, object);
+	public Statement createStatement(Resource subject, IRI predicate, Value object) {
+		return new SimpleStatement(subject, predicate, object);
 	}
 
 	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
-		return new ContextStatementImpl(subject, predicate, object, context);
+	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
+		return new ContextStatement(subject, predicate, object, context);
 	}
 
 	/*----------------------------------------------------------------------*
@@ -684,8 +684,8 @@ public class ValueStore extends ValueFactoryBase {
 	}
 
 	public NativeResource getNativeResource(Resource resource) {
-		if (resource instanceof URI) {
-			return getNativeURI((URI)resource);
+		if (resource instanceof IRI) {
+			return getNativeURI((IRI)resource);
 		}
 		else if (resource instanceof BNode) {
 			return getNativeBNode((BNode)resource);
@@ -702,12 +702,12 @@ public class ValueStore extends ValueFactoryBase {
 	 * 
 	 * @return A NativeURI for the specified URI.
 	 */
-	public NativeURI getNativeURI(URI uri) {
+	public NativeIRI getNativeURI(IRI uri) {
 		if (isOwnValue(uri)) {
-			return (NativeURI)uri;
+			return (NativeIRI)uri;
 		}
 
-		return new NativeURI(revision, uri.toString());
+		return new NativeIRI(revision, uri.toString());
 	}
 
 	/**
@@ -743,7 +743,7 @@ public class ValueStore extends ValueFactoryBase {
 			return new NativeLiteral(revision, l.getLabel(), l.getLanguage().get());
 		}
 		else {
-			NativeURI datatype = getNativeURI(l.getDatatype());
+			NativeIRI datatype = getNativeURI(l.getDatatype());
 			return new NativeLiteral(revision, l.getLabel(), datatype);
 		}
 	}

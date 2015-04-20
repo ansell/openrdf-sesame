@@ -65,7 +65,7 @@ public class Clear implements Command {
 				}
 				else {
 					try {
-						contexts[i - 1] = valueFactory.createURI(contextID);
+						contexts[i - 1] = valueFactory.createIRI(contextID);
 					}
 					catch (IllegalArgumentException e) {
 						consoleIO.writeError("illegal URI: " + contextID);

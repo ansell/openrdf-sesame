@@ -36,9 +36,9 @@ import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -253,7 +253,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 
 	@Override
 	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+			IRI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
 		Lock tempWriteLock = null;
@@ -352,7 +352,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
 		throws SailException
 	{
-		return new CloseableIteratorIteration<NamespaceImpl, SailException>(
+		return new CloseableIteratorIteration<SimpleNamespace, SailException>(
 				nativeStore.getNamespaceStore().iterator());
 	}
 
@@ -476,7 +476,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(UpdateContext op, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		verifyIsOpen();
@@ -539,7 +539,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatement(UpdateContext op, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		verifyIsOpen();
@@ -691,13 +691,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		addStatement(subj, pred, obj, true, contexts);
 	}
 
-	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean addInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		connectionLock.readLock().lock();
@@ -718,7 +718,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
+	private boolean addStatement(Resource subj, IRI pred, Value obj, boolean explicit, Resource... contexts)
 		throws SailException
 	{
 		acquireExclusiveTransactionLock();
@@ -778,13 +778,13 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		removeStatements(subj, pred, obj, true, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		connectionLock.readLock().lock();
@@ -806,7 +806,7 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
+	private int removeStatements(Resource subj, IRI pred, Value obj, boolean explicit, Resource... contexts)
 		throws SailException
 	{
 		acquireExclusiveTransactionLock();

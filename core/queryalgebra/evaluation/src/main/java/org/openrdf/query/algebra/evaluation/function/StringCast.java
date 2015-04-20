@@ -17,7 +17,7 @@
 package org.openrdf.query.algebra.evaluation.function;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
@@ -46,12 +46,12 @@ public class StringCast implements Function {
 		}
 
 		Value value = args[0];
-		if (value instanceof URI) {
+		if (value instanceof IRI) {
 			return valueFactory.createLiteral(value.toString(), XMLSchema.STRING);
 		}
 		else if (value instanceof Literal) {
 			Literal literal = (Literal)value;
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 
 			if (QueryEvaluationUtil.isSimpleLiteral(literal)) {
 				return valueFactory.createLiteral(literal.getLabel(), XMLSchema.STRING);

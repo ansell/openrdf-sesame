@@ -17,7 +17,7 @@
 package org.openrdf.sail.rdbms.algebra;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.rdbms.model.RdbmsResource;
@@ -69,7 +69,7 @@ public class ColumnVar implements Cloneable {
 		return var;
 	}
 
-	public static ColumnVar createPred(String alias, Var v, URI uri, boolean implied) {
+	public static ColumnVar createPred(String alias, Var v, IRI uri, boolean implied) {
 		ColumnVar var = createSubj(alias, v, uri);
 		var.column = "pred";
 		var.implied = uri != null && implied;

@@ -17,9 +17,9 @@
 package org.openrdf.rio.datatypes;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.DatatypeHandler;
 
@@ -36,8 +36,8 @@ public class VirtuosoGeometryPointDatatypeHandlerTest extends AbstractDatatypeHa
 	// -------------------------------------
 
 	@Override
-	protected URI getRecognisedDatatypeUri() {
-		return ValueFactoryImpl.getInstance().createURI("http://www.openlinksw.com/schemas/virtrdf#",
+	protected IRI getRecognisedDatatypeUri() {
+		return SimpleValueFactory.getInstance().createIRI("http://www.openlinksw.com/schemas/virtrdf#",
 				"Geometry");
 	}
 
@@ -53,9 +53,9 @@ public class VirtuosoGeometryPointDatatypeHandlerTest extends AbstractDatatypeHa
 
 	@Override
 	protected Literal getNormalisedLiteralForRecognisedDatatypeAndValue() {
-		return ValueFactoryImpl.getInstance().createLiteral(
+		return SimpleValueFactory.getInstance().createLiteral(
 				"POINT(123.0000 143.000)",
-				ValueFactoryImpl.getInstance().createURI("http://www.openlinksw.com/schemas/virtrdf#", "Geometry"));
+				SimpleValueFactory.getInstance().createIRI("http://www.openlinksw.com/schemas/virtrdf#", "Geometry"));
 	}
 
 	// -------------------------------------
@@ -69,11 +69,11 @@ public class VirtuosoGeometryPointDatatypeHandlerTest extends AbstractDatatypeHa
 
 	@Override
 	protected ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 	@Override
-	protected URI getUnrecognisedDatatypeUri() {
+	protected IRI getUnrecognisedDatatypeUri() {
 		return RDF.LANGSTRING;
 	}
 

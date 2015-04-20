@@ -16,22 +16,15 @@
  */
 package org.openrdf.model;
 
-import org.openrdf.model.util.URIUtil;
-
 /**
- * A URI. A URI consists of a namespace and a local name, which are derived from
- * a URI string by splitting it in two using the following algorithm:
- * <ul>
- * <li>Split after the first occurrence of the '#' character,
- * <li>If this fails, split after the last occurrence of the '/' character,
- * <li>If this fails, split after the last occurrence of the ':' character.
- * </ul>
- * The last step should never fail as every legal (full) URI contains at least
- * one ':' character to seperate the scheme from the rest of the URI. The
- * implementation should check this upon object creation.
+ * A Uniform Resource Identifier (URI).
  * 
- * @see URIUtil#getLocalNameIndex(String)
+ * @deprecated Since 4.0. Use {@link IRI} instead.
+ * @author Jeen Broekstra
+ * @author Arjohn Kampman
+ * @see <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a>
  */
+@Deprecated
 public interface URI extends Resource {
 
 	/**
@@ -42,7 +35,7 @@ public interface URI extends Resource {
 	public String toString();
 
 	/**
-	 * Gets the namespace of this URI. The namespace is defined as per the
+	 * Gets the namespace part of this URI. The namespace is defined as per the
 	 * algorithm described in the class documentation.
 	 * 
 	 * @return The URI's namespace.
@@ -50,7 +43,7 @@ public interface URI extends Resource {
 	public String getNamespace();
 
 	/**
-	 * Gets the local name of this URI. The local name is defined as per the
+	 * Gets the local name part of this URI. The local name is defined as per the
 	 * algorithm described in the class documentation.
 	 * 
 	 * @return The URI's local name.
@@ -69,10 +62,11 @@ public interface URI extends Resource {
 	public boolean equals(Object o);
 
 	/**
-	 * The hash code of a URI is defined as the hash code of its
+	 * The hash code of an URI is defined as the hash code of its
 	 * String-representation: <tt>toString().hashCode</tt>.
 	 * 
 	 * @return A hash code for the URI.
 	 */
 	public int hashCode();
+
 }

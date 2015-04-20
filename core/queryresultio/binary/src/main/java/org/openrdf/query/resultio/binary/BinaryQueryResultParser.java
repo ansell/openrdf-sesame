@@ -50,10 +50,10 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
@@ -85,7 +85,7 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 
 	/**
 	 * Creates a new parser for the binary query result format that will use an
-	 * instance of {@link ValueFactoryImpl} to create Value objects.
+	 * instance of {@link SimpleValueFactory} to create Value objects.
 	 */
 	public BinaryQueryResultParser() {
 		super();
@@ -255,21 +255,21 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 		namespaceArray[namespaceID] = namespace;
 	}
 
-	private URI readQName()
+	private IRI readQName()
 		throws IOException
 	{
 		int nsID = in.readInt();
 		String localName = readString();
 
-		return valueFactory.createURI(namespaceArray[nsID], localName);
+		return valueFactory.createIRI(namespaceArray[nsID], localName);
 	}
 
-	private URI readURI()
+	private IRI readURI()
 		throws IOException
 	{
 		String uri = readString();
 
-		return valueFactory.createURI(uri);
+		return valueFactory.createIRI(uri);
 	}
 
 	private BNode readBnode()
@@ -285,7 +285,7 @@ public class BinaryQueryResultParser extends TupleQueryResultParserBase {
 		String label = readString();
 
 		if (recordTypeMarker == DATATYPE_LITERAL_RECORD_MARKER) {
-			URI datatype = null;
+			IRI datatype = null;
 
 			int dtTypeMarker = in.readByte();
 			switch (dtTypeMarker) {

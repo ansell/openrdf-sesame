@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -55,7 +55,7 @@ public class TestRepositoryManagerFederator {
 	{
 		RepositoryManager manager = mock(RepositoryManager.class);
 		Repository system = mock(Repository.class);
-		when(system.getValueFactory()).thenReturn(ValueFactoryImpl.getInstance());
+		when(system.getValueFactory()).thenReturn(SimpleValueFactory.getInstance());
 		when(manager.getSystemRepository()).thenReturn(system);
 		federator = new RepositoryManagerFederator(manager);
 	}

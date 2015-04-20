@@ -33,7 +33,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter.Lf2SpacesIndenter;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -328,9 +328,9 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 	{
 		jg.writeStartObject();
 
-		if (value instanceof URI) {
+		if (value instanceof IRI) {
 			jg.writeStringField("type", "uri");
-			jg.writeStringField("value", ((URI)value).toString());
+			jg.writeStringField("value", ((IRI)value).toString());
 		}
 		else if (value instanceof BNode) {
 			jg.writeStringField("type", "bnode");
@@ -343,7 +343,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 				jg.writeObjectField("xml:lang", lit.getLanguage().orElse(null));
 			}
 			else {
-				URI datatype = lit.getDatatype();
+				IRI datatype = lit.getDatatype();
 				boolean ignoreDatatype = datatype.equals(XMLSchema.STRING) && xsdStringToPlainLiteral();
 				if (!ignoreDatatype) {
 					jg.writeObjectField("datatype", lit.getDatatype().stringValue());

@@ -22,11 +22,11 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -41,11 +41,11 @@ public class ModelsTest extends TestCase {
 
 	private Model model2;
 
-	private static ValueFactory VF = ValueFactoryImpl.getInstance();
+	private static ValueFactory VF = SimpleValueFactory.getInstance();
 
-	private URI foo;
+	private IRI foo;
 
-	private URI bar;
+	private IRI bar;
 	
 	private BNode baz;
 
@@ -54,8 +54,8 @@ public class ModelsTest extends TestCase {
 		model1 = new LinkedHashModel();
 		model2 = new LinkedHashModel();
 
-		foo = VF.createURI("http://example.org/foo");
-		bar = VF.createURI("http://example.org/bar");
+		foo = VF.createIRI("http://example.org/foo");
+		bar = VF.createIRI("http://example.org/bar");
 		baz = VF.createBNode();
 	}
 
@@ -248,8 +248,8 @@ public class ModelsTest extends TestCase {
 
 	public void testSetPropertyWithContext1() {
 		Literal lit1 = VF.createLiteral(1.0);
-		URI graph1 = VF.createURI("urn:g1");
-		URI graph2 = VF.createURI("urn:g2");
+		IRI graph1 = VF.createIRI("urn:g1");
+		IRI graph2 = VF.createIRI("urn:g2");
 		model1.add(foo, bar, lit1, graph1);
 		model1.add(foo, bar, bar);
 		model1.add(foo, bar, foo, graph2);
@@ -270,8 +270,8 @@ public class ModelsTest extends TestCase {
 
 	public void testSetPropertyWithContext2() {
 		Literal lit1 = VF.createLiteral(1.0);
-		URI graph1 = VF.createURI("urn:g1");
-		URI graph2 = VF.createURI("urn:g2");
+		IRI graph1 = VF.createIRI("urn:g1");
+		IRI graph2 = VF.createIRI("urn:g2");
 		model1.add(foo, bar, lit1, graph1);
 		model1.add(foo, bar, bar);
 		model1.add(foo, bar, foo, graph2);

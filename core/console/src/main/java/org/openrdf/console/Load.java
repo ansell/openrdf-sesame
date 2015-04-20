@@ -174,7 +174,7 @@ class Load implements Command {
 				contextURI = repository.getValueFactory().createBNode(context.substring(2));
 			}
 			else {
-				contextURI = repository.getValueFactory().createURI(context);
+				contextURI = repository.getValueFactory().createIRI(context);
 			}
 			contexts = new Resource[] { contextURI };
 		}

@@ -155,7 +155,7 @@ public class TupleResultBuilder {
 			nextValue = (Value)result;
 		}
 		else if (result instanceof URL) {
-			nextValue = vf.createURI(result.toString());
+			nextValue = vf.createIRI(result.toString());
 		}
 		else {
 			try {

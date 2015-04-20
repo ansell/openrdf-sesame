@@ -26,7 +26,7 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
@@ -172,8 +172,8 @@ public class RepositoryManagerFederator {
 		LOGGER.debug("Added member {}: ", identifier);
 	}
 
-	private URI getLocationPredicate(String memberRepoType) {
-		URI predicate;
+	private IRI getLocationPredicate(String memberRepoType) {
+		IRI predicate;
 		if (SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
 			predicate = SPARQLRepositoryConfig.QUERY_ENDPOINT;
 		}
@@ -191,10 +191,10 @@ public class RepositoryManagerFederator {
 	{
 		Value locator;
 		if (HTTPRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
-			locator = valueFactory.createURI(((HTTPRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getURL());
+			locator = valueFactory.createIRI(((HTTPRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getURL());
 		}
 		else if (SPARQLRepositoryFactory.REPOSITORY_TYPE.equals(memberRepoType)) {
-			locator = valueFactory.createURI(((SPARQLRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getQueryEndpointUrl());
+			locator = valueFactory.createIRI(((SPARQLRepositoryConfig)manager.getRepositoryConfig(identifier).getRepositoryImplConfig()).getQueryEndpointUrl());
 		}
 		else {
 			locator = valueFactory.createLiteral(identifier);
@@ -202,7 +202,7 @@ public class RepositoryManagerFederator {
 		return locator;
 	}
 
-	private static void addToGraph(Graph graph, Resource subject, URI predicate, Value object) {
+	private static void addToGraph(Graph graph, Resource subject, IRI predicate, Value object) {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(subject + " " + predicate + " " + object);
 		}

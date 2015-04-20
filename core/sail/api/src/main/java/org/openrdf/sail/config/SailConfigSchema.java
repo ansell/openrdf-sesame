@@ -16,9 +16,9 @@
  */
 package org.openrdf.sail.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Defines constants for the Sail repository schema which are used to initialize
@@ -35,14 +35,14 @@ public class SailConfigSchema {
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail#";
 
 	/** <tt>http://www.openrdf.org/config/sail#sailType</tt> */
-	public final static URI SAILTYPE;
+	public final static IRI SAILTYPE;
 
 	/** <tt>http://www.openrdf.org/config/sail#delegate</tt> */
-	public final static URI DELEGATE;
+	public final static IRI DELEGATE;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		SAILTYPE = factory.createURI(NAMESPACE, "sailType");
-		DELEGATE = factory.createURI(NAMESPACE, "delegate");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		SAILTYPE = factory.createIRI(NAMESPACE, "sailType");
+		DELEGATE = factory.createIRI(NAMESPACE, "delegate");
 	}
 }

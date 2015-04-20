@@ -28,7 +28,7 @@ import org.junit.Test;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 
 /**
  * Tests concurrent read and write access to a Sail implementation.
@@ -192,15 +192,15 @@ public abstract class SailConcurrencyTest {
 		throws SailException
 	{
 		// System.out.print("+");
-		connection.addStatement(new URIImpl("http://test#s" + i), new URIImpl("http://test#p" + i),
-				new URIImpl("http://test#o" + i), new URIImpl("http://test#context_" + i));
+		connection.addStatement(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p" + i),
+				new SimpleIRI("http://test#o" + i), new SimpleIRI("http://test#context_" + i));
 	}
 
 	protected void removeTestStatement(SailConnection connection, int i)
 		throws SailException
 	{
 		// System.out.print("-");
-		connection.removeStatements(new URIImpl("http://test#s" + i), new URIImpl("http://test#p" + i),
-				new URIImpl("http://test#o" + i), new URIImpl("http://test#context_" + i));
+		connection.removeStatements(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p" + i),
+				new SimpleIRI("http://test#o" + i), new SimpleIRI("http://test#context_" + i));
 	}
 }

@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
@@ -973,7 +973,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 		throws VisitorException
 	{
 		ValueConstant vc = (ValueConstant)node.getURI().jjtAccept(this, null);
-		assert vc.getValue() instanceof URI;
+		assert vc.getValue() instanceof IRI;
 
 		FunctionCall functionCall = new FunctionCall(vc.getValue().toString());
 
@@ -996,7 +996,7 @@ class QueryModelBuilder extends ASTVisitorBase {
 	public ValueConstant visit(ASTURI node, Object data)
 		throws VisitorException
 	{
-		return new ValueConstant(valueFactory.createURI(node.getValue()));
+		return new ValueConstant(valueFactory.createIRI(node.getValue()));
 	}
 
 	@Override
@@ -1010,12 +1010,12 @@ class QueryModelBuilder extends ASTVisitorBase {
 	public ValueConstant visit(ASTLiteral litNode, Object data)
 		throws VisitorException
 	{
-		URI datatype = null;
+		IRI datatype = null;
 
 		// Get datatype URI from child URI node, if present
 		ASTValueExpr dtNode = litNode.getDatatypeNode();
 		if (dtNode instanceof ASTURI) {
-			datatype = valueFactory.createURI(((ASTURI)dtNode).getValue());
+			datatype = valueFactory.createIRI(((ASTURI)dtNode).getValue());
 		}
 		else if (dtNode != null) {
 			throw new IllegalArgumentException("Unexpected datatype type: " + dtNode.getClass());

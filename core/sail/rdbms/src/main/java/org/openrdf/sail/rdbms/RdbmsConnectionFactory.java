@@ -26,7 +26,7 @@ import javax.sql.DataSource;
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
@@ -237,7 +237,7 @@ public class RdbmsConnectionFactory {
 			literalTable = tables.createLiteralTable(literalInserts, literalManager.getQueue());
 			literalTable.setIdSequence(ids);
 			vf = new RdbmsValueFactory();
-			vf.setDelegate(ValueFactoryImpl.getInstance());
+			vf.setDelegate(SimpleValueFactory.getInstance());
 			vf.setIdSequence(ids);
 			uriManager.setUriTable(uriTable);
 			uriManager.init();

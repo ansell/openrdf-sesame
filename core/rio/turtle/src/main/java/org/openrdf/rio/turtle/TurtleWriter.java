@@ -31,7 +31,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
@@ -66,7 +66,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 
 	protected Resource lastWrittenSubject;
 
-	protected URI lastWrittenPredicate;
+	protected IRI lastWrittenPredicate;
 
 	/*--------------*
 	 * Constructors *
@@ -200,7 +200,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		}
 
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 
 		try {
@@ -292,7 +292,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		writer.writeEOL();
 	}
 
-	protected void writePredicate(URI predicate)
+	protected void writePredicate(IRI predicate)
 		throws IOException
 	{
 		if (predicate.equals(RDF.TYPE)) {
@@ -318,15 +318,15 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 	protected void writeResource(Resource res)
 		throws IOException
 	{
-		if (res instanceof URI) {
-			writeURI((URI)res);
+		if (res instanceof IRI) {
+			writeURI((IRI)res);
 		}
 		else {
 			writeBNode((BNode)res);
 		}
 	}
 
-	protected void writeURI(URI uri)
+	protected void writeURI(IRI uri)
 		throws IOException
 	{
 		String uriString = uri.toString();
@@ -398,7 +398,7 @@ public class TurtleWriter extends RDFWriterBase implements RDFWriter {
 		throws IOException
 	{
 		String label = lit.getLabel();
-		URI datatype = lit.getDatatype();
+		IRI datatype = lit.getDatatype();
 
 		if (getWriterConfig().get(BasicWriterSettings.PRETTY_PRINT)) {
 			if (XMLSchema.INTEGER.equals(datatype) || XMLSchema.DECIMAL.equals(datatype)

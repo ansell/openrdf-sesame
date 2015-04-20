@@ -40,10 +40,10 @@ import org.apache.lucene.util.Version;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -60,27 +60,27 @@ public class LuceneSailTest extends TestCase {
 
 	public static final String QUERY_STRING;
 
-	public static final URI SUBJECT_1 = new URIImpl("urn:subject1");
+	public static final IRI SUBJECT_1 = new SimpleIRI("urn:subject1");
 
-	public static final URI SUBJECT_2 = new URIImpl("urn:subject2");
+	public static final IRI SUBJECT_2 = new SimpleIRI("urn:subject2");
 
-	public static final URI SUBJECT_3 = new URIImpl("urn:subject3");
+	public static final IRI SUBJECT_3 = new SimpleIRI("urn:subject3");
 
-	public static final URI SUBJECT_4 = new URIImpl("urn:subject4");
+	public static final IRI SUBJECT_4 = new SimpleIRI("urn:subject4");
 
-	public static final URI SUBJECT_5 = new URIImpl("urn:subject5");
+	public static final IRI SUBJECT_5 = new SimpleIRI("urn:subject5");
 
-	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
+	public static final IRI CONTEXT_1 = new SimpleIRI("urn:context1");
 
-	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
+	public static final IRI CONTEXT_2 = new SimpleIRI("urn:context2");
 
-	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
+	public static final IRI CONTEXT_3 = new SimpleIRI("urn:context3");
 
-	public static final URI PREDICATE_1 = new URIImpl("urn:predicate1");
+	public static final IRI PREDICATE_1 = new SimpleIRI("urn:predicate1");
 
-	public static final URI PREDICATE_2 = new URIImpl("urn:predicate2");
+	public static final IRI PREDICATE_2 = new SimpleIRI("urn:predicate2");
 
-	public static final URI PREDICATE_3 = new URIImpl("urn:predicate3");
+	public static final IRI PREDICATE_3 = new SimpleIRI("urn:predicate3");
 
 	protected LuceneSail sail;
 
@@ -125,13 +125,13 @@ public class LuceneSailTest extends TestCase {
 		// add some statements to it
 		connection = repository.getConnection();
 		connection.setAutoCommit(false);
-		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("one"));
-		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("five"));
-		connection.add(SUBJECT_1, PREDICATE_2, new LiteralImpl("two"));
-		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("one"));
-		connection.add(SUBJECT_2, PREDICATE_2, new LiteralImpl("three"));
-		connection.add(SUBJECT_3, PREDICATE_1, new LiteralImpl("four"));
-		connection.add(SUBJECT_3, PREDICATE_2, new LiteralImpl("one"));
+		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("one"));
+		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("five"));
+		connection.add(SUBJECT_1, PREDICATE_2, new SimpleLiteral("two"));
+		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("one"));
+		connection.add(SUBJECT_2, PREDICATE_2, new SimpleLiteral("three"));
+		connection.add(SUBJECT_3, PREDICATE_1, new SimpleLiteral("four"));
+		connection.add(SUBJECT_3, PREDICATE_2, new SimpleLiteral("one"));
 		connection.add(SUBJECT_3, PREDICATE_3, SUBJECT_1);
 		connection.add(SUBJECT_3, PREDICATE_3, SUBJECT_2);
 		connection.commit();
@@ -149,13 +149,13 @@ public class LuceneSailTest extends TestCase {
 		throws Exception
 	{
 		// are the triples stored in the underlying sail?
-		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, new LiteralImpl("one"), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, new LiteralImpl("five"), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_2, new LiteralImpl("two"), false));
-		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_1, new LiteralImpl("one"), false));
-		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_2, new LiteralImpl("three"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_1, new LiteralImpl("four"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_2, new LiteralImpl("one"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, new SimpleLiteral("one"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, new SimpleLiteral("five"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_2, new SimpleLiteral("two"), false));
+		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_1, new SimpleLiteral("one"), false));
+		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_2, new SimpleLiteral("three"), false));
+		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_1, new SimpleLiteral("four"), false));
+		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_2, new SimpleLiteral("one"), false));
 		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_3, SUBJECT_1, false));
 		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_3, SUBJECT_2, false));
 	}
@@ -165,27 +165,27 @@ public class LuceneSailTest extends TestCase {
 	{
 		// fire a query for all subjects with a given term
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, QUERY_STRING);
-		query.setBinding("Query", new LiteralImpl("one"));
+		query.setBinding("Query", new SimpleLiteral("one"));
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		ArrayList<URI> uris = new ArrayList<URI>();
+		ArrayList<IRI> uris = new ArrayList<IRI>();
 
 		BindingSet bindings = null;
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
+		uris.add((IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
+		uris.add((IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
+		uris.add((IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertFalse(result.hasNext());
@@ -219,13 +219,13 @@ public class LuceneSailTest extends TestCase {
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + (IRI)bindings.getValue("Resource") + ">, " + "<" + (IRI)bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
 		assertTrue(result.hasNext());
 		bindings = result.next();
-		results.add("<" + (URI)bindings.getValue("Resource") + ">, " + "<" + (URI)bindings.getValue("Matching")
+		results.add("<" + (IRI)bindings.getValue("Resource") + ">, " + "<" + (IRI)bindings.getValue("Matching")
 				+ ">");
 		assertNotNull(bindings.getValue("Score"));
 
@@ -256,8 +256,8 @@ public class LuceneSailTest extends TestCase {
 		// check the results
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_3, (URI)bindings.getValue("Resource"));
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Matching"));
+		assertEquals(SUBJECT_3, (IRI)bindings.getValue("Resource"));
+		assertEquals(SUBJECT_1, (IRI)bindings.getValue("Matching"));
 		assertNotNull(bindings.getValue("Score"));
 
 		assertFalse(result.hasNext());
@@ -572,7 +572,7 @@ public class LuceneSailTest extends TestCase {
 
 		// the first result is subject 1 and has a score
 		int results = 0;
-		Set<URI> expectedSubject = new HashSet<URI>();
+		Set<IRI> expectedSubject = new HashSet<IRI>();
 		expectedSubject.add(SUBJECT_1);
 		expectedSubject.add(SUBJECT_2);
 		while (result.hasNext()) {
@@ -581,7 +581,7 @@ public class LuceneSailTest extends TestCase {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove((IRI)bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
@@ -607,9 +607,9 @@ public class LuceneSailTest extends TestCase {
 		// "come" and "unicorn"
 		// and 'poor' should not be returned if we limit on predicate1
 		// and watch http://www.youtube.com/watch?v=Q5im0Ssyyus like 25mio others
-		myconnection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("come charly lets go to candy mountain"));
-		myconnection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("but the unicorn charly said to goaway"));
-		myconnection.add(SUBJECT_1, PREDICATE_2, new LiteralImpl("there was poor charly without a kidney"));
+		myconnection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("come charly lets go to candy mountain"));
+		myconnection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("but the unicorn charly said to goaway"));
+		myconnection.add(SUBJECT_1, PREDICATE_2, new SimpleLiteral("there was poor charly without a kidney"));
 		myconnection.commit();
 		myconnection.close();
 
@@ -796,13 +796,13 @@ public class LuceneSailTest extends TestCase {
 		// fire a query with the subject pre-specified
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, QUERY_STRING);
 		query.setBinding("Subject", SUBJECT_1);
-		query.setBinding("Query", new LiteralImpl("one"));
+		query.setBinding("Query", new SimpleLiteral("one"));
 		TupleQueryResult result = query.evaluate();
 
 		// check that this subject and only this subject is returned
 		assertTrue(result.hasNext());
 		BindingSet bindings = result.next();
-		assertEquals(SUBJECT_1, (URI)bindings.getValue("Subject"));
+		assertEquals(SUBJECT_1, (IRI)bindings.getValue("Subject"));
 		assertNotNull(bindings.getValue("Score"));
 		assertFalse(result.hasNext());
 
@@ -842,11 +842,11 @@ public class LuceneSailTest extends TestCase {
 	public void testContextHandling()
 		throws Exception
 	{
-		connection.add(SUBJECT_4, PREDICATE_1, new LiteralImpl("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_4, PREDICATE_2, new LiteralImpl("sfourptwocone"), CONTEXT_1);
-		connection.add(SUBJECT_5, PREDICATE_1, new LiteralImpl("sfiveponecone"), CONTEXT_1);
-		connection.add(SUBJECT_5, PREDICATE_1, new LiteralImpl("sfiveponectwo"), CONTEXT_2);
-		connection.add(SUBJECT_5, PREDICATE_2, new LiteralImpl("sfiveptwoctwo"), CONTEXT_2);
+		connection.add(SUBJECT_4, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_4, PREDICATE_2, new SimpleLiteral("sfourptwocone"), CONTEXT_1);
+		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponecone"), CONTEXT_1);
+		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponectwo"), CONTEXT_2);
+		connection.add(SUBJECT_5, PREDICATE_2, new SimpleLiteral("sfiveptwoctwo"), CONTEXT_2);
 		connection.commit();
 		// connection.close();
 		// connection = repository.getConnection();
@@ -873,8 +873,8 @@ public class LuceneSailTest extends TestCase {
 		throws Exception
 	{
 
-		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
 
 		connection.commit();
 		// prepare the query
@@ -890,7 +890,7 @@ public class LuceneSailTest extends TestCase {
 			@SuppressWarnings("unused")
 			BindingSet bindings = result.next();
 
-			connection.add(SUBJECT_3, PREDICATE_1, new LiteralImpl("sfourponecone"), CONTEXT_1);
+			connection.add(SUBJECT_3, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
 
 			assertTrue(result.hasNext());
 			bindings = result.next();
@@ -908,7 +908,7 @@ public class LuceneSailTest extends TestCase {
 			@SuppressWarnings("unused")
 			BindingSet bindings = result.next();
 
-			connection.add(SUBJECT_3, PREDICATE_1, new LiteralImpl("blubbb"), CONTEXT_1);
+			connection.add(SUBJECT_3, PREDICATE_1, new SimpleLiteral("blubbb"), CONTEXT_1);
 			connection.commit();
 
 			assertTrue(result.hasNext());
@@ -928,10 +928,10 @@ public class LuceneSailTest extends TestCase {
 		throws Exception
 	{
 
-		connection.add(SUBJECT_1, PREDICATE_1, new LiteralImpl("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponectwo"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponectwo"), CONTEXT_1);
+		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponectwo"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponectwo"), CONTEXT_1);
 
 		connection.commit();
 		assertEquals(0, index.oldmonitors.size());
@@ -976,7 +976,7 @@ public class LuceneSailTest extends TestCase {
 		assertEquals(2, index.currentMonitor.readingCount);
 
 		// This should invalidate readers
-		connection.add(SUBJECT_2, PREDICATE_1, new LiteralImpl("sfourponecthree"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponecthree"), CONTEXT_1);
 		connection.commit();
 		// But readers can not be closed, they are being iterated
 		assertEquals(1, index.oldmonitors.size());
@@ -1013,11 +1013,11 @@ public class LuceneSailTest extends TestCase {
 	public void testNullContextHandling()
 		throws Exception
 	{
-		connection.add(SUBJECT_4, PREDICATE_1, new LiteralImpl("sfourponecone"));
-		connection.add(SUBJECT_4, PREDICATE_2, new LiteralImpl("sfourptwocone"));
-		connection.add(SUBJECT_5, PREDICATE_1, new LiteralImpl("sfiveponecone"));
-		connection.add(SUBJECT_5, PREDICATE_1, new LiteralImpl("sfiveponectwo"), CONTEXT_2);
-		connection.add(SUBJECT_5, PREDICATE_2, new LiteralImpl("sfiveptwoctwo"), CONTEXT_2);
+		connection.add(SUBJECT_4, PREDICATE_1, new SimpleLiteral("sfourponecone"));
+		connection.add(SUBJECT_4, PREDICATE_2, new SimpleLiteral("sfourptwocone"));
+		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponecone"));
+		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponectwo"), CONTEXT_2);
+		connection.add(SUBJECT_5, PREDICATE_2, new SimpleLiteral("sfiveptwoctwo"), CONTEXT_2);
 		connection.commit();
 		// connection.close();
 		// connection = repository.getConnection();
@@ -1063,7 +1063,7 @@ public class LuceneSailTest extends TestCase {
 
 		// the first result is subject 1 and has a score
 		int results = 0;
-		Set<URI> expectedSubject = new HashSet<URI>();
+		Set<IRI> expectedSubject = new HashSet<IRI>();
 		expectedSubject.add(SUBJECT_1);
 		expectedSubject.add(SUBJECT_2);
 		expectedSubject.add(SUBJECT_3);
@@ -1073,7 +1073,7 @@ public class LuceneSailTest extends TestCase {
 
 			// the resource should be among the set of expected subjects, if so,
 			// remove it from the set
-			assertTrue(expectedSubject.remove((URI)bindings.getValue("Resource")));
+			assertTrue(expectedSubject.remove((IRI)bindings.getValue("Resource")));
 
 			// there should be a score
 			assertNotNull(bindings.getValue("Score"));
@@ -1092,7 +1092,7 @@ public class LuceneSailTest extends TestCase {
 		testComlexQueryTwo();
 	}
 
-	protected void assertQueryResult(String literal, URI predicate, Resource resultUri)
+	protected void assertQueryResult(String literal, IRI predicate, Resource resultUri)
 		throws Exception
 	{
 		// fire a query for all subjects with a given term

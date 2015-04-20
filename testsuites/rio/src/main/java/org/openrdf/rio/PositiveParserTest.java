@@ -24,7 +24,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.util.Models;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.ParseErrorCollector;
@@ -46,13 +46,13 @@ public class PositiveParserTest extends TestCase {
 
 	private RDFParser ntriplesParser;
 
-	protected URI testUri;
+	protected IRI testUri;
 
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
 
-	public PositiveParserTest(URI testUri, String testName, String inputURL, String outputURL,
+	public PositiveParserTest(IRI testUri, String testName, String inputURL, String outputURL,
 			String baseURL, RDFParser targetParser, RDFParser ntriplesParser)
 		throws MalformedURLException
 	{

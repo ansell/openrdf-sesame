@@ -19,13 +19,13 @@ package org.openrdf.model.impl;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * An extension of {@link LiteralImpl} that stores a boolean value to avoid
+ * An extension of {@link SimpleLiteral} that stores a boolean value to avoid
  * parsing.
  * 
  * @author David Huynh
  * @author Arjohn Kampman
  */
-public class BooleanLiteralImpl extends LiteralImpl {
+public class BooleanLiteral extends SimpleLiteral {
 
 	/*-----------*
 	 * Constants *
@@ -33,9 +33,9 @@ public class BooleanLiteralImpl extends LiteralImpl {
 
 	private static final long serialVersionUID = -3610638093719366795L;
 
-	public static final BooleanLiteralImpl TRUE = new BooleanLiteralImpl(true);
+	public static final BooleanLiteral TRUE = new BooleanLiteral(true);
 
-	public static final BooleanLiteralImpl FALSE = new BooleanLiteralImpl(false);
+	public static final BooleanLiteral FALSE = new BooleanLiteral(false);
 
 	/*-----------*
 	 * Variables *
@@ -50,7 +50,7 @@ public class BooleanLiteralImpl extends LiteralImpl {
 	/**
 	 * Creates an xsd:boolean typed literal with the specified value.
 	 */
-	public BooleanLiteralImpl(boolean value) {
+	public BooleanLiteral(boolean value) {
 		super(Boolean.toString(value), XMLSchema.BOOLEAN);
 		this.value = value;
 	}
@@ -66,12 +66,12 @@ public class BooleanLiteralImpl extends LiteralImpl {
 	}
 
 	/**
-	 * Returns a {@link BooleanLiteralImpl} for the specified value. This method
+	 * Returns a {@link BooleanLiteral} for the specified value. This method
 	 * uses the constants {@link #TRUE} and {@link #FALSE} as result values,
 	 * preventing the often unnecessary creation of new
-	 * {@link BooleanLiteralImpl} objects.
+	 * {@link BooleanLiteral} objects.
 	 */
-	public static BooleanLiteralImpl valueOf(boolean value) {
+	public static BooleanLiteral valueOf(boolean value) {
 		return value ? TRUE : FALSE;
 	}
 }

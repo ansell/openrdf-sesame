@@ -16,9 +16,9 @@
  */
 package org.openrdf.repository.sail.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.sail.SailRepository;
 
 /**
@@ -33,10 +33,10 @@ public class SailRepositorySchema {
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/sail#";
 
 	/** <tt>http://www.openrdf.org/config/repository/sail#sailImpl</tt> */
-	public final static URI SAILIMPL;
+	public final static IRI SAILIMPL;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		SAILIMPL = factory.createURI(NAMESPACE, "sailImpl");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		SAILIMPL = factory.createIRI(NAMESPACE, "sailImpl");
 	}
 }

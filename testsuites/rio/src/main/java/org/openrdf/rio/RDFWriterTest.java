@@ -43,11 +43,11 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -98,11 +98,11 @@ public abstract class RDFWriterTest {
 
 	private BNode bnodeSpecialChars;
 
-	private URI uri1;
+	private IRI uri1;
 
-	private URI uri2;
+	private IRI uri2;
 
-	private URI uri3;
+	private IRI uri3;
 
 	private Literal plainLit;
 
@@ -128,13 +128,13 @@ public abstract class RDFWriterTest {
 
 	private List<Value> potentialObjects;
 
-	private List<URI> potentialPredicates;
+	private List<IRI> potentialPredicates;
 
 	protected RDFWriterTest(RDFWriterFactory writerF, RDFParserFactory parserF) {
 		rdfWriterFactory = writerF;
 		rdfParserFactory = parserF;
 
-		vf = new ValueFactoryImpl();
+		vf = new SimpleValueFactory();
 
 		exNs = "http://example.org/";
 
@@ -145,9 +145,9 @@ public abstract class RDFWriterTest {
 		bnodeNumeric = vf.createBNode("123");
 		bnodeDashes = vf.createBNode("a-b");
 		bnodeSpecialChars = vf.createBNode("$%^&*()!@#$a-b<>?\"'[]{}|\\");
-		uri1 = vf.createURI(exNs, "uri1");
-		uri2 = vf.createURI(exNs, "uri2");
-		uri3 = vf.createURI(exNs, "uri3.");
+		uri1 = vf.createIRI(exNs, "uri1");
+		uri2 = vf.createIRI(exNs, "uri2");
+		uri3 = vf.createIRI(exNs, "uri3.");
 		plainLit = vf.createLiteral("plain");
 		dtLit = vf.createLiteral(1);
 		langLit = vf.createLiteral("test", "en");
@@ -183,7 +183,7 @@ public abstract class RDFWriterTest {
 			potentialSubjects.add(vf.createBNode("a" + Integer.toHexString(i).toLowerCase()));
 		}
 		for (int i = 0; i < 200; i++) {
-			potentialSubjects.add(vf.createURI(exNs + Integer.toHexString(i) + "/a"
+			potentialSubjects.add(vf.createIRI(exNs + Integer.toHexString(i) + "/a"
 					+ Integer.toOctalString(i % 133)));
 		}
 		Collections.shuffle(potentialSubjects, prng);
@@ -210,7 +210,7 @@ public abstract class RDFWriterTest {
 		potentialObjects.add(litBigPlaceholder);
 		Collections.shuffle(potentialObjects, prng);
 
-		potentialPredicates = new ArrayList<URI>();
+		potentialPredicates = new ArrayList<IRI>();
 		// In particular, the following fuzz tests the ability of the parser to
 		// cater for rdf:type predicates with literal endings, in unknown
 		// situations. All parsers/writers should preserve these statements, even
@@ -398,9 +398,9 @@ public abstract class RDFWriterTest {
 		String ns2 = "b:";
 		String ns3 = "c:";
 
-		URI uri1 = vf.createURI(ns1, "r1");
-		URI uri2 = vf.createURI(ns2, "r2");
-		URI uri3 = vf.createURI(ns3, "r3");
+		IRI uri1 = vf.createIRI(ns1, "r1");
+		IRI uri2 = vf.createIRI(ns2, "r2");
+		IRI uri3 = vf.createIRI(ns3, "r3");
 		Statement st = vf.createStatement(uri1, uri2, uri3);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -437,9 +437,9 @@ public abstract class RDFWriterTest {
 		String ns2 = "b:";
 		String ns3 = "c:";
 
-		URI uri1 = vf.createURI(ns1, "r1");
-		URI uri2 = vf.createURI(ns2, "r2");
-		URI uri3 = vf.createURI(ns3, "r3");
+		IRI uri1 = vf.createIRI(ns1, "r1");
+		IRI uri2 = vf.createIRI(ns2, "r2");
+		IRI uri3 = vf.createIRI(ns3, "r3");
 		Statement st = vf.createStatement(uri1, uri2, uri3);
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -478,7 +478,7 @@ public abstract class RDFWriterTest {
 		rdfWriter.handleNamespace("", RDF.NAMESPACE);
 		rdfWriter.handleNamespace("rdf", RDF.NAMESPACE);
 		rdfWriter.startRDF();
-		rdfWriter.handleStatement(vf.createStatement(vf.createURI(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
+		rdfWriter.handleStatement(vf.createStatement(vf.createIRI(RDF.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY));
 		rdfWriter.endRDF();
 	}
 

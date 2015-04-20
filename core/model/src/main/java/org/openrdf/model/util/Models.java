@@ -27,6 +27,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.IRI;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.util.iterators.Iterators;
@@ -147,7 +148,7 @@ public class Models {
 	 * and returned.
 	 * 
 	 * @param m
-	 *        the model from which to retrieve an object URI value.
+	 *        the model from which to retrieve an object IRI value.
 	 * @return an {@link Optional} object URI value from the given model, which
 	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 * @since 4.0
@@ -156,7 +157,7 @@ public class Models {
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
-				if (v instanceof URI) {
+				if (v instanceof IRI) {
 					return Optional.of((URI)v);
 				}
 			}
@@ -207,7 +208,7 @@ public class Models {
 	 * returned.
 	 * 
 	 * @param m
-	 *        the model from which to retrieve a subject URI value.
+	 *        the model from which to retrieve a subject IRI value.
 	 * @return an {@link Optional} subject URI value from the given model, which
 	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 */
@@ -215,7 +216,7 @@ public class Models {
 		final Set<Resource> objects = m.subjects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
-				if (v instanceof URI) {
+				if (v instanceof IRI) {
 					return Optional.of((URI)v);
 				}
 			}
@@ -276,7 +277,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<URI> predicate(Model m) {
-		final Set<URI> predicates = m.predicates();
+		final Set<IRI> predicates = m.predicates();
 		if (predicates != null && !predicates.isEmpty()) {
 			return Optional.of(predicates.iterator().next());
 		}
@@ -313,7 +314,7 @@ public class Models {
 	 * @return the Model object, containing the updated property value.
 	 * @since 2.8.0
 	 */
-	public static Model setProperty(Model m, Resource subject, URI property, Value value, Resource... contexts)
+	public static Model setProperty(Model m, Resource subject, IRI property, Value value, Resource... contexts)
 	{
 		Objects.requireNonNull(m, "model may not be null");
 		Objects.requireNonNull(subject, "subject may not be null");
@@ -486,8 +487,8 @@ public class Models {
 	}
 
 	private static boolean statementsMatch(Statement st1, Statement st2, Map<BNode, BNode> bNodeMapping) {
-		URI pred1 = st1.getPredicate();
-		URI pred2 = st2.getPredicate();
+		IRI pred1 = st1.getPredicate();
+		IRI pred2 = st2.getPredicate();
 
 		if (!pred1.equals(pred2)) {
 			// predicates don't match

@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Represents the concept of a boolean query result serialization format.
@@ -292,7 +292,7 @@ public class BooleanQueryResultFormat extends QueryResultFormat {
 	 * @since 2.8.0
 	 */
 	public BooleanQueryResultFormat(String name, Collection<String> mimeTypes, Charset charset,
-			Collection<String> fileExtensions, URI standardURI)
+			Collection<String> fileExtensions, IRI standardURI)
 	{
 		super(name, mimeTypes, charset, fileExtensions, standardURI);
 	}

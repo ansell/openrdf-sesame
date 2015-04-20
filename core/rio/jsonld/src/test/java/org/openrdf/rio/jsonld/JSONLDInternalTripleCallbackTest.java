@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.helpers.ParseErrorCollector;
 import org.openrdf.rio.helpers.StatementCollector;
@@ -55,7 +55,7 @@ public class JSONLDInternalTripleCallbackTest {
 		final ParseErrorCollector parseErrorListener = new ParseErrorCollector();
 		final ParserConfig parserConfig = new ParserConfig();
 		final JSONLDInternalTripleCallback callback = new JSONLDInternalTripleCallback(new StatementCollector(
-				graph), ValueFactoryImpl.getInstance(), parserConfig, parseErrorListener);
+				graph), SimpleValueFactory.getInstance(), parserConfig, parseErrorListener);
 
 		JsonLdProcessor.toRDF(input, callback);
 

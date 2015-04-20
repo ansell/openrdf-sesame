@@ -16,9 +16,9 @@
  */
 package org.openrdf.model.vocabulary;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for DOAP primitives and for the DOAP namespace.
@@ -31,69 +31,69 @@ public class DOAP {
 	 * Classes
 	 */
 
-	public final static URI PROJECT;
+	public final static IRI PROJECT;
 
-	public final static URI VERSION;
+	public final static IRI VERSION;
 
 	/**
 	 * Properties
 	 */
 
-	public final static URI NAME;
+	public final static IRI NAME;
 
-	public final static URI HOMEPAGE;
+	public final static IRI HOMEPAGE;
 
-	public final static URI OLD_HOMEPAGE;
+	public final static IRI OLD_HOMEPAGE;
 
-	public final static URI LICENSE;
+	public final static IRI LICENSE;
 
-	public final static URI DESCRIPTION;
+	public final static IRI DESCRIPTION;
 
-	public final static URI PROGRAMMING_LANGUAGE;
+	public final static IRI PROGRAMMING_LANGUAGE;
 
-	public final static URI IMPLEMENTS;
+	public final static IRI IMPLEMENTS;
 
-	public final static URI CATEGORY;
+	public final static IRI CATEGORY;
 
-	public final static URI DOWNLOAD_PAGE;
+	public final static IRI DOWNLOAD_PAGE;
 
-	public final static URI MAILING_LIST;
+	public final static IRI MAILING_LIST;
 
-	public final static URI BUG_DATABASE;
+	public final static IRI BUG_DATABASE;
 
-	public final static URI BLOG;
+	public final static IRI BLOG;
 
-	public final static URI DEVELOPER;
+	public final static IRI DEVELOPER;
 
-	public final static URI MAINTAINER;
+	public final static IRI MAINTAINER;
 
-	public final static URI DOCUMENTER;
+	public final static IRI DOCUMENTER;
 
-	public final static URI RELEASE;
+	public final static IRI RELEASE;
 
-	public final static URI CREATED;
+	public final static IRI CREATED;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		PROJECT = factory.createURI(DOAP.NAMESPACE, "Project");
-		VERSION = factory.createURI(DOAP.NAMESPACE, "Version");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		PROJECT = factory.createIRI(DOAP.NAMESPACE, "Project");
+		VERSION = factory.createIRI(DOAP.NAMESPACE, "Version");
 
-		NAME = factory.createURI(DOAP.NAMESPACE, "name");
-		HOMEPAGE = factory.createURI(DOAP.NAMESPACE, "homepage");
-		OLD_HOMEPAGE = factory.createURI(DOAP.NAMESPACE, "old-homepage");
-		LICENSE = factory.createURI(DOAP.NAMESPACE, "license");
-		DESCRIPTION = factory.createURI(DOAP.NAMESPACE, "description");
-		PROGRAMMING_LANGUAGE = factory.createURI(DOAP.NAMESPACE, "programming-language");
-		IMPLEMENTS = factory.createURI(DOAP.NAMESPACE, "implements");
-		CATEGORY = factory.createURI(DOAP.NAMESPACE, "category");
-		DOWNLOAD_PAGE = factory.createURI(DOAP.NAMESPACE, "download-page");
-		MAILING_LIST = factory.createURI(DOAP.NAMESPACE, "mailing-list");
-		BUG_DATABASE = factory.createURI(DOAP.NAMESPACE, "bug-database");
-		BLOG = factory.createURI(DOAP.NAMESPACE, "blog");
-		DEVELOPER = factory.createURI(DOAP.NAMESPACE, "developer");
-		MAINTAINER = factory.createURI(DOAP.NAMESPACE, "maintainer");
-		DOCUMENTER = factory.createURI(DOAP.NAMESPACE, "documenter");
-		RELEASE = factory.createURI(DOAP.NAMESPACE, "release");
-		CREATED = factory.createURI(DOAP.NAMESPACE, "created");
+		NAME = factory.createIRI(DOAP.NAMESPACE, "name");
+		HOMEPAGE = factory.createIRI(DOAP.NAMESPACE, "homepage");
+		OLD_HOMEPAGE = factory.createIRI(DOAP.NAMESPACE, "old-homepage");
+		LICENSE = factory.createIRI(DOAP.NAMESPACE, "license");
+		DESCRIPTION = factory.createIRI(DOAP.NAMESPACE, "description");
+		PROGRAMMING_LANGUAGE = factory.createIRI(DOAP.NAMESPACE, "programming-language");
+		IMPLEMENTS = factory.createIRI(DOAP.NAMESPACE, "implements");
+		CATEGORY = factory.createIRI(DOAP.NAMESPACE, "category");
+		DOWNLOAD_PAGE = factory.createIRI(DOAP.NAMESPACE, "download-page");
+		MAILING_LIST = factory.createIRI(DOAP.NAMESPACE, "mailing-list");
+		BUG_DATABASE = factory.createIRI(DOAP.NAMESPACE, "bug-database");
+		BLOG = factory.createIRI(DOAP.NAMESPACE, "blog");
+		DEVELOPER = factory.createIRI(DOAP.NAMESPACE, "developer");
+		MAINTAINER = factory.createIRI(DOAP.NAMESPACE, "maintainer");
+		DOCUMENTER = factory.createIRI(DOAP.NAMESPACE, "documenter");
+		RELEASE = factory.createIRI(DOAP.NAMESPACE, "release");
+		CREATED = factory.createIRI(DOAP.NAMESPACE, "created");
 	}
 }

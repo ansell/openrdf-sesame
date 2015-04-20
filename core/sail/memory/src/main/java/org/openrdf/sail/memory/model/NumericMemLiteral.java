@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -39,12 +39,12 @@ public class NumericMemLiteral extends MemLiteral {
 	 * Constructors *
 	 *--------------*/
 
-	public NumericMemLiteral(Object creator, String label, Number number, URI datatype) {
+	public NumericMemLiteral(Object creator, String label, Number number, IRI datatype) {
 		super(creator, label, datatype);
 		this.number = number;
 	}
 
-	public NumericMemLiteral(Object creator, Number number, URI datatype) {
+	public NumericMemLiteral(Object creator, Number number, IRI datatype) {
 		this(creator, number.toString(), number, datatype);
 	}
 

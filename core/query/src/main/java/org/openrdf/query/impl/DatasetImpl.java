@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.Dataset;
 
 /**
@@ -29,25 +29,25 @@ import org.openrdf.query.Dataset;
  */
 public class DatasetImpl implements Dataset {
 
-	private Set<URI> defaultRemoveGraphs = new LinkedHashSet<URI>();
+	private Set<IRI> defaultRemoveGraphs = new LinkedHashSet<IRI>();
 
-	private URI defaultInsertGraph;
+	private IRI defaultInsertGraph;
 
-	private Set<URI> defaultGraphs = new LinkedHashSet<URI>();
+	private Set<IRI> defaultGraphs = new LinkedHashSet<IRI>();
 
-	private Set<URI> namedGraphs = new LinkedHashSet<URI>();
+	private Set<IRI> namedGraphs = new LinkedHashSet<IRI>();
 
 	public DatasetImpl() {
 	}
 
-	public Set<URI> getDefaultRemoveGraphs() {
+	public Set<IRI> getDefaultRemoveGraphs() {
 		return Collections.unmodifiableSet(defaultRemoveGraphs);
 	}
 
 	/**
 	 * Adds a graph URI to the set of default remove graph URIs.
 	 */
-	public void addDefaultRemoveGraph(URI graphURI) {
+	public void addDefaultRemoveGraph(IRI graphURI) {
 		defaultRemoveGraphs.add(graphURI);
 	}
 
@@ -57,14 +57,14 @@ public class DatasetImpl implements Dataset {
 	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
 	 *         if the set did not contain the URI.
 	 */
-	public boolean removeDefaultRemoveGraph(URI graphURI) {
+	public boolean removeDefaultRemoveGraph(IRI graphURI) {
 		return defaultRemoveGraphs.remove(graphURI);
 	}
 
 	/**
 	 * @return Returns the default insert graph.
 	 */
-	public URI getDefaultInsertGraph() {
+	public IRI getDefaultInsertGraph() {
 		return defaultInsertGraph;
 	}
 
@@ -72,18 +72,18 @@ public class DatasetImpl implements Dataset {
 	 * @param defaultInsertGraph
 	 *        The default insert graph to used.
 	 */
-	public void setDefaultInsertGraph(URI defaultInsertGraph) {
+	public void setDefaultInsertGraph(IRI defaultInsertGraph) {
 		this.defaultInsertGraph = defaultInsertGraph;
 	}
 
-	public Set<URI> getDefaultGraphs() {
+	public Set<IRI> getDefaultGraphs() {
 		return Collections.unmodifiableSet(defaultGraphs);
 	}
 
 	/**
 	 * Adds a graph URI to the set of default graph URIs.
 	 */
-	public void addDefaultGraph(URI graphURI) {
+	public void addDefaultGraph(IRI graphURI) {
 		defaultGraphs.add(graphURI);
 	}
 
@@ -93,21 +93,21 @@ public class DatasetImpl implements Dataset {
 	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
 	 *         if the set did not contain the URI.
 	 */
-	public boolean removeDefaultGraph(URI graphURI) {
+	public boolean removeDefaultGraph(IRI graphURI) {
 		return defaultGraphs.remove(graphURI);
 	}
 
 	/**
 	 * Gets the (unmodifiable) set of named graph URIs.
 	 */
-	public Set<URI> getNamedGraphs() {
+	public Set<IRI> getNamedGraphs() {
 		return Collections.unmodifiableSet(namedGraphs);
 	}
 
 	/**
 	 * Adds a graph URI to the set of named graph URIs.
 	 */
-	public void addNamedGraph(URI graphURI) {
+	public void addNamedGraph(IRI graphURI) {
 		namedGraphs.add(graphURI);
 	}
 
@@ -117,7 +117,7 @@ public class DatasetImpl implements Dataset {
 	 * @return <tt>true</tt> if the URI was removed from the set, <tt>false</tt>
 	 *         if the set did not contain the URI.
 	 */
-	public boolean removeNamedGraph(URI graphURI) {
+	public boolean removeNamedGraph(IRI graphURI) {
 		return namedGraphs.remove(graphURI);
 	}
 
@@ -134,7 +134,7 @@ public class DatasetImpl implements Dataset {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (URI uri : getDefaultRemoveGraphs()) {
+		for (IRI uri : getDefaultRemoveGraphs()) {
 			sb.append("DELETE FROM ");
 			appendURI(sb, uri);
 		}
@@ -142,11 +142,11 @@ public class DatasetImpl implements Dataset {
 			sb.append("INSERT INTO ");
 			appendURI(sb, getDefaultInsertGraph());
 		}
-		for (URI uri : getDefaultGraphs()) {
+		for (IRI uri : getDefaultGraphs()) {
 			sb.append("USING ");
 			appendURI(sb, uri);
 		}
-		for (URI uri : getNamedGraphs()) {
+		for (IRI uri : getNamedGraphs()) {
 			sb.append("USING NAMED ");
 			appendURI(sb, uri);
 		}
@@ -156,7 +156,7 @@ public class DatasetImpl implements Dataset {
 		return sb.toString();
 	}
 
-	private void appendURI(StringBuilder sb, URI uri) {
+	private void appendURI(StringBuilder sb, IRI uri) {
 		String str = uri.toString();
 		if (str.length() > 50) {
 			sb.append("<").append(str, 0, 19).append("..");

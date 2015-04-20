@@ -31,11 +31,11 @@ import info.aduna.iteration.Iterations;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
@@ -62,9 +62,9 @@ public class NativeStoreConsistencyTest {
 
 	@Test
 	public void testSES1867IndexCorruption() throws Exception {
-		ValueFactory vf = ValueFactoryImpl.getInstance();
-		URI oldContext = vf.createURI("http://example.org/oldContext");
-		URI newContext = vf.createURI("http://example.org/newContext");
+		ValueFactory vf = SimpleValueFactory.getInstance();
+		IRI oldContext = vf.createIRI("http://example.org/oldContext");
+		IRI newContext = vf.createIRI("http://example.org/newContext");
 
 		File dataDir = tempDir.newFolder("nativestore-consistency");
 		
@@ -84,7 +84,7 @@ public class NativeStoreConsistencyTest {
 		conn.begin();
 
 		System.out.println("Removing old context");
-		conn.remove((Resource)null, (URI)null, (Value)null, oldContext);
+		conn.remove((Resource)null, (IRI)null, (Value)null, oldContext);
 
 		System.out.println("Adding updated context");
 		conn.add(getClass().getResourceAsStream("/nativestore-testdata/SES-1867/newTriples.nt"), "",

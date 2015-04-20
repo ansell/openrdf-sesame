@@ -17,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 import info.aduna.io.ResourceUtil;
 import info.aduna.iteration.Iterations;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
@@ -95,12 +95,12 @@ public abstract class CustomGraphQueryInferencerTest {
 			assertThat(watchSubjects.size(), is(equalTo(testData.subjCount)));
 			ValueFactory factory = connection.getValueFactory();
 			if (resourceFolder.startsWith(PREDICATE)) {
-				assertThat(watchPredicates.contains(factory.createURI(BASE, "brotherOf")), is(equalTo(true)));
-				assertThat(watchPredicates.contains(factory.createURI(BASE, "parentOf")), is(equalTo(true)));
+				assertThat(watchPredicates.contains(factory.createIRI(BASE, "brotherOf")), is(equalTo(true)));
+				assertThat(watchPredicates.contains(factory.createIRI(BASE, "parentOf")), is(equalTo(true)));
 			}
 			else {
-				URI bob = factory.createURI(BASE, "Bob");
-				URI alice = factory.createURI(BASE, "Alice");
+				IRI bob = factory.createIRI(BASE, "Bob");
+				IRI alice = factory.createIRI(BASE, "Alice");
 				assertThat(watchSubjects.contains(bob), is(equalTo(true)));
 				assertThat(watchSubjects.contains(alice), is(equalTo(true)));
 				assertThat(watchObjects.contains(bob), is(equalTo(true)));

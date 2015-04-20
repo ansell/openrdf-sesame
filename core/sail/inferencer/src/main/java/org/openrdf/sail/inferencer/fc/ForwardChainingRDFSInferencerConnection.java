@@ -28,7 +28,7 @@ import info.aduna.text.ASCIIUtil;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.vocabulary.RDF;
@@ -438,7 +438,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Statement nt = ntIter.next();
 
 			Resource xxx = nt.getSubject();
-			URI aaa = nt.getPredicate();
+			IRI aaa = nt.getPredicate();
 
 			CloseableIteration<? extends Statement, SailException> t1Iter;
 			t1Iter = getWrappedConnection().getStatements(aaa, RDFS.DOMAIN, null, true);
@@ -474,9 +474,9 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Resource aaa = nt.getSubject();
 			Value zzz = nt.getObject();
 
-			if (aaa instanceof URI && zzz instanceof Resource) {
+			if (aaa instanceof IRI && zzz instanceof Resource) {
 				CloseableIteration<? extends Statement, SailException> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
+				t1Iter = getWrappedConnection().getStatements(null, (IRI)aaa, null, true);
 
 				while (t1Iter.hasNext()) {
 					Statement t1 = t1Iter.next();
@@ -505,7 +505,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		while (ntIter.hasNext()) {
 			Statement nt = ntIter.next();
 
-			URI aaa = nt.getPredicate();
+			IRI aaa = nt.getPredicate();
 			Value uuu = nt.getObject();
 
 			if (uuu instanceof Resource) {
@@ -543,9 +543,9 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Resource aaa = nt.getSubject();
 			Value zzz = nt.getObject();
 
-			if (aaa instanceof URI && zzz instanceof Resource) {
+			if (aaa instanceof IRI && zzz instanceof Resource) {
 				CloseableIteration<? extends Statement, SailException> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
+				t1Iter = getWrappedConnection().getStatements(null, (IRI)aaa, null, true);
 
 				while (t1Iter.hasNext()) {
 					Statement t1 = t1Iter.next();
@@ -715,7 +715,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Statement nt = ntIter.next();
 
 			Resource xxx = nt.getSubject();
-			URI aaa = nt.getPredicate();
+			IRI aaa = nt.getPredicate();
 			Value yyy = nt.getObject();
 
 			CloseableIteration<? extends Statement, SailException> t1Iter;
@@ -725,8 +725,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 				Statement t1 = t1Iter.next();
 
 				Value bbb = t1.getObject();
-				if (bbb instanceof URI) {
-					boolean added = addInferredStatement(xxx, (URI)bbb, yyy);
+				if (bbb instanceof IRI) {
+					boolean added = addInferredStatement(xxx, (IRI)bbb, yyy);
 					if (added) {
 						nofInferred++;
 					}
@@ -752,9 +752,9 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			Resource aaa = nt.getSubject();
 			Value bbb = nt.getObject();
 
-			if (aaa instanceof URI && bbb instanceof URI) {
+			if (aaa instanceof IRI && bbb instanceof IRI) {
 				CloseableIteration<? extends Statement, SailException> t1Iter;
-				t1Iter = getWrappedConnection().getStatements(null, (URI)aaa, null, true);
+				t1Iter = getWrappedConnection().getStatements(null, (IRI)aaa, null, true);
 
 				while (t1Iter.hasNext()) {
 					Statement t1 = t1Iter.next();
@@ -762,7 +762,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 					Resource xxx = t1.getSubject();
 					Value yyy = t1.getObject();
 
-					boolean added = addInferredStatement(xxx, (URI)bbb, yyy);
+					boolean added = addInferredStatement(xxx, (IRI)bbb, yyy);
 					if (added) {
 						nofInferred++;
 					}
@@ -1023,7 +1023,7 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 		while (iter.hasNext()) {
 			Statement st = iter.next();
 
-			URI predNode = st.getPredicate();
+			IRI predNode = st.getPredicate();
 			String predURI = predNode.toString();
 
 			if (predURI.startsWith(prefix) && isValidPredicateNumber(predURI.substring(prefix.length()))) {

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
@@ -43,7 +43,7 @@ public class SPARQLResultsXMLParser extends SPARQLXMLParserBase implements Tuple
 
 	/**
 	 * Creates a new parser for the SPARQL Query Results XML Format that will use
-	 * an instance of {@link ValueFactoryImpl} to create Value objects.
+	 * an instance of {@link SimpleValueFactory} to create Value objects.
 	 */
 	public SPARQLResultsXMLParser() {
 		super();

@@ -38,9 +38,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.workbench.exceptions.BadRequestException;
@@ -85,7 +85,7 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	{
 		super(request);
 		this.defaults = defaults;
-		this.decoder = new ValueDecoder(repository, (repository == null) ? ValueFactoryImpl.getInstance()
+		this.decoder = new ValueDecoder(repository, (repository == null) ? SimpleValueFactory.getInstance()
 				: repository.getValueFactory());
 		String url = request.getRequestURL().toString();
 		if (ServletFileUpload.isMultipartContent(this)) {
@@ -267,12 +267,12 @@ public class WorkbenchRequest extends HttpServletRequestWrapper {
 	 * @throws RepositoryException
 	 *         if the name space prefix is not resolvable
 	 */
-	public URI getURI(String name)
+	public IRI getURI(String name)
 		throws BadRequestException, RepositoryException
 	{
 		Value value = getValue(name);
-		if (value == null || value instanceof URI) {
-			return (URI)value;
+		if (value == null || value instanceof IRI) {
+			return (IRI)value;
 		}
 		throw new BadRequestException("Not a URI: " + value);
 	}

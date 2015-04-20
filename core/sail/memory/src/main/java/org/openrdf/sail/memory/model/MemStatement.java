@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail.memory.model;
 
-import org.openrdf.model.impl.ContextStatementImpl;
+import org.openrdf.model.impl.ContextStatement;
 
 /**
  * A MemStatement is a Statement which contains context information and a flag
  * indicating whether the statement is explicit or inferred.
  */
-public class MemStatement extends ContextStatementImpl {
+public class MemStatement extends ContextStatement {
 
 	/*-----------*
 	 * Constants *
@@ -64,7 +64,7 @@ public class MemStatement extends ContextStatementImpl {
 	 * Creates a new MemStatement with the supplied subject, predicate, object
 	 * and context and marks it as 'explicit'.
 	 */
-	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+	public MemStatement(MemResource subject, MemIRI predicate, MemValue object, MemResource context,
 			int sinceSnapshot)
 	{
 		this(subject, predicate, object, context, true, sinceSnapshot);
@@ -74,7 +74,7 @@ public class MemStatement extends ContextStatementImpl {
 	 * Creates a new MemStatement with the supplied subject, predicate, object
 	 * and context and marks it as 'explicit'.
 	 */
-	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+	public MemStatement(MemResource subject, MemIRI predicate, MemValue object, MemResource context,
 			boolean explicit, int sinceSnapshot)
 	{
 		this(subject, predicate, object, context, explicit, sinceSnapshot, TxnStatus.NEUTRAL);
@@ -85,7 +85,7 @@ public class MemStatement extends ContextStatementImpl {
 	 * and context. The value of the <tt>explicit</tt> parameter determines if
 	 * this statement is marked as 'explicit' or not.
 	 */
-	public MemStatement(MemResource subject, MemURI predicate, MemValue object, MemResource context,
+	public MemStatement(MemResource subject, MemIRI predicate, MemValue object, MemResource context,
 			boolean explicit, int sinceSnapshot, TxnStatus txnStatus)
 	{
 		super(subject, predicate, object, context);
@@ -104,8 +104,8 @@ public class MemStatement extends ContextStatementImpl {
 	}
 
 	@Override
-	public MemURI getPredicate() {
-		return (MemURI)super.getPredicate();
+	public MemIRI getPredicate() {
+		return (MemIRI)super.getPredicate();
 	}
 
 	@Override

@@ -33,7 +33,7 @@ import org.apache.commons.io.input.BOMInputStream;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.rio.RDFFormat;
@@ -133,7 +133,7 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 	 * @throws RDFParseException
 	 * @since 2.7.4
 	 */
-	protected Literal createLiteral(String label, String language, URI datatype,
+	protected Literal createLiteral(String label, String language, IRI datatype,
 			JsonLocation currentLocation)
 		throws RDFParseException
 	{
@@ -212,7 +212,7 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 			final String subjStr = jp.getCurrentName();
 			Resource subject = null;
 
-			subject = subjStr.startsWith("_:") ? vf.createBNode(subjStr.substring(2)) : vf.createURI(subjStr);
+			subject = subjStr.startsWith("_:") ? vf.createBNode(subjStr.substring(2)) : vf.createIRI(subjStr);
 			if (jp.nextToken() != JsonToken.START_OBJECT) {
 				reportFatalError("Expected subject value to start with an Object", jp.getCurrentLocation());
 			}
@@ -221,7 +221,7 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 			while (jp.nextToken() != JsonToken.END_OBJECT) {
 				final String predStr = jp.getCurrentName();
 
-				final URI predicate = vf.createURI(predStr);
+				final IRI predicate = vf.createIRI(predStr);
 				foundPredicate = true;
 
 				if (jp.nextToken() != JsonToken.START_ARRAY) {
@@ -350,14 +350,14 @@ public class RDFJSONParser extends RDFParserBase implements RDFParser {
 							reportFatalError("Datatype was attached to a uri object: subject=" + subjStr
 									+ " predicate=" + predStr, jp.getCurrentLocation());
 						}
-						object = vf.createURI(nextValue);
+						object = vf.createIRI(nextValue);
 					}
 					foundObject = true;
 
 					if (!nextContexts.isEmpty()) {
 						for (final String nextContext : nextContexts) {
 							final Resource context = nextContext.equals(RDFJSONUtility.NULL) ? null
-									: vf.createURI(nextContext);
+									: vf.createIRI(nextContext);
 							Statement st = vf.createStatement(subject, predicate, object, context);
 							if (handler != null) {
 								handler.handleStatement(st);

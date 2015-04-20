@@ -25,7 +25,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
@@ -53,7 +53,7 @@ public abstract class BaseRepositoryServlet extends BaseServlet implements Repos
 
 	public void setRepository(Repository repository) {
 		if (repository == null) {
-			this.vf = new ValueFactoryImpl();
+			this.vf = new SimpleValueFactory();
 		} else {
 			this.repository = repository;
 			this.vf = repository.getValueFactory();

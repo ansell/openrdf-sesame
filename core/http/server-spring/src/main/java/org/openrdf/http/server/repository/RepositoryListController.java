@@ -109,7 +109,7 @@ public class RepositoryListController extends AbstractController {
 							QueryBindingSet bindings = new QueryBindingSet(queryResult.next());
 
 							String id = bindings.getValue("id").stringValue();
-							bindings.addBinding("uri", vf.createURI(namespace, id));
+							bindings.addBinding("uri", vf.createIRI(namespace, id));
 
 							bindingSets.add(bindings);
 						}

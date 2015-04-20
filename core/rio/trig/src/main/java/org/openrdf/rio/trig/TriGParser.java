@@ -20,10 +20,10 @@ import java.io.IOException;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -57,7 +57,7 @@ public class TriGParser extends TurtleParser {
 	 *--------------*/
 
 	/**
-	 * Creates a new TriGParser that will use a {@link ValueFactoryImpl} to
+	 * Creates a new TriGParser that will use a {@link SimpleValueFactory} to
 	 * create RDF model objects.
 	 */
 	public TriGParser() {
@@ -266,7 +266,7 @@ public class TriGParser extends TurtleParser {
 	}
 
 	@Override
-	protected void reportStatement(Resource subj, URI pred, Value obj)
+	protected void reportStatement(Resource subj, IRI pred, Value obj)
 		throws RDFParseException, RDFHandlerException
 	{
 		Statement st = createStatement(subj, pred, obj, getContext());

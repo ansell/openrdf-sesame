@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.impl.BooleanLiteral;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
@@ -82,12 +82,12 @@ public class ConstantOptimizer implements QueryOptimizer {
 			try {
 				if (isConstant(or.getLeftArg()) && isConstant(or.getRightArg())) {
 					boolean value = strategy.isTrue(or, EmptyBindingSet.getInstance());
-					or.replaceWith(new ValueConstant(BooleanLiteralImpl.valueOf(value)));
+					or.replaceWith(new ValueConstant(BooleanLiteral.valueOf(value)));
 				}
 				else if (isConstant(or.getLeftArg())) {
 					boolean leftIsTrue = strategy.isTrue(or.getLeftArg(), EmptyBindingSet.getInstance());
 					if (leftIsTrue) {
-						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+						or.replaceWith(new ValueConstant(BooleanLiteral.TRUE));
 					}
 					else {
 						or.replaceWith(or.getRightArg());
@@ -96,7 +96,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 				else if (isConstant(or.getRightArg())) {
 					boolean rightIsTrue = strategy.isTrue(or.getRightArg(), EmptyBindingSet.getInstance());
 					if (rightIsTrue) {
-						or.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+						or.replaceWith(new ValueConstant(BooleanLiteral.TRUE));
 					}
 					else {
 						or.replaceWith(or.getLeftArg());
@@ -120,7 +120,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 			try {
 				if (isConstant(and.getLeftArg()) && isConstant(and.getRightArg())) {
 					boolean value = strategy.isTrue(and, EmptyBindingSet.getInstance());
-					and.replaceWith(new ValueConstant(BooleanLiteralImpl.valueOf(value)));
+					and.replaceWith(new ValueConstant(BooleanLiteral.valueOf(value)));
 				}
 				else if (isConstant(and.getLeftArg())) {
 					boolean leftIsTrue = strategy.isTrue(and.getLeftArg(), EmptyBindingSet.getInstance());
@@ -128,7 +128,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 						and.replaceWith(and.getRightArg());
 					}
 					else {
-						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+						and.replaceWith(new ValueConstant(BooleanLiteral.FALSE));
 					}
 				}
 				else if (isConstant(and.getRightArg())) {
@@ -137,7 +137,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 						and.replaceWith(and.getLeftArg());
 					}
 					else {
-						and.replaceWith(new ValueConstant(BooleanLiteralImpl.FALSE));
+						and.replaceWith(new ValueConstant(BooleanLiteral.FALSE));
 					}
 				}
 			}
@@ -259,7 +259,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 
 			if (bound.getArg().hasValue()) {
 				// variable is always bound
-				bound.replaceWith(new ValueConstant(BooleanLiteralImpl.TRUE));
+				bound.replaceWith(new ValueConstant(BooleanLiteral.TRUE));
 			}
 		}
 

@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -98,7 +98,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
-	public void addWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void addWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		boolean denied = false;
@@ -188,7 +188,7 @@ public class InterceptingRepositoryConnectionWrapper extends RepositoryConnectio
 	}
 
 	@Override
-	public void removeWithoutCommit(Resource subject, URI predicate, Value object, Resource... contexts)
+	public void removeWithoutCommit(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException
 	{
 		boolean denied = false;

@@ -24,7 +24,7 @@ import info.aduna.text.StringUtil;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQueryResult;
@@ -188,8 +188,8 @@ public class TupleAndGraphQueryEvaluator {
 	private String getStringRepForValue(final Value value, final Collection<Namespace> namespaces) {
 		String result = "";
 		if (value != null) {
-			if (parameters.isShowPrefix() && value instanceof URI) {
-				final URI uri = (URI)value;
+			if (parameters.isShowPrefix() && value instanceof IRI) {
+				final IRI uri = (IRI)value;
 				final String prefix = getPrefixForNamespace(uri.getNamespace(), namespaces);
 				if (prefix == null) {
 					result = NTriplesUtil.toNTriplesString(value);

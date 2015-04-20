@@ -36,7 +36,7 @@ import info.aduna.iteration.UnionIteration;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
@@ -425,7 +425,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 *         statements that match the specified pattern.
 	 */
 	protected CloseableIteration<? extends Statement, IOException> createStatementIterator(Resource subj,
-			URI pred, Value obj, boolean includeInferred, boolean readTransaction, Resource... contexts)
+			IRI pred, Value obj, boolean includeInferred, boolean readTransaction, Resource... contexts)
 		throws IOException
 	{
 		int subjID = NativeValue.UNKNOWN_ID;
@@ -497,7 +497,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		}
 	}
 
-	protected double cardinality(Resource subj, URI pred, Value obj, Resource context)
+	protected double cardinality(Resource subj, IRI pred, Value obj, Resource context)
 		throws IOException
 	{
 		int subjID = NativeValue.UNKNOWN_ID;

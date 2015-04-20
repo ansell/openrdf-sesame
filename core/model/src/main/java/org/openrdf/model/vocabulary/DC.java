@@ -17,10 +17,10 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Vocabulary constants for the Dublin Core Metadata Element Set, version 1.1
@@ -45,100 +45,100 @@ public class DC {
 	 * An immutable {@link Namespace} constant that represents the Dublin Core
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/**
 	 * dc:title
 	 */
-	public static final URI TITLE;
+	public static final IRI TITLE;
 
 	/**
 	 * dc:source
 	 */
-	public static final URI SOURCE;
+	public static final IRI SOURCE;
 
 	/**
 	 * dc:contributor
 	 */
-	public static final URI CONTRIBUTOR;
+	public static final IRI CONTRIBUTOR;
 
 	/**
 	 * dc:coverage
 	 */
-	public static final URI COVERAGE;
+	public static final IRI COVERAGE;
 
 	/**
 	 * dc:creator
 	 */
-	public static final URI CREATOR;
+	public static final IRI CREATOR;
 
 	/**
 	 * dc:date
 	 */
-	public static final URI DATE;
+	public static final IRI DATE;
 
 	/**
 	 * dc:description
 	 */
-	public static final URI DESCRIPTION;
+	public static final IRI DESCRIPTION;
 
 	/**
 	 * dc:format
 	 */
-	public static final URI FORMAT;
+	public static final IRI FORMAT;
 
 	/**
 	 * dc:identifier
 	 */
-	public static final URI IDENTIFIER;
+	public static final IRI IDENTIFIER;
 
 	/**
 	 * dc:language
 	 */
-	public static final URI LANGUAGE;
+	public static final IRI LANGUAGE;
 
 	/**
 	 * dc:publisher
 	 */
-	public static final URI PUBLISHER;
+	public static final IRI PUBLISHER;
 
 	/**
 	 * dc:relation
 	 */
-	public static final URI RELATION;
+	public static final IRI RELATION;
 
 	/**
 	 * dc:rights
 	 */
-	public static final URI RIGHTS;
+	public static final IRI RIGHTS;
 
 	/**
 	 * dc:subject
 	 */
-	public static final URI SUBJECT;
+	public static final IRI SUBJECT;
 
 	/**
 	 * dc:type
 	 */
-	public static final URI TYPE;
+	public static final IRI TYPE;
 
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		CONTRIBUTOR = f.createURI(NAMESPACE, "contributor");
-		COVERAGE = f.createURI(NAMESPACE, "coverage");
-		CREATOR = f.createURI(NAMESPACE, "creator");
-		DATE = f.createURI(NAMESPACE, "date");
-		DESCRIPTION = f.createURI(NAMESPACE, "description");
-		FORMAT = f.createURI(NAMESPACE, "format");
-		IDENTIFIER = f.createURI(NAMESPACE, "identifier");
-		LANGUAGE = f.createURI(NAMESPACE, "language");
-		PUBLISHER = f.createURI(NAMESPACE, "publisher");
-		RELATION = f.createURI(NAMESPACE, "relation");
-		RIGHTS = f.createURI(NAMESPACE, "rights");
-		SOURCE = f.createURI(NAMESPACE, "source");
-		SUBJECT = f.createURI(NAMESPACE, "subject");
-		TITLE = f.createURI(NAMESPACE, "title");
-		TYPE = f.createURI(NAMESPACE, "type");
+		CONTRIBUTOR = f.createIRI(NAMESPACE, "contributor");
+		COVERAGE = f.createIRI(NAMESPACE, "coverage");
+		CREATOR = f.createIRI(NAMESPACE, "creator");
+		DATE = f.createIRI(NAMESPACE, "date");
+		DESCRIPTION = f.createIRI(NAMESPACE, "description");
+		FORMAT = f.createIRI(NAMESPACE, "format");
+		IDENTIFIER = f.createIRI(NAMESPACE, "identifier");
+		LANGUAGE = f.createIRI(NAMESPACE, "language");
+		PUBLISHER = f.createIRI(NAMESPACE, "publisher");
+		RELATION = f.createIRI(NAMESPACE, "relation");
+		RIGHTS = f.createIRI(NAMESPACE, "rights");
+		SOURCE = f.createIRI(NAMESPACE, "source");
+		SUBJECT = f.createIRI(NAMESPACE, "subject");
+		TITLE = f.createIRI(NAMESPACE, "title");
+		TYPE = f.createIRI(NAMESPACE, "type");
 	}
 }

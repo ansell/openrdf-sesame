@@ -44,7 +44,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	/**
 	 * The predicate of statements to return, or null if any predicate is OK.
 	 */
-	private final MemURI predicate;
+	private final MemIRI predicate;
 
 	/**
 	 * The object of statements to return, or null if any object is OK.
@@ -98,7 +98,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 * @param contexts
 	 *        context(s) of pattern.
 	 */
-	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
+	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemIRI predicate,
 			MemValue object, boolean explicitOnly, int snapshot, ReadMode readMode, MemResource... contexts)
 	{
 		this.statementList = statementList;

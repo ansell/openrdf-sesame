@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
@@ -51,7 +51,7 @@ public class Tz implements Function {
 		if (argValue instanceof Literal) {
 			Literal literal = (Literal)argValue;
 
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 
 			if (datatype != null && XMLDatatypeUtil.isCalendarDatatype(datatype)) {
 				String lexValue = literal.getLabel();

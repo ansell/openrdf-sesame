@@ -73,11 +73,11 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.OWL;
@@ -172,17 +172,17 @@ public abstract class RepositoryConnectionTest {
 
 	protected Resource alexander;
 
-	protected URI name;
+	protected IRI name;
 
-	protected URI mbox;
+	protected IRI mbox;
 
-	protected final URI publisher = DC.PUBLISHER;
+	protected final IRI publisher = DC.PUBLISHER;
 
-	protected URI unknownContext;
+	protected IRI unknownContext;
 
-	protected URI context1;
+	protected IRI context1;
 
-	protected URI context2;
+	protected IRI context2;
 
 	protected Literal nameAlice;
 
@@ -214,8 +214,8 @@ public abstract class RepositoryConnectionTest {
 		alice = vf.createBNode();
 		alexander = vf.createBNode();
 
-		name = vf.createURI(FOAF_NS + NAME);
-		mbox = vf.createURI(FOAF_NS + MBOX);
+		name = vf.createIRI(FOAF_NS + NAME);
+		mbox = vf.createIRI(FOAF_NS + MBOX);
 
 		nameAlice = vf.createLiteral("Alice");
 		nameBob = vf.createLiteral("Bob");
@@ -225,10 +225,10 @@ public abstract class RepositoryConnectionTest {
 
 		Александър = vf.createLiteral("Александър");
 
-		unknownContext = new URIImpl("urn:unknownContext");
+		unknownContext = new SimpleIRI("urn:unknownContext");
 
-		context1 = vf.createURI("urn:x-local:graph1");
-		context2 = vf.createURI("urn:x-local:graph2");
+		context1 = vf.createIRI("urn:x-local:graph1");
+		context2 = vf.createIRI("urn:x-local:graph2");
 	}
 
 	@After
@@ -823,7 +823,7 @@ public abstract class RepositoryConnectionTest {
 			assertThat(result.hasNext(), is(equalTo(true)));
 			while (result.hasNext()) {
 				Statement st = result.next();
-				URI predicate = st.getPredicate();
+				IRI predicate = st.getPredicate();
 				assertThat(predicate, anyOf(is(equalTo(name)), is(equalTo(mbox))));
 				Value object = st.getObject();
 				if (name.equals(predicate)) {
@@ -978,7 +978,7 @@ public abstract class RepositoryConnectionTest {
 	{
 		Literal invalidIntegerLiteral = vf.createLiteral("the number four", XMLSchema.INTEGER);
 		try {
-			URI pred = vf.createURI(URN_PRED);
+			IRI pred = vf.createIRI(URN_PRED);
 			testCon.add(bob, pred, invalidIntegerLiteral);
 
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
@@ -1001,7 +1001,7 @@ public abstract class RepositoryConnectionTest {
 	{
 		Literal invalidLanguageLiteral = vf.createLiteral("the number four", "en_us");
 		try {
-			URI pred = vf.createURI(URN_PRED);
+			IRI pred = vf.createIRI(URN_PRED);
 			testCon.add(bob, pred, invalidLanguageLiteral);
 
 			RepositoryResult<Statement> statements = testCon.getStatements(bob, pred, null, true);
@@ -1320,7 +1320,7 @@ public abstract class RepositoryConnectionTest {
 		testCon.setNamespace(RDFS_PREFIX, RDFS_NS);
 
 		// Translated from earlier RDF document. Is this line even necessary?
-		testCon.add(vf.createURI(EXAMPLE_NS, "Main"), vf.createURI(RDFS_NS, "label"),
+		testCon.add(vf.createIRI(EXAMPLE_NS, "Main"), vf.createIRI(RDFS_NS, "label"),
 				vf.createLiteral("Main Node"));
 	}
 
@@ -1438,7 +1438,7 @@ public abstract class RepositoryConnectionTest {
 			statements.close();
 		}
 
-		URI uri = st.getPredicate();
+		IRI uri = st.getPredicate();
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(baos);
@@ -1447,7 +1447,7 @@ public abstract class RepositoryConnectionTest {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream in = new ObjectInputStream(bais);
-		URI deserializedURI = (URI)in.readObject();
+		IRI deserializedURI = (IRI)in.readObject();
 		in.close();
 
 		assertThat(deserializedURI, is(equalTo(uri)));
@@ -1525,7 +1525,7 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.begin();
-		testCon.add(vf.createBNode(), vf.createURI(URN_PRED), vf.createBNode());
+		testCon.add(vf.createBNode(), vf.createIRI(URN_PRED), vf.createBNode());
 		assertThat(testCon.isEmpty(), is(equalTo(false)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.rollback();
@@ -1540,7 +1540,7 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.begin();
-		testCon.add(vf.createBNode(), vf.createURI(URN_PRED), vf.createBNode());
+		testCon.add(vf.createBNode(), vf.createIRI(URN_PRED), vf.createBNode());
 		assertThat(testCon.isEmpty(), is(equalTo(false)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.commit();
@@ -1566,10 +1566,10 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon.size(), is(equalTo(0L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.begin();
-		testCon.add(vf.createBNode(), vf.createURI(URN_PRED), vf.createBNode());
+		testCon.add(vf.createBNode(), vf.createIRI(URN_PRED), vf.createBNode());
 		assertThat(testCon.size(), is(equalTo(1L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
-		testCon.add(vf.createBNode(), vf.createURI(URN_PRED), vf.createBNode());
+		testCon.add(vf.createBNode(), vf.createIRI(URN_PRED), vf.createBNode());
 		assertThat(testCon.size(), is(equalTo(2L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.rollback();
@@ -1584,10 +1584,10 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon.size(), is(equalTo(0L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.begin();
-		testCon.add(vf.createBNode(), vf.createURI(URN_PRED), vf.createBNode());
+		testCon.add(vf.createBNode(), vf.createIRI(URN_PRED), vf.createBNode());
 		assertThat(testCon.size(), is(equalTo(1L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
-		testCon.add(vf.createBNode(), vf.createURI(URN_PRED), vf.createBNode());
+		testCon.add(vf.createBNode(), vf.createIRI(URN_PRED), vf.createBNode());
 		assertThat(testCon.size(), is(equalTo(2L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.commit();
@@ -1599,7 +1599,7 @@ public abstract class RepositoryConnectionTest {
 	public void testAddRemove()
 		throws Exception
 	{
-		URI FOAF_PERSON = vf.createURI("http://xmlns.com/foaf/0.1/Person");
+		IRI FOAF_PERSON = vf.createIRI("http://xmlns.com/foaf/0.1/Person");
 		final Statement stmt = vf.createStatement(bob, name, nameBob);
 
 		testCon.add(bob, RDF.TYPE, FOAF_PERSON);
@@ -1627,7 +1627,7 @@ public abstract class RepositoryConnectionTest {
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		int inferred = getTotalStatementCount(testCon);
 
-		URI root = vf.createURI("urn:root");
+		IRI root = vf.createIRI("urn:root");
 
 		testCon.add(root, RDF.TYPE, RDF.LIST);
 		testCon.remove(root, RDF.TYPE, RDF.LIST);
@@ -1663,13 +1663,13 @@ public abstract class RepositoryConnectionTest {
 		String SELECT_BY_DATE = "SELECT ?s ?d WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> ?d . FILTER (?d <= ?date) }";
 		DatatypeFactory data = DatatypeFactory.newInstance();
 		for (int i = 1; i < 5; i++) {
-			URI uri = vf.createURI(NS, "date" + i);
+			IRI uri = vf.createIRI(NS, "date" + i);
 			XMLGregorianCalendar xcal = data.newXMLGregorianCalendar();
 			xcal.setYear(2000);
 			xcal.setMonth(11);
 			xcal.setDay(i * 2);
 			testCon.add(uri, RDF.VALUE, vf.createLiteral(xcal));
-			URI uriz = vf.createURI(NS, "dateZ" + i);
+			IRI uriz = vf.createIRI(NS, "dateZ" + i);
 			xcal = data.newXMLGregorianCalendar();
 			xcal.setYear(2007);
 			xcal.setMonth(11);
@@ -1697,9 +1697,9 @@ public abstract class RepositoryConnectionTest {
 		throws Exception
 	{
 		String optional = "{ ?s :p1 ?v1 OPTIONAL {?s :p2 ?v2 FILTER(?v1<3) } }";
-		URI s = vf.createURI("urn:test:s");
-		URI p1 = vf.createURI(URN_TEST_P1);
-		URI p2 = vf.createURI(URN_TEST_P2);
+		IRI s = vf.createIRI("urn:test:s");
+		IRI p1 = vf.createIRI(URN_TEST_P1);
+		IRI p2 = vf.createIRI(URN_TEST_P2);
 		Value v1 = vf.createLiteral(1);
 		Value v2 = vf.createLiteral(2);
 		Value v3 = vf.createLiteral(3);
@@ -1724,10 +1724,10 @@ public abstract class RepositoryConnectionTest {
 		throws Exception
 	{
 		String union = "{ :s ?p :o FILTER (?p = :p1 || ?p = :p2) }";
-		URI s = vf.createURI("urn:test:s");
-		URI p1 = vf.createURI(URN_TEST_P1);
-		URI p2 = vf.createURI(URN_TEST_P2);
-		URI o = vf.createURI("urn:test:o");
+		IRI s = vf.createIRI("urn:test:s");
+		IRI p1 = vf.createIRI(URN_TEST_P1);
+		IRI p2 = vf.createIRI(URN_TEST_P2);
+		IRI o = vf.createIRI("urn:test:o");
 		testCon.add(s, p1, o);
 		testCon.add(s, p2, o);
 		String qry = "PREFIX :<urn:test:> SELECT ?p WHERE " + union;
@@ -1819,10 +1819,10 @@ public abstract class RepositoryConnectionTest {
 	public void testQueryDefaultGraph()
 		throws Exception
 	{
-		URI graph = vf.createURI("urn:test:default");
-		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		IRI graph = vf.createIRI("urn:test:default");
+		testCon.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1));
 		assertThat(size(graph), is(equalTo(0)));
-		testCon.add(vf.createURI("urn:test:s2"), vf.createURI(URN_TEST_P2), vf.createURI("urn:test:o2"), graph);
+		testCon.add(vf.createIRI("urn:test:s2"), vf.createIRI(URN_TEST_P2), vf.createIRI("urn:test:o2"), graph);
 		assertThat(size(graph), is(equalTo(1)));
 	}
 
@@ -1830,7 +1830,7 @@ public abstract class RepositoryConnectionTest {
 	public void testQueryBaseURI()
 		throws Exception
 	{
-		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1));
 		TupleQueryResult rs = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { <> ?p ?o }",
 				URN_TEST_S1).evaluate();
 		try {
@@ -1853,10 +1853,10 @@ public abstract class RepositoryConnectionTest {
 	public void testDeleteDefaultGraph()
 		throws Exception
 	{
-		URI g1 = vf.createURI("urn:test:g1");
-		URI g2 = vf.createURI("urn:test:g2");
-		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1), g1);
-		testCon.add(vf.createURI("urn:test:s2"), vf.createURI(URN_TEST_P2), vf.createURI("urn:test:o2"), g2);
+		IRI g1 = vf.createIRI("urn:test:g1");
+		IRI g2 = vf.createIRI("urn:test:g2");
+		testCon.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1), g1);
+		testCon.add(vf.createIRI("urn:test:s2"), vf.createIRI(URN_TEST_P2), vf.createIRI("urn:test:o2"), g2);
 		Update up = testCon.prepareUpdate(QueryLanguage.SPARQL, SPARQL_DEL_ALL);
 		DatasetImpl ds = new DatasetImpl();
 		ds.addDefaultGraph(g1);
@@ -1872,28 +1872,28 @@ public abstract class RepositoryConnectionTest {
 		throws Exception
 	{
 		ContextAwareConnection con = new ContextAwareConnection(testCon);
-		URI defaultGraph = vf.createURI("urn:test:default");
+		IRI defaultGraph = vf.createIRI("urn:test:default");
 		con.setReadContexts(defaultGraph);
 		con.setInsertContext(defaultGraph);
 		con.setRemoveContexts(defaultGraph);
-		con.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		con.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1));
 		con.prepareUpdate("INSERT DATA { <urn:test:s2> <urn:test:p2> \"l2\" }").execute();
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(2)));
 		assertThat(Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size(), is(equalTo(2)));
 		assertThat(size(defaultGraph), is(equalTo(2)));
-		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
+		con.add(vf.createIRI("urn:test:s3"), vf.createIRI("urn:test:p3"), vf.createIRI("urn:test:o3"),
 				(Resource)null);
-		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
-				vf.createURI(URN_TEST_OTHER));
+		con.add(vf.createIRI("urn:test:s4"), vf.createIRI("urn:test:p4"), vf.createIRI("urn:test:o4"),
+				vf.createIRI(URN_TEST_OTHER));
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(3)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(4)));
 		assertThat(size(defaultGraph), is(equalTo(3)));
-		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(1)));
+		assertThat(size(vf.createIRI(URN_TEST_OTHER)), is(equalTo(1)));
 		con.prepareUpdate(SPARQL_DEL_ALL).execute();
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(0)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(1)));
 		assertThat(size(defaultGraph), is(equalTo(0)));
-		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(1)));
+		assertThat(size(vf.createIRI(URN_TEST_OTHER)), is(equalTo(1)));
 	}
 
 	@Test
@@ -1901,27 +1901,27 @@ public abstract class RepositoryConnectionTest {
 		throws Exception
 	{
 		ContextAwareConnection con = new ContextAwareConnection(testCon);
-		URI defaultGraph = vf.createURI("urn:test:default");
+		IRI defaultGraph = vf.createIRI("urn:test:default");
 		con.setInsertContext(defaultGraph);
-		con.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		con.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1));
 		con.prepareUpdate("INSERT DATA { <urn:test:s2> <urn:test:p2> \"l2\" }").execute();
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(2)));
 		assertThat(Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size(), is(equalTo(2)));
 		assertThat(size(defaultGraph), is(equalTo(2)));
-		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
+		con.add(vf.createIRI("urn:test:s3"), vf.createIRI("urn:test:p3"), vf.createIRI("urn:test:o3"),
 				(Resource)null);
-		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
-				vf.createURI(URN_TEST_OTHER));
+		con.add(vf.createIRI("urn:test:s4"), vf.createIRI("urn:test:p4"), vf.createIRI("urn:test:o4"),
+				vf.createIRI(URN_TEST_OTHER));
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(4)));
 		assertThat(Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size(), is(equalTo(3)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(4)));
 		assertThat(size(defaultGraph), is(equalTo(3)));
-		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(1)));
+		assertThat(size(vf.createIRI(URN_TEST_OTHER)), is(equalTo(1)));
 		con.prepareUpdate(SPARQL_DEL_ALL).execute();
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(0)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(0)));
 		assertThat(size(defaultGraph), is(equalTo(0)));
-		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(0)));
+		assertThat(size(vf.createIRI(URN_TEST_OTHER)), is(equalTo(0)));
 	}
 
 	@Test
@@ -1929,32 +1929,32 @@ public abstract class RepositoryConnectionTest {
 		throws Exception
 	{
 		ContextAwareConnection con = new ContextAwareConnection(testCon);
-		URI defaultGraph = null; // null context
+		IRI defaultGraph = null; // null context
 		con.setReadContexts(defaultGraph);
 		con.setInsertContext(defaultGraph);
 		con.setRemoveContexts(defaultGraph);
-		con.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		con.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1));
 		con.prepareUpdate("INSERT DATA { <urn:test:s2> <urn:test:p2> \"l2\" }").execute();
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(2)));
 		assertThat(Iterations.asList(con.getStatements(null, null, null, defaultGraph)).size(), is(equalTo(2)));
 		assertThat(size(defaultGraph), is(equalTo(2)));
-		con.add(vf.createURI("urn:test:s3"), vf.createURI("urn:test:p3"), vf.createURI("urn:test:o3"),
+		con.add(vf.createIRI("urn:test:s3"), vf.createIRI("urn:test:p3"), vf.createIRI("urn:test:o3"),
 				(Resource)null);
-		con.add(vf.createURI("urn:test:s4"), vf.createURI("urn:test:p4"), vf.createURI("urn:test:o4"),
+		con.add(vf.createIRI("urn:test:s4"), vf.createIRI("urn:test:p4"), vf.createIRI("urn:test:o4"),
 
-		vf.createURI(URN_TEST_OTHER));
+		vf.createIRI(URN_TEST_OTHER));
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(3)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(4)));
 		assertThat(size(defaultGraph), is(equalTo(3)));
-		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(1)));
+		assertThat(size(vf.createIRI(URN_TEST_OTHER)), is(equalTo(1)));
 		con.prepareUpdate(SPARQL_DEL_ALL).execute();
 		assertThat(Iterations.asList(con.getStatements(null, null, null)).size(), is(equalTo(0)));
 		assertThat(Iterations.asList(testCon.getStatements(null, null, null, true)).size(), is(equalTo(1)));
 		assertThat(size(defaultGraph), is(equalTo(0)));
-		assertThat(size(vf.createURI(URN_TEST_OTHER)), is(equalTo(1)));
+		assertThat(size(vf.createIRI(URN_TEST_OTHER)), is(equalTo(1)));
 	}
 
-	private int size(URI defaultGraph)
+	private int size(IRI defaultGraph)
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		TupleQuery qry = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { ?s ?p ?o }");

@@ -33,11 +33,11 @@ import org.openrdf.IsolationLevels;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -510,8 +510,8 @@ public abstract class SailIsolationLevelTest {
 	{
 		clear(store);
 		final ValueFactory vf = store.getValueFactory();
-		final URI subj = vf.createURI("http://test#s");
-		final URI pred = vf.createURI("http://test#p");
+		final IRI subj = vf.createIRI("http://test#s");
+		final IRI pred = vf.createIRI("http://test#p");
 		SailConnection prep = store.getConnection();
 		try {
 			prep.begin(level);
@@ -547,7 +547,7 @@ public abstract class SailIsolationLevelTest {
 	}
 
 	protected Thread incrementBy(final CountDownLatch start, final CountDownLatch observed,
-			final IsolationLevels level, final ValueFactory vf, final URI subj, final URI pred, final int by)
+			final IsolationLevels level, final ValueFactory vf, final IRI subj, final IRI pred, final int by)
 	{
 		return new Thread(new Runnable() {
 
@@ -596,7 +596,7 @@ public abstract class SailIsolationLevelTest {
 		}
 	}
 
-	protected long count(SailConnection con, Resource subj, URI pred, Value obj, boolean includeInferred,
+	protected long count(SailConnection con, Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws SailException
 	{
@@ -615,7 +615,7 @@ public abstract class SailIsolationLevelTest {
 		}
 	}
 
-	protected Literal readLiteral(SailConnection con, final URI subj, final URI pred)
+	protected Literal readLiteral(SailConnection con, final IRI subj, final IRI pred)
 		throws SailException
 	{
 		CloseableIteration<? extends Statement, SailException> stmts;
@@ -636,9 +636,9 @@ public abstract class SailIsolationLevelTest {
 	protected void insertTestStatement(SailConnection connection, int i)
 		throws SailException
 	{
-		LiteralImpl lit = new LiteralImpl(Integer.toString(i), XMLSchema.INTEGER);
-		connection.addStatement(new URIImpl("http://test#s" + i), new URIImpl("http://test#p"), lit,
-				new URIImpl("http://test#context_" + i));
+		SimpleLiteral lit = new SimpleLiteral(Integer.toString(i), XMLSchema.INTEGER);
+		connection.addStatement(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p"), lit,
+				new SimpleIRI("http://test#context_" + i));
 	}
 
 	protected synchronized void fail(String message, Throwable t) {

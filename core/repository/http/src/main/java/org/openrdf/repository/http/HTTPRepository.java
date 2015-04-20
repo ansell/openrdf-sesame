@@ -28,7 +28,7 @@ import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -130,7 +130,7 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	public ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 	public RepositoryConnection getConnection()
@@ -276,7 +276,7 @@ public class HTTPRepository extends RepositoryBase {
 	protected SesameSession createHTTPClient() {
 		// initialize HTTP client
 		SesameSession httpClient = getSesameClient().createSesameSession(serverURL);
-		httpClient.setValueFactory(ValueFactoryImpl.getInstance());
+		httpClient.setValueFactory(SimpleValueFactory.getInstance());
 		if (repositoryURL != null) {
 			httpClient.setRepository(repositoryURL);
 		}

@@ -29,7 +29,7 @@ import info.aduna.text.StringUtil;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
@@ -156,15 +156,15 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	protected void writeResource(Resource res)
 		throws IOException
 	{
-		if (res instanceof URI) {
-			writeURI((URI)res);
+		if (res instanceof IRI) {
+			writeURI((IRI)res);
 		}
 		else {
 			writeBNode((BNode)res);
 		}
 	}
 
-	protected void writeURI(URI uri)
+	protected void writeURI(IRI uri)
 		throws IOException
 	{
 		String uriString = uri.toString();
@@ -183,7 +183,7 @@ public class SPARQLResultsTSVWriter extends QueryResultWriterBase implements Tup
 	{
 		String label = lit.getLabel();
 
-		URI datatype = lit.getDatatype();
+		IRI datatype = lit.getDatatype();
 
 		if (XMLSchema.INTEGER.equals(datatype) || XMLSchema.DECIMAL.equals(datatype)
 				|| XMLSchema.DOUBLE.equals(datatype))

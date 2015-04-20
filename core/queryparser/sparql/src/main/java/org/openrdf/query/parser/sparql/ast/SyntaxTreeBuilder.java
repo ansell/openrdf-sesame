@@ -3,7 +3,7 @@ package org.openrdf.query.parser.sparql.ast;
 
 import java.io.StringReader;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.Compare.CompareOp;
@@ -6895,7 +6895,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t; URI datatype;
+  jjtree.openNodeScope(jjtn000);Token t; IRI datatype;
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INTEGER:
@@ -6930,7 +6930,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t; URI datatype;
+  jjtree.openNodeScope(jjtn000);Token t; IRI datatype;
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INTEGER_POSITIVE:
@@ -6965,7 +6965,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
  /*@bgen(jjtree) NumericLiteral */
   ASTNumericLiteral jjtn000 = new ASTNumericLiteral(JJTNUMERICLITERAL);
   boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);Token t; URI datatype;
+  jjtree.openNodeScope(jjtn000);Token t; IRI datatype;
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INTEGER_NEGATIVE:

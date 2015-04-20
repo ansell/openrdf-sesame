@@ -32,7 +32,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.GraphImpl;
@@ -353,8 +353,8 @@ public class QueryResults extends Iterations {
 					Literal leftLit = (Literal)value1;
 					Literal rightLit = (Literal)value2;
 
-					URI dt1 = leftLit.getDatatype();
-					URI dt2 = rightLit.getDatatype();
+					IRI dt1 = leftLit.getDatatype();
+					IRI dt2 = rightLit.getDatatype();
 
 					if (dt1 != null && dt2 != null && dt1.equals(dt2)
 							&& XMLDatatypeUtil.isValidValue(leftLit.getLabel(), dt1)

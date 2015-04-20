@@ -30,7 +30,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
@@ -231,7 +231,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 		}
 
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 
 		// Verify that an XML namespace-qualified name can be created for the
@@ -263,7 +263,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 				}
 				else {
-					URI uri = (URI)subj;
+					IRI uri = (IRI)subj;
 					writeAttribute(RDF.NAMESPACE, "about", uri.toString());
 				}
 				writeEndOfStartTag();
@@ -285,7 +285,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					writeAttribute(RDF.NAMESPACE, "nodeID", getValidNodeId(bNode));
 				}
 				else {
-					URI uri = (URI)objRes;
+					IRI uri = (IRI)objRes;
 					writeAttribute(RDF.NAMESPACE, "resource", uri.toString());
 				}
 
@@ -301,7 +301,7 @@ public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
 					writeAttribute("xml:lang", objLit.getLanguage().get());
 				}
 				else {
-					URI datatype = objLit.getDatatype();
+					IRI datatype = objLit.getDatatype();
 					// Check if datatype is rdf:XMLLiteral
 					isXMLLiteral = datatype.equals(RDF.XMLLITERAL);
 

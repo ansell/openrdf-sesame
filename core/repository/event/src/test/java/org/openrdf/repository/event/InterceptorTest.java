@@ -25,11 +25,11 @@ import java.lang.reflect.Proxy;
 import junit.framework.TestCase;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
@@ -145,11 +145,11 @@ public class InterceptorTest extends TestCase {
 	public void testRemove()
 		throws Exception
 	{
-		ValueFactory vf = ValueFactoryImpl.getInstance();
-		final URI uri = vf.createURI("http://example.com/");
+		ValueFactory vf = SimpleValueFactory.getInstance();
+		final IRI uri = vf.createIRI("http://example.com/");
 		final RepositoryConnection stub = new RepositoryConnectionStub() {
 
-			protected void removeWithoutCommit(Resource subject, URI predicate, Value object,
+			protected void removeWithoutCommit(Resource subject, IRI predicate, Value object,
 					Resource... contexts)
 				throws RepositoryException
 			{
@@ -160,7 +160,7 @@ public class InterceptorTest extends TestCase {
 		InterceptingRepositoryConnection con = new InterceptingRepositoryConnectionWrapper(repo, stub);
 		con.addRepositoryConnectionInterceptor(new RepositoryConnectionInterceptorAdapter() {
 
-			public boolean remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+			public boolean remove(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 					Resource... contexts)
 			{
 				assertEquals(stub, conn);
@@ -172,6 +172,6 @@ public class InterceptorTest extends TestCase {
 			}
 
 		});
-		con.remove(new StatementImpl(uri, uri, uri));
+		con.remove(new SimpleStatement(uri, uri, uri));
 	}
 }

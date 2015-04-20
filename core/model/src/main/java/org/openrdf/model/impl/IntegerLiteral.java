@@ -19,16 +19,16 @@ package org.openrdf.model.impl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * An extension of {@link LiteralImpl} that stores an integer value using a
+ * An extension of {@link SimpleLiteral} that stores an integer value using a
  * {@link BigInteger} object.
  * 
  * @author Arjohn Kampman
  */
-public class IntegerLiteralImpl extends LiteralImpl {
+public class IntegerLiteral extends SimpleLiteral {
 
 	private static final long serialVersionUID = 4199641304079427245L;
 
@@ -37,14 +37,14 @@ public class IntegerLiteralImpl extends LiteralImpl {
 	/**
 	 * Creates an xsd:integer literal with the specified value.
 	 */
-	public IntegerLiteralImpl(BigInteger value) {
+	public IntegerLiteral(BigInteger value) {
 		this(value, XMLSchema.INTEGER);
 	}
 
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public IntegerLiteralImpl(BigInteger value, URI datatype) {
+	public IntegerLiteral(BigInteger value, IRI datatype) {
 		// TODO: maybe IntegerLiteralImpl should not extend LiteralImpl?
 		super(value.toString(), datatype);
 		this.value = value;

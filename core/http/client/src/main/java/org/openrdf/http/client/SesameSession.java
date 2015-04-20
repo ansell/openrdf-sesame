@@ -64,9 +64,9 @@ import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.transaction.TransactionWriter;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -426,7 +426,7 @@ public class SesameSession extends SparqlSession {
 	 * Get/add/remove statements *
 	 *---------------------------*/
 
-	public void getStatements(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
+	public void getStatements(Resource subj, IRI pred, Value obj, boolean includeInferred, RDFHandler handler,
 			Resource... contexts)
 		throws IOException, RDFHandlerException, RepositoryException, UnauthorizedException,
 		QueryInterruptedException
@@ -804,7 +804,7 @@ public class SesameSession extends SparqlSession {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContext);
 			}
 			if (baseURI != null && baseURI.trim().length() != 0) {
-				String encodedBaseURI = Protocol.encodeValue(new URIImpl(baseURI));
+				String encodedBaseURI = Protocol.encodeValue(new SimpleIRI(baseURI));
 				url.setParameter(Protocol.BASEURI_PARAM_NAME, encodedBaseURI);
 			}
 			if (preserveNodeIds) {

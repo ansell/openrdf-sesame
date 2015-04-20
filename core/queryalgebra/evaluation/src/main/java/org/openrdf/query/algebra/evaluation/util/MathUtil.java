@@ -22,11 +22,11 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.DecimalLiteralImpl;
-import org.openrdf.model.impl.IntegerLiteralImpl;
-import org.openrdf.model.impl.NumericLiteralImpl;
+import org.openrdf.model.impl.DecimalLiteral;
+import org.openrdf.model.impl.IntegerLiteral;
+import org.openrdf.model.impl.NumericLiteral;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -66,8 +66,8 @@ public class MathUtil {
 	public static Literal compute(Literal leftLit, Literal rightLit, MathOp op)
 		throws ValueExprEvaluationException
 	{
-		URI leftDatatype = leftLit.getDatatype();
-		URI rightDatatype = rightLit.getDatatype();
+		IRI leftDatatype = leftLit.getDatatype();
+		IRI rightDatatype = rightLit.getDatatype();
 
 		// Only numeric value can be used in math expressions
 		if (!XMLDatatypeUtil.isNumericDatatype(leftDatatype)) {
@@ -80,7 +80,7 @@ public class MathUtil {
 		// Determine most specific datatype that the arguments have in common,
 		// choosing from xsd:integer, xsd:decimal, xsd:float and xsd:double as
 		// per the SPARQL/XPATH spec
-		URI commonDatatype;
+		IRI commonDatatype;
 
 		if (leftDatatype.equals(XMLSchema.DOUBLE) || rightDatatype.equals(XMLSchema.DOUBLE)) {
 			commonDatatype = XMLSchema.DOUBLE;
@@ -113,13 +113,13 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new NumericLiteralImpl(left + right);
+						return new NumericLiteral(left + right);
 					case MINUS:
-						return new NumericLiteralImpl(left - right);
+						return new NumericLiteral(left - right);
 					case MULTIPLY:
-						return new NumericLiteralImpl(left * right);
+						return new NumericLiteral(left * right);
 					case DIVIDE:
-						return new NumericLiteralImpl(left / right);
+						return new NumericLiteral(left / right);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
 				}
@@ -130,13 +130,13 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new NumericLiteralImpl(left + right);
+						return new NumericLiteral(left + right);
 					case MINUS:
-						return new NumericLiteralImpl(left - right);
+						return new NumericLiteral(left - right);
 					case MULTIPLY:
-						return new NumericLiteralImpl(left * right);
+						return new NumericLiteral(left * right);
 					case DIVIDE:
-						return new NumericLiteralImpl(left / right);
+						return new NumericLiteral(left / right);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
 				}
@@ -147,11 +147,11 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new DecimalLiteralImpl(left.add(right));
+						return new DecimalLiteral(left.add(right));
 					case MINUS:
-						return new DecimalLiteralImpl(left.subtract(right));
+						return new DecimalLiteral(left.subtract(right));
 					case MULTIPLY:
-						return new DecimalLiteralImpl(left.multiply(right));
+						return new DecimalLiteral(left.multiply(right));
 					case DIVIDE:
 						// Divide by zero handled through NumberFormatException
 						BigDecimal result = null;
@@ -166,7 +166,7 @@ public class MathUtil {
 									RoundingMode.HALF_UP);
 						}
 
-						return new DecimalLiteralImpl(result);
+						return new DecimalLiteral(result);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
 				}
@@ -177,11 +177,11 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new IntegerLiteralImpl(left.add(right));
+						return new IntegerLiteral(left.add(right));
 					case MINUS:
-						return new IntegerLiteralImpl(left.subtract(right));
+						return new IntegerLiteral(left.subtract(right));
 					case MULTIPLY:
-						return new IntegerLiteralImpl(left.multiply(right));
+						return new IntegerLiteral(left.multiply(right));
 					case DIVIDE:
 						throw new RuntimeException("Integer divisions should be processed as decimal divisions");
 					default:

@@ -108,7 +108,7 @@ public class NotifyingSailConnectionWrapperTest {
 		throws SailException
 	{
 		wrapper.begin();
-		wrapper.removeStatements(null, factory.createURI("urn:pred"), factory.createLiteral(objectValue));
+		wrapper.removeStatements(null, factory.createIRI("urn:pred"), factory.createLiteral(objectValue));
 		wrapper.commit();
 	}
 
@@ -116,7 +116,7 @@ public class NotifyingSailConnectionWrapperTest {
 		throws SailException
 	{
 		wrapper.begin();
-		wrapper.addStatement(factory.createBNode(), factory.createURI("urn:pred"),
+		wrapper.addStatement(factory.createBNode(), factory.createIRI("urn:pred"),
 				factory.createLiteral(objectValue));
 		wrapper.commit();
 	}

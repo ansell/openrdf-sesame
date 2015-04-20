@@ -23,7 +23,7 @@ import java.util.TimeZone;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.util.Literals;
 import org.openrdf.sail.rdbms.managers.base.ValueManagerBase;
@@ -92,7 +92,7 @@ public class LiteralManager extends ValueManagerBase<RdbmsLiteral> {
 		throws SQLException, InterruptedException
 	{
 		String label = literal.getLabel();
-		URI datatype = literal.getDatatype();
+		IRI datatype = literal.getDatatype();
 		if (Literals.isLanguageLiteral(literal)) {
 			table.insertLanguage(id, label, literal.getLanguage().get());
 		}

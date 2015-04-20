@@ -44,7 +44,7 @@ import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.http.server.repository.statements.ExportStatementsView;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -113,7 +113,7 @@ public class GraphController extends AbstractController {
 		return result;
 	}
 
-	private URI getGraphName(HttpServletRequest request, ValueFactory vf)
+	private IRI getGraphName(HttpServletRequest request, ValueFactory vf)
 		throws ClientHTTPException
 	{
 		String requestURL = request.getRequestURL().toString();
@@ -123,7 +123,7 @@ public class GraphController extends AbstractController {
 
 		if (isServiceRequest) {
 			if (!"default".equalsIgnoreCase(queryString)) {
-				URI graph = ProtocolUtil.parseGraphParam(request, vf);
+				IRI graph = ProtocolUtil.parseGraphParam(request, vf);
 				if (graph == null) {
 					throw new ClientHTTPException(HttpServletResponse.SC_BAD_REQUEST,
 							"Named or default graph expected for indirect reference request.");
@@ -137,7 +137,7 @@ public class GraphController extends AbstractController {
 				throw new ClientHTTPException(HttpServletResponse.SC_BAD_REQUEST,
 						"No parameters epxected for direct reference request.");
 			}
-			return vf.createURI(requestURL);
+			return vf.createIRI(requestURL);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class GraphController extends AbstractController {
 
 		ValueFactory vf = repository.getValueFactory();
 
-		URI graph = getGraphName(request, vf);
+		IRI graph = getGraphName(request, vf);
 
 		RDFWriterFactory rdfWriterFactory = ProtocolUtil.getAcceptableService(request, response,
 				RDFWriterRegistry.getInstance());
@@ -186,7 +186,7 @@ public class GraphController extends AbstractController {
 
 		ValueFactory vf = repository.getValueFactory();
 
-		URI graph = getGraphName(request, vf);
+		IRI graph = getGraphName(request, vf);
 
 		InputStream in = request.getInputStream();
 		try {
@@ -233,7 +233,7 @@ public class GraphController extends AbstractController {
 
 		ValueFactory vf = repository.getValueFactory();
 
-		URI graph = getGraphName(request, vf);
+		IRI graph = getGraphName(request, vf);
 
 		try {
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);

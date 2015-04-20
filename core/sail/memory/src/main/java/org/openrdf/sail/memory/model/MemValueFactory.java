@@ -26,15 +26,15 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.impl.ValueFactoryBase;
+import org.openrdf.model.impl.SimpleBNode;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.AbstractValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -46,7 +46,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
  * @author Arjohn Kampman
  * @author David Huynh
  */
-public class MemValueFactory extends ValueFactoryBase {
+public class MemValueFactory extends AbstractValueFactory {
 
 	/*------------*
 	 * Attributes *
@@ -57,7 +57,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	 * This registry enables the reuse of objects, minimizing the number of
 	 * objects in main memory.
 	 */
-	private final WeakObjectRegistry<MemURI> uriRegistry = new WeakObjectRegistry<MemURI>();
+	private final WeakObjectRegistry<MemIRI> uriRegistry = new WeakObjectRegistry<MemIRI>();
 
 	/**
 	 * Registry containing the set of MemBNode objects as used by a MemoryStore.
@@ -121,8 +121,8 @@ public class MemValueFactory extends ValueFactoryBase {
 	 * See getMemValue() for description.
 	 */
 	public MemResource getMemResource(Resource resource) {
-		if (resource instanceof URI) {
-			return getMemURI((URI)resource);
+		if (resource instanceof IRI) {
+			return getMemURI((IRI)resource);
 		}
 		else if (resource instanceof BNode) {
 			return getMemBNode((BNode)resource);
@@ -138,9 +138,9 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See getMemValue() for description.
 	 */
-	public synchronized MemURI getMemURI(URI uri) {
+	public synchronized MemIRI getMemURI(IRI uri) {
 		if (isOwnMemValue(uri)) {
-			return (MemURI)uri;
+			return (MemIRI)uri;
 		}
 		else {
 			return uriRegistry.get(uri);
@@ -188,7 +188,7 @@ public class MemValueFactory extends ValueFactoryBase {
 	 * 
 	 * @return An unmodifiable Set of MemURI objects.
 	 */
-	public Set<MemURI> getMemURIs() {
+	public Set<MemIRI> getMemURIs() {
 		return Collections.unmodifiableSet(uriRegistry);
 	}
 
@@ -244,8 +244,8 @@ public class MemValueFactory extends ValueFactoryBase {
 	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
 	public MemResource getOrCreateMemResource(Resource resource) {
-		if (resource instanceof URI) {
-			return getOrCreateMemURI((URI)resource);
+		if (resource instanceof IRI) {
+			return getOrCreateMemURI((IRI)resource);
 		}
 		else if (resource instanceof BNode) {
 			return getOrCreateMemBNode((BNode)resource);
@@ -258,8 +258,8 @@ public class MemValueFactory extends ValueFactoryBase {
 	/**
 	 * See {@link #getOrCreateMemValue(Value)} for description.
 	 */
-	public synchronized MemURI getOrCreateMemURI(URI uri) {
-		MemURI memURI = getMemURI(uri);
+	public synchronized MemIRI getOrCreateMemURI(IRI uri) {
+		MemIRI memURI = getMemURI(uri);
 
 		if (memURI == null) {
 			// Namespace strings are relatively large objects and are shared
@@ -277,7 +277,7 @@ public class MemValueFactory extends ValueFactoryBase {
 			}
 
 			// Create a MemURI and add it to the registry
-			memURI = new MemURI(this, namespace, uri.getLocalName());
+			memURI = new MemIRI(this, namespace, uri.getLocalName());
 			boolean wasNew = uriRegistry.add(memURI);
 			assert wasNew : "Created a duplicate MemURI for URI " + uri;
 		}
@@ -308,7 +308,7 @@ public class MemValueFactory extends ValueFactoryBase {
 
 		if (memLiteral == null) {
 			String label = literal.getLabel();
-			URI datatype = literal.getDatatype();
+			IRI datatype = literal.getDatatype();
 
 			if (Literals.isLanguageLiteral(literal)) {
 				memLiteral = new MemLiteral(this, label, literal.getLanguage().get());
@@ -351,14 +351,14 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	public synchronized URI createURI(String uri) {
-		URI tempURI = new URIImpl(uri);
+	public synchronized IRI createIRI(String uri) {
+		IRI tempURI = new SimpleIRI(uri);
 		return getOrCreateMemURI(tempURI);
 	}
 
 	@Override
-	public synchronized URI createURI(String namespace, String localName) {
-		URI tempURI = null;
+	public synchronized IRI createIRI(String namespace, String localName) {
+		IRI tempURI = null;
 
 		// Reuse supplied namespace and local name strings if possible
 		if (URIUtil.isCorrectURISplit(namespace, localName)) {
@@ -366,10 +366,10 @@ public class MemValueFactory extends ValueFactoryBase {
 				throw new IllegalArgumentException("Not a valid (absolute) URI: " + namespace + localName);
 			}
 
-			tempURI = new MemURI(null, namespace, localName);
+			tempURI = new MemIRI(null, namespace, localName);
 		}
 		else {
-			tempURI = new URIImpl(namespace + localName);
+			tempURI = new SimpleIRI(namespace + localName);
 		}
 
 		return getOrCreateMemURI(tempURI);
@@ -377,25 +377,25 @@ public class MemValueFactory extends ValueFactoryBase {
 
 	@Override
 	public synchronized BNode createBNode(String nodeID) {
-		BNode tempBNode = new BNodeImpl(nodeID);
+		BNode tempBNode = new SimpleBNode(nodeID);
 		return getOrCreateMemBNode(tempBNode);
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value) {
-		Literal tempLiteral = new LiteralImpl(value, XMLSchema.STRING);
+		Literal tempLiteral = new SimpleLiteral(value, XMLSchema.STRING);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value, String language) {
-		Literal tempLiteral = new LiteralImpl(value, language);
+		Literal tempLiteral = new SimpleLiteral(value, language);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
 	@Override
-	public synchronized Literal createLiteral(String value, URI datatype) {
-		Literal tempLiteral = new LiteralImpl(value, datatype);
+	public synchronized Literal createLiteral(String value, IRI datatype) {
+		Literal tempLiteral = new SimpleLiteral(value, datatype);
 		return getOrCreateMemLiteral(tempLiteral);
 	}
 
@@ -406,13 +406,13 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	protected synchronized Literal createIntegerLiteral(Number n, URI datatype) {
+	protected synchronized Literal createIntegerLiteral(Number n, IRI datatype) {
 		MemLiteral newLiteral = new IntegerMemLiteral(this, BigInteger.valueOf(n.longValue()), datatype);
 		return getSharedLiteral(newLiteral);
 	}
 
 	@Override
-	protected synchronized Literal createFPLiteral(Number n, URI datatype) {
+	protected synchronized Literal createFPLiteral(Number n, IRI datatype) {
 		MemLiteral newLiteral = new NumericMemLiteral(this, n, datatype);
 		return getSharedLiteral(newLiteral);
 	}
@@ -436,17 +436,17 @@ public class MemValueFactory extends ValueFactoryBase {
 	}
 
 	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object) {
-		return new StatementImpl(subject, predicate, object);
+	public Statement createStatement(Resource subject, IRI predicate, Value object) {
+		return new SimpleStatement(subject, predicate, object);
 	}
 
 	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
+	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
 		if (context == null) {
-			return new StatementImpl(subject, predicate, object);
+			return new SimpleStatement(subject, predicate, object);
 		}
 		else {
-			return new ContextStatementImpl(subject, predicate, object, context);
+			return new ContextStatement(subject, predicate, object, context);
 		}
 	}
 }

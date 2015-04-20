@@ -19,7 +19,7 @@ package org.openrdf.http.protocol;
 import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.rio.ntriples.NTriplesUtil;
@@ -448,7 +448,7 @@ public abstract class Protocol {
 	 * @return the decoded URI
 	 * @see #encodeValue(Value)
 	 */
-	public static URI decodeURI(String encodedValue, ValueFactory valueFactory) {
+	public static IRI decodeURI(String encodedValue, ValueFactory valueFactory) {
 		if (encodedValue != null) {
 			return NTriplesUtil.parseURI(encodedValue, valueFactory);
 		}

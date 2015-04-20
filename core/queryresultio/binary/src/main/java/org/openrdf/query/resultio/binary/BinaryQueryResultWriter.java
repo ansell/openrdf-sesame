@@ -47,7 +47,7 @@ import java.util.Map;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
@@ -199,8 +199,8 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 					else if (value.equals(previousBindings.getValue(bindingName))) {
 						writeRepeat();
 					}
-					else if (value instanceof URI) {
-						writeQName((URI)value);
+					else if (value instanceof IRI) {
+						writeQName((IRI)value);
 					}
 					else if (value instanceof BNode) {
 						writeBNode((BNode)value);
@@ -246,7 +246,7 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		// Binary format does not support explicit setting of namespace prefixes.
 	}
 
-	private void writeQName(URI uri)
+	private void writeQName(IRI uri)
 		throws IOException
 	{
 		// Check if the URI has a new namespace
@@ -275,7 +275,7 @@ public class BinaryQueryResultWriter extends QueryResultWriterBase implements Tu
 		throws IOException
 	{
 		String label = literal.getLabel();
-		URI datatype = literal.getDatatype();
+		IRI datatype = literal.getDatatype();
 
 		int marker = PLAIN_LITERAL_RECORD_MARKER;
 

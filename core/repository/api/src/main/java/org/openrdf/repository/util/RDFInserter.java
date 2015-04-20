@@ -24,7 +24,7 @@ import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -182,7 +182,7 @@ public class RDFInserter extends RDFHandlerBase {
 		throws RDFHandlerException
 	{
 		Resource subj = st.getSubject();
-		URI pred = st.getPredicate();
+		IRI pred = st.getPredicate();
 		Value obj = st.getObject();
 		Resource ctxt = st.getContext();
 

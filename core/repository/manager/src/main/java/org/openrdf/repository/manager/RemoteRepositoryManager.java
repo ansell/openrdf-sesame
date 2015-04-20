@@ -29,7 +29,7 @@ import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.UnauthorizedException;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
@@ -285,7 +285,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 				boolean readable = Literals.getBooleanValue(bindingSet.getValue("readable"), false);
 				boolean writable = Literals.getBooleanValue(bindingSet.getValue("writable"), false);
 
-				if (uri instanceof URI) {
+				if (uri instanceof IRI) {
 					try {
 						repInfo.setLocation(new URL(uri.toString()));
 					}

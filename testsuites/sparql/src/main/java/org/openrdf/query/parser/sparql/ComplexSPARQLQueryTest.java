@@ -39,7 +39,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -84,11 +84,11 @@ public abstract class ComplexSPARQLQueryTest {
 
 	protected static final String EX_NS = "http://example.org/";
 
-	private URI bob;
+	private IRI bob;
 
-	private URI alice;
+	private IRI alice;
 
-	private URI mary;
+	private IRI mary;
 
 	/**
 	 * @throws java.lang.Exception
@@ -106,9 +106,9 @@ public abstract class ComplexSPARQLQueryTest {
 
 		conn.clear(); // clear existing data from repo
 
-		bob = f.createURI(EX_NS, "bob");
-		alice = f.createURI(EX_NS, "alice");
-		mary = f.createURI(EX_NS, "mary");
+		bob = f.createIRI(EX_NS, "bob");
+		alice = f.createIRI(EX_NS, "alice");
+		mary = f.createIRI(EX_NS, "mary");
 
 		logger.debug("test setup complete.");
 	}
@@ -215,8 +215,8 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
-		URI a = f.createURI("http://example.org/a");
-		URI p = f.createURI("http://example.org/p");
+		IRI a = f.createIRI("http://example.org/a");
+		IRI p = f.createIRI("http://example.org/p");
 		Model result = QueryResults.asModel(gq.evaluate());
 		Set<Value> objects = result.filter(a, p, null).objects();
 		assertNotNull(objects);
@@ -240,8 +240,8 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
-		URI a = f.createURI("http://example.org/a");
-		URI p = f.createURI("http://example.org/p");
+		IRI a = f.createIRI("http://example.org/a");
+		IRI p = f.createIRI("http://example.org/p");
 		Model result = QueryResults.asModel(gq.evaluate());
 		Set<Value> objects = result.filter(a, p, null).objects();
 		assertNotNull(objects);
@@ -265,12 +265,12 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
-		URI a = vf.createURI("http://example.org/a");
-		URI b = vf.createURI("http://example.org/b");
-		URI c = vf.createURI("http://example.org/c");
-		URI e = vf.createURI("http://example.org/e");
-		URI f = vf.createURI("http://example.org/f");
-		URI p = vf.createURI("http://example.org/p");
+		IRI a = vf.createIRI("http://example.org/a");
+		IRI b = vf.createIRI("http://example.org/b");
+		IRI c = vf.createIRI("http://example.org/c");
+		IRI e = vf.createIRI("http://example.org/e");
+		IRI f = vf.createIRI("http://example.org/f");
+		IRI p = vf.createIRI("http://example.org/p");
 
 		Model result = QueryResults.asModel(gq.evaluate());
 		assertTrue(result.contains(a, p, null));
@@ -302,8 +302,8 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
-		URI b = f.createURI("http://example.org/b");
-		URI p = f.createURI("http://example.org/p");
+		IRI b = f.createIRI("http://example.org/b");
+		IRI p = f.createIRI("http://example.org/p");
 		Model result = QueryResults.asModel(gq.evaluate());
 		Set<Resource> subjects = result.filter(null, p, b).subjects();
 		assertNotNull(subjects);
@@ -326,9 +326,9 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory f = conn.getValueFactory();
-		URI d = f.createURI("http://example.org/d");
-		URI p = f.createURI("http://example.org/p");
-		URI e = f.createURI("http://example.org/e");
+		IRI d = f.createIRI("http://example.org/d");
+		IRI p = f.createIRI("http://example.org/p");
+		IRI e = f.createIRI("http://example.org/e");
 		Model result = QueryResults.asModel(gq.evaluate());
 
 		assertNotNull(result);
@@ -361,8 +361,8 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
-		URI f = vf.createURI("http://example.org/f");
-		URI p = vf.createURI("http://example.org/p");
+		IRI f = vf.createIRI("http://example.org/f");
+		IRI p = vf.createIRI("http://example.org/p");
 		Model result = QueryResults.asModel(gq.evaluate());
 
 		assertNotNull(result);
@@ -396,11 +396,11 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
-		URI urn1 = vf.createURI("urn:1");
-		URI p1 = vf.createURI("urn:p1");
-		URI p2 = vf.createURI("urn:p2");
-		URI urn2 = vf.createURI("urn:2");
-		URI blank = vf.createURI("urn:blank");
+		IRI urn1 = vf.createIRI("urn:1");
+		IRI p1 = vf.createIRI("urn:p1");
+		IRI p2 = vf.createIRI("urn:p2");
+		IRI urn2 = vf.createIRI("urn:2");
+		IRI blank = vf.createIRI("urn:blank");
 
 		Model result = QueryResults.asModel(gq.evaluate());
 		assertTrue(result.contains(urn1, p1, null));
@@ -422,11 +422,11 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
-		URI urn1 = vf.createURI("urn:1");
-		URI p1 = vf.createURI("urn:p1");
-		URI p2 = vf.createURI("urn:p2");
-		URI urn2 = vf.createURI("urn:2");
-		URI blank = vf.createURI("urn:blank");
+		IRI urn1 = vf.createIRI("urn:1");
+		IRI p1 = vf.createIRI("urn:p1");
+		IRI p2 = vf.createIRI("urn:p2");
+		IRI urn2 = vf.createIRI("urn:2");
+		IRI blank = vf.createIRI("urn:blank");
 		Model result = QueryResults.asModel(gq.evaluate());
 
 		assertTrue(result.contains(urn1, p1, null));
@@ -448,11 +448,11 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
-		URI urn1 = vf.createURI("urn:1");
-		URI p1 = vf.createURI("urn:p1");
-		URI p2 = vf.createURI("urn:p2");
-		URI urn2 = vf.createURI("urn:2");
-		URI blank = vf.createURI("urn:blank");
+		IRI urn1 = vf.createIRI("urn:1");
+		IRI p1 = vf.createIRI("urn:p1");
+		IRI p2 = vf.createIRI("urn:p2");
+		IRI urn2 = vf.createIRI("urn:2");
+		IRI blank = vf.createIRI("urn:blank");
 		Model result = QueryResults.asModel(gq.evaluate());
 
 		assertTrue(result.contains(urn1, p1, null));
@@ -475,12 +475,12 @@ public abstract class ComplexSPARQLQueryTest {
 		GraphQuery gq = conn.prepareGraphQuery(QueryLanguage.SPARQL, query.toString());
 
 		ValueFactory vf = conn.getValueFactory();
-		URI urn1 = vf.createURI("urn:1");
-		URI p1 = vf.createURI("urn:p1");
-		URI p2 = vf.createURI("urn:p2");
-		URI urn2 = vf.createURI("urn:2");
-		URI urn4 = vf.createURI("urn:4");
-		URI blank = vf.createURI("urn:blank");
+		IRI urn1 = vf.createIRI("urn:1");
+		IRI p1 = vf.createIRI("urn:p1");
+		IRI p2 = vf.createIRI("urn:p2");
+		IRI urn2 = vf.createIRI("urn:2");
+		IRI urn4 = vf.createIRI("urn:4");
+		IRI blank = vf.createIRI("urn:blank");
 		Model result = QueryResults.asModel(gq.evaluate());
 
 		assertTrue(result.contains(urn1, p1, null));
@@ -683,8 +683,8 @@ public abstract class ComplexSPARQLQueryTest {
 
 				assertNotNull(s);
 				assertNotNull(a);
-				assertEquals(f.createURI("http://example.org/a"), s);
-				assertEquals(f.createURI("http://example.org/b"), a);
+				assertEquals(f.createIRI("http://example.org/a"), s);
+				assertEquals(f.createIRI("http://example.org/b"), a);
 			}
 			result.close();
 
@@ -733,13 +733,13 @@ public abstract class ComplexSPARQLQueryTest {
 	public void testSES1073InverseSymmetricPattern()
 		throws Exception
 	{
-		URI a = f.createURI("http://example.org/a");
-		URI b1 = f.createURI("http://example.org/b1");
-		URI b2 = f.createURI("http://example.org/b2");
-		URI c1 = f.createURI("http://example.org/c1");
-		URI c2 = f.createURI("http://example.org/c2");
-		URI a2b = f.createURI("http://example.org/a2b");
-		URI b2c = f.createURI("http://example.org/b2c");
+		IRI a = f.createIRI("http://example.org/a");
+		IRI b1 = f.createIRI("http://example.org/b1");
+		IRI b2 = f.createIRI("http://example.org/b2");
+		IRI c1 = f.createIRI("http://example.org/c1");
+		IRI c2 = f.createIRI("http://example.org/c2");
+		IRI a2b = f.createIRI("http://example.org/a2b");
+		IRI b2c = f.createIRI("http://example.org/b2c");
 		conn.add(a, a2b, b1);
 		conn.add(a, a2b, b2);
 		conn.add(b1, b2c, c1);
@@ -823,8 +823,8 @@ public abstract class ComplexSPARQLQueryTest {
 
 		conn.add(new StringReader("@prefix : <urn:> . :a :p :b . "), "", RDFFormat.TURTLE);
 
-		final URI x = conn.getValueFactory().createURI("urn:x");
-		final URI p = conn.getValueFactory().createURI("urn:p");
+		final IRI x = conn.getValueFactory().createIRI("urn:x");
+		final IRI p = conn.getValueFactory().createIRI("urn:p");
 
 		GraphQuery query = conn.prepareGraphQuery(QueryLanguage.SPARQL, queryStr);
 		Model result = QueryResults.asModel(query.evaluate());
@@ -871,7 +871,7 @@ public abstract class ComplexSPARQLQueryTest {
 	public void testIdenticalVariablesInStatementPattern()
 		throws Exception
 	{
-		conn.add(alice, f.createURI("http://purl.org/dc/elements/1.1/publisher"), bob);
+		conn.add(alice, f.createIRI("http://purl.org/dc/elements/1.1/publisher"), bob);
 
 		StringBuilder queryBuilder = new StringBuilder();
 		queryBuilder.append("SELECT ?publisher ");
@@ -958,7 +958,7 @@ public abstract class ComplexSPARQLQueryTest {
 		assertNotNull(result);
 		assertTrue(result.hasNext());
 		BindingSet bs = result.next();
-		URI uri = (URI)bs.getValue("uri");
+		IRI uri = (IRI)bs.getValue("uri");
 		assertTrue("uri result for invalid URI should be unbound", uri == null);
 
 		query = "BASE <http://example.org/> SELECT (URI(\"foo bar\") as ?uri) WHERE {}";
@@ -967,7 +967,7 @@ public abstract class ComplexSPARQLQueryTest {
 		assertNotNull(result);
 		assertTrue(result.hasNext());
 		bs = result.next();
-		uri = (URI)bs.getValue("uri");
+		uri = (IRI)bs.getValue("uri");
 		assertTrue("uri result for valid URI reference should be bound", uri != null);
 	}
 
@@ -1007,8 +1007,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("}\n");
 
 		ValueFactory vf = conn.getValueFactory();
-		final URI a = vf.createURI("http://example.org/a");
-		final URI b = vf.createURI("http://example.org/b");
+		final IRI a = vf.createIRI("http://example.org/a");
+		final IRI b = vf.createIRI("http://example.org/b");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
@@ -1041,7 +1041,7 @@ public abstract class ComplexSPARQLQueryTest {
 			count++;
 			BindingSet bs = result.next();
 			System.out.println(bs);
-			URI a = (URI)bs.getValue("a");
+			IRI a = (IRI)bs.getValue("a");
 			assertNotNull(a);
 			Value isX = bs.getValue("isX");
 			Literal name = (Literal)bs.getValue("name");
@@ -1075,7 +1075,7 @@ public abstract class ComplexSPARQLQueryTest {
 			while (result.hasNext()) {
 				BindingSet bs = result.next();
 
-				URI p = (URI)bs.getValue("p");
+				IRI p = (IRI)bs.getValue("p");
 				assertNotNull(p);
 				assertEquals(RDF.TYPE, p);
 			}
@@ -1106,7 +1106,7 @@ public abstract class ComplexSPARQLQueryTest {
 			while (result.hasNext()) {
 				BindingSet bs = result.next();
 
-				URI p = (URI)bs.getValue("p");
+				IRI p = (IRI)bs.getValue("p");
 				assertNotNull(p);
 				assertEquals(RDF.TYPE, p);
 			}
@@ -1136,7 +1136,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("}");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		tq.setBinding("william", conn.getValueFactory().createURI("http://example.org/william"));
+		tq.setBinding("william", conn.getValueFactory().createIRI("http://example.org/william"));
 
 		try {
 			TupleQueryResult result = tq.evaluate();
@@ -1153,7 +1153,7 @@ public abstract class ComplexSPARQLQueryTest {
 				Value mbox = bs.getValue("mbox");
 				Value x = bs.getValue("x");
 
-				assertTrue(mbox instanceof Literal || x instanceof URI);
+				assertTrue(mbox instanceof Literal || x instanceof IRI);
 			}
 			result.close();
 
@@ -1493,7 +1493,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "C"));
+			tq.setBinding("child", f.createIRI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1547,7 +1547,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "C"));
+			tq.setBinding("child", f.createIRI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1606,7 +1606,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "C"));
+			tq.setBinding("child", f.createIRI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1665,7 +1665,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "C"));
+			tq.setBinding("child", f.createIRI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1727,7 +1727,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "C"));
+			tq.setBinding("child", f.createIRI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1788,7 +1788,7 @@ public abstract class ComplexSPARQLQueryTest {
 			assertEquals(7, count);
 
 			// execute again, but this time setting a binding
-			tq.setBinding("child", f.createURI(EX_NS, "C"));
+			tq.setBinding("child", f.createIRI(EX_NS, "C"));
 
 			result = tq.evaluate();
 			assertNotNull(result);
@@ -1949,7 +1949,7 @@ public abstract class ComplexSPARQLQueryTest {
 			
 			Value x = result.next().getValue("x");
 			assertNotNull(x);
-			assertTrue(x instanceof URI);
+			assertTrue(x instanceof IRI);
 			assertEquals("urn:s1", x.stringValue());
 		}
 		catch (QueryEvaluationException e) {
@@ -1971,8 +1971,8 @@ public abstract class ComplexSPARQLQueryTest {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
 
-			URI uuid1 = (URI)result.next().getValue("uid");
-			URI uuid2 = (URI)result.next().getValue("uid");
+			IRI uuid1 = (IRI)result.next().getValue("uid");
+			IRI uuid2 = (IRI)result.next().getValue("uid");
 
 			assertNotNull(uuid1);
 			assertNotNull(uuid2);

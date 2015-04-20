@@ -36,7 +36,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParseLocationListener;
@@ -245,7 +245,7 @@ public abstract class AbstractNQuadsParserUnitTest {
 		final Statement statement = rdfHandler.getStatements().iterator().next();
 		Assert.assertEquals("http://www.v/dat/4b", statement.getSubject().stringValue());
 		Assert.assertEquals("http://www.w3.org/20/ica#dtend", statement.getPredicate().stringValue());
-		Assert.assertTrue(statement.getObject() instanceof URI);
+		Assert.assertTrue(statement.getObject() instanceof IRI);
 		Assert.assertEquals("http://sin/value/2", statement.getObject().stringValue());
 		Assert.assertEquals("http://sin.siteserv.org/def/", statement.getContext().stringValue());
 	}
@@ -266,7 +266,7 @@ public abstract class AbstractNQuadsParserUnitTest {
 		final Statement statement = rdfHandler.getStatements().iterator().next();
 		Assert.assertTrue(statement.getSubject() instanceof BNode);
 		Assert.assertEquals("http://www.w3.org/20/ica#dtend", statement.getPredicate().stringValue());
-		Assert.assertTrue(statement.getObject() instanceof URI);
+		Assert.assertTrue(statement.getObject() instanceof IRI);
 		Assert.assertEquals("http://sin/value/2", statement.getObject().stringValue());
 		Assert.assertEquals("http://sin.siteserv.org/def/", statement.getContext().stringValue());
 	}
@@ -430,22 +430,22 @@ public abstract class AbstractNQuadsParserUnitTest {
 		final Statement statement = rdfHandler.getStatements().iterator().next();
 
 		final Resource subject = statement.getSubject();
-		Assert.assertTrue(subject instanceof URI);
+		Assert.assertTrue(subject instanceof IRI);
 		final String subjectURI = subject.toString();
 		Assert.assertEquals("http://s/はむ", subjectURI);
 
 		final Resource predicate = statement.getPredicate();
-		Assert.assertTrue(predicate instanceof URI);
+		Assert.assertTrue(predicate instanceof IRI);
 		final String predicateURI = predicate.toString();
 		Assert.assertEquals("http://p/はむ", predicateURI);
 
 		final Value object = statement.getObject();
-		Assert.assertTrue(object instanceof URI);
+		Assert.assertTrue(object instanceof IRI);
 		final String objectURI = object.toString();
 		Assert.assertEquals("http://o/はむ", objectURI);
 
 		final Resource graph = statement.getContext();
-		Assert.assertTrue(graph instanceof URI);
+		Assert.assertTrue(graph instanceof IRI);
 		final String graphURI = graph.toString();
 		Assert.assertEquals("http://g/はむ", graphURI);
 	}

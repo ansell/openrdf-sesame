@@ -16,9 +16,9 @@
  */
 package org.openrdf.sail.lucene.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.sail.lucene.LuceneSail;
 
 /**
@@ -33,10 +33,10 @@ public class LuceneSailConfigSchema {
 	 */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/lucene#";
 
-	public static final URI INDEX_DIR;
+	public static final IRI INDEX_DIR;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		INDEX_DIR = factory.createURI(NAMESPACE, "indexDir");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		INDEX_DIR = factory.createIRI(NAMESPACE, "indexDir");
 	}
 }

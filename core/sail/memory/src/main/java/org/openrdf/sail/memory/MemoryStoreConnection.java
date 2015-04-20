@@ -31,7 +31,7 @@ import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -64,7 +64,7 @@ import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementIterator;
 import org.openrdf.sail.memory.model.MemStatementList;
-import org.openrdf.sail.memory.model.MemURI;
+import org.openrdf.sail.memory.model.MemIRI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 import org.openrdf.sail.memory.model.ReadMode;
@@ -279,7 +279,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 	@Override
 	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
+			IRI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
 		Lock stLock = store.getStatementsReadLock();
@@ -333,7 +333,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
 		throws SailException
 	{
@@ -480,13 +480,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected void addStatementInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		addStatementInternal(subj, pred, obj, true, contexts);
 	}
 
-	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean addInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		connectionLock.readLock().lock();
@@ -512,7 +512,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 * 
 	 * @throws SailException
 	 */
-	protected boolean addStatementInternal(Resource subj, URI pred, Value obj, boolean explicit,
+	protected boolean addStatementInternal(Resource subj, IRI pred, Value obj, boolean explicit,
 			Resource... contexts)
 		throws SailException
 	{
@@ -544,13 +544,13 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
+	protected void removeStatementsInternal(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		removeStatementsInternal(subj, pred, obj, true, contexts);
 	}
 
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		connectionLock.readLock().lock();
@@ -622,7 +622,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 *        pattern.
 	 * @throws SailException
 	 */
-	protected boolean removeStatementsInternal(Resource subj, URI pred, Value obj, boolean explicit,
+	protected boolean removeStatementsInternal(Resource subj, IRI pred, Value obj, boolean explicit,
 			Resource... contexts)
 		throws SailException
 	{
@@ -726,7 +726,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 					subj = null;
 				}
 				Value pred = getConstantValue(sp.getPredicateVar());
-				if (!(pred instanceof URI)) {
+				if (!(pred instanceof IRI)) {
 					// can happen when a previous optimizer has inlined a comparison
 					// operator. See SES-970 / SES-998
 					pred = null;
@@ -743,7 +743,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 				// Perform look-ups for value-equivalents of the specified values
 				MemResource memSubj = valueFactory.getMemResource((Resource)subj);
-				MemURI memPred = valueFactory.getMemURI((URI)pred);
+				MemIRI memPred = valueFactory.getMemURI((IRI)pred);
 				MemValue memObj = valueFactory.getMemValue(obj);
 				MemResource memContext = valueFactory.getMemResource((Resource)context);
 

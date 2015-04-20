@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.schema.NamespacesTable;
 
@@ -36,9 +36,9 @@ import org.openrdf.sail.rdbms.schema.NamespacesTable;
  */
 public class NamespaceManager {
 
-	private Map<String, NamespaceImpl> byNamespace = new ConcurrentHashMap<String, NamespaceImpl>();
+	private Map<String, SimpleNamespace> byNamespace = new ConcurrentHashMap<String, SimpleNamespace>();
 
-	private Map<String, NamespaceImpl> byPrefix = new ConcurrentHashMap<String, NamespaceImpl>();
+	private Map<String, SimpleNamespace> byPrefix = new ConcurrentHashMap<String, SimpleNamespace>();
 
 	private Connection conn;
 
@@ -74,7 +74,7 @@ public class NamespaceManager {
 		}
 	}
 
-	public NamespaceImpl findNamespace(String namespace)
+	public SimpleNamespace findNamespace(String namespace)
 		throws RdbmsException
 	{
 		if (namespace == null)
@@ -92,14 +92,14 @@ public class NamespaceManager {
 	private void load()
 		throws SQLException
 	{
-		Map<String, NamespaceImpl> map = new HashMap<String, NamespaceImpl>();
-		Map<String, NamespaceImpl> prefixes = new HashMap<String, NamespaceImpl>();
+		Map<String, SimpleNamespace> map = new HashMap<String, SimpleNamespace>();
+		Map<String, SimpleNamespace> prefixes = new HashMap<String, SimpleNamespace>();
 		for (Object[] row : table.selectAll()) {
 			String prefix = (String)row[0];
 			String namespace = (String)row[1];
 			if (namespace == null)
 				continue;
-			NamespaceImpl ns = new NamespaceImpl(prefix, namespace);
+			SimpleNamespace ns = new SimpleNamespace(prefix, namespace);
 			map.put(namespace, ns);
 			if (prefix != null) {
 				prefixes.put(prefix, ns);
@@ -110,13 +110,13 @@ public class NamespaceManager {
 		byPrefix.putAll(prefixes);
 	}
 
-	private synchronized NamespaceImpl create(String namespace)
+	private synchronized SimpleNamespace create(String namespace)
 		throws SQLException
 	{
 		if (byNamespace.containsKey(namespace))
 			return byNamespace.get(namespace);
 		table.insert(null, namespace);
-		NamespaceImpl ns = new NamespaceImpl(null, namespace);
+		SimpleNamespace ns = new SimpleNamespace(null, namespace);
 		byNamespace.put(ns.getName(), ns);
 		return ns;
 	}
@@ -124,7 +124,7 @@ public class NamespaceManager {
 	public void setPrefix(String prefix, String name)
 		throws RdbmsException
 	{
-		NamespaceImpl ns = findNamespace(name);
+		SimpleNamespace ns = findNamespace(name);
 		try {
 			table.updatePrefix(prefix, name);
 		}
@@ -135,14 +135,14 @@ public class NamespaceManager {
 		byPrefix.put(prefix, ns);
 	}
 
-	public NamespaceImpl findByPrefix(String prefix) {
+	public SimpleNamespace findByPrefix(String prefix) {
 		return byPrefix.get(prefix);
 	}
 
 	public void removePrefix(String prefix)
 		throws RdbmsException
 	{
-		NamespaceImpl ns = findByPrefix(prefix);
+		SimpleNamespace ns = findByPrefix(prefix);
 		if (ns == null)
 			return;
 		try {

@@ -29,10 +29,10 @@ import info.aduna.iteration.EmptyIteration;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Regex;
@@ -48,7 +48,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
  * @author james
  */
 public class RegexTest {
-	private ValueFactory vf = new ValueFactoryImpl();
+	private ValueFactory vf = new SimpleValueFactory();
 	private FederatedServiceResolverImpl serviceResolver;
 
 	@Before
@@ -166,7 +166,7 @@ public class RegexTest {
 			}
 			
 			public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
-					URI pred, Value obj, Resource... contexts)
+					IRI pred, Value obj, Resource... contexts)
 				throws QueryEvaluationException
 			{
 				return new EmptyIteration<Statement, QueryEvaluationException>();

@@ -17,7 +17,7 @@
 package org.openrdf.repository.event;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
@@ -47,10 +47,10 @@ public interface RepositoryConnectionListener {
 
 	public abstract void rollback(RepositoryConnection conn);
 
-	public abstract void add(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+	public abstract void add(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 			Resource... contexts);
 
-	public abstract void remove(RepositoryConnection conn, Resource subject, URI predicate, Value object,
+	public abstract void remove(RepositoryConnection conn, Resource subject, IRI predicate, Value object,
 			Resource... contexts);
 
 	public abstract void clear(RepositoryConnection conn, Resource... contexts);

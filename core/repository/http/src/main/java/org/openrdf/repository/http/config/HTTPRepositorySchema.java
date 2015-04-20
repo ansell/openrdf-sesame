@@ -16,9 +16,9 @@
  */
 package org.openrdf.repository.http.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.http.HTTPRepository;
 
 /**
@@ -33,18 +33,18 @@ public class HTTPRepositorySchema {
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/http#";
 
 	/** <tt>http://www.openrdf.org/config/repository/http#repositoryURL</tt> */
-	public final static URI REPOSITORYURL;
+	public final static IRI REPOSITORYURL;
 
 	/** <tt>http://www.openrdf.org/config/repository/http#username</tt> */
-	public final static URI USERNAME;
+	public final static IRI USERNAME;
 
 	/** <tt>http://www.openrdf.org/config/repository/http#password</tt> */
-	public final static URI PASSWORD;
+	public final static IRI PASSWORD;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		REPOSITORYURL = factory.createURI(NAMESPACE, "repositoryURL");
-		USERNAME = factory.createURI(NAMESPACE, "username");
-		PASSWORD = factory.createURI(NAMESPACE, "password");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		REPOSITORYURL = factory.createIRI(NAMESPACE, "repositoryURL");
+		USERNAME = factory.createIRI(NAMESPACE, "username");
+		PASSWORD = factory.createIRI(NAMESPACE, "password");
 	}
 }

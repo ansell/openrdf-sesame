@@ -39,65 +39,65 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleStatement;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest extends TestCase {
 
-	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
+	public static final IRI CONTEXT_1 = new SimpleIRI("urn:context1");
 
-	public static final URI CONTEXT_2 = new URIImpl("urn:context2");
+	public static final IRI CONTEXT_2 = new SimpleIRI("urn:context2");
 
-	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
+	public static final IRI CONTEXT_3 = new SimpleIRI("urn:context3");
 
 	// create some objects that we will use throughout this test
-	URI subject = new URIImpl("urn:subj");
+	IRI subject = new SimpleIRI("urn:subj");
 
-	URI subject2 = new URIImpl("urn:subj2");
+	IRI subject2 = new SimpleIRI("urn:subj2");
 
-	URI predicate1 = new URIImpl("urn:pred1");
+	IRI predicate1 = new SimpleIRI("urn:pred1");
 
-	URI predicate2 = new URIImpl("urn:pred2");
+	IRI predicate2 = new SimpleIRI("urn:pred2");
 
-	Literal object1 = new LiteralImpl("object1");
+	Literal object1 = new SimpleLiteral("object1");
 
-	Literal object2 = new LiteralImpl("object2");
+	Literal object2 = new SimpleLiteral("object2");
 
-	Literal object3 = new LiteralImpl("cats");
+	Literal object3 = new SimpleLiteral("cats");
 
-	Literal object4 = new LiteralImpl("dogs");
+	Literal object4 = new SimpleLiteral("dogs");
 
-	Literal object5 = new LiteralImpl("chicken");
+	Literal object5 = new SimpleLiteral("chicken");
 
-	Statement statement11 = new StatementImpl(subject, predicate1, object1);
+	Statement statement11 = new SimpleStatement(subject, predicate1, object1);
 
-	Statement statement12 = new StatementImpl(subject, predicate2, object2);
+	Statement statement12 = new SimpleStatement(subject, predicate2, object2);
 
-	Statement statement21 = new StatementImpl(subject2, predicate1, object3);
+	Statement statement21 = new SimpleStatement(subject2, predicate1, object3);
 
-	Statement statement22 = new StatementImpl(subject2, predicate2, object4);
+	Statement statement22 = new SimpleStatement(subject2, predicate2, object4);
 
-	Statement statement23 = new StatementImpl(subject2, predicate2, object5);
+	Statement statement23 = new SimpleStatement(subject2, predicate2, object5);
 
-	ContextStatementImpl statementContext111 = new ContextStatementImpl(subject, predicate1, object1,
+	ContextStatement statementContext111 = new ContextStatement(subject, predicate1, object1,
 			CONTEXT_1);
 
-	ContextStatementImpl statementContext121 = new ContextStatementImpl(subject, predicate2, object2,
+	ContextStatement statementContext121 = new ContextStatement(subject, predicate2, object2,
 			CONTEXT_1);
 
-	ContextStatementImpl statementContext211 = new ContextStatementImpl(subject2, predicate1, object3,
+	ContextStatement statementContext211 = new ContextStatement(subject2, predicate1, object3,
 			CONTEXT_1);
 
-	ContextStatementImpl statementContext222 = new ContextStatementImpl(subject2, predicate2, object4,
+	ContextStatement statementContext222 = new ContextStatement(subject2, predicate2, object4,
 			CONTEXT_2);
 
-	ContextStatementImpl statementContext232 = new ContextStatementImpl(subject2, predicate2, object5,
+	ContextStatement statementContext232 = new ContextStatement(subject2, predicate2, object5,
 			CONTEXT_2);
 
 	// add a statement to an index
@@ -389,12 +389,12 @@ public class LuceneIndexTest extends TestCase {
 	}
 
 	public void testRejectedDatatypes() {
-		URI STRING = new URIImpl("http://www.w3.org/2001/XMLSchema#string");
-		URI FLOAT = new URIImpl("http://www.w3.org/2001/XMLSchema#float");
-		Literal literal1 = new LiteralImpl("hi there");
-		Literal literal2 = new LiteralImpl("hi there, too", STRING);
-		Literal literal3 = new LiteralImpl("1.0");
-		Literal literal4 = new LiteralImpl("1.0", FLOAT);
+		IRI STRING = new SimpleIRI("http://www.w3.org/2001/XMLSchema#string");
+		IRI FLOAT = new SimpleIRI("http://www.w3.org/2001/XMLSchema#float");
+		Literal literal1 = new SimpleLiteral("hi there");
+		Literal literal2 = new SimpleLiteral("hi there, too", STRING);
+		Literal literal3 = new SimpleLiteral("1.0");
+		Literal literal4 = new SimpleLiteral("1.0", FLOAT);
 		assertEquals("Is the first literal accepted?", true, index.accept(literal1));
 		assertEquals("Is the second literal accepted?", true, index.accept(literal2));
 		assertEquals("Is the third literal accepted?", true, index.accept(literal3));

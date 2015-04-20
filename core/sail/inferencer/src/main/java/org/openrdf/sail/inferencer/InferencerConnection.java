@@ -17,7 +17,7 @@
 package org.openrdf.sail.inferencer;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnection;
@@ -49,7 +49,7 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *         If the connection has been closed.
 	 */
 	// FIXME: remove boolean result value to enable batch-wise processing
-	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean addInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**
@@ -71,7 +71,7 @@ public interface InferencerConnection extends NotifyingSailConnection {
 	 *         If the connection has been closed.
 	 */
 	// FIXME: remove boolean result value to enable batch-wise processing
-	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public boolean removeInferredStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**

@@ -16,7 +16,7 @@
  */
 package org.openrdf.rio.ntriples;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.EarlReport;
 
 /**
@@ -30,7 +30,7 @@ public class NTriplesEarlReport {
 		throws Exception
 	{
 		new EarlReport().generateReport(new NTriplesParserTest().createTestSuite(), EarlReport.ANSELL,
-				ValueFactoryImpl.getInstance().createURI("http://www.w3.org/TR/n-triples/"));
+				SimpleValueFactory.getInstance().createIRI("http://www.w3.org/TR/n-triples/"));
 	}
 
 }

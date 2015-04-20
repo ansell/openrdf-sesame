@@ -34,7 +34,7 @@ import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
 import org.openrdf.query.Binding;
@@ -147,19 +147,19 @@ public class TransactionWriter {
 			xmlWriter.startTag(TransactionXMLConstants.DATASET_TAG);
 
 			xmlWriter.startTag(TransactionXMLConstants.DEFAULT_GRAPHS_TAG);
-			for (URI defaultGraph : dataset.getDefaultGraphs()) {
+			for (IRI defaultGraph : dataset.getDefaultGraphs()) {
 				xmlWriter.textElement(TransactionXMLConstants.GRAPH_TAG, defaultGraph.stringValue());
 			}
 			xmlWriter.endTag(TransactionXMLConstants.DEFAULT_GRAPHS_TAG);
 
 			xmlWriter.startTag(TransactionXMLConstants.NAMED_GRAPHS_TAG);
-			for (URI namedGraph : dataset.getNamedGraphs()) {
+			for (IRI namedGraph : dataset.getNamedGraphs()) {
 				xmlWriter.textElement(TransactionXMLConstants.GRAPH_TAG, namedGraph.stringValue());
 			}
 			xmlWriter.endTag(TransactionXMLConstants.NAMED_GRAPHS_TAG);
 
 			xmlWriter.startTag(TransactionXMLConstants.DEFAULT_REMOVE_GRAPHS_TAG);
-			for (URI defaultRemoveGraph : dataset.getDefaultRemoveGraphs()) {
+			for (IRI defaultRemoveGraph : dataset.getDefaultRemoveGraphs()) {
 				xmlWriter.textElement(TransactionXMLConstants.GRAPH_TAG, defaultRemoveGraph.stringValue());
 			}
 			xmlWriter.endTag(TransactionXMLConstants.DEFAULT_REMOVE_GRAPHS_TAG);
@@ -178,7 +178,7 @@ public class TransactionWriter {
 				if (binding.getName() != null && binding.getValue() != null
 						&& binding.getValue().stringValue() != null)
 				{
-					if (binding.getValue() instanceof URI) {
+					if (binding.getValue() instanceof IRI) {
 						xmlWriter.setAttribute(TransactionXMLConstants.NAME_ATT, binding.getName());
 						xmlWriter.textElement(TransactionXMLConstants.BINDING_URI, binding.getValue().stringValue());
 					}
@@ -295,8 +295,8 @@ public class TransactionWriter {
 	private void serialize(Resource resource, XMLWriter xmlWriter)
 		throws IOException
 	{
-		if (resource instanceof URI) {
-			serialize((URI)resource, xmlWriter);
+		if (resource instanceof IRI) {
+			serialize((IRI)resource, xmlWriter);
 		}
 		else if (resource instanceof BNode) {
 			serialize((BNode)resource, xmlWriter);
@@ -309,7 +309,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(URI uri, XMLWriter xmlWriter)
+	private void serialize(IRI uri, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (uri != null) {

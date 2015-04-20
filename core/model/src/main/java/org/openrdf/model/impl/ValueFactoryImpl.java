@@ -16,73 +16,17 @@
  */
 package org.openrdf.model.impl;
 
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.vocabulary.XMLSchema;
-
 /**
- * Default implementation of the ValueFactory interface that uses the RDF model
- * classes from this package.
- * 
- * @author Arjohn Kampman
+ * @author Jeen Broekstra
+ * @deprecated since 4.0. Use {@link SimpleValueFactory} instead.
  */
-public class ValueFactoryImpl extends ValueFactoryBase {
-
-	/*-----------*
-	 * Constants *
-	 *-----------*/
+@Deprecated
+public class ValueFactoryImpl extends SimpleValueFactory {
 
 	private static final ValueFactoryImpl sharedInstance = new ValueFactoryImpl();
 
+	@Deprecated
 	public static ValueFactoryImpl getInstance() {
 		return sharedInstance;
-	}
-
-	/*---------*
-	 * Methods *
-	 *---------*/
-
-	@Override
-	public URI createURI(String uri) {
-		return new URIImpl(uri);
-	}
-
-	@Override
-	public URI createURI(String namespace, String localName) {
-		return createURI(namespace + localName);
-	}
-
-	@Override
-	public BNode createBNode(String nodeID) {
-		return new BNodeImpl(nodeID);
-	}
-
-	@Override
-	public Literal createLiteral(String value) {
-		return new LiteralImpl(value, XMLSchema.STRING);
-	}
-
-	@Override
-	public Literal createLiteral(String value, String language) {
-		return new LiteralImpl(value, language);
-	}
-
-	@Override
-	public Literal createLiteral(String value, URI datatype) {
-		return new LiteralImpl(value, datatype);
-	}
-
-	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object) {
-		return new StatementImpl(subject, predicate, object);
-	}
-
-	@Override
-	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
-		return new ContextStatementImpl(subject, predicate, object, context);
 	}
 }

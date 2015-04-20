@@ -365,7 +365,7 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 				result = valueFactory.createLiteral(value, language);
 			}
 			else if (datatype != null) {
-				result = valueFactory.createLiteral(value, valueFactory.createURI(datatype));
+				result = valueFactory.createLiteral(value, valueFactory.createIRI(datatype));
 			}
 			else {
 				result = valueFactory.createLiteral(value);
@@ -375,7 +375,7 @@ public abstract class SPARQLJSONParserBase extends QueryResultParserBase {
 			result = valueFactory.createBNode(value);
 		}
 		else if (type.equals(URI)) {
-			result = valueFactory.createURI(value);
+			result = valueFactory.createIRI(value);
 		}
 
 		logger.debug("result value: {}", result);

@@ -40,9 +40,9 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.ContextStatement;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -295,9 +295,9 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	private boolean incompleteQueryFails = true;
 
-	private Set<URI> indexedFields;
+	private Set<IRI> indexedFields;
 
-	private Map<URI, URI> indexedFieldsMapping;
+	private Map<IRI, IRI> indexedFieldsMapping;
 
 	private IndexableStatementFilter filter = null;
 
@@ -358,15 +358,15 @@ public class LuceneSail extends NotifyingSailWrapper {
 				Properties prop = new Properties();
 				prop.load(inputstream);
 				inputstream.close();
-				indexedFields = new HashSet<URI>();
-				indexedFieldsMapping = new HashMap<URI, URI>();
+				indexedFields = new HashSet<IRI>();
+				indexedFieldsMapping = new HashMap<IRI, IRI>();
 				for (Object key : prop.keySet()) {
 					if (key.toString().startsWith("index.")) {
-						indexedFields.add(new URIImpl(prop.getProperty(key.toString())));
+						indexedFields.add(new SimpleIRI(prop.getProperty(key.toString())));
 					}
 					else {
-						indexedFieldsMapping.put(new URIImpl(key.toString()),
-								new URIImpl(prop.getProperty(key.toString())));
+						indexedFieldsMapping.put(new SimpleIRI(key.toString()),
+								new SimpleIRI(prop.getProperty(key.toString())));
 					}
 				}
 			}
@@ -589,10 +589,10 @@ public class LuceneSail extends NotifyingSailWrapper {
 	}
 
 	public Statement mapStatement(Statement statement) {
-		URI p = statement.getPredicate();
+		IRI p = statement.getPredicate();
 		boolean predicateChanged = false;
 		if (indexedFieldsMapping != null) {
-			URI res = indexedFieldsMapping.get(p);
+			IRI res = indexedFieldsMapping.get(p);
 			if (res != null) {
 				p = res;
 				predicateChanged = true;
@@ -602,7 +602,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 			return null;
 
 		if (predicateChanged)
-			return new ContextStatementImpl(statement.getSubject(), p, statement.getObject(),
+			return new ContextStatement(statement.getSubject(), p, statement.getObject(),
 					statement.getContext());
 		else
 			return statement;

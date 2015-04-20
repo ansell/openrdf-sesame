@@ -62,7 +62,7 @@ import org.openrdf.http.server.ProtocolUtil;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
@@ -185,7 +185,7 @@ public class StatementsController extends AbstractController {
 		if (defaultRemoveGraphURIs != null) {
 			for (String graphURI : defaultRemoveGraphURIs) {
 				try {
-					URI uri = createURIOrNull(repository, graphURI);
+					IRI uri = createURIOrNull(repository, graphURI);
 					dataset.addDefaultRemoveGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
@@ -198,7 +198,7 @@ public class StatementsController extends AbstractController {
 		if (defaultInsertGraphURIs != null && defaultInsertGraphURIs.length > 0) {
 			String graphURI = defaultInsertGraphURIs[0];
 			try {
-				URI uri = createURIOrNull(repository, graphURI);
+				IRI uri = createURIOrNull(repository, graphURI);
 				dataset.setDefaultInsertGraph(uri);
 			}
 			catch (IllegalArgumentException e) {
@@ -209,7 +209,7 @@ public class StatementsController extends AbstractController {
 		if (defaultGraphURIs != null) {
 			for (String defaultGraphURI : defaultGraphURIs) {
 				try {
-					URI uri = createURIOrNull(repository, defaultGraphURI);
+					IRI uri = createURIOrNull(repository, defaultGraphURI);
 					dataset.addDefaultGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
@@ -222,7 +222,7 @@ public class StatementsController extends AbstractController {
 		if (namedGraphURIs != null) {
 			for (String namedGraphURI : namedGraphURIs) {
 				try {
-					URI uri = createURIOrNull(repository, namedGraphURI);
+					IRI uri = createURIOrNull(repository, namedGraphURI);
 					dataset.addNamedGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
@@ -291,10 +291,10 @@ public class StatementsController extends AbstractController {
 		}
 	}
 
-	private URI createURIOrNull(Repository repository, String graphURI) {
+	private IRI createURIOrNull(Repository repository, String graphURI) {
 		if ("null".equals(graphURI))
 			return null;
-		return repository.getValueFactory().createURI(graphURI);
+		return repository.getValueFactory().createIRI(graphURI);
 	}
 
 	/**
@@ -311,7 +311,7 @@ public class StatementsController extends AbstractController {
 		ValueFactory vf = repository.getValueFactory();
 
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
+		IRI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
 		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
@@ -399,11 +399,11 @@ public class StatementsController extends AbstractController {
 		ValueFactory vf = repository.getValueFactory();
 
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
-		URI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
+		IRI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
 		final boolean preserveNodeIds = ProtocolUtil.parseBooleanParam(request, Protocol.PRESERVE_BNODE_ID_PARAM_NAME, false);
 
 		if (baseURI == null) {
-			baseURI = vf.createURI("foo:bar");
+			baseURI = vf.createIRI("foo:bar");
 			logger.info("no base URI specified, using dummy '{}'", baseURI);
 		}
 
@@ -464,7 +464,7 @@ public class StatementsController extends AbstractController {
 		ValueFactory vf = repository.getValueFactory();
 
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
+		IRI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
 		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 

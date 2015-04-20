@@ -39,12 +39,12 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.NumericLiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.NumericLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -100,23 +100,23 @@ public abstract class RDFStoreTest {
 	 * Variables *
 	 *-----------*/
 
-	protected URI painter;
+	protected IRI painter;
 
-	protected URI paints;
+	protected IRI paints;
 
-	protected URI painting;
+	protected IRI painting;
 
-	protected URI picasso;
+	protected IRI picasso;
 
-	protected URI rembrandt;
+	protected IRI rembrandt;
 
-	protected URI guernica;
+	protected IRI guernica;
 
-	protected URI nightwatch;
+	protected IRI nightwatch;
 
-	protected URI context1;
+	protected IRI context1;
 
-	protected URI context2;
+	protected IRI context2;
 
 	protected Sail sail;
 
@@ -157,16 +157,16 @@ public abstract class RDFStoreTest {
 		// Create values
 		vf = sail.getValueFactory();
 
-		painter = vf.createURI(EXAMPLE_NS, PAINTER);
-		paints = vf.createURI(EXAMPLE_NS, PAINTS);
-		painting = vf.createURI(EXAMPLE_NS, PAINTING);
-		picasso = vf.createURI(EXAMPLE_NS, PICASSO);
-		guernica = vf.createURI(EXAMPLE_NS, GUERNICA);
-		rembrandt = vf.createURI(EXAMPLE_NS, REMBRANDT);
-		nightwatch = vf.createURI(EXAMPLE_NS, NIGHTWATCH);
+		painter = vf.createIRI(EXAMPLE_NS, PAINTER);
+		paints = vf.createIRI(EXAMPLE_NS, PAINTS);
+		painting = vf.createIRI(EXAMPLE_NS, PAINTING);
+		picasso = vf.createIRI(EXAMPLE_NS, PICASSO);
+		guernica = vf.createIRI(EXAMPLE_NS, GUERNICA);
+		rembrandt = vf.createIRI(EXAMPLE_NS, REMBRANDT);
+		nightwatch = vf.createIRI(EXAMPLE_NS, NIGHTWATCH);
 
-		context1 = vf.createURI(EXAMPLE_NS, CONTEXT_1);
-		context2 = vf.createURI(EXAMPLE_NS, CONTEXT_2);
+		context1 = vf.createIRI(EXAMPLE_NS, CONTEXT_1);
+		context2 = vf.createIRI(EXAMPLE_NS, CONTEXT_2);
 
 	}
 
@@ -206,9 +206,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip1()
 		throws Exception
 	{
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		URI obj = new URIImpl(EXAMPLE_NS + GUERNICA);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -218,8 +218,8 @@ public abstract class RDFStoreTest {
 		throws Exception
 	{
 		BNode subj = vf.createBNode();
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		URI obj = new URIImpl(EXAMPLE_NS + GUERNICA);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -228,9 +228,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip3()
 		throws Exception
 	{
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica");
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -239,9 +239,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip4()
 		throws Exception
 	{
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica", "es");
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica", "es");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -250,9 +250,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip5()
 		throws Exception
 	{
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new NumericLiteralImpl(3);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new NumericLiteral(3);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -261,9 +261,9 @@ public abstract class RDFStoreTest {
 	public void testDecimalRoundTrip()
 		throws Exception
 	{
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new NumericLiteralImpl(3, XMLSchema.DECIMAL);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new NumericLiteral(3, XMLSchema.DECIMAL);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -272,16 +272,16 @@ public abstract class RDFStoreTest {
 	public void testTimeZoneRoundTrip()
 		throws Exception
 	{
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("2006-08-23+00:00", XMLSchema.DATE);
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("2006-08-23+00:00", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 
 		con.begin();
 		con.removeStatements(null, null, null);
 		con.commit();
 
-		obj = new LiteralImpl("2006-08-23", XMLSchema.DATE);
+		obj = new SimpleLiteral("2006-08-23", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 	}
 
@@ -293,9 +293,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		URI obj = new URIImpl(EXAMPLE_NS + GUERNICA + sb.toString());
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -308,9 +308,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica" + sb.toString());
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica" + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -323,9 +323,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 1024000; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica" + sb.toString());
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica" + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -338,14 +338,14 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		URI subj = new URIImpl(EXAMPLE_NS + PICASSO);
-		URI pred = new URIImpl(EXAMPLE_NS + PAINTS);
-		Literal obj = new LiteralImpl("guernica" + sb.toString(), "es");
+		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = new SimpleLiteral("guernica" + sb.toString(), "es");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
 
-	private void testValueRoundTrip(Resource subj, URI pred, Value obj)
+	private void testValueRoundTrip(Resource subj, IRI pred, Value obj)
 		throws Exception
 	{
 		con.begin();
@@ -392,8 +392,8 @@ public abstract class RDFStoreTest {
 	public void testCreateURI1()
 		throws Exception
 	{
-		URI picasso1 = vf.createURI(EXAMPLE_NS, PICASSO);
-		URI picasso2 = vf.createURI(EXAMPLE_NS + PICASSO);
+		IRI picasso1 = vf.createIRI(EXAMPLE_NS, PICASSO);
+		IRI picasso2 = vf.createIRI(EXAMPLE_NS + PICASSO);
 		con.begin();
 		con.addStatement(picasso1, paints, guernica);
 		con.addStatement(picasso2, paints, guernica);
@@ -406,8 +406,8 @@ public abstract class RDFStoreTest {
 	public void testCreateURI2()
 		throws Exception
 	{
-		URI picasso1 = vf.createURI(EXAMPLE_NS + PICASSO);
-		URI picasso2 = vf.createURI(EXAMPLE_NS, PICASSO);
+		IRI picasso1 = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI picasso2 = vf.createIRI(EXAMPLE_NS, PICASSO);
 		con.begin();
 		con.addStatement(picasso1, paints, guernica);
 		con.addStatement(picasso2, paints, guernica);
@@ -444,11 +444,11 @@ public abstract class RDFStoreTest {
 		assertEquals("Size of repository should be 5", 5, con.size());
 		assertEquals("Size of named context should be 3", 3, con.size(context1));
 
-		URI unknownContext = new URIImpl(EXAMPLE_NS + "unknown");
+		IRI unknownContext = new SimpleIRI(EXAMPLE_NS + "unknown");
 
 		assertEquals("Size of unknown context should be 0", 0, con.size(unknownContext));
 
-		URIImpl uriImplContext1 = new URIImpl(context1.toString());
+		SimpleIRI uriImplContext1 = new SimpleIRI(context1.toString());
 
 		assertEquals("Size of named context (defined as URIImpl) should be 3", 3, con.size(uriImplContext1));
 	}
@@ -546,9 +546,9 @@ public abstract class RDFStoreTest {
 		while (iter.hasNext()) {
 			BindingSet bindings = iter.next();
 			Value p = bindings.getValue("P");
-			if (p instanceof URI) {
+			if (p instanceof IRI) {
 				con.begin();
-				con.addStatement((URI)p, RDF.TYPE, RDF.PROPERTY);
+				con.addStatement((IRI)p, RDF.TYPE, RDF.PROPERTY);
 				con.commit();
 			}
 		}

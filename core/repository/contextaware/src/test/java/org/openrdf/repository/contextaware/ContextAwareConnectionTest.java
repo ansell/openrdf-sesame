@@ -11,8 +11,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -79,7 +79,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		}
 	}
 
-	URI context = new URIImpl("urn:test:context");
+	IRI context = new SimpleIRI("urn:test:context");
 
 	String queryString = "SELECT ?o WHERE { ?s ?p ?o}";
 
@@ -94,7 +94,7 @@ public class ContextAwareConnectionTest extends TestCase {
 				return new GraphQueryStub() {
 					@Override
 					public void setDataset(Dataset dataset) {
-						Set<URI> contexts = Collections.singleton(context);
+						Set<IRI> contexts = Collections.singleton(context);
 						assertEquals(contexts, dataset.getDefaultGraphs());
 						super.setDataset(dataset);
 					}
@@ -119,7 +119,7 @@ public class ContextAwareConnectionTest extends TestCase {
 				return new QueryStub() {
 					@Override
 					public void setDataset(Dataset dataset) {
-						Set<URI> contexts = Collections.singleton(context);
+						Set<IRI> contexts = Collections.singleton(context);
 						assertEquals(contexts, dataset.getDefaultGraphs());
 						super.setDataset(dataset);
 					}
@@ -144,7 +144,7 @@ public class ContextAwareConnectionTest extends TestCase {
 				return new TupleQueryStub() {
 					@Override
 					public void setDataset(Dataset dataset) {
-						Set<URI> contexts = Collections.singleton(context);
+						Set<IRI> contexts = Collections.singleton(context);
 						assertEquals(contexts, dataset.getDefaultGraphs());
 						super.setDataset(dataset);
 					}

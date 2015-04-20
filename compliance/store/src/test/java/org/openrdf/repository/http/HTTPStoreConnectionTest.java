@@ -26,7 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
@@ -75,7 +75,7 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 
-		URI foobar = vf.createURI("foo:bar");
+		IRI foobar = vf.createIRI("foo:bar");
 
 		String sparql = "INSERT DATA { <foo:bar> <foo:bar> <foo:bar> . } ";
 

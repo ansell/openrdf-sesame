@@ -21,14 +21,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.model.util.Models;
 
 /**
  * An RDF Model, represented as a {@link java.util.Set} of {@link Statement}s
- * with predictable iteration order. A Model can contain statements in several
- * contexts, representing one or more (named) graphs.
+ * with predictable iteration order.
  * <p>
  * Additional utility functionality for working with Model objects is available
  * in the {@link org.openrdf.model.util.Models Models} utility class.
@@ -84,7 +83,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	public default Optional<Namespace> setNamespace(String prefix, String name) {
 		Optional<Namespace> result = getNamespace(prefix);
 		if (!result.isPresent() || !result.get().getName().equals(name)) {
-			result = Optional.of(new NamespaceImpl(prefix, name));
+			result = Optional.of(new SimpleNamespace(prefix, name));
 			setNamespace(result.get());
 		}
 		return result;
@@ -147,7 +146,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return <code>true</code> if statements match the specified pattern.
 	 */
-	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean contains(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Adds one or more statements to the model. This method creates a statement
@@ -171,7 +170,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If this Model cannot accept any statements, because it is filtered
 	 *         to the empty set.
 	 */
-	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Removes statements with the specified context exist in this model.
@@ -218,7 +217,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        matching one of these will be removed.
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
-	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean remove(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	// Views
 
@@ -269,7 +268,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        one of these will match.
 	 * @return The statements that match the specified pattern.
 	 */
-	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts);
+	public Model filter(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The
@@ -325,13 +324,13 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Utility method that casts the return value of {@link #subjectResource()}
-	 * to a URI, or throws a ModelException if that value is not a URI.
+	 * to a IRI, or throws a ModelException if that value is not an IRI.
 	 * 
 	 * @return The subject of the matched statement(s), or <tt>null</tt> if no
 	 *         matching statements were found.
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #subjectResource()} or if
-	 *         its return value is not a URI.
+	 *         its return value is not a IRI.
 	 * @since 2.8.0
 	 * @deprecated since 4.0. Instead, use {@link Models#subjectURI(Model)} to
 	 *             retrieve a subject URI, and/or use the size of the set
@@ -339,13 +338,13 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *             unique.
 	 */
 	@Deprecated
-	public default Optional<URI> subjectURI()
+	public default Optional<IRI> subjectIRI()
 		throws ModelException
 	{
 		Optional<Resource> subjectResource = subjectResource();
 		if (subjectResource.isPresent()) {
-			if (subjectResource.get() instanceof URI) {
-				return Optional.of((URI)subjectResource.get());
+			if (subjectResource.get() instanceof IRI) {
+				return Optional.of((IRI)subjectResource.get());
 			}
 			else {
 				throw new ModelException("Did not find a unique subject URI");
@@ -354,6 +353,19 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 		else {
 			return Optional.empty();
 		}
+	}
+
+	/**
+	 * Provided for backward-compatibility purposes only, this method executes
+	 * {@link #subjectIRI} instead.
+	 * 
+	 * @deprecated use {@link #subjectIRI()} instead.
+	 */
+	@Deprecated
+	public default Optional<IRI> subjectURI()
+		throws ModelException
+	{
+		return subjectIRI();
 	}
 
 	/**
@@ -403,8 +415,8 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * 
 	 * @return a set view of the predicates contained in this model
 	 */
-	public default Set<URI> predicates() {
-		Set<URI> predicates = stream().map(st -> st.getPredicate()).collect(Collectors.toSet());
+	public default Set<IRI> predicates() {
+		Set<IRI> predicates = stream().map(st -> st.getPredicate()).collect(Collectors.toSet());
 		return predicates;
 	};
 
@@ -542,27 +554,27 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	}
 
 	/**
-	 * Utility method that casts the return value of {@link #objectValue()} to a
-	 * URI, or throws a ModelUtilException if that value is not a URI.
+	 * Utility method that casts the return value of {@link #objectValue()} to an
+	 * IRI, or throws a ModelUtilException if that value is not an IRI.
 	 * 
 	 * @return The object of the matched statement(s), or
 	 *         {@link Optional#empty()} if no matching statements were found.
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
-	 *         return value is not a URI.
+	 *         return value is not an IRI.
 	 * @deprecated since 4.0. Instead, use {@link Models#objectURI(Model)} to
 	 *             retrieve an object URI value, and/or use the size of the set
 	 *             returned by {@link #objects()} to verify if the object is
 	 *             unique.
 	 */
 	@Deprecated
-	public default Optional<URI> objectURI()
+	public default Optional<IRI> objectIRI()
 		throws ModelException
 	{
 		Optional<Value> objectValue = objectValue();
 		if (objectValue.isPresent()) {
-			if (objectValue.get() instanceof URI) {
-				return Optional.of((URI)objectValue.get());
+			if (objectValue.get() instanceof IRI) {
+				return Optional.of((IRI)objectValue.get());
 			}
 			else {
 				throw new ModelException("Did not find a unique object URI");
@@ -571,6 +583,19 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 		else {
 			return Optional.empty();
 		}
+	}
+
+	/**
+	 * Provided for backward-compatibility purposes only, this method executes
+	 * {@link #objectIRI} instead.
+	 * 
+	 * @deprecated use {@link #objectIRI()} instead.
+	 */
+	@Deprecated
+	public default Optional<IRI> objectURI()
+		throws ModelException
+	{
+		return objectIRI();
 	}
 
 	/**
@@ -598,4 +623,5 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 			return Optional.empty();
 		}
 	}
+
 }

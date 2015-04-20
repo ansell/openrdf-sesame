@@ -26,7 +26,7 @@ import junit.framework.TestSuite;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -94,7 +94,7 @@ public abstract class RDFJSONParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((IRI)bindingSet.getValue("inputURL")).toString());
 			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
 
 			String nextBaseUrl = BASE_URL + nextTestFile;
@@ -121,7 +121,7 @@ public abstract class RDFJSONParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).toString();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((IRI)bindingSet.getValue("inputURL")).toString());
 			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
 
 			String nextBaseUrl = BASE_URL + nextTestFile;
@@ -149,10 +149,10 @@ public abstract class RDFJSONParserTestCase {
 		while (queryResult.hasNext()) {
 			BindingSet bindingSet = queryResult.next();
 			String nextTestName = ((Literal)bindingSet.getValue("testName")).getLabel();
-			String nextTestFile = removeBase(((URI)bindingSet.getValue("inputURL")).toString());
+			String nextTestFile = removeBase(((IRI)bindingSet.getValue("inputURL")).toString());
 			String nextInputURL = TEST_FILE_BASE_PATH + nextTestFile;
 			String nextOutputURL = TEST_FILE_BASE_PATH
-					+ removeBase(((URI)bindingSet.getValue("outputURL")).toString());
+					+ removeBase(((IRI)bindingSet.getValue("outputURL")).toString());
 
 			String nextBaseUrl = BASE_URL + nextTestFile;
 

@@ -24,7 +24,7 @@ import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 
@@ -67,10 +67,10 @@ public class LexicalValueComparator implements Serializable, Comparator<Value> {
 		}
 
 		// 3. IRIs
-		boolean u1 = o1 instanceof URI;
-		boolean u2 = o2 instanceof URI;
+		boolean u1 = o1 instanceof IRI;
+		boolean u2 = o2 instanceof IRI;
 		if (u1 && u2) {
-			return compareURIs((URI)o1, (URI)o2);
+			return compareURIs((IRI)o1, (IRI)o2);
 		}
 		if (u1) {
 			return -1;
@@ -87,7 +87,7 @@ public class LexicalValueComparator implements Serializable, Comparator<Value> {
 		return leftBNode.getID().compareTo(rightBNode.getID());
 	}
 
-	private int compareURIs(URI leftURI, URI rightURI) {
+	private int compareURIs(IRI leftURI, IRI rightURI) {
 		return leftURI.toString().compareTo(rightURI.toString());
 	}
 
@@ -98,8 +98,8 @@ public class LexicalValueComparator implements Serializable, Comparator<Value> {
 		int result = 0;
 		// FIXME: Confirm these rules work with RDF-1.1
 		// Sort by datatype first, plain literals come before datatyped literals
-		URI leftDatatype = leftLit.getDatatype();
-		URI rightDatatype = rightLit.getDatatype();
+		IRI leftDatatype = leftLit.getDatatype();
+		IRI rightDatatype = rightLit.getDatatype();
 
 		if (leftDatatype != null) {
 			if (rightDatatype != null) {
@@ -149,7 +149,7 @@ public class LexicalValueComparator implements Serializable, Comparator<Value> {
 	 * {@link QueryEvaluationUtil#compareLiterals(Literal, Literal, CompareOp)}
 	 * is used in consecutive ordering steps.
 	 */
-	private int compareDatatypes(URI leftDatatype, URI rightDatatype) {
+	private int compareDatatypes(IRI leftDatatype, IRI rightDatatype) {
 		if (XMLDatatypeUtil.isNumericDatatype(leftDatatype)) {
 			if (XMLDatatypeUtil.isNumericDatatype(rightDatatype)) {
 				// both are numeric datatypes

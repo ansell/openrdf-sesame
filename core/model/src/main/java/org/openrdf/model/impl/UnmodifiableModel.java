@@ -25,7 +25,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 
 /**
@@ -67,22 +67,22 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean contains(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		return model.contains(subj, pred, obj, contexts);
 	}
 
 	@Override
-	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public boolean remove(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public Model filter(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		return model.filter(subj, pred, obj, contexts).unmodifiable();
 	}
 
@@ -97,7 +97,7 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public void removeTermIteration(Iterator<Statement> iter, Resource subj, URI pred, Value obj,
+	public void removeTermIteration(Iterator<Statement> iter, Resource subj, IRI pred, Value obj,
 			Resource... contexts)
 	{
 		throw new UnsupportedOperationException();

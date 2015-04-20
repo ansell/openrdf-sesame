@@ -67,9 +67,9 @@ import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
 import org.openrdf.http.protocol.error.ErrorInfo;
 import org.openrdf.http.protocol.error.ErrorType;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQueryResult;
@@ -176,7 +176,7 @@ public class SparqlSession {
 		this.httpClient = client;
 		this.httpContext = new BasicHttpContext();
 		this.executor = executor;
-		valueFactory = ValueFactoryImpl.getInstance();
+		valueFactory = SimpleValueFactory.getInstance();
 		params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
 		CookieStore cookieStore = new BasicCookieStore();
 		httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
@@ -570,11 +570,11 @@ public class SparqlSession {
 		}
 
 		if (dataset != null) {
-			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
+			for (IRI defaultGraphURI : dataset.getDefaultGraphs()) {
 				queryParams.add(new BasicNameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
 						String.valueOf(defaultGraphURI)));
 			}
-			for (URI namedGraphURI : dataset.getNamedGraphs()) {
+			for (IRI namedGraphURI : dataset.getNamedGraphs()) {
 				queryParams.add(new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME,
 						String.valueOf(namedGraphURI)));
 			}
@@ -603,18 +603,18 @@ public class SparqlSession {
 				Boolean.toString(includeInferred)));
 
 		if (dataset != null) {
-			for (URI graphURI : dataset.getDefaultRemoveGraphs()) {
+			for (IRI graphURI : dataset.getDefaultRemoveGraphs()) {
 				queryParams.add(new BasicNameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
 			}
 			if (dataset.getDefaultInsertGraph() != null) {
 				queryParams.add(new BasicNameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
 						String.valueOf(dataset.getDefaultInsertGraph())));
 			}
-			for (URI defaultGraphURI : dataset.getDefaultGraphs()) {
+			for (IRI defaultGraphURI : dataset.getDefaultGraphs()) {
 				queryParams.add(new BasicNameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
 						String.valueOf(defaultGraphURI)));
 			}
-			for (URI namedGraphURI : dataset.getNamedGraphs()) {
+			for (IRI namedGraphURI : dataset.getNamedGraphs()) {
 				queryParams.add(new BasicNameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
 						String.valueOf(namedGraphURI)));
 			}

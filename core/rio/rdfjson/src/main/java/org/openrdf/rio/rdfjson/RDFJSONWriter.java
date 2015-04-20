@@ -33,7 +33,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.util.Literals;
@@ -179,8 +179,8 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 
 			jg.writeObjectField(RDFJSONUtility.TYPE, RDFJSONUtility.BNODE);
 		}
-		else if (object instanceof URI) {
-			jg.writeObjectField(RDFJSONUtility.VALUE, resourceToString((URI)object));
+		else if (object instanceof IRI) {
+			jg.writeObjectField(RDFJSONUtility.VALUE, resourceToString((IRI)object));
 
 			jg.writeObjectField(RDFJSONUtility.TYPE, RDFJSONUtility.URI);
 		}
@@ -212,7 +212,7 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 	 * @return The string value of the sesame resource
 	 */
 	public static String resourceToString(final Resource uriOrBnode) {
-		if (uriOrBnode instanceof URI) {
+		if (uriOrBnode instanceof IRI) {
 			return uriOrBnode.stringValue();
 		}
 		else {
@@ -236,7 +236,7 @@ public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
 		jg.writeStartObject();
 		for (final Resource nextSubject : graph.subjects()) {
 			jg.writeObjectFieldStart(RDFJSONWriter.resourceToString(nextSubject));
-			for (final URI nextPredicate : graph.filter(nextSubject, null, null).predicates()) {
+			for (final IRI nextPredicate : graph.filter(nextSubject, null, null).predicates()) {
 				jg.writeArrayFieldStart(nextPredicate.stringValue());
 				for (final Value nextObject : graph.filter(nextSubject, nextPredicate, null).objects()) {
 					// contexts are optional, so this may return empty in some

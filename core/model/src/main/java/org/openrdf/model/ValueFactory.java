@@ -21,41 +21,42 @@ import java.util.Date;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * A factory for creating URIs, blank nodes, literals and statements.
+ * A factory for creating {@link IRI IRIs}, {@link BNode blank nodes},
+ * {@link Literal literals} and {@link Statement statements}.
  * 
  * @author Arjohn Kampman
  */
 public interface ValueFactory {
 
 	/**
-	 * Creates a new URI from the supplied string-representation.
+	 * Creates a new IRI from the supplied string-representation.
 	 * 
-	 * @param uri
-	 *        A string-representation of a URI.
-	 * @return An object representing the URI.
+	 * @param iri
+	 *        A string-representation of a IRI.
+	 * @return An object representing the IRI.
 	 * @throws IlllegalArgumentException
-	 *         If the supplied string does not resolve to a legal (absolute) URI.
+	 *         If the supplied string does not resolve to a legal (absolute) IRI.
 	 */
-	public URI createURI(String uri);
+	public IRI createIRI(String iri);
 
 	/**
-	 * Creates a new URI from the supplied namespace and local name. Calling this
-	 * method is funtionally equivalent to calling {@link #createURI(String)
-	 * createURI(namespace+localName)}, but allows the ValueFactory to reuse
+	 * Creates a new IRI from the supplied namespace and local name. Calling this
+	 * method is funtionally equivalent to calling {@link #createIRI(String)
+	 * createIRI(namespace+localName)}, but allows the ValueFactory to reuse
 	 * supplied namespace and local name strings whenever possible. Note that the
-	 * values returned by {@link URI#getNamespace()} and
-	 * {@link URI#getLocalName()} are not necessarily the same as the values that
+	 * values returned by {@link IRI#getNamespace()} and
+	 * {@link IRI#getLocalName()} are not necessarily the same as the values that
 	 * are supplied to this method.
 	 * 
 	 * @param namespace
-	 *        The URI's namespace.
+	 *        The IRI's namespace.
 	 * @param localName
-	 *        The URI's local name.
+	 *        The IRI's local name.
 	 * @throws IllegalArgumentException
 	 *         If the supplied namespace and localname do not resolve to a legal
-	 *         (absolute) URI.
+	 *         (absolute) IRI.
 	 */
-	public URI createURI(String namespace, String localName);
+	public IRI createIRI(String namespace, String localName);
 
 	/**
 	 * Creates a new bNode.
@@ -101,7 +102,7 @@ public interface ValueFactory {
 	 *        The literal's datatype, or <tt>null</tt> if the literal doesn't
 	 *        have a datatype.
 	 */
-	public Literal createLiteral(String label, URI datatype);
+	public Literal createLiteral(String label, IRI datatype);
 
 	/**
 	 * Creates a new <tt>xsd:boolean</tt>-typed literal representing the
@@ -202,7 +203,7 @@ public interface ValueFactory {
 	 *        The statement's object.
 	 * @return The created statement.
 	 */
-	public Statement createStatement(Resource subject, URI predicate, Value object);
+	public Statement createStatement(Resource subject, IRI predicate, Value object);
 
 	/**
 	 * Creates a new statement with the supplied subject, predicate and object
@@ -218,5 +219,5 @@ public interface ValueFactory {
 	 *        The statement's context.
 	 * @return The created statement.
 	 */
-	public Statement createStatement(Resource subject, URI predicate, Value object, Resource context);
+	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context);
 }

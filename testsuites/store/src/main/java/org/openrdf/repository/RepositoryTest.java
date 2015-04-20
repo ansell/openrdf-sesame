@@ -26,7 +26,7 @@ import org.junit.rules.Timeout;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.DC;
 
@@ -61,17 +61,17 @@ public abstract class RepositoryTest {
 
 	protected Resource alexander;
 
-	protected URI name;
+	protected IRI name;
 
-	protected URI mbox;
+	protected IRI mbox;
 
-	protected final URI publisher = DC.PUBLISHER;
+	protected final IRI publisher = DC.PUBLISHER;
 
-	protected URI unknownContext;
+	protected IRI unknownContext;
 
-	protected URI context1;
+	protected IRI context1;
 
-	protected URI context2;
+	protected IRI context2;
 
 	protected Literal nameAlice;
 
@@ -96,8 +96,8 @@ public abstract class RepositoryTest {
 		bob = vf.createBNode();
 		alice = vf.createBNode();
 
-		name = vf.createURI(FOAF_NS + NAME);
-		mbox = vf.createURI(FOAF_NS + MBOX);
+		name = vf.createIRI(FOAF_NS + NAME);
+		mbox = vf.createIRI(FOAF_NS + MBOX);
 
 		nameAlice = vf.createLiteral("Alice");
 		nameBob = vf.createLiteral("Bob");

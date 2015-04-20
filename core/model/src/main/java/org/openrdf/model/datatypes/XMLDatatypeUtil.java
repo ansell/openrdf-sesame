@@ -28,7 +28,7 @@ import javax.xml.namespace.QName;
 
 import info.aduna.text.ASCIIUtil;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -56,7 +56,7 @@ public class XMLDatatypeUtil {
 	/**
 	 * Checks whether the supplied datatype is a primitive XML Schema datatype.
 	 */
-	public static boolean isPrimitiveDatatype(URI datatype) {
+	public static boolean isPrimitiveDatatype(IRI datatype) {
 		return datatype.equals(XMLSchema.DURATION) || datatype.equals(XMLSchema.DATETIME)
 				|| datatype.equals(XMLSchema.TIME) || datatype.equals(XMLSchema.DATE)
 				|| datatype.equals(XMLSchema.GYEARMONTH) || datatype.equals(XMLSchema.GYEAR)
@@ -72,7 +72,7 @@ public class XMLDatatypeUtil {
 	/**
 	 * Checks whether the supplied datatype is a derived XML Schema datatype.
 	 */
-	public static boolean isDerivedDatatype(URI datatype) {
+	public static boolean isDerivedDatatype(IRI datatype) {
 		return datatype.equals(XMLSchema.NORMALIZEDSTRING) || datatype.equals(XMLSchema.TOKEN)
 				|| datatype.equals(XMLSchema.LANGUAGE) || datatype.equals(XMLSchema.NMTOKEN)
 				|| datatype.equals(XMLSchema.NMTOKENS) || datatype.equals(XMLSchema.NAME)
@@ -91,7 +91,7 @@ public class XMLDatatypeUtil {
 	/**
 	 * Checks whether the supplied datatype is a built-in XML Schema datatype.
 	 */
-	public static boolean isBuiltInDatatype(URI datatype) {
+	public static boolean isBuiltInDatatype(IRI datatype) {
 		return isPrimitiveDatatype(datatype) || isDerivedDatatype(datatype);
 	}
 
@@ -100,7 +100,7 @@ public class XMLDatatypeUtil {
 	 * equal to xsd:float, xsd:double, xsd:decimal or one of the datatypes
 	 * derived from xsd:decimal.
 	 */
-	public static boolean isNumericDatatype(URI datatype) {
+	public static boolean isNumericDatatype(IRI datatype) {
 		return isDecimalDatatype(datatype) || isFloatingPointDatatype(datatype);
 	}
 
@@ -108,7 +108,7 @@ public class XMLDatatypeUtil {
 	 * Checks whether the supplied datatype is equal to xsd:decimal or one of the
 	 * built-in datatypes that is derived from xsd:decimal.
 	 */
-	public static boolean isDecimalDatatype(URI datatype) {
+	public static boolean isDecimalDatatype(IRI datatype) {
 		return datatype.equals(XMLSchema.DECIMAL) || isIntegerDatatype(datatype);
 	}
 
@@ -116,7 +116,7 @@ public class XMLDatatypeUtil {
 	 * Checks whether the supplied datatype is equal to xsd:integer or one of the
 	 * built-in datatypes that is derived from xsd:integer.
 	 */
-	public static boolean isIntegerDatatype(URI datatype) {
+	public static boolean isIntegerDatatype(IRI datatype) {
 		return datatype.equals(XMLSchema.INTEGER) || datatype.equals(XMLSchema.LONG)
 				|| datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.SHORT)
 				|| datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)
@@ -129,7 +129,7 @@ public class XMLDatatypeUtil {
 	/**
 	 * Checks whether the supplied datatype is equal to xsd:float or xsd:double.
 	 */
-	public static boolean isFloatingPointDatatype(URI datatype) {
+	public static boolean isFloatingPointDatatype(IRI datatype) {
 		return datatype.equals(XMLSchema.FLOAT) || datatype.equals(XMLSchema.DOUBLE);
 	}
 
@@ -141,7 +141,7 @@ public class XMLDatatypeUtil {
 	 * 
 	 * @see XMLGregorianCalendar
 	 */
-	public static boolean isCalendarDatatype(URI datatype) {
+	public static boolean isCalendarDatatype(IRI datatype) {
 		return datatype.equals(XMLSchema.DATETIME) || datatype.equals(XMLSchema.DATE)
 				|| datatype.equals(XMLSchema.TIME) || datatype.equals(XMLSchema.GYEARMONTH)
 				|| datatype.equals(XMLSchema.GMONTHDAY) || datatype.equals(XMLSchema.GYEAR)
@@ -154,7 +154,7 @@ public class XMLDatatypeUtil {
 	 * datatype can be compared to eachother using operators like <tt>&lt;</tt>
 	 * and <tt>&gt;</tt>.
 	 */
-	public static boolean isOrderedDatatype(URI datatype) {
+	public static boolean isOrderedDatatype(IRI datatype) {
 		return isNumericDatatype(datatype) || isCalendarDatatype(datatype);
 	}
 
@@ -171,7 +171,7 @@ public class XMLDatatypeUtil {
 	 *        an XML Schema datatatype.
 	 * @return true if the supplied lexical value is valid, false otherwise.
 	 */
-	public static boolean isValidValue(String value, URI datatype) {
+	public static boolean isValidValue(String value, IRI datatype) {
 		boolean result = true;
 
 		if (datatype.equals(XMLSchema.DECIMAL)) {
@@ -688,7 +688,7 @@ public class XMLDatatypeUtil {
 	 *         If the supplied value is illegal considering the supplied
 	 *         datatype.
 	 */
-	public static String normalize(String value, URI datatype) {
+	public static String normalize(String value, IRI datatype) {
 		String result = value;
 
 		if (datatype.equals(XMLSchema.DECIMAL)) {
@@ -1304,7 +1304,7 @@ public class XMLDatatypeUtil {
 	 * Value comparison *
 	 *------------------*/
 
-	public static int compare(String value1, String value2, URI datatype) {
+	public static int compare(String value1, String value2, IRI datatype) {
 		if (datatype.equals(XMLSchema.DECIMAL)) {
 			return compareDecimals(value1, value2);
 		}
@@ -1943,7 +1943,7 @@ public class XMLDatatypeUtil {
 	 *         If the supplied qname was not recognized by this method.
 	 * @see DatatypeConstants
 	 */
-	public static URI qnameToURI(QName qname) {
+	public static IRI qnameToURI(QName qname) {
 		if (DatatypeConstants.DATETIME.equals(qname)) {
 			return XMLSchema.DATETIME;
 		}

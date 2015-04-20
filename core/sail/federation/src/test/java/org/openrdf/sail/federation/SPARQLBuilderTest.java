@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.repository.Repository;
@@ -66,9 +66,9 @@ public class SPARQLBuilderTest extends TestCase {
 		repository.initialize();
 		con = repository.getConnection();
 		valueFactory = con.getValueFactory();
-		URI subj = valueFactory.createURI("urn:test:subj");
-		URI pred = valueFactory.createURI("urn:test:pred");
-		URI obj = valueFactory.createURI("urn:test:obj");
+		IRI subj = valueFactory.createIRI("urn:test:subj");
+		IRI pred = valueFactory.createIRI("urn:test:pred");
+		IRI obj = valueFactory.createIRI("urn:test:obj");
 		con.add(subj, pred, obj);
 	}
 
@@ -79,7 +79,7 @@ public class SPARQLBuilderTest extends TestCase {
 		// Thrown exceptions are the only failure path.
 		TupleQuery tupleQuery = con.prepareTupleQuery(SPARQL, pattern);
 		if (!(prefix.isEmpty() || namespace.isEmpty())) {
-			tupleQuery.setBinding(prefix, valueFactory.createURI(namespace));
+			tupleQuery.setBinding(prefix, valueFactory.createIRI(namespace));
 		}
 		tupleQuery.evaluate().close();
 	}

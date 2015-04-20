@@ -22,7 +22,7 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -127,7 +127,7 @@ public interface SailConnection {
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, IRI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException;
 
@@ -295,7 +295,7 @@ public interface SailConnection {
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
-	public void addStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**
@@ -323,14 +323,14 @@ public interface SailConnection {
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
-	public void removeStatements(Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatements(Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**
 	 * Signals the start of an update operation. The given <code>op</code> maybe
 	 * passed to subsequent
-	 * {@link #addStatement(UpdateContext, Resource, URI, Value, Resource...)} or
-	 * {@link #removeStatement(UpdateContext, Resource, URI, Value, Resource...)}
+	 * {@link #addStatement(UpdateContext, Resource, IRI, Value, Resource...)} or
+	 * {@link #removeStatement(UpdateContext, Resource, IRI, Value, Resource...)}
 	 * calls before {@link #endUpdate(UpdateContext)} is called.
 	 * 
 	 * @throws SailException
@@ -361,7 +361,7 @@ public interface SailConnection {
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
-	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void addStatement(UpdateContext op, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**
@@ -390,7 +390,7 @@ public interface SailConnection {
 	 * @throws IllegalStateException
 	 *         If the connection has been closed.
 	 */
-	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+	public void removeStatement(UpdateContext op, Resource subj, IRI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 	/**

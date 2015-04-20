@@ -32,9 +32,9 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleBNode;
+import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -94,31 +94,31 @@ public abstract class AbstractQueryResultIOTest {
 		List<String> bindingNames = Arrays.asList("a");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new URIImpl("foo:bar"));
+		solution1.addBinding("a", new SimpleIRI("foo:bar"));
 
 		MapBindingSet solution2 = new MapBindingSet(bindingNames.size());
-		solution2.addBinding("a", new LiteralImpl("2.0", XMLSchema.DOUBLE));
+		solution2.addBinding("a", new SimpleLiteral("2.0", XMLSchema.DOUBLE));
 
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
-		solution3.addBinding("a", new BNodeImpl("bnode3"));
+		solution3.addBinding("a", new SimpleBNode("bnode3"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
-		solution4.addBinding("a", new LiteralImpl("''single-quoted string", XMLSchema.STRING));
+		solution4.addBinding("a", new SimpleLiteral("''single-quoted string", XMLSchema.STRING));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
-		solution5.addBinding("a", new LiteralImpl("\"\"double-quoted string", XMLSchema.STRING));
+		solution5.addBinding("a", new SimpleLiteral("\"\"double-quoted string", XMLSchema.STRING));
 
 		MapBindingSet solution6 = new MapBindingSet(bindingNames.size());
-		solution6.addBinding("a", new LiteralImpl("space at the end         ", XMLSchema.STRING));
+		solution6.addBinding("a", new SimpleLiteral("space at the end         ", XMLSchema.STRING));
 
 		MapBindingSet solution7 = new MapBindingSet(bindingNames.size());
-		solution7.addBinding("a", new LiteralImpl("space at the end         ", XMLSchema.STRING));
+		solution7.addBinding("a", new SimpleLiteral("space at the end         ", XMLSchema.STRING));
 
 		MapBindingSet solution8 = new MapBindingSet(bindingNames.size());
-		solution8.addBinding("a", new LiteralImpl("\"\"double-quoted string with no datatype"));
+		solution8.addBinding("a", new SimpleLiteral("\"\"double-quoted string with no datatype"));
 
 		MapBindingSet solution9 = new MapBindingSet(bindingNames.size());
-		solution9.addBinding("a", new LiteralImpl("newline at the end \n", XMLSchema.STRING));
+		solution9.addBinding("a", new SimpleLiteral("newline at the end \n", XMLSchema.STRING));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5, solution6, solution7 , solution8, solution9);
@@ -132,28 +132,28 @@ public abstract class AbstractQueryResultIOTest {
 		List<String> bindingNames = Arrays.asList("a", "b", "c");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new URIImpl("foo:bar"));
-		solution1.addBinding("b", new BNodeImpl("bnode"));
-		solution1.addBinding("c", new LiteralImpl("baz"));
+		solution1.addBinding("a", new SimpleIRI("foo:bar"));
+		solution1.addBinding("b", new SimpleBNode("bnode"));
+		solution1.addBinding("c", new SimpleLiteral("baz"));
 
 		MapBindingSet solution2 = new MapBindingSet(bindingNames.size());
-		solution2.addBinding("a", new LiteralImpl("1", XMLSchema.INTEGER));
-		solution2.addBinding("c", new LiteralImpl("Hello World!", "en"));
+		solution2.addBinding("a", new SimpleLiteral("1", XMLSchema.INTEGER));
+		solution2.addBinding("c", new SimpleLiteral("Hello World!", "en"));
 
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
-		solution3.addBinding("a", new URIImpl("http://example.org/test/ns/bindingA"));
-		solution3.addBinding("b", new LiteralImpl("http://example.com/other/ns/bindingB"));
-		solution3.addBinding("c", new URIImpl("http://example.com/other/ns/binding,C"));
+		solution3.addBinding("a", new SimpleIRI("http://example.org/test/ns/bindingA"));
+		solution3.addBinding("b", new SimpleLiteral("http://example.com/other/ns/bindingB"));
+		solution3.addBinding("c", new SimpleIRI("http://example.com/other/ns/binding,C"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
-		solution4.addBinding("a", new LiteralImpl("string with newline at the end       \n"));
-		solution4.addBinding("b", new LiteralImpl("string with space at the end         "));
-		solution4.addBinding("c", new LiteralImpl("    "));
+		solution4.addBinding("a", new SimpleLiteral("string with newline at the end       \n"));
+		solution4.addBinding("b", new SimpleLiteral("string with space at the end         "));
+		solution4.addBinding("c", new SimpleLiteral("    "));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
-		solution5.addBinding("a", new LiteralImpl("''single-quoted string"));
-		solution5.addBinding("b", new LiteralImpl("\"\"double-quoted string"));
-		solution5.addBinding("c", new LiteralImpl("		unencoded tab characters followed by encoded \t\t"));
+		solution5.addBinding("a", new SimpleLiteral("''single-quoted string"));
+		solution5.addBinding("b", new SimpleLiteral("\"\"double-quoted string"));
+		solution5.addBinding("c", new SimpleLiteral("		unencoded tab characters followed by encoded \t\t"));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5);

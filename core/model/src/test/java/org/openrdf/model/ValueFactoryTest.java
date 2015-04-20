@@ -28,7 +28,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 
@@ -47,11 +47,11 @@ public class ValueFactoryTest {
 	public void setUp()
 		throws Exception
 	{
-		f = ValueFactoryImpl.getInstance();
+		f = SimpleValueFactory.getInstance();
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createBNode()}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createBNode()}.
 	 */
 	@Test
 	public void testCreateBNode() {
@@ -61,7 +61,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(boolean)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(boolean)}.
 	 */
 	@Test
 	public void testCreateLiteralBoolean() {
@@ -77,7 +77,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(byte)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(byte)}.
 	 */
 	@Test
 	public void testCreateLiteralByte() {
@@ -90,7 +90,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(short)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(short)}.
 	 */
 	@Test
 	public void testCreateLiteralShort() {
@@ -104,7 +104,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(int)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(int)}.
 	 */
 	@Test
 	public void testCreateLiteralInt() {
@@ -115,7 +115,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(long)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(long)}.
 	 */
 	@Test
 	public void testCreateLiteralLong() {
@@ -126,7 +126,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(float)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(float)}.
 	 */
 	@Test
 	public void testCreateLiteralFloat() {
@@ -139,7 +139,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(double)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(double)}.
 	 */
 	@Test
 	public void testCreateLiteralDouble() {
@@ -150,7 +150,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(javax.xml.datatype.XMLGregorianCalendar)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(javax.xml.datatype.XMLGregorianCalendar)}.
 	 */
 	@Test
 	public void testCreateLiteralXMLGregorianCalendar() {
@@ -170,7 +170,7 @@ public class ValueFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.model.impl.ValueFactoryBase#createLiteral(java.util.Date)}.
+	 * Test method for {@link org.openrdf.model.impl.AbstractValueFactory#createLiteral(java.util.Date)}.
 	 */
 	@Test
 	public void testCreateLiteralDate() {

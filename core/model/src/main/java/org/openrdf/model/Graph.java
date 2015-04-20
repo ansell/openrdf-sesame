@@ -36,7 +36,7 @@ public interface Graph extends Collection<Statement>, Serializable {
 	/**
 	 * Gets the value factory for this graph.
 	 * 
-	 * @deprecated {@link org.openrdf.model.impl.ValueFactoryImpl#getInstance}
+	 * @deprecated {@link org.openrdf.model.impl.SimpleValueFactory#getInstance}
 	 *             will obtain a default value factory implementation. If you are
 	 *             working with the Repository API, then <tt>Repository</tt>
 	 *             instances also supply a <tt>getValueFactory()</tt> method.
@@ -58,7 +58,7 @@ public interface Graph extends Collection<Statement>, Serializable {
 	 * @param contexts
 	 *        The contexts to add statements to.
 	 */
-	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
+	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**
 	 * Gets the statements with the specified subject, predicate, object and
@@ -104,5 +104,5 @@ public interface Graph extends Collection<Statement>, Serializable {
 	 *         info.
 	 */
 	@Deprecated
-	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts);
+	public Iterator<Statement> match(Resource subj, IRI pred, Value obj, Resource... contexts);
 }

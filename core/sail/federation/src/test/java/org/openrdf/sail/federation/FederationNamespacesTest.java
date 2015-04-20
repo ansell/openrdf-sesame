@@ -33,7 +33,7 @@ import org.junit.Test;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -54,7 +54,7 @@ public class FederationNamespacesTest extends TestCase {
 
 	private static String EXPECTED_NAME = "http://test/a#";
 
-	private static Namespace EXPECTED_NAMESPACE = new NamespaceImpl(PREFIX, EXPECTED_NAME);
+	private static Namespace EXPECTED_NAMESPACE = new SimpleNamespace(PREFIX, EXPECTED_NAME);
 
 	@Test
 	public void testTwoMatchingNamespaces()

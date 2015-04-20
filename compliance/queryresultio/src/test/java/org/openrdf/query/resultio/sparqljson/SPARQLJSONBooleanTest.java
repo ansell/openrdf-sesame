@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.resultio.AbstractQueryResultIOBooleanTest;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -51,7 +51,7 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 	public void testBoolean1()
 		throws Exception
 	{
-		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -64,7 +64,7 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 	public void testBoolean2()
 		throws Exception
 	{
-		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -77,7 +77,7 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 	public void testBoolean3()
 		throws Exception
 	{
-		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -90,7 +90,7 @@ public class SPARQLJSONBooleanTest extends AbstractQueryResultIOBooleanTest {
 	public void testBoolean4()
 		throws Exception
 	{
-		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLBooleanJSONParser parser = new SPARQLBooleanJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 

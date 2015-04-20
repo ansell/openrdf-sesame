@@ -44,7 +44,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -179,9 +179,9 @@ public class BinaryRDFParser extends RDFParserBase {
 		}
 
 		v = readValue();
-		URI pred = null;
-		if (v instanceof URI) {
-			pred = (URI)v;
+		IRI pred = null;
+		if (v instanceof IRI) {
+			pred = (IRI)v;
 		}
 		else {
 			reportFatalError("Invalid predicate type: " + v);
@@ -239,7 +239,7 @@ public class BinaryRDFParser extends RDFParserBase {
 		return declaredValues[id];
 	}
 
-	private URI readURI()
+	private IRI readURI()
 		throws IOException, RDFParseException
 	{
 		String uri = readString();
@@ -273,7 +273,7 @@ public class BinaryRDFParser extends RDFParserBase {
 	{
 		String label = readString();
 		String datatype = readString();
-		URI dtUri = createURI(datatype);
+		IRI dtUri = createURI(datatype);
 		return createLiteral(label, null, dtUri, -1, -1);
 	}
 

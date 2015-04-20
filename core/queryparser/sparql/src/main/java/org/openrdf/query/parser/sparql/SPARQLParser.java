@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
@@ -116,7 +116,7 @@ public class SPARQLParser implements QueryParser {
 					}
 				}
 
-				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new ValueFactoryImpl());
+				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new SimpleValueFactory());
 
 				ASTUpdate updateNode = uc.getUpdate();
 				if (updateNode != null) {
@@ -205,7 +205,7 @@ public class SPARQLParser implements QueryParser {
 	private TupleExpr buildQueryModel(Node qc)
 		throws MalformedQueryException
 	{
-		TupleExprBuilder tupleExprBuilder = new TupleExprBuilder(new ValueFactoryImpl());
+		TupleExprBuilder tupleExprBuilder = new TupleExprBuilder(new SimpleValueFactory());
 		try {
 			return (TupleExpr)qc.jjtAccept(tupleExprBuilder, null);
 		}

@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -64,7 +64,7 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 		throws Exception
 	{
 		parser = rdfParserFactory.getParser();
-		vf = ValueFactoryImpl.getInstance();
+		vf = SimpleValueFactory.getInstance();
 	}
 
 	@After
@@ -131,8 +131,8 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 	public void testNoContext()
 		throws RDFHandlerException
 	{
-		Statement s1 = vf.createStatement(vf.createURI("http://test.example.org/test/subject/1"),
-				vf.createURI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"));
+		Statement s1 = vf.createStatement(vf.createIRI("http://test.example.org/test/subject/1"),
+				vf.createIRI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"));
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		writer = rdfWriterFactory.getWriter(baos);
@@ -152,8 +152,8 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 	public void testNoContextAddXSDString()
 		throws RDFHandlerException
 	{
-		Statement s1 = vf.createStatement(vf.createURI("http://test.example.org/test/subject/1"),
-				vf.createURI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"));
+		Statement s1 = vf.createStatement(vf.createIRI("http://test.example.org/test/subject/1"),
+				vf.createIRI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"));
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		writer = rdfWriterFactory.getWriter(baos);
@@ -174,8 +174,8 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 	public void testBlankNodeContext()
 		throws RDFHandlerException
 	{
-		Statement s1 = vf.createStatement(vf.createURI("http://test.example.org/test/subject/1"),
-				vf.createURI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"),
+		Statement s1 = vf.createStatement(vf.createIRI("http://test.example.org/test/subject/1"),
+				vf.createIRI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"),
 				vf.createBNode());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -194,8 +194,8 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 	public void testBlankNodeContextAddXSDString()
 		throws RDFHandlerException
 	{
-		Statement s1 = vf.createStatement(vf.createURI("http://test.example.org/test/subject/1"),
-				vf.createURI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"),
+		Statement s1 = vf.createStatement(vf.createIRI("http://test.example.org/test/subject/1"),
+				vf.createIRI("http://other.example.com/test/predicate/1"), vf.createLiteral("test literal"),
 				vf.createBNode());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

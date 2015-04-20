@@ -33,7 +33,7 @@ import info.aduna.lang.ObjectUtil;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -69,7 +69,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 * Constants *
 	 *-----------*/
 
-	private final ValueFactoryImpl vf = ValueFactoryImpl.getInstance();
+	private final SimpleValueFactory vf = SimpleValueFactory.getInstance();
 
 	private final EvaluationStrategy strategy;
 

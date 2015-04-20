@@ -17,10 +17,10 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for RDF primitives and for the RDF namespace.
@@ -41,81 +41,81 @@ public class RDF {
 	/**
 	 * An immutable {@link Namespace} constant that represents the RDF namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#type */
-	public final static URI TYPE;
+	public final static IRI TYPE;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#Property */
-	public final static URI PROPERTY;
+	public final static IRI PROPERTY;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral */
-	public final static URI XMLLITERAL;
+	public final static IRI XMLLITERAL;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#subject */
-	public final static URI SUBJECT;
+	public final static IRI SUBJECT;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate */
-	public final static URI PREDICATE;
+	public final static IRI PREDICATE;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#object */
-	public final static URI OBJECT;
+	public final static IRI OBJECT;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement */
-	public final static URI STATEMENT;
+	public final static IRI STATEMENT;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag */
-	public final static URI BAG;
+	public final static IRI BAG;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#Alt */
-	public final static URI ALT;
+	public final static IRI ALT;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq */
-	public final static URI SEQ;
+	public final static IRI SEQ;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#value */
-	public final static URI VALUE;
+	public final static IRI VALUE;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#li */
-	public final static URI LI;
+	public final static IRI LI;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#List */
-	public final static URI LIST;
+	public final static IRI LIST;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#first */
-	public final static URI FIRST;
+	public final static IRI FIRST;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#rest */
-	public final static URI REST;
+	public final static IRI REST;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#nil */
-	public final static URI NIL;
+	public final static IRI NIL;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#langString */
-	public static final URI LANGSTRING;
+	public static final IRI LANGSTRING;
 
 	/** http://www.w3.org/1999/02/22-rdf-syntax-ns#HTML */
-	public static final URI HTML;
+	public static final IRI HTML;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		TYPE = factory.createURI(RDF.NAMESPACE, "type");
-		PROPERTY = factory.createURI(RDF.NAMESPACE, "Property");
-		XMLLITERAL = factory.createURI(RDF.NAMESPACE, "XMLLiteral");
-		SUBJECT = factory.createURI(RDF.NAMESPACE, "subject");
-		PREDICATE = factory.createURI(RDF.NAMESPACE, "predicate");
-		OBJECT = factory.createURI(RDF.NAMESPACE, "object");
-		STATEMENT = factory.createURI(RDF.NAMESPACE, "Statement");
-		BAG = factory.createURI(RDF.NAMESPACE, "Bag");
-		ALT = factory.createURI(RDF.NAMESPACE, "Alt");
-		SEQ = factory.createURI(RDF.NAMESPACE, "Seq");
-		VALUE = factory.createURI(RDF.NAMESPACE, "value");
-		LI = factory.createURI(RDF.NAMESPACE, "li");
-		LIST = factory.createURI(RDF.NAMESPACE, "List");
-		FIRST = factory.createURI(RDF.NAMESPACE, "first");
-		REST = factory.createURI(RDF.NAMESPACE, "rest");
-		NIL = factory.createURI(RDF.NAMESPACE, "nil");
-		LANGSTRING = factory.createURI(RDF.NAMESPACE, "langString");
-		HTML = factory.createURI(RDF.NAMESPACE, "HTML");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		TYPE = factory.createIRI(RDF.NAMESPACE, "type");
+		PROPERTY = factory.createIRI(RDF.NAMESPACE, "Property");
+		XMLLITERAL = factory.createIRI(RDF.NAMESPACE, "XMLLiteral");
+		SUBJECT = factory.createIRI(RDF.NAMESPACE, "subject");
+		PREDICATE = factory.createIRI(RDF.NAMESPACE, "predicate");
+		OBJECT = factory.createIRI(RDF.NAMESPACE, "object");
+		STATEMENT = factory.createIRI(RDF.NAMESPACE, "Statement");
+		BAG = factory.createIRI(RDF.NAMESPACE, "Bag");
+		ALT = factory.createIRI(RDF.NAMESPACE, "Alt");
+		SEQ = factory.createIRI(RDF.NAMESPACE, "Seq");
+		VALUE = factory.createIRI(RDF.NAMESPACE, "value");
+		LI = factory.createIRI(RDF.NAMESPACE, "li");
+		LIST = factory.createIRI(RDF.NAMESPACE, "List");
+		FIRST = factory.createIRI(RDF.NAMESPACE, "first");
+		REST = factory.createIRI(RDF.NAMESPACE, "rest");
+		NIL = factory.createIRI(RDF.NAMESPACE, "nil");
+		LANGSTRING = factory.createIRI(RDF.NAMESPACE, "langString");
+		HTML = factory.createIRI(RDF.NAMESPACE, "HTML");
 	}
 }

@@ -17,10 +17,10 @@
 package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleNamespace;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for the <a href="http://www.w3.org/TR/rdf-schema/">RDF Vocabulary
@@ -41,69 +41,69 @@ public class RDFS {
 	 * An immutable {@link Namespace} constant that represents the RDFS
 	 * namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/** http://www.w3.org/2000/01/rdf-schema#Resource */
-	public final static URI RESOURCE;
+	public final static IRI RESOURCE;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Literal */
-	public final static URI LITERAL;
+	public final static IRI LITERAL;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Class */
-	public final static URI CLASS;
+	public final static IRI CLASS;
 
 	/** http://www.w3.org/2000/01/rdf-schema#subClassOf */
-	public final static URI SUBCLASSOF;
+	public final static IRI SUBCLASSOF;
 
 	/** http://www.w3.org/2000/01/rdf-schema#subPropertyOf */
-	public final static URI SUBPROPERTYOF;
+	public final static IRI SUBPROPERTYOF;
 
 	/** http://www.w3.org/2000/01/rdf-schema#domain */
-	public final static URI DOMAIN;
+	public final static IRI DOMAIN;
 
 	/** http://www.w3.org/2000/01/rdf-schema#range */
-	public final static URI RANGE;
+	public final static IRI RANGE;
 
 	/** http://www.w3.org/2000/01/rdf-schema#comment */
-	public final static URI COMMENT;
+	public final static IRI COMMENT;
 
 	/** http://www.w3.org/2000/01/rdf-schema#label */
-	public final static URI LABEL;
+	public final static IRI LABEL;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Datatype */
-	public final static URI DATATYPE;
+	public final static IRI DATATYPE;
 
 	/** http://www.w3.org/2000/01/rdf-schema#Container */
-	public final static URI CONTAINER;
+	public final static IRI CONTAINER;
 
 	/** http://www.w3.org/2000/01/rdf-schema#member */
-	public final static URI MEMBER;
+	public final static IRI MEMBER;
 
 	/** http://www.w3.org/2000/01/rdf-schema#isDefinedBy */
-	public final static URI ISDEFINEDBY;
+	public final static IRI ISDEFINEDBY;
 
 	/** http://www.w3.org/2000/01/rdf-schema#seeAlso */
-	public final static URI SEEALSO;
+	public final static IRI SEEALSO;
 
 	/** http://www.w3.org/2000/01/rdf-schema#ContainerMembershipProperty */
-	public final static URI CONTAINERMEMBERSHIPPROPERTY;
+	public final static IRI CONTAINERMEMBERSHIPPROPERTY;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		RESOURCE = factory.createURI(RDFS.NAMESPACE, "Resource");
-		LITERAL = factory.createURI(RDFS.NAMESPACE, "Literal");
-		CLASS = factory.createURI(RDFS.NAMESPACE, "Class");
-		SUBCLASSOF = factory.createURI(RDFS.NAMESPACE, "subClassOf");
-		SUBPROPERTYOF = factory.createURI(RDFS.NAMESPACE, "subPropertyOf");
-		DOMAIN = factory.createURI(RDFS.NAMESPACE, "domain");
-		RANGE = factory.createURI(RDFS.NAMESPACE, "range");
-		COMMENT = factory.createURI(RDFS.NAMESPACE, "comment");
-		LABEL = factory.createURI(RDFS.NAMESPACE, "label");
-		DATATYPE = factory.createURI(RDFS.NAMESPACE, "Datatype");
-		CONTAINER = factory.createURI(RDFS.NAMESPACE, "Container");
-		MEMBER = factory.createURI(RDFS.NAMESPACE, "member");
-		ISDEFINEDBY = factory.createURI(RDFS.NAMESPACE, "isDefinedBy");
-		SEEALSO = factory.createURI(RDFS.NAMESPACE, "seeAlso");
-		CONTAINERMEMBERSHIPPROPERTY = factory.createURI(RDFS.NAMESPACE, "ContainerMembershipProperty");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		RESOURCE = factory.createIRI(RDFS.NAMESPACE, "Resource");
+		LITERAL = factory.createIRI(RDFS.NAMESPACE, "Literal");
+		CLASS = factory.createIRI(RDFS.NAMESPACE, "Class");
+		SUBCLASSOF = factory.createIRI(RDFS.NAMESPACE, "subClassOf");
+		SUBPROPERTYOF = factory.createIRI(RDFS.NAMESPACE, "subPropertyOf");
+		DOMAIN = factory.createIRI(RDFS.NAMESPACE, "domain");
+		RANGE = factory.createIRI(RDFS.NAMESPACE, "range");
+		COMMENT = factory.createIRI(RDFS.NAMESPACE, "comment");
+		LABEL = factory.createIRI(RDFS.NAMESPACE, "label");
+		DATATYPE = factory.createIRI(RDFS.NAMESPACE, "Datatype");
+		CONTAINER = factory.createIRI(RDFS.NAMESPACE, "Container");
+		MEMBER = factory.createIRI(RDFS.NAMESPACE, "member");
+		ISDEFINEDBY = factory.createIRI(RDFS.NAMESPACE, "isDefinedBy");
+		SEEALSO = factory.createIRI(RDFS.NAMESPACE, "seeAlso");
+		CONTAINERMEMBERSHIPPROPERTY = factory.createIRI(RDFS.NAMESPACE, "ContainerMembershipProperty");
 	}
 }

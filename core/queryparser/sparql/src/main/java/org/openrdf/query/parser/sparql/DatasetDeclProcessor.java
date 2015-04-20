@@ -18,8 +18,8 @@ package org.openrdf.query.parser.sparql;
 
 import java.util.List;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -65,10 +65,10 @@ public class DatasetDeclProcessor {
 					ASTIRI astIri = dc.jjtGetChild(ASTIRI.class);
 
 					try {
-						URI uri = SESAME.NIL;
+						IRI uri = SESAME.NIL;
 						
 						if (astIri != null) {
-							uri = new URIImpl(astIri.getValue());
+							uri = new SimpleIRI(astIri.getValue());
 						}
 						
 						if (dc.isNamed()) {

@@ -30,7 +30,7 @@ import org.springframework.web.servlet.View;
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -81,7 +81,7 @@ public class ExportStatementsView implements View {
 		throws Exception
 	{
 		Resource subj = (Resource)model.get(SUBJECT_KEY);
-		URI pred = (URI)model.get(PREDICATE_KEY);
+		IRI pred = (IRI)model.get(PREDICATE_KEY);
 		Value obj = (Value)model.get(OBJECT_KEY);
 		Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
 		boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);

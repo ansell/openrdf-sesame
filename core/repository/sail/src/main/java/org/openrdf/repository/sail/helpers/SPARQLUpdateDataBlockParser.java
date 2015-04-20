@@ -22,7 +22,7 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -55,7 +55,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 	 *--------------*/
 
 	/**
-	 * Creates a new parser that will use a {@link ValueFactoryImpl} to create
+	 * Creates a new parser that will use a {@link SimpleValueFactory} to create
 	 * RDF model objects.
 	 */
 	public SPARQLUpdateDataBlockParser() {

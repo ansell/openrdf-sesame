@@ -26,7 +26,7 @@ import java.util.List;
 
 import com.opencsv.CSVReader;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -79,7 +79,7 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 						else if (!"".equals(valueString)) {
 							if (valueString.matches("^[\\+\\-]?[\\d\\.].*")) {
 
-								URI datatype = null;
+								IRI datatype = null;
 
 								if (XMLDatatypeUtil.isValidInteger(valueString)) {
 									if (XMLDatatypeUtil.isValidNegativeInteger(valueString)) {
@@ -105,7 +105,7 @@ public class SPARQLResultsCSVParser extends TupleQueryResultParserBase implement
 							}
 							else {
 								try {
-									v = valueFactory.createURI(valueString);
+									v = valueFactory.createIRI(valueString);
 								}
 								catch (IllegalArgumentException e) {
 									v = valueFactory.createLiteral(valueString);

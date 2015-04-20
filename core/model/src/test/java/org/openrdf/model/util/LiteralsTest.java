@@ -28,7 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
@@ -349,7 +349,7 @@ public class LiteralsTest {
 
 		Object obj = null;
 		try {
-			Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+			Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 			fail("Did not find expected exception");
 		}
 		catch (NullPointerException npe) {
@@ -368,7 +368,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = Boolean.TRUE;
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BOOLEAN);
 		assertTrue(l.booleanValue());
@@ -386,7 +386,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Integer(42).byteValue();
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BYTE);
 		assertEquals(l.getLabel(), "42");
@@ -404,7 +404,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Double(42);
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DOUBLE);
 		assertEquals(l.getLabel(), "42.0");
@@ -422,7 +422,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Float(42);
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.FLOAT);
 		assertEquals(l.getLabel(), "42.0");
@@ -440,7 +440,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Integer(4);
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.INT);
 		assertEquals(l.getLabel(), "4");
@@ -458,7 +458,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Long(42);
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.LONG);
 		assertEquals(l.getLabel(), "42");
@@ -476,7 +476,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = Short.parseShort("42");
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.SHORT);
 		assertEquals("42", l.getLabel());
@@ -497,7 +497,7 @@ public class LiteralsTest {
 		c.setTime(new Date());
 		try {
 			Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+			Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 			assertNotNull(l);
 			assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 			// TODO check lexical value?
@@ -520,7 +520,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Date();
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 
@@ -537,7 +537,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = "random unique string";
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 		assertEquals(l.getLabel(), "random unique string");
@@ -555,7 +555,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Object();
-		Literal l = Literals.createLiteral(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteral(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 
@@ -573,7 +573,7 @@ public class LiteralsTest {
 
 		Object obj = null;
 		try {
-			Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+			Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 			fail("Did not find expected exception");
 		}
 		catch (NullPointerException npe) {
@@ -592,7 +592,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = Boolean.TRUE;
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BOOLEAN);
 		assertTrue(l.booleanValue());
@@ -610,7 +610,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Integer(42).byteValue();
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.BYTE);
 		assertEquals(l.getLabel(), "42");
@@ -628,7 +628,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Double(42);
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DOUBLE);
 		assertEquals(l.getLabel(), "42.0");
@@ -646,7 +646,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Float(42);
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.FLOAT);
 		assertEquals(l.getLabel(), "42.0");
@@ -664,7 +664,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Integer(4);
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.INT);
 		assertEquals(l.getLabel(), "4");
@@ -682,7 +682,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Long(42);
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.LONG);
 		assertEquals(l.getLabel(), "42");
@@ -700,7 +700,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = Short.parseShort("42");
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.SHORT);
 		assertEquals("42", l.getLabel());
@@ -721,7 +721,7 @@ public class LiteralsTest {
 		c.setTime(new Date());
 		try {
 			Object obj = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+			Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 			assertNotNull(l);
 			assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 			// TODO check lexical value?
@@ -744,7 +744,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = new Date();
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.DATETIME);
 
@@ -761,7 +761,7 @@ public class LiteralsTest {
 	{
 
 		Object obj = "random unique string";
-		Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+		Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 		assertNotNull(l);
 		assertEquals(l.getDatatype(), XMLSchema.STRING);
 		assertEquals(l.getLabel(), "random unique string");
@@ -780,7 +780,7 @@ public class LiteralsTest {
 
 		Object obj = new Object();
 		try {
-			Literal l = Literals.createLiteralOrFail(ValueFactoryImpl.getInstance(), obj);
+			Literal l = Literals.createLiteralOrFail(SimpleValueFactory.getInstance(), obj);
 			fail("Did not receive expected exception");
 		}
 		catch (LiteralUtilException e) {

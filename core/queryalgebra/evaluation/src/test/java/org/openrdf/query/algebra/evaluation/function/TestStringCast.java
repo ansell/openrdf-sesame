@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 
@@ -40,7 +40,7 @@ public class TestStringCast {
 
 	private StringCast stringCast;
 
-	private ValueFactory f = new ValueFactoryImpl();
+	private ValueFactory f = new SimpleValueFactory();
 	
 	/**
 	 * @throws java.lang.Exception
@@ -120,7 +120,7 @@ public class TestStringCast {
 	@Test 
 	public void testCastUnknownDatatypedLiteral() {
 		String lexVal = "foobar";
-		Literal dtLit = f.createLiteral(lexVal, f.createURI("foo:unknownDt"));
+		Literal dtLit = f.createLiteral(lexVal, f.createIRI("foo:unknownDt"));
 		try {
 			Literal result = stringCast.evaluate(f, dtLit);
 			assertNotNull(result);

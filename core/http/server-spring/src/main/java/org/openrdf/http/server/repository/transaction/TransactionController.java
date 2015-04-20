@@ -71,7 +71,7 @@ import org.openrdf.http.server.repository.TupleQueryResultView;
 import org.openrdf.http.server.repository.statements.ExportStatementsView;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.SESAME;
@@ -310,7 +310,7 @@ public class TransactionController extends AbstractController {
 		ValueFactory vf = conn.getValueFactory();
 
 		Resource subj = ProtocolUtil.parseResourceParam(request, SUBJECT_PARAM_NAME, vf);
-		URI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
+		IRI pred = ProtocolUtil.parseURIParam(request, PREDICATE_PARAM_NAME, vf);
 		Value obj = ProtocolUtil.parseValueParam(request, OBJECT_PARAM_NAME, vf);
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		boolean useInferencing = ProtocolUtil.parseBooleanParam(request, INCLUDE_INFERRED_PARAM_NAME, true);
@@ -441,9 +441,9 @@ public class TransactionController extends AbstractController {
 			if (defaultGraphURIs != null) {
 				for (String defaultGraphURI : defaultGraphURIs) {
 					try {
-						URI uri = null;
+						IRI uri = null;
 						if (!"null".equals(defaultGraphURI)) {
-							uri = repositoryCon.getValueFactory().createURI(defaultGraphURI);
+							uri = repositoryCon.getValueFactory().createIRI(defaultGraphURI);
 						}
 						dataset.addDefaultGraph(uri);
 					}
@@ -457,9 +457,9 @@ public class TransactionController extends AbstractController {
 			if (namedGraphURIs != null) {
 				for (String namedGraphURI : namedGraphURIs) {
 					try {
-						URI uri = null;
+						IRI uri = null;
 						if (!"null".equals(namedGraphURI)) {
-							uri = repositoryCon.getValueFactory().createURI(namedGraphURI);
+							uri = repositoryCon.getValueFactory().createIRI(namedGraphURI);
 						}
 						dataset.addNamedGraph(uri);
 					}
@@ -554,9 +554,9 @@ public class TransactionController extends AbstractController {
 		if (defaultRemoveGraphURIs != null) {
 			for (String graphURI : defaultRemoveGraphURIs) {
 				try {
-					URI uri = null;
+					IRI uri = null;
 					if (!"null".equals(graphURI)) {
-						uri = conn.getValueFactory().createURI(graphURI);
+						uri = conn.getValueFactory().createIRI(graphURI);
 					}
 					dataset.addDefaultRemoveGraph(uri);
 				}
@@ -570,9 +570,9 @@ public class TransactionController extends AbstractController {
 		if (defaultInsertGraphURIs != null && defaultInsertGraphURIs.length > 0) {
 			String graphURI = defaultInsertGraphURIs[0];
 			try {
-				URI uri = null;
+				IRI uri = null;
 				if (!"null".equals(graphURI)) {
-					uri = conn.getValueFactory().createURI(graphURI);
+					uri = conn.getValueFactory().createIRI(graphURI);
 				}
 				dataset.setDefaultInsertGraph(uri);
 			}
@@ -584,9 +584,9 @@ public class TransactionController extends AbstractController {
 		if (defaultGraphURIs != null) {
 			for (String defaultGraphURI : defaultGraphURIs) {
 				try {
-					URI uri = null;
+					IRI uri = null;
 					if (!"null".equals(defaultGraphURI)) {
-						uri = conn.getValueFactory().createURI(defaultGraphURI);
+						uri = conn.getValueFactory().createIRI(defaultGraphURI);
 					}
 					dataset.addDefaultGraph(uri);
 				}
@@ -600,9 +600,9 @@ public class TransactionController extends AbstractController {
 		if (namedGraphURIs != null) {
 			for (String namedGraphURI : namedGraphURIs) {
 				try {
-					URI uri = null;
+					IRI uri = null;
 					if (!"null".equals(namedGraphURI)) {
-						uri = conn.getValueFactory().createURI(namedGraphURI);
+						uri = conn.getValueFactory().createIRI(namedGraphURI);
 					}
 					dataset.addNamedGraph(uri);
 				}
@@ -686,7 +686,7 @@ public class TransactionController extends AbstractController {
 			throws RDFHandlerException
 		{
 			Resource subject = SESAME.WILDCARD.equals(st.getSubject()) ? null : st.getSubject();
-			URI predicate = SESAME.WILDCARD.equals(st.getPredicate()) ? null : st.getPredicate();
+			IRI predicate = SESAME.WILDCARD.equals(st.getPredicate()) ? null : st.getPredicate();
 			Value object = SESAME.WILDCARD.equals(st.getObject()) ? null : st.getObject();
 			Resource context = st.getContext();
 			try {

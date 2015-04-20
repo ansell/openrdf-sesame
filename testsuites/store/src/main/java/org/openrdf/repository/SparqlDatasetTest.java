@@ -26,9 +26,9 @@ import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -53,15 +53,15 @@ public abstract class SparqlDatasetTest {
 
 	private DatasetImpl dataset;
 
-	private URI graph1 = new URIImpl("http://example.org/graph1");
+	private IRI graph1 = new SimpleIRI("http://example.org/graph1");
 
-	private URI george;
+	private IRI george;
 
-	private URI paul;
+	private IRI paul;
 
-	private URI john;
+	private IRI john;
 
-	private URI ringo;
+	private IRI ringo;
 
 	@Test
 	public void testNoFrom()
@@ -175,17 +175,17 @@ public abstract class SparqlDatasetTest {
 		repository = null;
 	}
 
-	private URI createUser(String id, String name, String email, Resource... context)
+	private IRI createUser(String id, String name, String email, Resource... context)
 		throws RepositoryException
 	{
 		RepositoryConnection conn = repository.getConnection();
-		URI subj = vf.createURI("http://example.org/ns#", id);
-		URI foafName = vf.createURI("http://xmlns.com/foaf/0.1/", "name");
-		URI foafMbox = vf.createURI("http://xmlns.com/foaf/0.1/", "mbox");
+		IRI subj = vf.createIRI("http://example.org/ns#", id);
+		IRI foafName = vf.createIRI("http://xmlns.com/foaf/0.1/", "name");
+		IRI foafMbox = vf.createIRI("http://xmlns.com/foaf/0.1/", "mbox");
 
-		conn.add(subj, RDF.TYPE, vf.createURI("http://xmlns.com/foaf/0.1/", "Person"), context);
+		conn.add(subj, RDF.TYPE, vf.createIRI("http://xmlns.com/foaf/0.1/", "Person"), context);
 		conn.add(subj, foafName, vf.createLiteral(name), context);
-		conn.add(subj, foafMbox, vf.createURI("mailto:", email), context);
+		conn.add(subj, foafMbox, vf.createIRI("mailto:", email), context);
 		conn.close();
 
 		return subj;

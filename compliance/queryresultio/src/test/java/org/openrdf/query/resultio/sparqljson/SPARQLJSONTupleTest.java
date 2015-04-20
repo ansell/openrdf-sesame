@@ -24,8 +24,8 @@ import org.junit.Test;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
@@ -59,7 +59,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testBindings1()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -84,10 +84,10 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 		for (BindingSet b : handler.getBindingSets()) {
 			assertNotNull(b.getValue("book"));
 			assertNotNull(b.getValue("title"));
-			assertTrue(b.getValue("book") instanceof URI);
+			assertTrue(b.getValue("book") instanceof IRI);
 			assertTrue(b.getValue("title") instanceof Literal);
 
-			URI book = (URI)b.getValue("book");
+			IRI book = (IRI)b.getValue("book");
 			if (book.stringValue().equals("http://example.org/book/book6")) {
 				assertEquals("Harry Potter and the Half-Blood Prince", b.getValue("title").stringValue());
 			}
@@ -120,7 +120,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testBindings2()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -156,7 +156,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 			assertNotNull(b.getValue("friend"));
 
 			assertTrue(b.getValue("x") instanceof BNode);
-			assertTrue(b.getValue("hpage") instanceof URI);
+			assertTrue(b.getValue("hpage") instanceof IRI);
 			assertTrue(b.getValue("name") instanceof Literal);
 			assertTrue(b.getValue("friend") instanceof BNode);
 
@@ -189,7 +189,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 			else if (value.getID().equals("r2")) {
 				assertNull(b.getValue("blurb"));
 
-				assertTrue(b.getValue("mbox") instanceof URI);
+				assertTrue(b.getValue("mbox") instanceof IRI);
 
 				assertEquals("http://work.example.org/bob/", b.getValue("hpage").stringValue());
 
@@ -215,7 +215,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testNonStandardDistinct()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -237,7 +237,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testNonStandardOrdered()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 
@@ -259,7 +259,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testNonStandardDistinctOrdered()
 		throws Exception
 	{
-		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(ValueFactoryImpl.getInstance());
+		SPARQLResultsJSONParser parser = new SPARQLResultsJSONParser(SimpleValueFactory.getInstance());
 		QueryResultCollector handler = new QueryResultCollector();
 		parser.setQueryResultHandler(handler);
 

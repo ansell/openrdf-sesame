@@ -19,7 +19,7 @@ package org.openrdf.rio.helpers;
 import java.util.Optional;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.RDF;
@@ -81,7 +81,7 @@ public class RDFParserHelper {
 	 *         recovered from, based on settings in the given parser config.
 	 * @since 2.7.1
 	 */
-	public static final Literal createLiteral(String label, String lang, URI datatype,
+	public static final Literal createLiteral(String label, String lang, IRI datatype,
 			ParserConfig parserConfig, ParseErrorListener errListener, ValueFactory valueFactory)
 		throws RDFParseException
 	{
@@ -135,7 +135,7 @@ public class RDFParserHelper {
 	 *         recovered from, based on settings in the given parser config.
 	 * @since 2.7.4
 	 */
-	public static final Literal createLiteral(String label, String lang, URI datatype,
+	public static final Literal createLiteral(String label, String lang, IRI datatype,
 			ParserConfig parserConfig, ParseErrorListener errListener, ValueFactory valueFactory, int lineNo,
 			int columnNo)
 		throws RDFParseException
@@ -147,7 +147,7 @@ public class RDFParserHelper {
 		Literal result = null;
 		String workingLabel = label;
 		Optional<String> workingLang = Optional.ofNullable(lang);
-		URI workingDatatype = datatype;
+		IRI workingDatatype = datatype;
 
 		// In RDF-1.1 we must do lang check first as language literals will all
 		// have datatype RDF.LANGSTRING, but only language literals would have a

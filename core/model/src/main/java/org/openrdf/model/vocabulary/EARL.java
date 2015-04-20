@@ -16,9 +16,9 @@
  */
 package org.openrdf.model.vocabulary;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Constants for EARL primitives and for the EARL namespace.
@@ -35,79 +35,79 @@ public class EARL {
 	 */
 	public static final String PREFIX = "earl";
 
-	public final static URI ASSERTOR;
+	public final static IRI ASSERTOR;
 
-	public final static URI ASSERTION;
+	public final static IRI ASSERTION;
 
-	public final static URI ASSERTEDBY;
+	public final static IRI ASSERTEDBY;
 
-	public final static URI SUBJECT;
+	public final static IRI SUBJECT;
 
-	public final static URI TEST;
+	public final static IRI TEST;
 
-	public final static URI TEST_SUBJECT;
+	public final static IRI TEST_SUBJECT;
 
-	public final static URI RESULT;
+	public final static IRI RESULT;
 
-	public final static URI MODE;
+	public final static IRI MODE;
 
-	public final static URI TESTRESULT;
+	public final static IRI TESTRESULT;
 
-	public final static URI OUTCOME;
+	public final static IRI OUTCOME;
 
-	public final static URI SOFTWARE;
+	public final static IRI SOFTWARE;
 
 	// Outcome values
 
-	public final static URI PASS;
+	public final static IRI PASS;
 
-	public final static URI FAIL;
+	public final static IRI FAIL;
 
-	public final static URI CANNOTTELL;
+	public final static IRI CANNOTTELL;
 
-	public final static URI NOTAPPLICABLE;
+	public final static IRI NOTAPPLICABLE;
 
-	public final static URI NOTTESTED;
+	public final static IRI NOTTESTED;
 
 	// Test modes
 
-	public final static URI MANUAL;
+	public final static IRI MANUAL;
 
-	public final static URI AUTOMATIC;
+	public final static IRI AUTOMATIC;
 
-	public final static URI SEMIAUTOMATIC;
+	public final static IRI SEMIAUTOMATIC;
 
-	public final static URI NOTAVAILABLE;
+	public final static IRI NOTAVAILABLE;
 
-	public final static URI HEURISTIC;
+	public final static IRI HEURISTIC;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		ASSERTOR = factory.createURI(EARL.NAMESPACE, "Assertor");
-		ASSERTION = factory.createURI(EARL.NAMESPACE, "Assertion");
-		ASSERTEDBY = factory.createURI(EARL.NAMESPACE, "assertedBy");
-		SUBJECT = factory.createURI(EARL.NAMESPACE, "subject");
-		TEST = factory.createURI(EARL.NAMESPACE, "test");
-		TEST_SUBJECT = factory.createURI(EARL.NAMESPACE, "TestSubject");
-		RESULT = factory.createURI(EARL.NAMESPACE, "result");
-		MODE = factory.createURI(EARL.NAMESPACE, "mode");
-		TESTRESULT = factory.createURI(EARL.NAMESPACE, "TestResult");
-		OUTCOME = factory.createURI(EARL.NAMESPACE, "outcome");
-		SOFTWARE = factory.createURI(EARL.NAMESPACE, "Software");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		ASSERTOR = factory.createIRI(EARL.NAMESPACE, "Assertor");
+		ASSERTION = factory.createIRI(EARL.NAMESPACE, "Assertion");
+		ASSERTEDBY = factory.createIRI(EARL.NAMESPACE, "assertedBy");
+		SUBJECT = factory.createIRI(EARL.NAMESPACE, "subject");
+		TEST = factory.createIRI(EARL.NAMESPACE, "test");
+		TEST_SUBJECT = factory.createIRI(EARL.NAMESPACE, "TestSubject");
+		RESULT = factory.createIRI(EARL.NAMESPACE, "result");
+		MODE = factory.createIRI(EARL.NAMESPACE, "mode");
+		TESTRESULT = factory.createIRI(EARL.NAMESPACE, "TestResult");
+		OUTCOME = factory.createIRI(EARL.NAMESPACE, "outcome");
+		SOFTWARE = factory.createIRI(EARL.NAMESPACE, "Software");
 
 		// Outcome values
 
-		PASS = factory.createURI(EARL.NAMESPACE, "pass");
-		FAIL = factory.createURI(EARL.NAMESPACE, "fail");
-		CANNOTTELL = factory.createURI(EARL.NAMESPACE, "cannotTell");
-		NOTAPPLICABLE = factory.createURI(EARL.NAMESPACE, "notApplicable");
-		NOTTESTED = factory.createURI(EARL.NAMESPACE, "notTested");
+		PASS = factory.createIRI(EARL.NAMESPACE, "pass");
+		FAIL = factory.createIRI(EARL.NAMESPACE, "fail");
+		CANNOTTELL = factory.createIRI(EARL.NAMESPACE, "cannotTell");
+		NOTAPPLICABLE = factory.createIRI(EARL.NAMESPACE, "notApplicable");
+		NOTTESTED = factory.createIRI(EARL.NAMESPACE, "notTested");
 
 		// Test modes
-		MANUAL = factory.createURI(EARL.NAMESPACE, "manual");
-		AUTOMATIC = factory.createURI(EARL.NAMESPACE, "automatic");
-		SEMIAUTOMATIC = factory.createURI(EARL.NAMESPACE, "semiAutomatic");
-		NOTAVAILABLE = factory.createURI(EARL.NAMESPACE, "notAvailable");
-		HEURISTIC = factory.createURI(EARL.NAMESPACE, "heuristic");
+		MANUAL = factory.createIRI(EARL.NAMESPACE, "manual");
+		AUTOMATIC = factory.createIRI(EARL.NAMESPACE, "automatic");
+		SEMIAUTOMATIC = factory.createIRI(EARL.NAMESPACE, "semiAutomatic");
+		NOTAVAILABLE = factory.createIRI(EARL.NAMESPACE, "notAvailable");
+		HEURISTIC = factory.createIRI(EARL.NAMESPACE, "heuristic");
 	}
 }

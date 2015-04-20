@@ -17,7 +17,7 @@
 package org.openrdf.rio;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -81,31 +81,31 @@ public interface DatatypeHandler {
 	 * @param datatypeUri
 	 *        The datatype URI to check.
 	 * @return True if the datatype is syntactically valid and could be used with
-	 *         {@link #verifyDatatype(String, URI)} and
-	 *         {@link #normalizeDatatype(String, URI, ValueFactory)}.
+	 *         {@link #verifyDatatype(String, IRI)} and
+	 *         {@link #normalizeDatatype(String, IRI, ValueFactory)}.
 	 * @since 2.7.0
 	 */
-	public boolean isRecognizedDatatype(URI datatypeUri);
+	public boolean isRecognizedDatatype(IRI datatypeUri);
 
 	/**
 	 * Verifies that the datatype URI is valid, including a check on the
 	 * structure of the literal value.
 	 * <p>
 	 * This method must only be called after verifying that
-	 * {@link #isRecognizedDatatype(URI)} returns true for the given datatype
+	 * {@link #isRecognizedDatatype(IRI)} returns true for the given datatype
 	 * URI.
 	 * 
 	 * @param literalValue
 	 *        Literal value matching the given datatype URI.
 	 * @param datatypeUri
-	 *        A datatype URI that matched with {@link #isRecognizedDatatype(URI)}
+	 *        A datatype URI that matched with {@link #isRecognizedDatatype(IRI)}
 	 * @return True if the datatype URI is recognized by this datatype handler,
 	 *         and it is verified to be syntactically valid.
 	 * @since 2.7.0
 	 * @throws LiteralUtilException
 	 *         If the datatype was not recognized.
 	 */
-	public boolean verifyDatatype(String literalValue, URI datatypeUri)
+	public boolean verifyDatatype(String literalValue, IRI datatypeUri)
 		throws LiteralUtilException;
 
 	/**
@@ -114,8 +114,8 @@ public interface DatatypeHandler {
 	 * and datatype URI.
 	 * <p>
 	 * This method must only be called after verifying that
-	 * {@link #isRecognizedDatatype(URI)} returns true for the given datatype
-	 * URI, and {@link #verifyDatatype(String, URI)} also returns true for the
+	 * {@link #isRecognizedDatatype(IRI)} returns true for the given datatype
+	 * URI, and {@link #verifyDatatype(String, IRI)} also returns true for the
 	 * given datatype URI and literal value.
 	 * 
 	 * @param literalValue
@@ -134,7 +134,7 @@ public interface DatatypeHandler {
 	 *         If the datatype URI was not recognized or verified, or the literal
 	 *         value could not be normalized due to an error.
 	 */
-	public Literal normalizeDatatype(String literalValue, URI datatypeUri, ValueFactory valueFactory)
+	public Literal normalizeDatatype(String literalValue, IRI datatypeUri, ValueFactory valueFactory)
 		throws LiteralUtilException;
 
 	/**

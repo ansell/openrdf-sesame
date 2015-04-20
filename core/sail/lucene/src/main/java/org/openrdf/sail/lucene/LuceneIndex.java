@@ -59,10 +59,10 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.BNodeImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.impl.SimpleBNode;
+import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 
@@ -411,7 +411,7 @@ public class LuceneIndex {
 	 * string is either the URI or a bnode prefixed with a "!".
 	 */
 	private String getResourceID(Resource resource) {
-		if (resource instanceof URI) {
+		if (resource instanceof IRI) {
 			return resource.toString();
 		}
 		else if (resource instanceof BNode) {
@@ -847,10 +847,10 @@ public class LuceneIndex {
 	 */
 	private Resource getResource(String idString) {
 		if (idString.startsWith(BNODE_ID_PREFIX)) {
-			return new BNodeImpl(idString.substring(BNODE_ID_PREFIX.length()));
+			return new SimpleBNode(idString.substring(BNODE_ID_PREFIX.length()));
 		}
 		else {
-			return new URIImpl(idString);
+			return new SimpleIRI(idString);
 		}
 	}
 
@@ -914,7 +914,7 @@ public class LuceneIndex {
 	 * @throws ParseException
 	 *         when the parsing brakes
 	 */
-	public Query parseQuery(String query, URI propertyURI)
+	public Query parseQuery(String query, IRI propertyURI)
 		throws ParseException
 	{
 		return getQueryParser(propertyURI).parse(query);
@@ -934,7 +934,7 @@ public class LuceneIndex {
 	 * Gets the score for a particular Resource and query. Returns a value < 0
 	 * when the Resource does not match the query.
 	 */
-	public float getScore(Resource resource, String query, URI propertyURI)
+	public float getScore(Resource resource, String query, IRI propertyURI)
 		throws ParseException, IOException
 	{
 		return getScore(resource, getQueryParser(propertyURI).parse(query));
@@ -964,7 +964,7 @@ public class LuceneIndex {
 		}
 	}
 
-	private QueryParser getQueryParser(URI propertyURI) {
+	private QueryParser getQueryParser(IRI propertyURI) {
 		// check out which query parser to use, based on the given property URI
 		if (propertyURI == null)
 			// if we have no property given, we create a default query parser which

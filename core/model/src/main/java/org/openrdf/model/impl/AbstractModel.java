@@ -28,7 +28,7 @@ import java.util.Set;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.Models;
@@ -247,37 +247,37 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 	}
 
 	@Override
-	public Set<URI> predicates() {
-		return new ValueSet<URI>() {
+	public Set<IRI> predicates() {
+		return new ValueSet<IRI>() {
 
 			@Override
 			public boolean contains(Object o) {
-				if (o instanceof URI) {
-					return AbstractModel.this.contains(null, (URI)o, null);
+				if (o instanceof IRI) {
+					return AbstractModel.this.contains(null, (IRI)o, null);
 				}
 				return false;
 			}
 
 			@Override
 			public boolean remove(Object o) {
-				if (o instanceof URI) {
-					return AbstractModel.this.remove(null, (URI)o, null);
+				if (o instanceof IRI) {
+					return AbstractModel.this.remove(null, (IRI)o, null);
 				}
 				return false;
 			}
 
 			@Override
-			public boolean add(URI pred) {
+			public boolean add(IRI pred) {
 				return AbstractModel.this.add(null, pred, null);
 			}
 
 			@Override
-			protected URI term(Statement st) {
+			protected IRI term(Statement st) {
 				return st.getPredicate();
 			}
 
 			@Override
-			protected void removeIteration(Iterator<Statement> iter, URI pred) {
+			protected void removeIteration(Iterator<Statement> iter, IRI pred) {
 				AbstractModel.this.removeTermIteration(iter, null, pred, null);
 			}
 		};
@@ -578,7 +578,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 	 * @param contexts
 	 *        an array of one context term to be removed or an empty array
 	 */
-	public abstract void removeTermIteration(Iterator<Statement> iter, Resource subj, URI pred, Value obj,
+	public abstract void removeTermIteration(Iterator<Statement> iter, Resource subj, IRI pred, Value obj,
 			Resource... contexts);
 
 	/**
@@ -607,14 +607,14 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 
 	@Deprecated
 	@Override
-	public Iterator<Statement> match(Resource subj, URI pred, Value obj, Resource... contexts) {
+	public Iterator<Statement> match(Resource subj, IRI pred, Value obj, Resource... contexts) {
 		return this.filter(subj, pred, obj, contexts).iterator();
 	}
 
 	@Deprecated
 	@Override
 	public ValueFactory getValueFactory() {
-		return ValueFactoryImpl.getInstance();
+		return SimpleValueFactory.getInstance();
 	}
 
 }

@@ -1,8 +1,8 @@
 package org.openrdf.repository.sail.config;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
  * Defines constants for the HTTPRepository schema which is used by
@@ -20,10 +20,10 @@ public class ProxyRepositorySchema {
 	public static final String NAMESPACE = "http://www.openrdf.org/config/repository/proxy#";
 
 	/** <tt>http://www.openrdf.org/config/repository/proxy#proxiedID</tt> */
-	public final static URI PROXIED_ID;
+	public final static IRI PROXIED_ID;
 
 	static {
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		PROXIED_ID = factory.createURI(NAMESPACE, "proxiedID");
+		ValueFactory factory = SimpleValueFactory.getInstance();
+		PROXIED_ID = factory.createIRI(NAMESPACE, "proxiedID");
 	}
 }

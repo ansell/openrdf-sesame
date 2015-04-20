@@ -42,10 +42,10 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.impl.BooleanLiteral;
 import org.openrdf.model.util.URIUtil;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAME;
@@ -448,7 +448,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		try {
 			Resource[] contexts;
 
-			Set<URI> graphs = null;
+			Set<IRI> graphs = null;
 			boolean emptyGraph = false;
 
 			if (dataset != null) {
@@ -493,8 +493,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			else {
 				contexts = new Resource[graphs.size()];
 				int i = 0;
-				for (URI graph : graphs) {
-					URI context = null;
+				for (IRI graph : graphs) {
+					IRI context = null;
 					if (!SESAME.NIL.equals(graph)) {
 						context = graph;
 					}
@@ -502,7 +502,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				}
 			}
 
-			stIter = tripleSource.getStatements((Resource)subjValue, (URI)predValue, objValue, contexts);
+			stIter = tripleSource.getStatements((Resource)subjValue, (IRI)predValue, objValue, contexts);
 
 			if (contexts.length == 0 && sp.getScope() == Scope.NAMED_CONTEXTS) {
 				// Named contexts are matched by retrieving all statements from
@@ -531,7 +531,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			@Override
 			protected boolean accept(Statement st) {
 				Resource subj = st.getSubject();
-				URI pred = st.getPredicate();
+				IRI pred = st.getPredicate();
 				Value obj = st.getObject();
 				Resource context = st.getContext();
 
@@ -1133,10 +1133,10 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		try {
 			Value argValue = evaluate(node.getArg(), bindings);
-			return BooleanLiteralImpl.valueOf(argValue != null);
+			return BooleanLiteral.valueOf(argValue != null);
 		}
 		catch (ValueExprEvaluationException e) {
-			return BooleanLiteralImpl.FALSE;
+			return BooleanLiteral.FALSE;
 		}
 	}
 
@@ -1145,7 +1145,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
-		if (argValue instanceof URI) {
+		if (argValue instanceof IRI) {
 			return tripleSource.getValueFactory().createLiteral(argValue.toString());
 		}
 		else if (argValue instanceof Literal) {
@@ -1227,9 +1227,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
-		if (argValue instanceof URI) {
-			URI uri = (URI)argValue;
-			return tripleSource.getValueFactory().createURI(uri.getNamespace());
+		if (argValue instanceof IRI) {
+			IRI uri = (IRI)argValue;
+			return tripleSource.getValueFactory().createIRI(uri.getNamespace());
 		}
 		else {
 			throw new ValueExprEvaluationException();
@@ -1241,8 +1241,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 
-		if (argValue instanceof URI) {
-			URI uri = (URI)argValue;
+		if (argValue instanceof IRI) {
+			IRI uri = (IRI)argValue;
 			return tripleSource.getValueFactory().createLiteral(uri.getLocalName());
 		}
 		else {
@@ -1260,7 +1260,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
-		return BooleanLiteralImpl.valueOf(argValue instanceof Resource);
+		return BooleanLiteral.valueOf(argValue instanceof Resource);
 	}
 
 	/**
@@ -1273,7 +1273,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
-		return BooleanLiteralImpl.valueOf(argValue instanceof URI);
+		return BooleanLiteral.valueOf(argValue instanceof IRI);
 	}
 
 	/**
@@ -1286,7 +1286,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
-		return BooleanLiteralImpl.valueOf(argValue instanceof BNode);
+		return BooleanLiteral.valueOf(argValue instanceof BNode);
 	}
 
 	/**
@@ -1299,7 +1299,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
-		return BooleanLiteralImpl.valueOf(argValue instanceof Literal);
+		return BooleanLiteral.valueOf(argValue instanceof Literal);
 	}
 
 	/**
@@ -1317,12 +1317,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (argValue instanceof Literal) {
 			Literal lit = (Literal)argValue;
-			URI datatype = lit.getDatatype();
+			IRI datatype = lit.getDatatype();
 
-			return BooleanLiteralImpl.valueOf(XMLDatatypeUtil.isNumericDatatype(datatype));
+			return BooleanLiteral.valueOf(XMLDatatypeUtil.isNumericDatatype(datatype));
 		}
 		else {
-			return BooleanLiteralImpl.FALSE;
+			return BooleanLiteral.FALSE;
 		}
 
 	}
@@ -1338,7 +1338,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * @throws ValueExprEvaluationException
 	 * @throws QueryEvaluationException
 	 */
-	public URI evaluate(IRIFunction node, BindingSet bindings)
+	public IRI evaluate(IRIFunction node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
@@ -1362,18 +1362,18 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				}
 			}
 
-			URI result = null;
+			IRI result = null;
 
 			try {
-				result = tripleSource.getValueFactory().createURI(uriString);
+				result = tripleSource.getValueFactory().createIRI(uriString);
 			}
 			catch (IllegalArgumentException e) {
 				throw new ValueExprEvaluationException(e.getMessage());
 			}
 			return result;
 		}
-		else if (argValue instanceof URI) {
-			return ((URI)argValue);
+		else if (argValue instanceof IRI) {
+			return ((IRI)argValue);
 		}
 
 		throw new ValueExprEvaluationException();
@@ -1434,7 +1434,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 			Pattern pattern = Pattern.compile(ptn, f);
 			boolean result = pattern.matcher(text).find();
-			return BooleanLiteralImpl.valueOf(result);
+			return BooleanLiteral.valueOf(result);
 		}
 
 		throw new ValueExprEvaluationException();
@@ -1465,7 +1465,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				result = prefix.equalsIgnoreCase(langRange) && langTag.charAt(langRange.length()) == '-';
 			}
 
-			return BooleanLiteralImpl.valueOf(result);
+			return BooleanLiteral.valueOf(result);
 		}
 
 		throw new ValueExprEvaluationException();
@@ -1487,8 +1487,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value val = evaluate(node.getArg(), bindings);
 		String strVal = null;
 
-		if (val instanceof URI) {
-			strVal = ((URI)val).toString();
+		if (val instanceof IRI) {
+			strVal = ((IRI)val).toString();
 		}
 		else if (val instanceof Literal) {
 			strVal = ((Literal)val).getLabel();
@@ -1509,7 +1509,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 
 		if (patternIndex == -1) {
 			// No wildcards
-			return BooleanLiteralImpl.valueOf(node.getOpPattern().equals(strVal));
+			return BooleanLiteral.valueOf(node.getOpPattern().equals(strVal));
 		}
 
 		String snippet;
@@ -1518,7 +1518,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			// Pattern does not start with a wildcard, first part must match
 			snippet = node.getOpPattern().substring(0, patternIndex);
 			if (!strVal.startsWith(snippet)) {
-				return BooleanLiteralImpl.FALSE;
+				return BooleanLiteral.FALSE;
 			}
 
 			valIndex += snippet.length();
@@ -1533,7 +1533,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			// Search for the snippet in the value
 			valIndex = strVal.indexOf(snippet, valIndex);
 			if (valIndex == -1) {
-				return BooleanLiteralImpl.FALSE;
+				return BooleanLiteral.FALSE;
 			}
 
 			valIndex += snippet.length();
@@ -1556,18 +1556,18 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			if (valIndex == -1) {
-				return BooleanLiteralImpl.FALSE;
+				return BooleanLiteral.FALSE;
 			}
 
 			valIndex += snippet.length();
 
 			if (valIndex < strVal.length()) {
 				// Some characters were not matched
-				return BooleanLiteralImpl.FALSE;
+				return BooleanLiteral.FALSE;
 			}
 		}
 
-		return BooleanLiteralImpl.TRUE;
+		return BooleanLiteral.TRUE;
 	}
 
 	/**
@@ -1608,7 +1608,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			if (QueryEvaluationUtil.getEffectiveBooleanValue(leftValue) == false) {
 				// Left argument evaluates to false, we don't need to look any
 				// further
-				return BooleanLiteralImpl.FALSE;
+				return BooleanLiteral.FALSE;
 			}
 		}
 		catch (ValueExprEvaluationException e) {
@@ -1616,7 +1616,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			// the right argument evaluates to 'false', failure otherwise.
 			Value rightValue = evaluate(node.getRightArg(), bindings);
 			if (QueryEvaluationUtil.getEffectiveBooleanValue(rightValue) == false) {
-				return BooleanLiteralImpl.FALSE;
+				return BooleanLiteral.FALSE;
 			}
 			else {
 				throw new ValueExprEvaluationException();
@@ -1626,7 +1626,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Left argument evaluated to 'true', result is determined
 		// by the evaluation of the right argument.
 		Value rightValue = evaluate(node.getRightArg(), bindings);
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.getEffectiveBooleanValue(rightValue));
+		return BooleanLiteral.valueOf(QueryEvaluationUtil.getEffectiveBooleanValue(rightValue));
 	}
 
 	public Value evaluate(Or node, BindingSet bindings)
@@ -1637,7 +1637,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			if (QueryEvaluationUtil.getEffectiveBooleanValue(leftValue) == true) {
 				// Left argument evaluates to true, we don't need to look any
 				// further
-				return BooleanLiteralImpl.TRUE;
+				return BooleanLiteral.TRUE;
 			}
 		}
 		catch (ValueExprEvaluationException e) {
@@ -1645,7 +1645,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			// the right argument evaluates to 'true', failure otherwise.
 			Value rightValue = evaluate(node.getRightArg(), bindings);
 			if (QueryEvaluationUtil.getEffectiveBooleanValue(rightValue) == true) {
-				return BooleanLiteralImpl.TRUE;
+				return BooleanLiteral.TRUE;
 			}
 			else {
 				throw new ValueExprEvaluationException();
@@ -1655,7 +1655,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		// Left argument evaluated to 'false', result is determined
 		// by the evaluation of the right argument.
 		Value rightValue = evaluate(node.getRightArg(), bindings);
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.getEffectiveBooleanValue(rightValue));
+		return BooleanLiteral.valueOf(QueryEvaluationUtil.getEffectiveBooleanValue(rightValue));
 	}
 
 	public Value evaluate(Not node, BindingSet bindings)
@@ -1663,7 +1663,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		Value argValue = evaluate(node.getArg(), bindings);
 		boolean argBoolean = QueryEvaluationUtil.getEffectiveBooleanValue(argValue);
-		return BooleanLiteralImpl.valueOf(!argBoolean);
+		return BooleanLiteral.valueOf(!argBoolean);
 	}
 
 	public Value evaluate(Now node, BindingSet bindings)
@@ -1681,7 +1681,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value leftVal = evaluate(node.getLeftArg(), bindings);
 		Value rightVal = evaluate(node.getRightArg(), bindings);
 
-		return BooleanLiteralImpl.valueOf(leftVal != null && leftVal.equals(rightVal));
+		return BooleanLiteral.valueOf(leftVal != null && leftVal.equals(rightVal));
 	}
 
 	public Value evaluate(Coalesce node, BindingSet bindings)
@@ -1718,7 +1718,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		Value leftVal = evaluate(node.getLeftArg(), bindings);
 		Value rightVal = evaluate(node.getRightArg(), bindings);
 
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.compare(leftVal, rightVal, node.getOperator()));
+		return BooleanLiteral.valueOf(QueryEvaluationUtil.compare(leftVal, rightVal, node.getOperator()));
 	}
 
 	public Value evaluate(MathExpr node, BindingSet bindings)
@@ -1787,7 +1787,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			iter.close();
 		}
 
-		return BooleanLiteralImpl.valueOf(result);
+		return BooleanLiteral.valueOf(result);
 	}
 
 	public Value evaluate(ListMemberOperator node, BindingSet bindings)
@@ -1822,7 +1822,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			throw typeError;
 		}
 
-		return BooleanLiteralImpl.valueOf(result);
+		return BooleanLiteral.valueOf(result);
 	}
 
 	public Value evaluate(CompareAny node, BindingSet bindings)
@@ -1855,7 +1855,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			iter.close();
 		}
 
-		return BooleanLiteralImpl.valueOf(result);
+		return BooleanLiteral.valueOf(result);
 	}
 
 	public Value evaluate(CompareAll node, BindingSet bindings)
@@ -1889,7 +1889,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			iter.close();
 		}
 
-		return BooleanLiteralImpl.valueOf(result);
+		return BooleanLiteral.valueOf(result);
 	}
 
 	public Value evaluate(Exists node, BindingSet bindings)
@@ -1897,7 +1897,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(node.getSubQuery(), bindings);
 		try {
-			return BooleanLiteralImpl.valueOf(iter.hasNext());
+			return BooleanLiteral.valueOf(iter.hasNext());
 		}
 		finally {
 			iter.close();
